@@ -1,7 +1,9 @@
 # Jedis
 
 Jedis is a blazingly small and sane redis java client.
+
 Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest version of redis.
+
 Jedis is a WORK IS PROGRESS.
 
 ## What's still missing?

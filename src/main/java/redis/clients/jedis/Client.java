@@ -6,16 +6,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import redis.clients.jedis.Protocol;
-
 public class Client {
-    private String host;
-    private int port = Protocol.DEFAULT_PORT;
-    private Socket socket;
-    private boolean connected = false;
-    private Protocol protocol = new Protocol();
-    private OutputStream outputStream;
-    private InputStream inputStream;
+    protected String host;
+    protected int port = Protocol.DEFAULT_PORT;
+    protected Socket socket;
+    protected boolean connected = false;
+    protected Protocol protocol = new Protocol();
+    protected OutputStream outputStream;
+    protected InputStream inputStream;
 
     public Client(String host) {
 	super();
@@ -47,17 +45,6 @@ public class Client {
     public Client() {
     }
 
-    public String ping() {
-	String command = protocol.buildCommand("PING");
-	try {
-	    outputStream.write(command.getBytes());
-	    return protocol.getSingleLineReply(inputStream);
-	} catch (IOException e) {
-	    // TODO Not sure what to do here
-	    return null;
-	}
-    }
-
     public void connect() throws UnknownHostException, IOException {
 	if (!connected) {
 	    socket = new Socket(host, port);
@@ -82,25 +69,4 @@ public class Client {
 	return connected;
     }
 
-    public String set(String key, String value) {
-	String command = protocol.buildCommand("SET", key, value);
-	try {
-	    outputStream.write(command.getBytes());
-	    return protocol.getSingleLineReply(inputStream);
-	} catch (IOException e) {
-	    // TODO Not sure what to do here
-	    return null;
-	}
-    }
-
-    public String get(String key) {
-	String command = protocol.buildCommand("GET", key);
-	try {
-	    outputStream.write(command.getBytes());
-	    return protocol.getBulkReply(inputStream);
-	} catch (IOException e) {
-	    // TODO Not sure what to do here
-	    return null;
-	}
-    }
 }

@@ -23,29 +23,6 @@ public class ClientTest extends Assert {
 	client.disconnect();
     }
 
-    @Test
-    public void ping() throws UnknownHostException, IOException {
-	client.setHost("localhost");
-	client.connect();
-
-	assertTrue(client.isConnected());
-
-	String status = client.ping();
-	assertEquals("PONG", status);
-    }
-
-    @Test
-    public void setAndGet() throws UnknownHostException, IOException {
-	client.setHost("localhost");
-	client.connect();
-
-	String status = client.set("foo", "bar");
-	assertEquals("OK", status);
-
-	String value = client.get("foo");
-	assertEquals("bar", value);
-    }
-
     @Test(expected = UnknownHostException.class)
     public void checkUnkownHost() throws UnknownHostException, IOException {
 	client.setHost("someunknownhost");

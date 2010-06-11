@@ -4,7 +4,7 @@ Jedis is a blazingly small and sane redis java client.
 
 Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest version of redis.
 
-Jedis is a WORK IS PROGRESS.
+Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
 Right now almost everything. You can just PING, GET and SET. But stay close because whenever I have a couple of free hours it will support almost everything!

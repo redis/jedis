@@ -1,7 +1,11 @@
 package redis.clients.jedis.tests;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +17,24 @@ import redis.clients.jedis.Protocol;
 
 public class ProtocolTest extends Assert {
     @Test
-    public void buildACommand() {
-	Protocol protocol = new Protocol();
-	String command = protocol.buildCommand("GET", "SOMEKEY");
+    public void buildACommand() throws IOException {
+	PipedInputStream pis = new PipedInputStream();
+	BufferedInputStream bis = new BufferedInputStream(pis);
+	PipedOutputStream pos = new PipedOutputStream(pis);
 
+	Protocol protocol = new Protocol();
+	protocol.sendCommand(pos, "GET", "SOMEKEY");
+
+	pos.close();
 	String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";
 
-	assertEquals(expectedCommand, command);
+	int b;
+	StringBuilder sb = new StringBuilder();
+	while ((b = bis.read()) != -1) {
+	    sb.append((char) b);
+	}
+
+	assertEquals(expectedCommand, sb.toString());
     }
 
     @Test

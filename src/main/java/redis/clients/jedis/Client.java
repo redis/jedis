@@ -7,17 +7,22 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client {
-    protected String host;
-    protected int port = Protocol.DEFAULT_PORT;
-    protected Socket socket;
-    protected boolean connected = false;
-    protected Protocol protocol = new Protocol();
-    protected OutputStream outputStream;
-    protected InputStream inputStream;
+    private String host;
+    private int port = Protocol.DEFAULT_PORT;
+    private Socket socket;
+    private boolean connected = false;
+    private Protocol protocol = new Protocol();
+    private OutputStream outputStream;
+    private InputStream inputStream;
 
     public Client(String host) {
 	super();
 	this.host = host;
+    }
+
+    protected Client sendCommand(String name, String... args) {
+	protocol.sendCommand(outputStream, name, args);
+	return this;
     }
 
     public Client(String host, int port) {
@@ -67,6 +72,14 @@ public class Client {
 
     public boolean isConnected() {
 	return connected;
+    }
+
+    protected String getSingleLineReply() {
+	return protocol.getSingleLineReply(inputStream);
+    }
+
+    public String getBulkReply() {
+	return protocol.getBulkReply(inputStream);
     }
 
 }

@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Protocol {
     public static final byte PLUS_BYTE = PLUS.getBytes()[0];
     public static final byte COLON_BYTE = COLON.getBytes()[0];
 
-    public String buildCommand(String name, String... args) {
+    public void sendCommand(OutputStream os, String name, String... args) {
 	StringBuilder builder = new StringBuilder();
 	builder.append(ASTERISK).append(args.length + 1).append(
 		COMMAND_DELIMITER);
@@ -28,7 +29,11 @@ public class Protocol {
 	    builder.append(DOLLAR).append(arg.length()).append(
 		    COMMAND_DELIMITER).append(arg).append(COMMAND_DELIMITER);
 	}
-	return builder.toString();
+	try {
+	    os.write(builder.toString().getBytes());
+	} catch (IOException e) {
+	    // TODO don't know what to do here!
+	}
     }
 
     public String getBulkReply(InputStream is) {

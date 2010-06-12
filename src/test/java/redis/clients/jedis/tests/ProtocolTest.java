@@ -13,6 +13,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Protocol;
 
 public class ProtocolTest extends Assert {
@@ -38,7 +39,7 @@ public class ProtocolTest extends Assert {
     }
 
     @Test
-    public void bulkReply() {
+    public void bulkReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream("$6\r\nfoobar\r\n".getBytes());
 	Protocol protocol = new Protocol();
 	String response = protocol.getBulkReply(is);
@@ -46,7 +47,7 @@ public class ProtocolTest extends Assert {
     }
 
     @Test
-    public void nullBulkReply() {
+    public void nullBulkReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream("$-1\r\n".getBytes());
 	Protocol protocol = new Protocol();
 	String response = protocol.getBulkReply(is);
@@ -54,7 +55,7 @@ public class ProtocolTest extends Assert {
     }
 
     @Test
-    public void singleLineReply() {
+    public void singleLineReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream("+OK\r\n".getBytes());
 	Protocol protocol = new Protocol();
 	String response = protocol.getSingleLineReply(is);
@@ -62,7 +63,7 @@ public class ProtocolTest extends Assert {
     }
 
     @Test
-    public void integerReply() {
+    public void integerReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream(":123\r\n".getBytes());
 	Protocol protocol = new Protocol();
 	int response = protocol.getIntegerReply(is);
@@ -70,7 +71,7 @@ public class ProtocolTest extends Assert {
     }
 
     @Test
-    public void multiBulkReply() {
+    public void multiBulkReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream(
 		"*4\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$5\r\nHello\r\n$5\r\nWorld\r\n"
 			.getBytes());

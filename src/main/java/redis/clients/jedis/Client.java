@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.List;
 
 public class Client {
     private String host;
@@ -74,12 +75,19 @@ public class Client {
 	return connected;
     }
 
-    protected String getSingleLineReply() {
+    protected String getStatusCodeReply() throws JedisException {
 	return protocol.getSingleLineReply(inputStream);
     }
 
-    public String getBulkReply() {
+    public String getBulkReply() throws JedisException {
 	return protocol.getBulkReply(inputStream);
     }
 
+    public int getIntegerReply() throws JedisException {
+	return protocol.getIntegerReply(inputStream);
+    }
+
+    public List<String> getMultiBulkReply() throws JedisException {
+	return protocol.getMultiBulkReply(inputStream);
+    }
 }

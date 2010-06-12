@@ -7,12 +7,29 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
-Right now almost everything. You can just PING, GET and SET. But stay close because whenever I have a couple of free hours it will support almost everything!
+- Commands operating on string values
+- Commands operating on lists
+- Commands operating on sets
+- Commands operating on sorted sets
+- Commands operating on hashes
+- Sorting
+- Transactions
+- Publish/Subscribe
+- Persistence control commands
+- Remote server control commands
+- And the AUTH command
+
+But stay close because things are going fast and all this will be implemented soon!
+
+## Ok.. so what's already done?
+- Connection handling (not AUTH)
+- Commands operating on all the kind of values
+- Commands operating on string values (just GET and SET)
 
 ## How do I use it?
 
 You can download the latests build at: 
-    http://github.com/downloads/xetorthio/jedis/jedis-0.0.1-SNAPSHOT.jar
+    http://github.com/downloads/xetorthio/jedis/jedis-0.0.2.jar
 
 To use it just:
     

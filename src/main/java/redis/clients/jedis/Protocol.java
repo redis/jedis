@@ -10,6 +10,7 @@ public class Protocol {
     public static final String DOLLAR = "$";
     public static final String ASTERISK = "*";
     public static final String PLUS = "+";
+    public static final String MINUS = "-";
     public static final String COLON = ":";
     public static final String COMMAND_DELIMITER = "\r\n";
     public static final int DEFAULT_PORT = 6379;
@@ -17,6 +18,7 @@ public class Protocol {
     public static final byte DOLLAR_BYTE = DOLLAR.getBytes()[0];
     public static final byte ASTERISK_BYTE = ASTERISK.getBytes()[0];
     public static final byte PLUS_BYTE = PLUS.getBytes()[0];
+    public static final byte MINUS_BYTE = MINUS.getBytes()[0];
     public static final byte COLON_BYTE = COLON.getBytes()[0];
 
     public void sendCommand(OutputStream os, String name, String... args) {
@@ -36,10 +38,40 @@ public class Protocol {
 	}
     }
 
-    public String getBulkReply(InputStream is) {
+    public void processError(InputStream is) throws JedisException {
+	String message = readLine(is);
+	throw new JedisException(message);
+    }
+
+    private String readLine(InputStream is) {
+	byte b;
+	StringBuilder sb = new StringBuilder();
+
+	try {
+	    while ((b = (byte) is.read()) != -1) {
+		if (b == '\r') {
+		    b = (byte) is.read();
+		    if (b == '\n') {
+			break;
+		    }
+		}
+		sb.append((char) b);
+	    }
+	} catch (IOException e) {
+	    // TODO Dont know what to do here!
+	}
+	return sb.toString();
+    }
+
+    public String getBulkReply(InputStream is) throws JedisException {
 	String ret = null;
 	try {
-	    if ((byte) is.read() == DOLLAR_BYTE) {
+	    byte b = (byte) is.read();
+	    if (b == MINUS_BYTE) {
+		processError(is);
+	    }
+
+	    if (b == DOLLAR_BYTE) {
 		int len = Integer.parseInt(readLine(is));
 		if (len == -1) {
 		    return null;
@@ -60,26 +92,15 @@ public class Protocol {
 	return ret;
     }
 
-    private String readLine(InputStream is) throws IOException {
-	byte b;
-	StringBuilder sb = new StringBuilder();
-
-	while ((b = (byte) is.read()) != -1) {
-	    if (b == '\r') {
-		b = (byte) is.read();
-		if (b == '\n') {
-		    break;
-		}
-	    }
-	    sb.append((char) b);
-	}
-	return sb.toString();
-    }
-
-    public String getSingleLineReply(InputStream is) {
+    public String getSingleLineReply(InputStream is) throws JedisException {
 	String ret = null;
 	try {
-	    if ((byte) is.read() == PLUS_BYTE) {
+	    byte b = (byte) is.read();
+	    if (b == MINUS_BYTE) {
+		processError(is);
+	    }
+
+	    if (b == PLUS_BYTE) {
 		ret = readLine(is);
 	    }
 	} catch (IOException e) {
@@ -89,24 +110,33 @@ public class Protocol {
 	return ret;
     }
 
-    public int getIntegerReply(InputStream is) {
+    public int getIntegerReply(InputStream is) throws JedisException {
 	int ret = 0;
 	try {
-	    if ((byte) is.read() == COLON_BYTE) {
+	    byte b = (byte) is.read();
+	    if (b == MINUS_BYTE) {
+		processError(is);
+	    }
+	    if (b == COLON_BYTE) {
 		String num = readLine(is);
 		ret = Integer.parseInt(num);
 	    }
 	} catch (IOException e) {
 	    // TODO Not sure that I should return 0
+	    e.printStackTrace();
 	    return 0;
 	}
 	return ret;
     }
 
-    public List<String> getMultiBulkReply(InputStream is) {
+    public List<String> getMultiBulkReply(InputStream is) throws JedisException {
 	List<String> ret = new ArrayList<String>();
 	try {
-	    if ((byte) is.read() == ASTERISK_BYTE) {
+	    byte b = (byte) is.read();
+	    if (b == MINUS_BYTE) {
+		processError(is);
+	    }
+	    if (b == ASTERISK_BYTE) {
 		int num = Integer.parseInt(readLine(is));
 		for (int i = 0; i < num; i++) {
 		    ret.add(getBulkReply(is));

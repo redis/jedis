@@ -10,7 +10,6 @@ Jedis is a WORK IN PROGRESS.
 - Commands operating on lists
 - Commands operating on sets
 - Commands operating on sorted sets
-- Commands operating on hashes
 - Sorting
 - Transactions
 - Publish/Subscribe
@@ -24,6 +23,7 @@ But stay close because things are going fast and all this will be implemented so
 - Connection handling (not AUTH)
 - Commands operating on all the kind of values
 - Commands operating on string values
+- Commands operating on hashes
 
 ## How do I use it?
 

@@ -99,7 +99,7 @@ public class AllKindOfValuesCommandsTest extends Assert {
 
     @Test
     public void randomKey() throws JedisException {
-	assertEquals("", jedis.randomKey());
+	assertEquals(null, jedis.randomKey());
 
 	jedis.set("foo", "bar");
 

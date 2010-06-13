@@ -7,7 +7,6 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
-- Commands operating on string values
 - Commands operating on lists
 - Commands operating on sets
 - Commands operating on sorted sets
@@ -24,7 +23,7 @@ But stay close because things are going fast and all this will be implemented so
 ## Ok.. so what's already done?
 - Connection handling (not AUTH)
 - Commands operating on all the kind of values
-- Commands operating on string values (just GET and SET)
+- Commands operating on string values
 
 ## How do I use it?
 

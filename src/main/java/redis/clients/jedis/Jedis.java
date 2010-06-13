@@ -44,7 +44,7 @@ public class Jedis extends Client {
     }
 
     public String randomKey() throws JedisException {
-	return sendCommand("RANDOMKEY").getStatusCodeReply();
+	return sendCommand("RANDOMKEY").getBulkReply();
     }
 
     public String rename(String oldkey, String newkey) throws JedisException {
@@ -85,5 +85,58 @@ public class Jedis extends Client {
 
     public String flushAll() throws JedisException {
 	return sendCommand("FLUSHALL").getStatusCodeReply();
+    }
+
+    public String getSet(String key, String value) throws JedisException {
+	return sendCommand("GETSET", key, value).getBulkReply();
+    }
+
+    public List<String> mget(String... keys) throws JedisException {
+	return sendCommand("MGET", keys).getMultiBulkReply();
+    }
+
+    public int setnx(String key, String value) throws JedisException {
+	return sendCommand("SETNX", key, value).getIntegerReply();
+    }
+
+    public String setex(String key, int seconds, String value)
+	    throws JedisException {
+	return sendCommand("SETEX", key, String.valueOf(seconds), value)
+		.getStatusCodeReply();
+    }
+
+    public String mset(String... keysvalues) throws JedisException {
+	return sendCommand("MSET", keysvalues).getStatusCodeReply();
+    }
+
+    public int msetnx(String... keysvalues) throws JedisException {
+	return sendCommand("MSETNX", keysvalues).getIntegerReply();
+    }
+
+    public int decrBy(String key, int integer) throws JedisException {
+	return sendCommand("DECRBY", key, String.valueOf(integer))
+		.getIntegerReply();
+    }
+
+    public int decr(String key) throws JedisException {
+	return sendCommand("DECR", key).getIntegerReply();
+    }
+
+    public int incrBy(String key, int integer) throws JedisException {
+	return sendCommand("INCRBY", key, String.valueOf(integer))
+		.getIntegerReply();
+    }
+
+    public int incr(String key) throws JedisException {
+	return sendCommand("INCR", key).getIntegerReply();
+    }
+
+    public int append(String key, String value) throws JedisException {
+	return sendCommand("APPEND", key, value).getIntegerReply();
+    }
+
+    public String substr(String key, int start, int end) throws JedisException {
+	return sendCommand("SUBSTR", key, String.valueOf(start),
+		String.valueOf(end)).getBulkReply();
     }
 }

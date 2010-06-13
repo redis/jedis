@@ -28,7 +28,7 @@ But stay close because things are going fast and all this will be implemented so
 ## How do I use it?
 
 You can download the latests build at: 
-    http://github.com/downloads/xetorthio/jedis/jedis-0.0.3.jar
+    http://github.com/xetorthio/jedis/downloads
 
 To use it just:
     

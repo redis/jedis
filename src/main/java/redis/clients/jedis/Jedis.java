@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class Jedis extends Client {
     public Jedis(String host) {
@@ -160,16 +160,15 @@ public class Jedis extends Client {
 
     public String hmset(String key, Map<String, String> hash)
 	    throws JedisException {
-	String[] params = new String[(hash.size() * 2) + 1];
-	params[0] = key;
-	Iterator<Entry<String, String>> iterator = hash.entrySet().iterator();
-	int i = 1;
-	while (iterator.hasNext()) {
-	    Entry<String, String> entry = iterator.next();
-	    params[i++] = entry.getKey();
-	    params[i++] = entry.getValue();
+	List<String> params = new ArrayList<String>();
+	params.add(key);
+
+	for (String field : hash.keySet()) {
+	    params.add(field);
+	    params.add(hash.get(field));
 	}
-	return sendCommand("HMSET", params).getStatusCodeReply();
+	return sendCommand("HMSET", params.toArray(new String[params.size()]))
+		.getStatusCodeReply();
     }
 
     public List<String> hmget(String key, String... fields)
@@ -215,5 +214,23 @@ public class Jedis extends Client {
 	}
 
 	return hash;
+    }
+
+    public int rpush(String key, String string) throws JedisException {
+	return sendCommand("RPUSH", key, string).getIntegerReply();
+    }
+
+    public int lpush(String key, String string) throws JedisException {
+	return sendCommand("LPUSH", key, string).getIntegerReply();
+    }
+
+    public int llen(String key) throws JedisException {
+	return sendCommand("LLEN", key).getIntegerReply();
+    }
+
+    public List<String> lrange(String key, int start, int end)
+	    throws JedisException {
+	return sendCommand("LRANGE", key, String.valueOf(start),
+		String.valueOf(end)).getMultiBulkReply();
     }
 }

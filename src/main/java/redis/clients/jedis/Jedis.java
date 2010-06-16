@@ -23,7 +23,7 @@ public class Jedis extends Client {
 	return sendCommand("GET", key).getBulkReply();
     }
 
-    public void quit() {
+    public void quit() throws JedisException {
 	sendCommand("QUIT");
     }
 

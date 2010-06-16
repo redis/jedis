@@ -21,7 +21,11 @@ public class Client {
 	this.host = host;
     }
 
-    protected Client sendCommand(String name, String... args) {
+    protected Client sendCommand(String name, String... args)
+	    throws JedisException {
+	if (!isConnected()) {
+	    throw new JedisException("Please connect Jedis before using it.");
+	}
 	protocol.sendCommand(outputStream, name, args);
 	return this;
     }

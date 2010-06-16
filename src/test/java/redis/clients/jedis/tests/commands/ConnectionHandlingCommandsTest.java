@@ -8,6 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisException;
 
 public class ConnectionHandlingCommandsTest extends Assert {
     private Jedis jedis;
@@ -25,7 +26,7 @@ public class ConnectionHandlingCommandsTest extends Assert {
     }
 
     @Test
-    public void quit() {
+    public void quit() throws JedisException {
 	jedis.quit();
     }
 

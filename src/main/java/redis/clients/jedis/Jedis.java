@@ -233,4 +233,36 @@ public class Jedis extends Client {
 	return sendCommand("LRANGE", key, String.valueOf(start),
 		String.valueOf(end)).getMultiBulkReply();
     }
+
+    public String ltrim(String key, int start, int end) throws JedisException {
+	return sendCommand("LTRIM", key, String.valueOf(start),
+		String.valueOf(end)).getStatusCodeReply();
+    }
+
+    public String lindex(String key, int index) throws JedisException {
+	return sendCommand("LINDEX", key, String.valueOf(index)).getBulkReply();
+    }
+
+    public String lset(String key, int index, String value)
+	    throws JedisException {
+	return sendCommand("LSET", key, String.valueOf(index), value)
+		.getStatusCodeReply();
+    }
+
+    public int lrem(String key, int count, String value) throws JedisException {
+	return sendCommand("LREM", key, String.valueOf(count), value)
+		.getIntegerReply();
+    }
+
+    public String lpop(String key) throws JedisException {
+	return sendCommand("LPOP", key).getBulkReply();
+    }
+
+    public String rpop(String key) throws JedisException {
+	return sendCommand("RPOP", key).getBulkReply();
+    }
+
+    public String rpoplpush(String srckey, String dstkey) throws JedisException {
+	return sendCommand("RPOPLPUSH", srckey, dstkey).getBulkReply();
+    }
 }

@@ -7,7 +7,6 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
-- Commands operating on lists
 - Commands operating on sets
 - Commands operating on sorted sets
 - Sorting
@@ -15,7 +14,7 @@ Jedis is a WORK IN PROGRESS.
 - Publish/Subscribe
 - Persistence control commands
 - Remote server control commands
-- And the AUTH command
+- The AUTH, SORT, BLPOP and BRPOP commands
 
 But stay close because things are going fast and all this will be implemented soon!
 
@@ -24,6 +23,7 @@ But stay close because things are going fast and all this will be implemented so
 - Commands operating on all the kind of values
 - Commands operating on string values
 - Commands operating on hashes
+- Commands operating on lists (not SORT, BLPOP, BRPOP)
 
 ## How do I use it?
 

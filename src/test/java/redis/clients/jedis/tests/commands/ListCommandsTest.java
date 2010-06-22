@@ -86,4 +86,138 @@ public class ListCommandsTest extends Assert {
 	assertEquals(expected, range);
     }
 
+    @Test
+    public void ltrim() throws JedisException {
+	jedis.lpush("foo", "1");
+	jedis.lpush("foo", "2");
+	jedis.lpush("foo", "3");
+	String status = jedis.ltrim("foo", 0, 1);
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("3");
+	expected.add("2");
+
+	assertEquals("OK", status);
+	assertEquals(2, jedis.llen("foo"));
+	assertEquals(expected, jedis.lrange("foo", 0, 100));
+    }
+
+    @Test
+    public void lindex() throws JedisException {
+	jedis.lpush("foo", "1");
+	jedis.lpush("foo", "2");
+	jedis.lpush("foo", "3");
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("3");
+	expected.add("bar");
+	expected.add("1");
+
+	String status = jedis.lset("foo", 1, "bar");
+
+	assertEquals("OK", status);
+	assertEquals(expected, jedis.lrange("foo", 0, 100));
+    }
+
+    @Test
+    public void lset() throws JedisException {
+	jedis.lpush("foo", "1");
+	jedis.lpush("foo", "2");
+	jedis.lpush("foo", "3");
+
+	assertEquals("3", jedis.lindex("foo", 0));
+	assertEquals(null, jedis.lindex("foo", 100));
+    }
+
+    @Test
+    public void lrem() throws JedisException {
+	jedis.lpush("foo", "hello");
+	jedis.lpush("foo", "hello");
+	jedis.lpush("foo", "x");
+	jedis.lpush("foo", "hello");
+	jedis.lpush("foo", "c");
+	jedis.lpush("foo", "b");
+	jedis.lpush("foo", "a");
+
+	int count = jedis.lrem("foo", -2, "hello");
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("a");
+	expected.add("b");
+	expected.add("c");
+	expected.add("hello");
+	expected.add("x");
+
+	assertEquals(2, count);
+	assertEquals(expected, jedis.lrange("foo", 0, 1000));
+	assertEquals(0, jedis.lrem("bar", 100, "foo"));
+    }
+
+    @Test
+    public void lpop() throws JedisException {
+	jedis.rpush("foo", "a");
+	jedis.rpush("foo", "b");
+	jedis.rpush("foo", "c");
+
+	String element = jedis.lpop("foo");
+	assertEquals("a", element);
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("b");
+	expected.add("c");
+
+	assertEquals(expected, jedis.lrange("foo", 0, 1000));
+	jedis.lpop("foo");
+	jedis.lpop("foo");
+
+	element = jedis.lpop("foo");
+	assertEquals(null, element);
+    }
+
+    @Test
+    public void rpop() throws JedisException {
+	jedis.rpush("foo", "a");
+	jedis.rpush("foo", "b");
+	jedis.rpush("foo", "c");
+
+	String element = jedis.rpop("foo");
+	assertEquals("c", element);
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("a");
+	expected.add("b");
+
+	assertEquals(expected, jedis.lrange("foo", 0, 1000));
+	jedis.rpop("foo");
+	jedis.rpop("foo");
+
+	element = jedis.rpop("foo");
+	assertEquals(null, element);
+    }
+
+    @Test
+    public void rpoplpush() throws JedisException {
+	jedis.rpush("foo", "a");
+	jedis.rpush("foo", "b");
+	jedis.rpush("foo", "c");
+
+	jedis.rpush("dst", "foo");
+	jedis.rpush("dst", "bar");
+
+	String element = jedis.rpoplpush("foo", "dst");
+
+	assertEquals("c", element);
+	
+	List<String> srcExpected = new ArrayList<String>();
+	srcExpected.add("a");
+	srcExpected.add("b");
+
+	List<String> dstExpected = new ArrayList<String>();
+	dstExpected.add("c");
+	dstExpected.add("foo");
+	dstExpected.add("bar");
+
+	assertEquals(srcExpected, jedis.lrange("foo", 0, 1000));
+	assertEquals(dstExpected, jedis.lrange("dst", 0, 1000));
+    }
 }

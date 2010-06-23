@@ -265,4 +265,8 @@ public class Jedis extends Client {
     public String rpoplpush(String srckey, String dstkey) throws JedisException {
 	return sendCommand("RPOPLPUSH", srckey, dstkey).getBulkReply();
     }
+
+    public int sadd(String key, String member) throws JedisException {
+	return sendCommand("SADD", key, member).getIntegerReply();
+    }
 }

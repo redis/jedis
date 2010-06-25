@@ -7,7 +7,6 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
-- Commands operating on sets
 - Commands operating on sorted sets
 - Sorting
 - Transactions
@@ -24,6 +23,7 @@ But stay close because things are going fast and all this will be implemented so
 - Commands operating on string values
 - Commands operating on hashes
 - Commands operating on lists (not SORT, BLPOP, BRPOP)
+- Commands operating on sets
 
 ## How do I use it?
 

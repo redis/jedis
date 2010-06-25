@@ -276,4 +276,65 @@ public class Jedis extends Client {
 	List<String> members = sendCommand("SMEMBERS", key).getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
+
+    public int srem(String key, String member) throws JedisException {
+	return sendCommand("SREM", key, member).getIntegerReply();
+    }
+
+    public String spop(String key) throws JedisException {
+	return sendCommand("SPOP", key).getBulkReply();
+    }
+
+    public int smove(String srckey, String dstkey, String member)
+	    throws JedisException {
+	return sendCommand("SMOVE", srckey, dstkey, member).getIntegerReply();
+    }
+
+    public int scard(String key) throws JedisException {
+	return sendCommand("SCARD", key).getIntegerReply();
+    }
+
+    public int sismember(String key, String member) throws JedisException {
+	return sendCommand("SISMEMBER", key, member).getIntegerReply();
+    }
+
+    public Set<String> sinter(String... keys) throws JedisException {
+	List<String> members = sendCommand("SINTER", keys).getMultiBulkReply();
+	return new LinkedHashSet<String>(members);
+    }
+
+    public int sinterstore(String dstkey, String... keys) throws JedisException {
+	String[] params = new String[keys.length + 1];
+	params[0] = dstkey;
+	System.arraycopy(keys, 0, params, 1, keys.length);
+	return sendCommand("SINTERSTORE", params).getIntegerReply();
+    }
+
+    public Set<String> sunion(String... keys) throws JedisException {
+	List<String> members = sendCommand("SUNION", keys).getMultiBulkReply();
+	return new LinkedHashSet<String>(members);
+    }
+
+    public int sunionstore(String dstkey, String... keys) throws JedisException {
+	String[] params = new String[keys.length + 1];
+	params[0] = dstkey;
+	System.arraycopy(keys, 0, params, 1, keys.length);
+	return sendCommand("SUNIONSTORE", params).getIntegerReply();
+    }
+
+    public Set<String> sdiff(String... keys) throws JedisException {
+	List<String> members = sendCommand("SDIFF", keys).getMultiBulkReply();
+	return new LinkedHashSet<String>(members);
+    }
+
+    public int sdiffstore(String dstkey, String... keys) throws JedisException {
+	String[] params = new String[keys.length + 1];
+	params[0] = dstkey;
+	System.arraycopy(keys, 0, params, 1, keys.length);
+	return sendCommand("SDIFFSTORE", params).getIntegerReply();
+    }
+
+    public String srandmember(String key) throws JedisException {
+	return sendCommand("SRANDMEMBER", key).getBulkReply();
+    }
 }

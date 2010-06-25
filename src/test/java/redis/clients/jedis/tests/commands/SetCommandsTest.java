@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests.commands;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -36,16 +35,19 @@ public class SetCommandsTest extends Assert {
 	status = jedis.sadd("foo", "a");
 	assertEquals(0, status);
     }
-    
+
     @Test
     public void smembers() throws JedisException {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
-	
+
 	Set<String> expected = new LinkedHashSet<String>();
-	expected
-	
-	assertEquals(0, status);
+	expected.add("a");
+	expected.add("b");
+
+	Set<String> members = jedis.smembers("foo");
+
+	assertEquals(expected, members);
     }
-    
+
 }

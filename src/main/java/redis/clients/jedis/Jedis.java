@@ -3,8 +3,10 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Jedis extends Client {
     public Jedis(String host) {
@@ -268,5 +270,10 @@ public class Jedis extends Client {
 
     public int sadd(String key, String member) throws JedisException {
 	return sendCommand("SADD", key, member).getIntegerReply();
+    }
+
+    public Set<String> smembers(String key) throws JedisException {
+	List<String> members = sendCommand("SMEMBERS", key).getMultiBulkReply();
+	return new LinkedHashSet<String>(members);
     }
 }

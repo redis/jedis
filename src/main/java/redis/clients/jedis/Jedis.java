@@ -337,4 +337,82 @@ public class Jedis extends Client {
     public String srandmember(String key) throws JedisException {
 	return sendCommand("SRANDMEMBER", key).getBulkReply();
     }
+
+    public int zadd(String key, double score, String member)
+	    throws JedisException {
+	return sendCommand("ZADD", key, String.valueOf(score), member)
+		.getIntegerReply();
+    }
+
+    public Set<String> zrange(String key, int start, int end)
+	    throws JedisException {
+	List<String> members = sendCommand("ZRANGE", key,
+		String.valueOf(start), String.valueOf(end)).getMultiBulkReply();
+	return new LinkedHashSet<String>(members);
+    }
+
+    public int zrem(String key, String member) throws JedisException {
+	return sendCommand("ZREM", key, member).getIntegerReply();
+    }
+
+    public double zincrby(String key, double score, String member)
+	    throws JedisException {
+	String newscore = sendCommand("ZINCRBY", key, String.valueOf(score),
+		member).getBulkReply();
+	return Double.valueOf(newscore);
+    }
+
+    public int zrank(String key, String member) throws JedisException {
+	return sendCommand("ZRANK", key, member).getIntegerReply();
+    }
+
+    public int zrevrank(String key, String member) throws JedisException {
+	return sendCommand("ZREVRANK", key, member).getIntegerReply();
+    }
+
+    public Set<String> zrevrange(String key, int start, int end)
+	    throws JedisException {
+	List<String> members = sendCommand("ZREVRANGE", key,
+		String.valueOf(start), String.valueOf(end)).getMultiBulkReply();
+	return new LinkedHashSet<String>(members);
+    }
+
+    public Set<Tuple> zrangeWithScores(String key, int start, int end)
+	    throws JedisException {
+	List<String> membersWithScores = sendCommand("ZRANGE", key,
+		String.valueOf(start), String.valueOf(end), "WITHSCORES")
+		.getMultiBulkReply();
+	Set<Tuple> set = new LinkedHashSet<Tuple>();
+	Iterator<String> iterator = membersWithScores.iterator();
+	while (iterator.hasNext()) {
+	    set
+		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
+			    .next())));
+	}
+	return set;
+    }
+
+    public Set<Tuple> zrevrangeWithScores(String key, int start, int end)
+	    throws JedisException {
+	List<String> membersWithScores = sendCommand("ZREVRANGE", key,
+		String.valueOf(start), String.valueOf(end), "WITHSCORES")
+		.getMultiBulkReply();
+	Set<Tuple> set = new LinkedHashSet<Tuple>();
+	Iterator<String> iterator = membersWithScores.iterator();
+	while (iterator.hasNext()) {
+	    set
+		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
+			    .next())));
+	}
+	return set;
+    }
+
+    public int zcard(String key) throws JedisException {
+	return sendCommand("ZCARD", key).getIntegerReply();
+    }
+
+    public double zscore(String key, String member) throws JedisException {
+	String score = sendCommand("ZSCORE", key, member).getBulkReply();
+	return Double.valueOf(score);
+    }
 }

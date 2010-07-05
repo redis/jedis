@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -8,207 +9,235 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Jedis extends Client {
+public class Jedis {
+    private Client client = null;
+
     public Jedis(String host) {
-	super(host);
+	client = new Client(host);
+    }
+
+    public Jedis(String host, int port) {
+	client = new Client(host, port);
     }
 
     public String ping() throws JedisException {
-	return sendCommand("PING").getStatusCodeReply();
+	client.ping();
+	return client.getStatusCodeReply();
     }
 
     public String set(String key, String value) throws JedisException {
-	return sendCommand("SET", key, value).getStatusCodeReply();
+	client.set(key, value);
+	return client.getStatusCodeReply();
     }
 
     public String get(String key) throws JedisException {
-	return sendCommand("GET", key).getBulkReply();
+	client.sendCommand("GET", key);
+	return client.getBulkReply();
     }
 
     public void quit() throws JedisException {
-	sendCommand("QUIT");
+	client.quit();
     }
 
     public int exists(String key) throws JedisException {
-	return sendCommand("EXISTS", key).getIntegerReply();
+	client.exists(key);
+	return client.getIntegerReply();
     }
 
     public int del(String... keys) throws JedisException {
-	return sendCommand("DEL", keys).getIntegerReply();
+	client.del(keys);
+	return client.getIntegerReply();
     }
 
     public String type(String key) throws JedisException {
-	return sendCommand("TYPE", key).getStatusCodeReply();
+	client.type(key);
+	return client.getStatusCodeReply();
     }
 
     public String flushDB() throws JedisException {
-	return sendCommand("FLUSHDB").getStatusCodeReply();
+	client.flushDB();
+	return client.getStatusCodeReply();
     }
 
     public List<String> keys(String pattern) throws JedisException {
-	return sendCommand("KEYS", pattern).getMultiBulkReply();
+	client.keys(pattern);
+	return client.getMultiBulkReply();
     }
 
     public String randomKey() throws JedisException {
-	return sendCommand("RANDOMKEY").getBulkReply();
+	client.randomKey();
+	return client.getBulkReply();
     }
 
     public String rename(String oldkey, String newkey) throws JedisException {
-	return sendCommand("RENAME", oldkey, newkey).getStatusCodeReply();
+	client.rename(oldkey, newkey);
+	return client.getStatusCodeReply();
     }
 
     public int renamenx(String oldkey, String newkey) throws JedisException {
-	return sendCommand("RENAMENX", oldkey, newkey).getIntegerReply();
+	client.renamenx(oldkey, newkey);
+	return client.getIntegerReply();
     }
 
     public int dbSize() throws JedisException {
-	return sendCommand("DBSIZE").getIntegerReply();
+	client.dbSize();
+	return client.getIntegerReply();
     }
 
     public int expire(String key, int seconds) throws JedisException {
-	return sendCommand("EXPIRE", key, String.valueOf(seconds))
-		.getIntegerReply();
+	client.expire(key, seconds);
+	return client.getIntegerReply();
     }
 
     public int expireAt(String key, long unixTime) throws JedisException {
-	return sendCommand("EXPIREAT", key, String.valueOf(unixTime))
-		.getIntegerReply();
+	client.expireAt(key, unixTime);
+	return client.getIntegerReply();
     }
 
     public int ttl(String key) throws JedisException {
-	return sendCommand("TTL", key).getIntegerReply();
+	client.ttl(key);
+	return client.getIntegerReply();
     }
 
     public String select(int index) throws JedisException {
-	return sendCommand("SELECT", String.valueOf(index))
-		.getStatusCodeReply();
+	client.select(index);
+	return client.getStatusCodeReply();
     }
 
     public int move(String key, int dbIndex) throws JedisException {
-	return sendCommand("MOVE", key, String.valueOf(dbIndex))
-		.getIntegerReply();
+	client.move(key, dbIndex);
+	return client.getIntegerReply();
     }
 
     public String flushAll() throws JedisException {
-	return sendCommand("FLUSHALL").getStatusCodeReply();
+	client.flushAll();
+	return client.getStatusCodeReply();
     }
 
     public String getSet(String key, String value) throws JedisException {
-	return sendCommand("GETSET", key, value).getBulkReply();
+	client.getSet(key, value);
+	return client.getBulkReply();
     }
 
     public List<String> mget(String... keys) throws JedisException {
-	return sendCommand("MGET", keys).getMultiBulkReply();
+	client.mget(keys);
+	return client.getMultiBulkReply();
     }
 
     public int setnx(String key, String value) throws JedisException {
-	return sendCommand("SETNX", key, value).getIntegerReply();
+	client.setnx(key, value);
+	return client.getIntegerReply();
     }
 
     public String setex(String key, int seconds, String value)
 	    throws JedisException {
-	return sendCommand("SETEX", key, String.valueOf(seconds), value)
-		.getStatusCodeReply();
+	client.setex(key, seconds, value);
+	return client.getStatusCodeReply();
     }
 
     public String mset(String... keysvalues) throws JedisException {
-	return sendCommand("MSET", keysvalues).getStatusCodeReply();
+	client.mset(keysvalues);
+	return client.getStatusCodeReply();
     }
 
     public int msetnx(String... keysvalues) throws JedisException {
-	return sendCommand("MSETNX", keysvalues).getIntegerReply();
+	client.msetnx(keysvalues);
+	return client.getIntegerReply();
     }
 
     public int decrBy(String key, int integer) throws JedisException {
-	return sendCommand("DECRBY", key, String.valueOf(integer))
-		.getIntegerReply();
+	client.decrBy(key, integer);
+	return client.getIntegerReply();
     }
 
     public int decr(String key) throws JedisException {
-	return sendCommand("DECR", key).getIntegerReply();
+	client.decr(key);
+	return client.getIntegerReply();
     }
 
     public int incrBy(String key, int integer) throws JedisException {
-	return sendCommand("INCRBY", key, String.valueOf(integer))
-		.getIntegerReply();
+	client.incrBy(key, integer);
+	return client.getIntegerReply();
     }
 
     public int incr(String key) throws JedisException {
-	return sendCommand("INCR", key).getIntegerReply();
+	client.incr(key);
+	return client.getIntegerReply();
     }
 
     public int append(String key, String value) throws JedisException {
-	return sendCommand("APPEND", key, value).getIntegerReply();
+	client.append(key, value);
+	return client.getIntegerReply();
     }
 
     public String substr(String key, int start, int end) throws JedisException {
-	return sendCommand("SUBSTR", key, String.valueOf(start),
-		String.valueOf(end)).getBulkReply();
+	client.substr(key, start, end);
+	return client.getBulkReply();
     }
 
     public int hset(String key, String field, String value)
 	    throws JedisException {
-	return sendCommand("HSET", key, field, value).getIntegerReply();
+	client.hset(key, field, value);
+	return client.getIntegerReply();
     }
 
     public String hget(String key, String field) throws JedisException {
-	return sendCommand("HGET", key, field).getBulkReply();
+	client.hget(key, field);
+	return client.getBulkReply();
     }
 
     public int hsetnx(String key, String field, String value)
 	    throws JedisException {
-	return sendCommand("HSETNX", key, field, value).getIntegerReply();
+	client.hsetnx(key, field, value);
+	return client.getIntegerReply();
     }
 
     public String hmset(String key, Map<String, String> hash)
 	    throws JedisException {
-	List<String> params = new ArrayList<String>();
-	params.add(key);
-
-	for (String field : hash.keySet()) {
-	    params.add(field);
-	    params.add(hash.get(field));
-	}
-	return sendCommand("HMSET", params.toArray(new String[params.size()]))
-		.getStatusCodeReply();
+	client.hmset(key, hash);
+	return client.getStatusCodeReply();
     }
 
     public List<String> hmget(String key, String... fields)
 	    throws JedisException {
-	String[] params = new String[fields.length + 1];
-	params[0] = key;
-	System.arraycopy(fields, 0, params, 1, fields.length);
-	return sendCommand("HMGET", params).getMultiBulkReply();
+	client.hmget(key, fields);
+	return client.getMultiBulkReply();
     }
 
     public int hincrBy(String key, String field, int value)
 	    throws JedisException {
-	return sendCommand("HINCRBY", key, field, String.valueOf(value))
-		.getIntegerReply();
+	client.hincrBy(key, field, value);
+	return client.getIntegerReply();
     }
 
     public int hexists(String key, String field) throws JedisException {
-	return sendCommand("HEXISTS", key, field).getIntegerReply();
+	client.hexists(key, field);
+	return client.getIntegerReply();
     }
 
     public int hdel(String key, String field) throws JedisException {
-	return sendCommand("HDEL", key, field).getIntegerReply();
+	client.hdel(key, field);
+	return client.getIntegerReply();
     }
 
     public int hlen(String key) throws JedisException {
-	return sendCommand("HLEN", key).getIntegerReply();
+	client.hlen(key);
+	return client.getIntegerReply();
     }
 
     public List<String> hkeys(String key) throws JedisException {
-	return sendCommand("HKEYS", key).getMultiBulkReply();
+	client.hkeys(key);
+	return client.getMultiBulkReply();
     }
 
     public List<String> hvals(String key) throws JedisException {
-	return sendCommand("HVALS", key).getMultiBulkReply();
+	client.hvals(key);
+	return client.getMultiBulkReply();
     }
 
     public Map<String, String> hgetAll(String key) throws JedisException {
-	List<String> flatHash = sendCommand("HGETALL", key).getMultiBulkReply();
+	client.hgetAll(key);
+	List<String> flatHash = client.getMultiBulkReply();
 	Map<String, String> hash = new HashMap<String, String>();
 	Iterator<String> iterator = flatHash.iterator();
 	while (iterator.hasNext()) {
@@ -219,169 +248,183 @@ public class Jedis extends Client {
     }
 
     public int rpush(String key, String string) throws JedisException {
-	return sendCommand("RPUSH", key, string).getIntegerReply();
+	client.rpush(key, string);
+	return client.getIntegerReply();
     }
 
     public int lpush(String key, String string) throws JedisException {
-	return sendCommand("LPUSH", key, string).getIntegerReply();
+	client.lpush(key, string);
+	return client.getIntegerReply();
     }
 
     public int llen(String key) throws JedisException {
-	return sendCommand("LLEN", key).getIntegerReply();
+	client.llen(key);
+	return client.getIntegerReply();
     }
 
     public List<String> lrange(String key, int start, int end)
 	    throws JedisException {
-	return sendCommand("LRANGE", key, String.valueOf(start),
-		String.valueOf(end)).getMultiBulkReply();
+	client.lrange(key, start, end);
+	return client.getMultiBulkReply();
     }
 
     public String ltrim(String key, int start, int end) throws JedisException {
-	return sendCommand("LTRIM", key, String.valueOf(start),
-		String.valueOf(end)).getStatusCodeReply();
+	client.ltrim(key, start, end);
+	return client.getStatusCodeReply();
     }
 
     public String lindex(String key, int index) throws JedisException {
-	return sendCommand("LINDEX", key, String.valueOf(index)).getBulkReply();
+	client.lindex(key, index);
+	return client.getBulkReply();
     }
 
     public String lset(String key, int index, String value)
 	    throws JedisException {
-	return sendCommand("LSET", key, String.valueOf(index), value)
-		.getStatusCodeReply();
+	client.lset(key, index, value);
+	return client.getStatusCodeReply();
     }
 
     public int lrem(String key, int count, String value) throws JedisException {
-	return sendCommand("LREM", key, String.valueOf(count), value)
-		.getIntegerReply();
+	client.lrem(key, count, value);
+	return client.getIntegerReply();
     }
 
     public String lpop(String key) throws JedisException {
-	return sendCommand("LPOP", key).getBulkReply();
+	client.lpop(key);
+	return client.getBulkReply();
     }
 
     public String rpop(String key) throws JedisException {
-	return sendCommand("RPOP", key).getBulkReply();
+	client.rpop(key);
+	return client.getBulkReply();
     }
 
     public String rpoplpush(String srckey, String dstkey) throws JedisException {
-	return sendCommand("RPOPLPUSH", srckey, dstkey).getBulkReply();
+	client.rpoplpush(srckey, dstkey);
+	return client.getBulkReply();
     }
 
     public int sadd(String key, String member) throws JedisException {
-	return sendCommand("SADD", key, member).getIntegerReply();
+	client.sadd(key, member);
+	return client.getIntegerReply();
     }
 
     public Set<String> smembers(String key) throws JedisException {
-	List<String> members = sendCommand("SMEMBERS", key).getMultiBulkReply();
+	client.smembers(key);
+	List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
 
     public int srem(String key, String member) throws JedisException {
-	return sendCommand("SREM", key, member).getIntegerReply();
+	client.srem(key, member);
+	return client.getIntegerReply();
     }
 
     public String spop(String key) throws JedisException {
-	return sendCommand("SPOP", key).getBulkReply();
+	client.spop(key);
+	return client.getBulkReply();
     }
 
     public int smove(String srckey, String dstkey, String member)
 	    throws JedisException {
-	return sendCommand("SMOVE", srckey, dstkey, member).getIntegerReply();
+	client.smove(srckey, dstkey, member);
+	return client.getIntegerReply();
     }
 
     public int scard(String key) throws JedisException {
-	return sendCommand("SCARD", key).getIntegerReply();
+	client.scard(key);
+	return client.getIntegerReply();
     }
 
     public int sismember(String key, String member) throws JedisException {
-	return sendCommand("SISMEMBER", key, member).getIntegerReply();
+	client.sismember(key, member);
+	return client.getIntegerReply();
     }
 
     public Set<String> sinter(String... keys) throws JedisException {
-	List<String> members = sendCommand("SINTER", keys).getMultiBulkReply();
+	client.sinter(keys);
+	List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
 
     public int sinterstore(String dstkey, String... keys) throws JedisException {
-	String[] params = new String[keys.length + 1];
-	params[0] = dstkey;
-	System.arraycopy(keys, 0, params, 1, keys.length);
-	return sendCommand("SINTERSTORE", params).getIntegerReply();
+	client.sinterstore(dstkey, keys);
+	return client.getIntegerReply();
     }
 
     public Set<String> sunion(String... keys) throws JedisException {
-	List<String> members = sendCommand("SUNION", keys).getMultiBulkReply();
+	client.sunion(keys);
+	List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
 
     public int sunionstore(String dstkey, String... keys) throws JedisException {
-	String[] params = new String[keys.length + 1];
-	params[0] = dstkey;
-	System.arraycopy(keys, 0, params, 1, keys.length);
-	return sendCommand("SUNIONSTORE", params).getIntegerReply();
+	client.sunionstore(dstkey, keys);
+	return client.getIntegerReply();
     }
 
     public Set<String> sdiff(String... keys) throws JedisException {
-	List<String> members = sendCommand("SDIFF", keys).getMultiBulkReply();
+	client.sdiff(keys);
+	List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
 
     public int sdiffstore(String dstkey, String... keys) throws JedisException {
-	String[] params = new String[keys.length + 1];
-	params[0] = dstkey;
-	System.arraycopy(keys, 0, params, 1, keys.length);
-	return sendCommand("SDIFFSTORE", params).getIntegerReply();
+	client.sdiffstore(dstkey, keys);
+	return client.getIntegerReply();
     }
 
     public String srandmember(String key) throws JedisException {
-	return sendCommand("SRANDMEMBER", key).getBulkReply();
+	client.srandmember(key);
+	return client.getBulkReply();
     }
 
     public int zadd(String key, double score, String member)
 	    throws JedisException {
-	return sendCommand("ZADD", key, String.valueOf(score), member)
-		.getIntegerReply();
+	client.zadd(key, score, member);
+	return client.getIntegerReply();
     }
 
     public Set<String> zrange(String key, int start, int end)
 	    throws JedisException {
-	List<String> members = sendCommand("ZRANGE", key,
-		String.valueOf(start), String.valueOf(end)).getMultiBulkReply();
+	client.zrange(key, start, end);
+	List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
 
     public int zrem(String key, String member) throws JedisException {
-	return sendCommand("ZREM", key, member).getIntegerReply();
+	client.zrem(key, member);
+	return client.getIntegerReply();
     }
 
     public double zincrby(String key, double score, String member)
 	    throws JedisException {
-	String newscore = sendCommand("ZINCRBY", key, String.valueOf(score),
-		member).getBulkReply();
+	client.zincrby(key, score, member);
+	String newscore = client.getBulkReply();
 	return Double.valueOf(newscore);
     }
 
     public int zrank(String key, String member) throws JedisException {
-	return sendCommand("ZRANK", key, member).getIntegerReply();
+	client.zrank(key, member);
+	return client.getIntegerReply();
     }
 
     public int zrevrank(String key, String member) throws JedisException {
-	return sendCommand("ZREVRANK", key, member).getIntegerReply();
+	client.zrevrank(key, member);
+	return client.getIntegerReply();
     }
 
     public Set<String> zrevrange(String key, int start, int end)
 	    throws JedisException {
-	List<String> members = sendCommand("ZREVRANGE", key,
-		String.valueOf(start), String.valueOf(end)).getMultiBulkReply();
+	client.zrevrange(key, start, end);
+	List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
 
     public Set<Tuple> zrangeWithScores(String key, int start, int end)
 	    throws JedisException {
-	List<String> membersWithScores = sendCommand("ZRANGE", key,
-		String.valueOf(start), String.valueOf(end), "WITHSCORES")
-		.getMultiBulkReply();
+	client.zrangeWithScores(key, start, end);
+	List<String> membersWithScores = client.getMultiBulkReply();
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
@@ -394,9 +437,8 @@ public class Jedis extends Client {
 
     public Set<Tuple> zrevrangeWithScores(String key, int start, int end)
 	    throws JedisException {
-	List<String> membersWithScores = sendCommand("ZREVRANGE", key,
-		String.valueOf(start), String.valueOf(end), "WITHSCORES")
-		.getMultiBulkReply();
+	client.zrevrangeWithScores(key, start, end);
+	List<String> membersWithScores = client.getMultiBulkReply();
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
@@ -408,11 +450,39 @@ public class Jedis extends Client {
     }
 
     public int zcard(String key) throws JedisException {
-	return sendCommand("ZCARD", key).getIntegerReply();
+	client.zcard(key);
+	return client.getIntegerReply();
     }
 
     public double zscore(String key, String member) throws JedisException {
-	String score = sendCommand("ZSCORE", key, member).getBulkReply();
+	client.zscore(key, member);
+	String score = client.getBulkReply();
 	return Double.valueOf(score);
     }
+
+    public Transaction multi() throws JedisException {
+	client.multi();
+	client.getStatusCodeReply();
+	return new Transaction(client);
+    }
+
+    public void multi(TransactionBlock jedisTransaction) throws JedisException {
+	try {
+	    jedisTransaction.setClient(client);
+	    client.multi();
+	    client.getStatusCodeReply();
+	    jedisTransaction.execute();
+	} catch (Exception ex) {
+	    client.discard();
+	}
+    }
+
+    public void connect() throws UnknownHostException, IOException {
+	client.connect();
+    }
+
+    public void disconnect() throws IOException {
+	client.disconnect();
+    }
+
 }

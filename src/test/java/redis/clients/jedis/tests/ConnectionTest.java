@@ -8,14 +8,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.Client;
+import redis.clients.jedis.Connection;
 
-public class ClientTest extends Assert {
-    private Client client;
+public class ConnectionTest extends Assert {
+    private Connection client;
 
     @Before
     public void setUp() throws Exception {
-	client = new Client();
+	client = new Connection();
     }
 
     @After

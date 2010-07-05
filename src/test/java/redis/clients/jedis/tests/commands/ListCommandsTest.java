@@ -207,7 +207,7 @@ public class ListCommandsTest extends Assert {
 	String element = jedis.rpoplpush("foo", "dst");
 
 	assertEquals("c", element);
-	
+
 	List<String> srcExpected = new ArrayList<String>();
 	srcExpected.add("a");
 	srcExpected.add("b");

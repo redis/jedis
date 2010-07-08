@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,5 +73,23 @@ public class TransactionCommandsTest extends Assert {
 	expected.add(1);
 	expected.add(2);
 	assertEquals(expected, response);
+    }
+
+    @Test
+    public void watch() throws JedisException, UnknownHostException,
+	    IOException {
+	jedis.watch("mykey");
+	String val = jedis.get("mykey");
+	val = "foo";
+	Transaction t = jedis.multi();
+
+	Jedis nj = new Jedis("localhost");
+	nj.connect();
+	nj.set("mykey", "bar");
+	nj.disconnect();
+
+	t.set("mykey", val);
+	List<Object> resp = t.exec();
+	assertEquals(new ArrayList<Object>(), resp);
     }
 }

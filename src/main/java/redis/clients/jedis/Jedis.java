@@ -486,4 +486,9 @@ public class Jedis {
 	client.disconnect();
     }
 
+    public String watch(String key) throws JedisException {
+	client.watch(key);
+	return client.getStatusCodeReply();
+    }
+
 }

@@ -375,4 +375,8 @@ public class Client extends Connection {
     public void exec() throws JedisException {
 	sendCommand("EXEC");
     }
+
+    public void watch(String key) throws JedisException {
+	sendCommand("WATCH", key);
+    }
 }

@@ -375,5 +375,4 @@ public class Client extends Connection {
     public void exec() throws JedisException {
 	sendCommand("EXEC");
     }
-
 }

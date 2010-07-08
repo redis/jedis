@@ -80,7 +80,7 @@ public class Connection {
     }
 
     protected String getStatusCodeReply() throws JedisException {
-	return protocol.getSingleLineReply(inputStream);
+	return protocol.getStatusCodeReply(inputStream);
     }
 
     public String getBulkReply() throws JedisException {
@@ -91,7 +91,13 @@ public class Connection {
 	return protocol.getIntegerReply(inputStream);
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getMultiBulkReply() throws JedisException {
+	return (List<String>) (List<?>) protocol.getMultiBulkReply(inputStream);
+    }
+
+    public List<Object> getObjectMultiBulkReply() throws JedisException {
 	return protocol.getMultiBulkReply(inputStream);
     }
+
 }

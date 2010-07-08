@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.List;
 import java.util.Map;
 
 public class Transaction {
@@ -418,7 +419,8 @@ public class Transaction {
 	return client.getStatusCodeReply();
     }
 
-    public void exec() throws JedisException {
+    public List<Object> exec() throws JedisException {
 	client.exec();
+	return client.getObjectMultiBulkReply();
     }
 }

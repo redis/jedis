@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -39,14 +42,18 @@ public class TransactionCommandsTest extends Assert {
 	status = trans.scard("foo");
 	assertEquals("QUEUED", status);
 
-	trans.exec();
-	
-	//TODO: check for exec response
+	List<Object> response = trans.exec();
+
+	List<Object> expected = new ArrayList<Object>();
+	expected.add(1);
+	expected.add(1);
+	expected.add(2);
+	assertEquals(expected, response);
     }
 
     @Test
     public void multiBlock() throws JedisException {
-	jedis.multi(new TransactionBlock() {
+	List<Object> response = jedis.multi(new TransactionBlock() {
 	    public void execute() throws JedisException {
 		String status = sadd("foo", "a");
 		assertEquals("QUEUED", status);
@@ -58,7 +65,11 @@ public class TransactionCommandsTest extends Assert {
 		assertEquals("QUEUED", status);
 	    }
 	});
-	
-	//TODO: check what happens when throwind an exception
+
+	List<Object> expected = new ArrayList<Object>();
+	expected.add(1);
+	expected.add(1);
+	expected.add(2);
+	assertEquals(expected, response);
     }
 }

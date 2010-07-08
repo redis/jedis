@@ -466,15 +466,16 @@ public class Jedis {
 	return new Transaction(client);
     }
 
-    public void multi(TransactionBlock jedisTransaction) throws JedisException {
+    public List<Object> multi(TransactionBlock jedisTransaction)
+	    throws JedisException {
 	try {
 	    jedisTransaction.setClient(client);
-	    client.multi();
-	    client.getStatusCodeReply();
+	    multi();
 	    jedisTransaction.execute();
 	} catch (Exception ex) {
 	    client.discard();
 	}
+	return jedisTransaction.exec();
     }
 
     public void connect() throws UnknownHostException, IOException {

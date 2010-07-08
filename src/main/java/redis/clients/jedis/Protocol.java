@@ -64,88 +64,83 @@ public class Protocol {
     }
 
     public String getBulkReply(InputStream is) throws JedisException {
-	String ret = null;
-	try {
-	    byte b = (byte) is.read();
-	    if (b == MINUS_BYTE) {
-		processError(is);
-	    }
-
-	    if (b == DOLLAR_BYTE) {
-		int len = Integer.parseInt(readLine(is));
-		if (len == -1) {
-		    return null;
-		}
-		byte[] read = new byte[len];
-		is.read(read);
-		// read 2 more bytes for the command delimiter
-		is.read();
-		is.read();
-
-		ret = new String(read);
-
-	    }
-	} catch (IOException e) {
-	    // TODO Not sure that I should return null
-	    return null;
-	}
-	return ret;
+	Object reply = process(is);
+	return (String) reply;
     }
 
-    public String getSingleLineReply(InputStream is) throws JedisException {
-	String ret = null;
-	try {
-	    byte b = (byte) is.read();
-	    if (b == MINUS_BYTE) {
-		processError(is);
-	    }
-
-	    if (b == PLUS_BYTE) {
-		ret = readLine(is);
-	    }
-	} catch (IOException e) {
-	    // TODO Not sure that I should return null
-	    return null;
-	}
-	return ret;
+    public String getStatusCodeReply(InputStream is) throws JedisException {
+	Object reply = process(is);
+	return (String) reply;
     }
 
     public int getIntegerReply(InputStream is) throws JedisException {
-	int ret = 0;
+	Object reply = process(is);
+	return (Integer) reply;
+    }
+
+    private Object process(InputStream is) throws JedisException {
 	try {
 	    byte b = (byte) is.read();
 	    if (b == MINUS_BYTE) {
 		processError(is);
-	    }
-	    if (b == COLON_BYTE) {
-		String num = readLine(is);
-		ret = Integer.parseInt(num);
+	    } else if (b == ASTERISK_BYTE) {
+		return processMultiBulkReply(is);
+	    } else if (b == COLON_BYTE) {
+		return processInteger(is);
+	    } else if (b == DOLLAR_BYTE) {
+		return processBulkReply(is);
+	    } else {
+		return processStatusCodeReply(is);
 	    }
 	} catch (IOException e) {
-	    // TODO Not sure that I should return 0
-	    e.printStackTrace();
-	    return 0;
+	    // TODO check what to do here
+	    throw new JedisException(e.getMessage());
+	}
+	return null;
+    }
+
+    private Object processStatusCodeReply(InputStream is) {
+	String ret = null;
+	ret = readLine(is);
+	return ret;
+    }
+
+    private Object processBulkReply(InputStream is) throws IOException {
+	String ret = null;
+	int len = Integer.parseInt(readLine(is));
+	if (len == -1) {
+	    return null;
+	}
+	byte[] read = new byte[len];
+	is.read(read);
+	// read 2 more bytes for the command delimiter
+	is.read();
+	is.read();
+
+	ret = new String(read);
+	return ret;
+    }
+
+    private Object processInteger(InputStream is) {
+	int ret = 0;
+	String num = readLine(is);
+	ret = Integer.parseInt(num);
+	return ret;
+    }
+
+    private Object processMultiBulkReply(InputStream is) throws JedisException {
+	List<Object> ret = new ArrayList<Object>();
+	int num = Integer.parseInt(readLine(is));
+	for (int i = 0; i < num; i++) {
+	    ret.add(process(is));
 	}
 	return ret;
     }
 
-    public List<String> getMultiBulkReply(InputStream is) throws JedisException {
-	List<String> ret = new ArrayList<String>();
-	try {
-	    byte b = (byte) is.read();
-	    if (b == MINUS_BYTE) {
-		processError(is);
-	    }
-	    if (b == ASTERISK_BYTE) {
-		int num = Integer.parseInt(readLine(is));
-		for (int i = 0; i < num; i++) {
-		    ret.add(getBulkReply(is));
-		}
-	    }
-	} catch (IOException e) {
-	    // TODO Not sure that I should return null
-	    return null;
-	}
+    @SuppressWarnings("unchecked")
+    public List<Object> getMultiBulkReply(InputStream is) throws JedisException {
+	Object reply = process(is);
+	List<Object> ret = (List<Object>) reply;
 	return ret;
     }
 }

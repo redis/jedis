@@ -58,7 +58,7 @@ public class ProtocolTest extends Assert {
     public void singleLineReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream("+OK\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = protocol.getSingleLineReply(is);
+	String response = protocol.getStatusCodeReply(is);
 	assertEquals("OK", response);
     }
 
@@ -70,13 +70,15 @@ public class ProtocolTest extends Assert {
 	assertEquals(123, response);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void multiBulkReply() throws JedisException {
 	InputStream is = new ByteArrayInputStream(
 		"*4\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$5\r\nHello\r\n$5\r\nWorld\r\n"
 			.getBytes());
 	Protocol protocol = new Protocol();
-	List<String> response = protocol.getMultiBulkReply(is);
+	List<String> response = (List<String>) (List<?>) protocol
+		.getMultiBulkReply(is);
 	List<String> expected = new ArrayList<String>();
 	expected.add("foo");
 	expected.add("bar");
@@ -84,5 +86,22 @@ public class ProtocolTest extends Assert {
 	expected.add("World");
 
 	assertEquals(expected, response);
+
+	is = new ByteArrayInputStream(
+		"*4\r\n$3\r\nfoo\r\n+OK\r\n:1000\r\n*2\r\n$3\r\nfoo\r\n$3\r\nbar"
+			.getBytes());
+	protocol = new Protocol();
+	List<Object> response2 = protocol.getMultiBulkReply(is);
+	List<Object> expected2 = new ArrayList<Object>();
+	expected2.add("foo");
+	expected2.add("OK");
+	expected2.add(1000);
+	List<Object> sub = new ArrayList<Object>();
+	sub.add("foo");
+	sub.add("bar");
+	expected2.add(sub);
+
+	assertEquals(expected2, response2);
+
     }
 }

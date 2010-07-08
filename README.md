@@ -11,7 +11,7 @@ Jedis is a WORK IN PROGRESS.
 - Publish/Subscribe
 - Persistence control commands
 - Remote server control commands
-- The WATCH, UNWATCH, AUTH, SORT, BLPOP, BRPOP, ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
+- The AUTH, SORT, BLPOP, BRPOP, ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
 
 But stay close because things are going fast and all this will be implemented soon!
 

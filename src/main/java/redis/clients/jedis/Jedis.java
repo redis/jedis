@@ -491,4 +491,9 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
+    public String unwatch() throws JedisException {
+	client.unwatch();
+	return client.getStatusCodeReply();
+    }
+
 }

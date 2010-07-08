@@ -92,4 +92,26 @@ public class TransactionCommandsTest extends Assert {
 	List<Object> resp = t.exec();
 	assertEquals(new ArrayList<Object>(), resp);
     }
+
+    @Test
+    public void unwatch() throws JedisException, UnknownHostException,
+	    IOException {
+	jedis.watch("mykey");
+	String val = jedis.get("mykey");
+	val = "foo";
+	String status = jedis.unwatch();
+	assertEquals("OK", status);
+	Transaction t = jedis.multi();
+
+	Jedis nj = new Jedis("localhost");
+	nj.connect();
+	nj.set("mykey", "bar");
+	nj.disconnect();
+
+	t.set("mykey", val);
+	List<Object> resp = t.exec();
+	List<Object> expected = new ArrayList<Object>();
+	expected.add("OK");
+	assertEquals(expected, resp);
+    }
 }

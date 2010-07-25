@@ -340,8 +340,8 @@ public class Client extends Connection {
     }
 
     public void zrevrange(String key, int start, int end) throws JedisException {
-	sendCommand("ZREVRANGE", key, String.valueOf(start),
-		String.valueOf(end));
+	sendCommand("ZREVRANGE", key, String.valueOf(start), String
+		.valueOf(end));
     }
 
     public void zrangeWithScores(String key, int start, int end)
@@ -352,8 +352,8 @@ public class Client extends Connection {
 
     public void zrevrangeWithScores(String key, int start, int end)
 	    throws JedisException {
-	sendCommand("ZREVRANGE", key, String.valueOf(start),
-		String.valueOf(end), "WITHSCORES");
+	sendCommand("ZREVRANGE", key, String.valueOf(start), String
+		.valueOf(end), "WITHSCORES");
     }
 
     public void zcard(String key) throws JedisException {
@@ -390,6 +390,9 @@ public class Client extends Connection {
 
     public void sort(String key, SortingParams sortingParameters)
 	    throws JedisException {
-	sendCommand("SORT", sortingParameters.getParams());
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.addAll(sortingParameters.getParams());
+	sendCommand("SORT", args.toArray(new String[args.size()]));
     }
 }

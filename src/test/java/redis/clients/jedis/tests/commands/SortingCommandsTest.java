@@ -20,6 +20,7 @@ public class SortingCommandsTest extends Assert {
     public void setUp() throws Exception {
 	jedis = new Jedis("localhost");
 	jedis.connect();
+	jedis.flushDB();
     }
 
     @After
@@ -45,20 +46,58 @@ public class SortingCommandsTest extends Assert {
     }
 
     @Test
-    public void sortBy() throws JedisException {
+    public void sortDesc() throws JedisException {
 	jedis.lpush("foo", "3");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "1");
 
 	SortingParams sp = new SortingParams();
-	sp.by("bar_*");
+	sp.desc();
 
 	List<String> result = jedis.sort("foo", sp);
 
 	List<String> expected = new ArrayList<String>();
-	expected.add("foo_1");
-	expected.add("foo_2");
-	expected.add("foo_3");
+	expected.add("3");
+	expected.add("2");
+	expected.add("1");
+
+	assertEquals(expected, result);
+    }
+
+    @Test
+    public void sortLimit() throws JedisException {
+	for (int n = 10; n > 0; n--) {
+	    jedis.lpush("foo", String.valueOf(n));
+	}
+
+	SortingParams sp = new SortingParams();
+	sp.limit(0, 3);
+
+	List<String> result = jedis.sort("foo", sp);
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("1");
+	expected.add("2");
+	expected.add("3");
+
+	assertEquals(expected, result);
+    }
+
+    @Test
+    public void sortAlpha() throws JedisException {
+	jedis.lpush("foo", "1");
+	jedis.lpush("foo", "2");
+	jedis.lpush("foo", "10");
+
+	SortingParams sp = new SortingParams();
+	sp.alpha();
+
+	List<String> result = jedis.sort("foo", sp);
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("1");
+	expected.add("10");
+	expected.add("2");
 
 	assertEquals(expected, result);
     }

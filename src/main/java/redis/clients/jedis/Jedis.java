@@ -428,9 +428,7 @@ public class Jedis {
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set
-		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
-			    .next())));
+	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));
 	}
 	return set;
     }
@@ -442,9 +440,7 @@ public class Jedis {
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set
-		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
-			    .next())));
+	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));
 	}
 	return set;
     }
@@ -494,6 +490,17 @@ public class Jedis {
     public String unwatch() throws JedisException {
 	client.unwatch();
 	return client.getStatusCodeReply();
+    }
+
+    public List<String> sort(String key) throws JedisException {
+	client.sort(key);
+	return client.getMultiBulkReply();
+    }
+
+    public List<String> sort(String key, SortingParams sortingParameters)
+	    throws JedisException {
+	client.sort(key, sortingParameters);
+	return client.getMultiBulkReply();
     }
 
 }

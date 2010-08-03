@@ -399,4 +399,18 @@ public class Client extends Connection {
     public void blpop(String[] args) throws JedisException {
 	sendCommand("BLPOP", args);
     }
+
+    public void sort(String key, SortingParams sortingParameters, String dstkey)
+	    throws JedisException {
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.addAll(sortingParameters.getParams());
+	args.add("STORE");
+	args.add(dstkey);
+	sendCommand("SORT", args.toArray(new String[args.size()]));
+    }
+
+    public void sort(String key, String dstkey) throws JedisException {
+	sendCommand("SORT", key, "STORE", dstkey);
+    }
 }

@@ -39,4 +39,12 @@ public class SortingParams {
 	params.add("ALPHA");
 	return this;
     }
+
+    public SortingParams get(String... patterns) {
+	for (String pattern : patterns) {
+	    params.add("GET");
+	    params.add(pattern);
+	}
+	return this;
+    }
 }

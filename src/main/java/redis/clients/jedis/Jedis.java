@@ -519,4 +519,15 @@ public class Jedis {
 	client.blpop(args.toArray(new String[args.size()]));
 	return client.getMultiBulkReply();
     }
+
+    public int sort(String key, SortingParams sortingParameters, String dstkey)
+	    throws JedisException {
+	client.sort(key, sortingParameters, dstkey);
+	return client.getIntegerReply();
+    }
+
+    public int sort(String key, String dstkey) throws JedisException {
+	client.sort(key, dstkey);
+	return client.getIntegerReply();
+    }
 }

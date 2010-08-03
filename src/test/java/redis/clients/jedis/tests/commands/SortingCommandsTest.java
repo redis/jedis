@@ -46,6 +46,29 @@ public class SortingCommandsTest extends Assert {
     }
 
     @Test
+    public void sortBy() throws JedisException {
+	jedis.lpush("foo", "2");
+	jedis.lpush("foo", "3");
+	jedis.lpush("foo", "1");
+
+	jedis.set("bar1", "3");
+	jedis.set("bar2", "2");
+	jedis.set("bar3", "1");
+
+	SortingParams sp = new SortingParams();
+	sp.by("bar*");
+
+	List<String> result = jedis.sort("foo", sp);
+
+	List<String> expected = new ArrayList<String>();
+	expected.add("3");
+	expected.add("2");
+	expected.add("1");
+
+	assertEquals(expected, result);
+    }
+
+    @Test
     public void sortDesc() throws JedisException {
 	jedis.lpush("foo", "3");
 	jedis.lpush("foo", "2");

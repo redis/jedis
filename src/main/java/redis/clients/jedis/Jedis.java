@@ -530,4 +530,16 @@ public class Jedis {
 	client.sort(key, dstkey);
 	return client.getIntegerReply();
     }
+
+    public List<String> brpop(int timeout, String... keys)
+	    throws JedisException {
+	List<String> args = new ArrayList<String>();
+	for (String arg : keys) {
+	    args.add(arg);
+	}
+	args.add(String.valueOf(timeout));
+
+	client.brpop(args.toArray(new String[args.size()]));
+	return client.getMultiBulkReply();
+    }
 }

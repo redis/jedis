@@ -413,4 +413,8 @@ public class Client extends Connection {
     public void sort(String key, String dstkey) throws JedisException {
 	sendCommand("SORT", key, "STORE", dstkey);
     }
+
+    public void brpop(String[] args) throws JedisException {
+	sendCommand("BRPOP", args);
+    }
 }

@@ -242,4 +242,26 @@ public class ListCommandsTest extends Assert {
 	});
 	jedis.lpush("foo", "bar");
     }
+
+    @Test
+    public void brpop() throws JedisException {
+	List<String> result = jedis.brpop(2, "foo");
+	assertNull(result);
+
+	new Thread(new Runnable() {
+	    public void run() {
+		try {
+		    Jedis j = new Jedis("localhost");
+		    j.connect();
+		    List<String> result = j.brpop(0, "foo");
+		    assertNotNull(result);
+		    assertEquals(1, result.size());
+		    assertEquals("bar", result.get(0));
+		} catch (Exception ex) {
+		    fail(ex.getMessage());
+		}
+	    }
+	});
+	jedis.lpush("foo", "bar");
+    }
 }

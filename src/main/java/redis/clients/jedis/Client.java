@@ -395,4 +395,8 @@ public class Client extends Connection {
 	args.addAll(sortingParameters.getParams());
 	sendCommand("SORT", args.toArray(new String[args.size()]));
     }
+
+    public void blpop(String[] args) throws JedisException {
+	sendCommand("BLPOP", args);
+    }
 }

@@ -11,7 +11,7 @@ Jedis is a WORK IN PROGRESS.
 - Publish/Subscribe
 - Persistence control commands
 - Remote server control commands
-- The AUTH, SORT, BLPOP, BRPOP, ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
+- The AUTH, SORT, BRPOP, ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
 
 But stay close because things are going fast and all this will be implemented soon!
 
@@ -20,7 +20,7 @@ But stay close because things are going fast and all this will be implemented so
 - Commands operating on all the kind of values
 - Commands operating on string values
 - Commands operating on hashes
-- Commands operating on lists (not SORT, BLPOP, BRPOP)
+- Commands operating on lists (not SORT, BRPOP)
 - Commands operating on sets
 - Commands operating on sorted sets (not SORT, ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE)
 - Transactions

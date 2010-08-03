@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -428,7 +429,9 @@ public class Jedis {
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));
+	    set
+		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
+			    .next())));
 	}
 	return set;
     }
@@ -440,7 +443,9 @@ public class Jedis {
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));
+	    set
+		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
+			    .next())));
 	}
 	return set;
     }
@@ -503,4 +508,15 @@ public class Jedis {
 	return client.getMultiBulkReply();
     }
 
+    public List<String> blpop(int timeout, String... keys)
+	    throws JedisException {
+	List<String> args = new ArrayList<String>();
+	for (String arg : keys) {
+	    args.add(arg);
+	}
+	args.add(String.valueOf(timeout));
+
+	client.blpop(args.toArray(new String[args.size()]));
+	return client.getMultiBulkReply();
+    }
 }

@@ -90,7 +90,7 @@ public class TransactionCommandsTest extends Assert {
 
 	t.set("mykey", val);
 	List<Object> resp = t.exec();
-	assertEquals(new ArrayList<Object>(), resp);
+	assertEquals(null, resp);
     }
 
     @Test

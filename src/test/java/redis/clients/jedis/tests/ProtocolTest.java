@@ -102,6 +102,15 @@ public class ProtocolTest extends Assert {
 	expected2.add(sub);
 
 	assertEquals(expected2, response2);
+    }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void nullMultiBulkReply() throws JedisException {
+	InputStream is = new ByteArrayInputStream("*-1\r\n".getBytes());
+	Protocol protocol = new Protocol();
+	List<String> response = (List<String>) (List<?>) protocol
+		.getMultiBulkReply(is);
+	assertNull(response);
     }
 }

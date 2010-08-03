@@ -129,8 +129,11 @@ public class Protocol {
     }
 
     private Object processMultiBulkReply(InputStream is) throws JedisException {
-	List<Object> ret = new ArrayList<Object>();
 	int num = Integer.parseInt(readLine(is));
+	if (num == -1) {
+	    return null;
+	}
+	List<Object> ret = new ArrayList<Object>();
 	for (int i = 0; i < num; i++) {
 	    ret.add(process(is));
 	}

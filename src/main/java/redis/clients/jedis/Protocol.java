@@ -32,11 +32,11 @@ public class Protocol {
 	try {
 	    os.write(builder.toString().getBytes());
 	} catch (IOException e) {
-	    // TODO don't know what to do here!
+	    throw new JedisException(e);
 	}
     }
 
-    public void processError(InputStream is) throws JedisException {
+    public void processError(InputStream is) {
 	String message = readLine(is);
 	throw new JedisException(message);
     }
@@ -60,27 +60,27 @@ public class Protocol {
 		}
 	    }
 	} catch (IOException e) {
-	    // TODO Dont know what to do here!
+	    throw new JedisException(e);
 	}
 	return sb.toString();
     }
 
-    public String getBulkReply(InputStream is) throws JedisException {
+    public String getBulkReply(InputStream is) {
 	Object reply = process(is);
 	return (String) reply;
     }
 
-    public String getStatusCodeReply(InputStream is) throws JedisException {
+    public String getStatusCodeReply(InputStream is) {
 	Object reply = process(is);
 	return (String) reply;
     }
 
-    public int getIntegerReply(InputStream is) throws JedisException {
+    public int getIntegerReply(InputStream is) {
 	Object reply = process(is);
 	return (Integer) reply;
     }
 
-    private Object process(InputStream is) throws JedisException {
+    private Object process(InputStream is) {
 	try {
 	    byte b = (byte) is.read();
 	    if (b == MINUS_BYTE) {
@@ -95,8 +95,7 @@ public class Protocol {
 		return processStatusCodeReply(is);
 	    }
 	} catch (IOException e) {
-	    // TODO check what to do here
-	    throw new JedisException(e.getMessage());
+	    throw new JedisException(e);
 	}
 	return null;
     }
@@ -107,16 +106,20 @@ public class Protocol {
 	return ret;
     }
 
-    private Object processBulkReply(InputStream is) throws IOException {
+    private Object processBulkReply(InputStream is) {
 	int len = Integer.parseInt(readLine(is));
 	if (len == -1) {
 	    return null;
 	}
 	byte[] read = new byte[len];
-	is.read(read);
-	// read 2 more bytes for the command delimiter
-	is.read();
-	is.read();
+	try {
+	    is.read(read);
+	    // read 2 more bytes for the command delimiter
+	    is.read();
+	    is.read();
+	} catch (IOException e) {
+	    throw new JedisException(e);
+	}
 
 	return new String(read);
     }
@@ -128,7 +131,7 @@ public class Protocol {
 	return ret;
     }
 
-    private Object processMultiBulkReply(InputStream is) throws JedisException {
+    private Object processMultiBulkReply(InputStream is) {
 	int num = Integer.parseInt(readLine(is));
 	if (num == -1) {
 	    return null;
@@ -141,7 +144,7 @@ public class Protocol {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Object> getMultiBulkReply(InputStream is) throws JedisException {
+    public List<Object> getMultiBulkReply(InputStream is) {
 	Object reply = process(is);
 	List<Object> ret = (List<Object>) reply;
 	return ret;

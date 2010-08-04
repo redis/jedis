@@ -5,12 +5,11 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Tuple;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
     @Test
-    public void zadd() throws JedisException {
+    public void zadd() {
 	int status = jedis.zadd("foo", 1d, "a");
 	assertEquals(1, status);
 
@@ -25,7 +24,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrange() throws JedisException {
+    public void zrange() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 10d, "b");
 	jedis.zadd("foo", 0.1d, "c");
@@ -44,7 +43,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrevrange() throws JedisException {
+    public void zrevrange() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 10d, "b");
 	jedis.zadd("foo", 0.1d, "c");
@@ -63,7 +62,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrem() throws JedisException {
+    public void zrem() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 2d, "b");
 
@@ -81,7 +80,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zincrby() throws JedisException {
+    public void zincrby() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 2d, "b");
 
@@ -96,7 +95,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrank() throws JedisException {
+    public void zrank() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 2d, "b");
 
@@ -108,7 +107,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrevrank() throws JedisException {
+    public void zrevrank() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 2d, "b");
 
@@ -120,7 +119,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrangeWithScores() throws JedisException {
+    public void zrangeWithScores() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 10d, "b");
 	jedis.zadd("foo", 0.1d, "c");
@@ -139,7 +138,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zrevrangeWithScores() throws JedisException {
+    public void zrevrangeWithScores() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 10d, "b");
 	jedis.zadd("foo", 0.1d, "c");
@@ -158,7 +157,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zcard() throws JedisException {
+    public void zcard() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 10d, "b");
 	jedis.zadd("foo", 0.1d, "c");
@@ -169,7 +168,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void zscore() throws JedisException {
+    public void zscore() {
 	jedis.zadd("foo", 1d, "a");
 	jedis.zadd("foo", 10d, "b");
 	jedis.zadd("foo", 0.1d, "c");

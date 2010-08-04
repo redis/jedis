@@ -5,11 +5,9 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
-
 public class SetCommandsTest extends JedisCommandTestBase {
     @Test
-    public void sadd() throws JedisException {
+    public void sadd() {
 	int status = jedis.sadd("foo", "a");
 	assertEquals(1, status);
 
@@ -18,7 +16,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void smembers() throws JedisException {
+    public void smembers() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -32,7 +30,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void srem() throws JedisException {
+    public void srem() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -50,7 +48,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void spop() throws JedisException {
+    public void spop() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -64,7 +62,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void smove() throws JedisException {
+    public void smove() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -88,7 +86,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void scard() throws JedisException {
+    public void scard() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -101,7 +99,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sismember() throws JedisException {
+    public void sismember() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -113,7 +111,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sinter() throws JedisException {
+    public void sinter() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -128,7 +126,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sinterstore() throws JedisException {
+    public void sinterstore() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -145,7 +143,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sunion() throws JedisException {
+    public void sunion() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -162,7 +160,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sunionstore() throws JedisException {
+    public void sunionstore() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 
@@ -181,7 +179,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sdiff() throws JedisException {
+    public void sdiff() {
 	jedis.sadd("foo", "x");
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
@@ -201,7 +199,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sdiffstore() throws JedisException {
+    public void sdiffstore() {
 	jedis.sadd("foo", "x");
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
@@ -222,7 +220,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void srandmember() throws JedisException {
+    public void srandmember() {
 	jedis.sadd("foo", "a");
 	jedis.sadd("foo", "b");
 

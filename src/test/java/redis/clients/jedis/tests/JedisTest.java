@@ -7,7 +7,7 @@ import redis.clients.jedis.JedisException;
 
 public class JedisTest {
     @Test(expected = JedisException.class)
-    public void useWithoutConnecting() throws JedisException {
+    public void useWithoutConnecting() {
 	Jedis jedis = new Jedis("localhost");
 	jedis.dbSize();
     }

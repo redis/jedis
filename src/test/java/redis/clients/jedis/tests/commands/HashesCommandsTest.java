@@ -8,11 +8,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
-
 public class HashesCommandsTest extends JedisCommandTestBase {
     @Test
-    public void hset() throws JedisException {
+    public void hset() {
 	int status = jedis.hset("foo", "bar", "car");
 	assertEquals(1, status);
 	status = jedis.hset("foo", "bar", "foo");
@@ -20,7 +18,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hget() throws JedisException {
+    public void hget() {
 	jedis.hset("foo", "bar", "car");
 	assertEquals(null, jedis.hget("bar", "foo"));
 	assertEquals(null, jedis.hget("foo", "car"));
@@ -28,7 +26,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hsetnx() throws JedisException {
+    public void hsetnx() {
 	int status = jedis.hsetnx("foo", "bar", "car");
 	assertEquals(1, status);
 	assertEquals("car", jedis.hget("foo", "bar"));
@@ -43,7 +41,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hmset() throws JedisException {
+    public void hmset() {
 	Map<String, String> hash = new HashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -54,7 +52,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hmget() throws JedisException {
+    public void hmget() {
 	Map<String, String> hash = new HashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -70,7 +68,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hincrBy() throws JedisException {
+    public void hincrBy() {
 	int value = jedis.hincrBy("foo", "bar", 1);
 	assertEquals(1, value);
 	value = jedis.hincrBy("foo", "bar", -1);
@@ -80,7 +78,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hexists() throws JedisException {
+    public void hexists() {
 	Map<String, String> hash = new HashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -92,7 +90,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hdel() throws JedisException {
+    public void hdel() {
 	Map<String, String> hash = new HashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -105,7 +103,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hlen() throws JedisException {
+    public void hlen() {
 	Map<String, String> hash = new HashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -116,7 +114,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hkeys() throws JedisException {
+    public void hkeys() {
 	Map<String, String> hash = new LinkedHashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -130,7 +128,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hvals() throws JedisException {
+    public void hvals() {
 	Map<String, String> hash = new LinkedHashMap<String, String>();
 	hash.put("bar", "car");
 	hash.put("car", "bar");
@@ -144,7 +142,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void hgetAll() throws JedisException {
+    public void hgetAll() {
 	Map<String, String> h = new HashMap<String, String>();
 	h.put("bar", "car");
 	h.put("car", "bar");

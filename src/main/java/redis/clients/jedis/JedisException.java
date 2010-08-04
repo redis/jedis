@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
-public class JedisException extends Exception {
+import java.io.IOException;
+
+public class JedisException extends RuntimeException {
     /**
      * 
      */
@@ -8,5 +10,9 @@ public class JedisException extends Exception {
 
     public JedisException(String message) {
 	super(message);
+    }
+
+    public JedisException(IOException e) {
+	super(e);
     }
 }

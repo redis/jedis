@@ -10,7 +10,7 @@ import redis.clients.jedis.JedisException;
 
 public class ListCommandsTest extends JedisCommandTestBase {
     @Test
-    public void rpush() throws JedisException {
+    public void rpush() {
 	int size = jedis.rpush("foo", "bar");
 	assertEquals(1, size);
 	size = jedis.rpush("foo", "foo");
@@ -18,7 +18,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void lpush() throws JedisException {
+    public void lpush() {
 	int size = jedis.lpush("foo", "bar");
 	assertEquals(1, size);
 	size = jedis.lpush("foo", "foo");
@@ -26,7 +26,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void llen() throws JedisException {
+    public void llen() {
 	assertEquals(0, jedis.llen("foo"));
 	jedis.lpush("foo", "bar");
 	jedis.lpush("foo", "car");
@@ -34,13 +34,13 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisException.class)
-    public void llenNotOnList() throws JedisException {
+    public void llenNotOnList() {
 	jedis.set("foo", "bar");
 	jedis.llen("foo");
     }
 
     @Test
-    public void lrange() throws JedisException {
+    public void lrange() {
 	jedis.rpush("foo", "a");
 	jedis.rpush("foo", "b");
 	jedis.rpush("foo", "c");
@@ -69,7 +69,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void ltrim() throws JedisException {
+    public void ltrim() {
 	jedis.lpush("foo", "1");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "3");
@@ -85,7 +85,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void lindex() throws JedisException {
+    public void lindex() {
 	jedis.lpush("foo", "1");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "3");
@@ -102,7 +102,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void lset() throws JedisException {
+    public void lset() {
 	jedis.lpush("foo", "1");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "3");
@@ -112,7 +112,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void lrem() throws JedisException {
+    public void lrem() {
 	jedis.lpush("foo", "hello");
 	jedis.lpush("foo", "hello");
 	jedis.lpush("foo", "x");
@@ -136,7 +136,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void lpop() throws JedisException {
+    public void lpop() {
 	jedis.rpush("foo", "a");
 	jedis.rpush("foo", "b");
 	jedis.rpush("foo", "c");
@@ -157,7 +157,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void rpop() throws JedisException {
+    public void rpop() {
 	jedis.rpush("foo", "a");
 	jedis.rpush("foo", "b");
 	jedis.rpush("foo", "c");
@@ -178,7 +178,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void rpoplpush() throws JedisException {
+    public void rpoplpush() {
 	jedis.rpush("foo", "a");
 	jedis.rpush("foo", "b");
 	jedis.rpush("foo", "c");
@@ -204,7 +204,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void blpop() throws JedisException {
+    public void blpop() {
 	List<String> result = jedis.blpop(2, "foo");
 	assertNull(result);
 
@@ -226,7 +226,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void brpop() throws JedisException {
+    public void brpop() {
 	List<String> result = jedis.brpop(2, "foo");
 	assertNull(result);
 

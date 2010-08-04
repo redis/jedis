@@ -5,13 +5,12 @@ import java.net.UnknownHostException;
 import java.util.Calendar;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
 
 public class GetSetBenchmark {
     private static final int TOTAL_OPERATIONS = 100000;
 
     public static void main(String[] args) throws UnknownHostException,
-	    IOException, JedisException {
+	    IOException {
 	Jedis jedis = new Jedis("localhost");
 	jedis.connect();
 	jedis.auth("foobared");

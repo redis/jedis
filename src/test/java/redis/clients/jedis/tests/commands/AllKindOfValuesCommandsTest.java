@@ -9,13 +9,13 @@ import redis.clients.jedis.JedisException;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     @Test
-    public void ping() throws JedisException {
+    public void ping() {
 	String status = jedis.ping();
 	assertEquals("PONG", status);
     }
 
     @Test
-    public void exists() throws JedisException {
+    public void exists() {
 	String status = jedis.set("foo", "bar");
 	assertEquals("OK", status);
 
@@ -30,7 +30,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void del() throws JedisException {
+    public void del() {
 	jedis.set("foo1", "bar1");
 	jedis.set("foo2", "bar2");
 	jedis.set("foo3", "bar3");
@@ -55,14 +55,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void type() throws JedisException {
+    public void type() {
 	jedis.set("foo", "bar");
 	String status = jedis.type("foo");
 	assertEquals("string", status);
     }
 
     @Test
-    public void keys() throws JedisException {
+    public void keys() {
 	jedis.set("foo", "bar");
 	jedis.set("foobar", "bar");
 
@@ -79,7 +79,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void randomKey() throws JedisException {
+    public void randomKey() {
 	assertEquals(null, jedis.randomKey());
 
 	jedis.set("foo", "bar");
@@ -93,7 +93,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void rename() throws JedisException {
+    public void rename() {
 	jedis.set("foo", "bar");
 	String status = jedis.rename("foo", "bar");
 	assertEquals("OK", status);
@@ -106,13 +106,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisException.class)
-    public void renameOldAndNewAreTheSame() throws JedisException {
+    public void renameOldAndNewAreTheSame() {
 	jedis.set("foo", "bar");
 	jedis.rename("foo", "foo");
     }
 
     @Test
-    public void renamenx() throws JedisException {
+    public void renamenx() {
 	jedis.set("foo", "bar");
 	int status = jedis.renamenx("foo", "bar");
 	assertEquals(1, status);
@@ -123,7 +123,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void dbSize() throws JedisException {
+    public void dbSize() {
 	int size = jedis.dbSize();
 	assertEquals(0, size);
 
@@ -133,7 +133,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void expire() throws JedisException {
+    public void expire() {
 	int status = jedis.expire("foo", 20);
 	assertEquals(0, status);
 
@@ -146,7 +146,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void expireAt() throws JedisException {
+    public void expireAt() {
 	long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
 	int status = jedis.expireAt("foo", unixTime);
@@ -163,7 +163,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void ttl() throws JedisException {
+    public void ttl() {
 	int ttl = jedis.ttl("foo");
 	assertEquals(-1, ttl);
 
@@ -177,7 +177,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void select() throws JedisException {
+    public void select() {
 	jedis.set("foo", "bar");
 	String status = jedis.select(1);
 	assertEquals("OK", status);
@@ -188,7 +188,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void move() throws JedisException {
+    public void move() {
 	int status = jedis.move("foo", 1);
 	assertEquals(0, status);
 
@@ -202,7 +202,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void flushDB() throws JedisException {
+    public void flushDB() {
 	jedis.set("foo", "bar");
 	assertEquals(1, jedis.dbSize());
 	jedis.set("bar", "foo");
@@ -215,7 +215,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void flushAll() throws JedisException {
+    public void flushAll() {
 	jedis.set("foo", "bar");
 	assertEquals(1, jedis.dbSize());
 	jedis.set("bar", "foo");

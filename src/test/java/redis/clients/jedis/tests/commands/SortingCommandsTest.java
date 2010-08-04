@@ -5,12 +5,11 @@ import java.util.List;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.SortingParams;
 
 public class SortingCommandsTest extends JedisCommandTestBase {
     @Test
-    public void sort() throws JedisException {
+    public void sort() {
 	jedis.lpush("foo", "3");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "1");
@@ -26,7 +25,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sortBy() throws JedisException {
+    public void sortBy() {
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "3");
 	jedis.lpush("foo", "1");
@@ -49,7 +48,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sortDesc() throws JedisException {
+    public void sortDesc() {
 	jedis.lpush("foo", "3");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "1");
@@ -68,7 +67,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sortLimit() throws JedisException {
+    public void sortLimit() {
 	for (int n = 10; n > 0; n--) {
 	    jedis.lpush("foo", String.valueOf(n));
 	}
@@ -87,7 +86,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sortAlpha() throws JedisException {
+    public void sortAlpha() {
 	jedis.lpush("foo", "1");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "10");
@@ -106,7 +105,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sortGet() throws JedisException {
+    public void sortGet() {
 	jedis.lpush("foo", "1");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "10");
@@ -136,7 +135,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void sortStore() throws JedisException {
+    public void sortStore() {
 	jedis.lpush("foo", "1");
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "10");

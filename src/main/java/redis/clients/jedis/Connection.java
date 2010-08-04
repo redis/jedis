@@ -21,8 +21,7 @@ public class Connection {
 	this.host = host;
     }
 
-    protected Connection sendCommand(String name, String... args)
-	    throws JedisException {
+    protected Connection sendCommand(String name, String... args) {
 	if (!isConnected()) {
 	    throw new JedisException("Please connect Jedis before using it.");
 	}
@@ -79,24 +78,24 @@ public class Connection {
 	return connected;
     }
 
-    protected String getStatusCodeReply() throws JedisException {
+    protected String getStatusCodeReply() {
 	return protocol.getStatusCodeReply(inputStream);
     }
 
-    public String getBulkReply() throws JedisException {
+    public String getBulkReply() {
 	return protocol.getBulkReply(inputStream);
     }
 
-    public int getIntegerReply() throws JedisException {
+    public int getIntegerReply() {
 	return protocol.getIntegerReply(inputStream);
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> getMultiBulkReply() throws JedisException {
+    public List<String> getMultiBulkReply() {
 	return (List<String>) (List<?>) protocol.getMultiBulkReply(inputStream);
     }
 
-    public List<Object> getObjectMultiBulkReply() throws JedisException {
+    public List<Object> getObjectMultiBulkReply() {
 	return protocol.getMultiBulkReply(inputStream);
     }
 

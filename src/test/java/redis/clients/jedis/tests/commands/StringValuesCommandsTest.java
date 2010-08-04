@@ -9,7 +9,7 @@ import redis.clients.jedis.JedisException;
 
 public class StringValuesCommandsTest extends JedisCommandTestBase {
     @Test
-    public void setAndGet() throws JedisException {
+    public void setAndGet() {
 	String status = jedis.set("foo", "bar");
 	assertEquals("OK", status);
 
@@ -20,7 +20,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void getSet() throws JedisException {
+    public void getSet() {
 	String value = jedis.getSet("foo", "bar");
 	assertEquals(null, value);
 	value = jedis.get("foo");
@@ -28,7 +28,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void mget() throws JedisException {
+    public void mget() {
 	List<String> values = jedis.mget("foo", "bar");
 	List<String> expected = new ArrayList<String>();
 	expected.add(null);
@@ -56,7 +56,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void setnx() throws JedisException {
+    public void setnx() {
 	int status = jedis.setnx("foo", "bar");
 	assertEquals(1, status);
 	assertEquals("bar", jedis.get("foo"));
@@ -67,7 +67,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void setex() throws JedisException {
+    public void setex() {
 	String status = jedis.setex("foo", 20, "bar");
 	assertEquals("OK", status);
 	int ttl = jedis.ttl("foo");
@@ -75,7 +75,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void mset() throws JedisException {
+    public void mset() {
 	String status = jedis.mset("foo", "bar", "bar", "foo");
 	assertEquals("OK", status);
 	assertEquals("bar", jedis.get("foo"));
@@ -83,7 +83,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void msetnx() throws JedisException {
+    public void msetnx() {
 	int status = jedis.msetnx("foo", "bar", "bar", "foo");
 	assertEquals(1, status);
 	assertEquals("bar", jedis.get("foo"));
@@ -96,13 +96,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisException.class)
-    public void incrWrongValue() throws JedisException {
+    public void incrWrongValue() {
 	jedis.set("foo", "bar");
 	jedis.incr("foo");
     }
 
     @Test
-    public void incr() throws JedisException {
+    public void incr() {
 	int value = jedis.incr("foo");
 	assertEquals(1, value);
 	value = jedis.incr("foo");
@@ -110,13 +110,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisException.class)
-    public void incrByWrongValue() throws JedisException {
+    public void incrByWrongValue() {
 	jedis.set("foo", "bar");
 	jedis.incrBy("foo", 2);
     }
 
     @Test
-    public void incrBy() throws JedisException {
+    public void incrBy() {
 	int value = jedis.incrBy("foo", 2);
 	assertEquals(2, value);
 	value = jedis.incrBy("foo", 2);
@@ -124,13 +124,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisException.class)
-    public void decrWrongValue() throws JedisException {
+    public void decrWrongValue() {
 	jedis.set("foo", "bar");
 	jedis.decr("foo");
     }
 
     @Test
-    public void decr() throws JedisException {
+    public void decr() {
 	int value = jedis.decr("foo");
 	assertEquals(-1, value);
 	value = jedis.decr("foo");
@@ -138,13 +138,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisException.class)
-    public void decrByWrongValue() throws JedisException {
+    public void decrByWrongValue() {
 	jedis.set("foo", "bar");
 	jedis.decrBy("foo", 2);
     }
 
     @Test
-    public void decrBy() throws JedisException {
+    public void decrBy() {
 	int value = jedis.decrBy("foo", 2);
 	assertEquals(-2, value);
 	value = jedis.decrBy("foo", 2);
@@ -152,7 +152,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void append() throws JedisException {
+    public void append() {
 	int value = jedis.append("foo", "bar");
 	assertEquals(3, value);
 	assertEquals("bar", jedis.get("foo"));
@@ -162,7 +162,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void substr() throws JedisException {
+    public void substr() {
 	jedis.set("s", "This is a string");
 	assertEquals("This", jedis.substr("s", 0, 3));
 	assertEquals("ing", jedis.substr("s", -3, -1));

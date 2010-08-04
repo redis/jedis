@@ -8,13 +8,12 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
     @Test
-    public void multi() throws JedisException {
+    public void multi() {
 	Transaction trans = jedis.multi();
 
 	String status = trans.sadd("foo", "a");
@@ -36,9 +35,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void multiBlock() throws JedisException {
+    public void multiBlock() {
 	List<Object> response = jedis.multi(new TransactionBlock() {
-	    public void execute() throws JedisException {
+	    public void execute() {
 		String status = sadd("foo", "a");
 		assertEquals("QUEUED", status);
 
@@ -58,8 +57,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void watch() throws JedisException, UnknownHostException,
-	    IOException {
+    public void watch() throws UnknownHostException, IOException {
 	jedis.watch("mykey");
 	String val = jedis.get("mykey");
 	val = "foo";
@@ -77,8 +75,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void unwatch() throws JedisException, UnknownHostException,
-	    IOException {
+    public void unwatch() throws UnknownHostException, IOException {
 	jedis.watch("mykey");
 	String val = jedis.get("mykey");
 	val = "foo";

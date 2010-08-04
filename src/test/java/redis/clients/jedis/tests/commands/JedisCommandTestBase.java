@@ -7,7 +7,7 @@ import org.junit.Before;
 
 import redis.clients.jedis.Jedis;
 
-public class JedisCommandTestBase extends Assert {
+public abstract class JedisCommandTestBase extends Assert {
 
     protected Jedis jedis;
 

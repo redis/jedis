@@ -91,8 +91,10 @@ public class Protocol {
 		return processInteger(is);
 	    } else if (b == DOLLAR_BYTE) {
 		return processBulkReply(is);
-	    } else {
+	    } else if (b == PLUS_BYTE) {
 		return processStatusCodeReply(is);
+	    } else {
+		throw new JedisException("Unknown reply");
 	    }
 	} catch (IOException e) {
 	    throw new JedisException(e);

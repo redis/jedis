@@ -22,11 +22,9 @@ public class Protocol {
     public static final byte COLON_BYTE = COLON.getBytes()[0];
 
     public void sendCommand(OutputStream os, String name, String... args) {
-	StringBuilder builder = new StringBuilder();
-	builder.append(ASTERISK).append(args.length + 1).append(
-		COMMAND_DELIMITER);
-	builder.append(DOLLAR).append(name.length()).append(COMMAND_DELIMITER);
-	builder.append(name).append(COMMAND_DELIMITER);
+	StringBuilder builder = new StringBuilder(ASTERISK + (args.length + 1)
+		+ COMMAND_DELIMITER + DOLLAR + name.length()
+		+ COMMAND_DELIMITER + name + COMMAND_DELIMITER);
 	for (String arg : args) {
 	    builder.append(DOLLAR).append(arg.length()).append(
 		    COMMAND_DELIMITER).append(arg).append(COMMAND_DELIMITER);
@@ -45,17 +43,21 @@ public class Protocol {
 
     private String readLine(InputStream is) {
 	byte b;
+	byte c;
 	StringBuilder sb = new StringBuilder();
 
 	try {
 	    while ((b = (byte) is.read()) != -1) {
 		if (b == '\r') {
-		    b = (byte) is.read();
-		    if (b == '\n') {
+		    c = (byte) is.read();
+		    if (c == '\n') {
 			break;
 		    }
+		    sb.append((char) b);
+		    sb.append((char) c);
+		} else {
+		    sb.append((char) b);
 		}
-		sb.append((char) b);
 	    }
 	} catch (IOException e) {
 	    // TODO Dont know what to do here!
@@ -106,7 +108,6 @@ public class Protocol {
     }
 
     private Object processBulkReply(InputStream is) throws IOException {
-	String ret = null;
 	int len = Integer.parseInt(readLine(is));
 	if (len == -1) {
 	    return null;
@@ -117,8 +118,7 @@ public class Protocol {
 	is.read();
 	is.read();
 
-	ret = new String(read);
-	return ret;
+	return new String(read);
     }
 
     private Object processInteger(InputStream is) {

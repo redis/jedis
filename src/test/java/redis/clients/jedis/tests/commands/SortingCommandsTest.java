@@ -3,32 +3,12 @@ package redis.clients.jedis.tests.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
 import redis.clients.jedis.SortingParams;
 
-public class SortingCommandsTest extends Assert {
-    private Jedis jedis;
-
-    @Before
-    public void setUp() throws Exception {
-	jedis = new Jedis("localhost");
-	jedis.connect();
-	jedis.flushDB();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-	jedis.flushDB();
-	jedis.disconnect();
-    }
-
+public class SortingCommandsTest extends JedisCommandTestBase {
     @Test
     public void sort() throws JedisException {
 	jedis.lpush("foo", "3");

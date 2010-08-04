@@ -542,4 +542,9 @@ public class Jedis {
 	client.brpop(args.toArray(new String[args.size()]));
 	return client.getMultiBulkReply();
     }
+
+    public String auth(String password) throws JedisException {
+	client.auth(password);
+	return client.getStatusCodeReply();
+    }
 }

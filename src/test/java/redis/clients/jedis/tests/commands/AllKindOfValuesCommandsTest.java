@@ -3,30 +3,11 @@ package redis.clients.jedis.tests.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
 
-public class AllKindOfValuesCommandsTest extends Assert {
-    private Jedis jedis;
-
-    @Before
-    public void setUp() throws Exception {
-	jedis = new Jedis("localhost");
-	jedis.connect();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-	jedis.flushDB();
-	jedis.disconnect();
-    }
-
+public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     @Test
     public void ping() throws JedisException {
 	String status = jedis.ping();

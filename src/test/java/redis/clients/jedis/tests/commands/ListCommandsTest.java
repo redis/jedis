@@ -3,30 +3,12 @@ package redis.clients.jedis.tests.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
 
-public class ListCommandsTest extends Assert {
-    private Jedis jedis;
-
-    @Before
-    public void setUp() throws Exception {
-	jedis = new Jedis("localhost");
-	jedis.connect();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-	jedis.flushDB();
-	jedis.disconnect();
-    }
-
+public class ListCommandsTest extends JedisCommandTestBase {
     @Test
     public void rpush() throws JedisException {
 	int size = jedis.rpush("foo", "bar");

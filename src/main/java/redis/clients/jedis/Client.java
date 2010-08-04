@@ -417,4 +417,8 @@ public class Client extends Connection {
     public void brpop(String[] args) throws JedisException {
 	sendCommand("BRPOP", args);
     }
+
+    public void auth(String password) throws JedisException {
+	sendCommand("AUTH", password);
+    }
 }

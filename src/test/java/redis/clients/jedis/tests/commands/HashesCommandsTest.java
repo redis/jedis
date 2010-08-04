@@ -6,30 +6,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
 
-public class HashesCommandsTest extends Assert {
-    private Jedis jedis;
-
-    @Before
-    public void setUp() throws Exception {
-	jedis = new Jedis("localhost");
-	jedis.connect();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-	jedis.flushDB();
-	jedis.disconnect();
-    }
-
+public class HashesCommandsTest extends JedisCommandTestBase {
     @Test
     public void hset() throws JedisException {
 	int status = jedis.hset("foo", "bar", "car");

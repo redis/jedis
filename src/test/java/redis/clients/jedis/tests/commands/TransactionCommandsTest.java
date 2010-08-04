@@ -5,10 +5,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
@@ -16,21 +12,7 @@ import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 
-public class TransactionCommandsTest extends Assert {
-    private Jedis jedis;
-
-    @Before
-    public void setUp() throws Exception {
-	jedis = new Jedis("localhost");
-	jedis.connect();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-	jedis.flushDB();
-	jedis.disconnect();
-    }
-
+public class TransactionCommandsTest extends JedisCommandTestBase {
     @Test
     public void multi() throws JedisException {
 	Transaction trans = jedis.multi();
@@ -85,6 +67,7 @@ public class TransactionCommandsTest extends Assert {
 
 	Jedis nj = new Jedis("localhost");
 	nj.connect();
+	nj.auth("foobared");
 	nj.set("mykey", "bar");
 	nj.disconnect();
 
@@ -105,6 +88,7 @@ public class TransactionCommandsTest extends Assert {
 
 	Jedis nj = new Jedis("localhost");
 	nj.connect();
+	nj.auth("foobared");
 	nj.set("mykey", "bar");
 	nj.disconnect();
 

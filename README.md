@@ -10,13 +10,13 @@ Jedis is a WORK IN PROGRESS.
 - Publish/Subscribe
 - Persistence control commands
 - Remote server control commands
-- The AUTH, ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
+- The ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
 
 But stay close because things are going fast and all this will be implemented soon!
 
 ## Ok.. so what's already done?
 - Sorting
-- Connection handling (not AUTH)
+- Connection handling
 - Commands operating on all the kind of values
 - Commands operating on string values
 - Commands operating on hashes

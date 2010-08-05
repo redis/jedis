@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class Protocol {
     public static final byte MINUS_BYTE = MINUS.getBytes()[0];
     public static final byte COLON_BYTE = COLON.getBytes()[0];
 
-    public void sendCommand(OutputStream os, String name, String... args) {
+    public void sendCommand(DataOutputStream os, String name, String... args) {
 	StringBuilder builder = new StringBuilder(ASTERISK + (args.length + 1)
 		+ COMMAND_DELIMITER + DOLLAR + name.length()
 		+ COMMAND_DELIMITER + name + COMMAND_DELIMITER);
@@ -36,20 +36,20 @@ public class Protocol {
 	}
     }
 
-    public void processError(InputStream is) {
+    public void processError(DataInputStream is) {
 	String message = readLine(is);
 	throw new JedisException(message);
     }
 
-    private String readLine(InputStream is) {
+    private String readLine(DataInputStream is) {
 	byte b;
 	byte c;
 	StringBuilder sb = new StringBuilder();
 
 	try {
-	    while ((b = (byte) is.read()) != -1) {
+	    while ((b = is.readByte()) != -1) {
 		if (b == '\r') {
-		    c = (byte) is.read();
+		    c = is.readByte();
 		    if (c == '\n') {
 			break;
 		    }
@@ -65,24 +65,24 @@ public class Protocol {
 	return sb.toString();
     }
 
-    public String getBulkReply(InputStream is) {
+    public String getBulkReply(DataInputStream is) {
 	Object reply = process(is);
 	return (String) reply;
     }
 
-    public String getStatusCodeReply(InputStream is) {
+    public String getStatusCodeReply(DataInputStream is) {
 	Object reply = process(is);
 	return (String) reply;
     }
 
-    public int getIntegerReply(InputStream is) {
+    public int getIntegerReply(DataInputStream is) {
 	Object reply = process(is);
 	return (Integer) reply;
     }
 
-    private Object process(InputStream is) {
+    private Object process(DataInputStream is) {
 	try {
-	    byte b = (byte) is.read();
+	    byte b = is.readByte();
 	    if (b == MINUS_BYTE) {
 		processError(is);
 	    } else if (b == ASTERISK_BYTE) {
@@ -102,13 +102,13 @@ public class Protocol {
 	return null;
     }
 
-    private Object processStatusCodeReply(InputStream is) {
+    private Object processStatusCodeReply(DataInputStream is) {
 	String ret = null;
 	ret = readLine(is);
 	return ret;
     }
 
-    private Object processBulkReply(InputStream is) {
+    private Object processBulkReply(DataInputStream is) {
 	int len = Integer.parseInt(readLine(is));
 	if (len == -1) {
 	    return null;
@@ -126,14 +126,14 @@ public class Protocol {
 	return new String(read);
     }
 
-    private Object processInteger(InputStream is) {
+    private Object processInteger(DataInputStream is) {
 	int ret = 0;
 	String num = readLine(is);
 	ret = Integer.parseInt(num);
 	return ret;
     }
 
-    private Object processMultiBulkReply(InputStream is) {
+    private Object processMultiBulkReply(DataInputStream is) {
 	int num = Integer.parseInt(readLine(is));
 	if (num == -1) {
 	    return null;
@@ -146,7 +146,7 @@ public class Protocol {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Object> getMultiBulkReply(InputStream is) {
+    public List<Object> getMultiBulkReply(DataInputStream is) {
 	Object reply = process(is);
 	List<Object> ret = (List<Object>) reply;
 	return ret;

@@ -2,6 +2,8 @@ package redis.clients.jedis.tests;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -23,7 +25,7 @@ public class ProtocolTest extends Assert {
 	PipedOutputStream pos = new PipedOutputStream(pis);
 
 	Protocol protocol = new Protocol();
-	protocol.sendCommand(pos, "GET", "SOMEKEY");
+	protocol.sendCommand(new DataOutputStream(pos), "GET", "SOMEKEY");
 
 	pos.close();
 	String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";
@@ -41,7 +43,7 @@ public class ProtocolTest extends Assert {
     public void bulkReply() {
 	InputStream is = new ByteArrayInputStream("$6\r\nfoobar\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = protocol.getBulkReply(is);
+	String response = protocol.getBulkReply(new DataInputStream(is));
 	assertEquals("foobar", response);
     }
 
@@ -49,7 +51,7 @@ public class ProtocolTest extends Assert {
     public void nullBulkReply() {
 	InputStream is = new ByteArrayInputStream("$-1\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = protocol.getBulkReply(is);
+	String response = protocol.getBulkReply(new DataInputStream(is));
 	assertEquals(null, response);
     }
 
@@ -57,7 +59,7 @@ public class ProtocolTest extends Assert {
     public void singleLineReply() {
 	InputStream is = new ByteArrayInputStream("+OK\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = protocol.getStatusCodeReply(is);
+	String response = protocol.getStatusCodeReply(new DataInputStream(is));
 	assertEquals("OK", response);
     }
 
@@ -65,7 +67,7 @@ public class ProtocolTest extends Assert {
     public void integerReply() {
 	InputStream is = new ByteArrayInputStream(":123\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	int response = protocol.getIntegerReply(is);
+	int response = protocol.getIntegerReply(new DataInputStream(is));
 	assertEquals(123, response);
     }
 
@@ -77,7 +79,7 @@ public class ProtocolTest extends Assert {
 			.getBytes());
 	Protocol protocol = new Protocol();
 	List<String> response = (List<String>) (List<?>) protocol
-		.getMultiBulkReply(is);
+		.getMultiBulkReply(new DataInputStream(is));
 	List<String> expected = new ArrayList<String>();
 	expected.add("foo");
 	expected.add("bar");
@@ -90,7 +92,8 @@ public class ProtocolTest extends Assert {
 		"*4\r\n$3\r\nfoo\r\n+OK\r\n:1000\r\n*2\r\n$3\r\nfoo\r\n$3\r\nbar"
 			.getBytes());
 	protocol = new Protocol();
-	List<Object> response2 = protocol.getMultiBulkReply(is);
+	List<Object> response2 = protocol
+		.getMultiBulkReply(new DataInputStream(is));
 	List<Object> expected2 = new ArrayList<Object>();
 	expected2.add("foo");
 	expected2.add("OK");
@@ -109,7 +112,7 @@ public class ProtocolTest extends Assert {
 	InputStream is = new ByteArrayInputStream("*-1\r\n".getBytes());
 	Protocol protocol = new Protocol();
 	List<String> response = (List<String>) (List<?>) protocol
-		.getMultiBulkReply(is);
+		.getMultiBulkReply(new DataInputStream(is));
 	assertNull(response);
     }
 }

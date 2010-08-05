@@ -1,8 +1,9 @@
 package redis.clients.jedis;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -13,8 +14,8 @@ public class Connection {
     private Socket socket;
     private boolean connected = false;
     private Protocol protocol = new Protocol();
-    private OutputStream outputStream;
-    private InputStream inputStream;
+    private DataOutputStream outputStream;
+    private DataInputStream inputStream;
 
     public Connection(String host) {
 	super();
@@ -58,8 +59,9 @@ public class Connection {
 	if (!connected) {
 	    socket = new Socket(host, port);
 	    connected = socket.isConnected();
-	    outputStream = socket.getOutputStream();
-	    inputStream = socket.getInputStream();
+	    outputStream = new DataOutputStream(socket.getOutputStream());
+	    inputStream = new DataInputStream(new BufferedInputStream(socket
+		    .getInputStream()));
 	}
     }
 

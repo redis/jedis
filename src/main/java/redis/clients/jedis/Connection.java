@@ -58,6 +58,7 @@ public class Connection {
     public void connect() throws UnknownHostException, IOException {
 	if (!connected) {
 	    socket = new Socket(host, port);
+	    socket.setReceiveBufferSize(256);
 	    connected = socket.isConnected();
 	    outputStream = new DataOutputStream(socket.getOutputStream());
 	    inputStream = new DataInputStream(new BufferedInputStream(socket

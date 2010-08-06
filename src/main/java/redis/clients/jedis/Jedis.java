@@ -527,4 +527,10 @@ public class Jedis {
 	client.auth(password);
 	return client.getStatusCodeReply();
     }
+
+    public List<Object> pipelined(JedisPipeline jedisPipeline) {
+	jedisPipeline.setClient(client);
+	jedisPipeline.execute();
+	return client.getAll();
+    }
 }

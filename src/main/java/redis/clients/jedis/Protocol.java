@@ -65,21 +65,6 @@ public class Protocol {
 	return sb.toString();
     }
 
-    public String getBulkReply(DataInputStream is) {
-	Object reply = process(is);
-	return (String) reply;
-    }
-
-    public String getStatusCodeReply(DataInputStream is) {
-	Object reply = process(is);
-	return (String) reply;
-    }
-
-    public int getIntegerReply(DataInputStream is) {
-	Object reply = process(is);
-	return (Integer) reply;
-    }
-
     private Object process(DataInputStream is) {
 	try {
 	    byte b = is.readByte();
@@ -94,7 +79,7 @@ public class Protocol {
 	    } else if (b == PLUS_BYTE) {
 		return processStatusCodeReply(is);
 	    } else {
-		throw new JedisException("Unknown reply");
+		throw new JedisException("Unknown reply: " + (char) b);
 	    }
 	} catch (IOException e) {
 	    throw new JedisException(e);
@@ -145,10 +130,7 @@ public class Protocol {
 	return ret;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Object> getMultiBulkReply(DataInputStream is) {
-	Object reply = process(is);
-	List<Object> ret = (List<Object>) reply;
-	return ret;
+    public Object read(DataInputStream is) {
+	return process(is);
     }
 }

@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Connection {
@@ -16,6 +17,7 @@ public class Connection {
     private Protocol protocol = new Protocol();
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
+    private int pipelinedCommands = 0;
 
     public Connection(String host) {
 	super();
@@ -27,6 +29,7 @@ public class Connection {
 	    throw new JedisException("Please connect Jedis before using it.");
 	}
 	protocol.sendCommand(outputStream, name, args);
+	pipelinedCommands++;
 	return this;
     }
 
@@ -58,7 +61,6 @@ public class Connection {
     public void connect() throws UnknownHostException, IOException {
 	if (!connected) {
 	    socket = new Socket(host, port);
-	    socket.setReceiveBufferSize(256);
 	    connected = socket.isConnected();
 	    outputStream = new DataOutputStream(socket.getOutputStream());
 	    inputStream = new DataInputStream(new BufferedInputStream(socket
@@ -82,24 +84,38 @@ public class Connection {
     }
 
     protected String getStatusCodeReply() {
-	return protocol.getStatusCodeReply(inputStream);
+	pipelinedCommands--;
+	return (String) protocol.read(inputStream);
     }
 
     public String getBulkReply() {
-	return protocol.getBulkReply(inputStream);
+	pipelinedCommands--;
+	return (String) protocol.read(inputStream);
     }
 
     public int getIntegerReply() {
-	return protocol.getIntegerReply(inputStream);
+	pipelinedCommands--;
+	return (Integer) protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getMultiBulkReply() {
-	return (List<String>) (List<?>) protocol.getMultiBulkReply(inputStream);
+	pipelinedCommands--;
+	return (List<String>) protocol.read(inputStream);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Object> getObjectMultiBulkReply() {
-	return protocol.getMultiBulkReply(inputStream);
+	pipelinedCommands--;
+	return (List<Object>) protocol.read(inputStream);
     }
 
+    public List<Object> getAll() {
+	List<Object> all = new ArrayList<Object>();
+	while (pipelinedCommands > 0) {
+	    all.add(protocol.read(inputStream));
+	    pipelinedCommands--;
+	}
+	return all;
+    }
 }

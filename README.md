@@ -24,6 +24,7 @@ But stay close because things are going fast and all this will be implemented so
 - Commands operating on sets
 - Commands operating on sorted sets (not ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE)
 - Transactions
+- Pipelining
 
 ## How do I use it?
 

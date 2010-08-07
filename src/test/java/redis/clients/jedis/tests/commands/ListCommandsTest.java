@@ -204,52 +204,51 @@ public class ListCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void blpop() {
+    public void blpop() throws InterruptedException {
 	List<String> result = jedis.blpop(1, "foo");
 	assertNull(result);
 
 	new Thread(new Runnable() {
 	    public void run() {
 		try {
-		    Jedis j = new Jedis("localhost");
-		    j.connect();
-		    j.auth("foobared");
-		    j.flushAll();
-		    List<String> result = j.blpop(0, "foo");
-		    assertNotNull(result);
-		    assertEquals(2, result.size());
-		    assertEquals("foo", result.get(0));
-		    assertEquals("bar", result.get(1));
+		    Jedis j = createJedis();
+		    j.lpush("foo", "bar");
+		    j.disconnect();
 		} catch (Exception ex) {
 		    fail(ex.getMessage());
 		}
 	    }
 	}).start();
-	jedis.lpush("foo", "bar");
+
+	result = jedis.blpop(1, "foo");
+	assertNotNull(result);
+	assertEquals(2, result.size());
+	assertEquals("foo", result.get(0));
+	assertEquals("bar", result.get(1));
     }
 
     @Test
-    public void brpop() {
+    public void brpop() throws InterruptedException {
 	List<String> result = jedis.brpop(1, "foo");
 	assertNull(result);
 
 	new Thread(new Runnable() {
 	    public void run() {
 		try {
-		    Jedis j = new Jedis("localhost");
-		    j.connect();
-		    j.auth("foobared");
-		    j.flushAll();
-		    List<String> result = j.brpop(0, "foo");
-		    assertNotNull(result);
-		    assertEquals(2, result.size());
-		    assertEquals("foo", result.get(0));
-		    assertEquals("bar", result.get(1));
+		    Jedis j = createJedis();
+		    j.lpush("foo", "bar");
+		    j.disconnect();
 		} catch (Exception ex) {
 		    fail(ex.getMessage());
 		}
 	    }
 	}).start();
-	jedis.lpush("foo", "bar");
+
+	result = jedis.brpop(1, "foo");
+	assertNotNull(result);
+	assertEquals(2, result.size());
+	assertEquals("foo", result.get(0));
+	assertEquals("bar", result.get(1));
+
     }
 }

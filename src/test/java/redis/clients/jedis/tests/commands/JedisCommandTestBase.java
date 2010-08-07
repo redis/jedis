@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -26,5 +29,13 @@ public abstract class JedisCommandTestBase extends Assert {
     @After
     public void tearDown() throws Exception {
 	jedis.disconnect();
+    }
+
+    protected Jedis createJedis() throws UnknownHostException, IOException {
+        Jedis j = new Jedis("localhost");
+        j.connect();
+        j.auth("foobared");
+        j.flushAll();
+        return j;
     }
 }

@@ -533,4 +533,16 @@ public class Jedis {
 	jedisPipeline.execute();
 	return client.getAll();
     }
+
+    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+	jedisPubSub.proceed(client, channels);
+    }
+
+    public void publish(String channel, String message) {
+	client.publish(channel, message);
+    }
+
+    public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
+	jedisPubSub.proceedWithPatterns(client, patterns);
+    }
 }

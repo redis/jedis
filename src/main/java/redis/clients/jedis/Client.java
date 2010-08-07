@@ -407,4 +407,32 @@ public class Client extends Connection {
     public void auth(String password) {
 	sendCommand("AUTH", password);
     }
+
+    public void subscribe(String... channels) {
+	sendCommand("SUBSCRIBE", channels);
+    }
+
+    public void publish(String channel, String message) {
+	sendCommand("PUBLISH", channel, message);
+    }
+
+    public void unsubscribe() {
+	sendCommand("UNSUBSCRIBE");
+    }
+
+    public void unsubscribe(String... channels) {
+	sendCommand("UNSUBSCRIBE", channels);
+    }
+
+    public void psubscribe(String[] patterns) {
+	sendCommand("PSUBSCRIBE", patterns);
+    }
+
+    public void punsubscribe() {
+	sendCommand("PUNSUBSCRIBE");
+    }
+
+    public void punsubscribe(String... patterns) {
+	sendCommand("PUNSUBSCRIBE", patterns);
+    }
 }

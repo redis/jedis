@@ -463,4 +463,9 @@ public class Client extends Connection {
 		.valueOf(max), "LIMIT", String.valueOf(offset), String
 		.valueOf(count), "WITHSCORES");
     }
+
+    public void zremrangeByRank(String key, int start, int end) {
+	sendCommand("ZREMRANGEBYRANK", key, String.valueOf(start), String
+		.valueOf(end));
+    }
 }

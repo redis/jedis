@@ -572,4 +572,9 @@ public class Jedis {
 	}
 	return set;
     }
+
+    public int zremrangeByRank(String key, int start, int end) {
+	client.zremrangeByRank(key, start, end);
+	return client.getIntegerReply();
+    }
 }

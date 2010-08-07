@@ -252,4 +252,22 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(expected, range);
     }
+
+    @Test
+    public void zremrangeByRank() {
+	jedis.zadd("foo", 1d, "a");
+	jedis.zadd("foo", 10d, "b");
+	jedis.zadd("foo", 0.1d, "c");
+	jedis.zadd("foo", 2d, "a");
+
+	int result = jedis.zremrangeByRank("foo", 0, 0);
+
+	assertEquals(1, result);
+
+	Set<String> expected = new LinkedHashSet<String>();
+	expected.add("a");
+	expected.add("b");
+
+	assertEquals(expected, jedis.zrange("foo", 0, 100));
+    }
 }

@@ -439,4 +439,28 @@ public class Client extends Connection {
     public void zcount(String key, double min, double max) {
 	sendCommand("ZCOUNT", key, String.valueOf(min), String.valueOf(max));
     }
+
+    public void zrangeByScore(String key, double min, double max) {
+	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
+		.valueOf(max));
+    }
+
+    public void zrangeByScore(String key, double min, double max, int offset,
+	    int count) {
+	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
+		.valueOf(max), "LIMIT", String.valueOf(offset), String
+		.valueOf(count));
+    }
+
+    public void zrangeByScoreWithScores(String key, double min, double max) {
+	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
+		.valueOf(max), "WITHSCORES");
+    }
+
+    public void zrangeByScoreWithScores(String key, double min, double max,
+	    int offset, int count) {
+	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
+		.valueOf(max), "LIMIT", String.valueOf(offset), String
+		.valueOf(count), "WITHSCORES");
+    }
 }

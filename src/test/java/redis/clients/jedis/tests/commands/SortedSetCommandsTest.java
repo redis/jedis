@@ -192,4 +192,64 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(2, result);
     }
+
+    @Test
+    public void zrangebyscore() {
+	jedis.zadd("foo", 1d, "a");
+	jedis.zadd("foo", 10d, "b");
+	jedis.zadd("foo", 0.1d, "c");
+	jedis.zadd("foo", 2d, "a");
+
+	Set<String> range = jedis.zrangeByScore("foo", 0d, 2d);
+
+	Set<String> expected = new LinkedHashSet<String>();
+	expected.add("c");
+	expected.add("a");
+
+	assertEquals(expected, range);
+
+	range = jedis.zrangeByScore("foo", 0d, 2d, 0, 1);
+
+	expected = new LinkedHashSet<String>();
+	expected.add("c");
+
+	assertEquals(expected, range);
+
+	range = jedis.zrangeByScore("foo", 0d, 2d, 1, 1);
+
+	expected = new LinkedHashSet<String>();
+	expected.add("a");
+
+	assertEquals(expected, range);
+    }
+
+    @Test
+    public void zrangebyscoreWithScores() {
+	jedis.zadd("foo", 1d, "a");
+	jedis.zadd("foo", 10d, "b");
+	jedis.zadd("foo", 0.1d, "c");
+	jedis.zadd("foo", 2d, "a");
+
+	Set<Tuple> range = jedis.zrangeByScoreWithScores("foo", 0d, 2d);
+
+	Set<Tuple> expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("c", 0.1d));
+	expected.add(new Tuple("a", 2d));
+
+	assertEquals(expected, range);
+
+	range = jedis.zrangeByScoreWithScores("foo", 0d, 2d, 0, 1);
+
+	expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("c", 0.1d));
+
+	assertEquals(expected, range);
+
+	range = jedis.zrangeByScoreWithScores("foo", 0d, 2d, 1, 1);
+
+	expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("a", 2d));
+
+	assertEquals(expected, range);
+    }
 }

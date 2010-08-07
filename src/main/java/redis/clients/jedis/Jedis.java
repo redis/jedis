@@ -411,27 +411,13 @@ public class Jedis {
 
     public Set<Tuple> zrangeWithScores(String key, int start, int end) {
 	client.zrangeWithScores(key, start, end);
-	List<String> membersWithScores = client.getMultiBulkReply();
-	Set<Tuple> set = new LinkedHashSet<Tuple>();
-	Iterator<String> iterator = membersWithScores.iterator();
-	while (iterator.hasNext()) {
-	    set
-		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
-			    .next())));
-	}
+	Set<Tuple> set = getTupledSet();
 	return set;
     }
 
     public Set<Tuple> zrevrangeWithScores(String key, int start, int end) {
 	client.zrevrangeWithScores(key, start, end);
-	List<String> membersWithScores = client.getMultiBulkReply();
-	Set<Tuple> set = new LinkedHashSet<Tuple>();
-	Iterator<String> iterator = membersWithScores.iterator();
-	while (iterator.hasNext()) {
-	    set
-		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
-			    .next())));
-	}
+	Set<Tuple> set = getTupledSet();
 	return set;
     }
 
@@ -549,5 +535,41 @@ public class Jedis {
     public int zcount(String key, double min, double max) {
 	client.zcount(key, min, max);
 	return client.getIntegerReply();
+    }
+
+    public Set<String> zrangeByScore(String key, double min, double max) {
+	client.zrangeByScore(key, min, max);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    public Set<String> zrangeByScore(String key, double min, double max,
+	    int offset, int count) {
+	client.zrangeByScore(key, min, max, offset, count);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
+	client.zrangeByScoreWithScores(key, min, max);
+	Set<Tuple> set = getTupledSet();
+	return set;
+    }
+
+    public Set<Tuple> zrangeByScoreWithScores(String key, double min,
+	    double max, int offset, int count) {
+	client.zrangeByScoreWithScores(key, min, max, offset, count);
+	Set<Tuple> set = getTupledSet();
+	return set;
+    }
+
+    private Set<Tuple> getTupledSet() {
+	List<String> membersWithScores = client.getMultiBulkReply();
+	Set<Tuple> set = new LinkedHashSet<Tuple>();
+	Iterator<String> iterator = membersWithScores.iterator();
+	while (iterator.hasNext()) {
+	    set
+		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
+			    .next())));
+	}
+	return set;
     }
 }

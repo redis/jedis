@@ -10,7 +10,7 @@ Jedis is a WORK IN PROGRESS.
 - Sharding
 - Persistence control commands
 - Remote server control commands
-- The ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
+- The ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
 
 But stay close because things are going fast and all this will be implemented soon!
 
@@ -22,7 +22,7 @@ But stay close because things are going fast and all this will be implemented so
 - Commands operating on hashes
 - Commands operating on lists
 - Commands operating on sets
-- Commands operating on sorted sets (not ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE)
+- Commands operating on sorted sets (not ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE)
 - Transactions
 - Pipelining
 - Publish/Subscribe

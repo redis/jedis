@@ -6,6 +6,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.ZParams;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
     @Test
@@ -286,5 +287,79 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	expected.add("b");
 
 	assertEquals(expected, jedis.zrange("foo", 0, 100));
+    }
+
+    @Test
+    public void zunionstore() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 2, "b");
+	jedis.zadd("bar", 2, "a");
+	jedis.zadd("bar", 2, "b");
+
+	int result = jedis.zunionstore("dst", "foo", "bar");
+
+	assertEquals(2, result);
+
+	Set<Tuple> expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("b", 4));
+	expected.add(new Tuple("a", 3));
+
+	assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
+    }
+
+    @Test
+    public void zunionstoreParams() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 2, "b");
+	jedis.zadd("bar", 2, "a");
+	jedis.zadd("bar", 2, "b");
+
+	ZParams params = new ZParams();
+	params.weights(2, 2);
+	params.aggregate(ZParams.Aggregate.SUM);
+	int result = jedis.zunionstore("dst", params, "foo", "bar");
+
+	assertEquals(2, result);
+
+	Set<Tuple> expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("b", 8));
+	expected.add(new Tuple("a", 6));
+
+	assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
+    }
+
+    @Test
+    public void zinterstore() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 2, "b");
+	jedis.zadd("bar", 2, "a");
+
+	int result = jedis.zinterstore("dst", "foo", "bar");
+
+	assertEquals(1, result);
+
+	Set<Tuple> expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("a", 3));
+
+	assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
+    }
+
+    @Test
+    public void zintertoreParams() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 2, "b");
+	jedis.zadd("bar", 2, "a");
+
+	ZParams params = new ZParams();
+	params.weights(2, 2);
+	params.aggregate(ZParams.Aggregate.SUM);
+	int result = jedis.zinterstore("dst", params, "foo", "bar");
+
+	assertEquals(1, result);
+
+	Set<Tuple> expected = new LinkedHashSet<Tuple>();
+	expected.add(new Tuple("a", 6));
+
+	assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
     }
 }

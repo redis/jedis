@@ -473,4 +473,42 @@ public class Client extends Connection {
 	sendCommand("ZREMRANGEBYSCORE", key, String.valueOf(start), String
 		.valueOf(end));
     }
+
+    public void zunionstore(String dstkey, String... sets) {
+	String[] params = new String[sets.length + 2];
+	params[0] = dstkey;
+	params[1] = String.valueOf(sets.length);
+	System.arraycopy(sets, 0, params, 2, sets.length);
+	sendCommand("ZUNIONSTORE", params);
+    }
+
+    public void zunionstore(String dstkey, ZParams params, String... sets) {
+	List<String> args = new ArrayList<String>();
+	args.add(dstkey);
+	args.add(String.valueOf(sets.length));
+	for (String set : sets) {
+	    args.add(set);
+	}
+	args.addAll(params.getParams());
+	sendCommand("ZUNIONSTORE", args.toArray(new String[args.size()]));
+    }
+
+    public void zinterstore(String dstkey, String... sets) {
+	String[] params = new String[sets.length + 2];
+	params[0] = dstkey;
+	params[1] = String.valueOf(sets.length);
+	System.arraycopy(sets, 0, params, 2, sets.length);
+	sendCommand("ZINTERSTORE", params);
+    }
+
+    public void zinterstore(String dstkey, ZParams params, String... sets) {
+	List<String> args = new ArrayList<String>();
+	args.add(dstkey);
+	args.add(String.valueOf(sets.length));
+	for (String set : sets) {
+	    args.add(set);
+	}
+	args.addAll(params.getParams());
+	sendCommand("ZINTERSTORE", args.toArray(new String[args.size()]));
+    }
 }

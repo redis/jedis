@@ -582,4 +582,24 @@ public class Jedis {
 	client.zremrangeByScore(key, start, end);
 	return client.getIntegerReply();
     }
+
+    public int zunionstore(String dstkey, String... sets) {
+	client.zunionstore(dstkey, sets);
+	return client.getIntegerReply();
+    }
+
+    public int zunionstore(String dstkey, ZParams params, String... sets) {
+	client.zunionstore(dstkey, params, sets);
+	return client.getIntegerReply();
+    }
+
+    public int zinterstore(String dstkey, String... sets) {
+	client.zinterstore(dstkey, sets);
+	return client.getIntegerReply();
+    }
+
+    public int zinterstore(String dstkey, ZParams params, String... sets) {
+	client.zinterstore(dstkey, params, sets);
+	return client.getIntegerReply();
+    }
 }

@@ -468,4 +468,9 @@ public class Client extends Connection {
 	sendCommand("ZREMRANGEBYRANK", key, String.valueOf(start), String
 		.valueOf(end));
     }
+
+    public void zremrangeByScore(String key, int start, int end) {
+	sendCommand("ZREMRANGEBYSCORE", key, String.valueOf(start), String
+		.valueOf(end));
+    }
 }

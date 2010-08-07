@@ -577,4 +577,9 @@ public class Jedis {
 	client.zremrangeByRank(key, start, end);
 	return client.getIntegerReply();
     }
+
+    public int zremrangeByScore(String key, int start, int end) {
+	client.zremrangeByScore(key, start, end);
+	return client.getIntegerReply();
+    }
 }

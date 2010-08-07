@@ -7,7 +7,6 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
-- Publish/Subscribe
 - Persistence control commands
 - Remote server control commands
 - The ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands
@@ -25,6 +24,7 @@ But stay close because things are going fast and all this will be implemented so
 - Commands operating on sorted sets (not ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE)
 - Transactions
 - Pipelining
+- Publish/Subscribe
 
 ## How do I use it?
 

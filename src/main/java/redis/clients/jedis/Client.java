@@ -435,4 +435,8 @@ public class Client extends Connection {
     public void punsubscribe(String... patterns) {
 	sendCommand("PUNSUBSCRIBE", patterns);
     }
+
+    public void zcount(String key, double min, double max) {
+	sendCommand("ZCOUNT", key, String.valueOf(min), String.valueOf(max));
+    }
 }

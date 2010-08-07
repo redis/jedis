@@ -180,4 +180,16 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	score = jedis.zscore("foo", "c");
 	assertEquals(0.1d, score);
     }
+
+    @Test
+    public void zcount() {
+	jedis.zadd("foo", 1d, "a");
+	jedis.zadd("foo", 10d, "b");
+	jedis.zadd("foo", 0.1d, "c");
+	jedis.zadd("foo", 2d, "a");
+
+	int result = jedis.zcount("foo", 0.01d, 2.1d);
+
+	assertEquals(2, result);
+    }
 }

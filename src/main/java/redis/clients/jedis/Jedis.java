@@ -545,4 +545,9 @@ public class Jedis {
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
 	jedisPubSub.proceedWithPatterns(client, patterns);
     }
+
+    public int zcount(String key, double min, double max) {
+	client.zcount(key, min, max);
+	return client.getIntegerReply();
+    }
 }

@@ -7,6 +7,7 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 Jedis is a WORK IN PROGRESS.
 
 ## What's still missing?
+- Sharding
 - Persistence control commands
 - Remote server control commands
 - The ZRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE commands

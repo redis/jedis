@@ -547,4 +547,12 @@ public class Client extends Connection {
     public void slaveofNoOne() {
 	sendCommand("SLAVEOF", "no", "one");
     }
+
+    public void configGet(String pattern) {
+	sendCommand("CONFIG", "GET", pattern);
+    }
+
+    public void configSet(String parameter, String value) {
+	sendCommand("CONFIG", "SET", parameter, value);
+    }
 }

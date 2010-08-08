@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import redis.clients.jedis.JedisException;
@@ -54,5 +56,20 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 		client.disconnect();
 	    }
 	});
+    }
+
+    @Test
+    public void configGet() {
+	List<String> info = jedis.configGet("m*");
+	assertNotNull(info);
+    }
+
+    @Test
+    public void configSet() {
+	List<String> info = jedis.configGet("maxmemory");
+	String memory = info.get(1);
+	String status = jedis.configSet("maxmemory", "200");
+	assertEquals("OK", status);
+	jedis.configSet("maxmemory", memory);
     }
 }

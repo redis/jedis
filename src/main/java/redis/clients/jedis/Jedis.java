@@ -670,4 +670,14 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
+    public List<String> configGet(String pattern) {
+	client.configGet(pattern);
+	return client.getMultiBulkReply();
+    }
+
+    public String configSet(String parameter, String value) {
+	client.configSet(parameter, value);
+	return client.getStatusCodeReply();
+    }
+
 }

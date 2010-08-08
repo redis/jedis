@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 import org.junit.Test;
 
 import redis.clients.jedis.JedisException;
+import redis.clients.jedis.JedisMonitor;
 
 public class PersistenceControlCommandsTest extends JedisCommandTestBase {
     @Test
@@ -40,8 +41,18 @@ public class PersistenceControlCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
-    public void info() throws InterruptedException {
+    public void info() {
 	String info = jedis.info();
 	assertNotNull(info);
+    }
+
+    @Test
+    public void monitor() {
+	jedis.monitor(new JedisMonitor() {
+	    public void onCommand(String command) {
+		assertTrue(command.contains("OK"));
+		client.disconnect();
+	    }
+	});
     }
 }

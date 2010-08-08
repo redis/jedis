@@ -535,4 +535,8 @@ public class Client extends Connection {
     public void info() {
 	sendCommand("INFO");
     }
+
+    public void monitor() {
+	sendCommand("MONITOR");
+    }
 }

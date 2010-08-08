@@ -638,4 +638,9 @@ public class Jedis {
 	client.info();
 	return client.getBulkReply();
     }
+
+    public void monitor(JedisMonitor jedisMonitor) {
+	client.monitor();
+	jedisMonitor.proceed(client);
+    }
 }

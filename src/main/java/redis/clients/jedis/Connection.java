@@ -68,12 +68,16 @@ public class Connection {
 	}
     }
 
-    public void disconnect() throws IOException {
+    public void disconnect() {
 	if (connected) {
-	    inputStream.close();
-	    outputStream.close();
-	    if (!socket.isClosed()) {
-		socket.close();
+	    try {
+		inputStream.close();
+		outputStream.close();
+		if (!socket.isClosed()) {
+		    socket.close();
+		}
+	    } catch (IOException ex) {
+		throw new JedisException(ex);
 	    }
 	    connected = false;
 	}

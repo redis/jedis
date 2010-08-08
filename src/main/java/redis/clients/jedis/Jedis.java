@@ -602,4 +602,9 @@ public class Jedis {
 	client.zinterstore(dstkey, params, sets);
 	return client.getIntegerReply();
     }
+
+    public String save() {
+	client.save();
+	return client.getStatusCodeReply();
+    }
 }

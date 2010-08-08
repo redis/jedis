@@ -511,4 +511,8 @@ public class Client extends Connection {
 	args.addAll(params.getParams());
 	sendCommand("ZINTERSTORE", args.toArray(new String[args.size()]));
     }
+
+    public void save() {
+	sendCommand("SAVE");
+    }
 }

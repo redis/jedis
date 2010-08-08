@@ -2,6 +2,8 @@ package redis.clients.jedis.tests.commands;
 
 import org.junit.Test;
 
+import redis.clients.jedis.JedisException;
+
 public class PersistenceControlCommandsTest extends JedisCommandTestBase {
     @Test
     public void save() {
@@ -21,4 +23,19 @@ public class PersistenceControlCommandsTest extends JedisCommandTestBase {
 	assertEquals("Background append only file rewriting started", status);
     }
 
+    @Test
+    public void lastsave() throws InterruptedException {
+	int before = jedis.lastsave();
+	String st = "";
+	while (!st.equals("OK")) {
+	    try {
+		Thread.sleep(1000);
+		st = jedis.save();
+	    } catch (JedisException e) {
+
+	    }
+	}
+	int after = jedis.lastsave();
+	assertTrue((after - before) > 0);
+    }
 }

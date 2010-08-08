@@ -617,4 +617,9 @@ public class Jedis {
 	client.bgrewriteaof();
 	return client.getStatusCodeReply();
     }
+
+    public int lastsave() {
+	client.lastsave();
+	return client.getIntegerReply();
+    }
 }

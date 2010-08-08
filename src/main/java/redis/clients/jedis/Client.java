@@ -523,4 +523,8 @@ public class Client extends Connection {
     public void bgrewriteaof() {
 	sendCommand("BGREWRITEAOF");
     }
+
+    public void lastsave() {
+	sendCommand("LASTSAVE");
+    }
 }

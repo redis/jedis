@@ -21,6 +21,11 @@ public class Jedis {
 	client = new Client(host, port);
     }
 
+    public Jedis(String host, int port, int timeout) {
+	client = new Client(host, port);
+	client.setTimeout(timeout);
+    }
+
     public String ping() {
 	client.ping();
 	return client.getStatusCodeReply();
@@ -485,7 +490,10 @@ public class Jedis {
 	args.add(String.valueOf(timeout));
 
 	client.blpop(args.toArray(new String[args.size()]));
-	return client.getMultiBulkReply();
+	client.setTimeoutInfinite();
+	List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     public int sort(String key, SortingParams sortingParameters, String dstkey) {
@@ -506,7 +514,11 @@ public class Jedis {
 	args.add(String.valueOf(timeout));
 
 	client.brpop(args.toArray(new String[args.size()]));
-	return client.getMultiBulkReply();
+	client.setTimeoutInfinite();
+	List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+
+	return multiBulkReply;
     }
 
     public String auth(String password) {
@@ -521,7 +533,9 @@ public class Jedis {
     }
 
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+	client.setTimeoutInfinite();
 	jedisPubSub.proceed(client, channels);
+	client.rollbackTimeout();
     }
 
     public void publish(String channel, String message) {
@@ -529,7 +543,9 @@ public class Jedis {
     }
 
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
+	client.setTimeoutInfinite();
 	jedisPubSub.proceedWithPatterns(client, patterns);
+	client.rollbackTimeout();
     }
 
     public int zcount(String key, double min, double max) {

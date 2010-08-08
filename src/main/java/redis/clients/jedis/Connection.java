@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,31 @@ public class Connection {
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
     private int pipelinedCommands = 0;
+    private int timeout = 2000;
+
+    public int getTimeout() {
+	return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+	this.timeout = timeout;
+    }
+
+    public void setTimeoutInfinite() {
+	try {
+	    socket.setSoTimeout(0);
+	} catch (SocketException ex) {
+	    throw new JedisException(ex);
+	}
+    }
+
+    public void rollbackTimeout() {
+	try {
+	    socket.setSoTimeout(timeout);
+	} catch (SocketException ex) {
+	    throw new JedisException(ex);
+	}
+    }
 
     public Connection(String host) {
 	super();
@@ -61,6 +87,7 @@ public class Connection {
     public void connect() throws UnknownHostException, IOException {
 	if (!connected) {
 	    socket = new Socket(host, port);
+	    socket.setSoTimeout(timeout);
 	    connected = socket.isConnected();
 	    outputStream = new DataOutputStream(socket.getOutputStream());
 	    inputStream = new DataInputStream(new BufferedInputStream(socket

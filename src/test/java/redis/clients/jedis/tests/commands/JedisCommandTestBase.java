@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 
 public abstract class JedisCommandTestBase extends Assert {
 
@@ -20,7 +21,7 @@ public abstract class JedisCommandTestBase extends Assert {
 
     @Before
     public void setUp() throws Exception {
-	jedis = new Jedis("localhost");
+	jedis = new Jedis("localhost", Protocol.DEFAULT_PORT, 500);
 	jedis.connect();
 	jedis.auth("foobared");
 	jedis.flushDB();
@@ -32,10 +33,10 @@ public abstract class JedisCommandTestBase extends Assert {
     }
 
     protected Jedis createJedis() throws UnknownHostException, IOException {
-        Jedis j = new Jedis("localhost");
-        j.connect();
-        j.auth("foobared");
-        j.flushAll();
-        return j;
+	Jedis j = new Jedis("localhost");
+	j.connect();
+	j.auth("foobared");
+	j.flushAll();
+	return j;
     }
 }

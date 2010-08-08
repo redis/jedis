@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>redis.clients</groupId>
   <artifactId>jedis</artifactId>
-  <version>0.0.9</version>
+  <version>1.0.0-RC</version>
   <dependencies>
   	<dependency>
   		<groupId>junit</groupId>

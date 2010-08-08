@@ -612,4 +612,9 @@ public class Jedis {
 	client.bgsave();
 	return client.getStatusCodeReply();
     }
+
+    public String bgrewriteaof() {
+	client.bgrewriteaof();
+	return client.getStatusCodeReply();
+    }
 }

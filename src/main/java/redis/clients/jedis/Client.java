@@ -519,4 +519,8 @@ public class Client extends Connection {
     public void bgsave() {
 	sendCommand("BGSAVE");
     }
+
+    public void bgrewriteaof() {
+	sendCommand("BGREWRITEAOF");
+    }
 }

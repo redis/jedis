@@ -4,14 +4,18 @@ Jedis is a blazingly small and sane redis java client.
 
 Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest version of redis.
 
-## What's still missing?
+Jedis is now fully compatible with the latest version of redis.
+
+## What will be available soon?
 - Sharding
-- Persistence control commands
-- Remote server control commands
+- Connection pooling
+- More and more code and performance improvements
 
 But stay close because things are going fast and all this will be implemented soon!
 
-## Ok.. so what's already done?
+## Ok.. so what can I do with Jedis?
+All of the following reids features are supported:
+
 - Sorting
 - Connection handling
 - Commands operating on all the kind of values
@@ -23,6 +27,8 @@ But stay close because things are going fast and all this will be implemented so
 - Transactions
 - Pipelining
 - Publish/Subscribe
+- Persistence control commands
+- Remote server control commands
 
 ## How do I use it?
 

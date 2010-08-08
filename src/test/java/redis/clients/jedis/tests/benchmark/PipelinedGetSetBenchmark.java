@@ -8,13 +8,14 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPipeline;
 
 public class PipelinedGetSetBenchmark {
-    private static final int TOTAL_OPERATIONS = 100000;
+    private static final int TOTAL_OPERATIONS = 200000;
 
     public static void main(String[] args) throws UnknownHostException,
 	    IOException {
 	Jedis jedis = new Jedis("localhost");
 	jedis.connect();
 	jedis.auth("foobared");
+	jedis.flushAll();
 
 	long begin = Calendar.getInstance().getTimeInMillis();
 

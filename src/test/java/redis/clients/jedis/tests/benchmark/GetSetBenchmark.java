@@ -14,6 +14,7 @@ public class GetSetBenchmark {
 	Jedis jedis = new Jedis("localhost");
 	jedis.connect();
 	jedis.auth("foobared");
+	jedis.flushAll();
 
 	long begin = Calendar.getInstance().getTimeInMillis();
 

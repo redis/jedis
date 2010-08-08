@@ -5,7 +5,7 @@ import org.junit.Test;
 import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisMonitor;
 
-public class PersistenceControlCommandsTest extends JedisCommandTestBase {
+public class ControlCommandsTest extends JedisCommandTestBase {
     @Test
     public void save() {
 	String status = jedis.save();

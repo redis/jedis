@@ -8,4 +8,11 @@ public class PersistenceControlCommandsTest extends JedisCommandTestBase {
 	String status = jedis.save();
 	assertEquals("OK", status);
     }
+
+    @Test
+    public void bgsave() {
+	String status = jedis.bgsave();
+	assertEquals("Background saving started", status);
+    }
+
 }

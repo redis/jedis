@@ -515,4 +515,8 @@ public class Client extends Connection {
     public void save() {
 	sendCommand("SAVE");
     }
+
+    public void bgsave() {
+	sendCommand("BGSAVE");
+    }
 }

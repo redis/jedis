@@ -607,4 +607,9 @@ public class Jedis {
 	client.save();
 	return client.getStatusCodeReply();
     }
+
+    public String bgsave() {
+	client.bgsave();
+	return client.getStatusCodeReply();
+    }
 }

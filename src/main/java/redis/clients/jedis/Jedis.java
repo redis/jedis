@@ -633,4 +633,9 @@ public class Jedis {
 	}
 	return status;
     }
+
+    public String info() {
+	client.info();
+	return client.getBulkReply();
+    }
 }

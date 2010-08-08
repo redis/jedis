@@ -531,4 +531,8 @@ public class Client extends Connection {
     public void shutdown() {
 	sendCommand("SHUTDOWN");
     }
+
+    public void info() {
+	sendCommand("INFO");
+    }
 }

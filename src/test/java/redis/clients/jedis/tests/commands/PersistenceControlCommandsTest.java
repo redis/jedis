@@ -38,4 +38,10 @@ public class PersistenceControlCommandsTest extends JedisCommandTestBase {
 	int after = jedis.lastsave();
 	assertTrue((after - before) > 0);
     }
+
+    @Test
+    public void info() throws InterruptedException {
+	String info = jedis.info();
+	assertNotNull(info);
+    }
 }

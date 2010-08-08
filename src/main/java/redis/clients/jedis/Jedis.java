@@ -622,4 +622,15 @@ public class Jedis {
 	client.lastsave();
 	return client.getIntegerReply();
     }
+
+    public String shutdown() {
+	client.shutdown();
+	String status = null;
+	try {
+	    status = client.getStatusCodeReply();
+	} catch (JedisException ex) {
+	    status = null;
+	}
+	return status;
+    }
 }

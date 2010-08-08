@@ -527,4 +527,8 @@ public class Client extends Connection {
     public void lastsave() {
 	sendCommand("LASTSAVE");
     }
+
+    public void shutdown() {
+	sendCommand("SHUTDOWN");
+    }
 }

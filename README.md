@@ -6,6 +6,9 @@ Jedis was conceived to be EASY to use and FULLY COMPATIBLE with the latest versi
 
 Jedis is now fully compatible with the latest version of redis.
 
+## Why Jedis is a Release Candidate?
+Because I want to add Sharding and add more documentation to the site. And also publish the benchmark results, which are pretty good (around 26 Kops for GETs and SETs, and 126 Kops for GETs and SETs in pipeling mode).
+
 ## What will be available soon?
 - Sharding
 - Connection pooling

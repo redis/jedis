@@ -539,4 +539,12 @@ public class Client extends Connection {
     public void monitor() {
 	sendCommand("MONITOR");
     }
+
+    public void slaveof(String host, int port) {
+	sendCommand("SLAVEOF", host, String.valueOf(port));
+    }
+
+    public void slaveofNoOne() {
+	sendCommand("SLAVEOF", "no", "one");
+    }
 }

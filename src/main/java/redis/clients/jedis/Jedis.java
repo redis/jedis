@@ -643,4 +643,15 @@ public class Jedis {
 	client.monitor();
 	jedisMonitor.proceed(client);
     }
+
+    public String slaveof(String host, int port) {
+	client.slaveof(host, port);
+	return client.getStatusCodeReply();
+    }
+
+    public String slaveofNoOne() {
+	client.slaveofNoOne();
+	return client.getStatusCodeReply();
+    }
+
 }

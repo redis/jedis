@@ -24,7 +24,7 @@ public abstract class JedisCommandTestBase extends Assert {
 	jedis = new Jedis("localhost", Protocol.DEFAULT_PORT, 500);
 	jedis.connect();
 	jedis.auth("foobared");
-	jedis.flushDB();
+	jedis.flushAll();
     }
 
     @After

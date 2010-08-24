@@ -59,8 +59,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     @Test
     public void watch() throws UnknownHostException, IOException {
 	jedis.watch("mykey");
-	String val = jedis.get("mykey");
-	val = "foo";
 	Transaction t = jedis.multi();
 
 	Jedis nj = new Jedis("localhost");
@@ -69,9 +67,10 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	nj.set("mykey", "bar");
 	nj.disconnect();
 
-	t.set("mykey", val);
+	t.set("mykey", "foo");
 	List<Object> resp = t.exec();
 	assertEquals(null, resp);
+	assertEquals("bar", jedis.get("mykey"));
     }
 
     @Test

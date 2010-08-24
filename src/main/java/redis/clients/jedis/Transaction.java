@@ -407,4 +407,8 @@ public class Transaction {
 	client.exec();
 	return client.getObjectMultiBulkReply();
     }
+
+	public void discard() {
+		client.discard();
+	}
 }

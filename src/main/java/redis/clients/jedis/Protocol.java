@@ -3,34 +3,74 @@ package redis.clients.jedis;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Protocol {
+    public static final Charset CHARSET = Charset.forName("UTF-8");
+
     public static final String DOLLAR = "$";
     public static final String ASTERISK = "*";
     public static final String PLUS = "+";
     public static final String MINUS = "-";
     public static final String COLON = ":";
     public static final String COMMAND_DELIMITER = "\r\n";
+    public static final byte[] COMMAND_DELIMITER_BYTES = "\r\n"
+	    .getBytes(CHARSET);
     public static final int DEFAULT_PORT = 6379;
 
-    public static final byte DOLLAR_BYTE = DOLLAR.getBytes()[0];
-    public static final byte ASTERISK_BYTE = ASTERISK.getBytes()[0];
-    public static final byte PLUS_BYTE = PLUS.getBytes()[0];
-    public static final byte MINUS_BYTE = MINUS.getBytes()[0];
-    public static final byte COLON_BYTE = COLON.getBytes()[0];
+    public static final byte DOLLAR_BYTE = DOLLAR.getBytes(CHARSET)[0];
+    public static final byte ASTERISK_BYTE = ASTERISK.getBytes(CHARSET)[0];
+    public static final byte PLUS_BYTE = PLUS.getBytes(CHARSET)[0];
+    public static final byte MINUS_BYTE = MINUS.getBytes(CHARSET)[0];
+    public static final byte COLON_BYTE = COLON.getBytes(CHARSET)[0];
 
     public void sendCommand(DataOutputStream os, String name, String... args) {
-	StringBuilder builder = new StringBuilder(ASTERISK + (args.length + 1)
-		+ COMMAND_DELIMITER + DOLLAR + name.length()
-		+ COMMAND_DELIMITER + name + COMMAND_DELIMITER);
-	for (String arg : args) {
-	    builder.append(DOLLAR).append(arg.length()).append(
-		    COMMAND_DELIMITER).append(arg).append(COMMAND_DELIMITER);
-	}
-	try {
-	    os.write(builder.toString().getBytes());
+	    StringBuilder sb = new StringBuilder();
+	    sb.append(ASTERISK);
+	    sb.append((new Integer(args.length + 1)).toString());
+	    sb.append(COMMAND_DELIMITER);
+	    sb.append(DOLLAR);
+	    sb.append((new Integer(name.length())).toString());
+	    sb.append(COMMAND_DELIMITER);
+	    sb.append(name);
+	    sb.append(COMMAND_DELIMITER);
+
+	    for (String arg : args) {
+		int size = arg.getBytes(CHARSET).length;
+
+		sb.append(DOLLAR);
+		sb.append((new Integer(size)).toString());
+		sb.append(COMMAND_DELIMITER);
+		sb.append(arg);
+		sb.append(COMMAND_DELIMITER);
+	    }
+
+		try {
+		    os.write(sb.toString().getBytes(CHARSET));
+	    /*
+	    os.write(ASTERISK_BYTE);
+	    os.write((new Integer(args.length + 1)).toString()
+		    .getBytes(CHARSET));
+	    os.write(COMMAND_DELIMITER_BYTES);
+	    os.write(DOLLAR_BYTE);
+	    os.write((new Integer(name.length())).toString().getBytes(CHARSET));
+	    os.write(COMMAND_DELIMITER_BYTES);
+	    os.write(name.getBytes(CHARSET));
+	    os.write(COMMAND_DELIMITER_BYTES);
+
+	    for (String arg : args) {
+		byte[] barg = arg.getBytes(CHARSET);
+
+		os.write(DOLLAR_BYTE);
+		os.write((new Integer(barg.length)).toString()
+			.getBytes(CHARSET));
+		os.write(COMMAND_DELIMITER_BYTES);
+		os.write(barg);
+		os.write(COMMAND_DELIMITER_BYTES);
+	    }
+	    */
 	} catch (IOException e) {
 	    throw new JedisException(e);
 	}
@@ -108,7 +148,7 @@ public class Protocol {
 	    throw new JedisException(e);
 	}
 
-	return new String(read);
+	return new String(read, CHARSET);
     }
 
     private Object processInteger(DataInputStream is) {

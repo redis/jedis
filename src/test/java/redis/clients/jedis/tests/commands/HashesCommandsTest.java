@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import redis.clients.jedis.Protocol;
+
 public class HashesCommandsTest extends JedisCommandTestBase {
     @Test
     public void hset() {
@@ -154,5 +156,4 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	expected.put("car", "bar");
 	assertEquals(expected, hash);
     }
-
 }

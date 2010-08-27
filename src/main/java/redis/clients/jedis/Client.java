@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 public class Client extends Connection {
+    private boolean isInMulti;
+
+    public boolean isInMulti() {
+	return isInMulti;
+    }
 
     public Client(String host) {
 	super(host);
@@ -354,14 +359,17 @@ public class Client extends Connection {
 
     public void multi() {
 	sendCommand("MULTI");
+	isInMulti = true;
     }
 
     public void discard() {
-	sendCommand("MULTI");
+	sendCommand("DISCARD");
+	isInMulti = false;
     }
 
     public void exec() {
 	sendCommand("EXEC");
+	isInMulti = false;
     }
 
     public void watch(String key) {

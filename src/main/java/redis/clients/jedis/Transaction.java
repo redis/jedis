@@ -405,10 +405,11 @@ public class Transaction {
 
     public List<Object> exec() {
 	client.exec();
+
 	return client.getObjectMultiBulkReply();
     }
 
-	public void discard() {
-		client.discard();
-	}
+    public void discard() {
+	client.discard();
+    }
 }

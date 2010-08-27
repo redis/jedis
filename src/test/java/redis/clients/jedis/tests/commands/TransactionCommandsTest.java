@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 
@@ -93,5 +94,11 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	List<Object> expected = new ArrayList<Object>();
 	expected.add("OK");
 	assertEquals(expected, resp);
+    }
+
+    @Test(expected = JedisException.class)
+    public void validateWhenInMulti() {
+	jedis.multi();
+	jedis.ping();
     }
 }

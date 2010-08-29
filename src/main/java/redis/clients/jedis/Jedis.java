@@ -633,8 +633,9 @@ public class Jedis {
 	client.rollbackTimeout();
     }
 
-    public void publish(String channel, String message) {
+    public int publish(String channel, String message) {
 	client.publish(channel, message);
+	return client.getIntegerReply();
     }
 
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {

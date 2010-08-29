@@ -697,7 +697,7 @@ public class Jedis {
 	return client.getIntegerReply();
     }
 
-    public int zremrangeByScore(String key, int start, int end) {
+    public int zremrangeByScore(String key, double start, double end) {
 	checkIsInMulti();
 	client.zremrangeByScore(key, start, end);
 	return client.getIntegerReply();

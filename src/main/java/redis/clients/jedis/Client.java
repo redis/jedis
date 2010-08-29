@@ -477,7 +477,7 @@ public class Client extends Connection {
 		.valueOf(end));
     }
 
-    public void zremrangeByScore(String key, int start, int end) {
+    public void zremrangeByScore(String key, double start, double end) {
 	sendCommand("ZREMRANGEBYSCORE", key, String.valueOf(start), String
 		.valueOf(end));
     }

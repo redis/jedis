@@ -22,4 +22,18 @@ public class JedisPoolTest extends Assert {
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
     }
+
+    @Test
+    public void checkConnectionWithDefaultPort() throws TimeoutException {
+	JedisPool pool = new JedisPool("localhost");
+	pool.setResourcesNumber(10);
+	pool.init();
+
+	Jedis jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
+	pool.returnResource(jedis);
+    }
+
 }

@@ -12,6 +12,7 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 
     public JedisPool(String host) {
 	this.host = host;
+	this.port = Protocol.DEFAULT_PORT;
     }
 
     public JedisPool(String host, int port) {

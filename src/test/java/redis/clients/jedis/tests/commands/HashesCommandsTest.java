@@ -8,8 +8,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Protocol;
-
 public class HashesCommandsTest extends JedisCommandTestBase {
     @Test
     public void hset() {

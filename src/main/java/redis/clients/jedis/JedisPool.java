@@ -51,6 +51,6 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 
     @Override
     protected boolean isResourceValid(Jedis jedis) {
-	return jedis.ping().equals("OK");
+	return jedis.ping().equals("PONG");
     }
 }

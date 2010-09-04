@@ -787,4 +787,8 @@ public class Jedis {
 	client.configSet(parameter, value);
 	return client.getStatusCodeReply();
     }
+
+    public boolean isConnected() {
+	return client.isConnected();
+    }
 }

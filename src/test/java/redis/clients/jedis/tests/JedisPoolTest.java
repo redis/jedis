@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests;
 
+import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Assert;
@@ -36,4 +37,51 @@ public class JedisPoolTest extends Assert {
 	pool.returnResource(jedis);
     }
 
+    @Test
+    public void checkJedisIsReusedWhenReturned() throws TimeoutException {
+	JedisPool pool = new JedisPool("localhost");
+	pool.setResourcesNumber(1);
+	pool.init();
+
+	Jedis jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.set("foo", "0");
+	pool.returnResource(jedis);
+
+	jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.incr("foo");
+    }
+
+    @Test
+    public void checkPoolRepairedWhenJedisIsBroken() throws TimeoutException,
+	    IOException {
+	JedisPool pool = new JedisPool("localhost");
+	pool.setResourcesNumber(1);
+	pool.init();
+
+	Jedis jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.quit();
+	pool.returnBrokenResource(jedis);
+
+	jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.incr("foo");
+    }
+
+    @Test(expected = TimeoutException.class)
+    public void checkPoolOverflow() throws TimeoutException {
+	JedisPool pool = new JedisPool("localhost");
+	pool.setResourcesNumber(1);
+	pool.init();
+
+	Jedis jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.set("foo", "0");
+
+	jedis = pool.getResource(200);
+	jedis.auth("foobared");
+	jedis.incr("foo");
+    }
 }

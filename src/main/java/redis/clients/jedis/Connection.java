@@ -14,7 +14,6 @@ public class Connection {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
-    private boolean connected = false;
     private Protocol protocol = new Protocol();
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
@@ -85,10 +84,9 @@ public class Connection {
     }
 
     public void connect() throws UnknownHostException, IOException {
-	if (!connected) {
+	if (!isConnected()) {
 	    socket = new Socket(host, port);
 	    socket.setSoTimeout(timeout);
-	    connected = socket.isConnected();
 	    outputStream = new DataOutputStream(socket.getOutputStream());
 	    inputStream = new DataInputStream(new BufferedInputStream(socket
 		    .getInputStream()));
@@ -96,7 +94,7 @@ public class Connection {
     }
 
     public void disconnect() {
-	if (connected) {
+	if (isConnected()) {
 	    try {
 		inputStream.close();
 		outputStream.close();
@@ -106,12 +104,13 @@ public class Connection {
 	    } catch (IOException ex) {
 		throw new JedisException(ex);
 	    }
-	    connected = false;
 	}
     }
 
     public boolean isConnected() {
-	return connected;
+	return socket != null && socket.isBound() && !socket.isClosed()
+		&& socket.isConnected() && !socket.isInputShutdown()
+		&& !socket.isOutputShutdown();
     }
 
     protected String getStatusCodeReply() {

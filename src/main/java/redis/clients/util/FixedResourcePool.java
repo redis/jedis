@@ -287,7 +287,7 @@ public abstract class FixedResourcePool<T> {
 	    } catch (InterruptedException e1) {
 		e1.printStackTrace();
 	    } // If the wait gets interrupted, doesn't matter but print it (just
-	      // in case).
+	    // in case).
 	} while (true);
     }
 

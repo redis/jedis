@@ -41,16 +41,22 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 
     @Override
     protected void destroyResource(Jedis jedis) {
-	jedis.quit();
-	try {
-	    jedis.disconnect();
-	} catch (IOException e) {
-	    throw new JedisException(e);
+	if (jedis.isConnected()) {
+	    try {
+		jedis.quit();
+		jedis.disconnect();
+	    } catch (Exception e) {
+
+	    }
 	}
     }
 
     @Override
     protected boolean isResourceValid(Jedis jedis) {
-	return jedis.ping().equals("PONG");
+	try {
+	    return jedis.isConnected() && jedis.ping().equals("PONG");
+	} catch (Exception ex) {
+	    return false;
+	}
     }
 }

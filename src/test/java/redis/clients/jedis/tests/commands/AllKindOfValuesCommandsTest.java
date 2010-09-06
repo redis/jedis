@@ -140,9 +140,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("foo", "bar");
 	status = jedis.expire("foo", 20);
 	assertEquals(1, status);
-
-	status = jedis.expire("foo", 20);
-	assertEquals(0, status);
     }
 
     @Test
@@ -156,10 +153,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	unixTime = (System.currentTimeMillis() / 1000L) + 20;
 	status = jedis.expireAt("foo", unixTime);
 	assertEquals(1, status);
-
-	unixTime = (System.currentTimeMillis() / 1000L) + 20;
-	status = jedis.expireAt("foo", unixTime);
-	assertEquals(0, status);
     }
 
     @Test

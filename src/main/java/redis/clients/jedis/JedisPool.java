@@ -1,8 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-
 import redis.clients.util.FixedResourcePool;
 
 public class JedisPool extends FixedResourcePool<Jedis> {
@@ -29,12 +26,17 @@ public class JedisPool extends FixedResourcePool<Jedis> {
     @Override
     protected Jedis createResource() {
 	Jedis jedis = new Jedis(this.host, this.port, this.timeout);
-	try {
-	    jedis.connect();
-	} catch (UnknownHostException e) {
-	    throw new JedisException(e);
-	} catch (IOException e) {
-	    throw new JedisException(e);
+	boolean done = false;
+	while (!done) {
+	    try {
+		jedis.connect();
+		done = true;
+	    } catch (Exception e) {
+		try {
+		    Thread.sleep(100);
+		} catch (InterruptedException e1) {
+		}
+	    }
 	}
 	return jedis;
     }

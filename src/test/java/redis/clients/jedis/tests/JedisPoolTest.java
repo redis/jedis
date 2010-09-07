@@ -22,6 +22,7 @@ public class JedisPoolTest extends Assert {
 	jedis.set("foo", "bar");
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test
@@ -35,6 +36,7 @@ public class JedisPoolTest extends Assert {
 	jedis.set("foo", "bar");
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test
@@ -51,6 +53,8 @@ public class JedisPoolTest extends Assert {
 	jedis = pool.getResource(200);
 	jedis.auth("foobared");
 	jedis.incr("foo");
+	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test
@@ -68,6 +72,8 @@ public class JedisPoolTest extends Assert {
 	jedis = pool.getResource(200);
 	jedis.auth("foobared");
 	jedis.incr("foo");
+	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test(expected = TimeoutException.class)
@@ -80,8 +86,8 @@ public class JedisPoolTest extends Assert {
 	jedis.auth("foobared");
 	jedis.set("foo", "0");
 
-	jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.incr("foo");
+	Jedis newJedis = pool.getResource(200);
+	newJedis.auth("foobared");
+	newJedis.incr("foo");
     }
 }

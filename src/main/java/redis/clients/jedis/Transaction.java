@@ -409,6 +409,16 @@ public class Transaction {
 	return client.getObjectMultiBulkReply();
     }
 
+    public String sort(String key) {
+	client.sort(key);
+	return client.getStatusCodeReply();
+    }
+
+    public String sort(String key, SortingParams sortingParameters) {
+	client.sort(key, sortingParameters);
+	return client.getStatusCodeReply();
+    }
+
     public void discard() {
 	client.discard();
     }

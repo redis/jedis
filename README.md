@@ -16,7 +16,7 @@ Because I want to add Sharding and add more documentation to the site. And also 
 But stay close because things are going fast and all this will be implemented soon!
 
 ## Ok.. so what can I do with Jedis?
-All of the following reids features are supported:
+All of the following redis features are supported:
 
 - Sorting
 - Connection handling

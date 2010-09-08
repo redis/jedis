@@ -4,7 +4,7 @@ Jedis is a blazingly small and sane redis java client.
 
 Jedis was conceived to be EASY to use.
 
-Jedis is fully compatible with the redis master branch.
+Jedis is fully compatible with redis 2.0.0.
 
 ## Why Jedis is a Release Candidate?
 Because I want to add Sharding and add more documentation to the site. And also publish the benchmark results, which are pretty good (around 26 Kops for GETs and SETs, and 126 Kops for GETs and SETs in pipeling mode).

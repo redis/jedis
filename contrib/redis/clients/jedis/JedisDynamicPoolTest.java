@@ -13,7 +13,7 @@ import org.junit.Test;
  * @author secmask@gmail.com
  * 
  */
-public class JedisTest {
+public class JedisDynamicPoolTest {
 	@Test
 	public void testJedisPoolConnection() throws TimeoutException {
 		JedisPool pool = new JedisPool("192.168.65.57", 6379, 1000);

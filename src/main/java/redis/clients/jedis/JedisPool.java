@@ -43,7 +43,7 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 
     @Override
     protected void destroyResource(Jedis jedis) {
-	if (jedis.isConnected()) {
+	if (jedis != null && jedis.isConnected()) {
 	    try {
 		jedis.quit();
 		jedis.disconnect();

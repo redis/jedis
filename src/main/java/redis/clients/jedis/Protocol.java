@@ -139,8 +139,11 @@ public class Protocol {
 	    return null;
 	}
 	byte[] read = new byte[len];
+	int offset = 0;
 	try {
-	    is.read(read);
+		while(offset < len) {
+		    offset += is.read(read, offset, (len - offset));
+		}
 	    // read 2 more bytes for the command delimiter
 	    is.read();
 	    is.read();

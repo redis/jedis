@@ -15,4 +15,8 @@ public class JedisException extends RuntimeException {
     public JedisException(IOException e) {
 	super(e);
     }
+
+	public JedisException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

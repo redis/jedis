@@ -50,9 +50,13 @@ public class Connection {
     }
 
     protected Connection sendCommand(String name, String... args) {
-	if (!isConnected()) {
-	    throw new JedisException("Please connect Jedis before using it.");
-	}
+		try {
+			connect();
+		} catch (UnknownHostException e) {
+			throw new JedisException("Could not connect to redis-server", e);
+		} catch (IOException e) {
+			throw new JedisException("Could not connect to redis-server", e);
+		}
 	protocol.sendCommand(outputStream, name, args);
 	pipelinedCommands++;
 	return this;

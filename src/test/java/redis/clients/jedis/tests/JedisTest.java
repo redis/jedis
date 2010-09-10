@@ -11,7 +11,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 
 public class JedisTest extends JedisCommandTestBase {
-    @Test(expected = JedisException.class)
+    @Test
     public void useWithoutConnecting() {
 	Jedis jedis = new Jedis("localhost");
 	jedis.dbSize();

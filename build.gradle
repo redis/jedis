@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 group = 'redis.clients'
 archiveBaseName = 'jedis'
-version = '1.0.0-RC3'
+version = '1.0.0-RC5.1'
 
 repositories {
    mavenCentral()

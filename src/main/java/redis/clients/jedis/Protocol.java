@@ -127,13 +127,11 @@ public class Protocol {
 	return null;
     }
 
-    private Object processStatusCodeReply(DataInputStream is) {
-	String ret = null;
-	ret = readLine(is);
-	return ret;
+    private String processStatusCodeReply(DataInputStream is) {
+	return readLine(is);
     }
 
-    private Object processBulkReply(DataInputStream is) {
+    private String processBulkReply(DataInputStream is) {
 	int len = Integer.parseInt(readLine(is));
 	if (len == -1) {
 	    return null;
@@ -151,12 +149,12 @@ public class Protocol {
 	return new String(read, CHARSET);
     }
 
-    private Object processInteger(DataInputStream is) {
+    private Integer processInteger(DataInputStream is) {
 	String num = readLine(is);
 	return Integer.valueOf(num);
     }
 
-    private Object processMultiBulkReply(DataInputStream is) {
+    private List<Object> processMultiBulkReply(DataInputStream is) {
 	int num = Integer.parseInt(readLine(is));
 	if (num == -1) {
 	    return null;

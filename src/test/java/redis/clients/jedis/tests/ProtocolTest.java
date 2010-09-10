@@ -48,6 +48,16 @@ public class ProtocolTest extends Assert {
     }
 
     @Test
+    public void fragmentedBulkReply() {
+    	FragmentedByteArrayInputStream fis = new FragmentedByteArrayInputStream("$30\r\n012345678901234567890123456789\r\n".getBytes());
+    	Protocol protocol = new Protocol();
+    	String response = (String) protocol.read(new DataInputStream(fis));
+    	assertEquals("012345678901234567890123456789", response);
+    	assertEquals(3, fis.getReadMethodCallCount());
+    }
+
+    
+    @Test
     public void nullBulkReply() {
 	InputStream is = new ByteArrayInputStream("$-1\r\n".getBytes());
 	Protocol protocol = new Protocol();

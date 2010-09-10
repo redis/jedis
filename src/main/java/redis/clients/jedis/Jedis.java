@@ -467,7 +467,7 @@ public class Jedis {
 	checkIsInMulti();
 	client.zincrby(key, score, member);
 	String newscore = client.getBulkReply();
-	return Double.valueOf(newscore);
+	return Double.valueOf(newscore).doubleValue();
     }
 
     public int zrank(String key, String member) {
@@ -513,7 +513,7 @@ public class Jedis {
 	checkIsInMulti();
 	client.zscore(key, member);
 	String score = client.getBulkReply();
-	return Double.valueOf(score);
+	return Double.valueOf(score).doubleValue();
     }
 
     public Transaction multi() {
@@ -684,9 +684,8 @@ public class Jedis {
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set
-		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
-			    .next())));
+	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())
+		    .doubleValue()));
 	}
 	return set;
     }

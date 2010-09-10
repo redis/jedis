@@ -125,7 +125,7 @@ public class Connection {
 
     public int getIntegerReply() {
 	pipelinedCommands--;
-	return (Integer) protocol.read(inputStream);
+	return ((Integer) protocol.read(inputStream)).intValue();
     }
 
     @SuppressWarnings("unchecked")

@@ -51,10 +51,10 @@ public abstract class JedisPubSub {
 	do {
 	    List<Object> reply = client.getObjectMultiBulkReply();
 	    if (reply.get(0).equals("subscribe")) {
-		subscribedChannels = (Integer) reply.get(2);
+		subscribedChannels = ((Integer) reply.get(2)).intValue();
 		onSubscribe((String) reply.get(1), subscribedChannels);
 	    } else if (reply.get(0).equals("unsubscribe")) {
-		subscribedChannels = (Integer) reply.get(2);
+		subscribedChannels = ((Integer) reply.get(2)).intValue();
 		onUnsubscribe((String) reply.get(1), subscribedChannels);
 	    } else if (reply.get(0).equals("message")) {
 		onMessage((String) reply.get(1), (String) reply.get(2));
@@ -62,10 +62,10 @@ public abstract class JedisPubSub {
 		onPMessage((String) reply.get(1), (String) reply.get(2),
 			(String) reply.get(3));
 	    } else if (reply.get(0).equals("psubscribe")) {
-		subscribedChannels = (Integer) reply.get(2);
+		subscribedChannels = ((Integer) reply.get(2)).intValue();
 		onPSubscribe((String) reply.get(1), subscribedChannels);
 	    } else if (reply.get(0).equals("punsubscribe")) {
-		subscribedChannels = (Integer) reply.get(2);
+		subscribedChannels = ((Integer) reply.get(2)).intValue();
 		onPUnsubscribe((String) reply.get(1), subscribedChannels);
 	    } else {
 		throw new JedisException("Unknown message type: "

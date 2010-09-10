@@ -155,10 +155,8 @@ public class Protocol {
     }
 
     private Object processInteger(DataInputStream is) {
-	int ret = 0;
 	String num = readLine(is);
-	ret = Integer.parseInt(num);
-	return ret;
+	return Integer.valueOf(num);
     }
 
     private Object processMultiBulkReply(DataInputStream is) {

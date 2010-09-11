@@ -11,12 +11,7 @@ import java.util.List;
 public class Protocol {
     public static final Charset CHARSET = Charset.forName("UTF-8");
 
-    private static final ThreadLocal<CharsetEncoder> CHARSET_ENCODER = new ThreadLocal<CharsetEncoder> (){
-        @Override
-        protected CharsetEncoder initialValue() {
-            return CHARSET.newEncoder();
-        }
-    };
+    private final CharsetEncoder CHARSET_ENCODER = CHARSET.newEncoder();
 
     public static final String DOLLAR = "$";
     public static final String ASTERISK = "*";
@@ -24,8 +19,7 @@ public class Protocol {
     public static final String MINUS = "-";
     public static final String COLON = ":";
     public static final String COMMAND_DELIMITER = "\r\n";
-    public static final byte[] COMMAND_DELIMITER_BYTES = "\r\n"
-	    .getBytes(CHARSET);
+    public static final byte[] COMMAND_DELIMITER_BYTES = "\r\n".getBytes(CHARSET);
     public static final int DEFAULT_PORT = 6379;
 
     public static final byte DOLLAR_BYTE = DOLLAR.getBytes(CHARSET)[0];
@@ -36,15 +30,13 @@ public class Protocol {
 
     public void sendCommand(RedisOutputStream os, String name, String... args) {
         try {
-            final CharsetEncoder encoder = CHARSET_ENCODER.get();
-
             os.write(ASTERISK_BYTE);
-            os.write(String.valueOf(args.length + 1), encoder);
+            os.writeInt(args.length + 1);
             os.write(COMMAND_DELIMITER_BYTES);
             os.write(DOLLAR_BYTE);
-            os.write(String.valueOf(name.length()), encoder);
+            os.writeInt(name.length());
             os.write(COMMAND_DELIMITER_BYTES);
-            os.write(name, encoder);
+            os.writeString(name, CHARSET_ENCODER);
             os.write(COMMAND_DELIMITER_BYTES);
 
             for (String arg : args) {
@@ -52,7 +44,7 @@ public class Protocol {
                 int size = bytes.length;
 
             os.write(DOLLAR_BYTE);
-            os.write(String.valueOf(size), encoder);
+            os.writeInt(size);
             os.write(COMMAND_DELIMITER_BYTES);
             os.write(bytes);
             os.write(COMMAND_DELIMITER_BYTES);
@@ -61,34 +53,6 @@ public class Protocol {
         } catch (IOException e) {
             throw new JedisException(e);
         }
-
-//		try {
-//		    os.write(os.toByteArray());
-	    /*
-	    os.write(ASTERISK_BYTE);
-	    os.write((new Integer(args.length + 1)).toString()
-		    .getBytes(CHARSET));
-	    os.write(COMMAND_DELIMITER_BYTES);
-	    os.write(DOLLAR_BYTE);
-	    os.write((new Integer(name.length())).toString().getBytes(CHARSET));
-	    os.write(COMMAND_DELIMITER_BYTES);
-	    os.write(name.getBytes(CHARSET));
-	    os.write(COMMAND_DELIMITER_BYTES);
-
-	    for (String arg : args) {
-		byte[] barg = arg.getBytes(CHARSET);
-
-		os.write(DOLLAR_BYTE);
-		os.write((new Integer(barg.length)).toString()
-			.getBytes(CHARSET));
-		os.write(COMMAND_DELIMITER_BYTES);
-		os.write(barg);
-		os.write(COMMAND_DELIMITER_BYTES);
-	    }
-	    */
-//	} catch (IOException e) {
-//	    throw new JedisException(e);
-//	}
     }
 
     public void processError(DataInputStream is) {

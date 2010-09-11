@@ -195,7 +195,7 @@ public abstract class FixedResourcePool<T> {
      */
     private LinkedBlockingQueue<Wrapper<T>> availableQueue;
     private LinkedBlockingQueue<Wrapper<T>> repairQueue;
-    private HashMap<T, Wrapper<T>> inUse = new HashMap<T, Wrapper<T>>();
+    private final HashMap<T, Wrapper<T>> inUse = new HashMap<T, Wrapper<T>>();
     private RepairThread[] repairThreads;
     private Timer t;
     private boolean initializated = false;

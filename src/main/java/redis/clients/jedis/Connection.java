@@ -1,9 +1,8 @@
 package redis.clients.jedis;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import redis.clients.util.RedisOutputStream;
+
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -15,7 +14,7 @@ public class Connection {
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
     private Protocol protocol = new Protocol();
-    private DataOutputStream outputStream;
+    private RedisOutputStream outputStream;
     private DataInputStream inputStream;
     private int pipelinedCommands = 0;
     private int timeout = 2000;
@@ -91,9 +90,8 @@ public class Connection {
 	if (!isConnected()) {
 	    socket = new Socket(host, port);
 	    socket.setSoTimeout(timeout);
-	    outputStream = new DataOutputStream(socket.getOutputStream());
-	    inputStream = new DataInputStream(new BufferedInputStream(socket
-		    .getInputStream()));
+	    outputStream = new RedisOutputStream(socket.getOutputStream());
+	    inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 	}
     }
 

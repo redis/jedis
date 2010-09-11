@@ -3,7 +3,6 @@ package redis.clients.jedis.tests;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -16,6 +15,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.util.RedisOutputStream;
 
 public class ProtocolTest extends Assert {
     @Test
@@ -25,7 +25,7 @@ public class ProtocolTest extends Assert {
 	PipedOutputStream pos = new PipedOutputStream(pis);
 
 	Protocol protocol = new Protocol();
-	protocol.sendCommand(new DataOutputStream(pos), "GET", "SOMEKEY");
+	protocol.sendCommand(new RedisOutputStream(pos), "GET", "SOMEKEY");
 
 	pos.close();
 	String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";

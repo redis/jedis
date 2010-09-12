@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 
 import java.io.*;
@@ -15,7 +16,7 @@ public class Connection {
     private Socket socket;
     private Protocol protocol = new Protocol();
     private RedisOutputStream outputStream;
-    private DataInputStream inputStream;
+    private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
     private int timeout = 2000;
 
@@ -91,7 +92,7 @@ public class Connection {
 	    socket = new Socket(host, port);
 	    socket.setSoTimeout(timeout);
 	    outputStream = new RedisOutputStream(socket.getOutputStream());
-	    inputStream = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+	    inputStream = new RedisInputStream(socket.getInputStream());
 	}
     }
 

@@ -1,21 +1,15 @@
 package redis.clients.util;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
 
 /**
  * The class implements a buffered output stream without synchronization
- * There are also special operations like in-place string encoding
+ * There are also special operations like in-place string encoding.
+ * This stream fully ignore mark/reset and should not be used outside Jedis
  */
 public final class RedisOutputStream extends FilterOutputStream {
     protected final byte buf[];
-    protected final ByteBuffer outByteBuffer;
-
-    private final CharsetEncoder CHARSET_ENCODER = CHARSET.newEncoder();
 
     protected int count;
     public static final Charset CHARSET = Charset.forName("UTF-8");
@@ -30,13 +24,11 @@ public final class RedisOutputStream extends FilterOutputStream {
             throw new IllegalArgumentException("Buffer size <= 0");
         }
         buf = new byte[size];
-        outByteBuffer = ByteBuffer.wrap(buf);
     }
 
     private void flushBuffer() throws IOException {
         if (count > 0) {
             out.write(buf, 0, count);
-            outByteBuffer.position(0);
             count = 0;
         }
     }

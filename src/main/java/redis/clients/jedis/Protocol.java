@@ -3,51 +3,38 @@ package redis.clients.jedis;
 import redis.clients.util.RedisOutputStream;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import static redis.clients.util.RedisOutputStream.CHARSET;
+
 public class Protocol {
-    public static final Charset CHARSET = Charset.forName("UTF-8");
 
-    private final CharsetEncoder CHARSET_ENCODER = CHARSET.newEncoder();
-
-    public static final String DOLLAR = "$";
-    public static final String ASTERISK = "*";
-    public static final String PLUS = "+";
-    public static final String MINUS = "-";
-    public static final String COLON = ":";
-    public static final String COMMAND_DELIMITER = "\r\n";
-    public static final byte[] COMMAND_DELIMITER_BYTES = "\r\n".getBytes(CHARSET);
     public static final int DEFAULT_PORT = 6379;
 
-    public static final byte DOLLAR_BYTE = DOLLAR.getBytes(CHARSET)[0];
-    public static final byte ASTERISK_BYTE = ASTERISK.getBytes(CHARSET)[0];
-    public static final byte PLUS_BYTE = PLUS.getBytes(CHARSET)[0];
-    public static final byte MINUS_BYTE = MINUS.getBytes(CHARSET)[0];
-    public static final byte COLON_BYTE = COLON.getBytes(CHARSET)[0];
+    public static final byte DOLLAR_BYTE = '$';
+    public static final byte ASTERISK_BYTE = '*';
+    public static final byte PLUS_BYTE = '+';
+    public static final byte MINUS_BYTE = '-';
+    public static final byte COLON_BYTE = ':';
 
     public void sendCommand(RedisOutputStream os, String name, String... args) {
         try {
             os.write(ASTERISK_BYTE);
-            os.writeInt(args.length + 1);
-            os.write(COMMAND_DELIMITER_BYTES);
+            os.writeIntCrLf(args.length + 1);
             os.write(DOLLAR_BYTE);
-            os.writeInt(name.length());
-            os.write(COMMAND_DELIMITER_BYTES);
-            os.writeString(name, CHARSET_ENCODER);
-            os.write(COMMAND_DELIMITER_BYTES);
+            os.writeIntCrLf(name.length());
+            os.writeAsciiCrLf(name);
 
-            for (String arg : args) {
-                final byte[] bytes = arg.getBytes(CHARSET);
-                int size = bytes.length;
-
-            os.write(DOLLAR_BYTE);
-            os.writeInt(size);
-            os.write(COMMAND_DELIMITER_BYTES);
-            os.write(bytes);
-            os.write(COMMAND_DELIMITER_BYTES);
+            for (String str : args) {
+                os.write(DOLLAR_BYTE);
+                final int size = RedisOutputStream.utf8Length(str);
+                os.writeIntCrLf(size);
+                if(size == str.length())
+                    os.writeAsciiCrLf(str);
+                else {
+                    os.writeUtf8CrLf(str);
+                }
             }
             os.flush ();
         } catch (IOException e) {

@@ -1,9 +1,9 @@
 package redis.clients.jedis;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -15,8 +15,8 @@ public class Connection {
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
     private Protocol protocol = new Protocol();
-    private DataOutputStream outputStream;
-    private DataInputStream inputStream;
+    private RedisOutputStream outputStream;
+    private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
     private int timeout = 2000;
 
@@ -50,9 +50,13 @@ public class Connection {
     }
 
     protected Connection sendCommand(String name, String... args) {
-	if (!isConnected()) {
-	    throw new JedisException("Please connect Jedis before using it.");
-	}
+		try {
+			connect();
+		} catch (UnknownHostException e) {
+			throw new JedisException("Could not connect to redis-server", e);
+		} catch (IOException e) {
+			throw new JedisException("Could not connect to redis-server", e);
+		}
 	protocol.sendCommand(outputStream, name, args);
 	pipelinedCommands++;
 	return this;
@@ -87,9 +91,8 @@ public class Connection {
 	if (!isConnected()) {
 	    socket = new Socket(host, port);
 	    socket.setSoTimeout(timeout);
-	    outputStream = new DataOutputStream(socket.getOutputStream());
-	    inputStream = new DataInputStream(new BufferedInputStream(socket
-		    .getInputStream()));
+	    outputStream = new RedisOutputStream(socket.getOutputStream());
+	    inputStream = new RedisInputStream(socket.getInputStream());
 	}
     }
 
@@ -125,7 +128,7 @@ public class Connection {
 
     public int getIntegerReply() {
 	pipelinedCommands--;
-	return (Integer) protocol.read(inputStream);
+	return ((Integer) protocol.read(inputStream)).intValue();
     }
 
     @SuppressWarnings("unchecked")

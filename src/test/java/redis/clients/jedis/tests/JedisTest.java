@@ -6,12 +6,11 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.util.RedisOutputStream;
 
 public class JedisTest extends JedisCommandTestBase {
-    @Test(expected = JedisException.class)
+    @Test
     public void useWithoutConnecting() {
 	Jedis jedis = new Jedis("localhost");
 	jedis.dbSize();
@@ -24,7 +23,7 @@ public class JedisTest extends JedisCommandTestBase {
 	    bigdata[b] = (byte) ((byte) b % 255);
 	}
 	Map<String, String> hash = new HashMap<String, String>();
-	hash.put("data", new String(bigdata, Protocol.CHARSET));
+	hash.put("data", new String(bigdata, RedisOutputStream.CHARSET));
 
 	String status = jedis.hmset("foo", hash);
 	assertEquals("OK", status);

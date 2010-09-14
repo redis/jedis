@@ -30,7 +30,7 @@ All of the following redis features are supported:
 - Persistence control commands
 - Remote server control commands
 - Connection pooling
-- Sharding (using ketama)
+- Sharding (MD5, MurmureHash)
 
 ## How do I use it?
 

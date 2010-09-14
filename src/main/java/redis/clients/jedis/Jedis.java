@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.util.ShardInfo;
+
 public class Jedis {
     private Client client = null;
 
@@ -24,6 +26,14 @@ public class Jedis {
     public Jedis(String host, int port, int timeout) {
 	client = new Client(host, port);
 	client.setTimeout(timeout);
+    }
+
+    public Jedis(ShardInfo shardInfo) {
+	client = new Client(shardInfo.getHost(), shardInfo.getPort());
+	client.setTimeout(shardInfo.getTimeout());
+	if (shardInfo.getPassword() != null) {
+	    this.auth(shardInfo.getPassword());
+	}
     }
 
     public String ping() {

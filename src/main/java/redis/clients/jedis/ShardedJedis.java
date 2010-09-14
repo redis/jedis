@@ -352,10 +352,6 @@ public class ShardedJedis extends Sharded<Jedis> {
     }
 
     protected Jedis create(ShardInfo shard) {
-	Jedis c = new Jedis(shard.getHost(), shard.getPort());
-	if (shard.getPassword() != null) {
-	    c.auth(shard.getPassword());
-	}
-	return c;
+	return new Jedis(shard);
     }
 }

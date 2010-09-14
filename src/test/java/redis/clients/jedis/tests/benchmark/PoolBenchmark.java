@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Protocol;
 
 public class PoolBenchmark {
     private static final int TOTAL_OPERATIONS = 100000;
@@ -25,7 +26,7 @@ public class PoolBenchmark {
 	// withoutPool();
 	withPool();
 	long elapsed = System.currentTimeMillis() - t;
-	System.out.println(((1000 * 3 * TOTAL_OPERATIONS) / elapsed) + " ops");
+	System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
     }
 
     private static void withoutPool() throws InterruptedException {
@@ -60,7 +61,8 @@ public class PoolBenchmark {
     }
 
     private static void withPool() throws InterruptedException {
-	final JedisPool pool = new JedisPool("localhost");
+	final JedisPool pool = new JedisPool("localhost",
+		Protocol.DEFAULT_PORT, 2000, "foobared");
 	pool.setResourcesNumber(50);
 	pool.setDefaultPoolWait(1000000);
 	pool.init();
@@ -73,7 +75,6 @@ public class PoolBenchmark {
 		    for (int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS;) {
 			try {
 			    Jedis j = pool.getResource();
-			    j.auth("foobared");
 			    final String key = "foo" + i;
 			    j.set(key, key);
 			    j.get(key);

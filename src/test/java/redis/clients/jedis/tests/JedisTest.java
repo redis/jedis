@@ -6,8 +6,10 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.util.RedisOutputStream;
+import redis.clients.util.ShardInfo;
 
 public class JedisTest extends JedisCommandTestBase {
     @Test
@@ -31,4 +33,11 @@ public class JedisTest extends JedisCommandTestBase {
 	assertEquals(hash, jedis.hgetAll("foo"));
     }
 
+    @Test
+    public void connectWithShardInfo() {
+	ShardInfo shardInfo = new ShardInfo("localhost", Protocol.DEFAULT_PORT);
+	shardInfo.setPassword("foobared");
+	Jedis jedis = new Jedis(shardInfo);
+	jedis.get("foo");
+    }
 }

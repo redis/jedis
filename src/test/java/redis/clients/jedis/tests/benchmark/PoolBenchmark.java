@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -24,7 +25,7 @@ public class PoolBenchmark {
 	// withoutPool();
 	withPool();
 	long elapsed = System.currentTimeMillis() - t;
-	System.out.println(((1000 * 3 * TOTAL_OPERATIONS) / elapsed) + " ops");
+	System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
     }
 
     private static void withoutPool() throws InterruptedException {
@@ -60,30 +61,35 @@ public class PoolBenchmark {
 
     private static void withPool() throws InterruptedException {
 	final JedisPool pool = new JedisPool("localhost");
-	pool.setResourcesNumber(1000);
-	pool.setDefaultPoolWait(20);
+	pool.setResourcesNumber(50);
+	pool.setDefaultPoolWait(1000000);
 	pool.init();
 	List<Thread> tds = new ArrayList<Thread>();
 
-	for (int i = 0; i < TOTAL_OPERATIONS; i++) {
-	    final String key = "foo" + i;
+    final AtomicInteger ind = new AtomicInteger();
+	for (int i = 0; i < 50; i++) {
 	    Thread hj = new Thread(new Runnable() {
-		@Override
 		public void run() {
-		    try {
-			Jedis j = pool.getResource();
-			j.auth("foobared");
-			j.set(key, key);
-			j.get(key);
-			pool.returnResource(j);
-		    } catch (Exception e) {
-			e.printStackTrace();
-		    }
+            for(int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS; ) {
+                try {
+                    Jedis j = pool.getResource();
+                    final String key = "foo" + i;
+                    j.set(key, key);
+                    j.get(key);
+                    pool.returnResource(j);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 		}
 	    });
 	    tds.add(hj);
 	    hj.start();
 	}
+
+    for(Thread t : tds)
+        t.join();
+        
 	pool.destroy();
     }
 }

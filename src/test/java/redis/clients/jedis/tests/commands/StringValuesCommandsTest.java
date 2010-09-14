@@ -169,4 +169,10 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 	assertEquals("This is a string", jedis.substr("s", 0, -1));
 	assertEquals(" string", jedis.substr("s", 9, 100000));
     }
+
+    @Test
+    public void strlen() {
+	jedis.set("s", "This is a string");
+	assertEquals("This is a string".length(), jedis.strlen("s"));
+    }
 }

@@ -790,4 +790,33 @@ public class Jedis {
     public boolean isConnected() {
 	return client.isConnected();
     }
+
+    public int strlen(String key) {
+	client.strlen(key);
+	return client.getIntegerReply();
+    }
+
+    public void sync() {
+	client.sync();
+    }
+
+    public int lpushx(String key, String string) {
+	client.lpushx(key, string);
+	return client.getIntegerReply();
+    }
+
+    public int persist(String key) {
+	client.persist(key);
+	return client.getIntegerReply();
+    }
+
+    public int rpushx(String key, String string) {
+	client.rpushx(key, string);
+	return client.getIntegerReply();
+    }
+
+    public String echo(String string) {
+	client.echo(string);
+	return client.getBulkReply();
+    }
 }

@@ -16,8 +16,13 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void bgsave() {
-	String status = jedis.bgsave();
-	assertEquals("Background saving started", status);
+	try {
+	    String status = jedis.bgsave();
+	    assertEquals("Background saving started", status);
+	} catch (JedisException e) {
+	    assertEquals("ERR background save already in progress", e
+		    .getMessage());
+	}
     }
 
     @Test
@@ -72,4 +77,10 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 	assertEquals("OK", status);
 	jedis.configSet("maxmemory", memory);
     }
+
+    @Test
+    public void sync() {
+	jedis.sync();
+    }
+
 }

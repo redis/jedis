@@ -25,7 +25,7 @@ public class PoolBenchmark {
 	// withoutPool();
 	withPool();
 	long elapsed = System.currentTimeMillis() - t;
-	System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
+	System.out.println(((1000 * 3 * TOTAL_OPERATIONS) / elapsed) + " ops");
     }
 
     private static void withoutPool() throws InterruptedException {
@@ -66,30 +66,31 @@ public class PoolBenchmark {
 	pool.init();
 	List<Thread> tds = new ArrayList<Thread>();
 
-    final AtomicInteger ind = new AtomicInteger();
+	final AtomicInteger ind = new AtomicInteger();
 	for (int i = 0; i < 50; i++) {
 	    Thread hj = new Thread(new Runnable() {
 		public void run() {
-            for(int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS; ) {
-                try {
-                    Jedis j = pool.getResource();
-                    final String key = "foo" + i;
-                    j.set(key, key);
-                    j.get(key);
-                    pool.returnResource(j);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+		    for (int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS;) {
+			try {
+			    Jedis j = pool.getResource();
+			    j.auth("foobared");
+			    final String key = "foo" + i;
+			    j.set(key, key);
+			    j.get(key);
+			    pool.returnResource(j);
+			} catch (Exception e) {
+			    e.printStackTrace();
+			}
+		    }
 		}
 	    });
 	    tds.add(hj);
 	    hj.start();
 	}
 
-    for(Thread t : tds)
-        t.join();
-        
+	for (Thread t : tds)
+	    t.join();
+
 	pool.destroy();
     }
 }

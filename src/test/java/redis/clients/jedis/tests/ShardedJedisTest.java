@@ -10,6 +10,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
+import redis.clients.util.Hashing;
 import redis.clients.util.ShardInfo;
 
 public class ShardedJedisTest extends Assert {
@@ -50,4 +51,32 @@ public class ShardedJedisTest extends Assert {
 	assertEquals("bar1", j.get("b"));
 	j.disconnect();
     }
+
+    @Test
+    public void tryShardingWithMurmure() throws IOException {
+	List<ShardInfo> shards = new ArrayList<ShardInfo>();
+	ShardInfo si = new ShardInfo("localhost", Protocol.DEFAULT_PORT);
+	si.setPassword("foobared");
+	shards.add(si);
+	si = new ShardInfo("localhost", Protocol.DEFAULT_PORT + 1);
+	si.setPassword("foobared");
+	shards.add(si);
+	ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMURE_HASH);
+	jedis.set("a", "bar");
+	ShardInfo s1 = jedis.getShardInfo("a");
+	jedis.set("b", "bar1");
+	ShardInfo s2 = jedis.getShardInfo("b");
+	jedis.disconnect();
+
+	Jedis j = new Jedis(s1.getHost(), s1.getPort());
+	j.auth("foobared");
+	assertEquals("bar", j.get("a"));
+	j.disconnect();
+
+	j = new Jedis(s2.getHost(), s2.getPort());
+	j.auth("foobared");
+	assertEquals("bar1", j.get("b"));
+	j.disconnect();
+    }
+
 }

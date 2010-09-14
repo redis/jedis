@@ -5,12 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.util.Hashing;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 public class ShardedJedis extends Sharded<Jedis> {
     public ShardedJedis(List<ShardInfo> shards) {
 	super(shards);
+    }
+
+    public ShardedJedis(List<ShardInfo> shards, Hashing algo) {
+	super(shards, algo);
     }
 
     public String set(String key, String value) {

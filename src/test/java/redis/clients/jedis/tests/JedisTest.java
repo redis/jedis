@@ -13,6 +13,7 @@ public class JedisTest extends JedisCommandTestBase {
     @Test
     public void useWithoutConnecting() {
 	Jedis jedis = new Jedis("localhost");
+	jedis.auth("foobared");
 	jedis.dbSize();
     }
 

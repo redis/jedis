@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
 
@@ -269,5 +270,27 @@ public class ListCommandsTest extends JedisCommandTestBase {
 	jedis.lpush("foo", "a");
 	status = jedis.rpushx("foo", "b");
 	assertEquals(2, status);
+    }
+
+    @Test
+    public void linsert() {
+	int status = jedis.linsert("foo", Client.LIST_POSITION.BEFORE, "bar",
+		"car");
+	assertEquals(0, status);
+
+	jedis.lpush("foo", "a");
+	status = jedis.linsert("foo", Client.LIST_POSITION.AFTER, "a", "b");
+	assertEquals(2, status);
+
+	List<String> actual = jedis.lrange("foo", 0, 100);
+	List<String> expected = new ArrayList<String>();
+	expected.add("a");
+	expected.add("b");
+
+	assertEquals(expected, actual);
+
+	status = jedis
+		.linsert("foo", Client.LIST_POSITION.BEFORE, "bar", "car");
+	assertEquals(-1, status);
     }
 }

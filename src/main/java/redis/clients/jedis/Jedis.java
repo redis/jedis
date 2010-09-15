@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.Client.LIST_POSITION;
 import redis.clients.util.ShardInfo;
 
 public class Jedis {
@@ -830,5 +831,11 @@ public class Jedis {
     public String echo(String string) {
 	client.echo(string);
 	return client.getBulkReply();
+    }
+
+    public Integer linsert(String key, LIST_POSITION where, String pivot,
+	    String value) {
+	client.linsert(key, where, pivot, value);
+	return client.getIntegerReply();
     }
 }

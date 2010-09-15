@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.Client.LIST_POSITION;
 import redis.clients.util.Hashing;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
@@ -354,4 +355,11 @@ public class ShardedJedis extends Sharded<Jedis> {
     protected Jedis create(ShardInfo shard) {
 	return new Jedis(shard);
     }
+
+    public Integer linsert(String key, LIST_POSITION where, String pivot,
+	    String value) {
+	Jedis j = getShard(key);
+	return j.linsert(key, where, pivot, value);
+    }
+
 }

@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 public class Client extends Connection {
+    public enum LIST_POSITION {
+	BEFORE, AFTER
+    }
+
     private boolean isInMulti;
 
     public boolean isInMulti() {
@@ -586,5 +590,10 @@ public class Client extends Connection {
 
     public void echo(String string) {
 	sendCommand("ECHO", string);
+    }
+
+    public void linsert(String key, LIST_POSITION where, String pivot,
+	    String value) {
+	sendCommand("LINSERT", key, where.toString(), pivot, value);
     }
 }

@@ -838,4 +838,9 @@ public class Jedis {
 	client.linsert(key, where, pivot, value);
 	return client.getIntegerReply();
     }
+
+    public String debug(DebugParams params) {
+	client.debug(params);
+	return client.getStatusCodeReply();
+    }
 }

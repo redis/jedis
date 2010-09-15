@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisMonitor;
 
@@ -83,4 +84,14 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 	jedis.sync();
     }
 
+    @Test
+    public void debug() {
+	jedis.set("foo", "bar");
+	String resp = jedis.debug(DebugParams.OBJECT("foo"));
+	assertNotNull(resp);
+	resp = jedis.debug(DebugParams.SWAPIN("foo"));
+	assertNotNull(resp);
+	resp = jedis.debug(DebugParams.RELOAD());
+	assertNotNull(resp);
+    }
 }

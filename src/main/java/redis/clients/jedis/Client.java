@@ -596,4 +596,8 @@ public class Client extends Connection {
 	    String value) {
 	sendCommand("LINSERT", key, where.toString(), pivot, value);
     }
+
+    public void debug(DebugParams params) {
+	sendCommand("DEBUG", params.getCommand());
+    }
 }

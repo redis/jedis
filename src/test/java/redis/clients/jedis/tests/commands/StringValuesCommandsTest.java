@@ -173,6 +173,6 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     @Test
     public void strlen() {
 	jedis.set("s", "This is a string");
-	assertEquals("This is a string".length(), jedis.strlen("s"));
+	assertEquals("This is a string".length(), jedis.strlen("s").intValue());
     }
 }

@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 public class Tuple {
     private String element;
-    private double score;
+    private Double score;
 
     @Override
     public int hashCode() {
@@ -35,7 +35,7 @@ public class Tuple {
 	return true;
     }
 
-    public Tuple(String element, double score) {
+    public Tuple(String element, Double score) {
 	super();
 	this.element = element;
 	this.score = score;

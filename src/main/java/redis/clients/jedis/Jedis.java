@@ -59,13 +59,13 @@ public class Jedis {
 	client.quit();
     }
 
-    public int exists(String key) {
+    public Integer exists(String key) {
 	checkIsInMulti();
 	client.exists(key);
 	return client.getIntegerReply();
     }
 
-    public int del(String... keys) {
+    public Integer del(String... keys) {
 	checkIsInMulti();
 	client.del(keys);
 	return client.getIntegerReply();
@@ -101,31 +101,31 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
-    public int renamenx(String oldkey, String newkey) {
+    public Integer renamenx(String oldkey, String newkey) {
 	checkIsInMulti();
 	client.renamenx(oldkey, newkey);
 	return client.getIntegerReply();
     }
 
-    public int dbSize() {
+    public Integer dbSize() {
 	checkIsInMulti();
 	client.dbSize();
 	return client.getIntegerReply();
     }
 
-    public int expire(String key, int seconds) {
+    public Integer expire(String key, int seconds) {
 	checkIsInMulti();
 	client.expire(key, seconds);
 	return client.getIntegerReply();
     }
 
-    public int expireAt(String key, long unixTime) {
+    public Integer expireAt(String key, long unixTime) {
 	checkIsInMulti();
 	client.expireAt(key, unixTime);
 	return client.getIntegerReply();
     }
 
-    public int ttl(String key) {
+    public Integer ttl(String key) {
 	checkIsInMulti();
 	client.ttl(key);
 	return client.getIntegerReply();
@@ -137,7 +137,7 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
-    public int move(String key, int dbIndex) {
+    public Integer move(String key, int dbIndex) {
 	checkIsInMulti();
 	client.move(key, dbIndex);
 	return client.getIntegerReply();
@@ -161,7 +161,7 @@ public class Jedis {
 	return client.getMultiBulkReply();
     }
 
-    public int setnx(String key, String value) {
+    public Integer setnx(String key, String value) {
 	checkIsInMulti();
 	client.setnx(key, value);
 	return client.getIntegerReply();
@@ -179,37 +179,37 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
-    public int msetnx(String... keysvalues) {
+    public Integer msetnx(String... keysvalues) {
 	checkIsInMulti();
 	client.msetnx(keysvalues);
 	return client.getIntegerReply();
     }
 
-    public int decrBy(String key, int integer) {
+    public Integer decrBy(String key, int integer) {
 	checkIsInMulti();
 	client.decrBy(key, integer);
 	return client.getIntegerReply();
     }
 
-    public int decr(String key) {
+    public Integer decr(String key) {
 	checkIsInMulti();
 	client.decr(key);
 	return client.getIntegerReply();
     }
 
-    public int incrBy(String key, int integer) {
+    public Integer incrBy(String key, int integer) {
 	checkIsInMulti();
 	client.incrBy(key, integer);
 	return client.getIntegerReply();
     }
 
-    public int incr(String key) {
+    public Integer incr(String key) {
 	checkIsInMulti();
 	client.incr(key);
 	return client.getIntegerReply();
     }
 
-    public int append(String key, String value) {
+    public Integer append(String key, String value) {
 	checkIsInMulti();
 	client.append(key, value);
 	return client.getIntegerReply();
@@ -221,7 +221,7 @@ public class Jedis {
 	return client.getBulkReply();
     }
 
-    public int hset(String key, String field, String value) {
+    public Integer hset(String key, String field, String value) {
 	checkIsInMulti();
 	client.hset(key, field, value);
 	return client.getIntegerReply();
@@ -233,7 +233,7 @@ public class Jedis {
 	return client.getBulkReply();
     }
 
-    public int hsetnx(String key, String field, String value) {
+    public Integer hsetnx(String key, String field, String value) {
 	checkIsInMulti();
 	client.hsetnx(key, field, value);
 	return client.getIntegerReply();
@@ -251,25 +251,25 @@ public class Jedis {
 	return client.getMultiBulkReply();
     }
 
-    public int hincrBy(String key, String field, int value) {
+    public Integer hincrBy(String key, String field, int value) {
 	checkIsInMulti();
 	client.hincrBy(key, field, value);
 	return client.getIntegerReply();
     }
 
-    public int hexists(String key, String field) {
+    public Integer hexists(String key, String field) {
 	checkIsInMulti();
 	client.hexists(key, field);
 	return client.getIntegerReply();
     }
 
-    public int hdel(String key, String field) {
+    public Integer hdel(String key, String field) {
 	checkIsInMulti();
 	client.hdel(key, field);
 	return client.getIntegerReply();
     }
 
-    public int hlen(String key) {
+    public Integer hlen(String key) {
 	checkIsInMulti();
 	client.hlen(key);
 	return client.getIntegerReply();
@@ -300,19 +300,19 @@ public class Jedis {
 	return hash;
     }
 
-    public int rpush(String key, String string) {
+    public Integer rpush(String key, String string) {
 	checkIsInMulti();
 	client.rpush(key, string);
 	return client.getIntegerReply();
     }
 
-    public int lpush(String key, String string) {
+    public Integer lpush(String key, String string) {
 	checkIsInMulti();
 	client.lpush(key, string);
 	return client.getIntegerReply();
     }
 
-    public int llen(String key) {
+    public Integer llen(String key) {
 	checkIsInMulti();
 	client.llen(key);
 	return client.getIntegerReply();
@@ -342,7 +342,7 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
-    public int lrem(String key, int count, String value) {
+    public Integer lrem(String key, int count, String value) {
 	checkIsInMulti();
 	client.lrem(key, count, value);
 	return client.getIntegerReply();
@@ -366,7 +366,7 @@ public class Jedis {
 	return client.getBulkReply();
     }
 
-    public int sadd(String key, String member) {
+    public Integer sadd(String key, String member) {
 	checkIsInMulti();
 	client.sadd(key, member);
 	return client.getIntegerReply();
@@ -379,7 +379,7 @@ public class Jedis {
 	return new LinkedHashSet<String>(members);
     }
 
-    public int srem(String key, String member) {
+    public Integer srem(String key, String member) {
 	checkIsInMulti();
 	client.srem(key, member);
 	return client.getIntegerReply();
@@ -391,19 +391,19 @@ public class Jedis {
 	return client.getBulkReply();
     }
 
-    public int smove(String srckey, String dstkey, String member) {
+    public Integer smove(String srckey, String dstkey, String member) {
 	checkIsInMulti();
 	client.smove(srckey, dstkey, member);
 	return client.getIntegerReply();
     }
 
-    public int scard(String key) {
+    public Integer scard(String key) {
 	checkIsInMulti();
 	client.scard(key);
 	return client.getIntegerReply();
     }
 
-    public int sismember(String key, String member) {
+    public Integer sismember(String key, String member) {
 	checkIsInMulti();
 	client.sismember(key, member);
 	return client.getIntegerReply();
@@ -416,7 +416,7 @@ public class Jedis {
 	return new LinkedHashSet<String>(members);
     }
 
-    public int sinterstore(String dstkey, String... keys) {
+    public Integer sinterstore(String dstkey, String... keys) {
 	checkIsInMulti();
 	client.sinterstore(dstkey, keys);
 	return client.getIntegerReply();
@@ -429,7 +429,7 @@ public class Jedis {
 	return new LinkedHashSet<String>(members);
     }
 
-    public int sunionstore(String dstkey, String... keys) {
+    public Integer sunionstore(String dstkey, String... keys) {
 	checkIsInMulti();
 	client.sunionstore(dstkey, keys);
 	return client.getIntegerReply();
@@ -442,7 +442,7 @@ public class Jedis {
 	return new LinkedHashSet<String>(members);
     }
 
-    public int sdiffstore(String dstkey, String... keys) {
+    public Integer sdiffstore(String dstkey, String... keys) {
 	checkIsInMulti();
 	client.sdiffstore(dstkey, keys);
 	return client.getIntegerReply();
@@ -454,7 +454,7 @@ public class Jedis {
 	return client.getBulkReply();
     }
 
-    public int zadd(String key, double score, String member) {
+    public Integer zadd(String key, double score, String member) {
 	checkIsInMulti();
 	client.zadd(key, score, member);
 	return client.getIntegerReply();
@@ -467,26 +467,26 @@ public class Jedis {
 	return new LinkedHashSet<String>(members);
     }
 
-    public int zrem(String key, String member) {
+    public Integer zrem(String key, String member) {
 	checkIsInMulti();
 	client.zrem(key, member);
 	return client.getIntegerReply();
     }
 
-    public double zincrby(String key, double score, String member) {
+    public Double zincrby(String key, double score, String member) {
 	checkIsInMulti();
 	client.zincrby(key, score, member);
 	String newscore = client.getBulkReply();
-	return Double.valueOf(newscore).doubleValue();
+	return Double.valueOf(newscore);
     }
 
-    public int zrank(String key, String member) {
+    public Integer zrank(String key, String member) {
 	checkIsInMulti();
 	client.zrank(key, member);
 	return client.getIntegerReply();
     }
 
-    public int zrevrank(String key, String member) {
+    public Integer zrevrank(String key, String member) {
 	checkIsInMulti();
 	client.zrevrank(key, member);
 	return client.getIntegerReply();
@@ -513,17 +513,17 @@ public class Jedis {
 	return set;
     }
 
-    public int zcard(String key) {
+    public Integer zcard(String key) {
 	checkIsInMulti();
 	client.zcard(key);
 	return client.getIntegerReply();
     }
 
-    public double zscore(String key, String member) {
+    public Double zscore(String key, String member) {
 	checkIsInMulti();
 	client.zscore(key, member);
 	String score = client.getBulkReply();
-	return Double.valueOf(score).doubleValue();
+	return (score != null ? new Double(score) : null);
     }
 
     public Transaction multi() {
@@ -597,13 +597,14 @@ public class Jedis {
 	return multiBulkReply;
     }
 
-    public int sort(String key, SortingParams sortingParameters, String dstkey) {
+    public Integer sort(String key, SortingParams sortingParameters,
+	    String dstkey) {
 	checkIsInMulti();
 	client.sort(key, sortingParameters, dstkey);
 	return client.getIntegerReply();
     }
 
-    public int sort(String key, String dstkey) {
+    public Integer sort(String key, String dstkey) {
 	checkIsInMulti();
 	client.sort(key, dstkey);
 	return client.getIntegerReply();
@@ -643,7 +644,7 @@ public class Jedis {
 	client.rollbackTimeout();
     }
 
-    public int publish(String channel, String message) {
+    public Integer publish(String channel, String message) {
 	client.publish(channel, message);
 	return client.getIntegerReply();
     }
@@ -654,7 +655,7 @@ public class Jedis {
 	client.rollbackTimeout();
     }
 
-    public int zcount(String key, double min, double max) {
+    public Integer zcount(String key, double min, double max) {
 	checkIsInMulti();
 	client.zcount(key, min, max);
 	return client.getIntegerReply();
@@ -694,43 +695,44 @@ public class Jedis {
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())
-		    .doubleValue()));
+	    set
+		    .add(new Tuple(iterator.next(), Double.valueOf(iterator
+			    .next())));
 	}
 	return set;
     }
 
-    public int zremrangeByRank(String key, int start, int end) {
+    public Integer zremrangeByRank(String key, int start, int end) {
 	checkIsInMulti();
 	client.zremrangeByRank(key, start, end);
 	return client.getIntegerReply();
     }
 
-    public int zremrangeByScore(String key, double start, double end) {
+    public Integer zremrangeByScore(String key, double start, double end) {
 	checkIsInMulti();
 	client.zremrangeByScore(key, start, end);
 	return client.getIntegerReply();
     }
 
-    public int zunionstore(String dstkey, String... sets) {
+    public Integer zunionstore(String dstkey, String... sets) {
 	checkIsInMulti();
 	client.zunionstore(dstkey, sets);
 	return client.getIntegerReply();
     }
 
-    public int zunionstore(String dstkey, ZParams params, String... sets) {
+    public Integer zunionstore(String dstkey, ZParams params, String... sets) {
 	checkIsInMulti();
 	client.zunionstore(dstkey, params, sets);
 	return client.getIntegerReply();
     }
 
-    public int zinterstore(String dstkey, String... sets) {
+    public Integer zinterstore(String dstkey, String... sets) {
 	checkIsInMulti();
 	client.zinterstore(dstkey, sets);
 	return client.getIntegerReply();
     }
 
-    public int zinterstore(String dstkey, ZParams params, String... sets) {
+    public Integer zinterstore(String dstkey, ZParams params, String... sets) {
 	checkIsInMulti();
 	client.zinterstore(dstkey, params, sets);
 	return client.getIntegerReply();
@@ -751,7 +753,7 @@ public class Jedis {
 	return client.getStatusCodeReply();
     }
 
-    public int lastsave() {
+    public Integer lastsave() {
 	client.lastsave();
 	return client.getIntegerReply();
     }
@@ -801,7 +803,7 @@ public class Jedis {
 	return client.isConnected();
     }
 
-    public int strlen(String key) {
+    public Integer strlen(String key) {
 	client.strlen(key);
 	return client.getIntegerReply();
     }
@@ -810,17 +812,17 @@ public class Jedis {
 	client.sync();
     }
 
-    public int lpushx(String key, String string) {
+    public Integer lpushx(String key, String string) {
 	client.lpushx(key, string);
 	return client.getIntegerReply();
     }
 
-    public int persist(String key) {
+    public Integer persist(String key) {
 	client.persist(key);
 	return client.getIntegerReply();
     }
 
-    public int rpushx(String key, String string) {
+    public Integer rpushx(String key, String string) {
 	client.rpushx(key, string);
 	return client.getIntegerReply();
     }

@@ -84,9 +84,9 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	hash.put("car", "bar");
 	jedis.hmset("foo", hash);
 
-	assertEquals(0, jedis.hexists("bar", "foo"));
-	assertEquals(0, jedis.hexists("foo", "foo"));
-	assertEquals(1, jedis.hexists("foo", "bar"));
+	assertEquals(0, jedis.hexists("bar", "foo").intValue());
+	assertEquals(0, jedis.hexists("foo", "foo").intValue());
+	assertEquals(1, jedis.hexists("foo", "bar").intValue());
     }
 
     @Test
@@ -96,9 +96,9 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	hash.put("car", "bar");
 	jedis.hmset("foo", hash);
 
-	assertEquals(0, jedis.hdel("bar", "foo"));
-	assertEquals(0, jedis.hdel("foo", "foo"));
-	assertEquals(1, jedis.hdel("foo", "bar"));
+	assertEquals(0, jedis.hdel("bar", "foo").intValue());
+	assertEquals(0, jedis.hdel("foo", "foo").intValue());
+	assertEquals(1, jedis.hdel("foo", "bar").intValue());
 	assertEquals(null, jedis.hget("foo", "bar"));
     }
 
@@ -109,8 +109,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	hash.put("car", "bar");
 	jedis.hmset("foo", hash);
 
-	assertEquals(0, jedis.hlen("bar"));
-	assertEquals(2, jedis.hlen("foo"));
+	assertEquals(0, jedis.hlen("bar").intValue());
+	assertEquals(2, jedis.hlen("foo").intValue());
     }
 
     @Test

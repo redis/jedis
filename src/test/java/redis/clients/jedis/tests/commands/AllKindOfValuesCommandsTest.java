@@ -197,27 +197,27 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     @Test
     public void flushDB() {
 	jedis.set("foo", "bar");
-	assertEquals(1, jedis.dbSize());
+	assertEquals(1, jedis.dbSize().intValue());
 	jedis.set("bar", "foo");
 	jedis.move("bar", 1);
 	String status = jedis.flushDB();
 	assertEquals("OK", status);
-	assertEquals(0, jedis.dbSize());
+	assertEquals(0, jedis.dbSize().intValue());
 	jedis.select(1);
-	assertEquals(1, jedis.dbSize());
+	assertEquals(1, jedis.dbSize().intValue());
     }
 
     @Test
     public void flushAll() {
 	jedis.set("foo", "bar");
-	assertEquals(1, jedis.dbSize());
+	assertEquals(1, jedis.dbSize().intValue());
 	jedis.set("bar", "foo");
 	jedis.move("bar", 1);
 	String status = jedis.flushAll();
 	assertEquals("OK", status);
-	assertEquals(0, jedis.dbSize());
+	assertEquals(0, jedis.dbSize().intValue());
 	jedis.select(1);
-	assertEquals(0, jedis.dbSize());
+	assertEquals(0, jedis.dbSize().intValue());
     }
 
     @Test
@@ -226,7 +226,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	assertTrue(jedis.ttl("foo") > 0);
 	int status = jedis.persist("foo");
 	assertEquals(1, status);
-	assertEquals(-1, jedis.ttl("foo"));
+	assertEquals(-1, jedis.ttl("foo").intValue());
     }
 
     @Test

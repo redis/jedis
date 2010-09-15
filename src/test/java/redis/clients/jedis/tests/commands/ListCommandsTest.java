@@ -27,10 +27,10 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void llen() {
-	assertEquals(0, jedis.llen("foo"));
+	assertEquals(0, jedis.llen("foo").intValue());
 	jedis.lpush("foo", "bar");
 	jedis.lpush("foo", "car");
-	assertEquals(2, jedis.llen("foo"));
+	assertEquals(2, jedis.llen("foo").intValue());
     }
 
     @Test(expected = JedisException.class)
@@ -80,7 +80,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
 	expected.add("2");
 
 	assertEquals("OK", status);
-	assertEquals(2, jedis.llen("foo"));
+	assertEquals(2, jedis.llen("foo").intValue());
 	assertEquals(expected, jedis.lrange("foo", 0, 100));
     }
 
@@ -132,7 +132,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(2, count);
 	assertEquals(expected, jedis.lrange("foo", 0, 1000));
-	assertEquals(0, jedis.lrem("bar", 100, "foo"));
+	assertEquals(0, jedis.lrem("bar", 100, "foo").intValue());
     }
 
     @Test

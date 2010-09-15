@@ -6,13 +6,16 @@ import java.util.Calendar;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPipeline;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class PipelinedGetSetBenchmark {
+	private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
     private static final int TOTAL_OPERATIONS = 200000;
 
     public static void main(String[] args) throws UnknownHostException,
 	    IOException {
-	Jedis jedis = new Jedis("localhost");
+	Jedis jedis = new Jedis(hnp.host, hnp.port);
 	jedis.connect();
 	jedis.auth("foobared");
 	jedis.flushAll();

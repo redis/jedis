@@ -8,17 +8,20 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 import redis.clients.util.Hashing;
 import redis.clients.util.ShardInfo;
 
 public class ShardedJedisTest extends Assert {
+	private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0); 
+	private static HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1); 
+	
     @Test
     public void checkSharding() throws IOException {
 	List<ShardInfo> shards = new ArrayList<ShardInfo>();
-	shards.add(new ShardInfo("localhost", Protocol.DEFAULT_PORT));
-	shards.add(new ShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
+	shards.add(new ShardInfo(redis1.host, redis1.port));
+	shards.add(new ShardInfo(redis2.host, redis2.port));
 	ShardedJedis jedis = new ShardedJedis(shards);
 	ShardInfo s1 = jedis.getShardInfo("a");
 	ShardInfo s2 = jedis.getShardInfo("b");
@@ -28,10 +31,10 @@ public class ShardedJedisTest extends Assert {
     @Test
     public void trySharding() throws IOException {
 	List<ShardInfo> shards = new ArrayList<ShardInfo>();
-	ShardInfo si = new ShardInfo("localhost", Protocol.DEFAULT_PORT);
+	ShardInfo si = new ShardInfo(redis1.host, redis1.port);
 	si.setPassword("foobared");
 	shards.add(si);
-	si = new ShardInfo("localhost", Protocol.DEFAULT_PORT + 1);
+	si = new ShardInfo(redis2.host, redis2.port);
 	si.setPassword("foobared");
 	shards.add(si);
 	ShardedJedis jedis = new ShardedJedis(shards);
@@ -55,10 +58,10 @@ public class ShardedJedisTest extends Assert {
     @Test
     public void tryShardingWithMurmure() throws IOException {
 	List<ShardInfo> shards = new ArrayList<ShardInfo>();
-	ShardInfo si = new ShardInfo("localhost", Protocol.DEFAULT_PORT);
+	ShardInfo si = new ShardInfo(redis1.host, redis1.port);
 	si.setPassword("foobared");
 	shards.add(si);
-	si = new ShardInfo("localhost", Protocol.DEFAULT_PORT + 1);
+	si = new ShardInfo(redis2.host, redis2.port);
 	si.setPassword("foobared");
 	shards.add(si);
 	ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMURE_HASH);

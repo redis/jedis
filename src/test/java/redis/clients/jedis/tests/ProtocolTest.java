@@ -54,7 +54,6 @@ public class ProtocolTest extends Assert {
     	Protocol protocol = new Protocol();
     	String response = (String) protocol.read(new RedisInputStream(fis));
     	assertEquals("012345678901234567890123456789", response);
-//    	assertEquals(3, fis.getReadMethodCallCount());
     }
 
     

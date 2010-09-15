@@ -12,6 +12,11 @@
   		<scope>compile</scope>
   	</dependency>
   </dependencies>
+  
+  <properties>
+  	<redis-hosts>localhost:6379,localhost:6380</redis-hosts>
+  </properties>
+  
   <build>
     <plugins>
       <plugin>
@@ -22,6 +27,16 @@
               <source>1.6</source>
               <target>1.6</target>
           </configuration>
+      </plugin>
+      <plugin>
+      	<groupId>org.apache.maven.plugins</groupId>
+      	<artifactId>maven-surefire-plugin</artifactId>
+      	<version>2.6</version>
+      	<configuration>	
+					<systemPropertyVariables>
+						<redis-hosts>${redis-hosts}</redis-hosts>
+					</systemPropertyVariables>
+				</configuration>
       </plugin>
     </plugins>
   </build>

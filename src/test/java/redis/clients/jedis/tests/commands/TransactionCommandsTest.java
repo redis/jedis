@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
@@ -13,6 +14,17 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
+	Jedis nj;
+	@Before
+	public void setUp() throws Exception {
+		super.setUp();
+
+		nj = new Jedis(hnp.host, hnp.port, 500);
+		nj.connect();
+		nj.auth("foobared");
+		nj.flushAll();
+	}
+
     @Test
     public void multi() {
 	Transaction trans = jedis.multi();
@@ -62,7 +74,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	jedis.watch("mykey");
 	Transaction t = jedis.multi();
 
-	Jedis nj = new Jedis("localhost");
 	nj.connect();
 	nj.auth("foobared");
 	nj.set("mykey", "bar");
@@ -83,7 +94,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	assertEquals("OK", status);
 	Transaction t = jedis.multi();
 
-	Jedis nj = new Jedis("localhost");
 	nj.connect();
 	nj.auth("foobared");
 	nj.set("mykey", "bar");

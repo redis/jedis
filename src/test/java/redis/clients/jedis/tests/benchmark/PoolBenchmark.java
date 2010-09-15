@@ -9,14 +9,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class PoolBenchmark {
+	private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
     private static final int TOTAL_OPERATIONS = 100000;
 
     public static void main(String[] args) throws UnknownHostException,
 	    IOException, TimeoutException, InterruptedException {
-	Jedis j = new Jedis("localhost");
+	Jedis j = new Jedis(hnp.host, hnp.port);
 	j.connect();
 	j.auth("foobared");
 	j.flushAll();
@@ -37,7 +39,7 @@ public class PoolBenchmark {
 	    Thread hj = new Thread(new Runnable() {
 		@Override
 		public void run() {
-		    Jedis j = new Jedis("localhost");
+		    Jedis j = new Jedis(hnp.host, hnp.port);
 		    try {
 			j.connect();
 			j.auth("foobared");
@@ -61,8 +63,8 @@ public class PoolBenchmark {
     }
 
     private static void withPool() throws InterruptedException {
-	final JedisPool pool = new JedisPool("localhost",
-		Protocol.DEFAULT_PORT, 2000, "foobared");
+	final JedisPool pool = new JedisPool(hnp.host, hnp.port,
+		2000, "foobared");
 	pool.setResourcesNumber(50);
 	pool.setDefaultPoolWait(1000000);
 	pool.init();

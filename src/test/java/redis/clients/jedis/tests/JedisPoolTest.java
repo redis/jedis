@@ -4,35 +4,18 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class JedisPoolTest extends Assert {
-	private static String host = "localhost";
-	private static int port = Protocol.DEFAULT_PORT;
-	
-	static {
-		final String envHost = System.getProperty("redis-host");
-		final String envPort = System.getProperty("redis-port");
-		if (null != envHost && 0 < envHost.length()) {
-			host = envHost;
-		}
-		if (null != envPort && 0 < envPort.length()) {
-			try {
-				port = Integer.parseInt(envPort);
-			} catch (final NumberFormatException e) {}
-		}
-		
-		System.out.println("Redis host to be used : " + host + ":" + port);
-	}
+	private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0); 
 	
 	@Test
 	public void checkConnections() throws TimeoutException {
-		JedisPool pool = new JedisPool(host, port, 2000);
+		JedisPool pool = new JedisPool(hnp.host, hnp.port, 2000);
 		pool.setResourcesNumber(10);
 		pool.init();
 
@@ -46,7 +29,7 @@ public class JedisPoolTest extends Assert {
 
 	@Test
 	public void checkConnectionWithDefaultPort() throws TimeoutException {
-		JedisPool pool = new JedisPool(host, port);
+		JedisPool pool = new JedisPool(hnp.host, hnp.port);
 		pool.setResourcesNumber(10);
 		pool.init();
 
@@ -60,7 +43,7 @@ public class JedisPoolTest extends Assert {
 
 	@Test
 	public void checkJedisIsReusedWhenReturned() throws TimeoutException {
-		JedisPool pool = new JedisPool(host, port);
+		JedisPool pool = new JedisPool(hnp.host, hnp.port);
 		pool.setResourcesNumber(1);
 		pool.init();
 
@@ -79,7 +62,7 @@ public class JedisPoolTest extends Assert {
 	@Test
 	public void checkPoolRepairedWhenJedisIsBroken() throws TimeoutException,
 			IOException {
-		JedisPool pool = new JedisPool(host, port);
+		JedisPool pool = new JedisPool(hnp.host, hnp.port);
 		pool.setResourcesNumber(1);
 		pool.init();
 
@@ -97,7 +80,7 @@ public class JedisPoolTest extends Assert {
 
 	@Test(expected = TimeoutException.class)
 	public void checkPoolOverflow() throws TimeoutException {
-		JedisPool pool = new JedisPool(host, port);
+		JedisPool pool = new JedisPool(hnp.host, hnp.port);
 		pool.setResourcesNumber(1);
 		pool.init();
 

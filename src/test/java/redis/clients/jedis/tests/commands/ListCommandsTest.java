@@ -249,6 +249,25 @@ public class ListCommandsTest extends JedisCommandTestBase {
 	assertEquals(2, result.size());
 	assertEquals("foo", result.get(0));
 	assertEquals("bar", result.get(1));
+    }
 
+    @Test
+    public void lpushx() {
+	int status = jedis.lpushx("foo", "bar");
+	assertEquals(0, status);
+
+	jedis.lpush("foo", "a");
+	status = jedis.lpushx("foo", "b");
+	assertEquals(2, status);
+    }
+
+    @Test
+    public void rpushx() {
+	int status = jedis.rpushx("foo", "bar");
+	assertEquals(0, status);
+
+	jedis.lpush("foo", "a");
+	status = jedis.rpushx("foo", "b");
+	assertEquals(2, status);
     }
 }

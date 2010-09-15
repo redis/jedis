@@ -6,14 +6,12 @@ Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.0.0.
 
-## Why Jedis is a Release Candidate?
-Because I want to add Sharding and add more documentation to the site. And also publish the benchmark results, which are pretty good (around 26 Kops for GETs and SETs, and 126 Kops for GETs and SETs in pipeling mode).
-
 ## What will be available soon?
-- Sharding
+- Sharding with connection pooling and with pipelining
+- More examples and documentation
 - More and more code and performance improvements
 
-But stay close because things are going fast and all this will be implemented soon!
+Stay close because things are going fast!
 
 ## Ok.. so what can I do with Jedis?
 All of the following redis features are supported:
@@ -32,6 +30,7 @@ All of the following redis features are supported:
 - Persistence control commands
 - Remote server control commands
 - Connection pooling
+- Sharding (MD5, MurmureHash)
 
 ## How do I use it?
 
@@ -41,7 +40,6 @@ You can download the latests build at:
 To use it just:
     
     Jedis jedis = new Jedis("localhost");
-    jedis.connect();
     jedis.set("foo", "bar");
     String value = jedis.get("foo");
 

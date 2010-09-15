@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>redis.clients</groupId>
   <artifactId>jedis</artifactId>
-  <version>1.0.0-RC5</version>
+  <version>1.0.0</version>
   <dependencies>
   	<dependency>
   		<groupId>junit</groupId>
@@ -14,8 +14,7 @@
   </dependencies>
   
   <properties>
-  	<redis-host>localhost</redis-host>
-  	<redis-port>6379</redis-port>
+  	<redis-hosts>localhost:6379,localhost:6380</redis-hosts>
   </properties>
   
   <build>
@@ -35,8 +34,7 @@
       	<version>2.6</version>
       	<configuration>	
 					<systemPropertyVariables>
-						<redis-host>${redis-host}</redis-host>
-						<redis-port>${redis-port}</redis-port>
+						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
 				</configuration>
       </plugin>

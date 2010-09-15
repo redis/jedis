@@ -563,4 +563,28 @@ public class Client extends Connection {
     public void configSet(String parameter, String value) {
 	sendCommand("CONFIG", "SET", parameter, value);
     }
+
+    public void strlen(String key) {
+	sendCommand("STRLEN", key);
+    }
+
+    public void sync() {
+	sendCommand("SYNC");
+    }
+
+    public void lpushx(String key, String string) {
+	sendCommand("LPUSHX", key, string);
+    }
+
+    public void persist(String key) {
+	sendCommand("PERSIST", key);
+    }
+
+    public void rpushx(String key, String string) {
+	sendCommand("RPUSHX", key, string);
+    }
+
+    public void echo(String string) {
+	sendCommand("ECHO", string);
+    }
 }

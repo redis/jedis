@@ -219,4 +219,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.select(1);
 	assertEquals(0, jedis.dbSize());
     }
+
+    @Test
+    public void persist() {
+	jedis.setex("foo", 60 * 60, "bar");
+	assertTrue(jedis.ttl("foo") > 0);
+	int status = jedis.persist("foo");
+	assertEquals(1, status);
+	assertEquals(-1, jedis.ttl("foo"));
+    }
+
+    @Test
+    public void echo() {
+	String result = jedis.echo("hello world");
+	assertEquals("hello world", result);
+    }
+
 }

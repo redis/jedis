@@ -1,11 +1,13 @@
 package redis.clients.jedis;
 
 import redis.clients.util.FixedResourcePool;
+import redis.clients.util.ShardInfo;
 
 public class JedisPool extends FixedResourcePool<Jedis> {
     private String host;
     private int port;
     private int timeout;
+    private String password;
 
     public JedisPool(String host) {
 	this.host = host;
@@ -23,6 +25,20 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 	this.timeout = timeout;
     }
 
+    public JedisPool(String host, int port, int timeout, String password) {
+	this.host = host;
+	this.port = port;
+	this.timeout = timeout;
+	this.password = password;
+    }
+
+    public JedisPool(ShardInfo shardInfo) {
+	this.host = shardInfo.getHost();
+	this.port = shardInfo.getPort();
+	this.timeout = shardInfo.getTimeout();
+	this.password = shardInfo.getPassword();
+    }
+
     @Override
     protected Jedis createResource() {
 	Jedis jedis = new Jedis(this.host, this.port, this.timeout);
@@ -30,6 +46,9 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 	while (!done) {
 	    try {
 		jedis.connect();
+		if (password != null) {
+		    jedis.auth(password);
+		}
 		done = true;
 	    } catch (Exception e) {
 		try {

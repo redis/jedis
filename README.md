@@ -6,6 +6,11 @@ Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.0.0.
 
+## Community
+
+Meet us on IRC: ##jedis on freenode.net
+
+
 ## What will be available soon?
 - Sharding with connection pooling and with pipelining
 - More examples and documentation
@@ -47,8 +52,7 @@ For more usage examples check the tests. Soon I will add a nice wiki with everyt
 
 And you are done!
 
-License
--------
+## License
 
 Copyright (c) 2010 Jonathan Leibiusky
 

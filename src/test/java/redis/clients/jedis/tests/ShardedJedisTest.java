@@ -64,7 +64,7 @@ public class ShardedJedisTest extends Assert {
 	si = new ShardInfo(redis2.host, redis2.port);
 	si.setPassword("foobared");
 	shards.add(si);
-	ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMURE_HASH);
+	ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMUR_HASH);
 	jedis.set("a", "bar");
 	ShardInfo s1 = jedis.getShardInfo("a");
 	jedis.set("b", "bar1");

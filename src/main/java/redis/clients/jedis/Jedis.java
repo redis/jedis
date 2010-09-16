@@ -29,7 +29,7 @@ public class Jedis {
 	client.setTimeout(timeout);
     }
 
-    public Jedis(ShardInfo shardInfo) {
+    public Jedis(JedisShardInfo shardInfo) {
 	client = new Client(shardInfo.getHost(), shardInfo.getPort());
 	client.setTimeout(shardInfo.getTimeout());
 	if (shardInfo.getPassword() != null) {

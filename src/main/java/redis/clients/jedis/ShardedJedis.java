@@ -10,12 +10,12 @@ import redis.clients.util.Hashing;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
-public class ShardedJedis extends Sharded<Jedis> {
-    public ShardedJedis(List<ShardInfo> shards) {
+public class ShardedJedis extends Sharded<Jedis,JedisShardInfo> {
+    public ShardedJedis(List<JedisShardInfo> shards) {
 	super(shards);
     }
 
-    public ShardedJedis(List<ShardInfo> shards, Hashing algo) {
+    public ShardedJedis(List<JedisShardInfo> shards, Hashing algo) {
 	super(shards, algo);
     }
 
@@ -347,12 +347,12 @@ public class ShardedJedis extends Sharded<Jedis> {
     }
 
     public void disconnect() throws IOException {
-	for (Jedis jedis : getAllShards()) {
-	    jedis.disconnect();
+	for (JedisShardInfo jedis : getAllShards()) {
+	    jedis.getResource().disconnect();
 	}
     }
 
-    protected Jedis create(ShardInfo shard) {
+    protected Jedis create(JedisShardInfo shard) {
 	return new Jedis(shard);
     }
 

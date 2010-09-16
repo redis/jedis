@@ -1,92 +1,53 @@
 package redis.clients.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
-public abstract class Sharded<T> {
+public class Sharded<R, S extends ShardInfo<R>> {
     public static final int DEFAULT_WEIGHT = 1;
-    private TreeMap<Long, ShardInfo> nodes;
-    private int totalWeight;
-    private Map<ShardInfo, T> resources;
-    private Hashing algo = Hashing.MD5;
+    private TreeMap<Long, S> nodes;
+    private final Hashing algo;
 
-    public Sharded(List<ShardInfo> shards) {
-	initialize(shards);
+    public Sharded(List<S> shards) {
+        this(shards, Hashing.MURMUR_HASH); // MD5 is really not good as we works with 64-bits not 128
     }
 
-    public Sharded(List<ShardInfo> shards, Hashing algo) {
-	initialize(shards);
+    public Sharded(List<S> shards, Hashing algo) {
+        this.algo = algo;
+        initialize(shards);
     }
 
-    private void initialize(List<ShardInfo> shards) {
-	nodes = new TreeMap<Long, ShardInfo>();
-	resources = new HashMap<ShardInfo, T>();
+    private void initialize(List<S> shards) {
+        nodes = new TreeMap<Long, S>();
 
-	totalWeight = 0;
+        int totalWeight = 0;
 
-	for (ShardInfo shard : shards) {
-	    totalWeight += shard.getWeight();
-	}
+        for (ShardInfo shard : shards) {
+            totalWeight += shard.getWeight();
+        }
 
-	MessageDigest md5;
-	try {
-	    md5 = MessageDigest.getInstance("MD5");
-	} catch (NoSuchAlgorithmException e) {
-	    throw new IllegalStateException("++++ no md5 algorythm found");
-	}
+        long oneForthOfStep = (1L << 62) / totalWeight; // 62 vs 64 to normalize math in Long
 
-	for (ShardInfo shard : shards) {
-	    double factor = Math
-		    .floor(((double) (40 * shards.size() * DEFAULT_WEIGHT))
-			    / (double) totalWeight);
-
-	    for (long j = 0; j < factor; j++) {
-		byte[] d = md5.digest((shard.toString() + "-" + j).getBytes());
-		for (int h = 0; h < 4; h++) {
-		    Long k = ((long) (d[3 + h * 4] & 0xFF) << 24)
-			    | ((long) (d[2 + h * 4] & 0xFF) << 16)
-			    | ((long) (d[1 + h * 4] & 0xFF) << 8)
-			    | ((long) (d[0 + h * 4] & 0xFF));
-		    nodes.put(k, shard);
-		}
-	    }
-	    resources.put(shard, create(shard));
-	}
+        long floor = Long.MIN_VALUE;
+        for (int i = 0; i != shards.size(); ++i) {
+            final S shardInfo = shards.get(i);
+            shardInfo.initResource();
+            nodes.put(floor, shardInfo);
+            floor += 4 * oneForthOfStep * shardInfo.getWeight(); // *4 to compensate 62 vs 64
+        }
     }
 
-    public ShardInfo getShardInfo(String key) {
-	long hv = calculateHash(key);
-
-	return nodes.get(findPointFor(hv));
+    public R getShard(String key) {
+        return nodes.floorEntry(algo.hash(key)).getValue().getResource();
     }
 
-    private Long calculateHash(String key) {
-	return algo.hash(key);
+    public S getShardInfo(String key) {
+        return nodes.floorEntry(algo.hash(key)).getValue();
     }
 
-    private Long findPointFor(Long hashK) {
-	Long k = nodes.ceilingKey(hashK);
-
-	if (k == null) {
-	    k = nodes.firstKey();
-	}
-
-	return k;
-    }
-
-    public T getShard(String key) {
-	ShardInfo shard = getShardInfo(key);
-	return resources.get(shard);
-    }
-
-    protected abstract T create(ShardInfo shard);
-
-    public Collection<T> getAllShards() {
-	return resources.values();
+    public Collection<S> getAllShards() {
+        return Collections.unmodifiableCollection(nodes.values());
     }
 }

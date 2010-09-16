@@ -32,7 +32,7 @@ public class JedisPool extends FixedResourcePool<Jedis> {
 	this.password = password;
     }
 
-    public JedisPool(ShardInfo shardInfo) {
+    public JedisPool(JedisShardInfo shardInfo) {
 	this.host = shardInfo.getHost();
 	this.port = shardInfo.getPort();
 	this.timeout = shardInfo.getTimeout();

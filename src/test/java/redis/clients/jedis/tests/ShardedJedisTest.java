@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 import redis.clients.util.Hashing;
@@ -19,9 +20,9 @@ public class ShardedJedisTest extends Assert {
 	
     @Test
     public void checkSharding() throws IOException {
-	List<ShardInfo> shards = new ArrayList<ShardInfo>();
-	shards.add(new ShardInfo(redis1.host, redis1.port));
-	shards.add(new ShardInfo(redis2.host, redis2.port));
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(new JedisShardInfo(redis1.host, redis1.port));
+	shards.add(new JedisShardInfo(redis2.host, redis2.port));
 	ShardedJedis jedis = new ShardedJedis(shards);
 	ShardInfo s1 = jedis.getShardInfo("a");
 	ShardInfo s2 = jedis.getShardInfo("b");
@@ -30,18 +31,18 @@ public class ShardedJedisTest extends Assert {
 
     @Test
     public void trySharding() throws IOException {
-	List<ShardInfo> shards = new ArrayList<ShardInfo>();
-	ShardInfo si = new ShardInfo(redis1.host, redis1.port);
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	JedisShardInfo si = new JedisShardInfo(redis1.host, redis1.port);
 	si.setPassword("foobared");
 	shards.add(si);
-	si = new ShardInfo(redis2.host, redis2.port);
+	si = new JedisShardInfo(redis2.host, redis2.port);
 	si.setPassword("foobared");
 	shards.add(si);
 	ShardedJedis jedis = new ShardedJedis(shards);
 	jedis.set("a", "bar");
-	ShardInfo s1 = jedis.getShardInfo("a");
+	JedisShardInfo s1 = jedis.getShardInfo("a");
 	jedis.set("b", "bar1");
-	ShardInfo s2 = jedis.getShardInfo("b");
+	JedisShardInfo s2 = jedis.getShardInfo("b");
 	jedis.disconnect();
 
 	Jedis j = new Jedis(s1.getHost(), s1.getPort());
@@ -57,18 +58,18 @@ public class ShardedJedisTest extends Assert {
 
     @Test
     public void tryShardingWithMurmure() throws IOException {
-	List<ShardInfo> shards = new ArrayList<ShardInfo>();
-	ShardInfo si = new ShardInfo(redis1.host, redis1.port);
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	JedisShardInfo si = new JedisShardInfo(redis1.host, redis1.port);
 	si.setPassword("foobared");
 	shards.add(si);
-	si = new ShardInfo(redis2.host, redis2.port);
+	si = new JedisShardInfo(redis2.host, redis2.port);
 	si.setPassword("foobared");
 	shards.add(si);
 	ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMUR_HASH);
 	jedis.set("a", "bar");
-	ShardInfo s1 = jedis.getShardInfo("a");
+	JedisShardInfo s1 = jedis.getShardInfo("a");
 	jedis.set("b", "bar1");
-	ShardInfo s2 = jedis.getShardInfo("b");
+	JedisShardInfo s2 = jedis.getShardInfo("b");
 	jedis.disconnect();
 
 	Jedis j = new Jedis(s1.getHost(), s1.getPort());

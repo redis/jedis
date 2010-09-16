@@ -1,14 +1,14 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
 
 public class Connection {
     private String host;
@@ -50,13 +50,13 @@ public class Connection {
     }
 
     protected Connection sendCommand(String name, String... args) {
-	try {
-	    connect();
-	} catch (UnknownHostException e) {
-	    throw new JedisException("Could not connect to redis-server", e);
-	} catch (IOException e) {
-	    throw new JedisException("Could not connect to redis-server", e);
-	}
+		try {
+			connect();
+		} catch (UnknownHostException e) {
+			throw new JedisException("Could not connect to redis-server", e);
+		} catch (IOException e) {
+			throw new JedisException("Could not connect to redis-server", e);
+		}
 	protocol.sendCommand(outputStream, name, args);
 	pipelinedCommands++;
 	return this;
@@ -126,9 +126,9 @@ public class Connection {
 	return (String) protocol.read(inputStream);
     }
 
-    public Integer getIntegerReply() {
+    public int getIntegerReply() {
 	pipelinedCommands--;
-	return (Integer) protocol.read(inputStream);
+	return ((Integer) protocol.read(inputStream)).intValue();
     }
 
     @SuppressWarnings("unchecked")

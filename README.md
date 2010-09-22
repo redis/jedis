@@ -1,10 +1,14 @@
 # Jedis
 
-Jedis is a blazingly small and sane redis java client.
+Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.
 
 Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.0.0.
+
+## Is there a Groovy client?
+
+Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :) 
 
 ## Community
 

@@ -20,7 +20,6 @@ import redis.clients.jedis.Transaction;
 
 public class JedisNewCommandsCheckTest extends Assert {
     @Test
-    @Ignore(value = "Ignored because still missing information for DEBUG and LINSERT commands")
     public void checkJedisIsUpdated() throws IOException {
 	String[] commands = getAvailableCommands();
 	Set<String> implementedCommands = getImplementedCommands();

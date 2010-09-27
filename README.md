@@ -14,7 +14,7 @@ Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xe
 
 Meet us on IRC: ##jedis on freenode.net
 
-Join the mailing-list at http://groups.google.com/group/jedis_redis
+Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://groups.google.com/group/jedis_redis)
 
 ## What will be available soon?
 - Sharding with connection pooling and with pipelining

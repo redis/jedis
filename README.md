@@ -13,6 +13,7 @@ Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xe
 ## Community
 
 Meet us on IRC: ##jedis on freenode.net
+
 Join the mailing-list at http://groups.google.com/group/jedis_redis
 
 ## What will be available soon?

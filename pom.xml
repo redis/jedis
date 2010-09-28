@@ -4,6 +4,7 @@
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
 	<version>1.2.0</version>
+	
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -18,6 +19,33 @@
 		<redis-hosts>localhost:6379,localhost:6380</redis-hosts>
 	</properties>
 
+	<name>Jedis</name>
+	<description>Jedis is a blazingly small and sane Redis java client.</description>
+	<url>http://github.com/xetorthio/jedis</url>
+	
+	<issueManagement>
+		<system>github</system>
+		<url>http://github.com/xetorthio/jedis</url>
+	</issueManagement>
+	
+	<scm>
+		<url>scm:git:http://github.com/xetorthio/jedis.git</url>
+	</scm>
+	
+	<mailingLists>
+		<mailingList>
+			<name>Jedis</name>
+			<subscribe>http://groups.google.com/group/jedis_redis</subscribe>
+		</mailingList>
+	</mailingLists>
+	
+	<licenses>
+		<license>
+			<name>Jedis License</name>
+			<url>http://github.com/xetorthio/jedis/raw/master/LICENSE.txt</url>
+		</license>
+	</licenses>
+	
 	<build>
 		<plugins>
 			<plugin>

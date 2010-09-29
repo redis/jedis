@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-group = 'redis.clients'
+group = 'com.googlecode.jedis'
 archiveBaseName = 'jedis'
 version = '1.2.0'
 

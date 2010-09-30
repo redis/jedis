@@ -82,5 +82,29 @@ public class ShardedJedisTest extends Assert {
 	assertEquals("bar1", j.get("b"));
 	j.disconnect();
     }
+    
+    
+    /** @author muriloq@gmail.com */
+    @Test
+    public void checkKeyTags(){
+    	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    	shards.add(new JedisShardInfo(redis1.host, redis1.port));
+    	shards.add(new JedisShardInfo(redis2.host, redis2.port));
+    	ShardedJedis jedis = new ShardedJedis(shards);
+    	
+    	assertEquals(jedis.getKeyTag("foo"),"foo");
+    	assertEquals(jedis.getKeyTag("foo{bar}"),"bar");
+    	assertEquals(jedis.getKeyTag("foo{bar}}"),"bar"); // default pattern is non greedy
+    	assertEquals(jedis.getKeyTag("{bar}foo"),"bar"); // Key tag may appear anywhere
+    	assertEquals(jedis.getKeyTag("f{bar}oo"),"bar"); // Key tag may appear anywhere
+    	
+    	ShardInfo s1 = jedis.getShardInfo("a{bar}");
+    	ShardInfo s2 = jedis.getShardInfo("b{bar}");
+    	assertSame(s1, s2);
+    	
+    	ShardInfo s3 = jedis.getShardInfo("a");
+    	ShardInfo s4 = jedis.getShardInfo("b");
+    	assertNotSame(s3, s4);
+    }
 
 }

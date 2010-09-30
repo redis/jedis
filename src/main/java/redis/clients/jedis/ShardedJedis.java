@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import redis.clients.jedis.Client.LIST_POSITION;
 import redis.clients.util.Hashing;
@@ -19,6 +20,14 @@ public class ShardedJedis extends Sharded<Jedis,JedisShardInfo> {
 	super(shards, algo);
     }
 
+    public ShardedJedis(List<JedisShardInfo> shards, Pattern keyTagPattern) {
+   	super(shards, keyTagPattern);
+    }
+
+    public ShardedJedis(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
+  	super(shards, algo, keyTagPattern);
+    }
+        
     public String set(String key, String value) {
 	Jedis j = getShard(key);
 	return j.set(key, value);

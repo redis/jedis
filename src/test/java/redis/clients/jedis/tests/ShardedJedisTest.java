@@ -13,6 +13,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 import redis.clients.util.Hashing;
 import redis.clients.util.ShardInfo;
+import redis.clients.util.Sharded;
 
 public class ShardedJedisTest extends Assert {
 	private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0); 
@@ -90,7 +91,7 @@ public class ShardedJedisTest extends Assert {
     	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     	shards.add(new JedisShardInfo(redis1.host, redis1.port));
     	shards.add(new JedisShardInfo(redis2.host, redis2.port));
-    	ShardedJedis jedis = new ShardedJedis(shards);
+    	ShardedJedis jedis = new ShardedJedis(shards, ShardedJedis.DEFAULT_KEY_TAG_PATTERN);
     	
     	assertEquals(jedis.getKeyTag("foo"),"foo");
     	assertEquals(jedis.getKeyTag("foo{bar}"),"bar");
@@ -98,13 +99,22 @@ public class ShardedJedisTest extends Assert {
     	assertEquals(jedis.getKeyTag("{bar}foo"),"bar"); // Key tag may appear anywhere
     	assertEquals(jedis.getKeyTag("f{bar}oo"),"bar"); // Key tag may appear anywhere
     	
-    	ShardInfo s1 = jedis.getShardInfo("a{bar}");
-    	ShardInfo s2 = jedis.getShardInfo("b{bar}");
+    	ShardInfo s1 = jedis.getShardInfo("abc{bar}");
+    	ShardInfo s2 = jedis.getShardInfo("foo{bar}");
     	assertSame(s1, s2);
     	
     	ShardInfo s3 = jedis.getShardInfo("a");
     	ShardInfo s4 = jedis.getShardInfo("b");
     	assertNotSame(s3, s4);
+    	
+    	ShardedJedis jedis2 = new ShardedJedis(shards);
+    	
+    	assertEquals(jedis2.getKeyTag("foo"),"foo");
+    	assertNotSame(jedis2.getKeyTag("foo{bar}"),"bar");
+    	
+    	ShardInfo s5 = jedis2.getShardInfo("foo{bar}");
+    	ShardInfo s6 = jedis2.getShardInfo("abc{bar}");
+    	assertNotSame(s5, s6);
     }
 
 }

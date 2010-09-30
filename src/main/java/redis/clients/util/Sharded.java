@@ -8,15 +8,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Sharded<R, S extends ShardInfo<R>> {
-    public static final int DEFAULT_WEIGHT = 1;
+   
+	public static final int DEFAULT_WEIGHT = 1;
     private TreeMap<Long, S> nodes;
     private final Hashing algo;
     
     /** 
      * The default pattern used for extracting a key tag. 
      * The pattern must have a group (between parenthesis), which delimits the tag to be hashed.
+     * A null pattern avoids applying the regular expression for each lookup, improving performance a little bit
+     * is key tags aren't being used. 
      */
-    private Pattern tagPattern = Pattern.compile("\\{(.+?)\\}"); // the tag is anything between {} 
+    private Pattern tagPattern = null; 
+    public static final Pattern DEFAULT_KEY_TAG_PATTERN = Pattern.compile("\\{(.+?)\\}"); // the tag is anything between {}
 
     public Sharded(List<S> shards) {
         this(shards, Hashing.MURMUR_HASH); // MD5 is really not good as we works with 64-bits not 128
@@ -74,9 +78,11 @@ public class Sharded<R, S extends ShardInfo<R>> {
      * @return The tag if it exists, or the original key 
      */
     public String getKeyTag(String key){
-    	Matcher m = tagPattern.matcher(key);
-    	if (m.find()) 
-    		return m.group(1); 
+    	if (tagPattern != null){
+	    	Matcher m = tagPattern.matcher(key);
+	    	if (m.find()) 
+	    		return m.group(1); 
+    	}
     	return key; 
     }
 

@@ -11,21 +11,20 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPipeline;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class PipeliningTest extends Assert {
-	private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0); 
-	
-	private Jedis jedis;
+    private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-	@Before
-	public void setUp() throws Exception {
-		jedis = new Jedis(hnp.host, hnp.port, 500);
-		jedis.connect();
-		jedis.auth("foobared");
-		jedis.flushAll();
-	}
+    private Jedis jedis;
+
+    @Before
+    public void setUp() throws Exception {
+	jedis = new Jedis(hnp.host, hnp.port, 500);
+	jedis.connect();
+	jedis.auth("foobared");
+	jedis.flushAll();
+    }
 
     @Test
     public void pipeline() throws UnknownHostException, IOException {

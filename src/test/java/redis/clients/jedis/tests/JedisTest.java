@@ -10,7 +10,6 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.util.RedisOutputStream;
-import redis.clients.util.ShardInfo;
 
 public class JedisTest extends JedisCommandTestBase {
     @Test
@@ -36,7 +35,8 @@ public class JedisTest extends JedisCommandTestBase {
 
     @Test
     public void connectWithShardInfo() {
-	JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
+	JedisShardInfo shardInfo = new JedisShardInfo("localhost",
+		Protocol.DEFAULT_PORT);
 	shardInfo.setPassword("foobared");
 	Jedis jedis = new Jedis(shardInfo);
 	jedis.get("foo");

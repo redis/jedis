@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import redis.clients.util.FixedResourcePool;
-import redis.clients.util.ShardInfo;
 
 public class JedisPool extends FixedResourcePool<Jedis> {
     private String host;

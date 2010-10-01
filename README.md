@@ -41,6 +41,7 @@ All of the following redis features are supported:
 - Remote server control commands
 - Connection pooling
 - Sharding (MD5, MurmureHash)
+- Key-tags for sharding
 
 ## How do I use it?
 

@@ -12,7 +12,7 @@
 
 	<groupId>com.googlecode.jedis</groupId>
 	<artifactId>jedis</artifactId>
-	<version>1.2.0</version>
+	<version>1.3.0</version>
 
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>

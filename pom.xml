@@ -32,8 +32,8 @@
 
 	<scm>
 		<url>http://github.com/xetorthio/jedis</url>
-		<connection>scm:git:http://github.com/xetorthio/jedis.git</connection>
-		<developerConnection>scm:git:http://github.com/xetorthio/jedis.git</developerConnection>
+		<connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
+		<developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
 	</scm>
 
 	<properties>

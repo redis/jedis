@@ -48,6 +48,17 @@ All of the following redis features are supported:
 You can download the latests build at: 
     http://github.com/xetorthio/jedis/downloads
 
+Or use it as a maven dependency:
+
+    <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>1.3.0</version>
+        <type>jar</type>
+        <scope>compile</scope>
+    </dependency>
+
+
 To use it just:
     
     Jedis jedis = new Jedis("localhost");

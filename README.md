@@ -71,7 +71,7 @@ And you are done!
 
 ## I want to contribute!
 
-That's great! Just fork the project in github. Create a topic branch, write some tests and the feature that you wish to contribute.
+That is great! Just fork the project in github. Create a topic branch, write some tests and the feature that you wish to contribute.
 
 To run the tests:
 - Use the latest redis master branch.

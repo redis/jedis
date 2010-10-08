@@ -69,6 +69,16 @@ For more usage examples check the tests. Soon I will add a nice wiki with everyt
 
 And you are done!
 
+## I want to contribute!
+
+That's great! Just fork the project in github. Create a topic branch, write some tests and the feature that you wish to contribute.
+
+To run the tests:
+- Use the latest redis master branch.
+- Run 2 instances of redis using conf files in conf folder. For the tests we use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
+
+Thanks for helping!
+
 ## License
 
 Copyright (c) 2010 Jonathan Leibiusky

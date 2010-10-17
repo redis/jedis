@@ -10,7 +10,7 @@ import redis.clients.jedis.Client.LIST_POSITION;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
-public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> {
+public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> implements IJedis {
     public ShardedJedis(List<JedisShardInfo> shards) {
 	super(shards);
     }
@@ -26,6 +26,16 @@ public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> {
     public ShardedJedis(List<JedisShardInfo> shards, Hashing algo,
 	    Pattern keyTagPattern) {
 	super(shards, algo, keyTagPattern);
+    }
+
+    public void disconnect() throws IOException {
+	for (JedisShardInfo jedis : getAllShards()) {
+	    jedis.getResource().disconnect();
+	}
+    }
+
+    protected Jedis create(JedisShardInfo shard) {
+	return new Jedis(shard);
     }
 
     public String set(String key, String value) {
@@ -353,16 +363,6 @@ public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> {
     public Integer zremrangeByScore(String key, double start, double end) {
 	Jedis j = getShard(key);
 	return j.zremrangeByScore(key, start, end);
-    }
-
-    public void disconnect() throws IOException {
-	for (JedisShardInfo jedis : getAllShards()) {
-	    jedis.getResource().disconnect();
-	}
-    }
-
-    protected Jedis create(JedisShardInfo shard) {
-	return new Jedis(shard);
     }
 
     public Integer linsert(String key, LIST_POSITION where, String pivot,

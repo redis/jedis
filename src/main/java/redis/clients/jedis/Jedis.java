@@ -12,7 +12,7 @@ import java.util.Set;
 
 import redis.clients.jedis.Client.LIST_POSITION;
 
-public class Jedis implements IJedis {
+public class Jedis implements JedisCommands {
     private Client client = null;
 
     public Jedis(String host) {

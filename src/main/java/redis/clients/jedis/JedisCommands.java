@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * Common interface for sharded and non-sharded Jedis
  */
-public interface IJedis {
+public interface JedisCommands {
     String set(String key, String value);
 
     String get(String key);

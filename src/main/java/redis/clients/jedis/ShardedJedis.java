@@ -10,7 +10,7 @@ import redis.clients.jedis.Client.LIST_POSITION;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
-public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> implements IJedis {
+public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> implements JedisCommands {
     public ShardedJedis(List<JedisShardInfo> shards) {
 	super(shards);
     }

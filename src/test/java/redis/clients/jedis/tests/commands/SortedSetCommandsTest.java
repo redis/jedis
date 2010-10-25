@@ -220,7 +220,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	assertEquals(expected, range);
 
 	range = jedis.zrangeByScore("foo", 0d, 2d, 1, 1);
-
+	Set<String> range2 = jedis.zrangeByScore("foo", "-inf", "(2");
+        assertEquals(expected, range2);
+        
 	expected = new LinkedHashSet<String>();
 	expected.add("a");
 

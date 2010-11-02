@@ -64,7 +64,8 @@ To use it just:
     String value = jedis.get("foo");
 
 For more usage examples check the tests.
-Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There is lot of cool stuff you should know!
+
+Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool stuff you should know!
 
 And you are done!
 

@@ -20,13 +20,6 @@ Meet us on IRC: ##jedis on freenode.net
 
 Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://groups.google.com/group/jedis_redis)
 
-## What will be available soon?
-- Sharding with connection pooling and with pipelining
-- More examples and documentation
-- More and more code and performance improvements
-
-Stay close because things are going fast!
-
 ## Ok.. so what can I do with Jedis?
 All of the following redis features are supported:
 
@@ -46,6 +39,7 @@ All of the following redis features are supported:
 - Connection pooling
 - Sharding (MD5, MurmureHash)
 - Key-tags for sharding
+- Sharding with pipelining
 
 ## How do I use it?
 
@@ -69,7 +63,8 @@ To use it just:
     jedis.set("foo", "bar");
     String value = jedis.get("foo");
 
-For more usage examples check the tests. Soon I will add a nice wiki with everything you should know.
+For more usage examples check the tests.
+Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There is lot of cool stuff you should know!
 
 And you are done!
 

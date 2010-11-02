@@ -2849,4 +2849,8 @@ public class Jedis implements JedisCommands {
         client.debug(params);
         return client.getStatusCodeReply();
     }
+
+    public Client getClient() {
+        return client;
+    }
 }

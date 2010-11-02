@@ -126,9 +126,9 @@ public class Connection {
         return (String) protocol.read(inputStream);
     }
 
-    public int getIntegerReply() {
+    public Integer getIntegerReply() {
         pipelinedCommands--;
-        return ((Integer) protocol.read(inputStream)).intValue();
+        return (Integer) protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")

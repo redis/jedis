@@ -6,6 +6,10 @@ Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.0.0.
 
+## I want to persist my objects in Redis. How can I do it?
+You should definitely check [JOhm](http://github.com/xetorthio/johm "JOhm")!!!
+And of course, you can always serialize it and store it.
+
 ## Is there a Groovy client?
 
 Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :) 

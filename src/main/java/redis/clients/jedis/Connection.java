@@ -24,7 +24,7 @@ public class Connection {
         return timeout;
     }
 
-    public void setTimeout(int timeout) {
+    public void setTimeout(final int timeout) {
         this.timeout = timeout;
     }
 
@@ -44,12 +44,12 @@ public class Connection {
         }
     }
 
-    public Connection(String host) {
+    public Connection(final String host) {
         super();
         this.host = host;
     }
 
-    protected Connection sendCommand(String name, String... args) {
+    protected Connection sendCommand(final String name, final String... args) {
         try {
             connect();
         } catch (UnknownHostException e) {
@@ -62,7 +62,7 @@ public class Connection {
         return this;
     }
 
-    public Connection(String host, int port) {
+    public Connection(final String host, final int port) {
         super();
         this.host = host;
         this.port = port;
@@ -72,7 +72,7 @@ public class Connection {
         return host;
     }
 
-    public void setHost(String host) {
+    public void setHost(final String host) {
         this.host = host;
     }
 
@@ -80,7 +80,7 @@ public class Connection {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(final int port) {
         this.port = port;
     }
 
@@ -135,10 +135,19 @@ public class Connection {
         return (Integer) protocol.read(inputStream);
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getMultiBulkReply() {
+    	final List<byte[]> bresult = getBinaryMultiBulkReply();
+    	final ArrayList<String> result = new ArrayList<String>(bresult.size());
+    	for(final byte[] barray : bresult) {
+    		result.add(new String(barray, Protocol.UTF8));
+    	}
+    	return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<byte[]> getBinaryMultiBulkReply() {
         pipelinedCommands--;
-        return (List<String>) protocol.read(inputStream);
+        return (List<byte[]>) protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")

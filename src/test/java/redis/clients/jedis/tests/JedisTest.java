@@ -26,7 +26,7 @@ public class JedisTest extends JedisCommandTestBase {
 	    bigdata[b] = (byte) ((byte) b % 255);
 	}
 	Map<String, String> hash = new HashMap<String, String>();
-	hash.put("data", new String(bigdata, RedisOutputStream.CHARSET));
+	hash.put("data", new String(bigdata, Protocol.UTF8));
 
 	String status = jedis.hmset("foo", hash);
 	assertEquals("OK", status);

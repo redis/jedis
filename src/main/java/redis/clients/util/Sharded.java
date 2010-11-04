@@ -69,10 +69,19 @@ public class Sharded<R, S extends ShardInfo<R>> {
 	}
     }
 
-    public R getShard(String key) {
-	return nodes.floorEntry(algo.hash(getKeyTag(key))).getValue()
-		.getResource();
-    }
+	public R getShard(byte[] key) {
+		return nodes
+			.floorEntry(algo.hash(key))
+			.getValue()
+			.getResource();
+	}
+
+	public R getShard(String key) {
+		return nodes
+			.floorEntry(algo.hash(getKeyTag(key)))
+			.getValue()
+			.getResource();
+	}
 
     public S getShardInfo(String key) {
 	return nodes.floorEntry(algo.hash(getKeyTag(key))).getValue();

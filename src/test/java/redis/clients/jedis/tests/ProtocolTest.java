@@ -25,7 +25,7 @@ public class ProtocolTest extends Assert {
 	PipedOutputStream pos = new PipedOutputStream(pis);
 
 	Protocol protocol = new Protocol();
-	protocol.sendCommand(new RedisOutputStream(pos), "GET", "SOMEKEY");
+	protocol.sendCommand(new RedisOutputStream(pos), Protocol.Command.GET, "SOMEKEY".getBytes(Protocol.UTF8));
 
 	pos.close();
 	String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";

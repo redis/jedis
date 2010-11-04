@@ -43,6 +43,26 @@ public final class Protocol {
         }
     }
 
+    public void sendCommand(RedisOutputStream os, String name, byte[]... args) {
+        try {
+            os.write(ASTERISK_BYTE);
+            os.writeIntCrLf(args.length + 1);
+            os.write(DOLLAR_BYTE);
+            os.writeIntCrLf(name.length());
+            os.writeAsciiCrLf(name);
+
+            for (final byte[] arg : args) {
+                os.write(DOLLAR_BYTE);
+                os.writeIntCrLf(arg.length);
+                os.write(arg);
+                os.writeCrLf();
+            }
+            os.flush();
+        } catch (IOException e) {
+            throw new JedisException(e);
+        }
+    }
+
     private void processError(RedisInputStream is) {
         String message = is.readLine();
         throw new JedisException(message);

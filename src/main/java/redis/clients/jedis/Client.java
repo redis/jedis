@@ -1,20 +1,10 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-public class Client extends Connection {
-	public enum LIST_POSITION {
-		BEFORE, AFTER
-	}
-
-	private boolean isInMulti;
-
-	public boolean isInMulti() {
-		return isInMulti;
-	}
-
+public class Client extends BinaryClient {
 	public Client(final String host) {
 		super(host);
 	}
@@ -23,492 +13,450 @@ public class Client extends Connection {
 		super(host, port);
 	}
 
-	public void ping() {
-		sendCommand("PING");
-	}
-
 	public void set(final String key, final String value) {
-		sendCommand("SET", key, value);
+		set(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
 	}
 
 	public void get(final String key) {
-		sendCommand("GET", key);
-	}
-
-	public void quit() {
-		sendCommand("QUIT");
+		get(key.getBytes(Protocol.UTF8));
 	}
 
 	public void exists(final String key) {
-		sendCommand("EXISTS", key);
+		exists(key.getBytes(Protocol.UTF8));
 	}
 
 	public void del(final String... keys) {
-		sendCommand("DEL", keys);
+		final byte[][] bkeys = new byte[keys.length][];
+		for(int i=0; i < keys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		del(bkeys);
 	}
 
 	public void type(final String key) {
-		sendCommand("TYPE", key);
-	}
-
-	public void flushDB() {
-		sendCommand("FLUSHDB");
+		del(key.getBytes(Protocol.UTF8));
 	}
 
 	public void keys(final String pattern) {
-		sendCommand("KEYS", pattern);
+		keys(pattern.getBytes(Protocol.UTF8));
 	}
 
-	public void randomKey() {
-		sendCommand("RANDOMKEY");
-	}
 
 	public void rename(final String oldkey, final String newkey) {
-		sendCommand("RENAME", oldkey, newkey);
+		rename(oldkey.getBytes(Protocol.UTF8), newkey.getBytes(Protocol.UTF8));
 	}
 
 	public void renamenx(final String oldkey, final String newkey) {
-		sendCommand("RENAMENX", oldkey, newkey);
-	}
-
-	public void dbSize() {
-		sendCommand("DBSIZE");
+		renamenx(
+				oldkey.getBytes(Protocol.UTF8),
+				newkey.getBytes(Protocol.UTF8));
 	}
 
 	public void expire(final String key, final int seconds) {
-		sendCommand("EXPIRE", key, String.valueOf(seconds));
+		expire(key.getBytes(Protocol.UTF8), seconds);
 	}
 
 	public void expireAt(final String key, final long unixTime) {
-		sendCommand("EXPIREAT", key, String.valueOf(unixTime));
+		expireAt(key.getBytes(Protocol.UTF8), unixTime);
 	}
 
 	public void ttl(final String key) {
-		sendCommand("TTL", key);
-	}
-
-	public void select(final int index) {
-		sendCommand("SELECT", String.valueOf(index));
+		ttl(key.getBytes(Protocol.UTF8));
 	}
 
 	public void move(final String key, final int dbIndex) {
-		sendCommand("MOVE", key, String.valueOf(dbIndex));
-	}
-
-	public void flushAll() {
-		sendCommand("FLUSHALL");
+		move(key.getBytes(Protocol.UTF8), dbIndex);
 	}
 
 	public void getSet(final String key, final String value) {
-		sendCommand("GETSET", key, value);
+		getSet(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
 	}
 
 	public void mget(final String... keys) {
-		sendCommand("MGET", keys);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		mget(bkeys);
 	}
 
 	public void setnx(final String key, final String value) {
-		sendCommand("SETNX", key, value);
+		setnx(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
 	}
 
 	public void setex(
 			final String key,
 			final int seconds,
 			final String value) {
-		sendCommand("SETEX", key, String.valueOf(seconds), value);
+		setex(
+				key.getBytes(Protocol.UTF8),
+				seconds,
+				value.getBytes(Protocol.UTF8));
 	}
 
 	public void mset(final String... keysvalues) {
-		sendCommand("MSET", keysvalues);
+		final byte[][] bkeysvalues = new byte[keysvalues.length][];
+		for (int i = 0; i < keysvalues.length; i++) {
+			bkeysvalues[i] = keysvalues[i].getBytes(Protocol.UTF8);
+		}
+		mset(bkeysvalues);
 	}
 
 	public void msetnx(final String... keysvalues) {
-		sendCommand("MSETNX", keysvalues);
+		final byte[][] bkeysvalues = new byte[keysvalues.length][];
+		for (int i = 0; i < keysvalues.length; i++) {
+			bkeysvalues[i] = keysvalues[i].getBytes(Protocol.UTF8);
+		}
+		msetnx(bkeysvalues);
 	}
 
 	public void decrBy(final String key, final int integer) {
-		sendCommand("DECRBY", key, String.valueOf(integer));
+		decrBy(key.getBytes(Protocol.UTF8), integer);
 	}
 
 	public void decr(final String key) {
-		sendCommand("DECR", key);
+		decr(key.getBytes(Protocol.UTF8));
 	}
 
 	public void incrBy(final String key, final int integer) {
-		sendCommand("INCRBY", key, String.valueOf(integer));
+		incrBy(key.getBytes(Protocol.UTF8), integer);
 	}
 
 	public void incr(final String key) {
-		sendCommand("INCR", key);
+		incr(key.getBytes(Protocol.UTF8));
 	}
 
 	public void append(final String key, final String value) {
-		sendCommand("APPEND", key, value);
+		append(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
 	}
 
 	public void substr(final String key, final int start, final int end) {
-		sendCommand("SUBSTR", key, String.valueOf(start), String.valueOf(end));
+		substr(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void hset(
 			final String key,
 			final String field,
 			final String value) {
-		sendCommand("HSET", key, field, value);
+		hset(
+				key.getBytes(Protocol.UTF8),
+				field.getBytes(Protocol.UTF8),
+				value.getBytes(Protocol.UTF8));
 	}
 
 	public void hget(final String key, final String field) {
-		sendCommand("HGET", key, field);
+		hget(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8));
 	}
 
 	public void hsetnx(
 			final String key,
 			final String field,
 			final String value) {
-		sendCommand("HSETNX", key, field, value);
+		hsetnx(
+				key.getBytes(Protocol.UTF8),
+				field.getBytes(Protocol.UTF8),
+				value.getBytes(Protocol.UTF8));
 	}
 
 	public void hmset(final String key, final Map<String, String> hash) {
-		final List<String> params = new ArrayList<String>();
-		params.add(key);
-
-		for (final String field : hash.keySet()) {
-			params.add(field);
-			params.add(hash.get(field));
+		final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
+		for (final Entry<String,String> entry : hash.entrySet()) {
+			bhash.put(
+					entry.getKey().getBytes(Protocol.UTF8),
+					entry.getValue().getBytes(Protocol.UTF8));
 		}
-		sendCommand("HMSET", params.toArray(new String[params.size()]));
+		hmset(key.getBytes(Protocol.UTF8), bhash);
 	}
 
 	public void hmget(final String key, final String... fields) {
-		final String[] params = new String[fields.length + 1];
-		params[0] = key;
-		System.arraycopy(fields, 0, params, 1, fields.length);
-		sendCommand("HMGET", params);
+		final byte[][] bfields = new byte[fields.length][];
+		for (int i = 0; i < bfields.length; i++) {
+			bfields[i] = fields[i].getBytes(Protocol.UTF8);
+		}
+		hmget(key.getBytes(Protocol.UTF8), bfields);
 	}
 
 	public void hincrBy(final String key, final String field, final int value) {
-		sendCommand("HINCRBY", key, field, String.valueOf(value));
+		hincrBy(
+				key.getBytes(Protocol.UTF8),
+				field.getBytes(Protocol.UTF8),
+				value);
 	}
 
 	public void hexists(final String key, final String field) {
-		sendCommand("HEXISTS", key, field);
+		hexists(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8));
 	}
 
 	public void hdel(final String key, final String field) {
-		sendCommand("HDEL", key, field);
+		hdel(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8));
 	}
 
 	public void hlen(final String key) {
-		sendCommand("HLEN", key);
+		hlen(key.getBytes(Protocol.UTF8));
 	}
 
 	public void hkeys(final String key) {
-		sendCommand("HKEYS", key);
+		hkeys(key.getBytes(Protocol.UTF8));
 	}
 
 	public void hvals(final String key) {
-		sendCommand("HVALS", key);
+		hvals(key.getBytes(Protocol.UTF8));
 	}
 
 	public void hgetAll(final String key) {
-		sendCommand("HGETALL", key);
+		hgetAll(key.getBytes(Protocol.UTF8));
 	}
 
 	public void rpush(final String key, final String string) {
-		sendCommand("RPUSH", key, string);
+		rpush(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
 	}
 
 	public void lpush(final String key, final String string) {
-		sendCommand("LPUSH", key, string);
+		lpush(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
 	}
 
 	public void llen(final String key) {
-		sendCommand("LLEN", key);
+		llen(key.getBytes(Protocol.UTF8));
 	}
 
 	public void lrange(final String key, final int start, final int end) {
-		sendCommand("LRANGE", key, String.valueOf(start), String.valueOf(end));
+		lrange(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void ltrim(final String key, final int start, final int end) {
-		sendCommand("LTRIM", key, String.valueOf(start), String.valueOf(end));
+		ltrim(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void lindex(final String key, final int index) {
-		sendCommand("LINDEX", key, String.valueOf(index));
+		lindex(key.getBytes(Protocol.UTF8), index);
 	}
 
 	public void lset(final String key, final int index, final String value) {
-		sendCommand("LSET", key, String.valueOf(index), value);
+		lset(key.getBytes(Protocol.UTF8), index, value.getBytes(Protocol.UTF8));
 	}
 
 	public void lrem(final String key, int count, final String value) {
-		sendCommand("LREM", key, String.valueOf(count), value);
+		lrem(key.getBytes(Protocol.UTF8), count, value.getBytes(Protocol.UTF8));
 	}
 
 	public void lpop(final String key) {
-		sendCommand("LPOP", key);
+		lpop(key.getBytes(Protocol.UTF8));
 	}
 
 	public void rpop(final String key) {
-		sendCommand("RPOP", key);
+		rpop(key.getBytes(Protocol.UTF8));
 	}
 
 	public void rpoplpush(final String srckey, final String dstkey) {
-		sendCommand("RPOPLPUSH", srckey, dstkey);
+		rpoplpush(
+				srckey.getBytes(Protocol.UTF8),
+				dstkey.getBytes(Protocol.UTF8));
 	}
 
 	public void sadd(final String key, final String member) {
-		sendCommand("SADD", key, member);
+		sadd(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void smembers(final String key) {
-		sendCommand("SMEMBERS", key);
+		smembers(key.getBytes(Protocol.UTF8));
 	}
 
 	public void srem(final String key, final String member) {
-		sendCommand("SREM", key, member);
+		srem(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void spop(final String key) {
-		sendCommand("SPOP", key);
+		spop(key.getBytes(Protocol.UTF8));
 	}
 
 	public void smove(
 			final String srckey,
 			final String dstkey,
 			final String member) {
-		sendCommand("SMOVE", srckey, dstkey, member);
+		smove(srckey.getBytes(Protocol.UTF8), dstkey.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void scard(final String key) {
-		sendCommand("SCARD", key);
+		scard(key.getBytes(Protocol.UTF8));
 	}
 
 	public void sismember(final String key, final String member) {
-		sendCommand("SISMEMBER", key, member);
+		sismember(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void sinter(final String... keys) {
-		sendCommand("SINTER", keys);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		sinter(bkeys);
 	}
 
 	public void sinterstore(final String dstkey, final String... keys) {
-		String[] params = new String[keys.length + 1];
-		params[0] = dstkey;
-		System.arraycopy(keys, 0, params, 1, keys.length);
-		sendCommand("SINTERSTORE", params);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		sinterstore(dstkey.getBytes(Protocol.UTF8), bkeys);
 	}
 
 	public void sunion(final String... keys) {
-		sendCommand("SUNION", keys);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		sunion(bkeys);
 	}
 
 	public void sunionstore(final String dstkey, final String... keys) {
-		String[] params = new String[keys.length + 1];
-		params[0] = dstkey;
-		System.arraycopy(keys, 0, params, 1, keys.length);
-		sendCommand("SUNIONSTORE", params);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		sunionstore(dstkey.getBytes(Protocol.UTF8), bkeys);
 	}
 
 	public void sdiff(final String... keys) {
-		sendCommand("SDIFF", keys);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		sdiff(bkeys);
 	}
 
 	public void sdiffstore(final String dstkey, final String... keys) {
-		String[] params = new String[keys.length + 1];
-		params[0] = dstkey;
-		System.arraycopy(keys, 0, params, 1, keys.length);
-		sendCommand("SDIFFSTORE", params);
+		final byte[][] bkeys = new byte[keys.length][];
+		for (int i = 0; i < bkeys.length; i++) {
+			bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+		}
+		sdiffstore(dstkey.getBytes(Protocol.UTF8), bkeys);
 	}
 
 	public void srandmember(final String key) {
-		sendCommand("SRANDMEMBER", key);
+		srandmember(key.getBytes(Protocol.UTF8));
 	}
 
 	public void zadd(
 			final String key,
 			final double score,
 			final String member) {
-		sendCommand("ZADD", key, String.valueOf(score), member);
+		zadd(key.getBytes(Protocol.UTF8), score, member.getBytes(Protocol.UTF8));
 	}
 
 	public void zrange(final String key, final int start, final int end) {
-		sendCommand("ZRANGE", key, String.valueOf(start), String.valueOf(end));
+		zrange(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void zrem(final String key, final String member) {
-		sendCommand("ZREM", key, member);
+		zrem(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void zincrby(
 			final String key,
 			final double score,
 			final String member) {
-		sendCommand("ZINCRBY", key, String.valueOf(score), member);
+		zincrby(key.getBytes(Protocol.UTF8), score, member.getBytes(Protocol.UTF8));
 	}
 
 	public void zrank(final String key, final String member) {
-		sendCommand("ZRANK", key, member);
+		zrank(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void zrevrank(final String key, final String member) {
-		sendCommand("ZREVRANK", key, member);
+		zrevrank(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
 	public void zrevrange(
 			final String key,
 			final int start,
 			final int end) {
-		sendCommand(
-				"ZREVRANGE",
-				key,
-				String.valueOf(start),
-				String.valueOf(end));
+		zrevrange(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void zrangeWithScores(
 			final String key,
 			final int start,
 			final int end) {
-		sendCommand(
-				"ZRANGE",
-				key,
-				String.valueOf(start),
-				String.valueOf(end),
-				"WITHSCORES");
+		zrangeWithScores(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void zrevrangeWithScores(
 			final String key,
 			final int start,
 			final int end) {
-		sendCommand(
-				"ZREVRANGE",
-				key,
-				String.valueOf(start),
-				String.valueOf(end),
-				"WITHSCORES");
+		zrevrangeWithScores(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void zcard(final String key) {
-		sendCommand("ZCARD", key);
+		zcard(key.getBytes(Protocol.UTF8));
 	}
 
 	public void zscore(final String key, final String member) {
-		sendCommand("ZSCORE", key, member);
+		zscore(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
 	}
 
-	public void multi() {
-		sendCommand("MULTI");
-		isInMulti = true;
-	}
-
-	public void discard() {
-		sendCommand("DISCARD");
-		isInMulti = false;
-	}
-
-	public void exec() {
-		sendCommand("EXEC");
-		isInMulti = false;
-	}
 
 	public void watch(final String key) {
-		sendCommand("WATCH", key);
-	}
-
-	public void unwatch() {
-		sendCommand("UNWATCH");
+		watch(key.getBytes(Protocol.UTF8));
 	}
 
 	public void sort(final String key) {
-		sendCommand("SORT", key);
+		sort(key.getBytes(Protocol.UTF8));
 	}
 
 	public void sort(final String key, final SortingParams sortingParameters) {
-		List<String> args = new ArrayList<String>();
-		args.add(key);
-		args.addAll(sortingParameters.getParams());
-		sendCommand("SORT", args.toArray(new String[args.size()]));
+		sort(key.getBytes(Protocol.UTF8),sortingParameters);
 	}
 
 	public void blpop(final String[] args) {
-		sendCommand("BLPOP", args);
+		final byte[][] bargs = new byte[args.length][];
+		for (int i = 0; i < bargs.length; i++) {
+			bargs[i] = args[i].getBytes(Protocol.UTF8);
+		}
+		blpop(bargs);
 	}
 
 	public void sort(
 			final String key,
 			final SortingParams sortingParameters,
 			final String dstkey) {
-		List<String> args = new ArrayList<String>();
-		args.add(key);
-		args.addAll(sortingParameters.getParams());
-		args.add("STORE");
-		args.add(dstkey);
-		sendCommand("SORT", args.toArray(new String[args.size()]));
+		sort(
+				key.getBytes(Protocol.UTF8),
+				sortingParameters,
+				dstkey.getBytes(Protocol.UTF8));
 	}
 
 	public void sort(final String key, final String dstkey) {
-		sendCommand("SORT", key, "STORE", dstkey);
+		sort(key.getBytes(Protocol.UTF8), dstkey.getBytes(Protocol.UTF8));
 	}
 
 	public void brpop(final String[] args) {
-		sendCommand("BRPOP", args);
-	}
-
-	public void auth(final String password) {
-		sendCommand("AUTH", password);
-	}
-
-	public void subscribe(final String... channels) {
-		sendCommand("SUBSCRIBE", channels);
-	}
-
-	public void publish(final String channel, final String message) {
-		sendCommand("PUBLISH", channel, message);
-	}
-
-	public void unsubscribe() {
-		sendCommand("UNSUBSCRIBE");
-	}
-
-	public void unsubscribe(final String... channels) {
-		sendCommand("UNSUBSCRIBE", channels);
-	}
-
-	public void psubscribe(final String[] patterns) {
-		sendCommand("PSUBSCRIBE", patterns);
-	}
-
-	public void punsubscribe() {
-		sendCommand("PUNSUBSCRIBE");
-	}
-
-	public void punsubscribe(final String... patterns) {
-		sendCommand("PUNSUBSCRIBE", patterns);
+		final byte[][] bargs = new byte[args.length][];
+		for (int i = 0; i < bargs.length; i++) {
+			bargs[i] = args[i].getBytes(Protocol.UTF8);
+		}
+		brpop(bargs);
 	}
 
 	public void zcount(final String key, final double min, final double max) {
-		sendCommand("ZCOUNT", key, String.valueOf(min), String.valueOf(max));
+		zcount(key.getBytes(Protocol.UTF8), min, max);
 	}
 
 	public void zrangeByScore(
 			final String key,
 			final double min,
 			final double max) {
-		sendCommand(
-				"ZRANGEBYSCORE",
-				key,
-				String.valueOf(min),
-				String.valueOf(max));
+		zrangeByScore(key.getBytes(Protocol.UTF8), min, max);
 	}
 
 	public void zrangeByScore(
 			final String key,
 			final String min,
 			final String max) {
-		sendCommand("ZRANGEBYSCORE", key, min, max);
+		zrangeByScore(
+				key.getBytes(Protocol.UTF8),
+				min.getBytes(Protocol.UTF8),
+				max.getBytes(Protocol.UTF8));
 	}
 
 	public void zrangeByScore(
@@ -517,25 +465,14 @@ public class Client extends Connection {
 			final double max,
 			final int offset,
 			int count) {
-		sendCommand(
-				"ZRANGEBYSCORE",
-				key, String.valueOf(min),
-				String.valueOf(max),
-				"LIMIT",
-				String.valueOf(offset),
-				String.valueOf(count));
+		zrangeByScore(key.getBytes(Protocol.UTF8), min, max, offset, count);
 	}
 
 	public void zrangeByScoreWithScores(
 			final String key,
 			final double min,
 			final double max) {
-		sendCommand(
-			"ZRANGEBYSCORE",
-			key,
-			String.valueOf(min),
-			String.valueOf(max),
-			"WITHSCORES");
+		zrangeByScoreWithScores(key.getBytes(Protocol.UTF8), min, max);
 	}
 
 	public void zrangeByScoreWithScores(
@@ -544,148 +481,79 @@ public class Client extends Connection {
 			final double max,
 			final int offset,
 			final int count) {
-		sendCommand(
-				"ZRANGEBYSCORE",
-				key, String.valueOf(min),
-				String.valueOf(max),
-				"LIMIT",
-				String.valueOf(offset),
-				String.valueOf(count),
-				"WITHSCORES");
+		zrangeByScoreWithScores(key.getBytes(Protocol.UTF8), min, max, offset, count);
 	}
 
 	public void zremrangeByRank(
 			final String key,
 			final int start,
 			final int end) {
-		sendCommand(
-				"ZREMRANGEBYRANK",
-				key,
-				String.valueOf(start),
-				String.valueOf(end));
+		zremrangeByRank(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void zremrangeByScore(
 			final String key,
 			final double start,
 			final double end) {
-		sendCommand(
-				"ZREMRANGEBYSCORE",
-				key,
-				String.valueOf(start),
-				String.valueOf(end));
+		zremrangeByScore(key.getBytes(Protocol.UTF8), start, end);
 	}
 
 	public void zunionstore(final String dstkey, final String... sets) {
-		final String[] params = new String[sets.length + 2];
-		params[0] = dstkey;
-		params[1] = String.valueOf(sets.length);
-		System.arraycopy(sets, 0, params, 2, sets.length);
-		sendCommand("ZUNIONSTORE", params);
+		final byte[][] bsets = new byte[sets.length][];
+		for (int i = 0; i < bsets.length; i++) {
+			bsets[i] = sets[i].getBytes(Protocol.UTF8);
+		}
+		zunionstore(dstkey.getBytes(Protocol.UTF8), bsets);
 	}
 
 	public void zunionstore(
 			final String dstkey,
 			final ZParams params,
 			final String... sets) {
-		final List<String> args = new ArrayList<String>();
-		args.add(dstkey);
-		args.add(String.valueOf(sets.length));
-		for (final String set : sets) {
-			args.add(set);
+		final byte[][] bsets = new byte[sets.length][];
+		for (int i = 0; i < bsets.length; i++) {
+			bsets[i] = sets[i].getBytes(Protocol.UTF8);
 		}
-		args.addAll(params.getParams());
-		sendCommand("ZUNIONSTORE", args.toArray(new String[args.size()]));
+		zunionstore(dstkey.getBytes(Protocol.UTF8), params, bsets);
 	}
 
 	public void zinterstore(final String dstkey, final String... sets) {
-		final String[] params = new String[sets.length + 2];
-		params[0] = dstkey;
-		params[1] = String.valueOf(sets.length);
-		System.arraycopy(sets, 0, params, 2, sets.length);
-		sendCommand("ZINTERSTORE", params);
+		final byte[][] bsets = new byte[sets.length][];
+		for (int i = 0; i < bsets.length; i++) {
+			bsets[i] = sets[i].getBytes(Protocol.UTF8);
+		}
+		zinterstore(dstkey.getBytes(Protocol.UTF8), bsets);
 	}
 
 	public void zinterstore(
 			final String dstkey,
 			final ZParams params,
 			final String... sets) {
-		final List<String> args = new ArrayList<String>();
-		args.add(dstkey);
-		args.add(String.valueOf(sets.length));
-		for (final String set : sets) {
-			args.add(set);
+		final byte[][] bsets = new byte[sets.length][];
+		for (int i = 0; i < bsets.length; i++) {
+			bsets[i] = sets[i].getBytes(Protocol.UTF8);
 		}
-		args.addAll(params.getParams());
-		sendCommand("ZINTERSTORE", args.toArray(new String[args.size()]));
-	}
-
-	public void save() {
-		sendCommand("SAVE");
-	}
-
-	public void bgsave() {
-		sendCommand("BGSAVE");
-	}
-
-	public void bgrewriteaof() {
-		sendCommand("BGREWRITEAOF");
-	}
-
-	public void lastsave() {
-		sendCommand("LASTSAVE");
-	}
-
-	public void shutdown() {
-		sendCommand("SHUTDOWN");
-	}
-
-	public void info() {
-		sendCommand("INFO");
-	}
-
-	public void monitor() {
-		sendCommand("MONITOR");
-	}
-
-	public void slaveof(final String host, final int port) {
-		sendCommand("SLAVEOF", host, String.valueOf(port));
-	}
-
-	public void slaveofNoOne() {
-		sendCommand("SLAVEOF", "no", "one");
-	}
-
-	public void configGet(final String pattern) {
-		sendCommand("CONFIG", "GET", pattern);
-	}
-
-	public void configSet(final String parameter, final String value) {
-		sendCommand("CONFIG", "SET", parameter, value);
+		zinterstore(dstkey.getBytes(Protocol.UTF8), params, bsets);
 	}
 
 	public void strlen(final String key) {
-		sendCommand("STRLEN", key);
-	}
-
-	public void sync() {
-		sendCommand("SYNC");
+		strlen(key.getBytes(Protocol.UTF8));
 	}
 
 	public void lpushx(final String key, final String string) {
-		sendCommand("LPUSHX", key, string);
+		lpushx(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
 	}
 
 	public void persist(final String key) {
-		sendCommand("PERSIST", key);
+		persist(key.getBytes(Protocol.UTF8));
 	}
 
 	public void rpushx(final String key, final String string) {
-		sendCommand("RPUSHX", key, string);
+		rpushx(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
 	}
 
 	public void echo(final String string) {
-		sendCommand("ECHO", string);
+		echo(string.getBytes(Protocol.UTF8));
 	}
 
 	public void linsert(
@@ -693,10 +561,10 @@ public class Client extends Connection {
 			final LIST_POSITION where,
 			final String pivot,
 			final String value) {
-		sendCommand("LINSERT", key, where.toString(), pivot, value);
-	}
-
-	public void debug(final DebugParams params) {
-		sendCommand("DEBUG", params.getCommand());
+		linsert(
+				key.getBytes(Protocol.UTF8),
+				where,
+				pivot.getBytes(Protocol.UTF8),
+				value.getBytes(Protocol.UTF8));
 	}
 }

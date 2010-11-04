@@ -7,9 +7,11 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 
@@ -87,34 +89,54 @@ public class ProtocolTest extends Assert {
 		"*4\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$5\r\nHello\r\n$5\r\nWorld\r\n"
 			.getBytes());
 	Protocol protocol = new Protocol();
-	List<String> response = (List<String>) (List<?>) protocol
-		.read(new RedisInputStream(is));
-	List<String> expected = new ArrayList<String>();
-	expected.add("foo");
-	expected.add("bar");
-	expected.add("Hello");
-	expected.add("World");
+	List<byte[]> response = (List<byte[]>) protocol.read(new RedisInputStream(is));
+	List<byte[]> expected = new ArrayList<byte[]>();
+	expected.add("foo".getBytes(Protocol.UTF8));
+	expected.add("bar".getBytes(Protocol.UTF8));
+	expected.add("Hello".getBytes(Protocol.UTF8));
+	expected.add("World".getBytes(Protocol.UTF8));
 
-	assertEquals(expected, response);
+	assertEquals(expected.size(), response.size());
+	JedisTest.compareList(expected, response);
+//	final Iterator<byte[]> expectedit = expected.iterator();
+//	final Iterator<byte[]> responseit = response.iterator();
+//	while(expectedit.hasNext()) {
+//		final byte[] exp = expectedit.next();
+//		final byte[] resp = responseit.next();
+//		assertArrayEquals(exp, resp);
+//	}
 
 	is = new ByteArrayInputStream(
 		"*4\r\n$3\r\nfoo\r\n+OK\r\n:1000\r\n*2\r\n$3\r\nfoo\r\n$3\r\nbar"
 			.getBytes());
 	protocol = new Protocol();
-	List<Object> response2 = (List<Object>) protocol
-		.read(new RedisInputStream(is));
+	List<Object> response2 = (List<Object>) protocol.read(new RedisInputStream(is));
 	List<Object> expected2 = new ArrayList<Object>();
-	expected2.add("foo");
+	expected2.add("foo".getBytes(Protocol.UTF8));
 	expected2.add("OK");
 	expected2.add(1000);
 	List<Object> sub = new ArrayList<Object>();
-	sub.add("foo");
-	sub.add("bar");
+	sub.add("foo".getBytes(Protocol.UTF8));
+	sub.add("bar".getBytes(Protocol.UTF8));
 	expected2.add(sub);
 
-	assertEquals(expected2, response2);
+	assertEquals(expected2.size(), response2.size());
+	JedisTest.compareList(expected2, response2);
+//	final Iterator<Object> expectedit2 = expected2.iterator();
+//	final Iterator<Object> responseit2 = response2.iterator();
+//	while(expectedit2.hasNext()) {
+//		final Object exp = expectedit2.next();
+//		final Object resp = responseit2.next();
+//		if(exp instanceof byte[]) {
+//			final byte[] bexp = (byte[]) exp;
+//			final byte[] bresp = (byte[]) resp;
+//			assertArrayEquals(bexp, bresp);
+//		} else {
+//			assertEquals(exp, resp);
+//		}
+//	}
     }
-
+    
     @SuppressWarnings("unchecked")
     @Test
     public void nullMultiBulkReply() {

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
@@ -141,7 +142,12 @@ public class ShardedJedisTest extends Assert {
             }
         });
 
-        assertEquals("a", results.get(0));
-        assertEquals("b", results.get(1));
+        List<Object> expected = new ArrayList<Object>(2);
+        expected.add("a".getBytes(Protocol.UTF8));
+        expected.add("b".getBytes(Protocol.UTF8));
+        
+        JedisTest.compareList(expected, results);
+//        assertArrayEquals("a".getBytes(Protocol.UTF8), results.get(0));
+//        assertArrayEquals("b".getBytes(Protocol.UTF8), results.get(1));
     }
 }

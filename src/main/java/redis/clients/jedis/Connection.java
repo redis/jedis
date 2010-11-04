@@ -62,6 +62,19 @@ public class Connection {
         return this;
     }
 
+    protected Connection sendCommand(final String name, final byte[]... args) {
+        try {
+            connect();
+        } catch (UnknownHostException e) {
+            throw new JedisException("Could not connect to redis-server", e);
+        } catch (IOException e) {
+            throw new JedisException("Could not connect to redis-server", e);
+        }
+        protocol.sendCommand(outputStream, name, args);
+        pipelinedCommands++;
+        return this;
+    }
+
     public Connection(final String host, final int port) {
         super();
         this.host = host;

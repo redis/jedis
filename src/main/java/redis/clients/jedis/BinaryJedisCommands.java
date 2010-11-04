@@ -48,9 +48,9 @@ public interface BinaryJedisCommands {
 
     Integer hsetnx(byte[] key, byte[] field, byte[] value);
 
-    String hmset(byte[] key, Map<String, String> hash);
+    String hmset(byte[] key, Map<byte[], byte[]> hash);
 
-    List<byte[]> hmget(byte[] key, String... fields);
+    List<byte[]> hmget(byte[] key, byte[]... fields);
 
     Integer hincrBy(byte[] key, byte[] field, int value);
 

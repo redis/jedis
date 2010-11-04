@@ -12,7 +12,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 public interface BinaryJedisCommands {
     String set(byte[] key, byte[] value);
 
-    String get(byte[] key);
+    byte[] get(byte[] key);
 
     Integer exists(byte[] key);
 
@@ -24,7 +24,7 @@ public interface BinaryJedisCommands {
 
     Integer ttl(byte[] key);
 
-    String getSet(byte[] key, byte[] value);
+    byte[] getSet(byte[] key, byte[] value);
 
     Integer setnx(byte[] key, byte[] value);
 
@@ -40,17 +40,17 @@ public interface BinaryJedisCommands {
 
     Integer append(byte[] key, byte[] value);
 
-    String substr(byte[] key, int start, int end);
+    byte[] substr(byte[] key, int start, int end);
 
     Integer hset(byte[] key, byte[] field, byte[] value);
 
-    String hget(byte[] key, byte[] field);
+    byte[] hget(byte[] key, byte[] field);
 
     Integer hsetnx(byte[] key, byte[] field, byte[] value);
 
     String hmset(byte[] key, Map<String, String> hash);
 
-    List<String> hmget(byte[] key, String... fields);
+    List<byte[]> hmget(byte[] key, String... fields);
 
     Integer hincrBy(byte[] key, byte[] field, int value);
 
@@ -60,11 +60,11 @@ public interface BinaryJedisCommands {
 
     Integer hlen(byte[] key);
 
-    List<String> hkeys(byte[] key);
+    List<byte[]> hkeys(byte[] key);
 
-    List<String> hvals(byte[] key);
+    List<byte[]> hvals(byte[] key);
 
-    Map<String, String> hgetAll(byte[] key);
+    Map<byte[], byte[]> hgetAll(byte[] key);
 
     Integer rpush(byte[] key, byte[] string);
 
@@ -72,37 +72,37 @@ public interface BinaryJedisCommands {
 
     Integer llen(byte[] key);
 
-    List<String> lrange(byte[] key, int start, int end);
+    List<byte[]> lrange(byte[] key, int start, int end);
 
     String ltrim(byte[] key, int start, int end);
 
-    String lindex(byte[] key, int index);
+    byte[] lindex(byte[] key, int index);
 
     String lset(byte[] key, int index, byte[] value);
 
     Integer lrem(byte[] key, int count, byte[] value);
 
-    String lpop(byte[] key);
+    byte[] lpop(byte[] key);
 
-    String rpop(byte[] key);
+    byte[] rpop(byte[] key);
 
     Integer sadd(byte[] key, byte[] member);
 
-    Set<String> smembers(byte[] key);
+    Set<byte[]> smembers(byte[] key);
 
     Integer srem(byte[] key, byte[] member);
 
-    String spop(byte[] key);
+    byte[] spop(byte[] key);
 
     Integer scard(byte[] key);
 
     Integer sismember(byte[] key, byte[] member);
 
-    String srandmember(byte[] key);
+    byte[] srandmember(byte[] key);
 
     Integer zadd(byte[] key, double score, byte[] member);
 
-    Set<String> zrange(byte[] key, int start, int end);
+    Set<byte[]> zrange(byte[] key, int start, int end);
 
     Integer zrem(byte[] key, byte[] member);
 
@@ -112,7 +112,7 @@ public interface BinaryJedisCommands {
 
     Integer zrevrank(byte[] key, byte[] member);
 
-    Set<String> zrevrange(byte[] key, int start, int end);
+    Set<byte[]> zrevrange(byte[] key, int start, int end);
 
     Set<Tuple> zrangeWithScores(byte[] key, int start, int end);
 
@@ -122,15 +122,15 @@ public interface BinaryJedisCommands {
 
     Double zscore(byte[] key, byte[] member);
 
-    List<String> sort(byte[] key);
+    List<byte[]> sort(byte[] key);
 
-    List<String> sort(byte[] key, SortingParams sortingParameters);
+    List<byte[]> sort(byte[] key, SortingParams sortingParameters);
 
     Integer zcount(byte[] key, double min, double max);
 
-    Set<String> zrangeByScore(byte[] key, double min, double max);
+    Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
-    Set<String> zrangeByScore(
+    Set<byte[]> zrangeByScore(
     		byte[] key,
     		double min,
     		double max,

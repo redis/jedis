@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.Protocol.Command;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 
@@ -49,7 +50,15 @@ public class Connection {
         this.host = host;
     }
 
-    protected Connection sendCommand(final String name, final String... args) {
+    protected Connection sendCommand(final Command cmd, final String... args) {
+    	final byte[][] bargs = new byte[args.length][];
+    	for(int i=0; i < args.length; i++) {
+    		bargs[i] = args[i].getBytes(Protocol.UTF8);
+    	}
+    	return sendCommand(cmd, bargs);
+    }
+
+    protected Connection sendCommand(final Command cmd, final byte[]... args) {
         try {
             connect();
         } catch (UnknownHostException e) {
@@ -57,12 +66,12 @@ public class Connection {
         } catch (IOException e) {
             throw new JedisException("Could not connect to redis-server", e);
         }
-        protocol.sendCommand(outputStream, name, args);
+        protocol.sendCommand(outputStream, cmd, args);
         pipelinedCommands++;
         return this;
     }
 
-    protected Connection sendCommand(final String name, final byte[]... args) {
+    protected Connection sendCommand(final Command cmd) {
         try {
             connect();
         } catch (UnknownHostException e) {
@@ -70,7 +79,7 @@ public class Connection {
         } catch (IOException e) {
             throw new JedisException("Could not connect to redis-server", e);
         }
-        protocol.sendCommand(outputStream, name, args);
+        protocol.sendCommand(outputStream, cmd, (byte[])null);
         pipelinedCommands++;
         return this;
     }

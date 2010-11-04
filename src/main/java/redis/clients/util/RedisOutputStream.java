@@ -12,11 +12,11 @@ public final class RedisOutputStream extends FilterOutputStream {
 
     protected int count;
 
-    public RedisOutputStream(OutputStream out) {
+    public RedisOutputStream(final OutputStream out) {
         this(out, 8192);
     }
 
-    public RedisOutputStream(OutputStream out, int size) {
+    public RedisOutputStream(final OutputStream out, final int size) {
         super(out);
         if (size <= 0) {
             throw new IllegalArgumentException("Buffer size <= 0");
@@ -31,14 +31,18 @@ public final class RedisOutputStream extends FilterOutputStream {
         }
     }
 
-    public void write(int b) throws IOException {
-        buf[count++] = (byte) b;
+    public void write(final byte b) throws IOException {
+        buf[count++] = b;
         if (count == buf.length) {
             flushBuffer();
         }
     }
+    
+    public void write(final byte[] b) throws IOException {
+    	write(b, 0, b.length);
+    }
 
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(final byte b[], final int off, final int len) throws IOException {
         if (len >= buf.length) {
             flushBuffer();
             out.write(b, off, len);
@@ -52,7 +56,7 @@ public final class RedisOutputStream extends FilterOutputStream {
         }
     }
 
-    public void writeAsciiCrLf(String in) throws IOException {
+    public void writeAsciiCrLf(final String in) throws IOException {
         final int size = in.length();
 
         for (int i = 0; i != size; ++i) {
@@ -65,11 +69,11 @@ public final class RedisOutputStream extends FilterOutputStream {
         writeCrLf();
     }
 
-    public static boolean isSurrogate(char ch) {
+    public static boolean isSurrogate(final char ch) {
         return ch >= Character.MIN_SURROGATE && ch <= Character.MAX_SURROGATE;
     }
 
-    public static int utf8Length (String str) {
+    public static int utf8Length (final String str) {
         int strLen = str.length(), utfLen = 0;
         for(int i = 0; i != strLen; ++i) {
             char c = str.charAt(i);
@@ -96,7 +100,7 @@ public final class RedisOutputStream extends FilterOutputStream {
         buf[count++] = '\n';
     }
 
-    public void writeUtf8CrLf(String str) throws IOException {
+    public void writeUtf8CrLf(final String str) throws IOException {
         int strLen = str.length();
 
         int i;

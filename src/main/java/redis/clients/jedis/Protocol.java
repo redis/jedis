@@ -19,7 +19,7 @@ public final class Protocol {
     public static final byte PLUS_BYTE = '+';
     public static final byte MINUS_BYTE = '-';
     public static final byte COLON_BYTE = ':';
-
+/*
     public void sendCommand(final RedisOutputStream os, final String name, final String... args) {
         try {
             os.write(ASTERISK_BYTE);
@@ -43,14 +43,20 @@ public final class Protocol {
             throw new JedisException(e);
         }
     }
+*/
+    public void sendCommand(final RedisOutputStream os, final Command command, final byte[]... args) {
+    	sendCommand(os, command.raw, args);
+    }
 
-    public void sendCommand(final RedisOutputStream os, final String name, final byte[]... args) {
+    private void sendCommand(final RedisOutputStream os, final byte[] command, final byte[]... args) {
         try {
             os.write(ASTERISK_BYTE);
             os.writeIntCrLf(args.length + 1);
             os.write(DOLLAR_BYTE);
-            os.writeIntCrLf(name.length());
-            os.writeAsciiCrLf(name);
+            os.writeIntCrLf(command.length);
+            os.write(command);
+            os.writeCrLf();
+//            os.writeAsciiCrLf(command);
 
             for (final byte[] arg : args) {
                 os.write(DOLLAR_BYTE);
@@ -135,5 +141,164 @@ public final class Protocol {
 
     public Object read(final RedisInputStream is) {
         return process(is);
+    }
+
+	public static final byte[] toByteArray(final int value) {
+		return String.valueOf(value).getBytes(Protocol.UTF8);
+	}
+
+	public static final byte[] toByteArray(final long value) {
+		return String.valueOf(value).getBytes(Protocol.UTF8);
+	}
+	
+	public static final byte[] toByteArray(final double value) {
+		return String.valueOf(value).getBytes(Protocol.UTF8);
+	}
+
+    public static enum Command {
+    	PING,
+    	SET,
+    	GET,
+    	QUIT,
+    	EXISTS,
+    	DEL,
+    	TYPE,
+    	FLUSHDB,
+    	KEYS,
+    	RANDOMKEY,
+    	RENAME,
+    	RENAMENX,
+    	RENAMEX,
+    	DBSIZE,
+    	EXPIRE,
+    	EXPIREAT,
+    	TTL,
+    	SELECT,
+    	MOVE,
+    	FLUSHALL,
+    	GETSET,
+    	MGET,
+    	SETNX,
+    	SETEX,
+    	MSET,
+    	MSETNX,
+    	DECRBY,
+    	DECR,
+    	INCRBY,
+    	INCR,
+    	APPEND,
+    	SUBSTR,
+    	HSET,
+    	HGET,
+    	HSETNX,
+    	HMSET,
+    	HMGET,
+    	HINCRBY,
+    	HEXISTS,
+    	HDEL,
+    	HLEN,
+    	HKEYS,
+    	HVALS,
+    	HGETALL,
+    	RPUSH,
+    	LPUSH,
+    	LLEN,
+    	LRANGE,
+    	LTRIM,
+    	LINDEX,
+    	LSET,
+    	LREM,
+    	LPOP,
+    	RPOP,
+    	RPOPLPUSH,
+    	SADD,
+    	SMEMBERS,
+    	SREM,
+    	SPOP,
+    	SMOVE,
+    	SCARD,
+    	SISMEMBER,
+    	SINTER,
+    	SINTERSTORE,
+    	SUNION,
+    	SUNIONSTORE,
+    	SDIFF,
+    	SDIFFSTORE,
+    	SRANDMEMBER,
+    	ZADD,
+    	ZRANGE,
+    	ZREM,
+    	ZINCRBY,
+    	ZRANK,
+    	ZREVRANK,
+    	ZREVRANGE,
+    	ZCARD,
+    	ZSCORE,
+    	MULTI,
+    	DISCARD,
+    	EXEC,
+    	WATCH,
+    	UNWATCH,
+    	SORT,
+    	BLPOP,
+    	BRPOP,
+    	AUTH,
+    	SUBSCRIBE,
+    	PUBLISH,
+    	UNSUBSCRIBE,
+    	PSUBSCRIBE,
+    	PUNSUBSCRIBE,
+    	ZCOUNT,
+    	ZRANGEBYSCORE,
+    	ZREMRANGEBYRANK,
+    	ZREMRANGEBYSCORE,
+    	ZUNIONSTORE,
+    	ZINTERSTORE,
+    	SAVE,
+    	BGSAVE,
+    	BGREWRITEAOF,
+    	LASTSAVE,
+    	SHUTDOWN,
+    	INFO,
+    	MONITOR,
+    	SLAVEOF,
+    	CONFIG,
+    	STRLEN,
+    	SYNC,
+    	LPUSHX,
+    	PERSIST,
+    	RPUSHX,
+    	ECHO,
+    	LINSERT,
+    	DEBUG;
+
+    	public final byte[] raw;
+
+    	Command() {
+    		raw = this.name().getBytes(UTF8);
+    	}
+    }
+    
+    public static enum Keyword {
+    	AGGREGATE,
+    	ALPHA,
+    	ASC,
+    	BY,
+    	DESC,
+    	GET,
+    	NO,
+    	NOSORT,
+    	ONE,
+    	LIMIT,
+    	SET,
+    	STORE,
+    	WEIGHTS,
+    	WITHSCORES;
+    	public final byte[] raw;
+
+    	Keyword() {
+    		raw = this.name().getBytes(UTF8);
+    	}
+    	
     }
 }

@@ -1,7 +1,6 @@
 package redis.clients.util;
 
 import java.io.*;
-import java.nio.charset.Charset;
 
 /**
  * The class implements a buffered output stream without synchronization
@@ -12,7 +11,6 @@ public final class RedisOutputStream extends FilterOutputStream {
     protected final byte buf[];
 
     protected int count;
-    public static final Charset CHARSET = Charset.forName("UTF-8");
 
     public RedisOutputStream(OutputStream out) {
         this(out, 8192);

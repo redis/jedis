@@ -4,12 +4,15 @@ import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
+
+    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static final byte DOLLAR_BYTE = '$';
     public static final byte ASTERISK_BYTE = '*';

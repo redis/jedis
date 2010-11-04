@@ -122,8 +122,12 @@ public class Connection {
     }
 
     public String getBulkReply() {
+    	return new String(getBinaryBulkReply(), Protocol.UTF8);
+    }
+
+    public byte[] getBinaryBulkReply() {
         pipelinedCommands--;
-        return (String) protocol.read(inputStream);
+        return (byte[]) protocol.read(inputStream);
     }
 
     public Integer getIntegerReply() {

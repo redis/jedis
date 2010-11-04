@@ -7,8 +7,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static redis.clients.util.RedisOutputStream.CHARSET;
-
 public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
@@ -94,7 +92,7 @@ public final class Protocol {
         return is.readLine();
     }
 
-    private String processBulkReply(final RedisInputStream is) {
+    private byte[] processBulkReply(final RedisInputStream is) {
         int len = Integer.parseInt(is.readLine());
         if (len == -1) {
             return null;
@@ -112,7 +110,7 @@ public final class Protocol {
             throw new JedisException(e);
         }
 
-        return new String(read, CHARSET);
+        return read;
     }
 
     private Integer processInteger(final RedisInputStream is) {

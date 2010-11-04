@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Transaction;
 
 public class JedisNewCommandsCheckTest extends Assert {
@@ -36,23 +37,28 @@ public class JedisNewCommandsCheckTest extends Assert {
     }
 
     private Set<String> getImplementedCommands() {
-	Method[] methods = Jedis.class.getDeclaredMethods();
-	Set<String> implementedCommands = new HashSet<String>();
-	for (Method method : methods) {
-	    implementedCommands.add(method.getName().trim().toLowerCase());
-	}
-
-	methods = JedisPubSub.class.getDeclaredMethods();
-	for (Method method : methods) {
-	    implementedCommands.add(method.getName().trim().toLowerCase());
-	}
-
-	methods = Transaction.class.getDeclaredMethods();
-	for (Method method : methods) {
-	    implementedCommands.add(method.getName().trim().toLowerCase());
-	}
-	implementedCommands.add("config");
-	return implementedCommands;
+//	Method[] methods = Jedis.class.getDeclaredMethods();
+//	Set<String> implementedCommands = new HashSet<String>();
+//	for (Method method : methods) {
+//	    implementedCommands.add(method.getName().trim().toLowerCase());
+//	}
+//
+//	methods = JedisPubSub.class.getDeclaredMethods();
+//	for (Method method : methods) {
+//	    implementedCommands.add(method.getName().trim().toLowerCase());
+//	}
+//
+//	methods = Transaction.class.getDeclaredMethods();
+//	for (Method method : methods) {
+//	    implementedCommands.add(method.getName().trim().toLowerCase());
+//	}
+//	implementedCommands.add("config");
+//	return implementedCommands;
+    	Set<String> implementedCommands = new HashSet<String>();
+    	for(Command cmd : Command.values()){
+    		implementedCommands.add(cmd.name().toLowerCase());
+    	}
+    	return implementedCommands;
     }
 
     private String[] getAvailableCommands() throws MalformedURLException,

@@ -46,6 +46,8 @@ public class JedisTest extends JedisCommandTestBase {
     
     @SuppressWarnings("rawtypes")
 	public static void compareList(List expected, List result) {
+    	assertEquals(expected.size(), result.size());
+    	
     	final Iterator expectedit = expected.iterator();
     	final Iterator responseit = result.iterator();
     	while(expectedit.hasNext()) {

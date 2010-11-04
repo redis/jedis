@@ -3,7 +3,7 @@ package redis.clients.jedis.tests.commands;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.After;
 import org.junit.Before;

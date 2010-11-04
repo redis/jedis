@@ -34,7 +34,7 @@ public class Client extends BinaryClient {
 	}
 
 	public void type(final String key) {
-		del(key.getBytes(Protocol.UTF8));
+		type(key.getBytes(Protocol.UTF8));
 	}
 
 	public void keys(final String pattern) {

@@ -179,10 +179,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd("foo", 2d, "a");
 
         Double score = jedis.zscore("foo", "b");
-        assertEquals(10d, score);
+        assertEquals((Double)10d, score);
 
         score = jedis.zscore("foo", "c");
-        assertEquals(0.1d, score);
+        assertEquals((Double)0.1d, score);
 
         score = jedis.zscore("foo", "s");
         assertNull(score);

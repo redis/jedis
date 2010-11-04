@@ -79,7 +79,7 @@ public class Connection {
         } catch (IOException e) {
             throw new JedisException("Could not connect to redis-server", e);
         }
-        protocol.sendCommand(outputStream, cmd, (byte[])null);
+        protocol.sendCommand(outputStream, cmd, new byte[0][]);
         pipelinedCommands++;
         return this;
     }
@@ -144,7 +144,12 @@ public class Connection {
     }
 
     public String getBulkReply() {
-    	return new String(getBinaryBulkReply(), Protocol.UTF8);
+    	final byte[] result = getBinaryBulkReply();
+    	if (null != result) {
+    		return new String(result, Protocol.UTF8);
+    	} else {
+    		return null;
+    	}
     }
 
     public byte[] getBinaryBulkReply() {

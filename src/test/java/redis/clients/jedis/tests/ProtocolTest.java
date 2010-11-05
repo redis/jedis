@@ -70,8 +70,8 @@ public class ProtocolTest extends Assert {
     public void singleLineReply() {
 	InputStream is = new ByteArrayInputStream("+OK\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = (String) protocol.read(new RedisInputStream(is));
-	assertEquals("OK", response);
+	byte[] response = (byte[]) protocol.read(new RedisInputStream(is));
+	assertArrayEquals("OK".getBytes(Protocol.UTF8), response);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class ProtocolTest extends Assert {
 	List<Object> response2 = (List<Object>) protocol.read(new RedisInputStream(is));
 	List<Object> expected2 = new ArrayList<Object>();
 	expected2.add("foo".getBytes(Protocol.UTF8));
-	expected2.add("OK");
+	expected2.add("OK".getBytes(Protocol.UTF8));
 	expected2.add(1000);
 	List<Object> sub = new ArrayList<Object>();
 	sub.add("foo".getBytes(Protocol.UTF8));

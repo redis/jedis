@@ -91,7 +91,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         expected.add("a");
         expected.add("b");
 
-        assertEquals(3d, score);
+        assertEquals(3d, score, 0);
         assertEquals(expected, jedis.zrange("foo", 0, 100));
     }
 

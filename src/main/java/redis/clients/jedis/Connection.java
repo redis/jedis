@@ -140,7 +140,12 @@ public class Connection {
 
     protected String getStatusCodeReply() {
         pipelinedCommands--;
-        return (String) protocol.read(inputStream);
+        final byte[] resp = (byte[]) protocol.read(inputStream);
+        if (null == resp) {
+        	return null;
+        } else {
+        	return new String(resp, Protocol.UTF8);
+        }
     }
 
     public String getBulkReply() {
@@ -169,7 +174,11 @@ public class Connection {
     	}
     	final ArrayList<String> result = new ArrayList<String>(bresult.size());
     	for(final byte[] barray : bresult) {
-    		result.add(new String(barray, Protocol.UTF8));
+    		if( barray == null) {
+    			result.add(null);
+    		} else {
+    			result.add(new String(barray, Protocol.UTF8));
+    		}
     	}
     	return result;
     }

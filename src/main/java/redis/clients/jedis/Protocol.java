@@ -97,8 +97,8 @@ public final class Protocol {
         return null;
     }
 
-    private String processStatusCodeReply(final RedisInputStream is) {
-        return is.readLine();
+    private byte[] processStatusCodeReply(final RedisInputStream is) {
+        return is.readLine().getBytes(UTF8);
     }
 
     private byte[] processBulkReply(final RedisInputStream is) {

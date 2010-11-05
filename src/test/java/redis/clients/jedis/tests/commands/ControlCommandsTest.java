@@ -21,8 +21,9 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 	    String status = jedis.bgsave();
 	    assertEquals("Background saving started", status);
 	} catch (JedisException e) {
-	    assertEquals("ERR Background save already in progress", e
-		    .getMessage());
+		assertTrue(
+				"ERR Background save already in progress"
+					.equalsIgnoreCase(e.getMessage()));
 	}
     }
 

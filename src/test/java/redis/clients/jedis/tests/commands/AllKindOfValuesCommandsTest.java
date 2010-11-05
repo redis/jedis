@@ -1,11 +1,13 @@
 package redis.clients.jedis.tests.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 
 import redis.clients.jedis.JedisException;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.JedisTest;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
@@ -162,6 +164,23 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 	String randomkey = jedis.randomKey();
 	assertTrue(randomkey.equals("foo") || randomkey.equals("bar"));
+	
+	// Binary
+	jedis.del("foo");
+	jedis.del("bar");
+	assertEquals(null, jedis.randomKey());
+
+	jedis.set(bfoo, bbar);
+
+	assertArrayEquals(bfoo, jedis.randomBinaryKey());
+
+	jedis.set(bbar, bfoo);
+
+	byte[] randomBkey = jedis.randomBinaryKey();
+	assertTrue(
+			Arrays.equals(randomBkey, bfoo) ||
+			Arrays.equals(randomBkey, bbar));
+
     }
 
     @Test
@@ -175,12 +194,34 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 	value = jedis.get("bar");
 	assertEquals("bar", value);
+
+	//Binary
+	jedis.set(bfoo, bbar);
+	String bstatus = jedis.rename(bfoo, bbar);
+	assertEquals("OK", bstatus);
+
+	byte[] bvalue = jedis.get(bfoo);
+	assertEquals(null, bvalue);
+
+	bvalue = jedis.get(bbar);
+	assertArrayEquals(bbar, bvalue);
     }
 
-    @Test(expected = JedisException.class)
+    @Test
     public void renameOldAndNewAreTheSame() {
-	jedis.set("foo", "bar");
-	jedis.rename("foo", "foo");
+    	try {
+			jedis.set("foo", "bar");
+			jedis.rename("foo", "foo");
+			fail("JedisException expected");
+    	} catch(final JedisException e){}
+    	
+    	//Binary
+    	try {
+			jedis.set(bfoo, bbar);
+			jedis.rename(bfoo, bfoo);
+			fail("JedisException expected");
+    	} catch(final JedisException e){}
+
     }
 
     @Test
@@ -192,6 +233,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("foo", "bar");
 	status = jedis.renamenx("foo", "bar");
 	assertEquals(0, status);
+	
+	//Binary
+	jedis.set(bfoo, bbar);
+	int bstatus = jedis.renamenx(bfoo, bbar);
+	assertEquals(1, bstatus);
+
+	jedis.set(bfoo, bbar);
+	bstatus = jedis.renamenx(bfoo, bbar);
+	assertEquals(0, bstatus);
+
     }
 
     @Test
@@ -202,6 +253,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("foo", "bar");
 	size = jedis.dbSize();
 	assertEquals(1, size);
+	
+	//Binary
+	jedis.set(bfoo, bbar);
+	size = jedis.dbSize();
+	assertEquals(2, size);
     }
 
     @Test
@@ -212,6 +268,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("foo", "bar");
 	status = jedis.expire("foo", 20);
 	assertEquals(1, status);
+	
+	// Binary
+	int bstatus = jedis.expire(bfoo, 20);
+	assertEquals(0, bstatus);
+
+	jedis.set(bfoo, bbar);
+	bstatus = jedis.expire(bfoo, 20);
+	assertEquals(1, bstatus);
+
     }
 
     @Test
@@ -225,6 +290,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	unixTime = (System.currentTimeMillis() / 1000L) + 20;
 	status = jedis.expireAt("foo", unixTime);
 	assertEquals(1, status);
+	
+	//Binary
+	int bstatus = jedis.expireAt(bfoo, unixTime);
+	assertEquals(0, bstatus);
+
+	jedis.set(bfoo, bbar);
+	unixTime = (System.currentTimeMillis() / 1000L) + 20;
+	bstatus = jedis.expireAt(bfoo, unixTime);
+	assertEquals(1, bstatus);
+
     }
 
     @Test
@@ -239,6 +314,19 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.expire("foo", 20);
 	ttl = jedis.ttl("foo");
 	assertTrue(ttl >= 0 && ttl <= 20);
+
+	//Binary
+	int bttl = jedis.ttl(bfoo);
+	assertEquals(-1, bttl);
+
+	jedis.set(bfoo, bbar);
+	bttl = jedis.ttl(bfoo);
+	assertEquals(-1, bttl);
+
+	jedis.expire(bfoo, 20);
+	bttl = jedis.ttl(bfoo);
+	assertTrue(bttl >= 0 && bttl <= 20);
+
     }
 
     @Test
@@ -250,6 +338,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	status = jedis.select(0);
 	assertEquals("OK", status);
 	assertEquals("bar", jedis.get("foo"));
+	//Binary
+	jedis.set(bfoo, bbar);
+	String bstatus = jedis.select(1);
+	assertEquals("OK", bstatus);
+	assertEquals(null, jedis.get(bfoo));
+	bstatus = jedis.select(0);
+	assertEquals("OK", bstatus);
+	assertArrayEquals(bbar, jedis.get(bfoo));
     }
 
     @Test
@@ -264,6 +360,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 	jedis.select(1);
 	assertEquals("bar", jedis.get("foo"));
+	
+	//Binary
+	jedis.select(0);
+	int bstatus = jedis.move(bfoo, 1);
+	assertEquals(0, bstatus);
+
+	jedis.set(bfoo, bbar);
+	bstatus = jedis.move(bfoo, 1);
+	assertEquals(1, bstatus);
+	assertEquals(null, jedis.get(bfoo));
+
+	jedis.select(1);
+	assertArrayEquals(bbar, jedis.get(bfoo));
+
     }
 
     @Test
@@ -277,6 +387,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	assertEquals(0, jedis.dbSize().intValue());
 	jedis.select(1);
 	assertEquals(1, jedis.dbSize().intValue());
+	jedis.del("bar");
+	
+	//Binary
+	jedis.select(0);
+	jedis.set(bfoo, bbar);
+	assertEquals(1, jedis.dbSize().intValue());
+	jedis.set(bbar, bfoo);
+	jedis.move(bbar, 1);
+	String bstatus = jedis.flushDB();
+	assertEquals("OK", bstatus);
+	assertEquals(0, jedis.dbSize().intValue());
+	jedis.select(1);
+	assertEquals(1, jedis.dbSize().intValue());
+
     }
 
     @Test
@@ -290,6 +414,19 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	assertEquals(0, jedis.dbSize().intValue());
 	jedis.select(1);
 	assertEquals(0, jedis.dbSize().intValue());
+	
+	//Binary
+	jedis.select(0);
+	jedis.set(bfoo, bbar);
+	assertEquals(1, jedis.dbSize().intValue());
+	jedis.set(bbar, bfoo);
+	jedis.move(bbar, 1);
+	String bstatus = jedis.flushAll();
+	assertEquals("OK", bstatus);
+	assertEquals(0, jedis.dbSize().intValue());
+	jedis.select(1);
+	assertEquals(0, jedis.dbSize().intValue());
+
     }
 
     @Test
@@ -299,12 +436,25 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	int status = jedis.persist("foo");
 	assertEquals(1, status);
 	assertEquals(-1, jedis.ttl("foo").intValue());
+	
+	//Binary
+	jedis.setex(bfoo, 60 * 60, bbar);
+	assertTrue(jedis.ttl(bfoo) > 0);
+	int bstatus = jedis.persist(bfoo);
+	assertEquals(1, bstatus);
+	assertEquals(-1, jedis.ttl(bfoo).intValue());
+
     }
+    
 
     @Test
     public void echo() {
 	String result = jedis.echo("hello world");
 	assertEquals("hello world", result);
+	
+	// Binary
+	byte[] bresult = jedis.echo("hello world".getBytes(Protocol.UTF8));
+	assertArrayEquals("hello world".getBytes(Protocol.UTF8), bresult);
     }
 
 }

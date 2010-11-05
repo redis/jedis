@@ -2834,9 +2834,9 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getIntegerReply();
     }
 
-    public String echo(final byte[] string) {
+    public byte[] echo(final byte[] string) {
         client.echo(string);
-        return client.getBulkReply();
+        return client.getBinaryBulkReply();
     }
 
     public Integer linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot,

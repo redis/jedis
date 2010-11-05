@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -62,10 +63,9 @@ public class JedisTest extends JedisCommandTestBase {
 	    		if(exp instanceof byte[] && resp instanceof byte[]) {
 	    			final byte[] bexp = (byte[]) exp;
 	    			final byte[] bresp = (byte[]) resp;
-	    			if(isArraysAreEquals(bexp, bresp)) {
+	    			if(Arrays.equals(bexp, bresp)) {
 	    				found = true;
 	    			}
-//	    			Assert.assertArrayEquals(bexp, bresp);
 	    		} else if (exp instanceof List && resp instanceof List) {
 	    			final List subexp = (List) exp;
 	    			final List subresp = (List) resp;
@@ -86,17 +86,17 @@ public class JedisTest extends JedisCommandTestBase {
     	return true;
     }
 
-    public static boolean isArraysAreEquals(final byte[] expected, final byte[] result) {
-    	if(expected.length != result.length) {
-    		return false;
-    	}
-    	
-    	for(int i=0; i < expected.length; i++) {
-    		if(expected[i] != result[i]) {
-    			return false;
-    		}
-    	}
-    	
-    	return true;
-    }
+//    public static boolean isArraysAreEqualsPlop(final byte[] expected, final byte[] result) {
+//    	if(expected.length != result.length) {
+//    		return false;
+//    	}
+//    	
+//    	for(int i=0; i < expected.length; i++) {
+//    		if(expected[i] != result[i]) {
+//    			return false;
+//    		}
+//    	}
+//    	
+//    	return true;
+//    }
 }

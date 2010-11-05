@@ -286,18 +286,24 @@ public final class Protocol {
     	BY,
     	DESC,
     	GET,
+    	LIMIT,
+    	MESSAGE,
     	NO,
     	NOSORT,
+    	PMESSAGE,
+    	PSUBSCRIBE,
+    	PUNSUBSCRIBE,
     	ONE,
-    	LIMIT,
     	SET,
     	STORE,
+    	SUBSCRIBE,
+    	UNSUBSCRIBE,
     	WEIGHTS,
     	WITHSCORES;
     	public final byte[] raw;
 
     	Keyword() {
-    		raw = this.name().getBytes(UTF8);
+    		raw = this.name().toLowerCase().getBytes(UTF8);
     	}
     	
     }

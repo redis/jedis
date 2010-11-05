@@ -1,15 +1,19 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.toByteArray;
+import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Keyword.LIMIT;
+import static redis.clients.jedis.Protocol.Keyword.NO;
+import static redis.clients.jedis.Protocol.Keyword.ONE;
+import static redis.clients.jedis.Protocol.Keyword.STORE;
+import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
-import static redis.clients.jedis.Protocol.toByteArray;
-
-import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.*;
 public class BinaryClient extends Connection {
 	public enum LIST_POSITION {
 		BEFORE, AFTER;

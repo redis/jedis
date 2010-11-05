@@ -49,22 +49,44 @@ public class JedisTest extends JedisCommandTestBase {
     	assertEquals(expected.size(), result.size());
     	
     	final Iterator expectedit = expected.iterator();
-    	final Iterator responseit = result.iterator();
     	while(expectedit.hasNext()) {
     		final Object exp = expectedit.next();
-    		final Object resp = responseit.next();
-    		if(exp instanceof byte[]) {
-    			final byte[] bexp = (byte[]) exp;
-    			final byte[] bresp = (byte[]) resp;
-    			Assert.assertArrayEquals(bexp, bresp);
-    		} else if (exp instanceof List) {
-    			final List subexp = (List) exp;
-    			final List subresp = (List) resp;
-    			compareList(subexp, subresp);
-    		} else {
-    			assertEquals(exp, resp);
-    		}
+        	final Iterator responseit = result.iterator();
+        	boolean found = false;
+        	while(responseit.hasNext() && !found) {
+	    		final Object resp = responseit.next();
+	    		if(exp instanceof byte[]) {
+	    			final byte[] bexp = (byte[]) exp;
+	    			final byte[] bresp = (byte[]) resp;
+	    			if(arraysAreEquals(bexp, bresp)) {
+	    				found = true;
+	    			}
+//	    			Assert.assertArrayEquals(bexp, bresp);
+	    		} else if (exp instanceof List) {
+	    			final List subexp = (List) exp;
+	    			final List subresp = (List) resp;
+	    			compareList(subexp, subresp);
+	    		} else {
+	    			assertEquals(exp, resp);
+	    		}
+        	}
+        	if(!found){
+        		fail("Result doesn't contain " + exp.toString());
+        	}
     	}
     }
 
+    public static boolean arraysAreEquals(final byte[] expected, final byte[] result) {
+    	if(expected.length != result.length) {
+    		return false;
+    	}
+    	
+    	for(int i=0; i < expected.length; i++) {
+    		if(expected[i] != result[i]) {
+    			return false;
+    		}
+    	}
+    	
+    	return true;
+    }
 }

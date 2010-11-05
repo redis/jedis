@@ -27,12 +27,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     	super(shardInfo);
     }
 
-    public String ping() {
-        checkIsInMulti();
-        client.ping();
-        return client.getStatusCodeReply();
-    }
-
     /**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).
@@ -287,19 +281,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         checkIsInMulti();
         client.ttl(key);
         return client.getIntegerReply();
-    }
-
-    /**
-     * Select the DB with having the specified zero-based numeric index. For
-     * default every new client connection is automatically selected to DB 0.
-     * 
-     * @param index
-     * @return Status code reply
-     */
-    public String select(final int index) {
-        checkIsInMulti();
-        client.select(index);
-        return client.getStatusCodeReply();
     }
 
     /**

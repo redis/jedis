@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +49,7 @@ public class JedisTest extends JedisCommandTestBase {
     }
     
     @SuppressWarnings("rawtypes")
-	public static boolean isListAreEquals(List expected, List result) {
+	public static boolean isListAreEquals(Collection expected, Collection result) {
     	if(expected.size() != result.size()) {
     		return false;
     	}
@@ -66,20 +67,26 @@ public class JedisTest extends JedisCommandTestBase {
 	    			if(Arrays.equals(bexp, bresp)) {
 	    				found = true;
 	    			}
-	    		} else if (exp instanceof List && resp instanceof List) {
-	    			final List subexp = (List) exp;
-	    			final List subresp = (List) resp;
+	    		} else if (exp instanceof Collection && resp instanceof Collection) {
+	    			final Collection subexp = (Collection) exp;
+	    			final Collection subresp = (Collection) resp;
 	    			if(isListAreEquals(subexp, subresp)) {
 	    				found = true;
 	    			}
 	    		} else {
-	    			if (exp.equals(resp)){
-	    				found = true;
+	    			if (null != exp) {
+		    			if (exp.equals(resp)){
+		    				found = true;
+		    			}
+	    			} else {
+	    				if(resp == null) {
+	    					found = true;
+	    				}
 	    			}
 	    		}
         	}
         	if(!found){
-        		fail("Result doesn't contain " + exp.toString());
+        		fail("Result doesn't contain " + (null != exp ? exp.toString() : null));
         	}
     	}
     	

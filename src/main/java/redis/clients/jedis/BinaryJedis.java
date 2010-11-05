@@ -1574,14 +1574,14 @@ public class BinaryJedis implements BinaryJedisCommands {
     public Set<Tuple> zrangeWithScores(final byte[] key, final int start, final int end) {
         checkIsInMulti();
         client.zrangeWithScores(key, start, end);
-        Set<Tuple> set = getTupledSet();
+        Set<Tuple> set = getBinaryTupledSet();
         return set;
     }
 
     public Set<Tuple> zrevrangeWithScores(final byte[] key, final int start, final int end) {
         checkIsInMulti();
         client.zrevrangeWithScores(key, start, end);
-        Set<Tuple> set = getTupledSet();
+        Set<Tuple> set = getBinaryTupledSet();
         return set;
     }
 
@@ -2225,7 +2225,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
         checkIsInMulti();
         client.zrangeByScoreWithScores(key, min, max);
-        Set<Tuple> set = getTupledSet();
+        Set<Tuple> set = getBinaryTupledSet();
         return set;
     }
 
@@ -2289,19 +2289,22 @@ public class BinaryJedis implements BinaryJedisCommands {
     		final double max, final int offset, final int count) {
         checkIsInMulti();
         client.zrangeByScoreWithScores(key, min, max, offset, count);
-        Set<Tuple> set = getTupledSet();
+        Set<Tuple> set = getBinaryTupledSet();
         return set;
     }
 
-    private Set<Tuple> getTupledSet() {
+    private Set<Tuple> getBinaryTupledSet() {
         checkIsInMulti();
-        List<String> membersWithScores = client.getMultiBulkReply();
+        List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
         Set<Tuple> set = new LinkedHashSet<Tuple>();
-        Iterator<String> iterator = membersWithScores.iterator();
+        Iterator<byte[]> iterator = membersWithScores.iterator();
         while (iterator.hasNext()) {
-            set
-                    .add(new Tuple(iterator.next(), Double.valueOf(iterator
-                            .next())));
+            set.add(
+            	new Tuple(
+            			iterator.next(),
+            			Double.valueOf(new String(iterator.next(), Protocol.UTF8))
+            	)
+            );
         }
         return set;
     }

@@ -145,7 +145,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	assertEquals(expectedSrc, jedis.smembers("foo"));
 	assertEquals(expectedDst, jedis.smembers("bar"));
 
-	status = jedis.smove("foo", "bar", "a");	final byte[] bD  = {0x0D};
+	status = jedis.smove("foo", "bar", "a");
 
 	assertEquals(status, 0);
 	

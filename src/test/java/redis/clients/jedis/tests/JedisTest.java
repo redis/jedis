@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.tree.ExpandVetoException;
+
 import org.junit.Test;
 import org.junit.Assert;
 import redis.clients.jedis.Jedis;
@@ -45,8 +47,10 @@ public class JedisTest extends JedisCommandTestBase {
     }
     
     @SuppressWarnings("rawtypes")
-	public static void compareList(List expected, List result) {
-    	assertEquals(expected.size(), result.size());
+	public static boolean isListAreEquals(List expected, List result) {
+    	if(expected.size() != result.size()) {
+    		return false;
+    	}
     	
     	final Iterator expectedit = expected.iterator();
     	while(expectedit.hasNext()) {
@@ -55,28 +59,34 @@ public class JedisTest extends JedisCommandTestBase {
         	boolean found = false;
         	while(responseit.hasNext() && !found) {
 	    		final Object resp = responseit.next();
-	    		if(exp instanceof byte[]) {
+	    		if(exp instanceof byte[] && resp instanceof byte[]) {
 	    			final byte[] bexp = (byte[]) exp;
 	    			final byte[] bresp = (byte[]) resp;
-	    			if(arraysAreEquals(bexp, bresp)) {
+	    			if(isArraysAreEquals(bexp, bresp)) {
 	    				found = true;
 	    			}
 //	    			Assert.assertArrayEquals(bexp, bresp);
-	    		} else if (exp instanceof List) {
+	    		} else if (exp instanceof List && resp instanceof List) {
 	    			final List subexp = (List) exp;
 	    			final List subresp = (List) resp;
-	    			compareList(subexp, subresp);
+	    			if(isListAreEquals(subexp, subresp)) {
+	    				found = true;
+	    			}
 	    		} else {
-	    			assertEquals(exp, resp);
+	    			if (exp.equals(resp)){
+	    				found = true;
+	    			}
 	    		}
         	}
         	if(!found){
         		fail("Result doesn't contain " + exp.toString());
         	}
     	}
+    	
+    	return true;
     }
 
-    public static boolean arraysAreEquals(final byte[] expected, final byte[] result) {
+    public static boolean isArraysAreEquals(final byte[] expected, final byte[] result) {
     	if(expected.length != result.length) {
     		return false;
     	}

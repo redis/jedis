@@ -146,7 +146,7 @@ public class ShardedJedisTest extends Assert {
         expected.add("a".getBytes(Protocol.UTF8));
         expected.add("b".getBytes(Protocol.UTF8));
         
-        JedisTest.compareList(expected, results);
+        assertTrue(JedisTest.isListAreEquals(expected, results));
 //        assertArrayEquals("a".getBytes(Protocol.UTF8), results.get(0));
 //        assertArrayEquals("b".getBytes(Protocol.UTF8), results.get(1));
     }

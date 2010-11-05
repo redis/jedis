@@ -140,7 +140,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	List<byte[]> bexpected = new ArrayList<byte[]>();
 	bexpected.add(bfoo);
 	bexpected.add(bfoobar);
-	JedisTest.compareList(bexpected, bkeys);
+	assertTrue(JedisTest.isListAreEquals(bexpected, bkeys));
 //	assertEquals(expected, keys);
 
 	expected = new ArrayList<String>();

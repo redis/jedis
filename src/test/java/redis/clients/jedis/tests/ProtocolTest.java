@@ -45,8 +45,8 @@ public class ProtocolTest extends Assert {
     public void bulkReply() {
 	InputStream is = new ByteArrayInputStream("$6\r\nfoobar\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = (String) protocol.read(new RedisInputStream(is));
-	assertEquals("foobar", response);
+	byte[] response = (byte[]) protocol.read(new RedisInputStream(is));
+	assertArrayEquals("foobar".getBytes(Protocol.UTF8), response);
     }
 
     @Test
@@ -54,8 +54,8 @@ public class ProtocolTest extends Assert {
 	FragmentedByteArrayInputStream fis = new FragmentedByteArrayInputStream(
 		"$30\r\n012345678901234567890123456789\r\n".getBytes());
 	Protocol protocol = new Protocol();
-	String response = (String) protocol.read(new RedisInputStream(fis));
-	assertEquals("012345678901234567890123456789", response);
+	byte[] response = (byte[]) protocol.read(new RedisInputStream(fis));
+	assertArrayEquals("012345678901234567890123456789".getBytes(Protocol.UTF8), response);
     }
 
     @Test
@@ -96,8 +96,7 @@ public class ProtocolTest extends Assert {
 	expected.add("Hello".getBytes(Protocol.UTF8));
 	expected.add("World".getBytes(Protocol.UTF8));
 
-	assertEquals(expected.size(), response.size());
-	JedisTest.compareList(expected, response);
+	assertTrue(JedisTest.isListAreEquals(expected, response));
 //	final Iterator<byte[]> expectedit = expected.iterator();
 //	final Iterator<byte[]> responseit = response.iterator();
 //	while(expectedit.hasNext()) {
@@ -120,8 +119,7 @@ public class ProtocolTest extends Assert {
 	sub.add("bar".getBytes(Protocol.UTF8));
 	expected2.add(sub);
 
-	assertEquals(expected2.size(), response2.size());
-	JedisTest.compareList(expected2, response2);
+	assertTrue(JedisTest.isListAreEquals(expected2, response2));
 //	final Iterator<Object> expectedit2 = expected2.iterator();
 //	final Iterator<Object> responseit2 = response2.iterator();
 //	while(expectedit2.hasNext()) {

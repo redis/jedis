@@ -10,8 +10,10 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
+import redis.clients.jedis.tests.JedisTest;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
 	Jedis nj;
@@ -102,8 +104,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	t.set("mykey", val);
 	List<Object> resp = t.exec();
 	List<Object> expected = new ArrayList<Object>();
-	expected.add("OK");
-	assertEquals(expected, resp);
+	expected.add("OK".getBytes(Protocol.UTF8));
+	JedisTest.isListAreEquals(expected, resp);
+//	assertEquals(expected, resp);
     }
 
     @Test(expected = JedisException.class)

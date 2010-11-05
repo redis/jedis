@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import redis.clients.jedis.tests.JedisTest;
+
 public class HashesCommandsTest extends JedisCommandTestBase {
     @Test
     public void hset() {
@@ -124,7 +126,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	List<String> expected = new ArrayList<String>();
 	expected.add("bar");
 	expected.add("car");
-	assertEquals(expected, keys);
+	assertTrue(JedisTest.isListAreEquals(expected, keys));
+//	assertEquals(expected, keys);
     }
 
     @Test
@@ -138,7 +141,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	List<String> expected = new ArrayList<String>();
 	expected.add("car");
 	expected.add("bar");
-	assertEquals(expected, vals);
+	assertTrue(JedisTest.isListAreEquals(expected, vals));
+//	assertEquals(expected, vals);
     }
 
     @Test

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -177,10 +178,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param pattern
      * @return Multi bulk reply
      */
-    public List<byte[]> keys(final byte[] pattern) {
+    public Set<byte[]> keys(final byte[] pattern) {
         checkIsInMulti();
         client.keys(pattern);
-        return client.getBinaryMultiBulkReply();
+        final HashSet<byte[]> keySet = new HashSet<byte[]>(client.getBinaryMultiBulkReply());
+        return keySet;
     }
 
     /**

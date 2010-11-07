@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -142,10 +143,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param pattern
      * @return Multi bulk reply
      */
-    public List<String> keys(final String pattern) {
+    public Set<String> keys(final String pattern) {
         checkIsInMulti();
         client.keys(pattern);
-        return client.getMultiBulkReply();
+        final HashSet<String> keySet = new HashSet<String>( client.getMultiBulkReply());
+        return keySet;
     }
 
     /**

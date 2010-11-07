@@ -12,6 +12,7 @@ import static redis.clients.util.RedisOutputStream.CHARSET;
 public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
+    public static final int DEFAULT_TIMEOUT = 2000;
 
     public static final byte DOLLAR_BYTE = '$';
     public static final byte ASTERISK_BYTE = '*';

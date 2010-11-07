@@ -6,8 +6,29 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.tests.JedisTest;
 
 public class SortingCommandsTest extends JedisCommandTestBase {
+	final byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
+//	final byte[] bfoo = {'b', 'f', 'o', 'o'};
+	final byte[] bbar1 = {0x05, 0x06, 0x07, 0x08, '1'};
+	final byte[] bbar2 = {0x05, 0x06, 0x07, 0x08, '2'};
+	final byte[] bbar3 = {0x05, 0x06, 0x07, 0x08, '3'};
+	final byte[] bbar10 = {0x05, 0x06, 0x07, 0x08, '1', '0'};
+	final byte[] bbarstar = {0x05, 0x06, 0x07, 0x08, '*'};
+//	final byte[] bbar1 = {'b', 'b', 'a', 'r', '1'};
+//	final byte[] bbar2 = {'b', 'b', 'a', 'r', '2'};
+//	final byte[] bbar3 = {'b', 'b', 'a', 'r', '3'};
+//	final byte[] bbarstar = {'b', 'b', 'a', 'r', '*'};
+//	final byte[] bbarstar = {0x05, 0x06, 0x07, 0x08, '*'};
+	final byte[] bcar1 = {0x0A, 0x0B, 0x0C, 0x0D, '1'};
+	final byte[] bcar2 = {0x0A, 0x0B, 0x0C, 0x0D, '2'};
+	final byte[] bcar10 = {0x0A, 0x0B, 0x0C, 0x0D, '1', '0'};
+	final byte[] bcarstar = {0x0A, 0x0B, 0x0C, 0x0D, '*'};
+	final byte[] b1 = {'1'};
+	final byte[] b2 = {'2'};
+	final byte[] b3 = {'3'};
+	final byte[] b10 = {'1', '0'};
     @Test
     public void sort() {
 	jedis.lpush("foo", "3");
@@ -22,6 +43,20 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 	expected.add("3");
 
 	assertEquals(expected, result);
+	
+	//Binary
+	jedis.lpush(bfoo, b3);
+	jedis.lpush(bfoo, b2);
+	jedis.lpush(bfoo, b1);
+
+	List<byte[]> bresult = jedis.sort(bfoo);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(b1);
+	bexpected.add(b2);
+	bexpected.add(b3);
+
+	assertTrue(JedisTest.isListAreEquals(bexpected, bresult));
     }
 
     @Test
@@ -45,6 +80,28 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 	expected.add("1");
 
 	assertEquals(expected, result);
+	
+	//Binary
+	jedis.lpush(bfoo, b2);
+	jedis.lpush(bfoo, b3);
+	jedis.lpush(bfoo, b1);
+
+	jedis.set(bbar1, b3);
+	jedis.set(bbar2, b2);
+	jedis.set(bbar3, b1);
+
+	SortingParams bsp = new SortingParams();
+	bsp.by(bbarstar);
+
+	List<byte[]> bresult = jedis.sort(bfoo, bsp);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(b3);
+	bexpected.add(b2);
+	bexpected.add(b1);
+
+	assertTrue(JedisTest.isListAreEquals(bexpected, bresult));
+
     }
 
     @Test
@@ -64,6 +121,24 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 	expected.add("1");
 
 	assertEquals(expected, result);
+
+	//Binary
+	jedis.lpush(bfoo, b3);
+	jedis.lpush(bfoo, b2);
+	jedis.lpush(bfoo, b1);
+
+	SortingParams bsp = new SortingParams();
+	bsp.desc();
+
+	List<byte[]> bresult = jedis.sort(bfoo, bsp);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(b3);
+	bexpected.add(b2);
+	bexpected.add(b1);
+
+	JedisTest.isListAreEquals(bexpected, bresult);
+
     }
 
     @Test
@@ -83,7 +158,26 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 	expected.add("3");
 
 	assertEquals(expected, result);
+	
+	//Binary
+	for (int n = 10; n > 0; n--) {
+	    jedis.lpush(bfoo, new byte[]{(byte)n});
+	}
+
+	SortingParams bsp = new SortingParams();
+	sp.limit(0, 3);
+
+	List<byte[]> bresult = jedis.sort(bfoo, bsp);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(b1);
+	bexpected.add(b2);
+	bexpected.add(b3);
+
+	JedisTest.isListAreEquals(bexpected, bresult);
+
     }
+    
 
     @Test
     public void sortAlpha() {
@@ -102,6 +196,23 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 	expected.add("2");
 
 	assertEquals(expected, result);
+	
+	//Binary
+	jedis.lpush(bfoo, b1);
+	jedis.lpush(bfoo, b2);
+	jedis.lpush(bfoo, b10);
+
+	SortingParams bsp = new SortingParams();
+	bsp.alpha();
+
+	List<byte[]> bresult = jedis.sort(bfoo, bsp);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(b1);
+	bexpected.add(b10);
+	bexpected.add(b2);
+
+	JedisTest.isListAreEquals(bexpected, bresult);
     }
 
     @Test
@@ -132,7 +243,37 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 	expected.add("bar10");
 
 	assertEquals(expected, result);
+	
+	//Binary
+	jedis.lpush(bfoo, b1);
+	jedis.lpush(bfoo, b2);
+	jedis.lpush(bfoo, b10);
+
+	jedis.set(bbar1, bbar1);
+	jedis.set(bbar2, bbar2);
+	jedis.set(bbar10, bbar10);
+
+	jedis.set(bcar1, bcar1);
+	jedis.set(bcar2, bcar2);
+	jedis.set(bcar10, bcar10);
+
+	SortingParams bsp = new SortingParams();
+	sp.get(bcarstar, bbarstar);
+
+	List<byte[]> bresult = jedis.sort(bfoo, bsp);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(bcar1);
+	bexpected.add(bbar1);
+	bexpected.add(bcar2);
+	bexpected.add(bbar2);
+	bexpected.add(bcar10);
+	bexpected.add(bbar10);
+
+	JedisTest.isListAreEquals(bexpected, bresult);
+
     }
+    
 
     @Test
     public void sortStore() {
@@ -149,6 +290,23 @@ public class SortingCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(3, result);
 	assertEquals(expected, jedis.lrange("result", 0, 1000));
+	
+	//Binary
+	jedis.lpush(bfoo, b1);
+	jedis.lpush(bfoo, b2);
+	jedis.lpush(bfoo, b10);
+
+	byte[] bkresult =  new byte[]{0X09, 0x0A, 0x0B, 0x0C};
+	int bresult = jedis.sort(bfoo, bkresult);
+
+	List<byte[]> bexpected = new ArrayList<byte[]>();
+	bexpected.add(b1);
+	bexpected.add(b2);
+	bexpected.add(b10);
+
+	assertEquals(3, bresult);
+	JedisTest.isListAreEquals(bexpected, jedis.lrange(bkresult, 0, 1000));
+
     }
 
 }

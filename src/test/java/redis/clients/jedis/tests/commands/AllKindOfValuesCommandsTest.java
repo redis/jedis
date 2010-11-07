@@ -2,7 +2,9 @@ package redis.clients.jedis.tests.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -21,6 +23,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	final byte[] bbar3  = {0x05, 0x06, 0x07, 0x08, 0x0C};
 	
 	final byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+	final byte[] bfoostar = {0x01, 0x02, 0x03, 0x04, '*'};
+	final byte[] bbarstar  = {0x05, 0x06, 0x07, 0x08, '*'};
 
     @Test
     public void ping() {
@@ -120,13 +124,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("foo", "bar");
 	jedis.set("foobar", "bar");
 
-	List<String> keys = jedis.keys("foo*");
-	List<String> expected = new ArrayList<String>();
+	Set<String> keys = jedis.keys("foo*");
+	Set<String> expected = new HashSet<String>();
 	expected.add("foo");
 	expected.add("foobar");
 	assertEquals(expected, keys);
 
-	expected = new ArrayList<String>();
+	expected = new HashSet<String>();
 	keys = jedis.keys("bar*");
 
 	assertEquals(expected, keys);
@@ -135,20 +139,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set(bfoo, bbar);
 	jedis.set(bfoobar, bbar);
 	
-	byte[] bfoostar = new byte[bfoo.length+1];
-	System.arraycopy(bfoo, 0, bfoostar, 0, bfoo.length);
-	bfoostar[bfoostar.length-1] = '*';
-	List<byte[]> bkeys = jedis.keys(bfoostar);
-	List<byte[]> bexpected = new ArrayList<byte[]>();
+//	byte[] bfoostar = new byte[bfoo.length+1];
+//	System.arraycopy(bfoo, 0, bfoostar, 0, bfoo.length);
+//	bfoostar[bfoostar.length-1] = '*';
+	Set<byte[]> bkeys = jedis.keys(bfoostar);
+	Set<byte[]> bexpected = new HashSet<byte[]>();
 	bexpected.add(bfoo);
 	bexpected.add(bfoobar);
-	assertTrue(JedisTest.isListAreEquals(bexpected, bkeys));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bkeys));
 //	assertEquals(expected, keys);
 
-	expected = new ArrayList<String>();
-	keys = jedis.keys("bar*");
+	bexpected = new HashSet<byte[]>();
+	bkeys = jedis.keys(bbarstar);
 
-	assertEquals(expected, keys);
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bkeys));
 	
     }
 

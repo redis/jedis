@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.tree.ExpandVetoException;
 
@@ -49,7 +50,7 @@ public class JedisTest extends JedisCommandTestBase {
     }
     
     @SuppressWarnings("rawtypes")
-	public static boolean isListAreEquals(Collection expected, Collection result) {
+	public static boolean isSetAreEquals(Set expected, Set result) {
     	if(expected.size() != result.size()) {
     		return false;
     	}
@@ -67,9 +68,15 @@ public class JedisTest extends JedisCommandTestBase {
 	    			if(Arrays.equals(bexp, bresp)) {
 	    				found = true;
 	    			}
-	    		} else if (exp instanceof Collection && resp instanceof Collection) {
-	    			final Collection subexp = (Collection) exp;
-	    			final Collection subresp = (Collection) resp;
+	    		} else if (exp instanceof Set && resp instanceof Set) {
+	    			final Set subexp = (Set) exp;
+	    			final Set subresp = (Set) resp;
+	    			if(isSetAreEquals(subexp, subresp)) {
+	    				found = true;
+	    			}
+	    		} else if (exp instanceof List && resp instanceof List) {
+	    			final List subexp = (List) exp;
+	    			final List subresp = (List) resp;
 	    			if(isListAreEquals(subexp, subresp)) {
 	    				found = true;
 	    			}
@@ -93,7 +100,56 @@ public class JedisTest extends JedisCommandTestBase {
     	return true;
     }
 
-//    public static boolean isArraysAreEqualsPlop(final byte[] expected, final byte[] result) {
+    @SuppressWarnings("rawtypes")
+	public static boolean isListAreEquals(List expected, List result) {
+    	if(expected.size() != result.size()) {
+    		return false;
+    	}
+    	
+    	final Iterator expectedit = expected.iterator();
+    	final Iterator responseit = result.iterator();
+    	int index = -1;
+    	while(expectedit.hasNext() && responseit.hasNext()) {
+    		index++;
+    		final Object exp = expectedit.next();
+    		final Object resp = responseit.next();
+    		if(exp instanceof byte[] && resp instanceof byte[]) {
+    			final byte[] bexp = (byte[]) exp;
+    			final byte[] bresp = (byte[]) resp;
+    			if(Arrays.equals(bexp, bresp)) {
+    				continue;
+    			}
+    		} else if (exp instanceof Set && resp instanceof Set) {
+    			final Set subexp = (Set) exp;
+    			final Set subresp = (Set) resp;
+    			if(isSetAreEquals(subexp, subresp)) {
+    				continue;
+    			}
+    		} else if (exp instanceof List && resp instanceof List) {
+    			final List subexp = (List) exp;
+    			final List subresp = (List) resp;
+    			if(isListAreEquals(subexp, subresp)) {
+    				continue;
+    			}
+    		} else {
+    			if (null != exp) {
+	    			if (exp.equals(resp)){
+	    				continue;
+	    			}
+    			} else {
+    				if(resp == null) {
+    					continue;
+    				}
+    			}
+        	}
+
+    		fail("Element at index "+index+" differs. Expecting "+(null == exp ? null : exp.toString())+" but was "+(resp == null ? null : resp.toString()));
+    	}
+    	
+    	return true;
+    }
+
+    //    public static boolean isArraysAreEqualsPlop(final byte[] expected, final byte[] result) {
 //    	if(expected.length != result.length) {
 //    		return false;
 //    	}

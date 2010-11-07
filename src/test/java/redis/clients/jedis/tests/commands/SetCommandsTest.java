@@ -58,7 +58,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
 	Set<byte[]> bmembers = jedis.smembers(bfoo);
 
-	assertTrue(JedisTest.isListAreEquals(bexpected, bmembers));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bmembers));
     }
     
 
@@ -90,7 +90,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	bexpected.add(bb);
 
 	assertEquals(1, bstatus);
-	assertTrue(JedisTest.isListAreEquals(bexpected, jedis.smembers(bfoo)));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.smembers(bfoo)));
 
 	bstatus = jedis.srem(bfoo, bbar);
 
@@ -165,8 +165,8 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	bexpectedDst.add(ba);
 
 	assertEquals(bstatus, 1);
-	assertTrue(JedisTest.isListAreEquals(bexpectedSrc, jedis.smembers(bfoo)));
-	assertTrue(JedisTest.isListAreEquals(bexpectedDst, jedis.smembers(bbar)));
+	assertTrue(JedisTest.isSetAreEquals(bexpectedSrc, jedis.smembers(bfoo)));
+	assertTrue(JedisTest.isSetAreEquals(bexpectedDst, jedis.smembers(bbar)));
 
 	bstatus = jedis.smove(bfoo, bbar, ba);
 	assertEquals(bstatus, 0);
@@ -246,7 +246,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	bexpected.add(bb);
 
 	Set<byte[]> bintersection = jedis.sinter(bfoo, bbar);
-	assertTrue(JedisTest.isListAreEquals(bexpected, bintersection));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bintersection));
 
     }
 
@@ -279,7 +279,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	int bstatus = jedis.sinterstore(bcar, bfoo, bbar);
 	assertEquals(1, bstatus);
 
-	assertTrue(JedisTest.isListAreEquals(bexpected, jedis.smembers(bcar)));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.smembers(bcar)));
 
     }
 
@@ -312,7 +312,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	bexpected.add(bc);
 
 	Set<byte[]> bunion = jedis.sunion(bfoo, bbar);
-	assertTrue(JedisTest.isListAreEquals(bexpected, bunion));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bunion));
 
     }
 
@@ -349,7 +349,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	int bstatus = jedis.sunionstore(bcar, bfoo, bbar);
 	assertEquals(3, bstatus);
 
-	assertTrue(JedisTest.isListAreEquals(bexpected, jedis.smembers(bcar)));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.smembers(bcar)));
 
     }
 
@@ -388,7 +388,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	bexpected.add(bb);
 
 	Set<byte[]> bdiff = jedis.sdiff(bfoo, bbar, bcar);
-	assertTrue(JedisTest.isListAreEquals(bexpected, bdiff));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bdiff));
 
     }
 
@@ -429,7 +429,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
 	int bstatus = jedis.sdiffstore("tar".getBytes(), bfoo, bbar, bcar);
 	assertEquals(2, bstatus);
-	assertTrue(JedisTest.isListAreEquals(bexpected, jedis.smembers(bcar)));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.smembers(bcar)));
 
     }
 

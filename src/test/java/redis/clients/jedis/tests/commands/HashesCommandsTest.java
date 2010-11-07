@@ -3,9 +3,11 @@ package redis.clients.jedis.tests.commands;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -291,12 +293,12 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	Map<byte[], byte[]> bexpected = new HashMap<byte[], byte[]>();
 	bexpected.put(bbar, bcar);
 	bexpected.put(bcar, bbar);
-	final Collection<byte[]> keysetExpected = bexpected.keySet();
-	final Collection<byte[]> keysetResult = bhash.keySet();
-	assertTrue(JedisTest.isListAreEquals(keysetExpected, keysetResult));
-	final Collection<byte[]> valsExpected = bexpected.values();
-	final Collection<byte[]> valsResult = bhash.values();
-	assertTrue(JedisTest.isListAreEquals(valsExpected, valsResult));
+	final Set<byte[]> keysetExpected = bexpected.keySet();
+	final Set<byte[]> keysetResult = bhash.keySet();
+	assertTrue(JedisTest.isSetAreEquals(keysetExpected, keysetResult));
+	final Set<byte[]> valsExpected = new HashSet<byte[]>(bexpected.values());
+	final Set<byte[]> valsResult = new HashSet<byte[]>(bhash.values());
+	assertTrue(JedisTest.isSetAreEquals(valsExpected, valsResult));
 	
     }
 }

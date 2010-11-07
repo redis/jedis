@@ -76,11 +76,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(ba);
 
         Set<byte[]> brange = jedis.zrange(bfoo, 0, 1);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         bexpected.add(bb);
         brange = jedis.zrange(bfoo, 0, 100);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
     }
 
@@ -113,11 +113,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(ba);
 
         Set<byte[]> brange = jedis.zrevrange(bfoo, 0, 1);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         bexpected.add(bc);
         brange = jedis.zrevrange(bfoo, 0, 100);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
     }
 
@@ -148,7 +148,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(bb);
 
         assertEquals(1, bstatus);
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
 
         bstatus = jedis.zrem(bfoo, bbar);
 
@@ -181,7 +181,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(bb);
 
         assertEquals(3d, bscore, 0);
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
 
     }
 
@@ -266,11 +266,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(ba, 2d));
 
         Set<Tuple> brange = jedis.zrangeWithScores(bfoo, 0, 1);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         bexpected.add(new Tuple(bb, 10d));
         brange = jedis.zrangeWithScores(bfoo, 0, 100);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
     }
 
@@ -303,11 +303,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(ba, 2d));
 
         Set<Tuple> brange = jedis.zrevrangeWithScores(bfoo, 0, 1);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         bexpected.add(new Tuple(bc, 0.1d));
         brange = jedis.zrevrangeWithScores(bfoo, 0, 100);
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
     }
 
@@ -431,23 +431,23 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(bc);
         bexpected.add(ba);
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         brange = jedis.zrangeByScore(bfoo, 0d, 2d, 0, 1);
 
         bexpected = new LinkedHashSet<byte[]>();
         bexpected.add(bc);
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         brange = jedis.zrangeByScore(bfoo, 0d, 2d, 1, 1);
         Set<byte[]> brange2 = jedis.zrangeByScore(bfoo, "-inf".getBytes(Protocol.UTF8), "(2".getBytes(Protocol.UTF8));
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange2));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange2));
 
         bexpected = new LinkedHashSet<byte[]>();
         bexpected.add(ba);
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
     }
 
@@ -493,21 +493,21 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(bc, 0.1d));
         bexpected.add(new Tuple(ba, 2d));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         brange = jedis.zrangeByScoreWithScores(bfoo, 0d, 2d, 0, 1);
 
         bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(bc, 0.1d));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
         brange = jedis.zrangeByScoreWithScores(bfoo, 0d, 2d, 1, 1);
 
         bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(ba, 2d));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, brange));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, brange));
 
     }
 
@@ -542,7 +542,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(ba);
         bexpected.add(bb);
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
 
     }
 
@@ -575,7 +575,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
         bexpected.add(bb);
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrange(bfoo, 0, 100)));
 
     }
 
@@ -610,7 +610,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(bb, new Double(4)));
         bexpected.add(new Tuple(ba, new Double(3)));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
 
     }
 
@@ -651,7 +651,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(bb, new Double(8)));
         bexpected.add(new Tuple(ba, new Double(6)));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
 
     }
 
@@ -682,7 +682,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(ba, new Double(3)));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
 
     }
     
@@ -720,7 +720,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(ba, new Double(6)));
 
-        assertTrue(JedisTest.isListAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
+        assertTrue(JedisTest.isSetAreEquals(bexpected, jedis.zrangeWithScores("dst".getBytes(Protocol.UTF8), 0, 100)));
 
     }
 }

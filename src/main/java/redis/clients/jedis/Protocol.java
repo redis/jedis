@@ -295,6 +295,7 @@ public final class Protocol {
     	PUNSUBSCRIBE,
     	OK,
     	ONE,
+    	QUEUED,
     	SET,
     	STORE,
     	SUBSCRIBE,

@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -13,9 +14,17 @@ import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.tests.JedisTest;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
+	final byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
+	final byte[] bbar = {0x05, 0x06, 0x07, 0x08};
+	final byte[] ba = {0x0A};
+	final byte[] bb = {0x0B};
+	
+	final byte[] bmykey = {0x42, 0x02, 0x03, 0x04};
+
 	Jedis nj;
 	@Before
 	public void setUp() throws Exception {
@@ -32,13 +41,13 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	Transaction trans = jedis.multi();
 
 	String status = trans.sadd("foo", "a");
-	assertEquals("QUEUED", status);
+	assertEquals(Keyword.QUEUED.name(), status);
 
 	status = trans.sadd("foo", "b");
-	assertEquals("QUEUED", status);
+	assertEquals(Keyword.QUEUED.name(), status);
 
 	status = trans.scard("foo");
-	assertEquals("QUEUED", status);
+	assertEquals(Keyword.QUEUED.name(), status);
 
 	List<Object> response = trans.exec();
 
@@ -47,6 +56,27 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	expected.add(1);
 	expected.add(2);
 	assertEquals(expected, response);
+	
+	//Binary
+	trans = jedis.multi();
+	
+	status = trans.sadd(bfoo, ba);
+	assertEquals(Keyword.QUEUED.name(), status);
+
+	status = trans.sadd(bfoo, bb);
+	assertEquals(Keyword.QUEUED.name(), status);
+
+	status = trans.scard(bfoo);
+	assertEquals(Keyword.QUEUED.name(), status);
+
+	response = trans.exec();
+
+	expected = new ArrayList<Object>();
+	expected.add(1);
+	expected.add(1);
+	expected.add(2);
+	assertEquals(expected, response);
+
     }
 
     @Test
@@ -54,13 +84,13 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	List<Object> response = jedis.multi(new TransactionBlock() {
 	    public void execute() {
 		String status = sadd("foo", "a");
-		assertEquals("QUEUED", status);
+		assertEquals(Keyword.QUEUED.name(), status);
 
 		status = sadd("foo", "b");
-		assertEquals("QUEUED", status);
+		assertEquals(Keyword.QUEUED.name(), status);
 
 		status = scard("foo");
-		assertEquals("QUEUED", status);
+		assertEquals(Keyword.QUEUED.name(), status);
 	    }
 	});
 
@@ -69,6 +99,27 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	expected.add(1);
 	expected.add(2);
 	assertEquals(expected, response);
+	
+	//Binary
+	response = jedis.multi(new TransactionBlock() {
+	    public void execute() {
+		String status = sadd(bfoo, ba);
+		assertEquals(Keyword.QUEUED.name(), status);
+
+		status = sadd(bfoo, bb);
+		assertEquals(Keyword.QUEUED.name(), status);
+
+		status = scard(bfoo);
+		assertEquals(Keyword.QUEUED.name(), status);
+	    }
+	});
+
+	expected = new ArrayList<Object>();
+	expected.add(1);
+	expected.add(1);
+	expected.add(2);
+	assertEquals(expected, response);
+
     }
 
     @Test
@@ -85,6 +136,20 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	List<Object> resp = t.exec();
 	assertEquals(null, resp);
 	assertEquals("bar", jedis.get("mykey"));
+	
+	//Binary
+	jedis.watch(bmykey);
+	t = jedis.multi();
+
+	nj.connect();
+	nj.auth("foobared");
+	nj.set(bmykey, bbar);
+	nj.disconnect();
+
+	t.set(bmykey, bfoo);
+	resp = t.exec();
+	assertEquals(null, resp);
+	assertTrue(Arrays.equals(bbar, jedis.get(bmykey)));
     }
 
     @Test
@@ -104,9 +169,28 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	t.set("mykey", val);
 	List<Object> resp = t.exec();
 	List<Object> expected = new ArrayList<Object>();
-	expected.add("OK".getBytes(Protocol.UTF8));
+	expected.add(Keyword.OK.name().getBytes(Protocol.UTF8));
 	JedisTest.isListAreEquals(expected, resp);
-//	assertEquals(expected, resp);
+	
+	//Binary
+	jedis.watch(bmykey);
+	byte[] bval = jedis.get(bmykey);
+	bval = bfoo;
+	status = jedis.unwatch();
+	assertEquals(Keyword.OK.name(), status);
+	t = jedis.multi();
+
+	nj.connect();
+	nj.auth("foobared");
+	nj.set(bmykey, bbar);
+	nj.disconnect();
+
+	t.set(bmykey, bval);
+	resp = t.exec();
+	expected = new ArrayList<Object>();
+	expected.add(Keyword.OK.name().toUpperCase().getBytes());
+	JedisTest.isListAreEquals(expected, resp);
+
     }
 
     @Test(expected = JedisException.class)

@@ -758,10 +758,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return All the fields names contained into a hash.
      */
-    public List<String> hkeys(final String key) {
+    public Set<String> hkeys(final String key) {
         checkIsInMulti();
         client.hkeys(key);
-        return client.getMultiBulkReply();
+        final List<String> lresult = client.getMultiBulkReply();
+        return new HashSet<String>(lresult);
     }
 
     /**
@@ -772,10 +773,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    public List<String> hvals(final String key) {
+    public Set<String> hvals(final String key) {
         checkIsInMulti();
         client.hvals(key);
-        return client.getMultiBulkReply();
+        final List<String> lresult = client.getMultiBulkReply();
+        return new HashSet<String>(lresult);
     }
 
     /**

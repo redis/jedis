@@ -60,9 +60,9 @@ public interface BinaryJedisCommands {
 
     Integer hlen(byte[] key);
 
-    List<byte[]> hkeys(byte[] key);
+    Set<byte[]> hkeys(byte[] key);
 
-    List<byte[]> hvals(byte[] key);
+    Set<byte[]> hvals(byte[] key);
 
     Map<byte[], byte[]> hgetAll(byte[] key);
 

@@ -222,11 +222,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	hash.put("car", "bar");
 	jedis.hmset("foo", hash);
 
-	List<String> keys = jedis.hkeys("foo");
-	List<String> expected = new ArrayList<String>();
+	Set<String> keys = jedis.hkeys("foo");
+	Set<String> expected = new HashSet<String>();
 	expected.add("bar");
 	expected.add("car");
-	assertTrue(JedisTest.isListAreEquals(expected, keys));
+	assertTrue(JedisTest.isSetAreEquals(expected, keys));
 	
 	//Binary
 	Map<byte[], byte[]> bhash = new LinkedHashMap<byte[], byte[]>();
@@ -234,11 +234,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	bhash.put(bcar, bbar);
 	jedis.hmset(bfoo, bhash);
 
-	List<byte[]> bkeys = jedis.hkeys(bfoo);
-	List<byte[]> bexpected = new ArrayList<byte[]>();
+	Set<byte[]> bkeys = jedis.hkeys(bfoo);
+	Set<byte[]> bexpected = new HashSet<byte[]>();
 	bexpected.add(bbar);
 	bexpected.add(bcar);
-	assertTrue(JedisTest.isListAreEquals(bexpected, bkeys));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bkeys));
 
     }
 
@@ -249,11 +249,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	hash.put("car", "bar");
 	jedis.hmset("foo", hash);
 
-	List<String> vals = jedis.hvals("foo");
-	List<String> expected = new ArrayList<String>();
+	Set<String> vals = jedis.hvals("foo");
+	Set<String> expected = new HashSet<String>();
 	expected.add("car");
 	expected.add("bar");
-	assertTrue(JedisTest.isListAreEquals(expected, vals));
+	assertTrue(JedisTest.isSetAreEquals(expected, vals));
 	
 	//Binary
 	Map<byte[], byte[]> bhash = new LinkedHashMap<byte[], byte[]>();
@@ -261,11 +261,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	bhash.put(bcar, bbar);
 	jedis.hmset(bfoo, bhash);
 
-	List<byte[]> bvals = jedis.hvals(bfoo);
-	List<byte[]> bexpected = new ArrayList<byte[]>();
+	Set<byte[]> bvals = jedis.hvals(bfoo);
+	Set<byte[]> bexpected = new HashSet<byte[]>();
 	bexpected.add(bcar);
 	bexpected.add(bbar);
-	assertTrue(JedisTest.isListAreEquals(bexpected, bvals));
+	assertTrue(JedisTest.isSetAreEquals(bexpected, bvals));
 
 
     }

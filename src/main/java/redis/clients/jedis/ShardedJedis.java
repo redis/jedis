@@ -150,12 +150,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.hlen(key);
     }
 
-    public List<String> hkeys(String key) {
+    public Set<String> hkeys(String key) {
         Jedis j = getShard(key);
         return j.hkeys(key);
     }
 
-    public List<String> hvals(String key) {
+    public Set<String> hvals(String key) {
         Jedis j = getShard(key);
         return j.hvals(key);
     }

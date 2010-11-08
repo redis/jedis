@@ -829,10 +829,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param key
      * @return All the fields names contained into a hash.
      */
-    public List<byte[]> hkeys(final byte[] key) {
+    public Set<byte[]> hkeys(final byte[] key) {
         checkIsInMulti();
         client.hkeys(key);
-        return client.getBinaryMultiBulkReply();
+        final List<byte[]> lresult = client.getBinaryMultiBulkReply();
+        return new HashSet<byte[]>(lresult);
     }
 
     /**
@@ -843,10 +844,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    public List<byte[]> hvals(final byte[] key) {
+    public Set<byte[]> hvals(final byte[] key) {
         checkIsInMulti();
         client.hvals(key);
-        return client.getBinaryMultiBulkReply();
+        final List<byte[]> lresult = client.getBinaryMultiBulkReply();
+        return new HashSet<byte[]>(lresult);
     }
 
     /**

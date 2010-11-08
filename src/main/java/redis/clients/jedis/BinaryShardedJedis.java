@@ -164,12 +164,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
         return j.hlen(key);
     }
 
-    public List<byte[]> hkeys(byte[] key) {
+    public Set<byte[]> hkeys(byte[] key) {
         Jedis j = getShard(key);
         return j.hkeys(key);
     }
 
-    public List<byte[]> hvals(byte[] key) {
+    public Set<byte[]> hvals(byte[] key) {
         Jedis j = getShard(key);
         return j.hvals(key);
     }

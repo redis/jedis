@@ -293,6 +293,7 @@ public final class Protocol {
     	PMESSAGE,
     	PSUBSCRIBE,
     	PUNSUBSCRIBE,
+    	OK,
     	ONE,
     	SET,
     	STORE,

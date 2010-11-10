@@ -14,6 +14,7 @@ import redis.clients.jedis.Client.LIST_POSITION;
 
 public class Jedis implements JedisCommands {
     private Client client = null;
+    private String password = null;
 
     public Jedis(String host) {
         client = new Client(host);
@@ -31,13 +32,11 @@ public class Jedis implements JedisCommands {
     public Jedis(JedisShardInfo shardInfo) {
         client = new Client(shardInfo.getHost(), shardInfo.getPort());
         client.setTimeout(shardInfo.getTimeout());
-        if (shardInfo.getPassword() != null) {
-            this.auth(shardInfo.getPassword());
-        }
+        this.password = shardInfo.getPassword();
     }
 
     public String ping() {
-        checkIsInMulti();
+        runChecks();
         client.ping();
         return client.getStatusCodeReply();
     }
@@ -53,7 +52,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String set(String key, String value) {
-        checkIsInMulti();
+        runChecks();
         client.set(key, value);
         return client.getStatusCodeReply();
     }
@@ -69,7 +68,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String get(String key) {
-        checkIsInMulti();
+        runChecks();
         client.sendCommand("GET", key);
         return client.getBulkReply();
     }
@@ -78,7 +77,7 @@ public class Jedis implements JedisCommands {
      * Ask the server to silently close the connection.
      */
     public void quit() {
-        checkIsInMulti();
+        runChecks();
         client.quit();
     }
 
@@ -93,7 +92,7 @@ public class Jedis implements JedisCommands {
      * @return Integer reply, "0" if the key exists, otherwise "1"
      */
     public Integer exists(String key) {
-        checkIsInMulti();
+        runChecks();
         client.exists(key);
         return client.getIntegerReply();
     }
@@ -109,7 +108,7 @@ public class Jedis implements JedisCommands {
      *         more keys were removed 0 if none of the specified key existed
      */
     public Integer del(String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.del(keys);
         return client.getIntegerReply();
     }
@@ -129,7 +128,7 @@ public class Jedis implements JedisCommands {
      *         contains a Hash value
      */
     public String type(String key) {
-        checkIsInMulti();
+        runChecks();
         client.type(key);
         return client.getStatusCodeReply();
     }
@@ -141,7 +140,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String flushDB() {
-        checkIsInMulti();
+        runChecks();
         client.flushDB();
         return client.getStatusCodeReply();
     }
@@ -178,7 +177,7 @@ public class Jedis implements JedisCommands {
      * @return Multi bulk reply
      */
     public List<String> keys(String pattern) {
-        checkIsInMulti();
+        runChecks();
         client.keys(pattern);
         return client.getMultiBulkReply();
     }
@@ -192,7 +191,7 @@ public class Jedis implements JedisCommands {
      *         empty string is the database is empty
      */
     public String randomKey() {
-        checkIsInMulti();
+        runChecks();
         client.randomKey();
         return client.getBulkReply();
     }
@@ -209,7 +208,7 @@ public class Jedis implements JedisCommands {
      * @return Status code repy
      */
     public String rename(String oldkey, String newkey) {
-        checkIsInMulti();
+        runChecks();
         client.rename(oldkey, newkey);
         return client.getStatusCodeReply();
     }
@@ -226,7 +225,7 @@ public class Jedis implements JedisCommands {
      *         target key already exist
      */
     public Integer renamenx(String oldkey, String newkey) {
-        checkIsInMulti();
+        runChecks();
         client.renamenx(oldkey, newkey);
         return client.getIntegerReply();
     }
@@ -237,7 +236,7 @@ public class Jedis implements JedisCommands {
      * @return Integer reply
      */
     public Integer dbSize() {
-        checkIsInMulti();
+        runChecks();
         client.dbSize();
         return client.getIntegerReply();
     }
@@ -271,7 +270,7 @@ public class Jedis implements JedisCommands {
      *         exist.
      */
     public Integer expire(String key, int seconds) {
-        checkIsInMulti();
+        runChecks();
         client.expire(key, seconds);
         return client.getIntegerReply();
     }
@@ -307,7 +306,7 @@ public class Jedis implements JedisCommands {
      *         exist.
      */
     public Integer expireAt(String key, long unixTime) {
-        checkIsInMulti();
+        runChecks();
         client.expireAt(key, unixTime);
         return client.getIntegerReply();
     }
@@ -324,7 +323,7 @@ public class Jedis implements JedisCommands {
      *         have an associated expire, -1 is returned.
      */
     public Integer ttl(String key) {
-        checkIsInMulti();
+        runChecks();
         client.ttl(key);
         return client.getIntegerReply();
     }
@@ -337,7 +336,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String select(int index) {
-        checkIsInMulti();
+        runChecks();
         client.select(index);
         return client.getStatusCodeReply();
     }
@@ -356,7 +355,7 @@ public class Jedis implements JedisCommands {
      *         found in the current DB.
      */
     public Integer move(String key, int dbIndex) {
-        checkIsInMulti();
+        runChecks();
         client.move(key, dbIndex);
         return client.getIntegerReply();
     }
@@ -368,7 +367,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String flushAll() {
-        checkIsInMulti();
+        runChecks();
         client.flushAll();
         return client.getStatusCodeReply();
     }
@@ -385,7 +384,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String getSet(String key, String value) {
-        checkIsInMulti();
+        runChecks();
         client.getSet(key, value);
         return client.getBulkReply();
     }
@@ -401,7 +400,7 @@ public class Jedis implements JedisCommands {
      * @return Multi bulk reply
      */
     public List<String> mget(String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.mget(keys);
         return client.getMultiBulkReply();
     }
@@ -419,7 +418,7 @@ public class Jedis implements JedisCommands {
      *         was not set
      */
     public Integer setnx(String key, String value) {
-        checkIsInMulti();
+        runChecks();
         client.setnx(key, value);
         return client.getIntegerReply();
     }
@@ -437,7 +436,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String setex(String key, int seconds, String value) {
-        checkIsInMulti();
+        runChecks();
         client.setex(key, seconds, value);
         return client.getStatusCodeReply();
     }
@@ -463,7 +462,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply Basically +OK as MSET can't fail
      */
     public String mset(String... keysvalues) {
-        checkIsInMulti();
+        runChecks();
         client.mset(keysvalues);
         return client.getStatusCodeReply();
     }
@@ -490,7 +489,7 @@ public class Jedis implements JedisCommands {
      *         no key was set (at least one key already existed)
      */
     public Integer msetnx(String... keysvalues) {
-        checkIsInMulti();
+        runChecks();
         client.msetnx(keysvalues);
         return client.getIntegerReply();
     }
@@ -518,7 +517,7 @@ public class Jedis implements JedisCommands {
      *         after the increment.
      */
     public Integer decrBy(String key, int integer) {
-        checkIsInMulti();
+        runChecks();
         client.decrBy(key, integer);
         return client.getIntegerReply();
     }
@@ -546,7 +545,7 @@ public class Jedis implements JedisCommands {
      *         after the increment.
      */
     public Integer decr(String key) {
-        checkIsInMulti();
+        runChecks();
         client.decr(key);
         return client.getIntegerReply();
     }
@@ -574,7 +573,7 @@ public class Jedis implements JedisCommands {
      *         after the increment.
      */
     public Integer incrBy(String key, int integer) {
-        checkIsInMulti();
+        runChecks();
         client.incrBy(key, integer);
         return client.getIntegerReply();
     }
@@ -602,7 +601,7 @@ public class Jedis implements JedisCommands {
      *         after the increment.
      */
     public Integer incr(String key) {
-        checkIsInMulti();
+        runChecks();
         client.incr(key);
         return client.getIntegerReply();
     }
@@ -624,7 +623,7 @@ public class Jedis implements JedisCommands {
      *         the append operation.
      */
     public Integer append(String key, String value) {
-        checkIsInMulti();
+        runChecks();
         client.append(key, value);
         return client.getIntegerReply();
     }
@@ -648,7 +647,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String substr(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.substr(key, start, end);
         return client.getBulkReply();
     }
@@ -669,7 +668,7 @@ public class Jedis implements JedisCommands {
      *         1 is returned.
      */
     public Integer hset(String key, String field, String value) {
-        checkIsInMulti();
+        runChecks();
         client.hset(key, field, value);
         return client.getIntegerReply();
     }
@@ -688,7 +687,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String hget(String key, String field) {
-        checkIsInMulti();
+        runChecks();
         client.hget(key, field);
         return client.getBulkReply();
     }
@@ -705,7 +704,7 @@ public class Jedis implements JedisCommands {
      *         field is created 1 is returned.
      */
     public Integer hsetnx(String key, String field, String value) {
-        checkIsInMulti();
+        runChecks();
         client.hsetnx(key, field, value);
         return client.getIntegerReply();
     }
@@ -723,7 +722,7 @@ public class Jedis implements JedisCommands {
      * @return Always OK because HMSET can't fail
      */
     public String hmset(String key, Map<String, String> hash) {
-        checkIsInMulti();
+        runChecks();
         client.hmset(key, hash);
         return client.getStatusCodeReply();
     }
@@ -742,7 +741,7 @@ public class Jedis implements JedisCommands {
      *         with the specified fields, in the same order of the request.
      */
     public List<String> hmget(String key, String... fields) {
-        checkIsInMulti();
+        runChecks();
         client.hmget(key, fields);
         return client.getMultiBulkReply();
     }
@@ -766,7 +765,7 @@ public class Jedis implements JedisCommands {
      *         operation.
      */
     public Integer hincrBy(String key, String field, int value) {
-        checkIsInMulti();
+        runChecks();
         client.hincrBy(key, field, value);
         return client.getIntegerReply();
     }
@@ -782,7 +781,7 @@ public class Jedis implements JedisCommands {
      *         Return 0 if the key is not found or the field is not present.
      */
     public Integer hexists(String key, String field) {
-        checkIsInMulti();
+        runChecks();
         client.hexists(key, field);
         return client.getIntegerReply();
     }
@@ -798,7 +797,7 @@ public class Jedis implements JedisCommands {
      *         returned, otherwise 0 is returned and no operation is performed.
      */
     public Integer hdel(String key, String field) {
-        checkIsInMulti();
+        runChecks();
         client.hdel(key, field);
         return client.getIntegerReply();
     }
@@ -814,7 +813,7 @@ public class Jedis implements JedisCommands {
      *         an empty hash.
      */
     public Integer hlen(String key) {
-        checkIsInMulti();
+        runChecks();
         client.hlen(key);
         return client.getIntegerReply();
     }
@@ -828,7 +827,7 @@ public class Jedis implements JedisCommands {
      * @return All the fields names contained into a hash.
      */
     public List<String> hkeys(String key) {
-        checkIsInMulti();
+        runChecks();
         client.hkeys(key);
         return client.getMultiBulkReply();
     }
@@ -842,7 +841,7 @@ public class Jedis implements JedisCommands {
      * @return All the fields values contained into a hash.
      */
     public List<String> hvals(String key) {
-        checkIsInMulti();
+        runChecks();
         client.hvals(key);
         return client.getMultiBulkReply();
     }
@@ -856,7 +855,7 @@ public class Jedis implements JedisCommands {
      * @return All the fields and values contained into a hash.
      */
     public Map<String, String> hgetAll(String key) {
-        checkIsInMulti();
+        runChecks();
         client.hgetAll(key);
         List<String> flatHash = client.getMultiBulkReply();
         Map<String, String> hash = new HashMap<String, String>();
@@ -884,7 +883,7 @@ public class Jedis implements JedisCommands {
      *         list after the push operation.
      */
     public Integer rpush(String key, String string) {
-        checkIsInMulti();
+        runChecks();
         client.rpush(key, string);
         return client.getIntegerReply();
     }
@@ -905,7 +904,7 @@ public class Jedis implements JedisCommands {
      *         list after the push operation.
      */
     public Integer lpush(String key, String string) {
-        checkIsInMulti();
+        runChecks();
         client.lpush(key, string);
         return client.getIntegerReply();
     }
@@ -921,7 +920,7 @@ public class Jedis implements JedisCommands {
      * @return The length of the list.
      */
     public Integer llen(String key) {
-        checkIsInMulti();
+        runChecks();
         client.llen(key);
         return client.getIntegerReply();
     }
@@ -965,7 +964,7 @@ public class Jedis implements JedisCommands {
      *         specified range.
      */
     public List<String> lrange(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.lrange(key, start, end);
         return client.getMultiBulkReply();
     }
@@ -1005,7 +1004,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String ltrim(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.ltrim(key, start, end);
         return client.getStatusCodeReply();
     }
@@ -1029,7 +1028,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply, specifically the requested element
      */
     public String lindex(String key, int index) {
-        checkIsInMulti();
+        runChecks();
         client.lindex(key, index);
         return client.getBulkReply();
     }
@@ -1056,7 +1055,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String lset(String key, int index, String value) {
-        checkIsInMulti();
+        runChecks();
         client.lset(key, index, value);
         return client.getStatusCodeReply();
     }
@@ -1081,7 +1080,7 @@ public class Jedis implements JedisCommands {
      *         the operation succeeded
      */
     public Integer lrem(String key, int count, String value) {
-        checkIsInMulti();
+        runChecks();
         client.lrem(key, count, value);
         return client.getIntegerReply();
     }
@@ -1100,7 +1099,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String lpop(String key) {
-        checkIsInMulti();
+        runChecks();
         client.lpop(key);
         return client.getBulkReply();
     }
@@ -1119,7 +1118,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String rpop(String key) {
-        checkIsInMulti();
+        runChecks();
         client.rpop(key);
         return client.getBulkReply();
     }
@@ -1143,7 +1142,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String rpoplpush(String srckey, String dstkey) {
-        checkIsInMulti();
+        runChecks();
         client.rpoplpush(srckey, dstkey);
         return client.getBulkReply();
     }
@@ -1162,7 +1161,7 @@ public class Jedis implements JedisCommands {
      *         the element was already a member of the set
      */
     public Integer sadd(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.sadd(key, member);
         return client.getIntegerReply();
     }
@@ -1177,7 +1176,7 @@ public class Jedis implements JedisCommands {
      * @return Multi bulk reply
      */
     public Set<String> smembers(String key) {
-        checkIsInMulti();
+        runChecks();
         client.smembers(key);
         List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1196,7 +1195,7 @@ public class Jedis implements JedisCommands {
      *         if the new element was not a member of the set
      */
     public Integer srem(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.srem(key, member);
         return client.getIntegerReply();
     }
@@ -1214,7 +1213,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String spop(String key) {
-        checkIsInMulti();
+        runChecks();
         client.spop(key);
         return client.getBulkReply();
     }
@@ -1243,7 +1242,7 @@ public class Jedis implements JedisCommands {
      *         performed
      */
     public Integer smove(String srckey, String dstkey, String member) {
-        checkIsInMulti();
+        runChecks();
         client.smove(srckey, dstkey, member);
         return client.getIntegerReply();
     }
@@ -1257,7 +1256,7 @@ public class Jedis implements JedisCommands {
      *         of the set as an integer.
      */
     public Integer scard(String key) {
-        checkIsInMulti();
+        runChecks();
         client.scard(key);
         return client.getIntegerReply();
     }
@@ -1275,7 +1274,7 @@ public class Jedis implements JedisCommands {
      *         does not exist
      */
     public Integer sismember(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.sismember(key, member);
         return client.getIntegerReply();
     }
@@ -1300,7 +1299,7 @@ public class Jedis implements JedisCommands {
      * @return Multi bulk reply, specifically the list of common elements.
      */
     public Set<String> sinter(String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.sinter(keys);
         List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1318,7 +1317,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public Integer sinterstore(String dstkey, String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.sinterstore(dstkey, keys);
         return client.getIntegerReply();
     }
@@ -1340,7 +1339,7 @@ public class Jedis implements JedisCommands {
      * @return Multi bulk reply, specifically the list of common elements.
      */
     public Set<String> sunion(String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.sunion(keys);
         List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1359,7 +1358,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public Integer sunionstore(String dstkey, String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.sunionstore(dstkey, keys);
         return client.getIntegerReply();
     }
@@ -1388,7 +1387,7 @@ public class Jedis implements JedisCommands {
      *         the first set provided and all the successive sets.
      */
     public Set<String> sdiff(String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.sdiff(keys);
         List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1403,7 +1402,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public Integer sdiffstore(String dstkey, String... keys) {
-        checkIsInMulti();
+        runChecks();
         client.sdiffstore(dstkey, keys);
         return client.getIntegerReply();
     }
@@ -1421,7 +1420,7 @@ public class Jedis implements JedisCommands {
      * @return Bulk reply
      */
     public String srandmember(String key) {
-        checkIsInMulti();
+        runChecks();
         client.srandmember(key);
         return client.getBulkReply();
     }
@@ -1448,13 +1447,13 @@ public class Jedis implements JedisCommands {
      *         was updated
      */
     public Integer zadd(String key, double score, String member) {
-        checkIsInMulti();
+        runChecks();
         client.zadd(key, score, member);
         return client.getIntegerReply();
     }
 
     public Set<String> zrange(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.zrange(key, start, end);
         List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1476,7 +1475,7 @@ public class Jedis implements JedisCommands {
      *         if the new element was not a member of the set
      */
     public Integer zrem(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.zrem(key, member);
         return client.getIntegerReply();
     }
@@ -1506,7 +1505,7 @@ public class Jedis implements JedisCommands {
      * @return The new score
      */
     public Double zincrby(String key, double score, String member) {
-        checkIsInMulti();
+        runChecks();
         client.zincrby(key, score, member);
         String newscore = client.getBulkReply();
         return Double.valueOf(newscore);
@@ -1533,7 +1532,7 @@ public class Jedis implements JedisCommands {
      *         reply if there is no such element.
      */
     public Integer zrank(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.zrank(key, member);
         return client.getIntegerReply();
     }
@@ -1559,27 +1558,27 @@ public class Jedis implements JedisCommands {
      *         reply if there is no such element.
      */
     public Integer zrevrank(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.zrevrank(key, member);
         return client.getIntegerReply();
     }
 
     public Set<String> zrevrange(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.zrevrange(key, start, end);
         List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
     }
 
     public Set<Tuple> zrangeWithScores(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.zrangeWithScores(key, start, end);
         Set<Tuple> set = getTupledSet();
         return set;
     }
 
     public Set<Tuple> zrevrangeWithScores(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.zrevrangeWithScores(key, start, end);
         Set<Tuple> set = getTupledSet();
         return set;
@@ -1595,7 +1594,7 @@ public class Jedis implements JedisCommands {
      * @return the cardinality (number of elements) of the set as an integer.
      */
     public Integer zcard(String key) {
-        checkIsInMulti();
+        runChecks();
         client.zcard(key);
         return client.getIntegerReply();
     }
@@ -1612,7 +1611,7 @@ public class Jedis implements JedisCommands {
      * @return the score
      */
     public Double zscore(String key, String member) {
-        checkIsInMulti();
+        runChecks();
         client.zscore(key, member);
         String score = client.getBulkReply();
         return (score != null ? new Double(score) : null);
@@ -1637,15 +1636,27 @@ public class Jedis implements JedisCommands {
         return results;
     }
 
-    private void checkIsInMulti() {
+    private void runChecks() {
         if (client.isInMulti()) {
             throw new JedisException(
                     "Cannot use Jedis when in Multi. Please use JedisTransaction instead.");
         }
+        try {
+            this.connect();
+        } catch (UnknownHostException e) {
+            throw new JedisException(e);
+        } catch (IOException e) {
+            throw new JedisException(e);
+        }
     }
 
     public void connect() throws UnknownHostException, IOException {
-        client.connect();
+        if (!client.isConnected()) {
+            client.connect();
+            if (this.password != null) {
+                this.auth(this.password);
+            }
+        }
     }
 
     public void disconnect() throws IOException {
@@ -1680,7 +1691,7 @@ public class Jedis implements JedisCommands {
      *         smallest to the biggest number.
      */
     public List<String> sort(String key) {
-        checkIsInMulti();
+        runChecks();
         client.sort(key);
         return client.getMultiBulkReply();
     }
@@ -1762,7 +1773,7 @@ public class Jedis implements JedisCommands {
      * @return a list of sorted elements.
      */
     public List<String> sort(String key, SortingParams sortingParameters) {
-        checkIsInMulti();
+        runChecks();
         client.sort(key, sortingParameters);
         return client.getMultiBulkReply();
     }
@@ -1840,7 +1851,7 @@ public class Jedis implements JedisCommands {
      *         programming language used.
      */
     public List<String> blpop(int timeout, String... keys) {
-        checkIsInMulti();
+        runChecks();
         List<String> args = new ArrayList<String>();
         for (String arg : keys) {
             args.add(arg);
@@ -1869,7 +1880,7 @@ public class Jedis implements JedisCommands {
      */
     public Integer sort(String key, SortingParams sortingParameters,
             String dstkey) {
-        checkIsInMulti();
+        runChecks();
         client.sort(key, sortingParameters, dstkey);
         return client.getIntegerReply();
     }
@@ -1891,7 +1902,7 @@ public class Jedis implements JedisCommands {
      * @return The number of elements of the list at dstkey.
      */
     public Integer sort(String key, String dstkey) {
-        checkIsInMulti();
+        runChecks();
         client.sort(key, dstkey);
         return client.getIntegerReply();
     }
@@ -1969,7 +1980,7 @@ public class Jedis implements JedisCommands {
      *         programming language used.
      */
     public List<String> brpop(int timeout, String... keys) {
-        checkIsInMulti();
+        runChecks();
         List<String> args = new ArrayList<String>();
         for (String arg : keys) {
             args.add(arg);
@@ -2000,7 +2011,7 @@ public class Jedis implements JedisCommands {
      * @return Status code reply
      */
     public String auth(String password) {
-        checkIsInMulti();
+        runChecks();
         client.auth(password);
         return client.getStatusCodeReply();
     }
@@ -2029,7 +2040,7 @@ public class Jedis implements JedisCommands {
     }
 
     public Integer zcount(String key, double min, double max) {
-        checkIsInMulti();
+        runChecks();
         client.zcount(key, min, max);
         return client.getIntegerReply();
     }
@@ -2092,13 +2103,13 @@ public class Jedis implements JedisCommands {
      *         score range.
      */
     public Set<String> zrangeByScore(String key, double min, double max) {
-        checkIsInMulti();
+        runChecks();
         client.zrangeByScore(key, min, max);
         return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
 
     public Set<String> zrangeByScore(String key, String min, String max) {
-        checkIsInMulti();
+        runChecks();
         client.zrangeByScore(key, min, max);
         return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
@@ -2161,7 +2172,7 @@ public class Jedis implements JedisCommands {
      */
     public Set<String> zrangeByScore(String key, double min, double max,
             int offset, int count) {
-        checkIsInMulti();
+        runChecks();
         client.zrangeByScore(key, min, max, offset, count);
         return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
@@ -2223,7 +2234,7 @@ public class Jedis implements JedisCommands {
      *         score range.
      */
     public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
-        checkIsInMulti();
+        runChecks();
         client.zrangeByScoreWithScores(key, min, max);
         Set<Tuple> set = getTupledSet();
         return set;
@@ -2287,14 +2298,14 @@ public class Jedis implements JedisCommands {
      */
     public Set<Tuple> zrangeByScoreWithScores(String key, double min,
             double max, int offset, int count) {
-        checkIsInMulti();
+        runChecks();
         client.zrangeByScoreWithScores(key, min, max, offset, count);
         Set<Tuple> set = getTupledSet();
         return set;
     }
 
     private Set<Tuple> getTupledSet() {
-        checkIsInMulti();
+        runChecks();
         List<String> membersWithScores = client.getMultiBulkReply();
         Set<Tuple> set = new LinkedHashSet<Tuple>();
         Iterator<String> iterator = membersWithScores.iterator();
@@ -2320,7 +2331,7 @@ public class Jedis implements JedisCommands {
      * 
      */
     public Integer zremrangeByRank(String key, int start, int end) {
-        checkIsInMulti();
+        runChecks();
         client.zremrangeByRank(key, start, end);
         return client.getIntegerReply();
     }
@@ -2340,7 +2351,7 @@ public class Jedis implements JedisCommands {
      * @return Integer reply, specifically the number of elements removed.
      */
     public Integer zremrangeByScore(String key, double start, double end) {
-        checkIsInMulti();
+        runChecks();
         client.zremrangeByScore(key, start, end);
         return client.getIntegerReply();
     }
@@ -2384,7 +2395,7 @@ public class Jedis implements JedisCommands {
      *         set at dstkey
      */
     public Integer zunionstore(String dstkey, String... sets) {
-        checkIsInMulti();
+        runChecks();
         client.zunionstore(dstkey, sets);
         return client.getIntegerReply();
     }
@@ -2429,7 +2440,7 @@ public class Jedis implements JedisCommands {
      *         set at dstkey
      */
     public Integer zunionstore(String dstkey, ZParams params, String... sets) {
-        checkIsInMulti();
+        runChecks();
         client.zunionstore(dstkey, params, sets);
         return client.getIntegerReply();
     }
@@ -2473,7 +2484,7 @@ public class Jedis implements JedisCommands {
      *         set at dstkey
      */
     public Integer zinterstore(String dstkey, String... sets) {
-        checkIsInMulti();
+        runChecks();
         client.zinterstore(dstkey, sets);
         return client.getIntegerReply();
     }
@@ -2518,7 +2529,7 @@ public class Jedis implements JedisCommands {
      *         set at dstkey
      */
     public Integer zinterstore(String dstkey, ZParams params, String... sets) {
-        checkIsInMulti();
+        runChecks();
         client.zinterstore(dstkey, params, sets);
         return client.getIntegerReply();
     }

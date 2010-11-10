@@ -31,12 +31,9 @@ public class ShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
 
     public void disconnect() throws IOException {
         for (JedisShardInfo jedis : getAllShards()) {
+            jedis.getResource().quit();
             jedis.getResource().disconnect();
         }
-    }
-
-    protected Jedis create(JedisShardInfo shard) {
-        return new Jedis(shard);
     }
 
     public String set(String key, String value) {

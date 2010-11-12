@@ -249,11 +249,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	hash.put("car", "bar");
 	jedis.hmset("foo", hash);
 
-	Set<String> vals = jedis.hvals("foo");
-	Set<String> expected = new HashSet<String>();
+	Collection<String> vals = jedis.hvals("foo");
+	List<String> expected = new ArrayList<String>();
 	expected.add("car");
 	expected.add("bar");
-	assertTrue(JedisTest.isSetAreEquals(expected, vals));
+	assertTrue(JedisTest.isCollectionAreEquals(expected, vals));
 	
 	//Binary
 	Map<byte[], byte[]> bhash = new LinkedHashMap<byte[], byte[]>();
@@ -261,11 +261,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	bhash.put(bcar, bbar);
 	jedis.hmset(bfoo, bhash);
 
-	Set<byte[]> bvals = jedis.hvals(bfoo);
-	Set<byte[]> bexpected = new HashSet<byte[]>();
+	Collection<byte[]> bvals = jedis.hvals(bfoo);
+	List<byte[]> bexpected = new ArrayList<byte[]>();
 	bexpected.add(bcar);
 	bexpected.add(bbar);
-	assertTrue(JedisTest.isSetAreEquals(bexpected, bvals));
+	assertTrue(JedisTest.isCollectionAreEquals(bexpected, bvals));
 
 
     }

@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -773,11 +774,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    public Set<String> hvals(final String key) {
+    public Collection<String> hvals(final String key) {
         checkIsInMulti();
         client.hvals(key);
         final List<String> lresult = client.getMultiBulkReply();
-        return new HashSet<String>(lresult);
+        return lresult;
     }
 
     /**

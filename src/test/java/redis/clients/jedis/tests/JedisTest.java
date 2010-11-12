@@ -50,6 +50,63 @@ public class JedisTest extends JedisCommandTestBase {
     }
     
     @SuppressWarnings("rawtypes")
+	public static boolean isCollectionAreEquals(Collection expected, Collection result) {
+    	if(expected.size() != result.size()) {
+    		return false;
+    	}
+    	
+    	final Iterator expectedit = expected.iterator();
+    	while(expectedit.hasNext()) {
+    		final Object exp = expectedit.next();
+        	final Iterator responseit = result.iterator();
+        	boolean found = false;
+        	while(responseit.hasNext() && !found) {
+	    		final Object resp = responseit.next();
+	    		if(exp instanceof byte[] && resp instanceof byte[]) {
+	    			final byte[] bexp = (byte[]) exp;
+	    			final byte[] bresp = (byte[]) resp;
+	    			if(Arrays.equals(bexp, bresp)) {
+	    				found = true;
+	    			}
+	    		} else if (exp instanceof Set && resp instanceof Set) {
+	    			final Set subexp = (Set) exp;
+	    			final Set subresp = (Set) resp;
+	    			if(isSetAreEquals(subexp, subresp)) {
+	    				found = true;
+	    			}
+	    		} else if (exp instanceof List && resp instanceof List) {
+	    			final List subexp = (List) exp;
+	    			final List subresp = (List) resp;
+	    			if(isListAreEquals(subexp, subresp)) {
+	    				found = true;
+	    			}
+	    		} else if (exp instanceof Collection && resp instanceof Collection) {
+	    			final Collection subexp = (Collection) exp;
+	    			final Collection subresp = (Collection) resp;
+	    			if(isCollectionAreEquals(subexp, subresp)) {
+	    				found = true;
+	    			}
+	    		} else {
+	    			if (null != exp) {
+		    			if (exp.equals(resp)){
+		    				found = true;
+		    			}
+	    			} else {
+	    				if(resp == null) {
+	    					found = true;
+	    				}
+	    			}
+	    		}
+        	}
+        	if(!found){
+        		fail("Result doesn't contain " + (null != exp ? exp.toString() : null));
+        	}
+    	}
+    	
+    	return true;
+    }
+
+    @SuppressWarnings("rawtypes")
 	public static boolean isSetAreEquals(Set expected, Set result) {
     	if(expected.size() != result.size()) {
     		return false;
@@ -78,6 +135,12 @@ public class JedisTest extends JedisCommandTestBase {
 	    			final List subexp = (List) exp;
 	    			final List subresp = (List) resp;
 	    			if(isListAreEquals(subexp, subresp)) {
+	    				found = true;
+	    			}
+	    		} else if (exp instanceof Collection && resp instanceof Collection) {
+	    			final Collection subexp = (Collection) exp;
+	    			final Collection subresp = (Collection) resp;
+	    			if(isCollectionAreEquals(subexp, subresp)) {
 	    				found = true;
 	    			}
 	    		} else {
@@ -129,6 +192,12 @@ public class JedisTest extends JedisCommandTestBase {
     			final List subexp = (List) exp;
     			final List subresp = (List) resp;
     			if(isListAreEquals(subexp, subresp)) {
+    				continue;
+    			}
+    		} else if (exp instanceof Collection && resp instanceof Collection) {
+    			final Collection subexp = (Collection) exp;
+    			final Collection subresp = (Collection) resp;
+    			if(isCollectionAreEquals(subexp, subresp)) {
     				continue;
     			}
     		} else {

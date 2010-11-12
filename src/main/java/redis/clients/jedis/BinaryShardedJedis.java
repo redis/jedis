@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,7 +170,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
         return j.hkeys(key);
     }
 
-    public Set<byte[]> hvals(byte[] key) {
+    public Collection<byte[]> hvals(byte[] key) {
         Jedis j = getShard(key);
         return j.hvals(key);
     }

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +61,7 @@ public interface JedisCommands {
 
     Set<String> hkeys(String key);
 
-    Set<String> hvals(String key);
+    Collection<String> hvals(String key);
 
     Map<String, String> hgetAll(String key);
 

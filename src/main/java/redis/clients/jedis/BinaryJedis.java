@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -844,11 +845,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    public Set<byte[]> hvals(final byte[] key) {
+    public Collection<byte[]> hvals(final byte[] key) {
         checkIsInMulti();
         client.hvals(key);
         final List<byte[]> lresult = client.getBinaryMultiBulkReply();
-        return new HashSet<byte[]>(lresult);
+        return lresult;
     }
 
     /**

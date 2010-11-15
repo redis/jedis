@@ -175,4 +175,18 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("s", "This is a string");
 	assertEquals("This is a string".length(), jedis.strlen("s").intValue());
     }
+	
+	@Test
+	public void incrLargeNumbers() {
+		long value = jedis.incr("foo");
+		assertEquals(1, value);
+		assertEquals(1L + Integer.MAX_VALUE, (long) jedis.incrBy("foo", Integer.MAX_VALUE));
+	}
+	
+	@Test
+	public void incrReallyLargeNumbers() {
+		jedis.set("foo", Long.toString(Long.MAX_VALUE));
+		long value = jedis.incr("foo");
+		assertEquals(Long.MIN_VALUE, value);
+	}
 }

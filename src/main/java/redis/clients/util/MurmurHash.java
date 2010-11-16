@@ -20,6 +20,8 @@ package redis.clients.util;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import redis.clients.jedis.Protocol;
+
 /**
  * This is a very fast, non-cryptographic hash suitable for general hash-based
  * lookup. See http://murmurhash.googlepages.com/ for more details.
@@ -156,7 +158,11 @@ public class MurmurHash implements Hashing {
 	return h;
     }
 
+    public long hash(byte[] key) {
+    	return hash64A(key, 0x1234ABCD);
+    }
+    
     public long hash(String key) {
-	return hash64A(key.getBytes(), 0x1234ABCD);
+    	return hash(key.getBytes(Protocol.UTF8));
     }
 }

@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.Protocol.Command;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 
@@ -24,7 +25,7 @@ public class Connection {
         return timeout;
     }
 
-    public void setTimeout(int timeout) {
+    public void setTimeout(final int timeout) {
         this.timeout = timeout;
     }
 
@@ -44,18 +45,46 @@ public class Connection {
         }
     }
 
-    public Connection(String host) {
+    public Connection(final String host) {
         super();
         this.host = host;
     }
 
-    protected Connection sendCommand(String name, String... args) {
-        protocol.sendCommand(outputStream, name, args);
+    protected Connection sendCommand(final Command cmd, final String... args) {
+        final byte[][] bargs = new byte[args.length][];
+        for (int i = 0; i < args.length; i++) {
+            bargs[i] = args[i].getBytes(Protocol.UTF8);
+        }
+        return sendCommand(cmd, bargs);
+    }
+
+    protected Connection sendCommand(final Command cmd, final byte[]... args) {
+        try {
+            connect();
+        } catch (UnknownHostException e) {
+            throw new JedisException("Could not connect to redis-server", e);
+        } catch (IOException e) {
+            throw new JedisException("Could not connect to redis-server", e);
+        }
+        protocol.sendCommand(outputStream, cmd, args);
         pipelinedCommands++;
         return this;
     }
 
-    public Connection(String host, int port) {
+    protected Connection sendCommand(final Command cmd) {
+        try {
+            connect();
+        } catch (UnknownHostException e) {
+            throw new JedisException("Could not connect to redis-server", e);
+        } catch (IOException e) {
+            throw new JedisException("Could not connect to redis-server", e);
+        }
+        protocol.sendCommand(outputStream, cmd, new byte[0][]);
+        pipelinedCommands++;
+        return this;
+    }
+
+    public Connection(final String host, final int port) {
         super();
         this.host = host;
         this.port = port;
@@ -65,7 +94,7 @@ public class Connection {
         return host;
     }
 
-    public void setHost(String host) {
+    public void setHost(final String host) {
         this.host = host;
     }
 
@@ -73,7 +102,7 @@ public class Connection {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(final int port) {
         this.port = port;
     }
 
@@ -111,12 +140,26 @@ public class Connection {
 
     protected String getStatusCodeReply() {
         pipelinedCommands--;
-        return (String) protocol.read(inputStream);
+        final byte[] resp = (byte[]) protocol.read(inputStream);
+        if (null == resp) {
+            return null;
+        } else {
+            return new String(resp, Protocol.UTF8);
+        }
     }
 
     public String getBulkReply() {
+        final byte[] result = getBinaryBulkReply();
+        if (null != result) {
+            return new String(result, Protocol.UTF8);
+        } else {
+            return null;
+        }
+    }
+
+    public byte[] getBinaryBulkReply() {
         pipelinedCommands--;
-        return (String) protocol.read(inputStream);
+        return (byte[]) protocol.read(inputStream);
     }
 
     public Integer getIntegerReply() {
@@ -124,10 +167,26 @@ public class Connection {
         return (Integer) protocol.read(inputStream);
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getMultiBulkReply() {
+        final List<byte[]> bresult = getBinaryMultiBulkReply();
+        if (null == bresult) {
+            return null;
+        }
+        final ArrayList<String> result = new ArrayList<String>(bresult.size());
+        for (final byte[] barray : bresult) {
+            if (barray == null) {
+                result.add(null);
+            } else {
+                result.add(new String(barray, Protocol.UTF8));
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<byte[]> getBinaryMultiBulkReply() {
         pipelinedCommands--;
-        return (List<String>) protocol.read(inputStream);
+        return (List<byte[]>) protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")

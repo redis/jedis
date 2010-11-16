@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPipeline;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class PipeliningTest extends Assert {
@@ -36,7 +37,7 @@ public class PipeliningTest extends Assert {
 	});
 
 	assertEquals(2, results.size());
-	assertEquals("OK", results.get(0));
-	assertEquals("bar", results.get(1));
+	assertArrayEquals("OK".getBytes(Protocol.UTF8), (byte[])results.get(0));
+	assertArrayEquals("bar".getBytes(Protocol.UTF8), (byte[])results.get(1));
     }
 }

@@ -5,29 +5,36 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static redis.clients.jedis.Protocol.Keyword.*;
+
 public class ZParams {
     public enum Aggregate {
-	SUM, MIN, MAX
+    	SUM, MIN, MAX;
+	
+		public final byte[] raw;
+		Aggregate() {
+			raw = name().getBytes(Protocol.UTF8);
+		}
     }
 
-    private List<String> params = new ArrayList<String>();
+    private List<byte[]> params = new ArrayList<byte[]>();
 
-    public ZParams weights(int... weights) {
-	params.add("WEIGHTS");
-	for (int weight : weights) {
-	    params.add(String.valueOf(weight));
+    public ZParams weights(final int... weights) {
+	params.add(WEIGHTS.raw);
+	for (final int weight : weights) {
+	    params.add(Protocol.toByteArray(weight));
 	}
 
 	return this;
     }
 
-    public Collection<String> getParams() {
-	return Collections.unmodifiableCollection(params);
+    public Collection<byte[]> getParams() {
+    	return Collections.unmodifiableCollection(params);
     }
 
-    public ZParams aggregate(Aggregate aggregate) {
-	params.add("AGGREGATE");
-	params.add(aggregate.name());
+    public ZParams aggregate(final Aggregate aggregate) {
+	params.add(AGGREGATE.raw);
+	params.add(aggregate.raw);
 	return this;
     }
 }

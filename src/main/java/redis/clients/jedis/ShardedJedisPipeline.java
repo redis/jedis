@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import redis.clients.jedis.Client.LIST_POSITION;
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public abstract class ShardedJedisPipeline {
-    private ShardedJedis jedis;
+    private BinaryShardedJedis jedis;
     private List<FutureResult> results = new ArrayList<FutureResult>();
 
     private class FutureResult {
@@ -22,7 +22,7 @@ public abstract class ShardedJedisPipeline {
         }
     }
 
-    public void setShardedJedis(ShardedJedis jedis) {
+    public void setShardedJedis(BinaryShardedJedis jedis) {
         this.jedis = jedis;
     }
 

@@ -57,7 +57,7 @@ public class ShardedJedisPoolTest extends Assert {
     @Test
     public void checkConnectionWithDefaultPort() throws TimeoutException {
         ShardedJedisPool pool = new ShardedJedisPool(shards);
-        pool.setResourcesNumber(10);
+        pool.setResourcesNumber(1);
         pool.init();
 
         ShardedJedis jedis = pool.getResource(200);

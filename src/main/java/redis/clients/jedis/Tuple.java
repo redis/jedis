@@ -1,14 +1,21 @@
 package redis.clients.jedis;
 
+import java.util.Arrays;
+
 public class Tuple {
-    private String element;
+    private byte[] element;
     private Double score;
 
     @Override
     public int hashCode() {
 	final int prime = 31;
 	int result = 1;
-	result = prime * result + ((element == null) ? 0 : element.hashCode());
+	result = prime * result;
+	if (null != element) {
+		for(final byte b : element) {
+			result = prime * result + b;
+		}
+	}
 	long temp;
 	temp = Double.doubleToLongBits(score);
 	result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -27,7 +34,7 @@ public class Tuple {
 	if (element == null) {
 	    if (other.element != null)
 		return false;
-	} else if (!element.equals(other.element))
+	} else if (!Arrays.equals(element, other.element))
 	    return false;
 	if (Double.doubleToLongBits(score) != Double
 		.doubleToLongBits(other.score))
@@ -37,15 +44,33 @@ public class Tuple {
 
     public Tuple(String element, Double score) {
 	super();
-	this.element = element;
+	this.element = element.getBytes(Protocol.UTF8);
 	this.score = score;
     }
 
+    public Tuple(byte[] element, Double score) {
+    	super();
+    	this.element = element;
+    	this.score = score;
+        }
+
     public String getElement() {
-	return element;
+    	if(null != element) {
+    		return new String(element, Protocol.UTF8);
+    	} else {
+    		return null;
+    	}
+    }
+
+    public byte[] getBinaryElement() {
+   		return element;
     }
 
     public double getScore() {
 	return score;
+    }
+    
+    public String toString() {
+    	return '['+Arrays.toString(element)+','+score+']';
     }
 }

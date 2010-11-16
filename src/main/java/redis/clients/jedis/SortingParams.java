@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
+import static redis.clients.jedis.Protocol.Keyword.*;
 /**
  * Builder Class for {@link Jedis#sort(String, SortingParams) SORT} Parameters.
  * 
  */
 public class SortingParams {
-    private List<String> params = new ArrayList<String>();
+    private List<byte[]> params = new ArrayList<byte[]>();
 
     /**
      * Sort by weight in keys.
@@ -25,8 +25,25 @@ public class SortingParams {
      * @param pattern
      * @return the SortingParams Object
      */
-    public SortingParams by(String pattern) {
-	params.add("BY");
+    public SortingParams by(final String pattern) {
+	return by(pattern.getBytes(Protocol.UTF8));
+    }
+
+    /**
+     * Sort by weight in keys.
+     * <p>
+     * Takes a pattern that is used in order to generate the key names of the
+     * weights used for sorting. Weight key names are obtained substituting the
+     * first occurrence of * with the actual value of the elements on the list.
+     * <p>
+     * The pattern for a normal key/value pair is "keyname*" and for a value in
+     * a hash "keyname*->fieldname".
+     * 
+     * @param pattern
+     * @return the SortingParams Object
+     */
+    public SortingParams by(final byte[] pattern) {
+	params.add(BY.raw);
 	params.add(pattern);
 	return this;
     }
@@ -40,11 +57,12 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams nosort() {
-	params.add("BY nosort");
+    	params.add(BY.raw);
+    	params.add(NOSORT.raw);
 	return this;
     }
 
-    public Collection<String> getParams() {
+    public Collection<byte[]> getParams() {
 	return Collections.unmodifiableCollection(params);
     }
 
@@ -54,7 +72,7 @@ public class SortingParams {
      * @return the sortingParams Object
      */
     public SortingParams desc() {
-	params.add("DESC");
+	params.add(DESC.raw);
 	return this;
     }
 
@@ -64,7 +82,7 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams asc() {
-	params.add("ASC");
+	params.add(ASC.raw);
 	return this;
     }
 
@@ -76,10 +94,10 @@ public class SortingParams {
      * @param count
      * @return the SortingParams Object
      */
-    public SortingParams limit(int start, int count) {
-	params.add("LIMIT");
-	params.add(String.valueOf(start));
-	params.add(String.valueOf(count));
+    public SortingParams limit(final int start, final int count) {
+	params.add(LIMIT.raw);
+	params.add(Protocol.toByteArray(start));
+	params.add(Protocol.toByteArray(count));
 	return this;
     }
 
@@ -90,7 +108,7 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams alpha() {
-	params.add("ALPHA");
+	params.add(ALPHA.raw);
 	return this;
     }
 
@@ -110,8 +128,31 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams get(String... patterns) {
-	for (String pattern : patterns) {
-	    params.add("GET");
+	for (final String pattern : patterns) {
+	    params.add(GET.raw);
+	    params.add(pattern.getBytes(Protocol.UTF8));
+	}
+	return this;
+    }
+
+    /**
+     * Retrieving external keys from the result of the search.
+     * <p>
+     * Takes a pattern that is used in order to generate the key names of the
+     * result of sorting. The key names are obtained substituting the first
+     * occurrence of * with the actual value of the elements on the list.
+     * <p>
+     * The pattern for a normal key/value pair is "keyname*" and for a value in
+     * a hash "keyname*->fieldname".
+     * <p>
+     * To get the list itself use the char # as pattern.
+     * 
+     * @param patterns
+     * @return the SortingParams Object
+     */
+    public SortingParams get(byte[]... patterns) {
+	for (final byte[] pattern : patterns) {
+	    params.add(GET.raw);
 	    params.add(pattern);
 	}
 	return this;

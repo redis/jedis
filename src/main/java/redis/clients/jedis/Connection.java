@@ -66,8 +66,17 @@ public class Connection {
         } catch (IOException e) {
             throw new JedisException("Could not connect to redis-server", e);
         }
-        protocol.sendCommand(outputStream, cmd, args);
-        pipelinedCommands++;
+        try 
+        {
+            protocol.sendCommand(outputStream, cmd, args);
+            pipelinedCommands++;
+        }
+        catch(JedisException e)
+        {
+            // Disconnect this connection since there may be some socket error
+            disconnect();
+            throw e;
+        }
         return this;
     }
 

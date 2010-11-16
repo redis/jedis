@@ -79,7 +79,10 @@ public final class Protocol {
     }
 
     private byte[] processBulkReply(final RedisInputStream is) {
-        int len = Integer.parseInt(is.readLine());
+        String str = is.readLine() ;
+        if(str == null || str.length() == 0) 
+                throw new JedisException( new IOException("Empty reply: received empty String in response") );
+        int len = Integer.parseInt(str);
         if (len == -1) {
             return null;
         }
@@ -101,11 +104,16 @@ public final class Protocol {
 
     private Integer processInteger(final RedisInputStream is) {
         String num = is.readLine();
+        if(num == null || num.length() == 0) 
+                throw new JedisException( new IOException("Empty reply: received empty String in response") );
         return Integer.valueOf(num);
     }
 
     private List<Object> processMultiBulkReply(final RedisInputStream is) {
-        int num = Integer.parseInt(is.readLine());
+        String str  = is.readLine();
+        if(str == null || str.length() == 0) 
+                throw new JedisException( new IOException("Empty reply: received empty String in response") );
+        int num = Integer.parseInt(str);
         if (num == -1) {
             return null;
         }

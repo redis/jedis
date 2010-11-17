@@ -33,7 +33,7 @@ public final class RedisOutputStream extends FilterOutputStream {
 
     public void write(final byte b) throws IOException {
         buf[count++] = b;
-	 if (count == buf.length) {
+        if (count == buf.length) {
             flushBuffer();
         }
     }
@@ -61,7 +61,7 @@ public final class RedisOutputStream extends FilterOutputStream {
 
         for (int i = 0; i != size; ++i) {
             buf[count++] = (byte) in.charAt(i);
-	     if (count == buf.length) {
+            if (count == buf.length) {
                 flushBuffer();
             }
         }
@@ -108,7 +108,7 @@ public final class RedisOutputStream extends FilterOutputStream {
             char c = str.charAt(i);
             if (!(c < 0x80)) break;
             buf[count++] = (byte) c;
-	     if(count == buf.length) {
+            if(count == buf.length) {
                 flushBuffer();
             }
         }
@@ -117,7 +117,7 @@ public final class RedisOutputStream extends FilterOutputStream {
             char c = str.charAt(i);
             if (c < 0x80) {
                 buf[count++] = (byte) c;
-		 if(count == buf.length) {
+                if(count == buf.length) {
                     flushBuffer();
                 }
             } else if (c < 0x800) {

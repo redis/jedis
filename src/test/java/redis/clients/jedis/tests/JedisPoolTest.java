@@ -1,8 +1,9 @@
 package redis.clients.jedis.tests;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
+import java.util.NoSuchElementException;
 
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,12 +15,9 @@ public class JedisPoolTest extends Assert {
     private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
     @Test
-    public void checkConnections() throws TimeoutException {
-        JedisPool pool = new JedisPool(hnp.host, hnp.port, 2000);
-        pool.setResourcesNumber(10);
-        pool.init();
-
-        Jedis jedis = pool.getResource(200);
+    public void checkConnections() throws Exception {
+        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port, 2000);
+        Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "bar");
         assertEquals("bar", jedis.get("foo"));
@@ -28,12 +26,9 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkConnectionWithDefaultPort() throws TimeoutException {
-        JedisPool pool = new JedisPool(hnp.host, hnp.port);
-        pool.setResourcesNumber(10);
-        pool.init();
-
-        Jedis jedis = pool.getResource(200);
+    public void checkConnectionWithDefaultPort() throws Exception {
+        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port);
+        Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "bar");
         assertEquals("bar", jedis.get("foo"));
@@ -42,17 +37,14 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkJedisIsReusedWhenReturned() throws TimeoutException {
-        JedisPool pool = new JedisPool(hnp.host, hnp.port);
-        pool.setResourcesNumber(1);
-        pool.init();
-
-        Jedis jedis = pool.getResource(200);
+    public void checkJedisIsReusedWhenReturned() throws Exception {
+        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port);
+        Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "0");
         pool.returnResource(jedis);
 
-        jedis = pool.getResource(200);
+        jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.incr("foo");
         pool.returnResource(jedis);
@@ -60,35 +52,31 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkPoolRepairedWhenJedisIsBroken() throws TimeoutException,
-            IOException {
-        JedisPool pool = new JedisPool(hnp.host, hnp.port);
-        pool.setResourcesNumber(1);
-        pool.init();
-
-        Jedis jedis = pool.getResource(200);
+    public void checkPoolRepairedWhenJedisIsBroken() throws Exception {
+        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port);
+        Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.quit();
         pool.returnBrokenResource(jedis);
 
-        jedis = pool.getResource(200);
+        jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.incr("foo");
         pool.returnResource(jedis);
         pool.destroy();
     }
 
-    @Test(expected = TimeoutException.class)
-    public void checkPoolOverflow() throws TimeoutException {
-        JedisPool pool = new JedisPool(hnp.host, hnp.port);
-        pool.setResourcesNumber(1);
-        pool.init();
-
-        Jedis jedis = pool.getResource(200);
+    @Test(expected = NoSuchElementException.class)
+    public void checkPoolOverflow() throws Exception {
+        Config config = new Config();
+        config.maxActive = 1;
+        config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;
+        JedisPool pool = new JedisPool(config, hnp.host, hnp.port);
+        Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "0");
 
-        Jedis newJedis = pool.getResource(200);
+        Jedis newJedis = pool.getResource();
         newJedis.auth("foobared");
         newJedis.incr("foo");
     }

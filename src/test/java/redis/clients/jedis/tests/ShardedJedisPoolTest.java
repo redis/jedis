@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
+import java.util.NoSuchElementException;
 
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,12 +44,9 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkConnections() throws TimeoutException {
-        ShardedJedisPool pool = new ShardedJedisPool(shards);
-        pool.setResourcesNumber(10);
-        pool.init();
-
-        ShardedJedis jedis = pool.getResource(200);
+    public void checkConnections() throws Exception {
+        ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
+        ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "bar");
         assertEquals("bar", jedis.get("foo"));
         pool.returnResource(jedis);
@@ -55,12 +54,9 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkConnectionWithDefaultPort() throws TimeoutException {
-        ShardedJedisPool pool = new ShardedJedisPool(shards);
-        pool.setResourcesNumber(1);
-        pool.init();
-
-        ShardedJedis jedis = pool.getResource(200);
+    public void checkConnectionWithDefaultPort() throws Exception {
+        ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
+        ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "bar");
         assertEquals("bar", jedis.get("foo"));
         pool.returnResource(jedis);
@@ -68,48 +64,43 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkJedisIsReusedWhenReturned() throws TimeoutException {
-        ShardedJedisPool pool = new ShardedJedisPool(shards);
-        pool.setResourcesNumber(1);
-        pool.init();
-
-        ShardedJedis jedis = pool.getResource(200);
+    public void checkJedisIsReusedWhenReturned() throws Exception {
+        ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
+        ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "0");
         pool.returnResource(jedis);
 
-        jedis = pool.getResource(200);
+        jedis = pool.getResource();
         jedis.incr("foo");
         pool.returnResource(jedis);
         pool.destroy();
     }
 
     @Test
-    public void checkPoolRepairedWhenJedisIsBroken() throws TimeoutException,
-            IOException {
-        ShardedJedisPool pool = new ShardedJedisPool(shards);
-        pool.setResourcesNumber(1);
-        pool.init();
-
-        ShardedJedis jedis = pool.getResource(200);
+    public void checkPoolRepairedWhenJedisIsBroken() throws Exception {
+        ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
+        ShardedJedis jedis = pool.getResource();
         jedis.disconnect();
         pool.returnBrokenResource(jedis);
 
-        jedis = pool.getResource(200);
+        jedis = pool.getResource();
         jedis.incr("foo");
         pool.returnResource(jedis);
         pool.destroy();
     }
 
-    @Test(expected = TimeoutException.class)
-    public void checkPoolOverflow() throws TimeoutException {
-        ShardedJedisPool pool = new ShardedJedisPool(shards);
-        pool.setResourcesNumber(1);
-        pool.init();
+    @Test(expected = NoSuchElementException.class)
+    public void checkPoolOverflow() throws Exception {
+        Config config = new Config();
+        config.maxActive = 1;
+        config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;
 
-        ShardedJedis jedis = pool.getResource(200);
+        ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+
+        ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "0");
 
-        ShardedJedis newJedis = pool.getResource(200);
+        ShardedJedis newJedis = pool.getResource();
         newJedis.incr("foo");
     }
 }

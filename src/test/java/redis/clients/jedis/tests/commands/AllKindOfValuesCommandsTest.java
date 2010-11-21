@@ -7,7 +7,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.JedisException;
-import redis.clients.jedis.Protocol;
+import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -447,8 +447,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         assertEquals("hello world", result);
 
         // Binary
-        byte[] bresult = jedis.echo("hello world".getBytes(Protocol.UTF8));
-        assertArrayEquals("hello world".getBytes(Protocol.UTF8), bresult);
+        byte[] bresult = jedis.echo(SafeEncoder.encode("hello world"));
+        assertArrayEquals(SafeEncoder.encode("hello world"), bresult);
     }
 
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
     public enum LIST_POSITION {
@@ -21,7 +22,7 @@ public class BinaryClient extends Connection {
         public final byte[] raw;
 
         private LIST_POSITION() {
-            raw = name().getBytes(Protocol.UTF8);
+            raw = SafeEncoder.encode(name());
         }
     }
 

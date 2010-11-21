@@ -169,7 +169,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         t.set("mykey", val);
         List<Object> resp = t.exec();
         assertEquals(1, resp.size());
-        assertArrayEquals(Keyword.OK.name().getBytes(Protocol.UTF8),
+        assertArrayEquals(Keyword.OK.name().getBytes(Protocol.CHARSET),
                 (byte[]) resp.get(0));
 
         // Binary
@@ -188,7 +188,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         t.set(bmykey, bval);
         resp = t.exec();
         assertEquals(1, resp.size());
-        assertArrayEquals(Keyword.OK.name().getBytes(Protocol.UTF8),
+        assertArrayEquals(Keyword.OK.name().getBytes(Protocol.CHARSET),
                 (byte[]) resp.get(0));
     }
 

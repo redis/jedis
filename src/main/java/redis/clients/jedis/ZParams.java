@@ -1,40 +1,44 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Keyword.AGGREGATE;
+import static redis.clients.jedis.Protocol.Keyword.WEIGHTS;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static redis.clients.jedis.Protocol.Keyword.*;
+import redis.clients.util.SafeEncoder;
 
 public class ZParams {
     public enum Aggregate {
-    	SUM, MIN, MAX;
-	
-		public final byte[] raw;
-		Aggregate() {
-			raw = name().getBytes(Protocol.UTF8);
-		}
+        SUM, MIN, MAX;
+
+        public final byte[] raw;
+
+        Aggregate() {
+            raw = SafeEncoder.encode(name());
+        }
     }
 
     private List<byte[]> params = new ArrayList<byte[]>();
 
     public ZParams weights(final int... weights) {
-	params.add(WEIGHTS.raw);
-	for (final int weight : weights) {
-	    params.add(Protocol.toByteArray(weight));
-	}
+        params.add(WEIGHTS.raw);
+        for (final int weight : weights) {
+            params.add(Protocol.toByteArray(weight));
+        }
 
-	return this;
+        return this;
     }
 
     public Collection<byte[]> getParams() {
-    	return Collections.unmodifiableCollection(params);
+        return Collections.unmodifiableCollection(params);
     }
 
     public ZParams aggregate(final Aggregate aggregate) {
-	params.add(AGGREGATE.raw);
-	params.add(aggregate.raw);
-	return this;
+        params.add(AGGREGATE.raw);
+        params.add(aggregate.raw);
+        return this;
     }
 }

@@ -5,9 +5,9 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.util.SafeEncoder;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -359,7 +359,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bscore = jedis.zscore(bfoo, bc);
         assertEquals((Double) 0.1d, bscore);
 
-        bscore = jedis.zscore(bfoo, "s".getBytes(Protocol.UTF8));
+        bscore = jedis.zscore(bfoo, SafeEncoder.encode("s"));
         assertNull(bscore);
 
     }
@@ -440,8 +440,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         assertEquals(bexpected, brange);
 
         brange = jedis.zrangeByScore(bfoo, 0d, 2d, 1, 1);
-        Set<byte[]> brange2 = jedis.zrangeByScore(bfoo, "-inf"
-                .getBytes(Protocol.UTF8), "(2".getBytes(Protocol.UTF8));
+        Set<byte[]> brange2 = jedis.zrangeByScore(bfoo, SafeEncoder
+                .encode("-inf"), SafeEncoder.encode("(2"));
         assertEquals(bexpected, brange2);
 
         bexpected = new LinkedHashSet<byte[]>();
@@ -601,8 +601,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd(bbar, 2, ba);
         jedis.zadd(bbar, 2, bb);
 
-        int bresult = jedis.zunionstore("dst".getBytes(Protocol.UTF8), bfoo,
-                bbar);
+        int bresult = jedis.zunionstore(SafeEncoder.encode("dst"), bfoo, bbar);
 
         assertEquals(2, bresult);
 
@@ -610,8 +609,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(bb, new Double(4)));
         bexpected.add(new Tuple(ba, new Double(3)));
 
-        assertEquals(bexpected, jedis.zrangeWithScores("dst"
-                .getBytes(Protocol.UTF8), 0, 100));
+        assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder
+                .encode("dst"), 0, 100));
     }
 
     @Test
@@ -643,7 +642,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         ZParams bparams = new ZParams();
         bparams.weights(2, 2);
         bparams.aggregate(ZParams.Aggregate.SUM);
-        int bresult = jedis.zunionstore("dst".getBytes(Protocol.UTF8), bparams,
+        int bresult = jedis.zunionstore(SafeEncoder.encode("dst"), bparams,
                 bfoo, bbar);
 
         assertEquals(2, bresult);
@@ -652,8 +651,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(bb, new Double(8)));
         bexpected.add(new Tuple(ba, new Double(6)));
 
-        assertEquals(bexpected, jedis.zrangeWithScores("dst"
-                .getBytes(Protocol.UTF8), 0, 100));
+        assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder
+                .encode("dst"), 0, 100));
     }
 
     @Test
@@ -676,16 +675,15 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd(bfoo, 2, bb);
         jedis.zadd(bbar, 2, ba);
 
-        int bresult = jedis.zinterstore("dst".getBytes(Protocol.UTF8), bfoo,
-                bbar);
+        int bresult = jedis.zinterstore(SafeEncoder.encode("dst"), bfoo, bbar);
 
         assertEquals(1, bresult);
 
         Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(ba, new Double(3)));
 
-        assertEquals(bexpected, jedis.zrangeWithScores("dst"
-                .getBytes(Protocol.UTF8), 0, 100));
+        assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder
+                .encode("dst"), 0, 100));
     }
 
     @Test
@@ -714,7 +712,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         ZParams bparams = new ZParams();
         bparams.weights(2, 2);
         bparams.aggregate(ZParams.Aggregate.SUM);
-        int bresult = jedis.zinterstore("dst".getBytes(Protocol.UTF8), bparams,
+        int bresult = jedis.zinterstore(SafeEncoder.encode("dst"), bparams,
                 bfoo, bbar);
 
         assertEquals(1, bresult);
@@ -722,7 +720,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(ba, new Double(6)));
 
-        assertEquals(bexpected, jedis.zrangeWithScores("dst"
-                .getBytes(Protocol.UTF8), 0, 100));
+        assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder
+                .encode("dst"), 0, 100));
     }
 }

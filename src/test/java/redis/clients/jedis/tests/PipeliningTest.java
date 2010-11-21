@@ -37,7 +37,7 @@ public class PipeliningTest extends Assert {
 	});
 
 	assertEquals(2, results.size());
-	assertArrayEquals("OK".getBytes(Protocol.UTF8), (byte[])results.get(0));
-	assertArrayEquals("bar".getBytes(Protocol.UTF8), (byte[])results.get(1));
+	assertArrayEquals("OK".getBytes(Protocol.CHARSET), (byte[])results.get(0));
+	assertArrayEquals("bar".getBytes(Protocol.CHARSET), (byte[])results.get(1));
     }
 }

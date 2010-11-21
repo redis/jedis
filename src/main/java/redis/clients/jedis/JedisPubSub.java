@@ -1,9 +1,16 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
+
 import java.util.Arrays;
 import java.util.List;
 
-import static redis.clients.jedis.Protocol.Keyword.*;
+import redis.clients.util.SafeEncoder;
 
 public abstract class JedisPubSub {
     private int subscribedChannels = 0;
@@ -67,76 +74,54 @@ public abstract class JedisPubSub {
             List<Object> reply = client.getObjectMultiBulkReply();
             final Object firstObj = reply.get(0);
             if (!(firstObj instanceof byte[])) {
-            	throw
-            		new JedisException("Unknown message type: "+ firstObj);
+                throw new JedisException("Unknown message type: " + firstObj);
             }
             final byte[] resp = (byte[]) firstObj;
-            if(Arrays.equals(SUBSCRIBE.raw, resp)) {
+            if (Arrays.equals(SUBSCRIBE.raw, resp)) {
                 subscribedChannels = ((Integer) reply.get(2)).intValue();
                 final byte[] bchannel = (byte[]) reply.get(1);
-                final String strchannel =
-                	(bchannel == null) ?
-                			null :
-                			new String(bchannel, Protocol.UTF8);
-               	onSubscribe(strchannel, subscribedChannels);
+                final String strchannel = (bchannel == null) ? null
+                        : SafeEncoder.encode(bchannel);
+                onSubscribe(strchannel, subscribedChannels);
             } else if (Arrays.equals(UNSUBSCRIBE.raw, resp)) {
                 subscribedChannels = ((Integer) reply.get(2)).intValue();
                 final byte[] bchannel = (byte[]) reply.get(1);
-                final String strchannel =
-                	(bchannel == null) ?
-                		null : 
-                		new String(bchannel, Protocol.UTF8);
-               	onUnsubscribe(strchannel, subscribedChannels);
+                final String strchannel = (bchannel == null) ? null
+                        : SafeEncoder.encode(bchannel);
+                onUnsubscribe(strchannel, subscribedChannels);
             } else if (Arrays.equals(MESSAGE.raw, resp)) {
                 final byte[] bchannel = (byte[]) reply.get(1);
                 final byte[] bmesg = (byte[]) reply.get(2);
-                final String strchannel =
-                	(bchannel == null) ?
-                		null :
-                		new String(bchannel, Protocol.UTF8);
-                final String strmesg =
-                	(bmesg == null) ?
-                		null :
-                		new String(bmesg, Protocol.UTF8);
+                final String strchannel = (bchannel == null) ? null
+                        : SafeEncoder.encode(bchannel);
+                final String strmesg = (bmesg == null) ? null : SafeEncoder
+                        .encode(bmesg);
                 onMessage(strchannel, strmesg);
             } else if (Arrays.equals(PMESSAGE.raw, resp)) {
-            	final byte[] bpattern = (byte[]) reply.get(1);
+                final byte[] bpattern = (byte[]) reply.get(1);
                 final byte[] bchannel = (byte[]) reply.get(2);
                 final byte[] bmesg = (byte[]) reply.get(3);
-                final String strpattern =
-                	(bpattern == null) ?
-                		null :
-                		new String(bpattern, Protocol.UTF8);
-                final String strchannel =
-                	(bchannel == null) ?
-                		null :
-                		new String(bchannel, Protocol.UTF8);
-                final String strmesg =
-                	(bmesg == null) ?
-                		null :
-                		new String(bmesg, Protocol.UTF8);
-                onPMessage(
-                		strpattern,
-                		strchannel,
-                		strmesg);
+                final String strpattern = (bpattern == null) ? null
+                        : SafeEncoder.encode(bpattern);
+                final String strchannel = (bchannel == null) ? null
+                        : SafeEncoder.encode(bchannel);
+                final String strmesg = (bmesg == null) ? null : SafeEncoder
+                        .encode(bmesg);
+                onPMessage(strpattern, strchannel, strmesg);
             } else if (Arrays.equals(PSUBSCRIBE.raw, resp)) {
                 subscribedChannels = ((Integer) reply.get(2)).intValue();
-            	final byte[] bpattern = (byte[]) reply.get(1);
-                final String strpattern =
-                	(bpattern == null) ?
-                		null :
-                		new String(bpattern, Protocol.UTF8);
+                final byte[] bpattern = (byte[]) reply.get(1);
+                final String strpattern = (bpattern == null) ? null
+                        : SafeEncoder.encode(bpattern);
                 onPSubscribe(strpattern, subscribedChannels);
             } else if (Arrays.equals(PUNSUBSCRIBE.raw, resp)) {
                 subscribedChannels = ((Integer) reply.get(2)).intValue();
-            	final byte[] bpattern = (byte[]) reply.get(1);
-                final String strpattern =
-                	(bpattern == null) ?
-                		null :
-                		new String(bpattern, Protocol.UTF8);
+                final byte[] bpattern = (byte[]) reply.get(1);
+                final String strpattern = (bpattern == null) ? null
+                        : SafeEncoder.encode(bpattern);
                 onPUnsubscribe(strpattern, subscribedChannels);
             } else {
-                throw new JedisException("Unknown message type: "+ firstObj);
+                throw new JedisException("Unknown message type: " + firstObj);
             }
         } while (isSubscribed());
     }

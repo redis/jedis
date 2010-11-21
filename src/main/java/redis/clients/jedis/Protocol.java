@@ -1,19 +1,19 @@
 package redis.clients.jedis;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
 
 public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_TIMEOUT = 2000;
 
-    public static final Charset UTF8 = Charset.forName("UTF-8");
+    public static final String CHARSET = "UTF-8";
 
     public static final byte DOLLAR_BYTE = '$';
     public static final byte ASTERISK_BYTE = '*';
@@ -76,7 +76,7 @@ public final class Protocol {
     }
 
     private byte[] processStatusCodeReply(final RedisInputStream is) {
-        return is.readLine().getBytes(UTF8);
+        return SafeEncoder.encode(is.readLine());
     }
 
     private byte[] processBulkReply(final RedisInputStream is) {
@@ -122,15 +122,15 @@ public final class Protocol {
     }
 
     public static final byte[] toByteArray(final int value) {
-        return String.valueOf(value).getBytes(Protocol.UTF8);
+        return SafeEncoder.encode(String.valueOf(value));
     }
 
     public static final byte[] toByteArray(final long value) {
-        return String.valueOf(value).getBytes(Protocol.UTF8);
+        return SafeEncoder.encode(String.valueOf(value));
     }
 
     public static final byte[] toByteArray(final double value) {
-        return String.valueOf(value).getBytes(Protocol.UTF8);
+        return SafeEncoder.encode(String.valueOf(value));
     }
 
     public static enum Command {
@@ -139,7 +139,7 @@ public final class Protocol {
         public final byte[] raw;
 
         Command() {
-            raw = this.name().getBytes(UTF8);
+            raw = SafeEncoder.encode(this.name());
         }
     }
 
@@ -148,7 +148,7 @@ public final class Protocol {
         public final byte[] raw;
 
         Keyword() {
-            raw = this.name().toLowerCase().getBytes(UTF8);
+            raw = SafeEncoder.encode(this.name().toLowerCase());
         }
 
     }

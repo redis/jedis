@@ -10,6 +10,7 @@ import java.util.List;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
 
 public class Connection {
     private String host;
@@ -53,7 +54,7 @@ public class Connection {
     protected Connection sendCommand(final Command cmd, final String... args) {
         final byte[][] bargs = new byte[args.length][];
         for (int i = 0; i < args.length; i++) {
-            bargs[i] = args[i].getBytes(Protocol.UTF8);
+            bargs[i] = SafeEncoder.encode(args[i]);
         }
         return sendCommand(cmd, bargs);
     }
@@ -144,14 +145,14 @@ public class Connection {
         if (null == resp) {
             return null;
         } else {
-            return new String(resp, Protocol.UTF8);
+            return SafeEncoder.encode(resp);
         }
     }
 
     public String getBulkReply() {
         final byte[] result = getBinaryBulkReply();
         if (null != result) {
-            return new String(result, Protocol.UTF8);
+            return SafeEncoder.encode(result);
         } else {
             return null;
         }
@@ -177,7 +178,7 @@ public class Connection {
             if (barray == null) {
                 result.add(null);
             } else {
-                result.add(new String(barray, Protocol.UTF8));
+                result.add(SafeEncoder.encode(barray));
             }
         }
         return result;

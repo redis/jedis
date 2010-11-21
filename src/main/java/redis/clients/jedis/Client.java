@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import redis.clients.util.SafeEncoder;
+
 public class Client extends BinaryClient {
     public Client(final String host) {
         super(host);
@@ -14,82 +16,81 @@ public class Client extends BinaryClient {
     }
 
     public void set(final String key, final String value) {
-        set(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
+        set(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
     public void get(final String key) {
-        get(key.getBytes(Protocol.UTF8));
+        get(SafeEncoder.encode(key));
     }
 
     public void exists(final String key) {
-        exists(key.getBytes(Protocol.UTF8));
+        exists(SafeEncoder.encode(key));
     }
 
     public void del(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < keys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
         del(bkeys);
     }
 
     public void type(final String key) {
-        type(key.getBytes(Protocol.UTF8));
+        type(SafeEncoder.encode(key));
     }
 
     public void keys(final String pattern) {
-        keys(pattern.getBytes(Protocol.UTF8));
+        keys(SafeEncoder.encode(pattern));
     }
 
     public void rename(final String oldkey, final String newkey) {
-        rename(oldkey.getBytes(Protocol.UTF8), newkey.getBytes(Protocol.UTF8));
+        rename(SafeEncoder.encode(oldkey), SafeEncoder.encode(newkey));
     }
 
     public void renamenx(final String oldkey, final String newkey) {
-        renamenx(oldkey.getBytes(Protocol.UTF8), newkey.getBytes(Protocol.UTF8));
+        renamenx(SafeEncoder.encode(oldkey), SafeEncoder.encode(newkey));
     }
 
     public void expire(final String key, final int seconds) {
-        expire(key.getBytes(Protocol.UTF8), seconds);
+        expire(SafeEncoder.encode(key), seconds);
     }
 
     public void expireAt(final String key, final long unixTime) {
-        expireAt(key.getBytes(Protocol.UTF8), unixTime);
+        expireAt(SafeEncoder.encode(key), unixTime);
     }
 
     public void ttl(final String key) {
-        ttl(key.getBytes(Protocol.UTF8));
+        ttl(SafeEncoder.encode(key));
     }
 
     public void move(final String key, final int dbIndex) {
-        move(key.getBytes(Protocol.UTF8), dbIndex);
+        move(SafeEncoder.encode(key), dbIndex);
     }
 
     public void getSet(final String key, final String value) {
-        getSet(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
+        getSet(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
     public void mget(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
         mget(bkeys);
     }
 
     public void setnx(final String key, final String value) {
-        setnx(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
+        setnx(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
     public void setex(final String key, final int seconds, final String value) {
-        setex(key.getBytes(Protocol.UTF8), seconds, value
-                .getBytes(Protocol.UTF8));
+        setex(SafeEncoder.encode(key), seconds, SafeEncoder.encode(value));
     }
 
     public void mset(final String... keysvalues) {
         final byte[][] bkeysvalues = new byte[keysvalues.length][];
         for (int i = 0; i < keysvalues.length; i++) {
-            bkeysvalues[i] = keysvalues[i].getBytes(Protocol.UTF8);
+            bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
         }
         mset(bkeysvalues);
     }
@@ -97,175 +98,173 @@ public class Client extends BinaryClient {
     public void msetnx(final String... keysvalues) {
         final byte[][] bkeysvalues = new byte[keysvalues.length][];
         for (int i = 0; i < keysvalues.length; i++) {
-            bkeysvalues[i] = keysvalues[i].getBytes(Protocol.UTF8);
+            bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
         }
         msetnx(bkeysvalues);
     }
 
     public void decrBy(final String key, final int integer) {
-        decrBy(key.getBytes(Protocol.UTF8), integer);
+        decrBy(SafeEncoder.encode(key), integer);
     }
 
     public void decr(final String key) {
-        decr(key.getBytes(Protocol.UTF8));
+        decr(SafeEncoder.encode(key));
     }
 
     public void incrBy(final String key, final int integer) {
-        incrBy(key.getBytes(Protocol.UTF8), integer);
+        incrBy(SafeEncoder.encode(key), integer);
     }
 
     public void incr(final String key) {
-        incr(key.getBytes(Protocol.UTF8));
+        incr(SafeEncoder.encode(key));
     }
 
     public void append(final String key, final String value) {
-        append(key.getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
+        append(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
     public void substr(final String key, final int start, final int end) {
-        substr(key.getBytes(Protocol.UTF8), start, end);
+        substr(SafeEncoder.encode(key), start, end);
     }
 
     public void hset(final String key, final String field, final String value) {
-        hset(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8), value
-                .getBytes(Protocol.UTF8));
+        hset(SafeEncoder.encode(key), SafeEncoder.encode(field), SafeEncoder
+                .encode(value));
     }
 
     public void hget(final String key, final String field) {
-        hget(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8));
+        hget(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
     public void hsetnx(final String key, final String field, final String value) {
-        hsetnx(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8),
-                value.getBytes(Protocol.UTF8));
+        hsetnx(SafeEncoder.encode(key), SafeEncoder.encode(field), SafeEncoder
+                .encode(value));
     }
 
     public void hmset(final String key, final Map<String, String> hash) {
         final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash
                 .size());
         for (final Entry<String, String> entry : hash.entrySet()) {
-            bhash.put(entry.getKey().getBytes(Protocol.UTF8), entry.getValue()
-                    .getBytes(Protocol.UTF8));
+            bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder
+                    .encode(entry.getValue()));
         }
-        hmset(key.getBytes(Protocol.UTF8), bhash);
+        hmset(SafeEncoder.encode(key), bhash);
     }
 
     public void hmget(final String key, final String... fields) {
         final byte[][] bfields = new byte[fields.length][];
         for (int i = 0; i < bfields.length; i++) {
-            bfields[i] = fields[i].getBytes(Protocol.UTF8);
+            bfields[i] = SafeEncoder.encode(fields[i]);
         }
-        hmget(key.getBytes(Protocol.UTF8), bfields);
+        hmget(SafeEncoder.encode(key), bfields);
     }
 
     public void hincrBy(final String key, final String field, final int value) {
-        hincrBy(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8),
-                value);
+        hincrBy(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
     }
 
     public void hexists(final String key, final String field) {
-        hexists(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8));
+        hexists(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
     public void hdel(final String key, final String field) {
-        hdel(key.getBytes(Protocol.UTF8), field.getBytes(Protocol.UTF8));
+        hdel(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
     public void hlen(final String key) {
-        hlen(key.getBytes(Protocol.UTF8));
+        hlen(SafeEncoder.encode(key));
     }
 
     public void hkeys(final String key) {
-        hkeys(key.getBytes(Protocol.UTF8));
+        hkeys(SafeEncoder.encode(key));
     }
 
     public void hvals(final String key) {
-        hvals(key.getBytes(Protocol.UTF8));
+        hvals(SafeEncoder.encode(key));
     }
 
     public void hgetAll(final String key) {
-        hgetAll(key.getBytes(Protocol.UTF8));
+        hgetAll(SafeEncoder.encode(key));
     }
 
     public void rpush(final String key, final String string) {
-        rpush(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
+        rpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
     public void lpush(final String key, final String string) {
-        lpush(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
+        lpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
     public void llen(final String key) {
-        llen(key.getBytes(Protocol.UTF8));
+        llen(SafeEncoder.encode(key));
     }
 
     public void lrange(final String key, final int start, final int end) {
-        lrange(key.getBytes(Protocol.UTF8), start, end);
+        lrange(SafeEncoder.encode(key), start, end);
     }
 
     public void ltrim(final String key, final int start, final int end) {
-        ltrim(key.getBytes(Protocol.UTF8), start, end);
+        ltrim(SafeEncoder.encode(key), start, end);
     }
 
     public void lindex(final String key, final int index) {
-        lindex(key.getBytes(Protocol.UTF8), index);
+        lindex(SafeEncoder.encode(key), index);
     }
 
     public void lset(final String key, final int index, final String value) {
-        lset(key.getBytes(Protocol.UTF8), index, value.getBytes(Protocol.UTF8));
+        lset(SafeEncoder.encode(key), index, SafeEncoder.encode(value));
     }
 
     public void lrem(final String key, int count, final String value) {
-        lrem(key.getBytes(Protocol.UTF8), count, value.getBytes(Protocol.UTF8));
+        lrem(SafeEncoder.encode(key), count, SafeEncoder.encode(value));
     }
 
     public void lpop(final String key) {
-        lpop(key.getBytes(Protocol.UTF8));
+        lpop(SafeEncoder.encode(key));
     }
 
     public void rpop(final String key) {
-        rpop(key.getBytes(Protocol.UTF8));
+        rpop(SafeEncoder.encode(key));
     }
 
     public void rpoplpush(final String srckey, final String dstkey) {
-        rpoplpush(srckey.getBytes(Protocol.UTF8), dstkey
-                .getBytes(Protocol.UTF8));
+        rpoplpush(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey));
     }
 
     public void sadd(final String key, final String member) {
-        sadd(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        sadd(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void smembers(final String key) {
-        smembers(key.getBytes(Protocol.UTF8));
+        smembers(SafeEncoder.encode(key));
     }
 
     public void srem(final String key, final String member) {
-        srem(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        srem(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void spop(final String key) {
-        spop(key.getBytes(Protocol.UTF8));
+        spop(SafeEncoder.encode(key));
     }
 
     public void smove(final String srckey, final String dstkey,
             final String member) {
-        smove(srckey.getBytes(Protocol.UTF8), dstkey.getBytes(Protocol.UTF8),
-                member.getBytes(Protocol.UTF8));
+        smove(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey),
+                SafeEncoder.encode(member));
     }
 
     public void scard(final String key) {
-        scard(key.getBytes(Protocol.UTF8));
+        scard(SafeEncoder.encode(key));
     }
 
     public void sismember(final String key, final String member) {
-        sismember(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        sismember(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void sinter(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
         sinter(bkeys);
     }
@@ -273,15 +272,15 @@ public class Client extends BinaryClient {
     public void sinterstore(final String dstkey, final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
-        sinterstore(dstkey.getBytes(Protocol.UTF8), bkeys);
+        sinterstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
     public void sunion(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
         sunion(bkeys);
     }
@@ -289,15 +288,15 @@ public class Client extends BinaryClient {
     public void sunionstore(final String dstkey, final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
-        sunionstore(dstkey.getBytes(Protocol.UTF8), bkeys);
+        sunionstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
     public void sdiff(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
         sdiff(bkeys);
     }
@@ -305,198 +304,197 @@ public class Client extends BinaryClient {
     public void sdiffstore(final String dstkey, final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
-            bkeys[i] = keys[i].getBytes(Protocol.UTF8);
+            bkeys[i] = SafeEncoder.encode(keys[i]);
         }
-        sdiffstore(dstkey.getBytes(Protocol.UTF8), bkeys);
+        sdiffstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
     public void srandmember(final String key) {
-        srandmember(key.getBytes(Protocol.UTF8));
+        srandmember(SafeEncoder.encode(key));
     }
 
     public void zadd(final String key, final double score, final String member) {
-        zadd(key.getBytes(Protocol.UTF8), score, member.getBytes(Protocol.UTF8));
+        zadd(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
     }
 
     public void zrange(final String key, final int start, final int end) {
-        zrange(key.getBytes(Protocol.UTF8), start, end);
+        zrange(SafeEncoder.encode(key), start, end);
     }
 
     public void zrem(final String key, final String member) {
-        zrem(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        zrem(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void zincrby(final String key, final double score,
             final String member) {
-        zincrby(key.getBytes(Protocol.UTF8), score, member
-                .getBytes(Protocol.UTF8));
+        zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
     }
 
     public void zrank(final String key, final String member) {
-        zrank(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        zrank(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void zrevrank(final String key, final String member) {
-        zrevrank(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        zrevrank(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void zrevrange(final String key, final int start, final int end) {
-        zrevrange(key.getBytes(Protocol.UTF8), start, end);
+        zrevrange(SafeEncoder.encode(key), start, end);
     }
 
     public void zrangeWithScores(final String key, final int start,
             final int end) {
-        zrangeWithScores(key.getBytes(Protocol.UTF8), start, end);
+        zrangeWithScores(SafeEncoder.encode(key), start, end);
     }
 
     public void zrevrangeWithScores(final String key, final int start,
             final int end) {
-        zrevrangeWithScores(key.getBytes(Protocol.UTF8), start, end);
+        zrevrangeWithScores(SafeEncoder.encode(key), start, end);
     }
 
     public void zcard(final String key) {
-        zcard(key.getBytes(Protocol.UTF8));
+        zcard(SafeEncoder.encode(key));
     }
 
     public void zscore(final String key, final String member) {
-        zscore(key.getBytes(Protocol.UTF8), member.getBytes(Protocol.UTF8));
+        zscore(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
     public void watch(final String key) {
-        watch(key.getBytes(Protocol.UTF8));
+        watch(SafeEncoder.encode(key));
     }
 
     public void sort(final String key) {
-        sort(key.getBytes(Protocol.UTF8));
+        sort(SafeEncoder.encode(key));
     }
 
     public void sort(final String key, final SortingParams sortingParameters) {
-        sort(key.getBytes(Protocol.UTF8), sortingParameters);
+        sort(SafeEncoder.encode(key), sortingParameters);
     }
 
     public void blpop(final String[] args) {
         final byte[][] bargs = new byte[args.length][];
         for (int i = 0; i < bargs.length; i++) {
-            bargs[i] = args[i].getBytes(Protocol.UTF8);
+            bargs[i] = SafeEncoder.encode(args[i]);
         }
         blpop(bargs);
     }
 
     public void sort(final String key, final SortingParams sortingParameters,
             final String dstkey) {
-        sort(key.getBytes(Protocol.UTF8), sortingParameters, dstkey
-                .getBytes(Protocol.UTF8));
+        sort(SafeEncoder.encode(key), sortingParameters, SafeEncoder
+                .encode(dstkey));
     }
 
     public void sort(final String key, final String dstkey) {
-        sort(key.getBytes(Protocol.UTF8), dstkey.getBytes(Protocol.UTF8));
+        sort(SafeEncoder.encode(key), SafeEncoder.encode(dstkey));
     }
 
     public void brpop(final String[] args) {
         final byte[][] bargs = new byte[args.length][];
         for (int i = 0; i < bargs.length; i++) {
-            bargs[i] = args[i].getBytes(Protocol.UTF8);
+            bargs[i] = SafeEncoder.encode(args[i]);
         }
         brpop(bargs);
     }
 
     public void zcount(final String key, final double min, final double max) {
-        zcount(key.getBytes(Protocol.UTF8), min, max);
+        zcount(SafeEncoder.encode(key), min, max);
     }
 
     public void zrangeByScore(final String key, final double min,
             final double max) {
-        zrangeByScore(key.getBytes(Protocol.UTF8), min, max);
+        zrangeByScore(SafeEncoder.encode(key), min, max);
     }
 
     public void zrangeByScore(final String key, final String min,
             final String max) {
-        zrangeByScore(key.getBytes(Protocol.UTF8), min.getBytes(Protocol.UTF8),
-                max.getBytes(Protocol.UTF8));
+        zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min),
+                SafeEncoder.encode(max));
     }
 
     public void zrangeByScore(final String key, final double min,
             final double max, final int offset, int count) {
-        zrangeByScore(key.getBytes(Protocol.UTF8), min, max, offset, count);
+        zrangeByScore(SafeEncoder.encode(key), min, max, offset, count);
     }
 
     public void zrangeByScoreWithScores(final String key, final double min,
             final double max) {
-        zrangeByScoreWithScores(key.getBytes(Protocol.UTF8), min, max);
+        zrangeByScoreWithScores(SafeEncoder.encode(key), min, max);
     }
 
     public void zrangeByScoreWithScores(final String key, final double min,
             final double max, final int offset, final int count) {
-        zrangeByScoreWithScores(key.getBytes(Protocol.UTF8), min, max, offset,
+        zrangeByScoreWithScores(SafeEncoder.encode(key), min, max, offset,
                 count);
     }
 
     public void zremrangeByRank(final String key, final int start, final int end) {
-        zremrangeByRank(key.getBytes(Protocol.UTF8), start, end);
+        zremrangeByRank(SafeEncoder.encode(key), start, end);
     }
 
     public void zremrangeByScore(final String key, final double start,
             final double end) {
-        zremrangeByScore(key.getBytes(Protocol.UTF8), start, end);
+        zremrangeByScore(SafeEncoder.encode(key), start, end);
     }
 
     public void zunionstore(final String dstkey, final String... sets) {
         final byte[][] bsets = new byte[sets.length][];
         for (int i = 0; i < bsets.length; i++) {
-            bsets[i] = sets[i].getBytes(Protocol.UTF8);
+            bsets[i] = SafeEncoder.encode(sets[i]);
         }
-        zunionstore(dstkey.getBytes(Protocol.UTF8), bsets);
+        zunionstore(SafeEncoder.encode(dstkey), bsets);
     }
 
     public void zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
         final byte[][] bsets = new byte[sets.length][];
         for (int i = 0; i < bsets.length; i++) {
-            bsets[i] = sets[i].getBytes(Protocol.UTF8);
+            bsets[i] = SafeEncoder.encode(sets[i]);
         }
-        zunionstore(dstkey.getBytes(Protocol.UTF8), params, bsets);
+        zunionstore(SafeEncoder.encode(dstkey), params, bsets);
     }
 
     public void zinterstore(final String dstkey, final String... sets) {
         final byte[][] bsets = new byte[sets.length][];
         for (int i = 0; i < bsets.length; i++) {
-            bsets[i] = sets[i].getBytes(Protocol.UTF8);
+            bsets[i] = SafeEncoder.encode(sets[i]);
         }
-        zinterstore(dstkey.getBytes(Protocol.UTF8), bsets);
+        zinterstore(SafeEncoder.encode(dstkey), bsets);
     }
 
     public void zinterstore(final String dstkey, final ZParams params,
             final String... sets) {
         final byte[][] bsets = new byte[sets.length][];
         for (int i = 0; i < bsets.length; i++) {
-            bsets[i] = sets[i].getBytes(Protocol.UTF8);
+            bsets[i] = SafeEncoder.encode(sets[i]);
         }
-        zinterstore(dstkey.getBytes(Protocol.UTF8), params, bsets);
+        zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }
 
     public void strlen(final String key) {
-        strlen(key.getBytes(Protocol.UTF8));
+        strlen(SafeEncoder.encode(key));
     }
 
     public void lpushx(final String key, final String string) {
-        lpushx(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
+        lpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
     public void persist(final String key) {
-        persist(key.getBytes(Protocol.UTF8));
+        persist(SafeEncoder.encode(key));
     }
 
     public void rpushx(final String key, final String string) {
-        rpushx(key.getBytes(Protocol.UTF8), string.getBytes(Protocol.UTF8));
+        rpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
     public void echo(final String string) {
-        echo(string.getBytes(Protocol.UTF8));
+        echo(SafeEncoder.encode(string));
     }
 
     public void linsert(final String key, final LIST_POSITION where,
             final String pivot, final String value) {
-        linsert(key.getBytes(Protocol.UTF8), where, pivot
-                .getBytes(Protocol.UTF8), value.getBytes(Protocol.UTF8));
+        linsert(SafeEncoder.encode(key), where, SafeEncoder.encode(pivot),
+                SafeEncoder.encode(value));
     }
 }

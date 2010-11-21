@@ -12,6 +12,7 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.JedisByteHashMap;
+import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BinaryJedisCommands {
     protected Client client = null;
@@ -2317,8 +2318,8 @@ public class BinaryJedis implements BinaryJedisCommands {
         Set<Tuple> set = new LinkedHashSet<Tuple>();
         Iterator<byte[]> iterator = membersWithScores.iterator();
         while (iterator.hasNext()) {
-            set.add(new Tuple(iterator.next(), Double.valueOf(new String(
-                    iterator.next(), Protocol.UTF8))));
+            set.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder
+                    .encode(iterator.next()))));
         }
         return set;
     }

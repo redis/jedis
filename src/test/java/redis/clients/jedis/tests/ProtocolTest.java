@@ -14,6 +14,7 @@ import org.junit.Test;
 import redis.clients.jedis.Protocol;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
 
 public class ProtocolTest extends JedisTestBase {
     @Test
@@ -24,7 +25,7 @@ public class ProtocolTest extends JedisTestBase {
 
         Protocol protocol = new Protocol();
         protocol.sendCommand(new RedisOutputStream(pos), Protocol.Command.GET,
-                "SOMEKEY".getBytes(Protocol.UTF8));
+                "SOMEKEY".getBytes(Protocol.CHARSET));
 
         pos.close();
         String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";
@@ -43,7 +44,7 @@ public class ProtocolTest extends JedisTestBase {
         InputStream is = new ByteArrayInputStream("$6\r\nfoobar\r\n".getBytes());
         Protocol protocol = new Protocol();
         byte[] response = (byte[]) protocol.read(new RedisInputStream(is));
-        assertArrayEquals("foobar".getBytes(Protocol.UTF8), response);
+        assertArrayEquals(SafeEncoder.encode("foobar"), response);
     }
 
     @Test
@@ -52,8 +53,8 @@ public class ProtocolTest extends JedisTestBase {
                 "$30\r\n012345678901234567890123456789\r\n".getBytes());
         Protocol protocol = new Protocol();
         byte[] response = (byte[]) protocol.read(new RedisInputStream(fis));
-        assertArrayEquals("012345678901234567890123456789"
-                .getBytes(Protocol.UTF8), response);
+        assertArrayEquals(SafeEncoder.encode("012345678901234567890123456789"),
+                response);
     }
 
     @Test
@@ -69,7 +70,7 @@ public class ProtocolTest extends JedisTestBase {
         InputStream is = new ByteArrayInputStream("+OK\r\n".getBytes());
         Protocol protocol = new Protocol();
         byte[] response = (byte[]) protocol.read(new RedisInputStream(is));
-        assertArrayEquals("OK".getBytes(Protocol.UTF8), response);
+        assertArrayEquals(SafeEncoder.encode("OK"), response);
     }
 
     @Test
@@ -90,10 +91,10 @@ public class ProtocolTest extends JedisTestBase {
         List<byte[]> response = (List<byte[]>) protocol
                 .read(new RedisInputStream(is));
         List<byte[]> expected = new ArrayList<byte[]>();
-        expected.add("foo".getBytes(Protocol.UTF8));
-        expected.add("bar".getBytes(Protocol.UTF8));
-        expected.add("Hello".getBytes(Protocol.UTF8));
-        expected.add("World".getBytes(Protocol.UTF8));
+        expected.add(SafeEncoder.encode("foo"));
+        expected.add(SafeEncoder.encode("bar"));
+        expected.add(SafeEncoder.encode("Hello"));
+        expected.add(SafeEncoder.encode("World"));
 
         assertEquals(expected, response);
     }

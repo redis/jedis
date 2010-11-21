@@ -9,11 +9,11 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 import redis.clients.util.Hashing;
+import redis.clients.util.SafeEncoder;
 
 public class ShardedJedisTest extends Assert {
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()
@@ -143,11 +143,11 @@ public class ShardedJedisTest extends Assert {
         });
 
         List<Object> expected = new ArrayList<Object>(2);
-        expected.add("a".getBytes(Protocol.UTF8));
-        expected.add("b".getBytes(Protocol.UTF8));
+        expected.add(SafeEncoder.encode("a"));
+        expected.add(SafeEncoder.encode("b"));
 
         assertEquals(2, results.size());
-        assertArrayEquals("a".getBytes(Protocol.UTF8), (byte[]) results.get(0));
-        assertArrayEquals("b".getBytes(Protocol.UTF8), (byte[]) results.get(1));
+        assertArrayEquals(SafeEncoder.encode("a"), (byte[]) results.get(0));
+        assertArrayEquals(SafeEncoder.encode("b"), (byte[]) results.get(1));
     }
 }

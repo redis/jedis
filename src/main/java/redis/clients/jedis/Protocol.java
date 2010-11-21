@@ -11,6 +11,7 @@ import redis.clients.util.RedisOutputStream;
 public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
+    public static final int DEFAULT_TIMEOUT = 2000;
 
     public static final Charset UTF8 = Charset.forName("UTF-8");
 

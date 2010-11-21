@@ -19,7 +19,7 @@ public class Connection {
     private RedisOutputStream outputStream;
     private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
-    private int timeout = 2000;
+    private int timeout = Protocol.DEFAULT_TIMEOUT;
 
     public int getTimeout() {
         return timeout;

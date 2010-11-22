@@ -40,19 +40,16 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
         return hashSet;
     }
 
-    @Override
     public byte[] get(Object key) {
         if (key instanceof byte[])
             return internalMap.get(new ByteArrayWrapper((byte[]) key));
         return internalMap.get(key);
     }
 
-    @Override
     public boolean isEmpty() {
         return internalMap.isEmpty();
     }
 
-    @Override
     public Set<byte[]> keySet() {
         Set<byte[]> keySet = new HashSet<byte[]>();
         Iterator<ByteArrayWrapper> iterator = internalMap.keySet().iterator();
@@ -62,13 +59,11 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
         return keySet;
     }
 
-    @Override
     public byte[] put(byte[] key, byte[] value) {
         return internalMap.put(new ByteArrayWrapper(key), value);
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public void putAll(Map<? extends byte[], ? extends byte[]> m) {
         Iterator<?> iterator = m.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -79,19 +74,16 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
         }
     }
 
-    @Override
     public byte[] remove(Object key) {
         if (key instanceof byte[])
             return internalMap.remove(new ByteArrayWrapper((byte[]) key));
         return internalMap.remove(key);
     }
 
-    @Override
     public int size() {
         return internalMap.size();
     }
 
-    @Override
     public Collection<byte[]> values() {
         return internalMap.values();
     }
@@ -106,7 +98,6 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
             this.data = data;
         }
 
-        @Override
         public boolean equals(Object other) {
             if (!(other instanceof ByteArrayWrapper)) {
                 return false;
@@ -114,7 +105,6 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
             return Arrays.equals(data, ((ByteArrayWrapper) other).data);
         }
 
-        @Override
         public int hashCode() {
             return Arrays.hashCode(data);
         }
@@ -133,12 +123,10 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
             return this.key;
         }
 
-        @Override
         public byte[] getValue() {
             return this.value;
         }
 
-        @Override
         public byte[] setValue(byte[] value) {
             this.value = value;
             return value;

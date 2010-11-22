@@ -124,7 +124,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void watch() throws UnknownHostException, IOException {
-        jedis.watch("mykey");
+        jedis.watch("mykey", "somekey");
         Transaction t = jedis.multi();
 
         nj.connect();
@@ -196,5 +196,12 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     public void validateWhenInMulti() {
         jedis.multi();
         jedis.ping();
+    }
+
+    @Test
+    public void discard() {
+        Transaction t = jedis.multi();
+        String status = t.discard();
+        assertEquals("OK", status);
     }
 }

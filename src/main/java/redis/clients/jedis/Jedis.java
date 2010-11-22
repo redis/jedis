@@ -1669,8 +1669,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.disconnect();
     }
 
-    public String watch(final String key) {
-        client.watch(key);
+    public String watch(final String... keys) {
+        client.watch(keys);
         return client.getStatusCodeReply();
     }
 

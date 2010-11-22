@@ -396,8 +396,8 @@ public class BinaryClient extends Connection {
         isInMulti = false;
     }
 
-    public void watch(final byte[] key) {
-        sendCommand(WATCH, key);
+    public void watch(final byte[]... keys) {
+        sendCommand(WATCH, keys);
     }
 
     public void unwatch() {

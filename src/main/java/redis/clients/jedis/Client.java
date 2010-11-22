@@ -360,8 +360,12 @@ public class Client extends BinaryClient {
         zscore(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void watch(final String key) {
-        watch(SafeEncoder.encode(key));
+    public void watch(final String... keys) {
+        final byte[][] bargs = new byte[keys.length][];
+        for (int i = 0; i < bargs.length; i++) {
+            bargs[i] = SafeEncoder.encode(keys[i]);
+        }
+        watch(bargs);
     }
 
     public void sort(final String key) {

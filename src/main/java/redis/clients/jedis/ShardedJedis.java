@@ -29,9 +29,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     }
 
     public void disconnect() throws IOException {
-        for (JedisShardInfo jedis : getAllShards()) {
-            jedis.getResource().quit();
-            jedis.getResource().disconnect();
+        for (Jedis jedis : getAllShards()) {
+            jedis.quit();
+            jedis.disconnect();
         }
     }
 

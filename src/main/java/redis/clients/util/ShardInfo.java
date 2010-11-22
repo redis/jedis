@@ -1,8 +1,6 @@
 package redis.clients.util;
 
 public abstract class ShardInfo<T> {
-    private T resource;
-
     private int weight;
 
     public ShardInfo() {
@@ -14,14 +12,6 @@ public abstract class ShardInfo<T> {
 
     public int getWeight() {
         return this.weight;
-    }
-
-    public T getResource() {
-        return resource;
-    }
-
-    public void initResource () {
-        resource = createResource();
     }
 
     protected abstract T createResource();

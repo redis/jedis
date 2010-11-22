@@ -103,4 +103,18 @@ public class ShardedJedisPoolTest extends Assert {
         ShardedJedis newJedis = pool.getResource();
         newJedis.incr("foo");
     }
+
+    @Test
+    public void shouldNotShareInstances() throws Exception {
+        Config config = new Config();
+        config.maxActive = 2;
+        config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;
+
+        ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+
+        ShardedJedis j1 = pool.getResource();
+        ShardedJedis j2 = pool.getResource();
+
+        assertNotSame(j1.getShard("foo"), j2.getShard("foo"));
+    }
 }

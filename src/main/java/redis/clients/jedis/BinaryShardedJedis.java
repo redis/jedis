@@ -31,8 +31,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public void disconnect() throws IOException {
-        for (JedisShardInfo jedis : getAllShards()) {
-            jedis.getResource().disconnect();
+        for (Jedis jedis : getAllShards()) {
+            jedis.disconnect();
         }
     }
 

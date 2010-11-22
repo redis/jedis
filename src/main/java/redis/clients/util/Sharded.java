@@ -2,8 +2,10 @@ package redis.clients.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -14,6 +16,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
     public static final int DEFAULT_WEIGHT = 1;
     private TreeMap<Long, S> nodes;
     private final Hashing algo;
+    private final Map<ShardInfo<R>, R> resources = new HashMap<ShardInfo<R>, R>();
 
     /**
      * The default pattern used for extracting a key tag. The pattern must have
@@ -63,7 +66,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
         long floor = Long.MIN_VALUE;
         for (int i = 0; i != shards.size(); ++i) {
             final S shardInfo = shards.get(i);
-            shardInfo.initResource();
+            resources.put(shardInfo, shardInfo.createResource());
             nodes.put(floor, shardInfo);
             floor += 4 * oneForthOfStep * shardInfo.getWeight(); // *4 to
             // compensate
@@ -72,11 +75,11 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     public R getShard(byte[] key) {
-        return getShardInfo(key).getResource();
+        return resources.get(getShardInfo(key));
     }
 
     public R getShard(String key) {
-        return getShardInfo(key).getResource();
+        return resources.get(getShardInfo(key));
     }
 
     private S getShardInfo(byte[] key) {
@@ -111,7 +114,11 @@ public class Sharded<R, S extends ShardInfo<R>> {
         return key;
     }
 
-    public Collection<S> getAllShards() {
+    public Collection<S> getAllShardInfo() {
         return Collections.unmodifiableCollection(nodes.values());
+    }
+
+    public Collection<R> getAllShards() {
+        return Collections.unmodifiableCollection(resources.values());
     }
 }

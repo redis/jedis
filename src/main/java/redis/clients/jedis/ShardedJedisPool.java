@@ -51,9 +51,9 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             boolean done = false;
             while (!done) {
                 try {
-                    for (JedisShardInfo shard : jedis.getAllShards()) {
-                        if (!shard.getResource().isConnected()) {
-                            shard.getResource().connect();
+                    for (Jedis shard : jedis.getAllShards()) {
+                        if (!shard.isConnected()) {
+                            shard.connect();
                         }
                     }
                     done = true;
@@ -82,9 +82,8 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         public boolean validateObject(final Object obj) {
             try {
                 ShardedJedis jedis = (ShardedJedis) obj;
-                for (JedisShardInfo shard : jedis.getAllShards()) {
-                    if (!shard.getResource().isConnected()
-                            || !shard.getResource().ping().equals("PONG")) {
+                for (Jedis shard : jedis.getAllShards()) {
+                    if (!shard.isConnected() || !shard.ping().equals("PONG")) {
                         return false;
                     }
                 }

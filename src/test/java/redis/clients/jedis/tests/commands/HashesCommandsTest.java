@@ -17,13 +17,13 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void hset() {
-        int status = jedis.hset("foo", "bar", "car");
+        long status = jedis.hset("foo", "bar", "car");
         assertEquals(1, status);
         status = jedis.hset("foo", "bar", "foo");
         assertEquals(0, status);
 
         // Binary
-        int bstatus = jedis.hset(bfoo, bbar, bcar);
+        long bstatus = jedis.hset(bfoo, bbar, bcar);
         assertEquals(1, bstatus);
         bstatus = jedis.hset(bfoo, bbar, bfoo);
         assertEquals(0, bstatus);
@@ -46,7 +46,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void hsetnx() {
-        int status = jedis.hsetnx("foo", "bar", "car");
+        long status = jedis.hsetnx("foo", "bar", "car");
         assertEquals(1, status);
         assertEquals("car", jedis.hget("foo", "bar"));
 
@@ -59,7 +59,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         assertEquals("bar", jedis.hget("foo", "car"));
 
         // Binary
-        int bstatus = jedis.hsetnx(bfoo, bbar, bcar);
+        long bstatus = jedis.hsetnx(bfoo, bbar, bcar);
         assertEquals(1, bstatus);
         assertArrayEquals(bcar, jedis.hget(bfoo, bbar));
 
@@ -126,7 +126,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void hincrBy() {
-        int value = jedis.hincrBy("foo", "bar", 1);
+        long value = jedis.hincrBy("foo", "bar", 1);
         assertEquals(1, value);
         value = jedis.hincrBy("foo", "bar", -1);
         assertEquals(0, value);
@@ -134,7 +134,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         assertEquals(-10, value);
 
         // Binary
-        int bvalue = jedis.hincrBy(bfoo, bbar, 1);
+        long bvalue = jedis.hincrBy(bfoo, bbar, 1);
         assertEquals(1, bvalue);
         bvalue = jedis.hincrBy(bfoo, bbar, -1);
         assertEquals(0, bvalue);

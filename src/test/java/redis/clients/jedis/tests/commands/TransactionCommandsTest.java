@@ -26,7 +26,8 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     Jedis nj;
 
-    @Before
+    @Override
+	@Before
     public void setUp() throws Exception {
         super.setUp();
 
@@ -52,9 +53,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         List<Object> response = trans.exec();
 
         List<Object> expected = new ArrayList<Object>();
-        expected.add(1);
-        expected.add(1);
-        expected.add(2);
+        expected.add(1L);
+        expected.add(1L);
+        expected.add(2L);
         assertEquals(expected, response);
 
         // Binary
@@ -72,9 +73,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         response = trans.exec();
 
         expected = new ArrayList<Object>();
-        expected.add(1);
-        expected.add(1);
-        expected.add(2);
+        expected.add(1L);
+        expected.add(1L);
+        expected.add(2L);
         assertEquals(expected, response);
 
     }
@@ -82,7 +83,8 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     @Test
     public void multiBlock() {
         List<Object> response = jedis.multi(new TransactionBlock() {
-            public void execute() {
+            @Override
+			public void execute() {
                 String status = sadd("foo", "a");
                 assertEquals(Keyword.QUEUED.name(), status);
 
@@ -95,14 +97,15 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         });
 
         List<Object> expected = new ArrayList<Object>();
-        expected.add(1);
-        expected.add(1);
-        expected.add(2);
+        expected.add(1L);
+        expected.add(1L);
+        expected.add(2L);
         assertEquals(expected, response);
 
         // Binary
         response = jedis.multi(new TransactionBlock() {
-            public void execute() {
+            @Override
+			public void execute() {
                 String status = sadd(bfoo, ba);
                 assertEquals(Keyword.QUEUED.name(), status);
 
@@ -115,9 +118,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         });
 
         expected = new ArrayList<Object>();
-        expected.add(1);
-        expected.add(1);
-        expected.add(2);
+        expected.add(1L);
+        expected.add(1L);
+        expected.add(2L);
         assertEquals(expected, response);
 
     }

@@ -77,7 +77,7 @@ public class ProtocolTest extends JedisTestBase {
     public void integerReply() {
         InputStream is = new ByteArrayInputStream(":123\r\n".getBytes());
         Protocol protocol = new Protocol();
-        int response = (Integer) protocol.read(new RedisInputStream(is));
+        long response = (Long) protocol.read(new RedisInputStream(is));
         assertEquals(123, response);
     }
 

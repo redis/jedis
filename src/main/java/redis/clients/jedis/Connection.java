@@ -163,9 +163,9 @@ public class Connection {
         return (byte[]) protocol.read(inputStream);
     }
 
-    public Integer getIntegerReply() {
+    public Long getIntegerReply() {
         pipelinedCommands--;
-        return (Integer) protocol.read(inputStream);
+        return (Long) protocol.read(inputStream);
     }
 
     public List<String> getMultiBulkReply() {

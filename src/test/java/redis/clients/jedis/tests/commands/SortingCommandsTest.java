@@ -271,7 +271,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
         jedis.lpush("foo", "2");
         jedis.lpush("foo", "10");
 
-        int result = jedis.sort("foo", "result");
+        long result = jedis.sort("foo", "result");
 
         List<String> expected = new ArrayList<String>();
         expected.add("1");
@@ -287,7 +287,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
         jedis.lpush(bfoo, b10);
 
         byte[] bkresult = new byte[] { 0X09, 0x0A, 0x0B, 0x0C };
-        int bresult = jedis.sort(bfoo, bkresult);
+        long bresult = jedis.sort(bfoo, bkresult);
 
         List<byte[]> bexpected = new ArrayList<byte[]>();
         bexpected.add(b1);

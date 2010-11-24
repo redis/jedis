@@ -100,9 +100,9 @@ public final class Protocol {
         return read;
     }
 
-    private Integer processInteger(final RedisInputStream is) {
+    private Long processInteger(final RedisInputStream is) {
         String num = is.readLine();
-        return Integer.valueOf(num);
+        return Long.valueOf(num);
     }
 
     private List<Object> processMultiBulkReply(final RedisInputStream is) {

@@ -93,7 +93,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param key
      * @return Integer reply, "0" if the key exists, otherwise "1"
      */
-    public Integer exists(final byte[] key) {
+    public Long exists(final byte[] key) {
         checkIsInMulti();
         client.exists(key);
         return client.getIntegerReply();
@@ -109,7 +109,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: an integer greater than 0 if one or
      *         more keys were removed 0 if none of the specified key existed
      */
-    public Integer del(final byte[]... keys) {
+    public Long del(final byte[]... keys) {
         checkIsInMulti();
         client.del(keys);
         return client.getIntegerReply();
@@ -228,7 +228,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the key was renamed 0 if the
      *         target key already exist
      */
-    public Integer renamenx(final byte[] oldkey, final byte[] newkey) {
+    public Long renamenx(final byte[] oldkey, final byte[] newkey) {
         checkIsInMulti();
         client.renamenx(oldkey, newkey);
         return client.getIntegerReply();
@@ -239,7 +239,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * 
      * @return Integer reply
      */
-    public Integer dbSize() {
+    public Long dbSize() {
         checkIsInMulti();
         client.dbSize();
         return client.getIntegerReply();
@@ -273,7 +273,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         2.1.3 will happily update the timeout), or the key does not
      *         exist.
      */
-    public Integer expire(final byte[] key, final int seconds) {
+    public Long expire(final byte[] key, final int seconds) {
         checkIsInMulti();
         client.expire(key, seconds);
         return client.getIntegerReply();
@@ -309,7 +309,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         2.1.3 will happily update the timeout), or the key does not
      *         exist.
      */
-    public Integer expireAt(final byte[] key, final long unixTime) {
+    public Long expireAt(final byte[] key, final long unixTime) {
         checkIsInMulti();
         client.expireAt(key, unixTime);
         return client.getIntegerReply();
@@ -326,7 +326,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         key that has an EXPIRE. If the Key does not exists or does not
      *         have an associated expire, -1 is returned.
      */
-    public Integer ttl(final byte[] key) {
+    public Long ttl(final byte[] key) {
         checkIsInMulti();
         client.ttl(key);
         return client.getIntegerReply();
@@ -358,7 +358,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         was not moved because already present on the target DB or was not
      *         found in the current DB.
      */
-    public Integer move(final byte[] key, final int dbIndex) {
+    public Long move(final byte[] key, final int dbIndex) {
         checkIsInMulti();
         client.move(key, dbIndex);
         return client.getIntegerReply();
@@ -421,7 +421,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the key was set 0 if the key
      *         was not set
      */
-    public Integer setnx(final byte[] key, final byte[] value) {
+    public Long setnx(final byte[] key, final byte[] value) {
         checkIsInMulti();
         client.setnx(key, value);
         return client.getIntegerReply();
@@ -492,7 +492,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the all the keys were set 0 if
      *         no key was set (at least one key already existed)
      */
-    public Integer msetnx(final byte[]... keysvalues) {
+    public Long msetnx(final byte[]... keysvalues) {
         checkIsInMulti();
         client.msetnx(keysvalues);
         return client.getIntegerReply();
@@ -520,7 +520,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer decrBy(final byte[] key, final int integer) {
+    public Long decrBy(final byte[] key, final int integer) {
         checkIsInMulti();
         client.decrBy(key, integer);
         return client.getIntegerReply();
@@ -548,7 +548,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer decr(final byte[] key) {
+    public Long decr(final byte[] key) {
         checkIsInMulti();
         client.decr(key);
         return client.getIntegerReply();
@@ -576,7 +576,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer incrBy(final byte[] key, final int integer) {
+    public Long incrBy(final byte[] key, final int integer) {
         checkIsInMulti();
         client.incrBy(key, integer);
         return client.getIntegerReply();
@@ -604,7 +604,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer incr(final byte[] key) {
+    public Long incr(final byte[] key) {
         checkIsInMulti();
         client.incr(key);
         return client.getIntegerReply();
@@ -626,7 +626,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically the total length of the string after
      *         the append operation.
      */
-    public Integer append(final byte[] key, final byte[] value) {
+    public Long append(final byte[] key, final byte[] value) {
         checkIsInMulti();
         client.append(key, value);
         return client.getIntegerReply();
@@ -671,7 +671,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         of the value, 0 is returned, otherwise if a new field is created
      *         1 is returned.
      */
-    public Integer hset(final byte[] key, final byte[] field, final byte[] value) {
+    public Long hset(final byte[] key, final byte[] field, final byte[] value) {
         checkIsInMulti();
         client.hset(key, field, value);
         return client.getIntegerReply();
@@ -707,7 +707,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return If the field already exists, 0 is returned, otherwise if a new
      *         field is created 1 is returned.
      */
-    public Integer hsetnx(final byte[] key, final byte[] field,
+    public Long hsetnx(final byte[] key, final byte[] field,
             final byte[] value) {
         checkIsInMulti();
         client.hsetnx(key, field, value);
@@ -769,7 +769,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply The new value at field after the increment
      *         operation.
      */
-    public Integer hincrBy(final byte[] key, final byte[] field, final int value) {
+    public Long hincrBy(final byte[] key, final byte[] field, final int value) {
         checkIsInMulti();
         client.hincrBy(key, field, value);
         return client.getIntegerReply();
@@ -785,7 +785,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Return 1 if the hash stored at key contains the specified field.
      *         Return 0 if the key is not found or the field is not present.
      */
-    public Integer hexists(final byte[] key, final byte[] field) {
+    public Long hexists(final byte[] key, final byte[] field) {
         checkIsInMulti();
         client.hexists(key, field);
         return client.getIntegerReply();
@@ -801,7 +801,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return If the field was present in the hash it is deleted and 1 is
      *         returned, otherwise 0 is returned and no operation is performed.
      */
-    public Integer hdel(final byte[] key, final byte[] field) {
+    public Long hdel(final byte[] key, final byte[] field) {
         checkIsInMulti();
         client.hdel(key, field);
         return client.getIntegerReply();
@@ -817,7 +817,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         key. If the specified key does not exist, 0 is returned assuming
      *         an empty hash.
      */
-    public Integer hlen(final byte[] key) {
+    public Long hlen(final byte[] key) {
         checkIsInMulti();
         client.hlen(key);
         return client.getIntegerReply();
@@ -889,7 +889,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Integer rpush(final byte[] key, final byte[] string) {
+    public Long rpush(final byte[] key, final byte[] string) {
         checkIsInMulti();
         client.rpush(key, string);
         return client.getIntegerReply();
@@ -910,7 +910,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Integer lpush(final byte[] key, final byte[] string) {
+    public Long lpush(final byte[] key, final byte[] string) {
         checkIsInMulti();
         client.lpush(key, string);
         return client.getIntegerReply();
@@ -926,7 +926,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param key
      * @return The length of the list.
      */
-    public Integer llen(final byte[] key) {
+    public Long llen(final byte[] key) {
         checkIsInMulti();
         client.llen(key);
         return client.getIntegerReply();
@@ -1086,7 +1086,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer Reply, specifically: The number of removed elements if
      *         the operation succeeded
      */
-    public Integer lrem(final byte[] key, final int count, final byte[] value) {
+    public Long lrem(final byte[] key, final int count, final byte[] value) {
         checkIsInMulti();
         client.lrem(key, count, value);
         return client.getIntegerReply();
@@ -1167,7 +1167,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the new element was added 0 if
      *         the element was already a member of the set
      */
-    public Integer sadd(final byte[] key, final byte[] member) {
+    public Long sadd(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.sadd(key, member);
         return client.getIntegerReply();
@@ -1201,7 +1201,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Integer srem(final byte[] key, final byte[] member) {
+    public Long srem(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.srem(key, member);
         return client.getIntegerReply();
@@ -1248,7 +1248,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         element was not found on the first set and no operation was
      *         performed
      */
-    public Integer smove(final byte[] srckey, final byte[] dstkey,
+    public Long smove(final byte[] srckey, final byte[] dstkey,
             final byte[] member) {
         checkIsInMulti();
         client.smove(srckey, dstkey, member);
@@ -1263,7 +1263,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: the cardinality (number of elements)
      *         of the set as an integer.
      */
-    public Integer scard(final byte[] key) {
+    public Long scard(final byte[] key) {
         checkIsInMulti();
         client.scard(key);
         return client.getIntegerReply();
@@ -1281,7 +1281,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         set 0 if the element is not a member of the set OR if the key
      *         does not exist
      */
-    public Integer sismember(final byte[] key, final byte[] member) {
+    public Long sismember(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.sismember(key, member);
         return client.getIntegerReply();
@@ -1324,7 +1324,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param keys
      * @return Status code reply
      */
-    public Integer sinterstore(final byte[] dstkey, final byte[]... keys) {
+    public Long sinterstore(final byte[] dstkey, final byte[]... keys) {
         checkIsInMulti();
         client.sinterstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1365,7 +1365,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param keys
      * @return Status code reply
      */
-    public Integer sunionstore(final byte[] dstkey, final byte[]... keys) {
+    public Long sunionstore(final byte[] dstkey, final byte[]... keys) {
         checkIsInMulti();
         client.sunionstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1409,7 +1409,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param keys
      * @return Status code reply
      */
-    public Integer sdiffstore(final byte[] dstkey, final byte[]... keys) {
+    public Long sdiffstore(final byte[] dstkey, final byte[]... keys) {
         checkIsInMulti();
         client.sdiffstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1454,7 +1454,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         the element was already a member of the sorted set and the score
      *         was updated
      */
-    public Integer zadd(final byte[] key, final double score,
+    public Long zadd(final byte[] key, final double score,
             final byte[] member) {
         checkIsInMulti();
         client.zadd(key, score, member);
@@ -1483,7 +1483,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Integer zrem(final byte[] key, final byte[] member) {
+    public Long zrem(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.zrem(key, member);
         return client.getIntegerReply();
@@ -1541,7 +1541,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         element as an integer reply if the element exists. A nil bulk
      *         reply if there is no such element.
      */
-    public Integer zrank(final byte[] key, final byte[] member) {
+    public Long zrank(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.zrank(key, member);
         return client.getIntegerReply();
@@ -1567,7 +1567,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         element as an integer reply if the element exists. A nil bulk
      *         reply if there is no such element.
      */
-    public Integer zrevrank(final byte[] key, final byte[] member) {
+    public Long zrevrank(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.zrevrank(key, member);
         return client.getIntegerReply();
@@ -1606,7 +1606,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param key
      * @return the cardinality (number of elements) of the set as an integer.
      */
-    public Integer zcard(final byte[] key) {
+    public Long zcard(final byte[] key) {
         checkIsInMulti();
         client.zcard(key);
         return client.getIntegerReply();
@@ -1880,7 +1880,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param dstkey
      * @return The number of elements of the list at dstkey.
      */
-    public Integer sort(final byte[] key,
+    public Long sort(final byte[] key,
             final SortingParams sortingParameters, final byte[] dstkey) {
         checkIsInMulti();
         client.sort(key, sortingParameters, dstkey);
@@ -1903,7 +1903,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param dstkey
      * @return The number of elements of the list at dstkey.
      */
-    public Integer sort(final byte[] key, final byte[] dstkey) {
+    public Long sort(final byte[] key, final byte[] dstkey) {
         checkIsInMulti();
         client.sort(key, dstkey);
         return client.getIntegerReply();
@@ -2031,7 +2031,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.rollbackTimeout();
     }
 
-    public Integer publish(final String channel, final String message) {
+    public Long publish(final String channel, final String message) {
         client.publish(channel, message);
         return client.getIntegerReply();
     }
@@ -2043,7 +2043,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.rollbackTimeout();
     }
 
-    public Integer zcount(final byte[] key, final double min, final double max) {
+    public Long zcount(final byte[] key, final double min, final double max) {
         checkIsInMulti();
         client.zcount(key, min, max);
         return client.getIntegerReply();
@@ -2337,7 +2337,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * operation
      * 
      */
-    public Integer zremrangeByRank(final byte[] key, final int start,
+    public Long zremrangeByRank(final byte[] key, final int start,
             final int end) {
         checkIsInMulti();
         client.zremrangeByRank(key, start, end);
@@ -2358,7 +2358,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param end
      * @return Integer reply, specifically the number of elements removed.
      */
-    public Integer zremrangeByScore(final byte[] key, final double start,
+    public Long zremrangeByScore(final byte[] key, final double start,
             final double end) {
         checkIsInMulti();
         client.zremrangeByScore(key, start, end);
@@ -2403,7 +2403,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zunionstore(final byte[] dstkey, final byte[]... sets) {
+    public Long zunionstore(final byte[] dstkey, final byte[]... sets) {
         checkIsInMulti();
         client.zunionstore(dstkey, sets);
         return client.getIntegerReply();
@@ -2448,7 +2448,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zunionstore(final byte[] dstkey, final ZParams params,
+    public Long zunionstore(final byte[] dstkey, final ZParams params,
             final byte[]... sets) {
         checkIsInMulti();
         client.zunionstore(dstkey, params, sets);
@@ -2493,7 +2493,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zinterstore(final byte[] dstkey, final byte[]... sets) {
+    public Long zinterstore(final byte[] dstkey, final byte[]... sets) {
         checkIsInMulti();
         client.zinterstore(dstkey, sets);
         return client.getIntegerReply();
@@ -2538,7 +2538,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zinterstore(final byte[] dstkey, final ZParams params,
+    public Long zinterstore(final byte[] dstkey, final ZParams params,
             final byte[]... sets) {
         checkIsInMulti();
         client.zinterstore(dstkey, params, sets);
@@ -2615,7 +2615,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * 
      * @return Integer reply, specifically an UNIX time stamp.
      */
-    public Integer lastsave() {
+    public Long lastsave() {
         client.lastsave();
         return client.getIntegerReply();
     }
@@ -2822,7 +2822,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.isConnected();
     }
 
-    public Integer strlen(final byte[] key) {
+    public Long strlen(final byte[] key) {
         client.strlen(key);
         return client.getIntegerReply();
     }
@@ -2831,7 +2831,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.sync();
     }
 
-    public Integer lpushx(final byte[] key, final byte[] string) {
+    public Long lpushx(final byte[] key, final byte[] string) {
         client.lpushx(key, string);
         return client.getIntegerReply();
     }
@@ -2846,12 +2846,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1: the key is now persist. 0: the
      *         key is not persist (only happens when key not set).
      */
-    public Integer persist(final byte[] key) {
+    public Long persist(final byte[] key) {
         client.persist(key);
         return client.getIntegerReply();
     }
 
-    public Integer rpushx(final byte[] key, final byte[] string) {
+    public Long rpushx(final byte[] key, final byte[] string) {
         client.rpushx(key, string);
         return client.getIntegerReply();
     }
@@ -2861,7 +2861,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getBinaryBulkReply();
     }
 
-    public Integer linsert(final byte[] key, final LIST_POSITION where,
+    public Long linsert(final byte[] key, final LIST_POSITION where,
             final byte[] pivot, final byte[] value) {
         client.linsert(key, where, pivot, value);
         return client.getIntegerReply();

@@ -50,7 +50,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.get(key);
     }
 
-    public Integer exists(byte[] key) {
+    public Long exists(byte[] key) {
         Jedis j = getShard(key);
         return j.exists(key);
     }
@@ -60,17 +60,17 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.type(key);
     }
 
-    public Integer expire(byte[] key, int seconds) {
+    public Long expire(byte[] key, int seconds) {
         Jedis j = getShard(key);
         return j.expire(key, seconds);
     }
 
-    public Integer expireAt(byte[] key, long unixTime) {
+    public Long expireAt(byte[] key, long unixTime) {
         Jedis j = getShard(key);
         return j.expireAt(key, unixTime);
     }
 
-    public Integer ttl(byte[] key) {
+    public Long ttl(byte[] key) {
         Jedis j = getShard(key);
         return j.ttl(key);
     }
@@ -80,7 +80,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.getSet(key, value);
     }
 
-    public Integer setnx(byte[] key, byte[] value) {
+    public Long setnx(byte[] key, byte[] value) {
         Jedis j = getShard(key);
         return j.setnx(key, value);
     }
@@ -90,27 +90,27 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.setex(key, seconds, value);
     }
 
-    public Integer decrBy(byte[] key, int integer) {
+    public Long decrBy(byte[] key, int integer) {
         Jedis j = getShard(key);
         return j.decrBy(key, integer);
     }
 
-    public Integer decr(byte[] key) {
+    public Long decr(byte[] key) {
         Jedis j = getShard(key);
         return j.decr(key);
     }
 
-    public Integer incrBy(byte[] key, int integer) {
+    public Long incrBy(byte[] key, int integer) {
         Jedis j = getShard(key);
         return j.incrBy(key, integer);
     }
 
-    public Integer incr(byte[] key) {
+    public Long incr(byte[] key) {
         Jedis j = getShard(key);
         return j.incr(key);
     }
 
-    public Integer append(byte[] key, byte[] value) {
+    public Long append(byte[] key, byte[] value) {
         Jedis j = getShard(key);
         return j.append(key, value);
     }
@@ -120,7 +120,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.substr(key, start, end);
     }
 
-    public Integer hset(byte[] key, byte[] field, byte[] value) {
+    public Long hset(byte[] key, byte[] field, byte[] value) {
         Jedis j = getShard(key);
         return j.hset(key, field, value);
     }
@@ -130,7 +130,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.hget(key, field);
     }
 
-    public Integer hsetnx(byte[] key, byte[] field, byte[] value) {
+    public Long hsetnx(byte[] key, byte[] field, byte[] value) {
         Jedis j = getShard(key);
         return j.hsetnx(key, field, value);
     }
@@ -145,22 +145,22 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.hmget(key, fields);
     }
 
-    public Integer hincrBy(byte[] key, byte[] field, int value) {
+    public Long hincrBy(byte[] key, byte[] field, int value) {
         Jedis j = getShard(key);
         return j.hincrBy(key, field, value);
     }
 
-    public Integer hexists(byte[] key, byte[] field) {
+    public Long hexists(byte[] key, byte[] field) {
         Jedis j = getShard(key);
         return j.hexists(key, field);
     }
 
-    public Integer hdel(byte[] key, byte[] field) {
+    public Long hdel(byte[] key, byte[] field) {
         Jedis j = getShard(key);
         return j.hdel(key, field);
     }
 
-    public Integer hlen(byte[] key) {
+    public Long hlen(byte[] key) {
         Jedis j = getShard(key);
         return j.hlen(key);
     }
@@ -180,17 +180,17 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.hgetAll(key);
     }
 
-    public Integer rpush(byte[] key, byte[] string) {
+    public Long rpush(byte[] key, byte[] string) {
         Jedis j = getShard(key);
         return j.rpush(key, string);
     }
 
-    public Integer lpush(byte[] key, byte[] string) {
+    public Long lpush(byte[] key, byte[] string) {
         Jedis j = getShard(key);
         return j.lpush(key, string);
     }
 
-    public Integer llen(byte[] key) {
+    public Long llen(byte[] key) {
         Jedis j = getShard(key);
         return j.llen(key);
     }
@@ -215,7 +215,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.lset(key, index, value);
     }
 
-    public Integer lrem(byte[] key, int count, byte[] value) {
+    public Long lrem(byte[] key, int count, byte[] value) {
         Jedis j = getShard(key);
         return j.lrem(key, count, value);
     }
@@ -230,7 +230,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.rpop(key);
     }
 
-    public Integer sadd(byte[] key, byte[] member) {
+    public Long sadd(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.sadd(key, member);
     }
@@ -240,7 +240,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.smembers(key);
     }
 
-    public Integer srem(byte[] key, byte[] member) {
+    public Long srem(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.srem(key, member);
     }
@@ -250,12 +250,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.spop(key);
     }
 
-    public Integer scard(byte[] key) {
+    public Long scard(byte[] key) {
         Jedis j = getShard(key);
         return j.scard(key);
     }
 
-    public Integer sismember(byte[] key, byte[] member) {
+    public Long sismember(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.sismember(key, member);
     }
@@ -265,7 +265,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.srandmember(key);
     }
 
-    public Integer zadd(byte[] key, double score, byte[] member) {
+    public Long zadd(byte[] key, double score, byte[] member) {
         Jedis j = getShard(key);
         return j.zadd(key, score, member);
     }
@@ -275,7 +275,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.zrange(key, start, end);
     }
 
-    public Integer zrem(byte[] key, byte[] member) {
+    public Long zrem(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.zrem(key, member);
     }
@@ -285,12 +285,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.zincrby(key, score, member);
     }
 
-    public Integer zrank(byte[] key, byte[] member) {
+    public Long zrank(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.zrank(key, member);
     }
 
-    public Integer zrevrank(byte[] key, byte[] member) {
+    public Long zrevrank(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.zrevrank(key, member);
     }
@@ -310,7 +310,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.zrevrangeWithScores(key, start, end);
     }
 
-    public Integer zcard(byte[] key) {
+    public Long zcard(byte[] key) {
         Jedis j = getShard(key);
         return j.zcard(key);
     }
@@ -330,7 +330,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.sort(key, sortingParameters);
     }
 
-    public Integer zcount(byte[] key, double min, double max) {
+    public Long zcount(byte[] key, double min, double max) {
         Jedis j = getShard(key);
         return j.zcount(key, min, max);
     }
@@ -357,17 +357,17 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.zrangeByScoreWithScores(key, min, max, offset, count);
     }
 
-    public Integer zremrangeByRank(byte[] key, int start, int end) {
+    public Long zremrangeByRank(byte[] key, int start, int end) {
         Jedis j = getShard(key);
         return j.zremrangeByRank(key, start, end);
     }
 
-    public Integer zremrangeByScore(byte[] key, double start, double end) {
+    public Long zremrangeByScore(byte[] key, double start, double end) {
         Jedis j = getShard(key);
         return j.zremrangeByScore(key, start, end);
     }
 
-    public Integer linsert(byte[] key, LIST_POSITION where, byte[] pivot,
+    public Long linsert(byte[] key, LIST_POSITION where, byte[] pivot,
             byte[] value) {
         Jedis j = getShard(key);
         return j.linsert(key, where, pivot, value);

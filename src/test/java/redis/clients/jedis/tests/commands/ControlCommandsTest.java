@@ -35,7 +35,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void lastsave() throws InterruptedException {
-	int before = jedis.lastsave();
+	long before = jedis.lastsave();
 	String st = "";
 	while (!st.equals("OK")) {
 	    try {
@@ -45,7 +45,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
 	    }
 	}
-	int after = jedis.lastsave();
+	long after = jedis.lastsave();
 	assertTrue((after - before) > 0);
     }
 
@@ -58,7 +58,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     @Test
     public void monitor() {
 	jedis.monitor(new JedisMonitor() {
-	    public void onCommand(String command) {
+	    @Override
+		public void onCommand(String command) {
 		assertTrue(command.contains("OK"));
 		client.disconnect();
 	    }

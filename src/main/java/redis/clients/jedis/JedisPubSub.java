@@ -78,13 +78,13 @@ public abstract class JedisPubSub {
             }
             final byte[] resp = (byte[]) firstObj;
             if (Arrays.equals(SUBSCRIBE.raw, resp)) {
-                subscribedChannels = ((Integer) reply.get(2)).intValue();
+                subscribedChannels = ((Long) reply.get(2)).intValue();
                 final byte[] bchannel = (byte[]) reply.get(1);
                 final String strchannel = (bchannel == null) ? null
                         : SafeEncoder.encode(bchannel);
                 onSubscribe(strchannel, subscribedChannels);
             } else if (Arrays.equals(UNSUBSCRIBE.raw, resp)) {
-                subscribedChannels = ((Integer) reply.get(2)).intValue();
+                subscribedChannels = ((Long) reply.get(2)).intValue();
                 final byte[] bchannel = (byte[]) reply.get(1);
                 final String strchannel = (bchannel == null) ? null
                         : SafeEncoder.encode(bchannel);
@@ -109,13 +109,13 @@ public abstract class JedisPubSub {
                         .encode(bmesg);
                 onPMessage(strpattern, strchannel, strmesg);
             } else if (Arrays.equals(PSUBSCRIBE.raw, resp)) {
-                subscribedChannels = ((Integer) reply.get(2)).intValue();
+                subscribedChannels = ((Long) reply.get(2)).intValue();
                 final byte[] bpattern = (byte[]) reply.get(1);
                 final String strpattern = (bpattern == null) ? null
                         : SafeEncoder.encode(bpattern);
                 onPSubscribe(strpattern, subscribedChannels);
             } else if (Arrays.equals(PUNSUBSCRIBE.raw, resp)) {
-                subscribedChannels = ((Integer) reply.get(2)).intValue();
+                subscribedChannels = ((Long) reply.get(2)).intValue();
                 final byte[] bpattern = (byte[]) reply.get(1);
                 final String strpattern = (bpattern == null) ? null
                         : SafeEncoder.encode(bpattern);

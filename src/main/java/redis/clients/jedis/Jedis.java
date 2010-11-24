@@ -30,7 +30,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         super(shardInfo);
     }
 
-    public String ping() {
+    @Override
+	public String ping() {
         runChecks();
         client.ping();
         return client.getStatusCodeReply();
@@ -71,7 +72,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     /**
      * Ask the server to silently close the connection.
      */
-    public void quit() {
+    @Override
+	public void quit() {
         runChecks();
         client.quit();
     }
@@ -86,7 +88,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return Integer reply, "0" if the key exists, otherwise "1"
      */
-    public Integer exists(final String key) {
+    public Long exists(final String key) {
         runChecks();
         client.exists(key);
         return client.getIntegerReply();
@@ -102,7 +104,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: an integer greater than 0 if one or
      *         more keys were removed 0 if none of the specified key existed
      */
-    public Integer del(final String... keys) {
+    public Long del(final String... keys) {
         runChecks();
         client.del(keys);
         return client.getIntegerReply();
@@ -134,7 +136,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Status code reply
      */
-    public String flushDB() {
+    @Override
+	public String flushDB() {
         runChecks();
         client.flushDB();
         return client.getStatusCodeReply();
@@ -221,7 +224,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1 if the key was renamed 0 if the
      *         target key already exist
      */
-    public Integer renamenx(final String oldkey, final String newkey) {
+    public Long renamenx(final String oldkey, final String newkey) {
         runChecks();
         client.renamenx(oldkey, newkey);
         return client.getIntegerReply();
@@ -232,7 +235,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Integer reply
      */
-    public Integer dbSize() {
+    @Override
+	public Long dbSize() {
         runChecks();
         client.dbSize();
         return client.getIntegerReply();
@@ -266,7 +270,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         2.1.3 will happily update the timeout), or the key does not
      *         exist.
      */
-    public Integer expire(final String key, final int seconds) {
+    public Long expire(final String key, final int seconds) {
         runChecks();
         client.expire(key, seconds);
         return client.getIntegerReply();
@@ -302,7 +306,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         2.1.3 will happily update the timeout), or the key does not
      *         exist.
      */
-    public Integer expireAt(final String key, final long unixTime) {
+    public Long expireAt(final String key, final long unixTime) {
         runChecks();
         client.expireAt(key, unixTime);
         return client.getIntegerReply();
@@ -319,7 +323,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         key that has an EXPIRE. If the Key does not exists or does not
      *         have an associated expire, -1 is returned.
      */
-    public Integer ttl(final String key) {
+    public Long ttl(final String key) {
         runChecks();
         client.ttl(key);
         return client.getIntegerReply();
@@ -332,7 +336,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param index
      * @return Status code reply
      */
-    public String select(final int index) {
+    @Override
+	public String select(final int index) {
         runChecks();
         client.select(index);
         return client.getStatusCodeReply();
@@ -351,7 +356,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         was not moved because already present on the target DB or was not
      *         found in the current DB.
      */
-    public Integer move(final String key, final int dbIndex) {
+    public Long move(final String key, final int dbIndex) {
         runChecks();
         client.move(key, dbIndex);
         return client.getIntegerReply();
@@ -363,7 +368,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Status code reply
      */
-    public String flushAll() {
+    @Override
+	public String flushAll() {
         runChecks();
         client.flushAll();
         return client.getStatusCodeReply();
@@ -414,7 +420,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1 if the key was set 0 if the key
      *         was not set
      */
-    public Integer setnx(final String key, final String value) {
+    public Long setnx(final String key, final String value) {
         runChecks();
         client.setnx(key, value);
         return client.getIntegerReply();
@@ -485,7 +491,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1 if the all the keys were set 0 if
      *         no key was set (at least one key already existed)
      */
-    public Integer msetnx(final String... keysvalues) {
+    public Long msetnx(final String... keysvalues) {
         runChecks();
         client.msetnx(keysvalues);
         return client.getIntegerReply();
@@ -513,7 +519,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer decrBy(final String key, final int integer) {
+    public Long decrBy(final String key, final int integer) {
         runChecks();
         client.decrBy(key, integer);
         return client.getIntegerReply();
@@ -541,7 +547,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer decr(final String key) {
+    public Long decr(final String key) {
         runChecks();
         client.decr(key);
         return client.getIntegerReply();
@@ -569,7 +575,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer incrBy(final String key, final int integer) {
+    public Long incrBy(final String key, final int integer) {
         runChecks();
         client.incrBy(key, integer);
         return client.getIntegerReply();
@@ -597,7 +603,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Integer incr(final String key) {
+    public Long incr(final String key) {
         runChecks();
         client.incr(key);
         return client.getIntegerReply();
@@ -619,7 +625,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically the total length of the string after
      *         the append operation.
      */
-    public Integer append(final String key, final String value) {
+    public Long append(final String key, final String value) {
         runChecks();
         client.append(key, value);
         return client.getIntegerReply();
@@ -664,7 +670,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         of the value, 0 is returned, otherwise if a new field is created
      *         1 is returned.
      */
-    public Integer hset(final String key, final String field, final String value) {
+    public Long hset(final String key, final String field, final String value) {
         runChecks();
         client.hset(key, field, value);
         return client.getIntegerReply();
@@ -700,7 +706,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return If the field already exists, 0 is returned, otherwise if a new
      *         field is created 1 is returned.
      */
-    public Integer hsetnx(final String key, final String field,
+    public Long hsetnx(final String key, final String field,
             final String value) {
         runChecks();
         client.hsetnx(key, field, value);
@@ -762,7 +768,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply The new value at field after the increment
      *         operation.
      */
-    public Integer hincrBy(final String key, final String field, final int value) {
+    public Long hincrBy(final String key, final String field, final int value) {
         runChecks();
         client.hincrBy(key, field, value);
         return client.getIntegerReply();
@@ -778,7 +784,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Return 1 if the hash stored at key contains the specified field.
      *         Return 0 if the key is not found or the field is not present.
      */
-    public Integer hexists(final String key, final String field) {
+    public Long hexists(final String key, final String field) {
         runChecks();
         client.hexists(key, field);
         return client.getIntegerReply();
@@ -794,7 +800,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return If the field was present in the hash it is deleted and 1 is
      *         returned, otherwise 0 is returned and no operation is performed.
      */
-    public Integer hdel(final String key, final String field) {
+    public Long hdel(final String key, final String field) {
         runChecks();
         client.hdel(key, field);
         return client.getIntegerReply();
@@ -810,7 +816,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         key. If the specified key does not exist, 0 is returned assuming
      *         an empty hash.
      */
-    public Integer hlen(final String key) {
+    public Long hlen(final String key) {
         runChecks();
         client.hlen(key);
         return client.getIntegerReply();
@@ -882,7 +888,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Integer rpush(final String key, final String string) {
+    public Long rpush(final String key, final String string) {
         runChecks();
         client.rpush(key, string);
         return client.getIntegerReply();
@@ -903,7 +909,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Integer lpush(final String key, final String string) {
+    public Long lpush(final String key, final String string) {
         runChecks();
         client.lpush(key, string);
         return client.getIntegerReply();
@@ -919,7 +925,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return The length of the list.
      */
-    public Integer llen(final String key) {
+    public Long llen(final String key) {
         runChecks();
         client.llen(key);
         return client.getIntegerReply();
@@ -1079,7 +1085,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer Reply, specifically: The number of removed elements if
      *         the operation succeeded
      */
-    public Integer lrem(final String key, final int count, final String value) {
+    public Long lrem(final String key, final int count, final String value) {
         runChecks();
         client.lrem(key, count, value);
         return client.getIntegerReply();
@@ -1160,7 +1166,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1 if the new element was added 0 if
      *         the element was already a member of the set
      */
-    public Integer sadd(final String key, final String member) {
+    public Long sadd(final String key, final String member) {
         runChecks();
         client.sadd(key, member);
         return client.getIntegerReply();
@@ -1194,7 +1200,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Integer srem(final String key, final String member) {
+    public Long srem(final String key, final String member) {
         runChecks();
         client.srem(key, member);
         return client.getIntegerReply();
@@ -1241,7 +1247,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         element was not found on the first set and no operation was
      *         performed
      */
-    public Integer smove(final String srckey, final String dstkey,
+    public Long smove(final String srckey, final String dstkey,
             final String member) {
         runChecks();
         client.smove(srckey, dstkey, member);
@@ -1256,7 +1262,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: the cardinality (number of elements)
      *         of the set as an integer.
      */
-    public Integer scard(final String key) {
+    public Long scard(final String key) {
         runChecks();
         client.scard(key);
         return client.getIntegerReply();
@@ -1274,7 +1280,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         set 0 if the element is not a member of the set OR if the key
      *         does not exist
      */
-    public Integer sismember(final String key, final String member) {
+    public Long sismember(final String key, final String member) {
         runChecks();
         client.sismember(key, member);
         return client.getIntegerReply();
@@ -1317,7 +1323,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param keys
      * @return Status code reply
      */
-    public Integer sinterstore(final String dstkey, final String... keys) {
+    public Long sinterstore(final String dstkey, final String... keys) {
         runChecks();
         client.sinterstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1358,7 +1364,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param keys
      * @return Status code reply
      */
-    public Integer sunionstore(final String dstkey, final String... keys) {
+    public Long sunionstore(final String dstkey, final String... keys) {
         runChecks();
         client.sunionstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1402,7 +1408,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param keys
      * @return Status code reply
      */
-    public Integer sdiffstore(final String dstkey, final String... keys) {
+    public Long sdiffstore(final String dstkey, final String... keys) {
         runChecks();
         client.sdiffstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1447,7 +1453,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         the element was already a member of the sorted set and the score
      *         was updated
      */
-    public Integer zadd(final String key, final double score,
+    public Long zadd(final String key, final double score,
             final String member) {
         runChecks();
         client.zadd(key, score, member);
@@ -1476,7 +1482,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Integer zrem(final String key, final String member) {
+    public Long zrem(final String key, final String member) {
         runChecks();
         client.zrem(key, member);
         return client.getIntegerReply();
@@ -1534,7 +1540,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         element as an integer reply if the element exists. A nil bulk
      *         reply if there is no such element.
      */
-    public Integer zrank(final String key, final String member) {
+    public Long zrank(final String key, final String member) {
         runChecks();
         client.zrank(key, member);
         return client.getIntegerReply();
@@ -1560,7 +1566,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         element as an integer reply if the element exists. A nil bulk
      *         reply if there is no such element.
      */
-    public Integer zrevrank(final String key, final String member) {
+    public Long zrevrank(final String key, final String member) {
         runChecks();
         client.zrevrank(key, member);
         return client.getIntegerReply();
@@ -1599,7 +1605,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return the cardinality (number of elements) of the set as an integer.
      */
-    public Integer zcard(final String key) {
+    public Long zcard(final String key) {
         runChecks();
         client.zcard(key);
         return client.getIntegerReply();
@@ -1623,13 +1629,15 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return (score != null ? new Double(score) : null);
     }
 
-    public Transaction multi() {
+    @Override
+	public Transaction multi() {
         client.multi();
         client.getStatusCodeReply();
         return new Transaction(client);
     }
 
-    public List<Object> multi(TransactionBlock jedisTransaction) {
+    @Override
+	public List<Object> multi(TransactionBlock jedisTransaction) {
         List<Object> results = null;
         try {
             jedisTransaction.setClient(client);
@@ -1656,7 +1664,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         }
     }
 
-    public void connect() throws UnknownHostException, IOException {
+    @Override
+	public void connect() throws UnknownHostException, IOException {
         if (!client.isConnected()) {
             client.connect();
             if (this.password != null) {
@@ -1665,7 +1674,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         }
     }
 
-    public void disconnect() throws IOException {
+    @Override
+	public void disconnect() throws IOException {
         client.disconnect();
     }
 
@@ -1880,7 +1890,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param dstkey
      * @return The number of elements of the list at dstkey.
      */
-    public Integer sort(final String key,
+    public Long sort(final String key,
             final SortingParams sortingParameters, final String dstkey) {
         runChecks();
         client.sort(key, sortingParameters, dstkey);
@@ -1903,7 +1913,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param dstkey
      * @return The number of elements of the list at dstkey.
      */
-    public Integer sort(final String key, final String dstkey) {
+    public Long sort(final String key, final String dstkey) {
         runChecks();
         client.sort(key, dstkey);
         return client.getIntegerReply();
@@ -2012,36 +2022,41 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param password
      * @return Status code reply
      */
-    public String auth(final String password) {
+    @Override
+	public String auth(final String password) {
         runChecks();
         client.auth(password);
         return client.getStatusCodeReply();
     }
 
-    public List<Object> pipelined(JedisPipeline jedisPipeline) {
+    @Override
+	public List<Object> pipelined(JedisPipeline jedisPipeline) {
         jedisPipeline.setClient(client);
         jedisPipeline.execute();
         return client.getAll();
     }
 
-    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+    @Override
+	public void subscribe(JedisPubSub jedisPubSub, String... channels) {
         client.setTimeoutInfinite();
         jedisPubSub.proceed(client, channels);
         client.rollbackTimeout();
     }
 
-    public Integer publish(String channel, String message) {
+    @Override
+	public Long publish(String channel, String message) {
         client.publish(channel, message);
         return client.getIntegerReply();
     }
 
-    public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
+    @Override
+	public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
         client.setTimeoutInfinite();
         jedisPubSub.proceedWithPatterns(client, patterns);
         client.rollbackTimeout();
     }
 
-    public Integer zcount(final String key, final double min, final double max) {
+    public Long zcount(final String key, final double min, final double max) {
         runChecks();
         client.zcount(key, min, max);
         return client.getIntegerReply();
@@ -2336,7 +2351,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * operation
      * 
      */
-    public Integer zremrangeByRank(final String key, final int start,
+    public Long zremrangeByRank(final String key, final int start,
             final int end) {
         runChecks();
         client.zremrangeByRank(key, start, end);
@@ -2357,7 +2372,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param end
      * @return Integer reply, specifically the number of elements removed.
      */
-    public Integer zremrangeByScore(final String key, final double start,
+    public Long zremrangeByScore(final String key, final double start,
             final double end) {
         runChecks();
         client.zremrangeByScore(key, start, end);
@@ -2402,7 +2417,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zunionstore(final String dstkey, final String... sets) {
+    public Long zunionstore(final String dstkey, final String... sets) {
         runChecks();
         client.zunionstore(dstkey, sets);
         return client.getIntegerReply();
@@ -2447,7 +2462,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zunionstore(final String dstkey, final ZParams params,
+    public Long zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
         runChecks();
         client.zunionstore(dstkey, params, sets);
@@ -2492,7 +2507,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zinterstore(final String dstkey, final String... sets) {
+    public Long zinterstore(final String dstkey, final String... sets) {
         runChecks();
         client.zinterstore(dstkey, sets);
         return client.getIntegerReply();
@@ -2537,19 +2552,19 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically the number of elements in the sorted
      *         set at dstkey
      */
-    public Integer zinterstore(final String dstkey, final ZParams params,
+    public Long zinterstore(final String dstkey, final ZParams params,
             final String... sets) {
         runChecks();
         client.zinterstore(dstkey, params, sets);
         return client.getIntegerReply();
     }
 
-    public Integer strlen(final String key) {
+    public Long strlen(final String key) {
         client.strlen(key);
         return client.getIntegerReply();
     }
 
-    public Integer lpushx(final String key, final String string) {
+    public Long lpushx(final String key, final String string) {
         client.lpushx(key, string);
         return client.getIntegerReply();
     }
@@ -2564,12 +2579,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically: 1: the key is now persist. 0: the
      *         key is not persist (only happens when key not set).
      */
-    public Integer persist(final String key) {
+    public Long persist(final String key) {
         client.persist(key);
         return client.getIntegerReply();
     }
 
-    public Integer rpushx(final String key, final String string) {
+    public Long rpushx(final String key, final String string) {
         client.rpushx(key, string);
         return client.getIntegerReply();
     }
@@ -2579,7 +2594,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getBulkReply();
     }
 
-    public Integer linsert(final String key, final LIST_POSITION where,
+    public Long linsert(final String key, final LIST_POSITION where,
             final String pivot, final String value) {
         client.linsert(key, where, pivot, value);
         return client.getIntegerReply();

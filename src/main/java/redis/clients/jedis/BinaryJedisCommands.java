@@ -15,51 +15,51 @@ public interface BinaryJedisCommands {
 
     byte[] get(byte[] key);
 
-    Integer exists(byte[] key);
+    Long exists(byte[] key);
 
     String type(byte[] key);
 
-    Integer expire(byte[] key, int seconds);
+    Long expire(byte[] key, int seconds);
 
-    Integer expireAt(byte[] key, long unixTime);
+    Long expireAt(byte[] key, long unixTime);
 
-    Integer ttl(byte[] key);
+    Long ttl(byte[] key);
 
     byte[] getSet(byte[] key, byte[] value);
 
-    Integer setnx(byte[] key, byte[] value);
+    Long setnx(byte[] key, byte[] value);
 
     String setex(byte[] key, int seconds, byte[] value);
 
-    Integer decrBy(byte[] key, int integer);
+    Long decrBy(byte[] key, int integer);
 
-    Integer decr(byte[] key);
+    Long decr(byte[] key);
 
-    Integer incrBy(byte[] key, int integer);
+    Long incrBy(byte[] key, int integer);
 
-    Integer incr(byte[] key);
+    Long incr(byte[] key);
 
-    Integer append(byte[] key, byte[] value);
+    Long append(byte[] key, byte[] value);
 
     byte[] substr(byte[] key, int start, int end);
 
-    Integer hset(byte[] key, byte[] field, byte[] value);
+    Long hset(byte[] key, byte[] field, byte[] value);
 
     byte[] hget(byte[] key, byte[] field);
 
-    Integer hsetnx(byte[] key, byte[] field, byte[] value);
+    Long hsetnx(byte[] key, byte[] field, byte[] value);
 
     String hmset(byte[] key, Map<byte[], byte[]> hash);
 
     List<byte[]> hmget(byte[] key, byte[]... fields);
 
-    Integer hincrBy(byte[] key, byte[] field, int value);
+    Long hincrBy(byte[] key, byte[] field, int value);
 
-    Integer hexists(byte[] key, byte[] field);
+    Long hexists(byte[] key, byte[] field);
 
-    Integer hdel(byte[] key, byte[] field);
+    Long hdel(byte[] key, byte[] field);
 
-    Integer hlen(byte[] key);
+    Long hlen(byte[] key);
 
     Set<byte[]> hkeys(byte[] key);
 
@@ -67,11 +67,11 @@ public interface BinaryJedisCommands {
 
     Map<byte[], byte[]> hgetAll(byte[] key);
 
-    Integer rpush(byte[] key, byte[] string);
+    Long rpush(byte[] key, byte[] string);
 
-    Integer lpush(byte[] key, byte[] string);
+    Long lpush(byte[] key, byte[] string);
 
-    Integer llen(byte[] key);
+    Long llen(byte[] key);
 
     List<byte[]> lrange(byte[] key, int start, int end);
 
@@ -81,37 +81,37 @@ public interface BinaryJedisCommands {
 
     String lset(byte[] key, int index, byte[] value);
 
-    Integer lrem(byte[] key, int count, byte[] value);
+    Long lrem(byte[] key, int count, byte[] value);
 
     byte[] lpop(byte[] key);
 
     byte[] rpop(byte[] key);
 
-    Integer sadd(byte[] key, byte[] member);
+    Long sadd(byte[] key, byte[] member);
 
     Set<byte[]> smembers(byte[] key);
 
-    Integer srem(byte[] key, byte[] member);
+    Long srem(byte[] key, byte[] member);
 
     byte[] spop(byte[] key);
 
-    Integer scard(byte[] key);
+    Long scard(byte[] key);
 
-    Integer sismember(byte[] key, byte[] member);
+    Long sismember(byte[] key, byte[] member);
 
     byte[] srandmember(byte[] key);
 
-    Integer zadd(byte[] key, double score, byte[] member);
+    Long zadd(byte[] key, double score, byte[] member);
 
     Set<byte[]> zrange(byte[] key, int start, int end);
 
-    Integer zrem(byte[] key, byte[] member);
+    Long zrem(byte[] key, byte[] member);
 
     Double zincrby(byte[] key, double score, byte[] member);
 
-    Integer zrank(byte[] key, byte[] member);
+    Long zrank(byte[] key, byte[] member);
 
-    Integer zrevrank(byte[] key, byte[] member);
+    Long zrevrank(byte[] key, byte[] member);
 
     Set<byte[]> zrevrange(byte[] key, int start, int end);
 
@@ -119,7 +119,7 @@ public interface BinaryJedisCommands {
 
     Set<Tuple> zrevrangeWithScores(byte[] key, int start, int end);
 
-    Integer zcard(byte[] key);
+    Long zcard(byte[] key);
 
     Double zscore(byte[] key, byte[] member);
 
@@ -127,7 +127,7 @@ public interface BinaryJedisCommands {
 
     List<byte[]> sort(byte[] key, SortingParams sortingParameters);
 
-    Integer zcount(byte[] key, double min, double max);
+    Long zcount(byte[] key, double min, double max);
 
     Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
@@ -147,11 +147,11 @@ public interface BinaryJedisCommands {
             int offset,
             int count);
 
-    Integer zremrangeByRank(byte[] key, int start, int end);
+    Long zremrangeByRank(byte[] key, int start, int end);
 
-    Integer zremrangeByScore(byte[] key, double start, double end);
+    Long zremrangeByScore(byte[] key, double start, double end);
 
-    Integer linsert(
+    Long linsert(
     		byte[] key,
     		LIST_POSITION where,
     		byte[] pivot,

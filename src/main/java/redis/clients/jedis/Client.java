@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import redis.clients.util.SafeEncoder;
 
-public class Client extends BinaryClient {
+public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
         super(host);
     }

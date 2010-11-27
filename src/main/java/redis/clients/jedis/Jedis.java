@@ -30,8 +30,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         super(shardInfo);
     }
 
-    @Override
-	public String ping() {
+    public String ping() {
         runChecks();
         client.ping();
         return client.getStatusCodeReply();
@@ -72,8 +71,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     /**
      * Ask the server to silently close the connection.
      */
-    @Override
-	public void quit() {
+
+    public void quit() {
         runChecks();
         client.quit();
     }
@@ -136,8 +135,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Status code reply
      */
-    @Override
-	public String flushDB() {
+
+    public String flushDB() {
         runChecks();
         client.flushDB();
         return client.getStatusCodeReply();
@@ -235,8 +234,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Integer reply
      */
-    @Override
-	public Long dbSize() {
+
+    public Long dbSize() {
         runChecks();
         client.dbSize();
         return client.getIntegerReply();
@@ -336,8 +335,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param index
      * @return Status code reply
      */
-    @Override
-	public String select(final int index) {
+
+    public String select(final int index) {
         runChecks();
         client.select(index);
         return client.getStatusCodeReply();
@@ -368,8 +367,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Status code reply
      */
-    @Override
-	public String flushAll() {
+
+    public String flushAll() {
         runChecks();
         client.flushAll();
         return client.getStatusCodeReply();
@@ -706,8 +705,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return If the field already exists, 0 is returned, otherwise if a new
      *         field is created 1 is returned.
      */
-    public Long hsetnx(final String key, final String field,
-            final String value) {
+    public Long hsetnx(final String key, final String field, final String value) {
         runChecks();
         client.hsetnx(key, field, value);
         return client.getIntegerReply();
@@ -1453,8 +1451,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         the element was already a member of the sorted set and the score
      *         was updated
      */
-    public Long zadd(final String key, final double score,
-            final String member) {
+    public Long zadd(final String key, final double score, final String member) {
         runChecks();
         client.zadd(key, score, member);
         return client.getIntegerReply();
@@ -1629,15 +1626,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return (score != null ? new Double(score) : null);
     }
 
-    @Override
-	public Transaction multi() {
+    public Transaction multi() {
         client.multi();
         client.getStatusCodeReply();
         return new Transaction(client);
     }
 
-    @Override
-	public List<Object> multi(TransactionBlock jedisTransaction) {
+    public List<Object> multi(TransactionBlock jedisTransaction) {
         List<Object> results = null;
         try {
             jedisTransaction.setClient(client);
@@ -1664,8 +1659,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         }
     }
 
-    @Override
-	public void connect() throws UnknownHostException, IOException {
+    public void connect() throws UnknownHostException, IOException {
         if (!client.isConnected()) {
             client.connect();
             if (this.password != null) {
@@ -1674,8 +1668,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         }
     }
 
-    @Override
-	public void disconnect() throws IOException {
+    public void disconnect() throws IOException {
         client.disconnect();
     }
 
@@ -1890,8 +1883,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param dstkey
      * @return The number of elements of the list at dstkey.
      */
-    public Long sort(final String key,
-            final SortingParams sortingParameters, final String dstkey) {
+    public Long sort(final String key, final SortingParams sortingParameters,
+            final String dstkey) {
         runChecks();
         client.sort(key, sortingParameters, dstkey);
         return client.getIntegerReply();
@@ -2022,35 +2015,25 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param password
      * @return Status code reply
      */
-    @Override
-	public String auth(final String password) {
+
+    public String auth(final String password) {
         runChecks();
         client.auth(password);
         return client.getStatusCodeReply();
     }
 
-    @Override
-	public List<Object> pipelined(JedisPipeline jedisPipeline) {
-        jedisPipeline.setClient(client);
-        jedisPipeline.execute();
-        return client.getAll();
-    }
-
-    @Override
-	public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
         client.setTimeoutInfinite();
         jedisPubSub.proceed(client, channels);
         client.rollbackTimeout();
     }
 
-    @Override
-	public Long publish(String channel, String message) {
+    public Long publish(String channel, String message) {
         client.publish(channel, message);
         return client.getIntegerReply();
     }
 
-    @Override
-	public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
+    public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
         client.setTimeoutInfinite();
         jedisPubSub.proceedWithPatterns(client, patterns);
         client.rollbackTimeout();
@@ -2351,8 +2334,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * operation
      * 
      */
-    public Long zremrangeByRank(final String key, final int start,
-            final int end) {
+    public Long zremrangeByRank(final String key, final int start, final int end) {
         runChecks();
         client.zremrangeByRank(key, start, end);
         return client.getIntegerReply();

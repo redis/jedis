@@ -707,8 +707,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return If the field already exists, 0 is returned, otherwise if a new
      *         field is created 1 is returned.
      */
-    public Long hsetnx(final byte[] key, final byte[] field,
-            final byte[] value) {
+    public Long hsetnx(final byte[] key, final byte[] field, final byte[] value) {
         checkIsInMulti();
         client.hsetnx(key, field, value);
         return client.getIntegerReply();
@@ -1454,8 +1453,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         the element was already a member of the sorted set and the score
      *         was updated
      */
-    public Long zadd(final byte[] key, final double score,
-            final byte[] member) {
+    public Long zadd(final byte[] key, final double score, final byte[] member) {
         checkIsInMulti();
         client.zadd(key, score, member);
         return client.getIntegerReply();
@@ -1880,8 +1878,8 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param dstkey
      * @return The number of elements of the list at dstkey.
      */
-    public Long sort(final byte[] key,
-            final SortingParams sortingParameters, final byte[] dstkey) {
+    public Long sort(final byte[] key, final SortingParams sortingParameters,
+            final byte[] dstkey) {
         checkIsInMulti();
         client.sort(key, sortingParameters, dstkey);
         return client.getIntegerReply();
@@ -2018,10 +2016,14 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getStatusCodeReply();
     }
 
-    public List<Object> pipelined(final JedisPipeline jedisPipeline) {
+    public List<Object> pipelined(final PipelineBlock jedisPipeline) {
         jedisPipeline.setClient(client);
         jedisPipeline.execute();
         return client.getAll();
+    }
+
+    public Pipeline pipelined() {
+        return new Pipeline(client);
     }
 
     public void subscribe(final JedisPubSub jedisPubSub,
@@ -2337,8 +2339,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * operation
      * 
      */
-    public Long zremrangeByRank(final byte[] key, final int start,
-            final int end) {
+    public Long zremrangeByRank(final byte[] key, final int start, final int end) {
         checkIsInMulti();
         client.zremrangeByRank(key, start, end);
         return client.getIntegerReply();

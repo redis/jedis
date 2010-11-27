@@ -5,12 +5,12 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import org.junit.Assert;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPipeline;
+import redis.clients.jedis.PipelineBlock;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
@@ -21,23 +21,37 @@ public class PipeliningTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-	jedis = new Jedis(hnp.host, hnp.port, 500);
-	jedis.connect();
-	jedis.auth("foobared");
-	jedis.flushAll();
+        jedis = new Jedis(hnp.host, hnp.port, 500);
+        jedis.connect();
+        jedis.auth("foobared");
+        jedis.flushAll();
     }
 
     @Test
     public void pipeline() throws UnknownHostException, IOException {
-	List<Object> results = jedis.pipelined(new JedisPipeline() {
-	    public void execute() {
-		client.set("foo", "bar");
-		client.get("foo");
-	    }
-	});
+        List<Object> results = jedis.pipelined(new PipelineBlock() {
+            public void execute() {
+                set("foo", "bar");
+                get("foo");
+            }
+        });
 
-	assertEquals(2, results.size());
-	assertArrayEquals("OK".getBytes(Protocol.CHARSET), (byte[])results.get(0));
-	assertArrayEquals("bar".getBytes(Protocol.CHARSET), (byte[])results.get(1));
+        assertEquals(2, results.size());
+        assertArrayEquals("OK".getBytes(Protocol.CHARSET), (byte[]) results
+                .get(0));
+        assertArrayEquals("bar".getBytes(Protocol.CHARSET), (byte[]) results
+                .get(1));
+
+        Pipeline p = jedis.pipelined();
+        p.set("foo", "bar");
+        p.get("foo");
+        results = p.execute();
+
+        assertEquals(2, results.size());
+        assertArrayEquals("OK".getBytes(Protocol.CHARSET), (byte[]) results
+                .get(0));
+        assertArrayEquals("bar".getBytes(Protocol.CHARSET), (byte[]) results
+                .get(1));
+
     }
 }

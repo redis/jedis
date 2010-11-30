@@ -91,12 +91,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Time complexity: O(1)
      * 
      * @param key
-     * @return Integer reply, "0" if the key exists, otherwise "1"
+     * @return Integer reply, "1" if the key exists, otherwise "0"
      */
-    public Long exists(final byte[] key) {
+    public Boolean exists(final byte[] key) {
         checkIsInMulti();
         client.exists(key);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**
@@ -784,10 +784,10 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Return 1 if the hash stored at key contains the specified field.
      *         Return 0 if the key is not found or the field is not present.
      */
-    public Long hexists(final byte[] key, final byte[] field) {
+    public Boolean hexists(final byte[] key, final byte[] field) {
         checkIsInMulti();
         client.hexists(key, field);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**
@@ -1280,10 +1280,10 @@ public class BinaryJedis implements BinaryJedisCommands {
      *         set 0 if the element is not a member of the set OR if the key
      *         does not exist
      */
-    public Long sismember(final byte[] key, final byte[] member) {
+    public Boolean sismember(final byte[] key, final byte[] member) {
         checkIsInMulti();
         client.sismember(key, member);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**

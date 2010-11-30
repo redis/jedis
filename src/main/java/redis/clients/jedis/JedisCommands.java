@@ -13,7 +13,7 @@ public interface JedisCommands {
 
     String get(String key);
 
-    Long exists(String key);
+    Boolean exists(String key);
 
     String type(String key);
 
@@ -53,7 +53,7 @@ public interface JedisCommands {
 
     Long hincrBy(String key, String field, int value);
 
-    Long hexists(String key, String field);
+    Boolean hexists(String key, String field);
 
     Long hdel(String key, String field);
 
@@ -95,7 +95,7 @@ public interface JedisCommands {
 
     Long scard(String key);
 
-    Long sismember(String key, String member);
+    Boolean sismember(String key, String member);
 
     String srandmember(String key);
 
@@ -129,18 +129,18 @@ public interface JedisCommands {
 
     Set<String> zrangeByScore(String key, double min, double max);
 
-    Set<String> zrangeByScore(String key, double min, double max,
-	    int offset, int count);
+    Set<String> zrangeByScore(String key, double min, double max, int offset,
+            int count);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
 
-    Set<Tuple> zrangeByScoreWithScores(String key, double min,
-            double max, int offset, int count);
+    Set<Tuple> zrangeByScoreWithScores(String key, double min, double max,
+            int offset, int count);
 
     Long zremrangeByRank(String key, int start, int end);
 
     Long zremrangeByScore(String key, double start, double end);
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
-                String value);
+            String value);
 }

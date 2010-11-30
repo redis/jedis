@@ -15,7 +15,7 @@ public interface BinaryJedisCommands {
 
     byte[] get(byte[] key);
 
-    Long exists(byte[] key);
+    Boolean exists(byte[] key);
 
     String type(byte[] key);
 
@@ -55,7 +55,7 @@ public interface BinaryJedisCommands {
 
     Long hincrBy(byte[] key, byte[] field, int value);
 
-    Long hexists(byte[] key, byte[] field);
+    Boolean hexists(byte[] key, byte[] field);
 
     Long hdel(byte[] key, byte[] field);
 
@@ -97,7 +97,7 @@ public interface BinaryJedisCommands {
 
     Long scard(byte[] key);
 
-    Long sismember(byte[] key, byte[] member);
+    Boolean sismember(byte[] key, byte[] member);
 
     byte[] srandmember(byte[] key);
 
@@ -131,29 +131,17 @@ public interface BinaryJedisCommands {
 
     Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
-    Set<byte[]> zrangeByScore(
-    		byte[] key,
-    		double min,
-    		double max,
-    		int offset,
-    		int count);
+    Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset,
+            int count);
 
     Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
-    Set<Tuple> zrangeByScoreWithScores(
-    		byte[] key,
-    		double min,
-            double max,
-            int offset,
-            int count);
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max,
+            int offset, int count);
 
     Long zremrangeByRank(byte[] key, int start, int end);
 
     Long zremrangeByScore(byte[] key, double start, double end);
 
-    Long linsert(
-    		byte[] key,
-    		LIST_POSITION where,
-    		byte[] pivot,
-    		byte[] value);
+    Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value);
 }

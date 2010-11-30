@@ -29,7 +29,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     }
 
     @Override
-	public void disconnect() throws IOException {
+    public void disconnect() throws IOException {
         for (Jedis jedis : getAllShards()) {
             jedis.quit();
             jedis.disconnect();
@@ -46,7 +46,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.get(key);
     }
 
-    public Long exists(String key) {
+    public Boolean exists(String key) {
         Jedis j = getShard(key);
         return j.exists(key);
     }
@@ -146,7 +146,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.hincrBy(key, field, value);
     }
 
-    public Long hexists(String key, String field) {
+    public Boolean hexists(String key, String field) {
         Jedis j = getShard(key);
         return j.hexists(key, field);
     }
@@ -251,7 +251,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.scard(key);
     }
 
-    public Long sismember(String key, String member) {
+    public Boolean sismember(String key, String member) {
         Jedis j = getShard(key);
         return j.sismember(key, member);
     }

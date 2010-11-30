@@ -199,21 +199,17 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("foo", "a");
         jedis.sadd("foo", "b");
 
-        long status = jedis.sismember("foo", "a");
-        assertEquals(1, status);
+        assertTrue(jedis.sismember("foo", "a"));
 
-        status = jedis.sismember("foo", "c");
-        assertEquals(0, status);
+        assertFalse(jedis.sismember("foo", "c"));
 
         // Binary
         jedis.sadd(bfoo, ba);
         jedis.sadd(bfoo, bb);
 
-        long bstatus = jedis.sismember(bfoo, ba);
-        assertEquals(1, bstatus);
+        assertTrue(jedis.sismember(bfoo, ba));
 
-        bstatus = jedis.sismember(bfoo, bc);
-        assertEquals(0, bstatus);
+        assertFalse(jedis.sismember(bfoo, bc));
 
     }
 

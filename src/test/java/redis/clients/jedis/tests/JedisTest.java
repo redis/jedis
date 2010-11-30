@@ -52,6 +52,5 @@ public class JedisTest extends JedisCommandTestBase {
         // every 10 seconds or so
         Thread.sleep(20000);
         jedis.hmget("foobar", "foo");
-        jedis.configSet("timeout", "300");
     }
 }

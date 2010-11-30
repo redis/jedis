@@ -50,7 +50,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.get(key);
     }
 
-    public Long exists(byte[] key) {
+    public Boolean exists(byte[] key) {
         Jedis j = getShard(key);
         return j.exists(key);
     }
@@ -150,7 +150,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.hincrBy(key, field, value);
     }
 
-    public Long hexists(byte[] key, byte[] field) {
+    public Boolean hexists(byte[] key, byte[] field) {
         Jedis j = getShard(key);
         return j.hexists(key, field);
     }
@@ -255,7 +255,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.scard(key);
     }
 
-    public Long sismember(byte[] key, byte[] member) {
+    public Boolean sismember(byte[] key, byte[] member) {
         Jedis j = getShard(key);
         return j.sismember(key, member);
     }

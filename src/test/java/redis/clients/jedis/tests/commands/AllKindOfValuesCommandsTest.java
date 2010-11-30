@@ -37,23 +37,23 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         status = jedis.set(bfoo, bbar);
         assertEquals("OK", status);
 
-        long reply = jedis.exists("foo");
-        assertEquals(1, reply);
+        boolean reply = jedis.exists("foo");
+        assertTrue(reply);
 
         reply = jedis.exists(bfoo);
-        assertEquals(1, reply);
+        assertTrue(reply);
 
-        reply = jedis.del("foo");
-        assertEquals(1, reply);
+        long lreply = jedis.del("foo");
+        assertEquals(1, lreply);
 
-        reply = jedis.del(bfoo);
-        assertEquals(1, reply);
+        lreply = jedis.del(bfoo);
+        assertEquals(1, lreply);
 
         reply = jedis.exists("foo");
-        assertEquals(0, reply);
+        assertFalse(reply);
 
         reply = jedis.exists(bfoo);
-        assertEquals(0, reply);
+        assertFalse(reply);
     }
 
     @Test
@@ -65,12 +65,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         long reply = jedis.del("foo1", "foo2", "foo3");
         assertEquals(3, reply);
 
-        reply = jedis.exists("foo1");
-        assertEquals(0, reply);
-        reply = jedis.exists("foo2");
-        assertEquals(0, reply);
-        reply = jedis.exists("foo3");
-        assertEquals(0, reply);
+        Boolean breply = jedis.exists("foo1");
+        assertFalse(breply);
+        breply = jedis.exists("foo2");
+        assertFalse(breply);
+        breply = jedis.exists("foo3");
+        assertFalse(breply);
 
         jedis.set("foo1", "bar1");
 
@@ -88,12 +88,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         reply = jedis.del(bfoo1, bfoo2, bfoo3);
         assertEquals(3, reply);
 
-        reply = jedis.exists(bfoo1);
-        assertEquals(0, reply);
-        reply = jedis.exists(bfoo2);
-        assertEquals(0, reply);
-        reply = jedis.exists(bfoo3);
-        assertEquals(0, reply);
+        breply = jedis.exists(bfoo1);
+        assertFalse(breply);
+        breply = jedis.exists(bfoo2);
+        assertFalse(breply);
+        breply = jedis.exists(bfoo3);
+        assertFalse(breply);
 
         jedis.set(bfoo1, bbar1);
 

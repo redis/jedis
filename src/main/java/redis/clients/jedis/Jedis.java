@@ -78,19 +78,19 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
-     * Test if the specified key exists. The command returns "0" if the key
+     * Test if the specified key exists. The command returns "1" if the key
      * exists, otherwise "1" is returned. Note that even keys set with an empty
-     * string as value will return "1".
+     * string as value will return "0".
      * 
      * Time complexity: O(1)
      * 
      * @param key
      * @return Integer reply, "0" if the key exists, otherwise "1"
      */
-    public Long exists(final String key) {
+    public Boolean exists(final String key) {
         runChecks();
         client.exists(key);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**
@@ -782,10 +782,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Return 1 if the hash stored at key contains the specified field.
      *         Return 0 if the key is not found or the field is not present.
      */
-    public Long hexists(final String key, final String field) {
+    public Boolean hexists(final String key, final String field) {
         runChecks();
         client.hexists(key, field);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**
@@ -1278,10 +1278,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         set 0 if the element is not a member of the set OR if the key
      *         does not exist
      */
-    public Long sismember(final String key, final String member) {
+    public Boolean sismember(final String key, final String member) {
         runChecks();
         client.sismember(key, member);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**

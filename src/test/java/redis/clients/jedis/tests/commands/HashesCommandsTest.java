@@ -150,9 +150,9 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         hash.put("car", "bar");
         jedis.hmset("foo", hash);
 
-        assertEquals(0, jedis.hexists("bar", "foo").intValue());
-        assertEquals(0, jedis.hexists("foo", "foo").intValue());
-        assertEquals(1, jedis.hexists("foo", "bar").intValue());
+        assertFalse(jedis.hexists("bar", "foo"));
+        assertFalse(jedis.hexists("foo", "foo"));
+        assertTrue(jedis.hexists("foo", "bar"));
 
         // Binary
         Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
@@ -160,9 +160,9 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         bhash.put(bcar, bbar);
         jedis.hmset(bfoo, bhash);
 
-        assertEquals(0, jedis.hexists(bbar, bfoo).intValue());
-        assertEquals(0, jedis.hexists(bfoo, bfoo).intValue());
-        assertEquals(1, jedis.hexists(bfoo, bbar).intValue());
+        assertFalse(jedis.hexists(bbar, bfoo));
+        assertFalse(jedis.hexists(bfoo, bfoo));
+        assertTrue(jedis.hexists(bfoo, bbar));
 
     }
 

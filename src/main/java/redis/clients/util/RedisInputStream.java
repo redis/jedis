@@ -16,9 +16,11 @@
 
 package redis.clients.util;
 
-import redis.clients.jedis.JedisException;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-import java.io.*;
+import redis.clients.jedis.JedisException;
 
 public class RedisInputStream extends FilterInputStream {
 
@@ -38,9 +40,9 @@ public class RedisInputStream extends FilterInputStream {
         this(in, 8192);
     }
 
-    public byte readByte () throws IOException {
-        if(count == limit) {
-            fill ();
+    public byte readByte() throws IOException {
+        if (count == limit) {
+            fill();
         }
 
         return buf[count++];
@@ -53,19 +55,19 @@ public class RedisInputStream extends FilterInputStream {
 
         try {
             while (true) {
-                if(count == limit) {
-                    fill ();
+                if (count == limit) {
+                    fill();
                 }
-                if(limit == -1)
+                if (limit == -1)
                     break;
 
                 b = buf[count++];
                 if (b == '\r') {
-                    if(count == limit) {
-                        fill ();
+                    if (count == limit) {
+                        fill();
                     }
 
-                    if(limit == -1) {
+                    if (limit == -1) {
                         sb.append((char) b);
                         break;
                     }
@@ -83,14 +85,19 @@ public class RedisInputStream extends FilterInputStream {
         } catch (IOException e) {
             throw new JedisException(e);
         }
-        return sb.toString();
+        String reply = sb.toString();
+        if (reply.isEmpty()) {
+            throw new JedisException(
+                    "It seems like server has closed the connection.");
+        }
+        return reply;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        if(count == limit) {
-            fill ();
-            if(limit == -1)
+        if (count == limit) {
+            fill();
+            if (limit == -1)
                 return -1;
         }
         final int length = Math.min(limit - count, len);
@@ -99,7 +106,7 @@ public class RedisInputStream extends FilterInputStream {
         return length;
     }
 
-    private void fill () throws IOException {
+    private void fill() throws IOException {
         limit = in.read(buf);
         count = 0;
     }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
@@ -40,5 +41,17 @@ public class JedisTest extends JedisCommandTestBase {
         shardInfo.setPassword("foobared");
         Jedis jedis = new Jedis(shardInfo);
         jedis.get("foo");
+    }
+
+    @Test(expected = JedisException.class)
+    public void timeoutConnection() throws Exception {
+        jedis = new Jedis("localhost", 6379, 15000);
+        jedis.auth("foobared");
+        jedis.configSet("timeout", "1");
+        // we need to sleep a long time since redis check for idle connections
+        // every 10 seconds or so
+        Thread.sleep(20000);
+        jedis.hmget("foobar", "foo");
+        jedis.configSet("timeout", "300");
     }
 }

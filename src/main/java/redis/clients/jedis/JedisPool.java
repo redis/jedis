@@ -47,7 +47,6 @@ public class JedisPool extends Pool<Jedis> {
             this.password = password;
         }
 
-        @Override
         public Object makeObject() throws Exception {
             final Jedis jedis;
             if (timeout > 0) {
@@ -63,7 +62,6 @@ public class JedisPool extends Pool<Jedis> {
             return jedis;
         }
 
-        @Override
         public void destroyObject(final Object obj) throws Exception {
             if (obj instanceof Jedis) {
                 final Jedis jedis = (Jedis) obj;
@@ -78,7 +76,6 @@ public class JedisPool extends Pool<Jedis> {
             }
         }
 
-        @Override
         public boolean validateObject(final Object obj) {
             if (obj instanceof Jedis) {
                 final Jedis jedis = (Jedis) obj;

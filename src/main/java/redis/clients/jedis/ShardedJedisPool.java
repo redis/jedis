@@ -45,7 +45,6 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             this.keyTagPattern = keyTagPattern;
         }
 
-        @Override
         public Object makeObject() throws Exception {
             ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
             boolean done = false;
@@ -67,7 +66,6 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             return jedis;
         }
 
-        @Override
         public void destroyObject(final Object obj) throws Exception {
             if (obj != null) {
                 try {
@@ -78,7 +76,6 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             }
         }
 
-        @Override
         public boolean validateObject(final Object obj) {
             try {
                 ShardedJedis jedis = (ShardedJedis) obj;

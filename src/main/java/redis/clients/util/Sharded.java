@@ -3,11 +3,10 @@ package redis.clients.util;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,23 +53,12 @@ public class Sharded<R, S extends ShardInfo<R>> {
     private void initialize(List<S> shards) {
         nodes = new TreeMap<Long, S>();
 
-        int totalWeight = 0;
-
-        for (ShardInfo<?> shard : shards) {
-            totalWeight += shard.getWeight();
-        }
-
-        long oneForthOfStep = (1L << 62) / totalWeight; // 62 vs 64 to normalize
-        // math in Long
-
-        long floor = Long.MIN_VALUE;
         for (int i = 0; i != shards.size(); ++i) {
             final S shardInfo = shards.get(i);
+            for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
+                nodes.put(this.algo.hash(shardInfo.toString() + n), shardInfo);
+            }
             resources.put(shardInfo, shardInfo.createResource());
-            nodes.put(floor, shardInfo);
-            floor += 4 * oneForthOfStep * shardInfo.getWeight(); // *4 to
-            // compensate
-            // 62 vs 64
         }
     }
 
@@ -83,13 +71,11 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     private S getShardInfo(byte[] key) {
-        Iterator<Entry<Long, S>> iterator = nodes.headMap(algo.hash(key))
-                .entrySet().iterator();
-        Entry<Long, S> next = iterator.next();
-        if (iterator.hasNext()) {
-            next = iterator.next();
+        SortedMap<Long, S> tail = nodes.tailMap(algo.hash(key));
+        if (tail.size() == 0) {
+            return nodes.get(nodes.firstKey());
         }
-        return next.getValue();
+        return tail.get(tail.firstKey());
     }
 
     public S getShardInfo(String key) {

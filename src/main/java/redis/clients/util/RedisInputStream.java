@@ -86,7 +86,7 @@ public class RedisInputStream extends FilterInputStream {
             throw new JedisException(e);
         }
         String reply = sb.toString();
-        if (reply.isEmpty()) {
+        if (reply.length() == 0) {
             throw new JedisException(
                     "It seems like server has closed the connection.");
         }

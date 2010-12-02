@@ -67,7 +67,10 @@ public class JedisPool extends Pool<Jedis> {
                 final Jedis jedis = (Jedis) obj;
                 if (jedis.isConnected()) {
                     try {
-                        jedis.quit();
+                        try {
+                            jedis.quit();
+                        } catch (Exception e) {
+                        }
                         jedis.disconnect();
                     } catch (Exception e) {
 

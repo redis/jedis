@@ -1,13 +1,12 @@
 package redis.clients.jedis.tests;
 
-import java.util.NoSuchElementException;
-
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
@@ -66,8 +65,8 @@ public class JedisPoolTest extends Assert {
         pool.destroy();
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void checkPoolOverflow() throws Exception {
+    @Test(expected = JedisException.class)
+    public void checkPoolOverflow() {
         Config config = new Config();
         config.maxActive = 1;
         config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;

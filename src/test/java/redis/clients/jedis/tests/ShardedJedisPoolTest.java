@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
@@ -13,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
@@ -44,7 +44,7 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkConnections() throws Exception {
+    public void checkConnections() {
         ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
         ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "bar");
@@ -54,7 +54,7 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkConnectionWithDefaultPort() throws Exception {
+    public void checkConnectionWithDefaultPort() {
         ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
         ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "bar");
@@ -64,7 +64,7 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkJedisIsReusedWhenReturned() throws Exception {
+    public void checkJedisIsReusedWhenReturned() {
         ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
         ShardedJedis jedis = pool.getResource();
         jedis.set("foo", "0");
@@ -89,8 +89,8 @@ public class ShardedJedisPoolTest extends Assert {
         pool.destroy();
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void checkPoolOverflow() throws Exception {
+    @Test(expected = JedisException.class)
+    public void checkPoolOverflow() {
         Config config = new Config();
         config.maxActive = 1;
         config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;
@@ -105,7 +105,7 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void shouldNotShareInstances() throws Exception {
+    public void shouldNotShareInstances() {
         Config config = new Config();
         config.maxActive = 2;
         config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;

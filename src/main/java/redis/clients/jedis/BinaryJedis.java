@@ -520,7 +520,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Long decrBy(final byte[] key, final int integer) {
+    public Long decrBy(final byte[] key, final long integer) {
         checkIsInMulti();
         client.decrBy(key, integer);
         return client.getIntegerReply();
@@ -576,7 +576,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Long incrBy(final byte[] key, final int integer) {
+    public Long incrBy(final byte[] key, final long integer) {
         checkIsInMulti();
         client.incrBy(key, integer);
         return client.getIntegerReply();
@@ -768,7 +768,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply The new value at field after the increment
      *         operation.
      */
-    public Long hincrBy(final byte[] key, final byte[] field, final int value) {
+    public Long hincrBy(final byte[] key, final byte[] field, final long value) {
         checkIsInMulti();
         client.hincrBy(key, field, value);
         return client.getIntegerReply();

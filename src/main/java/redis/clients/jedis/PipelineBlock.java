@@ -27,7 +27,7 @@ public abstract class PipelineBlock implements Commands {
         client.decr(key);
     }
 
-    public void decrBy(String key, int integer) {
+    public void decrBy(String key, long integer) {
         client.decrBy(key, integer);
     }
 
@@ -75,7 +75,7 @@ public abstract class PipelineBlock implements Commands {
         client.hgetAll(key);
     }
 
-    public void hincrBy(String key, String field, int value) {
+    public void hincrBy(String key, String field, long value) {
         client.hincrBy(key, field, value);
     }
 
@@ -111,7 +111,7 @@ public abstract class PipelineBlock implements Commands {
         client.incr(key);
     }
 
-    public void incrBy(String key, int integer) {
+    public void incrBy(String key, long integer) {
         client.incrBy(key, integer);
     }
 

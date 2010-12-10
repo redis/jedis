@@ -518,7 +518,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Long decrBy(final String key, final int integer) {
+    public Long decrBy(final String key, final long integer) {
         runChecks();
         client.decrBy(key, integer);
         return client.getIntegerReply();
@@ -574,7 +574,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
-    public Long incrBy(final String key, final int integer) {
+    public Long incrBy(final String key, final long integer) {
         runChecks();
         client.incrBy(key, integer);
         return client.getIntegerReply();
@@ -766,7 +766,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply The new value at field after the increment
      *         operation.
      */
-    public Long hincrBy(final String key, final String field, final int value) {
+    public Long hincrBy(final String key, final String field, final long value) {
         runChecks();
         client.hincrBy(key, field, value);
         return client.getIntegerReply();

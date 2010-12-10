@@ -103,7 +103,7 @@ public class Client extends BinaryClient implements Commands {
         msetnx(bkeysvalues);
     }
 
-    public void decrBy(final String key, final int integer) {
+    public void decrBy(final String key, final long integer) {
         decrBy(SafeEncoder.encode(key), integer);
     }
 
@@ -111,7 +111,7 @@ public class Client extends BinaryClient implements Commands {
         decr(SafeEncoder.encode(key));
     }
 
-    public void incrBy(final String key, final int integer) {
+    public void incrBy(final String key, final long integer) {
         incrBy(SafeEncoder.encode(key), integer);
     }
 
@@ -159,7 +159,7 @@ public class Client extends BinaryClient implements Commands {
         hmget(SafeEncoder.encode(key), bfields);
     }
 
-    public void hincrBy(final String key, final String field, final int value) {
+    public void hincrBy(final String key, final String field, final long value) {
         hincrBy(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
     }
 

@@ -86,7 +86,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.setex(key, seconds, value);
     }
 
-    public Long decrBy(String key, int integer) {
+    public Long decrBy(String key, long integer) {
         Jedis j = getShard(key);
         return j.decrBy(key, integer);
     }
@@ -96,7 +96,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.decr(key);
     }
 
-    public Long incrBy(String key, int integer) {
+    public Long incrBy(String key, long integer) {
         Jedis j = getShard(key);
         return j.incrBy(key, integer);
     }
@@ -141,7 +141,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.hmget(key, fields);
     }
 
-    public Long hincrBy(String key, String field, int value) {
+    public Long hincrBy(String key, String field, long value) {
         Jedis j = getShard(key);
         return j.hincrBy(key, field, value);
     }

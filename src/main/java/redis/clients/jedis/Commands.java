@@ -42,11 +42,11 @@ public interface Commands {
 
     public void msetnx(final String... keysvalues);
 
-    public void decrBy(final String key, final int integer);
+    public void decrBy(final String key, final long integer);
 
     public void decr(final String key);
 
-    public void incrBy(final String key, final int integer);
+    public void incrBy(final String key, final long integer);
 
     public void incr(final String key);
 
@@ -64,7 +64,7 @@ public interface Commands {
 
     public void hmget(final String key, final String... fields);
 
-    public void hincrBy(final String key, final String field, final int value);
+    public void hincrBy(final String key, final String field, final long value);
 
     public void hexists(final String key, final String field);
 

@@ -29,11 +29,11 @@ public interface JedisCommands {
 
     String setex(String key, int seconds, String value);
 
-    Long decrBy(String key, int integer);
+    Long decrBy(String key, long integer);
 
     Long decr(String key);
 
-    Long incrBy(String key, int integer);
+    Long incrBy(String key, long integer);
 
     Long incr(String key);
 
@@ -51,7 +51,7 @@ public interface JedisCommands {
 
     List<String> hmget(String key, String... fields);
 
-    Long hincrBy(String key, String field, int value);
+    Long hincrBy(String key, String field, long value);
 
     Boolean hexists(String key, String field);
 

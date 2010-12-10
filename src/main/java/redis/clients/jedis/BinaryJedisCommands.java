@@ -31,11 +31,11 @@ public interface BinaryJedisCommands {
 
     String setex(byte[] key, int seconds, byte[] value);
 
-    Long decrBy(byte[] key, int integer);
+    Long decrBy(byte[] key, long integer);
 
     Long decr(byte[] key);
 
-    Long incrBy(byte[] key, int integer);
+    Long incrBy(byte[] key, long integer);
 
     Long incr(byte[] key);
 
@@ -53,7 +53,7 @@ public interface BinaryJedisCommands {
 
     List<byte[]> hmget(byte[] key, byte[]... fields);
 
-    Long hincrBy(byte[] key, byte[] field, int value);
+    Long hincrBy(byte[] key, byte[] field, long value);
 
     Boolean hexists(byte[] key, byte[] field);
 

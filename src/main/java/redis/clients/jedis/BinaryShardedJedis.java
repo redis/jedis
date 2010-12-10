@@ -90,7 +90,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.setex(key, seconds, value);
     }
 
-    public Long decrBy(byte[] key, int integer) {
+    public Long decrBy(byte[] key, long integer) {
         Jedis j = getShard(key);
         return j.decrBy(key, integer);
     }
@@ -100,7 +100,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.decr(key);
     }
 
-    public Long incrBy(byte[] key, int integer) {
+    public Long incrBy(byte[] key, long integer) {
         Jedis j = getShard(key);
         return j.incrBy(key, integer);
     }
@@ -145,7 +145,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.hmget(key, fields);
     }
 
-    public Long hincrBy(byte[] key, byte[] field, int value) {
+    public Long hincrBy(byte[] key, byte[] field, long value) {
         Jedis j = getShard(key);
         return j.hincrBy(key, field, value);
     }

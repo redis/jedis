@@ -140,7 +140,7 @@ public class BinaryClient extends Connection {
         sendCommand(MSETNX, keysvalues);
     }
 
-    public void decrBy(final byte[] key, final int integer) {
+    public void decrBy(final byte[] key, final long integer) {
         sendCommand(DECRBY, key, toByteArray(integer));
     }
 
@@ -148,7 +148,7 @@ public class BinaryClient extends Connection {
         sendCommand(DECR, key);
     }
 
-    public void incrBy(final byte[] key, final int integer) {
+    public void incrBy(final byte[] key, final long integer) {
         sendCommand(INCRBY, key, toByteArray(integer));
     }
 
@@ -194,7 +194,7 @@ public class BinaryClient extends Connection {
         sendCommand(HMGET, params);
     }
 
-    public void hincrBy(final byte[] key, final byte[] field, final int value) {
+    public void hincrBy(final byte[] key, final byte[] field, final long value) {
         sendCommand(HINCRBY, key, field, toByteArray(value));
     }
 

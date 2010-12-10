@@ -14,6 +14,11 @@ public class JedisPool extends Pool<Jedis> {
                 null);
     }
 
+    public JedisPool(String host, int port) {
+        super(new Config(), new JedisFactory(host, port,
+                Protocol.DEFAULT_TIMEOUT, null));
+    }
+
     public JedisPool(final Config poolConfig, final String host, int port,
             int timeout, final String password) {
         super(poolConfig, new JedisFactory(host, port, timeout, password));

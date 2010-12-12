@@ -21,6 +21,18 @@ import redis.clients.util.SafeEncoder;
  */
 public class SortingParams {
     private List<byte[]> params = new ArrayList<byte[]>();
+    
+    /**
+     * Convenient {@link #SortingParams()} creator, e.g. for static import.
+     * 
+     * With this creator you can write a {@link Jedis#sort(String, SortingParams)} like this:
+     * {@code jedis.sort(key, sp().limit(0, 20).asc())}
+     * 
+     * @return
+     */
+    static public SortingParams sp(){
+	return new SortingParams();
+    }
 
     /**
      * Sort by weight in keys.

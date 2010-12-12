@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
+import static java.util.Arrays.asList;
+import static redis.clients.jedis.SortingParams.sp;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +54,17 @@ public class SortingCommandsTest extends JedisCommandTestBase {
         bexpected.add(b3);
 
         assertEquals(bexpected, bresult);
+    }
+    
+    @Test
+    public void staticInit(){
+	
+	jedis.lpush("foo", "c");
+        jedis.lpush("foo", "b");
+        jedis.lpush("foo", "a");
+        
+        assertEquals(jedis.sort("foo", sp().alpha()), asList("a", "b", "c")); 
+	
     }
 
     @Test

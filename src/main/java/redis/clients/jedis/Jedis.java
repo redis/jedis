@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -843,10 +844,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    public List<String> hvals(final String key) {
+    public Collection<String> hvals(final String key) {
         runChecks();
         client.hvals(key);
-        final List<String> lresult = client.getMultiBulkReply();
+        final Collection<String> lresult = client.getMultiBulkReply();
         return lresult;
     }
 

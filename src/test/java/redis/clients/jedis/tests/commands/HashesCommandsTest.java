@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -245,7 +246,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         hash.put("car", "bar");
         jedis.hmset("foo", hash);
 
-        List<String> vals = jedis.hvals("foo");
+        Collection<String> vals = jedis.hvals("foo");
         assertEquals(2, vals.size());
         assertTrue(vals.contains("bar"));
         assertTrue(vals.contains("car"));
@@ -256,11 +257,11 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         bhash.put(bcar, bbar);
         jedis.hmset(bfoo, bhash);
 
-        List<byte[]> bvals = jedis.hvals(bfoo);
+        Collection<byte[]> bvals = jedis.hvals(bfoo);
 
         assertEquals(2, bvals.size());
-        assertTrue(arrayContains(bvals, bbar));
-        assertTrue(arrayContains(bvals, bcar));
+        assertTrue(collectionContains(bvals, bbar));
+        assertTrue(collectionContains(bvals, bcar));
     }
 
     @Test

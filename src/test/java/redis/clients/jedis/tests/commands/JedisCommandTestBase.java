@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
@@ -62,18 +63,14 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
     }
 
     protected boolean arrayContains(List<byte[]> array, byte[] expected) {
-        for (byte[] a : array) {
-            try {
-                assertArrayEquals(a, expected);
-                return true;
-            } catch (AssertionError e) {
-
-            }
-        }
-        return false;
+        return collectionContains(array, expected);
     }
 
     protected boolean setContains(Set<byte[]> set, byte[] expected) {
+        return collectionContains(set, expected);
+    }
+
+    protected boolean collectionContains(Collection<byte[]> set, byte[] expected) {
         for (byte[] a : set) {
             try {
                 assertArrayEquals(a, expected);

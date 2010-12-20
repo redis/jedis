@@ -406,4 +406,8 @@ public class Pipeline implements Commands {
     public List<Object> execute() {
         return client.getAll();
     }
+
+    public void bgrewriteaof() {
+        client.bgrewriteaof();
+    }
 }

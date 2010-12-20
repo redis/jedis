@@ -214,4 +214,5 @@ public interface Commands {
     public void linsert(final String key, final LIST_POSITION where,
             final String pivot, final String value);
 
+    public void bgrewriteaof();
 }

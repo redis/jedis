@@ -2876,4 +2876,9 @@ public class BinaryJedis implements BinaryJedisCommands {
     public Client getClient() {
         return client;
     }
+
+    public String bgrewriteof() {
+        client.bgrewriteaof();
+        return client.getStatusCodeReply();
+    }
 }

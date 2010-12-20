@@ -402,5 +402,9 @@ public abstract class PipelineBlock implements Commands {
         client.zunionstore(dstkey, params, sets);
     }
 
+    public void bgrewriteaof() {
+        client.bgrewriteaof();
+    }
+
     public abstract void execute();
 }

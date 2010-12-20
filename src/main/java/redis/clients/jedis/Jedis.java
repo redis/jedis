@@ -2581,4 +2581,9 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.linsert(key, where, pivot, value);
         return client.getIntegerReply();
     }
+
+    public String bgrewriteof() {
+        client.bgrewriteaof();
+        return client.getStatusCodeReply();
+    }
 }

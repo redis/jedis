@@ -410,5 +410,21 @@ public abstract class PipelineBlock implements Commands {
         client.bgsave();
     }
 
+    public void configGet(String pattern) {
+        client.configGet(pattern);
+    }
+
+    public void configSet(String parameter, String value) {
+        client.configSet(parameter, value);
+    }
+
+    public void brpoplpush(String source, String destination, int timeout) {
+        client.brpoplpush(source, destination, timeout);
+    }
+
+    public void configResetStat() {
+        client.configResetStat();
+    }
+
     public abstract void execute();
 }

@@ -2781,6 +2781,16 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
+     * Reset the stats returned by INFO
+     * 
+     * @return
+     */
+    public String configResetStat() {
+        client.configResetStat();
+        return client.getStatusCodeReply();
+    }
+
+    /**
      * Alter the configuration of a running Redis server. Not all the
      * configuration parameters are supported.
      * <p>

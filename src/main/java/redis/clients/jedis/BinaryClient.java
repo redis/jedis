@@ -632,4 +632,8 @@ public class BinaryClient extends Connection {
             final int timeout) {
         sendCommand(BRPOPLPUSH, source, destination, toByteArray(timeout));
     }
+
+    public void configResetStat() {
+        sendCommand(CONFIG, Keyword.RESETSTAT.name());
+    }
 }

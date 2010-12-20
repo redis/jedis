@@ -410,4 +410,8 @@ public class Pipeline implements Commands {
     public void bgrewriteaof() {
         client.bgrewriteaof();
     }
+
+    public void bgsave() {
+        client.bgsave();
+    }
 }

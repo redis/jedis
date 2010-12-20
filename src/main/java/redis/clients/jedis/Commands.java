@@ -215,4 +215,6 @@ public interface Commands {
             final String pivot, final String value);
 
     public void bgrewriteaof();
+    
+    public void bgsave();
 }

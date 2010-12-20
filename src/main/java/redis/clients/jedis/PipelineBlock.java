@@ -406,5 +406,9 @@ public abstract class PipelineBlock implements Commands {
         client.bgrewriteaof();
     }
 
+    public void bgsave() {
+        client.bgsave();
+    }
+
     public abstract void execute();
 }

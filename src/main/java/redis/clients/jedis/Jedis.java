@@ -2581,4 +2581,18 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.linsert(key, where, pivot, value);
         return client.getIntegerReply();
     }
+
+    /**
+     * Pop a value from a list, push it to another list and return it; or block
+     * until one is available
+     * 
+     * @param source
+     * @param destination
+     * @param timeout
+     * @return the element
+     */
+    public String brpoplpush(String source, String destination, int timeout) {
+        client.brpoplpush(source, destination, timeout);
+        return client.getBulkReply();
+    }
 }

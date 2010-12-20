@@ -501,4 +501,9 @@ public class Client extends BinaryClient implements Commands {
         linsert(SafeEncoder.encode(key), where, SafeEncoder.encode(pivot),
                 SafeEncoder.encode(value));
     }
+
+    public void brpoplpush(String source, String destination, int timeout) {
+        brpoplpush(SafeEncoder.encode(source), SafeEncoder.encode(destination),
+                timeout);
+    }
 }

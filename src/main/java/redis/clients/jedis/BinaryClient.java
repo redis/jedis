@@ -627,4 +627,9 @@ public class BinaryClient extends Connection {
     public void debug(final DebugParams params) {
         sendCommand(DEBUG, params.getCommand());
     }
+
+    public void brpoplpush(final byte[] source, final byte[] destination,
+            final int timeout) {
+        sendCommand(BRPOPLPUSH, source, destination, toByteArray(timeout));
+    }
 }

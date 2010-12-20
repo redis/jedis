@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -576,6 +578,54 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
         bstatus = jedis.linsert(bfoo, Client.LIST_POSITION.BEFORE, bbar, bcar);
         assertEquals(-1, bstatus);
+
+    }
+
+    @Test
+    public void brpoplpush() {
+        (new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                    Jedis j = createJedis();
+                    j.lpush("foo", "a");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        })).start();
+
+        String element = jedis.brpoplpush("foo", "bar", 0);
+
+        assertEquals("a", element);
+        assertEquals(1, jedis.llen("bar").longValue());
+        assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
+
+        (new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                    Jedis j = createJedis();
+                    j.lpush("foo", "a");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        })).start();
+
+        element = jedis.brpoplpush("foo".getBytes(), "bar".getBytes(), 0);
+
+        assertEquals("a", element);
+        assertEquals(1, jedis.llen("bar").longValue());
+        assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
 
     }
 }

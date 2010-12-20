@@ -506,4 +506,12 @@ public class Client extends BinaryClient implements Commands {
         brpoplpush(SafeEncoder.encode(source), SafeEncoder.encode(destination),
                 timeout);
     }
+
+    public void setbit(final String key, final int offset, final String value) {
+        setbit(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
+    }
+
+    public void getbit(String key, int offset) {
+        getbit(SafeEncoder.encode(key), offset);
+    }
 }

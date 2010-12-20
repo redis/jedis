@@ -636,4 +636,12 @@ public class BinaryClient extends Connection {
     public void configResetStat() {
         sendCommand(CONFIG, Keyword.RESETSTAT.name());
     }
+
+    public void setbit(byte[] key, int offset, byte[] value) {
+        sendCommand(SETBIT, key, toByteArray(offset), value);
+    }
+
+    public void getbit(byte[] key, int offset) {
+        sendCommand(GETBIT, key, toByteArray(offset));
+    }
 }

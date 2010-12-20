@@ -2595,4 +2595,29 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.brpoplpush(source, destination, timeout);
         return client.getBulkReply();
     }
+
+    /**
+     * Sets or clears the bit at offset in the string value stored at key
+     * 
+     * @param key
+     * @param offset
+     * @param value
+     * @return
+     */
+    public Long setbit(String key, int offset, String value) {
+        client.setbit(key, offset, value);
+        return client.getIntegerReply();
+    }
+
+    /**
+     * Returns the bit value at offset in the string value stored at key
+     * 
+     * @param key
+     * @param offset
+     * @return
+     */
+    public Long getbit(String key, int offset) {
+        client.getbit(key, offset);
+        return client.getIntegerReply();
+    }
 }

@@ -168,8 +168,9 @@ public interface Commands {
     public void sort(final String key, final String dstkey);
 
     public void brpop(final String[] args);
-    
-    public void brpoplpush(final String source, final String destination, final int timeout);
+
+    public void brpoplpush(final String source, final String destination,
+            final int timeout);
 
     public void zcount(final String key, final double min, final double max);
 
@@ -220,9 +221,13 @@ public interface Commands {
 
     public void bgsave();
 
+    public void lastsave();
+
+    public void save();
+
     public void configSet(final String parameter, final String value);
 
     public void configGet(final String pattern);
-    
+
     public void configResetStat();
 }

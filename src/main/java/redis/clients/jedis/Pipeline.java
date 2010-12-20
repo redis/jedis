@@ -430,4 +430,12 @@ public class Pipeline implements Commands {
     public void configResetStat() {
         client.configResetStat();
     }
+
+    public void save() {
+        client.save();
+    }
+
+    public void lastsave() {
+        client.lastsave();
+    }
 }

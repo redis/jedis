@@ -426,5 +426,13 @@ public abstract class PipelineBlock implements Commands {
         client.configResetStat();
     }
 
+    public void save() {
+        client.save();
+    }
+
+    public void lastsave() {
+        client.lastsave();
+    }
+
     public abstract void execute();
 }

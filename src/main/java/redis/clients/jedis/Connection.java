@@ -1,212 +1,281 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.DEFAULT_CHARSET;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 
 public class Connection {
-    private String host;
-    private int port = Protocol.DEFAULT_PORT;
+
+    private static final Logger log = LoggerFactory.getLogger(Connection.class);
+
     private Socket socket;
-    private Protocol protocol = new Protocol();
+    private final Protocol protocol = new Protocol();
     private RedisOutputStream outputStream;
     private RedisInputStream inputStream;
+    private boolean pipelineMode = false;
     private int pipelinedCommands = 0;
-    private int timeout = Protocol.DEFAULT_TIMEOUT;
 
-    public int getTimeout() {
-        return timeout;
+    JedisConfig config;
+
+    protected Connection() {
+	config = new JedisConfig();
     }
 
-    public void setTimeout(final int timeout) {
-        this.timeout = timeout;
+    protected void connect() throws UnknownHostException, IOException {
+	if (!isConnected()) {
+	    socket = new Socket(config.getHost(), config.getPort());
+	    socket.setSoTimeout(config.getTimeout());
+	    outputStream = new RedisOutputStream(socket.getOutputStream());
+	    inputStream = new RedisInputStream(socket.getInputStream());
+	}
     }
 
-    public void setTimeoutInfinite() {
-        try {
-            socket.setSoTimeout(0);
-        } catch (SocketException ex) {
-            throw new JedisException(ex);
-        }
+    protected void disconnect() {
+	if (isConnected()) {
+	    try {
+		inputStream.close();
+		outputStream.close();
+		if (!socket.isClosed()) {
+		    socket.close();
+		}
+	    } catch (IOException ex) {
+		throw new JedisException(ex);
+	    }
+	}
     }
 
-    public void rollbackTimeout() {
-        try {
-            socket.setSoTimeout(timeout);
-        } catch (SocketException ex) {
-            throw new JedisException(ex);
-        }
+    protected List<byte[]> getAll() {
+	List<byte[]> all = Lists.newArrayList();
+
+	while (pipelinedCommands > 0) {
+	    all.add((byte[]) protocol.read(inputStream));
+	    pipelinedCommands--;
+	}
+
+	if (log.isDebugEnabled()) {
+	    Collection<String> allAsString = Collections2.transform(all,
+		    new Function<byte[], String>() {
+			@Override
+			public String apply(byte[] input) {
+			    return (input != null) ? new String(input,
+				    DEFAULT_CHARSET) : "nil";
+			}
+		    });
+	    log.debug("-> {}", Joiner.on(" ").join(allAsString));
+	}
+
+	return all;
     }
 
-    public Connection(final String host) {
-        super();
-        this.host = host;
+    protected byte[] getBinaryBulkReply() {
+	byte[] reply = null;
+	if (!pipelineMode) {
+	    pipelinedCommands--;
+	    reply = (byte[]) protocol.read(inputStream);
+	}
+	return reply;
     }
 
-    protected Connection sendCommand(final Command cmd, final String... args) {
-        final byte[][] bargs = new byte[args.length][];
-        for (int i = 0; i < args.length; i++) {
-            bargs[i] = SafeEncoder.encode(args[i]);
-        }
-        return sendCommand(cmd, bargs);
+    @SuppressWarnings("unchecked")
+    protected List<byte[]> getBinaryMultiBulkReply() {
+	List<byte[]> reply = null;
+	if (!pipelineMode) {
+	    reply = Collections.emptyList();
+	    Object input = protocol.read(inputStream);
+	    pipelinedCommands--;
+	    if (input != null) {
+		reply = (List<byte[]>) input;
+	    }
+	}
+	return reply;
     }
 
-    protected Connection sendCommand(final Command cmd, final byte[]... args) {
-        try {
-            connect();
-        } catch (UnknownHostException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        } catch (IOException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        }
-        protocol.sendCommand(outputStream, cmd, args);
-        pipelinedCommands++;
-        return this;
+    protected String getBulkReply() {
+	String reply = null;
+	if (!pipelineMode) {
+	    final byte[] breply = getBinaryBulkReply();
+
+	    if (breply != null) {
+		reply = new String(breply, DEFAULT_CHARSET);
+	    }
+
+	    log.debug("redis -> {}", reply);
+	}
+	return reply;
     }
 
-    protected Connection sendCommand(final Command cmd) {
-        try {
-            connect();
-        } catch (UnknownHostException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        } catch (IOException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        }
-        protocol.sendCommand(outputStream, cmd, new byte[0][]);
-        pipelinedCommands++;
-        return this;
+    protected JedisConfig getConfig() {
+	return config;
     }
 
-    public Connection(final String host, final int port) {
-        super();
-        this.host = host;
-        this.port = port;
+    protected Long getIntegerReply() {
+	Long reply = null;
+	if (!pipelineMode) {
+	    reply = (Long) protocol.read(inputStream);
+
+	    pipelinedCommands--;
+	    log.debug("redis -> {}", reply);
+	}
+	return reply;
     }
 
-    public String getHost() {
-        return host;
+    protected List<String> getMultiBulkReply() {
+	ArrayList<String> result = null;
+	if (!pipelineMode) {
+	    result = Lists.newArrayList();
+
+	    for (byte[] ba : getBinaryMultiBulkReply()) {
+		result.add((ba != null) ? new String(ba,
+			Protocol.DEFAULT_CHARSET) : (String) null);
+	    }
+
+	    if (log.isDebugEnabled()) {
+		log.debug("redis -> {}",
+			Joiner.on(" ").useForNull("nil").join(result));
+	    }
+	}
+	return result;
     }
 
-    public void setHost(final String host) {
-        this.host = host;
+    protected List<? extends Object> getObjectMultiBulkReply() {
+	List<? extends Object> reply = null;
+	if (!pipelineMode) {
+	    reply = Collections.emptyList();
+
+	    Object input = protocol.read(inputStream);
+
+	    pipelinedCommands--;
+
+	    if (input != null) {
+		reply = (List<?>) input;
+	    }
+	}
+	return reply;
     }
 
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(final int port) {
-        this.port = port;
-    }
-
-    public Connection() {
-    }
-
-    public void connect() throws UnknownHostException, IOException {
-        if (!isConnected()) {
-            socket = new Socket(host, port);
-            socket.setSoTimeout(timeout);
-            outputStream = new RedisOutputStream(socket.getOutputStream());
-            inputStream = new RedisInputStream(socket.getInputStream());
-        }
-    }
-
-    public void disconnect() {
-        if (isConnected()) {
-            try {
-                inputStream.close();
-                outputStream.close();
-                if (!socket.isClosed()) {
-                    socket.close();
-                }
-            } catch (IOException ex) {
-                throw new JedisException(ex);
-            }
-        }
-    }
-
-    public boolean isConnected() {
-        return socket != null && socket.isBound() && !socket.isClosed()
-                && socket.isConnected() && !socket.isInputShutdown()
-                && !socket.isOutputShutdown();
+    protected Object getOne() {
+	Object reply = null;
+	if (!pipelineMode) {
+	    pipelinedCommands--;
+	    reply = protocol.read(inputStream);
+	}
+	return reply;
     }
 
     protected String getStatusCodeReply() {
-        pipelinedCommands--;
-        final byte[] resp = (byte[]) protocol.read(inputStream);
-        if (null == resp) {
-            return null;
-        } else {
-            return SafeEncoder.encode(resp);
-        }
+	String reply = null;
+	if (!pipelineMode) {
+
+	    final byte[] input = (byte[]) protocol.read(inputStream);
+
+	    pipelinedCommands--;
+
+	    if (input != null) {
+		reply = new String(input, DEFAULT_CHARSET);
+	    }
+
+	    log.debug("redis -> {}", reply);
+	}
+	return reply;
     }
 
-    public String getBulkReply() {
-        final byte[] result = getBinaryBulkReply();
-        if (null != result) {
-            return SafeEncoder.encode(result);
-        } else {
-            return null;
-        }
+    protected boolean isConnected() {
+	return socket != null && socket.isBound() && !socket.isClosed()
+		&& socket.isConnected() && !socket.isInputShutdown()
+		&& !socket.isOutputShutdown();
     }
 
-    public byte[] getBinaryBulkReply() {
-        pipelinedCommands--;
-        return (byte[]) protocol.read(inputStream);
+    protected boolean isPipelineMode() {
+	return pipelineMode;
     }
 
-    public Long getIntegerReply() {
-        pipelinedCommands--;
-        return (Long) protocol.read(inputStream);
+    protected void rollbackTimeout() {
+	try {
+	    socket.setSoTimeout(config.getTimeout());
+	} catch (SocketException ex) {
+	    throw new JedisException(ex);
+	}
     }
 
-    public List<String> getMultiBulkReply() {
-        final List<byte[]> bresult = getBinaryMultiBulkReply();
-        if (null == bresult) {
-            return null;
-        }
-        final ArrayList<String> result = new ArrayList<String>(bresult.size());
-        for (final byte[] barray : bresult) {
-            if (barray == null) {
-                result.add(null);
-            } else {
-                result.add(SafeEncoder.encode(barray));
-            }
-        }
-        return result;
+    private void safeConnect() {
+	try {
+	    connect();
+	} catch (UnknownHostException e) {
+	    log.error("Could not connect to redis-server {}", config.toString());
+	    throw new JedisException("Could not connect to redis-server", e);
+	} catch (IOException e) {
+	    log.error("Could not connect to redis-server {}", config.toString());
+	    throw new JedisException("Could not connect to redis-server", e);
+	}
     }
 
-    @SuppressWarnings("unchecked")
-    public List<byte[]> getBinaryMultiBulkReply() {
-        pipelinedCommands--;
-        return (List<byte[]>) protocol.read(inputStream);
+    protected Connection sendCommand(Command cmd) {
+	return sendCommand(cmd, new byte[0][0]);
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Object> getObjectMultiBulkReply() {
-        pipelinedCommands--;
-        return (List<Object>) protocol.read(inputStream);
+    // see: Effective Java 2: Item 42, performance
+    protected Connection sendCommand(final Command cmd, final byte[]... args) {
+
+	safeConnect();
+
+	protocol.sendCommand(outputStream, cmd, args);
+	pipelinedCommands++;
+
+	// test if log string is needed, construction is expensive
+	if (log.isDebugEnabled()) {
+	    StringBuilder sb = new StringBuilder();
+	    sb.append(cmd);
+	    for (byte[] arg : args) {
+		sb.append(" ");
+		sb.append((arg != null) ? new String(arg, DEFAULT_CHARSET)
+			: "nil");
+	    }
+	    log.debug("redis <- {}", sb.toString());
+	}
+	return this;
     }
 
-    public List<Object> getAll() {
-        List<Object> all = new ArrayList<Object>();
-        while (pipelinedCommands > 0) {
-            all.add(protocol.read(inputStream));
-            pipelinedCommands--;
-        }
-        return all;
+    // TODO: Effective Java 2: Item 42, performance
+    protected Connection sendCommand(final Command cmd, final String... args) {
+	final byte[][] bargs = new byte[args.length][];
+	for (int i = 0; i < args.length; i++) {
+	    bargs[i] = args[i].getBytes(DEFAULT_CHARSET);
+	}
+	return sendCommand(cmd, bargs);
     }
 
-    public Object getOne() {
-        pipelinedCommands--;
-        return protocol.read(inputStream);
+    protected void setConfig(JedisConfig config) {
+	// make defensive copy
+	this.config = config.copy();
+    }
+
+    protected void setPipelineMode(boolean pipelineMode) {
+	this.pipelineMode = pipelineMode;
+    }
+
+    protected void setTimeoutInfinite() {
+	try {
+	    socket.setSoTimeout(0);
+	} catch (SocketException ex) {
+	    log.error("Could not set timeout to infinite");
+	    throw new JedisException(ex);
+	}
     }
 }

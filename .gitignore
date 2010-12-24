@@ -5,3 +5,4 @@
 .gradle/
 target/
 build/
+/test-output

@@ -2620,4 +2620,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.getbit(key, offset);
         return client.getIntegerReply();
     }
+
+    public boolean isSameShardAs(Jedis other) {
+        return client.getHost().equals(other.getClient().getHost()) && client.getPort() == other.getClient().getPort();
+    }
 }

@@ -143,4 +143,11 @@ public interface JedisCommands {
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
             String value);
+
+    Long publish(final String channel, final String message);
+
+    void subscribe(final JedisPubSub jedisPubSub, final String... channels);
+
+    void unsubscribe(final JedisPubSub jedisPubSub, final String... channels);
+
 }

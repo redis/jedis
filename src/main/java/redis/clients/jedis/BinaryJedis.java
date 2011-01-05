@@ -2033,6 +2033,11 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.rollbackTimeout();
     }
 
+    public void unsubscribe(final JedisPubSub jedisPubSub,
+            final String... channels) {
+        jedisPubSub.unsubscribe(channels);
+    }
+
     public Long publish(final String channel, final String message) {
         client.publish(channel, message);
         return client.getIntegerReply();

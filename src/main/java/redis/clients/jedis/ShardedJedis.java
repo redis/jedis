@@ -368,4 +368,32 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         Jedis j = getShard(key);
         return j.linsert(key, where, pivot, value);
     }
+
+    public Long publish(String channel, String message) {
+        Jedis j = getShard(channel);
+        return j.publish(channel, message);
+    }
+
+    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+        Jedis j = getJedisShardForChannels(jedisPubSub, channels);
+        j.subscribe(jedisPubSub, channels);
+    }
+
+    public void unsubscribe(JedisPubSub jedisPubSub, String... channels) {
+        Jedis j = getJedisShardForChannels(jedisPubSub, channels);
+        j.unsubscribe(jedisPubSub, channels);
+    }
+
+    private Jedis getJedisShardForChannels(JedisPubSub jedisPubSub, String... channels) {
+        String firstChannel = channels[0];
+        Jedis first = getShard(firstChannel);
+        for (String channel : channels) {
+            if(!first.isSameShardAs(getShard(channel))) {
+                throw new IllegalArgumentException(
+                        String.format("Subscribe attempted with channels on different shards. First=%s, Different=%s",
+                                firstChannel, channel));
+            }
+        }
+        return first;
+    }
 }

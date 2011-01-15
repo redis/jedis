@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -9,9 +10,9 @@
 
   <modelVersion>4.0.0</modelVersion>
   <packaging>jar</packaging>
-  <groupId>redis.clients</groupId>
+  <groupId>com.googlecode.jedis</groupId>
   <artifactId>jedis</artifactId>
-  <version>1.5.1-SNAPSHOT</version>
+  <version>2.0.0-SNAPSHOT</version>
   <name>Jedis</name>
   <description>Jedis is a blazingly small and sane Redis java client.</description>
   <url>http://code.google.com/p/jedis/</url>
@@ -19,6 +20,7 @@
   <properties>
     <!--need to set targetJdk for PMD, see: http://jira.codehaus.org/browse/MPMD-86 -->
     <targetJdk>1.6</targetJdk>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <checkstyle.suppressions.location>${project.basedir}/src/test/resources/suppressions.xml</checkstyle.suppressions.location>
     <redis-hosts>localhost:6379,localhost:6380</redis-hosts>
   </properties>
@@ -51,14 +53,6 @@
   </scm>
 
   <dependencies>
-
-    <!-- DI -->
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>2.0</version>
-      <scope>compile</scope>
-    </dependency>
 
     <!-- utils & collections -->
     <dependency>
@@ -122,8 +116,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.0.2</version>
         <configuration>
-          <source>${targetJdk}</source>
-          <target>${targetJdk}</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
       <plugin>
@@ -149,29 +143,17 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.7</version>
         <configuration>
-          <docletArtifact>
-            <groupId>com.google.doclava</groupId>
-            <artifactId>doclava</artifactId>
-            <version>1.0.2</version>
-          </docletArtifact>
-          <doclet>com.google.doclava.Doclava</doclet>
-          <!--
-            | bootclasspath required by Sun's JVM
-          -->
-          <bootclasspath>${sun.boot.class.path}</bootclasspath>
-          <additionalparam>
-             -quiet
-             -federate JDK http://download.oracle.com/javase/6/docs/api/index.html?
-             -federationxml JDK http://doclava.googlecode.com/svn/static/api/openjdk-6.xml
-             -hdf project.name "${project.name}"
-             -d ${project.build.directory}/apidocs
-           </additionalparam>
-          <useStandardDocletOptions>false</useStandardDocletOptions>
-          <!--
-            | Apple's JVM sometimes requires more memory
-          -->
-          <additionalJOption>-J-Xmx1024m</additionalJOption>
+          <splitindex>true</splitindex>
         </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <phase>install</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -197,7 +179,7 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-javadoc-plugin</artifactId>
-              <version>${javadocPluginVersion}</version>
+              <version>2.7</version>
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
@@ -235,7 +217,6 @@
           </reportPlugins>
         </configuration>
       </plugin>
-
     </plugins>
   </build>
 

@@ -24,7 +24,7 @@ public class ZParams {
     private List<byte[]> params = new ArrayList<byte[]>();
 
     public ZParams weights(final int... weights) {
-        params.add(WEIGHTS.raw);
+        params.add(WEIGHTS.raw());
         for (final int weight : weights) {
             params.add(Protocol.toByteArray(weight));
         }
@@ -37,7 +37,7 @@ public class ZParams {
     }
 
     public ZParams aggregate(final Aggregate aggregate) {
-        params.add(AGGREGATE.raw);
+        params.add(AGGREGATE.raw());
         params.add(aggregate.raw);
         return this;
     }

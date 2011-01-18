@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.IRedisCommand;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -59,7 +60,7 @@ public class Connection {
         return sendCommand(cmd, bargs);
     }
 
-    protected Connection sendCommand(final Command cmd, final byte[]... args) {
+    protected Connection sendCommand(final IRedisCommand cmd, final byte[]... args) {
         try {
             connect();
         } catch (UnknownHostException e) {

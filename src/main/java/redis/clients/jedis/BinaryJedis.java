@@ -2896,9 +2896,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param timeout
      * @return the element
      */
-    public String brpoplpush(byte[] source, byte[] destination, int timeout) {
+    public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
         client.brpoplpush(source, destination, timeout);
-        return client.getBulkReply();
+        return client.getBinaryBulkReply();
     }
 
     /**

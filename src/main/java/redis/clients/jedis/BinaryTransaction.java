@@ -3,6 +3,8 @@ package redis.clients.jedis;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
 public class BinaryTransaction {
     protected Client client = null;
     protected boolean inTransaction = true;
@@ -428,6 +430,22 @@ public class BinaryTransaction {
     public String discard() {
         client.discard();
         inTransaction = false;
+        return client.getStatusCodeReply();
+    }
+
+    public String setbit(byte[] key, int offset, byte[] value) {
+        client.setbit(key, offset, value);
+        return client.getStatusCodeReply();
+    }
+
+    public String getbit(byte[] key, int offset) {
+        client.getbit(key, offset);
+        return client.getStatusCodeReply();
+    }
+
+    public String linsert(final byte[] key, final LIST_POSITION where,
+            final byte[] pivot, final byte[] value) {
+        client.linsert(key, where, pivot, value);
         return client.getStatusCodeReply();
     }
 }

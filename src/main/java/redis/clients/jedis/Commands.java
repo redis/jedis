@@ -230,4 +230,10 @@ public interface Commands {
     public void configGet(final String pattern);
 
     public void configResetStat();
+    
+    public void multi();
+    
+    public void exec();
+    
+    public void discard();
 }

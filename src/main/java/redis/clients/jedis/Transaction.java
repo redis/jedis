@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import java.util.Map;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
 public class Transaction extends BinaryTransaction {
     public Transaction() {
     }
@@ -387,6 +389,22 @@ public class Transaction extends BinaryTransaction {
 
     public String sort(final String key, final SortingParams sortingParameters) {
         client.sort(key, sortingParameters);
+        return client.getStatusCodeReply();
+    }
+
+    public String setbit(String key, long offset, String value) {
+        client.setbit(key, offset, value);
+        return client.getStatusCodeReply();
+    }
+
+    public String getbit(String key, long offset) {
+        client.getbit(key, offset);
+        return client.getStatusCodeReply();
+    }
+
+    public String linsert(final String key, final LIST_POSITION where,
+            final String pivot, final String value) {
+        client.linsert(key, where, pivot, value);
         return client.getStatusCodeReply();
     }
 }

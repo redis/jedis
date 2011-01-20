@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -621,9 +622,10 @@ public class ListCommandsTest extends JedisCommandTestBase {
             }
         })).start();
 
-        element = jedis.brpoplpush("foo".getBytes(), "bar".getBytes(), 0);
+        byte[] brpoplpush = jedis.brpoplpush("foo".getBytes(),
+                "bar".getBytes(), 0);
 
-        assertEquals("a", element);
+        assertTrue(Arrays.equals("a".getBytes(), brpoplpush));
         assertEquals(1, jedis.llen("bar").longValue());
         assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
 

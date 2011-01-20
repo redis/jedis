@@ -438,4 +438,16 @@ public class Pipeline implements Commands {
     public void lastsave() {
         client.lastsave();
     }
+
+    public void discard() {
+        client.discard();
+    }
+
+    public void exec() {
+        client.exec();
+    }
+
+    public void multi() {
+        client.multi();
+    }
 }

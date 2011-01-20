@@ -434,5 +434,17 @@ public abstract class PipelineBlock implements Commands {
         client.lastsave();
     }
 
+    public void discard() {
+        client.discard();
+    }
+
+    public void exec() {
+        client.exec();
+    }
+
+    public void multi() {
+        client.multi();
+    }
+
     public abstract void execute();
 }

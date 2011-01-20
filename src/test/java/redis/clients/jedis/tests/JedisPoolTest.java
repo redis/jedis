@@ -8,6 +8,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class JedisPoolTest extends Assert {
@@ -15,7 +16,8 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void checkConnections() throws Exception {
-        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port, 2000);
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000);
         Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "bar");
@@ -26,7 +28,8 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void checkConnectionWithDefaultPort() throws Exception {
-        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port);
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port);
         Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "bar");
@@ -37,7 +40,8 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void checkJedisIsReusedWhenReturned() throws Exception {
-        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port);
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port);
         Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.set("foo", "0");
@@ -52,7 +56,8 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void checkPoolRepairedWhenJedisIsBroken() throws Exception {
-        JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port);
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port);
         Jedis jedis = pool.getResource();
         jedis.auth("foobared");
         jedis.quit();

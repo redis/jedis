@@ -507,11 +507,11 @@ public class Client extends BinaryClient implements Commands {
                 timeout);
     }
 
-    public void setbit(final String key, final int offset, final String value) {
+    public void setbit(final String key, final long offset, final String value) {
         setbit(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
 
-    public void getbit(String key, int offset) {
+    public void getbit(String key, long offset) {
         getbit(SafeEncoder.encode(key), offset);
     }
 }

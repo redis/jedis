@@ -637,11 +637,11 @@ public class BinaryClient extends Connection {
         sendCommand(CONFIG, Keyword.RESETSTAT.name());
     }
 
-    public void setbit(byte[] key, int offset, byte[] value) {
+    public void setbit(byte[] key, long offset, byte[] value) {
         sendCommand(SETBIT, key, toByteArray(offset), value);
     }
 
-    public void getbit(byte[] key, int offset) {
+    public void getbit(byte[] key, long offset) {
         sendCommand(GETBIT, key, toByteArray(offset));
     }
 }

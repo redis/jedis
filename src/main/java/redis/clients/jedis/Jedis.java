@@ -2604,7 +2604,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param value
      * @return
      */
-    public Long setbit(String key, int offset, String value) {
+    public Long setbit(String key, long offset, String value) {
         client.setbit(key, offset, value);
         return client.getIntegerReply();
     }
@@ -2616,7 +2616,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param offset
      * @return
      */
-    public Long getbit(String key, int offset) {
+    public Long getbit(String key, long offset) {
         client.getbit(key, offset);
         return client.getIntegerReply();
     }

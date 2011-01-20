@@ -88,10 +88,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void debug() {
-	jedis.set("foo", "bar");
+        jedis.set("foo", "bar");
 	String resp = jedis.debug(DebugParams.OBJECT("foo"));
-	assertNotNull(resp);
-	resp = jedis.debug(DebugParams.SWAPIN("foo"));
 	assertNotNull(resp);
 	resp = jedis.debug(DebugParams.RELOAD());
 	assertNotNull(resp);

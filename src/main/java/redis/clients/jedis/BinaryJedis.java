@@ -2909,7 +2909,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param value
      * @return
      */
-    public Long setbit(byte[] key, int offset, byte[] value) {
+    public Long setbit(byte[] key, long offset, byte[] value) {
         client.setbit(key, offset, value);
         return client.getIntegerReply();
     }
@@ -2921,7 +2921,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param offset
      * @return
      */
-    public Long getbit(byte[] key, int offset) {
+    public Long getbit(byte[] key, long offset) {
         client.getbit(key, offset);
         return client.getIntegerReply();
     }

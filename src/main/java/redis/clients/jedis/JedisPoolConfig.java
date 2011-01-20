@@ -4,145 +4,129 @@ import org.apache.commons.pool.impl.GenericObjectPool.Config;
 
 /**
  * Subclass of org.apache.commons.pool.impl.GenericObjectPool.Config that
- * includes getters/setters so it can be more easily configured by Spring
- * and other IoC frameworks.
- *
+ * includes getters/setters so it can be more easily configured by Spring and
+ * other IoC frameworks.
+ * 
  * Spring example:
- *
- *	<bean id="jedisConfig" class="redis.clients.jedis.JedisPoolConfig">
- *		<property name="testWhileIdle" value="true"/>
- *	</bean>
- *
- *	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" destroy-method="destroy">
- *		<constructor-arg ref="jedisConfig" />
- *		<constructor-arg value="localhost" />
- *		<constructor-arg type="int" value="6379" />
- *	</bean>
- *
+ * 
+ * <bean id="jedisConfig" class="redis.clients.jedis.JedisPoolConfig"> <property
+ * name="testWhileIdle" value="true"/> </bean>
+ * 
+ * <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+ * destroy-method="destroy"> <constructor-arg ref="jedisConfig" />
+ * <constructor-arg value="localhost" /> <constructor-arg type="int"
+ * value="6379" /> </bean>
+ * 
  * For information on parameters refer to:
  * 
- * http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/GenericObjectPool.html
+ * http://commons.apache.org/pool/apidocs/org/apache/commons/pool/impl/
+ * GenericObjectPool.html
  */
-public class JedisPoolConfig extends Config
-{
-	public int getMaxIdle()
-	{
-		return maxIdle;
-	}
+public class JedisPoolConfig extends Config {
+    public JedisPoolConfig() {
+        // defaults to make your life with connection pool easier :)
+        setTestWhileIdle(true);
+        setMinEvictableIdleTimeMillis(60000);
+        setTimeBetweenEvictionRunsMillis(30000);
+        setNumTestsPerEvictionRun(-1);
+    }
 
-	public void setMaxIdle(int maxIdle)
-	{
-		this.maxIdle = maxIdle;
-	}
+    public int getMaxIdle() {
+        return maxIdle;
+    }
 
-	public int getMinIdle()
-	{
-		return minIdle;
-	}
+    public void setMaxIdle(int maxIdle) {
+        this.maxIdle = maxIdle;
+    }
 
-	public void setMinIdle(int minIdle)
-	{
-		this.minIdle = minIdle;
-	}
+    public int getMinIdle() {
+        return minIdle;
+    }
 
-	public int getMaxActive()
-	{
-		return maxActive;
-	}
+    public void setMinIdle(int minIdle) {
+        this.minIdle = minIdle;
+    }
 
-	public void setMaxActive(int maxActive)
-	{
-		this.maxActive = maxActive;
-	}
+    public int getMaxActive() {
+        return maxActive;
+    }
 
-	public long getMaxWait()
-	{
-		return maxWait;
-	}
+    public void setMaxActive(int maxActive) {
+        this.maxActive = maxActive;
+    }
 
-	public void setMaxWait(long maxWait)
-	{
-		this.maxWait = maxWait;
-	}
+    public long getMaxWait() {
+        return maxWait;
+    }
 
-	public byte getWhenExhaustedAction()
-	{
-		return whenExhaustedAction;
-	}
+    public void setMaxWait(long maxWait) {
+        this.maxWait = maxWait;
+    }
 
-	public void setWhenExhaustedAction(byte whenExhaustedAction)
-	{
-		this.whenExhaustedAction = whenExhaustedAction;
-	}
+    public byte getWhenExhaustedAction() {
+        return whenExhaustedAction;
+    }
 
-	public boolean isTestOnBorrow()
-	{
-		return testOnBorrow;
-	}
+    public void setWhenExhaustedAction(byte whenExhaustedAction) {
+        this.whenExhaustedAction = whenExhaustedAction;
+    }
 
-	public void setTestOnBorrow(boolean testOnBorrow)
-	{
-		this.testOnBorrow = testOnBorrow;
-	}
+    public boolean isTestOnBorrow() {
+        return testOnBorrow;
+    }
 
-	public boolean isTestOnReturn()
-	{
-		return testOnReturn;
-	}
+    public void setTestOnBorrow(boolean testOnBorrow) {
+        this.testOnBorrow = testOnBorrow;
+    }
 
-	public void setTestOnReturn(boolean testOnReturn)
-	{
-		this.testOnReturn = testOnReturn;
-	}
+    public boolean isTestOnReturn() {
+        return testOnReturn;
+    }
 
-	public boolean isTestWhileIdle()
-	{
-		return testWhileIdle;
-	}
+    public void setTestOnReturn(boolean testOnReturn) {
+        this.testOnReturn = testOnReturn;
+    }
 
-	public void setTestWhileIdle(boolean testWhileIdle)
-	{
-		this.testWhileIdle = testWhileIdle;
-	}
+    public boolean isTestWhileIdle() {
+        return testWhileIdle;
+    }
 
-	public long getTimeBetweenEvictionRunsMillis()
-	{
-		return timeBetweenEvictionRunsMillis;
-	}
+    public void setTestWhileIdle(boolean testWhileIdle) {
+        this.testWhileIdle = testWhileIdle;
+    }
 
-	public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis)
-	{
-		this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
-	}
+    public long getTimeBetweenEvictionRunsMillis() {
+        return timeBetweenEvictionRunsMillis;
+    }
 
-	public int getNumTestsPerEvictionRun()
-	{
-		return numTestsPerEvictionRun;
-	}
+    public void setTimeBetweenEvictionRunsMillis(
+            long timeBetweenEvictionRunsMillis) {
+        this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+    }
 
-	public void setNumTestsPerEvictionRun(int numTestsPerEvictionRun)
-	{
-		this.numTestsPerEvictionRun = numTestsPerEvictionRun;
-	}
+    public int getNumTestsPerEvictionRun() {
+        return numTestsPerEvictionRun;
+    }
 
-	public long getMinEvictableIdleTimeMillis()
-	{
-		return minEvictableIdleTimeMillis;
-	}
+    public void setNumTestsPerEvictionRun(int numTestsPerEvictionRun) {
+        this.numTestsPerEvictionRun = numTestsPerEvictionRun;
+    }
 
-	public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis)
-	{
-		this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
-	}
+    public long getMinEvictableIdleTimeMillis() {
+        return minEvictableIdleTimeMillis;
+    }
 
-	public long getSoftMinEvictableIdleTimeMillis()
-	{
-		return softMinEvictableIdleTimeMillis;
-	}
+    public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
+        this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+    }
 
-	public void setSoftMinEvictableIdleTimeMillis(long softMinEvictableIdleTimeMillis)
-	{
-		this.softMinEvictableIdleTimeMillis = softMinEvictableIdleTimeMillis;
-	}
+    public long getSoftMinEvictableIdleTimeMillis() {
+        return softMinEvictableIdleTimeMillis;
+    }
+
+    public void setSoftMinEvictableIdleTimeMillis(
+            long softMinEvictableIdleTimeMillis) {
+        this.softMinEvictableIdleTimeMillis = softMinEvictableIdleTimeMillis;
+    }
 
 }

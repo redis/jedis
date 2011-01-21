@@ -427,18 +427,24 @@ public class BinaryTransaction {
         return client.getStatusCodeReply();
     }
 
+    public String sort(final byte[] key, final SortingParams sortingParameters,
+            final byte[] dstkey) {
+        client.sort(key, sortingParameters, dstkey);
+        return client.getStatusCodeReply();
+    }
+
     public String discard() {
         client.discard();
         inTransaction = false;
         return client.getStatusCodeReply();
     }
 
-    public String setbit(byte[] key, int offset, byte[] value) {
+    public String setbit(byte[] key, long offset, byte[] value) {
         client.setbit(key, offset, value);
         return client.getStatusCodeReply();
     }
 
-    public String getbit(byte[] key, int offset) {
+    public String getbit(byte[] key, long offset) {
         client.getbit(key, offset);
         return client.getStatusCodeReply();
     }

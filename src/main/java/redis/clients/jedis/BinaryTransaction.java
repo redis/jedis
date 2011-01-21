@@ -433,6 +433,11 @@ public class BinaryTransaction {
         return client.getStatusCodeReply();
     }
 
+    public String sort(final byte[] key, final byte[] dstkey) {
+        client.sort(key, dstkey);
+        return client.getStatusCodeReply();
+    }
+
     public String discard() {
         client.discard();
         inTransaction = false;

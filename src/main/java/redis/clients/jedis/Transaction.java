@@ -392,6 +392,11 @@ public class Transaction extends BinaryTransaction {
         return client.getStatusCodeReply();
     }
 
+    public String sort(final String key, final String dstkey) {
+        client.sort(key, dstkey);
+        return client.getStatusCodeReply();
+    }
+
     public String sort(final String key, final SortingParams sortingParameters,
             final String dstkey) {
         client.sort(key, sortingParameters, dstkey);

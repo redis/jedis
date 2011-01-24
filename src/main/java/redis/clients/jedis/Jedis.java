@@ -2023,18 +2023,21 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+	runChecks();
         client.setTimeoutInfinite();
         jedisPubSub.proceed(client, channels);
         client.rollbackTimeout();
     }
 
     public Long publish(String channel, String message) {
+	runChecks();
         client.publish(channel, message);
         return client.getIntegerReply();
     }
 
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
-        client.setTimeoutInfinite();
+        runChecks();
+	client.setTimeoutInfinite();
         jedisPubSub.proceedWithPatterns(client, patterns);
         client.rollbackTimeout();
     }

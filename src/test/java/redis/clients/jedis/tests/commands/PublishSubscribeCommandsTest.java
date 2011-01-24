@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisPubSub;
 
 public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
@@ -231,5 +232,31 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         t.start();
         jedis.subscribe(pubsub, "foo");
         t.join();
+    }
+    
+    @Test
+    public void subscribeWithoutConnecting() {
+	try {
+	Jedis jedis = new Jedis(hnp.host, hnp.port);
+	jedis.subscribe(new JedisPubSub() {
+	    public void onMessage(String channel, String message) {
+	    }
+	    public void onPMessage(String pattern, String channel,
+		    String message) {
+	    }
+	    public void onSubscribe(String channel, int subscribedChannels) {
+	    }
+	    public void onUnsubscribe(String channel, int subscribedChannels) {
+	    }
+	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
+	    }
+	    public void onPSubscribe(String pattern, int subscribedChannels) {
+	    }
+	  }, "foo");
+	} catch(NullPointerException ex) {
+	    fail();
+	} catch(JedisException ex) {
+	    // this is OK because we are not sending AUTH command
+	}
     }
 }

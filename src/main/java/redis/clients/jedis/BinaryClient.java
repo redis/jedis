@@ -441,11 +441,11 @@ public class BinaryClient extends Connection {
         sendCommand(AUTH, password);
     }
 
-    public void subscribe(final String... channels) {
+    public void subscribe(final byte[]... channels) {
         sendCommand(SUBSCRIBE, channels);
     }
 
-    public void publish(final String channel, final String message) {
+    public void publish(final byte[] channel, final byte[] message) {
         sendCommand(PUBLISH, channel, message);
     }
 
@@ -453,11 +453,11 @@ public class BinaryClient extends Connection {
         sendCommand(UNSUBSCRIBE);
     }
 
-    public void unsubscribe(final String... channels) {
+    public void unsubscribe(final byte[]... channels) {
         sendCommand(UNSUBSCRIBE, channels);
     }
 
-    public void psubscribe(final String[] patterns) {
+    public void psubscribe(final byte[]... patterns) {
         sendCommand(PSUBSCRIBE, patterns);
     }
 
@@ -465,7 +465,7 @@ public class BinaryClient extends Connection {
         sendCommand(PUNSUBSCRIBE);
     }
 
-    public void punsubscribe(final String... patterns) {
+    public void punsubscribe(final byte[]... patterns) {
         sendCommand(PUNSUBSCRIBE, patterns);
     }
 

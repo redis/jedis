@@ -514,4 +514,41 @@ public class Client extends BinaryClient implements Commands {
     public void getbit(String key, long offset) {
         getbit(SafeEncoder.encode(key), offset);
     }
+
+    public void publish(final String channel, final String message) {
+        publish(SafeEncoder.encode(channel), SafeEncoder.encode(message));
+    }
+
+    public void unsubscribe(final String... channels) {
+        final byte[][] cs = new byte[channels.length][];
+        for (int i = 0; i < cs.length; i++) {
+            cs[i] = SafeEncoder.encode(channels[i]);
+        }
+        unsubscribe(cs);
+    }
+
+    public void psubscribe(final String... patterns) {
+        final byte[][] ps = new byte[patterns.length][];
+        for (int i = 0; i < ps.length; i++) {
+            ps[i] = SafeEncoder.encode(patterns[i]);
+        }
+        psubscribe(ps);
+    }
+
+    public void punsubscribe(final String... patterns) {
+        final byte[][] ps = new byte[patterns.length][];
+        for (int i = 0; i < ps.length; i++) {
+            ps[i] = SafeEncoder.encode(patterns[i]);
+        }
+        punsubscribe(ps);
+    }
+
+    public void subscribe(final String... channels) {
+        final byte[][] cs = new byte[channels.length][];
+        for (int i = 0; i < cs.length; i++) {
+            cs[i] = SafeEncoder.encode(channels[i]);
+        }
+        subscribe(cs);
+    }
+
 }

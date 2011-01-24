@@ -2925,4 +2925,21 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.getbit(key, offset);
         return client.getIntegerReply();
     }
+
+    public Long publish(byte[] channel, byte[] message) {
+        client.publish(channel, message);
+        return client.getIntegerReply();
+    }
+
+    public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
+        client.setTimeoutInfinite();
+        jedisPubSub.proceed(client, channels);
+        client.rollbackTimeout();
+    }
+
+    public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
+        client.setTimeoutInfinite();
+        jedisPubSub.proceedWithPatterns(client, patterns);
+        client.rollbackTimeout();
+    }
 }

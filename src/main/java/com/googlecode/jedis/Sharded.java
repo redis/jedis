@@ -67,7 +67,7 @@ public class Sharded {
     }
 
     public ShardJedisConfig getShardInfo(String key) {
-	return getShardInfo(SafeEncoder.encode(getKeyTag(key)));
+	return getShardInfo(getKeyTag(key).getBytes());
     }
 
     private void init() {

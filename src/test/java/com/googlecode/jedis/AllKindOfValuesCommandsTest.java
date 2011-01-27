@@ -2,15 +2,7 @@ package com.googlecode.jedis;
 
 import static com.googlecode.jedis.PairImpl.newPair;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 import org.testng.annotations.Test;
 
@@ -107,7 +99,7 @@ public class AllKindOfValuesCommandsTest extends JedisTestBase {
 	assertThat(jedis.move(foo, 1), is(false));
 	jedis.set(foo, bar);
 	assertThat(jedis.move(foo, 1), is(true));
-	assertThat(jedis.get(foo), nullValue());
+	assertThat(jedis.get(foo), is((String) null));
 	jedis.select(1);
 	assertThat(jedis.get(foo), is(bar));
     }
@@ -134,7 +126,7 @@ public class AllKindOfValuesCommandsTest extends JedisTestBase {
 
     @Test
     public void persist() {
-	jedis.setex(foo, 60 * 60, bar);
+	jedis.setex(foo, bar, 60 * 60);
 	assertThat(jedis.ttl(foo), greaterThan(0L));
 	assertThat(jedis.persist(foo), is(true));
 	assertThat(jedis.ttl(foo), is(-1L));
@@ -215,8 +207,18 @@ public class AllKindOfValuesCommandsTest extends JedisTestBase {
 
     @Test
     public void type() {
+	assertThat(jedis.type(foo), is(RedisType.NONE));
 	jedis.set(foo, bar);
-	assertThat(jedis.type(foo), is("string"));
+	assertThat(jedis.type(foo), is(RedisType.STRING));
+	jedis.del(foo);
+	jedis.lpush(foo, bar);
+	assertThat(jedis.type(foo), is(RedisType.LIST));
+	jedis.del(foo);
+	jedis.sadd(foo, bar);
+	assertThat(jedis.type(foo), is(RedisType.SET));
+	jedis.del(foo);
+	jedis.hset(foo, bar, bar);
+	assertThat(jedis.type(foo), is(RedisType.HASH));
     }
 
 }

@@ -1,9 +1,9 @@
 package com.googlecode.jedis;
 
+import static com.googlecode.jedis.PairImpl.newPair;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.testng.Assert.fail;
 
@@ -30,9 +30,11 @@ public class ListCommandsTest extends JedisTestBase {
     final byte[] bhello = { 0x04, 0x02 };
     final byte[] bx = { 0x02, 0x04 };
 
+    @SuppressWarnings("unchecked")
     @Test
     public void blpop() throws InterruptedException {
-	assertThat(jedis.blpop(1, "foo"), notNullValue());
+	assertThat(jedis.blpop(1, "foo"),
+		is(Matchers.<Pair<String, String>> empty()));
 
 	new Thread(new Runnable() {
 	    @Override
@@ -47,30 +49,14 @@ public class ListCommandsTest extends JedisTestBase {
 	    }
 	}).start();
 
-	assertThat(jedis.blpop(1, "foo"), contains("foo", "bar"));
-
-	// raw
-	assertThat(jedis.blpop(1, bfoo), notNullValue());
-
-	new Thread(new Runnable() {
-	    @Override
-	    public void run() {
-		try {
-		    Jedis j = JedisFactory.newJedisInstance(c1);
-		    j.lpush(bfoo, bbar);
-		    j.disconnect();
-		} catch (Exception ex) {
-		    fail(ex.getMessage());
-		}
-	    }
-	}).start();
-
-	assertThat(jedis.blpop(1, bfoo), contains(bfoo, bbar));
+	assertThat(jedis.blpop(1, "foo"), contains(newPair("foo", "bar")));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void brpop() throws InterruptedException {
-	assertThat(jedis.brpop(1, "foo"), notNullValue());
+	assertThat(jedis.brpop(1, "foo"),
+		is(Matchers.<Pair<String, String>> empty()));
 
 	new Thread(new Runnable() {
 	    @Override
@@ -85,25 +71,7 @@ public class ListCommandsTest extends JedisTestBase {
 	    }
 	}).start();
 
-	assertThat(jedis.brpop(1, "foo"), contains("foo", "bar"));
-
-	// raw
-	assertThat(jedis.brpop(1, bfoo), notNullValue());
-
-	new Thread(new Runnable() {
-	    @Override
-	    public void run() {
-		try {
-		    Jedis j = JedisFactory.newJedisInstance(c1);
-		    j.lpush(bfoo, bbar);
-		    j.disconnect();
-		} catch (Exception ex) {
-		    fail(ex.getMessage());
-		}
-	    }
-	}).start();
-
-	assertThat(jedis.brpop(1, bfoo), contains(bfoo, bbar));
+	assertThat(jedis.brpop(1, "foo"), contains(newPair("foo", "bar")));
     }
 
     @Test
@@ -112,7 +80,7 @@ public class ListCommandsTest extends JedisTestBase {
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "3");
 
-	assertThat(jedis.lset("foo", 1, "bar"), is("OK"));
+	assertThat(jedis.lset("foo", 1, "bar"), is(true));
 	assertThat(jedis.lrange("foo", 0, 100), contains("3", "bar", "1"));
 
 	// Binary
@@ -120,7 +88,7 @@ public class ListCommandsTest extends JedisTestBase {
 	jedis.lpush(bfoo, b2);
 	jedis.lpush(bfoo, b3);
 
-	assertThat(jedis.lset(bfoo, 1, bbar), is("OK"));
+	assertThat(jedis.lset(bfoo, 1, bbar), is(true));
 	assertThat(jedis.lrange(bfoo, 0, 100), contains(b3, bbar, b1));
     }
 
@@ -397,7 +365,7 @@ public class ListCommandsTest extends JedisTestBase {
 	jedis.lpush("foo", "2");
 	jedis.lpush("foo", "3");
 
-	assertThat(jedis.ltrim("foo", 0, 1), is("OK"));
+	assertThat(jedis.ltrim("foo", 0, 1), is(true));
 	assertThat(jedis.llen("foo"), is(2L));
 	assertThat(jedis.lrange("foo", 0, 100), contains("3", "2"));
 
@@ -406,7 +374,7 @@ public class ListCommandsTest extends JedisTestBase {
 	jedis.lpush(bfoo, b2);
 	jedis.lpush(bfoo, b3);
 
-	assertThat(jedis.ltrim(bfoo, 0, 1), is("OK"));
+	assertThat(jedis.ltrim(bfoo, 0, 1), is(true));
 	assertThat(jedis.llen(bfoo), is(2L));
 	assertThat(jedis.lrange(bfoo, 0, 100), contains(b3, b2));
     }

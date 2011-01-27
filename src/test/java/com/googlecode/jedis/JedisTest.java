@@ -9,9 +9,6 @@ import org.testng.annotations.Test;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
-import com.googlecode.jedis.Jedis;
-import com.googlecode.jedis.JedisException;
-import com.googlecode.jedis.JedisImpl;
 
 public class JedisTest extends JedisTestBase {
 
@@ -40,7 +37,7 @@ public class JedisTest extends JedisTestBase {
 
     @Test
     public void useWithoutConnecting() {
-	Jedis jedis = new JedisImpl();
+	Jedis jedis = JedisFactory.newJedisInstance();
 	jedis.auth("foobared");
 	jedis.dbSize();
     }

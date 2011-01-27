@@ -1,94 +1,39 @@
 package com.googlecode.jedis;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.googlecode.jedis.PairImpl.newPair;
 import static com.googlecode.jedis.Protocol.DEFAULT_CHARSET;
-import static com.googlecode.jedis.Protocol.Command.APPEND;
-import static com.googlecode.jedis.Protocol.Command.AUTH;
-import static com.googlecode.jedis.Protocol.Command.BGREWRITEAOF;
-import static com.googlecode.jedis.Protocol.Command.BGSAVE;
-import static com.googlecode.jedis.Protocol.Command.EXPIRE;
-import static com.googlecode.jedis.Protocol.Command.EXPIREAT;
-import static com.googlecode.jedis.Protocol.Command.GETSET;
-import static com.googlecode.jedis.Protocol.Command.PERSIST;
-import static com.googlecode.jedis.Protocol.Command.RANDOMKEY;
-import static com.googlecode.jedis.Protocol.Command.RENAME;
-import static com.googlecode.jedis.Protocol.Command.SDIFFSTORE;
-import static com.googlecode.jedis.Protocol.Command.SRANDMEMBER;
-import static com.googlecode.jedis.Protocol.Command.SUNION;
-import static com.googlecode.jedis.Protocol.Command.SUNIONSTORE;
-import static com.googlecode.jedis.Protocol.Command.ZADD;
-import static com.googlecode.jedis.Protocol.Command.ZCARD;
-import static com.googlecode.jedis.Protocol.Command.ZCOUNT;
-import static com.googlecode.jedis.Protocol.Command.ZINCRBY;
-import static com.googlecode.jedis.Protocol.Command.ZINTERSTORE;
-import static com.googlecode.jedis.Protocol.Command.ZRANGE;
-import static com.googlecode.jedis.Protocol.Command.ZRANGEBYSCORE;
-import static com.googlecode.jedis.Protocol.Command.ZREMRANGEBYRANK;
-import static com.googlecode.jedis.Protocol.Command.ZREMRANGEBYSCORE;
-import static com.googlecode.jedis.Protocol.Command.ZREVRANGE;
-import static com.googlecode.jedis.Protocol.Command.ZREVRANGEBYSCORE;
-import static com.googlecode.jedis.Protocol.Command.ZREVRANK;
-import static com.googlecode.jedis.Protocol.Command.ZSCORE;
-import static com.googlecode.jedis.Protocol.Command.ZUNIONSTORE;
+import static com.googlecode.jedis.Protocol.Command.*;
+import static com.googlecode.jedis.util.Encoders.asByte;
+import static com.googlecode.jedis.util.Encoders.asString;
 import static java.lang.System.arraycopy;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.googlecode.jedis.Protocol.Command;
 
 class RawJedisImpl implements RawJedis {
 
-    static protected byte[] asByte(final double value) {
-	return asByte(String.valueOf(value));
-    }
+    protected static final Logger log = LoggerFactory.getLogger(Jedis.class);
 
-    static protected byte[] asByte(final long value) {
-	return asByte(String.valueOf(value));
-    }
-
-    static protected Pair<byte[], byte[]> asByte(Pair<String, String> value) {
-	return PairImpl.newPair(asByte(value.getFirst()),
-		asByte(value.getSecond()));
-    }
-
-    static protected byte[] asByte(String value) {
-	return Strings.nullToEmpty(value).getBytes(Protocol.DEFAULT_CHARSET);
-    }
-
-    static protected byte[][] asByte(String[] value) {
-	byte[][] ret = new byte[value.length][];
-	for (int i = 0; i < value.length; i++) {
-	    ret[i] = asByte(value[i]);
-	}
-	return ret;
-    }
-
-    static protected String asString(byte[] value) {
-	return (value != null) ? new String(value, Protocol.DEFAULT_CHARSET)
-		: null;
-    }
-
-    static protected String asString(long value) {
-	return String.valueOf(value);
-    }
-
-    protected Client client;
+    protected Connection conn;
 
     protected RawJedisImpl() {
-	client = new Client();
+	conn = new NettyConnection();
     }
 
     /*
@@ -98,9 +43,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long append(final byte[] key, final byte[] value) {
-	runChecks();
-	client.sendCommand(APPEND, value);
-	return client.getIntegerReply();
+
+	conn.sendCommand(APPEND, value);
+	return conn.integerReply();
     }
 
     /*
@@ -109,10 +54,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#auth(byte[])
      */
     @Override
-    public String auth(final byte[] password) {
-	runChecks();
-	client.sendCommand(AUTH, password);
-	return client.getStatusCodeReply();
+    public Boolean auth(final byte[] password) {
+	conn.sendCommand(AUTH, password);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -121,10 +65,10 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#bgrewriteaof()
      */
     @Override
-    public String bgrewriteaof() {
-	client.bgrewriteaof();
-	client.sendCommand(BGREWRITEAOF);
-	return client.getStatusCodeReply();
+    public Boolean bgrewriteaof() {
+	conn.sendCommand(BGREWRITEAOF);
+	return Arrays.equals("Background append only file rewriting started"
+		.getBytes(DEFAULT_CHARSET), conn.statusCodeReply());
     }
 
     /*
@@ -133,9 +77,11 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#bgsave()
      */
     @Override
-    public String bgsave() {
-	client.sendCommand(BGSAVE);
-	return client.getStatusCodeReply();
+    public Boolean bgsave() {
+	conn.sendCommand(BGSAVE);
+	return Arrays.equals(
+		"Background saving started".getBytes(DEFAULT_CHARSET),
+		conn.statusCodeReply());
     }
 
     /*
@@ -144,26 +90,28 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#blpop(long, byte[], byte[][])
      */
     @Override
-    public List<byte[]> blpop(final long timeout, final byte[] key1,
-	    byte[]... keyN) {
-	runChecks();
-	if (key1 == null) {
-	    throw new NullPointerException();
+    public List<Pair<byte[], byte[]>> blpopRaw(final long timeout,
+	    final byte[] key1, byte[]... keyN) {
+	checkNotNull(key1);
+
+	byte[][] args = new byte[2 + keyN.length][];
+	args[0] = key1;
+	args[1 + keyN.length] = asByte(timeout);
+	arraycopy(keyN, 0, args, 1, keyN.length);
+
+	conn.sendCommand(BLPOP, args);
+	conn.setTimeoutInfinite();
+
+	final List<byte[]> multiBulkReply = conn.multiBulkReply();
+	conn.rollbackTimeout();
+
+	List<Pair<byte[], byte[]>> result = Lists
+		.newArrayListWithCapacity(multiBulkReply.size() / 2);
+	for (Iterator<byte[]> it = multiBulkReply.iterator(); it.hasNext();) {
+	    result.add(newPair(it.next(), it.next()));
 	}
 
-	final List<byte[]> args = Lists.newArrayList();
-	args.add(key1);
-	for (final byte[] key : keyN) {
-	    args.add(key);
-	}
-	args.add(Protocol.toByteArray(timeout));
-
-	client.blpop(args.toArray(new byte[args.size()][]));
-
-	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+	return result;
     }
 
     /*
@@ -172,44 +120,48 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#brpop(long, byte[], byte[][])
      */
     @Override
-    public List<byte[]> brpop(long timeout, byte[] key1, byte[]... keyN) {
-	runChecks();
-	final List<byte[]> args = Lists.newArrayList();
-	args.add(key1);
-	for (final byte[] key : keyN) {
-	    args.add(key);
+    public List<Pair<byte[], byte[]>> brpopRaw(long timeout, byte[] key1,
+	    byte[]... keyN) {
+	checkNotNull(key1);
+
+	byte[][] args = new byte[2 + keyN.length][];
+	args[0] = key1;
+	args[1 + keyN.length] = asByte(timeout);
+	arraycopy(keyN, 0, args, 1, keyN.length);
+
+	conn.sendCommand(BRPOP, args);
+	conn.setTimeoutInfinite();
+	final List<byte[]> multiBulkReply = conn.multiBulkReply();
+	conn.rollbackTimeout();
+	List<Pair<byte[], byte[]>> result = Lists
+		.newArrayListWithCapacity(multiBulkReply.size() / 2);
+	for (Iterator<byte[]> it = multiBulkReply.iterator(); it.hasNext();) {
+	    result.add(newPair(it.next(), it.next()));
 	}
-	args.add(Protocol.toByteArray(timeout));
 
-	client.brpop(args.toArray(new byte[args.size()][]));
-	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-
-	return multiBulkReply;
+	return result;
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.googlecode.jedis.RawJedis#configGet(java.lang.String)
+     * @see com.googlecode.jedis.RawJedis#configGet(byte[])
      */
     @Override
-    public List<String> configGet(final String pattern) {
-	client.configGet(pattern);
-	return client.getMultiBulkReply();
+    public List<byte[]> configGet(byte[] pattern) {
+	conn.sendCommand(CONFIG, Protocol.Keyword.GET.raw, pattern);
+	return conn.multiBulkReply();
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.googlecode.jedis.RawJedis#configSet(java.lang.String,
-     * java.lang.String)
+     * @see com.googlecode.jedis.RawJedis#configSet(byte[], byte[])
      */
     @Override
-    public String configSet(final String parameter, final String value) {
-	client.configSet(parameter, value);
-	return client.getStatusCodeReply();
+    public byte[] configSet(byte[] parameter, byte[] value) {
+	conn.sendCommand(CONFIG, Protocol.Keyword.SET.raw, parameter, value);
+	return conn.statusCodeReply();
     }
 
     /*
@@ -219,11 +171,14 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public void connect() throws UnknownHostException, IOException {
-	if (!client.isConnected()) {
-	    client.connect();
-	    if (client.getConfig().getPassword() != null) {
-		this.auth(client.getConfig().getPassword()
-			.getBytes(DEFAULT_CHARSET));
+	if (!conn.isConnected()) {
+	    try {
+		conn.connect();
+	    } catch (Throwable e) {
+		log.error("could not connect: ", e);
+	    }
+	    if (conn.getJedisConfig().getPassword() != null) {
+		this.auth(conn.getJedisConfig().getPassword().getBytes(UTF_8));
 	    }
 	}
     }
@@ -235,9 +190,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long dbSize() {
-	runChecks();
-	client.dbSize();
-	return client.getIntegerReply();
+
+	conn.sendCommand(DBSIZE);
+	return conn.integerReply();
     }
 
     /*
@@ -247,9 +202,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.RawJedis#debug(com.googlecode.jedis.DebugParams)
      */
     @Override
-    public String debug(final DebugParams params) {
-	client.debug(params);
-	return client.getStatusCodeReply();
+    public byte[] debugRaw(final DebugParams params) {
+	conn.sendCommand(DEBUG, params.getCommand());
+	return conn.statusCodeReply();
     }
 
     /*
@@ -260,9 +215,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long decr(final byte[] key) {
 	checkNotNull(key);
-	runChecks();
-	client.sendCommand(Command.DECR, key);
-	return client.getIntegerReply();
+
+	conn.sendCommand(DECR, key);
+	return conn.integerReply();
     }
 
     /*
@@ -273,9 +228,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long decrBy(final byte[] key, final long value) {
 	checkNotNull(key);
-	runChecks();
-	client.sendCommand(Command.DECRBY, key, asByte(value));
-	return client.getIntegerReply();
+
+	conn.sendCommand(DECRBY, key, asByte(value));
+	return conn.integerReply();
     }
 
     /*
@@ -286,9 +241,12 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long del(final byte[] key1, final byte[]... keyN) {
 	checkNotNull(key1);
-	runChecks();
-	client.del(key1, keyN);
-	return client.getIntegerReply();
+
+	byte[][] args = new byte[1 + keyN.length][];
+	args[0] = key1;
+	System.arraycopy(keyN, 0, args, 1, keyN.length);
+	conn.sendCommand(DEL, args);
+	return conn.integerReply();
     }
 
     /*
@@ -298,7 +256,7 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public void disconnect() throws IOException {
-	client.disconnect();
+	conn.disconnect();
     }
 
     /*
@@ -308,16 +266,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] echo(final byte[] string) {
-	client.echo(string);
-	return client.getBinaryBulkReply();
-    }
+	checkNotNull(string);
 
-    @Override
-    public List<byte[]> executeRaw() {
-	Preconditions.checkState(client.isPipelineMode(),
-		"Not in pipelined mode!");
-	client.setPipelineMode(false);
-	return client.getAll();
+	conn.sendCommand(ECHO, string);
+	return conn.bulkReply();
     }
 
     /*
@@ -327,9 +279,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean exists(final byte[] key) {
-	runChecks();
-	client.exists(key);
-	return client.getIntegerReply() == 1;
+
+	conn.sendCommand(EXISTS, key);
+	return conn.integerReply() == 1;
     }
 
     /*
@@ -340,9 +292,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Boolean expire(final byte[] key, final long seconds) {
 	checkNotNull(key);
-	runChecks();
-	client.sendCommand(EXPIRE, key, asByte(seconds));
-	return client.getBooleanIntegerReply();
+
+	conn.sendCommand(EXPIRE, key, asByte(seconds));
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -353,9 +305,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Boolean expireAt(final byte[] key, final long unixTime) {
 	checkNotNull(key);
-	runChecks();
-	client.sendCommand(EXPIREAT, key, asByte(unixTime));
-	return client.getBooleanIntegerReply();
+
+	conn.sendCommand(EXPIREAT, key, asByte(unixTime));
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -365,9 +317,8 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean flushAll() {
-	runChecks();
-	client.flushAll();
-	return client.getStatusCodeReply().equals("OK");
+	conn.sendCommand(FLUSHALL);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -377,9 +328,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean flushDB() {
-	runChecks();
-	client.flushDB();
-	return client.getStatusCodeReply().equals("OK");
+
+	conn.sendCommand(FLUSHDB);
+	return conn.statusCodeReply().equals("OK");
     }
 
     /*
@@ -389,21 +340,21 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] get(final byte[] key) {
-	runChecks();
-	client.get(key);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(GET, key);
+	return conn.bulkReply();
     }
 
     private Set<Pair<byte[], Double>> getBinaryPairSet() {
-	List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
+	List<byte[]> membersWithScores = conn.multiBulkReply();
 	Iterator<byte[]> iterator = membersWithScores.iterator();
 	Set<Pair<byte[], Double>> set = Sets.newLinkedHashSet();
 
 	while (iterator.hasNext()) {
 	    set.add(newPair(iterator.next(),
-		    Double.valueOf(SafeEncoder.encode(iterator.next()))));
+		    Double.valueOf(asString(iterator.next()))));
 	}
-	return set;
+	return ImmutableSet.copyOf(set);
     }
 
     /*
@@ -411,13 +362,13 @@ class RawJedisImpl implements RawJedis {
      * 
      * @see com.googlecode.jedis.RawJedis#getClient()
      */
-    public Client getClient() {
-	return client;
+    public Connection getClient() {
+	return conn;
     }
 
     @Override
     public JedisConfig getJedisConfig() {
-	return client.getConfig();
+	return conn.getJedisConfig();
     }
 
     /*
@@ -430,9 +381,9 @@ class RawJedisImpl implements RawJedis {
 	if (key == null || value == null) {
 	    throw new NullPointerException();
 	}
-	runChecks();
-	client.sendCommand(GETSET, key, value);
-	return client.getBinaryBulkReply();
+
+	conn.sendCommand(GETSET, key, value);
+	return conn.bulkReply();
     }
 
     /*
@@ -442,9 +393,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long hdel(final byte[] key, final byte[] field) {
-	runChecks();
-	client.hdel(key, field);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(field);
+
+	conn.sendCommand(HDEL, key, field);
+	return conn.integerReply();
     }
 
     /*
@@ -454,9 +407,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean hexists(final byte[] key, final byte[] field) {
-	runChecks();
-	client.hexists(key, field);
-	return client.getIntegerReply() == 1;
+	checkNotNull(key);
+	checkNotNull(field);
+
+	conn.sendCommand(HEXISTS, key, field);
+	return conn.integerReply() == 1;
     }
 
     /*
@@ -466,9 +421,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] hget(final byte[] key, final byte[] field) {
-	runChecks();
-	client.hget(key, field);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	checkNotNull(field);
+
+	conn.sendCommand(HGET, key, field);
+	return conn.bulkReply();
     }
 
     /*
@@ -478,9 +435,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Map<byte[], byte[]> hgetAll(final byte[] key) {
-	runChecks();
-	client.hgetAll(key);
-	final List<byte[]> flatHash = client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+
+	conn.sendCommand(HGETALL, key);
+	final List<byte[]> flatHash = conn.multiBulkReply();
 	final Map<byte[], byte[]> hash = new JedisByteHashMap();
 	final Iterator<byte[]> iterator = flatHash.iterator();
 	while (iterator.hasNext()) {
@@ -497,9 +455,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long hincrBy(final byte[] key, final byte[] field, final long value) {
-	runChecks();
-	client.hincrBy(key, field, value);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(field);
+
+	conn.sendCommand(HINCRBY, key, field, asByte(value));
+	return conn.integerReply();
     }
 
     /*
@@ -509,9 +469,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Set<byte[]> hkeys(final byte[] key) {
-	runChecks();
-	client.hkeys(key);
-	final List<byte[]> lresult = client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+
+	conn.sendCommand(HKEYS, key);
+	final List<byte[]> lresult = conn.multiBulkReply();
 	return new LinkedHashSet<byte[]>(lresult);
     }
 
@@ -522,9 +483,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long hlen(final byte[] key) {
-	runChecks();
-	client.hlen(key);
-	return client.getIntegerReply();
+	checkNotNull(key);
+
+	conn.sendCommand(HLEN, key);
+	return conn.integerReply();
     }
 
     /*
@@ -534,9 +496,14 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public List<byte[]> hmget(final byte[] key, final byte[]... fields) {
-	runChecks();
-	client.hmget(key, fields);
-	return client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+	// checkNotNull(field);
+	byte[][] args = new byte[1 + fields.length][];
+	args[0] = key;
+	arraycopy(fields, 0, args, 1, fields.length);
+
+	conn.sendCommand(HMGET, args);
+	return conn.multiBulkReply();
     }
 
     /*
@@ -545,10 +512,20 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#hmset(byte[], java.util.Map)
      */
     @Override
-    public String hmset(final byte[] key, final Map<byte[], byte[]> hash) {
-	runChecks();
-	client.hmset(key, hash);
-	return client.getStatusCodeReply();
+    public Boolean hmset(final byte[] key, final Map<byte[], byte[]> hash) {
+	checkNotNull(key);
+	checkArgument(!(hash.isEmpty()));
+	int hashElements = hash.size() * 2;
+	byte[][] args = new byte[1 + hashElements][];
+	int i = 0;
+	args[i++] = key;
+	for (Map.Entry<byte[], byte[]> it : hash.entrySet()) {
+	    args[i++] = it.getKey();
+	    args[i++] = it.getValue();
+	}
+
+	conn.sendCommand(HMSET, args);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -558,9 +535,12 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long hset(final byte[] key, final byte[] field, final byte[] value) {
-	runChecks();
-	client.hset(key, field, value);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(field);
+	checkNotNull(value);
+
+	conn.sendCommand(HSET, key, field, value);
+	return conn.integerReply();
     }
 
     /*
@@ -570,9 +550,12 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long hsetnx(final byte[] key, final byte[] field, final byte[] value) {
-	runChecks();
-	client.hsetnx(key, field, value);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(field);
+	checkNotNull(value);
+
+	conn.sendCommand(HSETNX, key, field, value);
+	return conn.integerReply();
     }
 
     /*
@@ -582,9 +565,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public List<byte[]> hvals(final byte[] key) {
-	runChecks();
-	client.hvals(key);
-	final List<byte[]> lresult = client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+
+	conn.sendCommand(HVALS, key);
+	final List<byte[]> lresult = conn.multiBulkReply();
 	return lresult;
     }
 
@@ -596,9 +580,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long incr(final byte[] key) {
 	checkNotNull(key);
-	runChecks();
-	client.sendCommand(Command.INCR, key);
-	return client.getIntegerReply();
+
+	conn.sendCommand(INCR, key);
+	return conn.integerReply();
     }
 
     /*
@@ -609,9 +593,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long incrBy(final byte[] key, final long value) {
 	checkNotNull(key);
-	runChecks();
-	client.sendCommand(Command.INCRBY, key, asByte(value));
-	return client.getIntegerReply();
+
+	conn.sendCommand(INCRBY, key, asByte(value));
+	return conn.integerReply();
     }
 
     /*
@@ -620,9 +604,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#info()
      */
     @Override
-    public String info() {
-	client.info();
-	return client.getBulkReply();
+    public byte[] info() {
+	conn.sendCommand(INFO);
+	return conn.bulkReply();
     }
 
     /*
@@ -632,7 +616,7 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public boolean isConnected() {
-	return client.isConnected();
+	return conn.isConnected();
     }
 
     /*
@@ -642,11 +626,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Set<byte[]> keys(final byte[] pattern) {
-	runChecks();
-	client.keys(pattern);
-	final HashSet<byte[]> keySet = new LinkedHashSet<byte[]>(
-		client.getBinaryMultiBulkReply());
-	return keySet;
+
+	conn.sendCommand(KEYS, pattern);
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -656,8 +638,8 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long lastsave() {
-	client.lastsave();
-	return client.getIntegerReply();
+	conn.sendCommand(LASTSAVE);
+	return conn.integerReply();
     }
 
     /*
@@ -667,9 +649,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] lindex(final byte[] key, final int index) {
-	runChecks();
-	client.lindex(key, index);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	checkNotNull(index);
+
+	conn.sendCommand(LINDEX, key, asByte(index));
+	return conn.bulkReply();
     }
 
     /*
@@ -679,8 +663,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long linsertAfter(byte[] key, byte[] element, byte[] value) {
-	client.linsertAfter(key, element, value);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(element);
+	checkNotNull(value);
+	conn.sendCommand(LINSERT, key, asByte("AFTER"), element, value);
+	return conn.integerReply();
     }
 
     /*
@@ -690,8 +677,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long linsertBefore(byte[] key, byte[] element, byte[] value) {
-	client.linsertBefore(key, element, value);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(element);
+	checkNotNull(value);
+	conn.sendCommand(LINSERT, key, asByte("BEFORE"), element, value);
+	return conn.integerReply();
     }
 
     /*
@@ -701,9 +691,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long llen(final byte[] key) {
-	runChecks();
-	client.llen(key);
-	return client.getIntegerReply();
+	checkNotNull(key);
+
+	conn.sendCommand(LLEN, key);
+	return conn.integerReply();
     }
 
     /*
@@ -713,9 +704,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] lpop(final byte[] key) {
-	runChecks();
-	client.lpop(key);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(LPOP, key);
+	return conn.bulkReply();
     }
 
     /*
@@ -724,10 +715,16 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#lpush(byte[], byte[])
      */
     @Override
-    public Long lpush(final byte[] key, final byte[] string) {
-	runChecks();
-	client.lpush(key, string);
-	return client.getIntegerReply();
+    public Long lpush(final byte[] key, final byte[] value) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(LPUSH, key, value);
+	return conn.integerReply();
+    }
+
+    @Override
+    public Long lpushRaw(Pair<byte[], byte[]> keyValuePair) {
+	return lpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -736,9 +733,22 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#lpushx(byte[], byte[])
      */
     @Override
-    public Long lpushx(final byte[] key, final byte[] string) {
-	client.lpushx(key, string);
-	return client.getIntegerReply();
+    public Long lpushx(final byte[] key, final byte[] value) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(LPUSHX, key, value);
+	return conn.integerReply();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedis#lpushxRaw(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Long lpushxRaw(Pair<byte[], byte[]> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return lpushx(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -749,9 +759,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public List<byte[]> lrange(final byte[] key, final long start,
 	    final long end) {
-	runChecks();
-	client.lrange(key, start, end);
-	return client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(LRANGE, key, asByte(start), asByte(end));
+	return conn.multiBulkReply();
     }
 
     /*
@@ -761,9 +771,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long lrem(final byte[] key, final int count, final byte[] value) {
-	runChecks();
-	client.lrem(key, count, value);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	conn.sendCommand(LREM, key, asByte(count), value);
+	return conn.integerReply();
     }
 
     /*
@@ -772,10 +782,11 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#lset(byte[], int, byte[])
      */
     @Override
-    public String lset(final byte[] key, final int index, final byte[] value) {
-	runChecks();
-	client.lset(key, index, value);
-	return client.getStatusCodeReply();
+    public Boolean lset(final byte[] key, final int index, final byte[] value) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(LSET, key, asByte(index), value);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -784,10 +795,10 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#ltrim(byte[], int, int)
      */
     @Override
-    public String ltrim(final byte[] key, final int start, final int end) {
-	runChecks();
-	client.ltrim(key, start, end);
-	return client.getStatusCodeReply();
+    public Boolean ltrim(final byte[] key, final int start, final int end) {
+	checkNotNull(key);
+	conn.sendCommand(LTRIM, key, asByte(start), asByte(end));
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -797,9 +808,8 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public List<byte[]> mget(final byte[]... keys) {
-	runChecks();
-	client.mget(keys);
-	return client.getBinaryMultiBulkReply();
+	conn.sendCommand(MGET, keys);
+	return conn.multiBulkReply();
     }
 
     /*
@@ -810,8 +820,8 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public void monitor(final JedisMonitor jedisMonitor) {
-	client.monitor();
-	jedisMonitor.proceed(client);
+	conn.sendCommand(MONITOR);
+	jedisMonitor.proceed(conn);
     }
 
     /*
@@ -822,10 +832,10 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Boolean move(final byte[] key, final long index) {
 	checkNotNull(key);
-	checkArgument(0L <= index && index < 16);
-	runChecks();
-	client.sendCommand(Command.MOVE, key, asByte(index));
-	return client.getBooleanIntegerReply();
+	checkArgument(0L <= index && index < 16L);
+
+	conn.sendCommand(MOVE, key, asByte(index));
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -840,7 +850,6 @@ class RawJedisImpl implements RawJedis {
 	checkNotNull(keyValuePair1);
 	checkNotNull(keyValuePair1.getFirst());
 	checkNotNull(keyValuePair1.getSecond());
-	runChecks();
 
 	List<byte[]> keysAndVals = Lists.newArrayList();
 	keysAndVals.add(keyValuePair1.getFirst());
@@ -851,9 +860,9 @@ class RawJedisImpl implements RawJedis {
 	    keysAndVals.add(it.getSecond());
 	}
 
-	client.sendCommand(Command.MSETNX,
+	conn.sendCommand(MSETNX,
 		keysAndVals.toArray(new byte[keysAndVals.size()][]));
-	return client.getIntegerReply() == 1L;
+	return conn.integerReply() == 1L;
     }
 
     /*
@@ -868,7 +877,6 @@ class RawJedisImpl implements RawJedis {
 	checkNotNull(keyValuePair1);
 	checkNotNull(keyValuePair1.getFirst());
 	checkNotNull(keyValuePair1.getSecond());
-	runChecks();
 
 	List<byte[]> keysAndVals = Lists.newArrayList();
 	keysAndVals.add(keyValuePair1.getFirst());
@@ -879,9 +887,9 @@ class RawJedisImpl implements RawJedis {
 	    keysAndVals.add(it.getSecond());
 	}
 
-	client.sendCommand(Command.MSET,
+	conn.sendCommand(MSET,
 		keysAndVals.toArray(new byte[keysAndVals.size()][]));
-	return client.getBooleanStatusCodeReply();
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -892,8 +900,8 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Boolean persist(final byte[] key) {
 	checkNotNull(key);
-	client.sendCommand(PERSIST, key);
-	return client.getBooleanIntegerReply();
+	conn.sendCommand(PERSIST, key);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -903,36 +911,8 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean ping() {
-	runChecks();
-	client.sendCommand(Command.PING);
-	return client.getStatusCodeReply().equals("PONG");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.googlecode.jedis.RawJedis#psubscribe(com.googlecode.jedis.JedisPubSub
-     * , java.lang.String)
-     */
-    @Override
-    public void psubscribe(final JedisPubSub jedisPubSub,
-	    final String pattern1, final String... patternN) {
-	client.setTimeoutInfinite();
-	jedisPubSub.proceedWithPatterns(client, pattern1, patternN);
-	client.rollbackTimeout();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.googlecode.jedis.RawJedis#publish(java.lang.String,
-     * java.lang.String)
-     */
-    @Override
-    public Long publish(final String channel, final String message) {
-	client.publish(channel, message);
-	return client.getIntegerReply();
+	conn.sendCommand(PING);
+	return Arrays.equals(conn.statusCodeReply(), Protocol.Keyword.PONG.raw);
     }
 
     /*
@@ -942,20 +922,7 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public void quit() {
-	runChecks();
-	client.quit();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.googlecode.jedis.RawJedis#randomBinaryKey()
-     */
-    @Override
-    public byte[] randomBinaryKey() {
-	runChecks();
-	client.randomKey();
-	return client.getBinaryBulkReply();
+	conn.sendCommand(QUIT);
     }
 
     /*
@@ -965,8 +932,8 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] randomKeyRaw() {
-	client.sendCommand(RANDOMKEY);
-	return client.getBinaryBulkReply();
+	conn.sendCommand(RANDOMKEY);
+	return conn.bulkReply();
     }
 
     /*
@@ -978,9 +945,9 @@ class RawJedisImpl implements RawJedis {
     public Boolean rename(final byte[] srcKey, final byte[] dstKey) {
 	checkNotNull(srcKey);
 	checkNotNull(dstKey);
-	runChecks();
-	client.sendCommand(RENAME, srcKey, dstKey);
-	return client.getBooleanStatusCodeReply();
+
+	conn.sendCommand(RENAME, srcKey, dstKey);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -992,9 +959,9 @@ class RawJedisImpl implements RawJedis {
     public Boolean renamenx(final byte[] srcKey, final byte[] dstKey) {
 	checkNotNull(srcKey);
 	checkNotNull(dstKey);
-	runChecks();
-	client.sendCommand(Command.RENAMENX, srcKey, dstKey);
-	return client.getBooleanIntegerReply();
+
+	conn.sendCommand(RENAMENX, srcKey, dstKey);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1004,9 +971,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] rpop(final byte[] key) {
-	runChecks();
-	client.rpop(key);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(RPOP, key);
+	return conn.bulkReply();
     }
 
     /*
@@ -1016,9 +983,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] rpoplpush(final byte[] srckey, final byte[] dstkey) {
-	runChecks();
-	client.rpoplpush(srckey, dstkey);
-	return client.getBinaryBulkReply();
+	checkNotNull(srckey);
+	checkNotNull(dstkey);
+	conn.sendCommand(RPOPLPUSH, srckey, dstkey);
+	return conn.bulkReply();
     }
 
     /*
@@ -1027,10 +995,22 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#rpush(byte[], byte[])
      */
     @Override
-    public Long rpush(final byte[] key, final byte[] string) {
-	runChecks();
-	client.rpush(key, string);
-	return client.getIntegerReply();
+    public Long rpush(final byte[] key, final byte[] value) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(RPUSH, key, value);
+	return conn.integerReply();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedis#rpushRaw(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Long rpushRaw(Pair<byte[], byte[]> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return rpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -1039,23 +1019,22 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#rpushx(byte[], byte[])
      */
     @Override
-    public Long rpushx(final byte[] key, final byte[] string) {
-	client.rpushx(key, string);
-	return client.getIntegerReply();
+    public Long rpushx(final byte[] key, final byte[] value) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(RPUSHX, key, value);
+	return conn.integerReply();
     }
 
-    protected void runChecks() {
-	if (client.isInMulti()) {
-	    throw new JedisException(
-		    "Cannot use Jedis when in Multi. Please use JedisTransaction instead.");
-	}
-	try {
-	    this.connect();
-	} catch (UnknownHostException e) {
-	    throw new JedisException(e);
-	} catch (IOException e) {
-	    throw new JedisException(e);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedis#rpushxRaw(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Long rpushxRaw(Pair<byte[], byte[]> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return rpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -1065,9 +1044,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean sadd(final byte[] key, final byte[] member) {
-	runChecks();
-	client.sadd(key, member);
-	return client.getIntegerReply().equals(1L);
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(SADD, key, member);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1076,9 +1056,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#save()
      */
     @Override
-    public String save() {
-	client.save();
-	return client.getStatusCodeReply();
+    public Boolean save() {
+	conn.sendCommand(SAVE);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1088,9 +1068,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long scard(final byte[] key) {
-	runChecks();
-	client.scard(key);
-	return client.getIntegerReply();
+	checkNotNull(key);
+
+	conn.sendCommand(SCARD, key);
+	return conn.integerReply();
     }
 
     /*
@@ -1103,12 +1084,12 @@ class RawJedisImpl implements RawJedis {
 	if (key1 == null) {
 	    throw new NullPointerException();
 	}
-	runChecks();
+
 	byte[][] args = new byte[keyN.length + 1][];
 	args[0] = key1;
 	arraycopy(keyN, 0, args, 1, keyN.length);
-	client.sendCommand(Command.SDIFF, args);
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	conn.sendCommand(SDIFF, args);
+	return Sets.newLinkedHashSet(conn.multiBulkReply());
     }
 
     /*
@@ -1122,13 +1103,13 @@ class RawJedisImpl implements RawJedis {
 	if (dstKey == null || key1 == null) {
 	    throw new NullPointerException();
 	}
-	runChecks();
+
 	byte[][] args = new byte[keyN.length + 2][];
 	args[0] = dstKey;
 	args[1] = key1;
 	arraycopy(keyN, 0, args, 2, keyN.length);
-	client.sendCommand(SDIFFSTORE, args);
-	return client.getIntegerReply();
+	conn.sendCommand(SDIFFSTORE, args);
+	return conn.integerReply();
     }
 
     /*
@@ -1139,9 +1120,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Boolean select(final long index) {
 	checkArgument(0L <= index && index < 16L);
-	runChecks();
-	client.sendCommand(Command.SELECT, asByte(asString(index)));
-	return client.getBooleanStatusCodeReply();
+
+	conn.sendCommand(SELECT, asByte(asString(index)));
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1153,21 +1134,8 @@ class RawJedisImpl implements RawJedis {
     public Boolean set(final byte[] key, final byte[] value) {
 	checkNotNull(key);
 	checkNotNull(value);
-
-	runChecks();
-	client.sendCommand(Command.SET, key, value);
-
-	String reply = client.getStatusCodeReply();
-	return (reply != null) ? reply.equals("OK") : false;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.googlecode.jedis.RawJedis#setClient(com.googlecode.jedis.Client)
-     */
-    public void setClient(Client client) {
-	this.client = client;
+	conn.sendCommand(SET, key, value);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1176,15 +1144,34 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#setex(byte[], int, byte[])
      */
     @Override
-    public String setex(final byte[] key, final int seconds, final byte[] value) {
-	runChecks();
-	client.setex(key, seconds, value);
-	return client.getStatusCodeReply();
+    public Boolean setex(byte[] key, byte[] value, int seconds) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(SETEX, key, asByte(seconds), value);
+	return conn.statusCodeReplyAsBoolean();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedis#setex(com.googlecode.jedis.Pair, int)
+     */
+    @Override
+    public Boolean setexRaw(Pair<byte[], byte[]> keyValuePair, final int seconds) {
+	checkNotNull(keyValuePair);
+	return setex(keyValuePair.getFirst(), keyValuePair.getSecond(), seconds);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.googlecode.jedis.RawJedis#setJedisConfig(com.googlecode.jedis.JedisConfig
+     * )
+     */
     @Override
     public void setJedisConfig(JedisConfig config) {
-	client.setConfig(config);
+	conn.setJedisConfig(config);
     }
 
     /*
@@ -1196,9 +1183,26 @@ class RawJedisImpl implements RawJedis {
     public Boolean setnx(final byte[] key, final byte[] value) {
 	checkNotNull(key);
 	checkNotNull(value);
-	runChecks();
-	client.sendCommand(Command.SETNX, key, value);
-	return client.getIntegerReply() == 1L;
+
+	conn.sendCommand(SETNX, key, value);
+	return conn.integerReply() == 1L;
+    }
+
+    @Override
+    public Boolean setnxRaw(Pair<byte[], byte[]> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return setnx(keyValuePair.getFirst(), keyValuePair.getSecond());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedis#setRaw(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Boolean setRaw(Pair<byte[], byte[]> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return set(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -1207,13 +1211,12 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#shutdown()
      */
     @Override
-    public String shutdown() {
-	client.shutdown();
-	String status = null;
+    public Boolean shutdown() {
+	conn.sendCommand(SHUTDOWN);
+	Boolean status = null;
 	try {
-	    status = client.getStatusCodeReply();
+	    status = conn.statusCodeReplyAsBoolean();
 	} catch (JedisException ex) {
-	    status = null;
 	}
 	return status;
     }
@@ -1225,10 +1228,12 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Set<byte[]> sinter(byte[] key1, final byte[]... keyN) {
-	runChecks();
-	client.sinter(key1, keyN);
-	final List<byte[]> members = client.getBinaryMultiBulkReply();
-	return new LinkedHashSet<byte[]>(members);
+	checkNotNull(key1);
+	byte[][] args = new byte[1 + keyN.length][];
+	args[0] = key1;
+	arraycopy(keyN, 0, args, 1, keyN.length);
+	conn.sendCommand(SINTER, args);
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1239,9 +1244,14 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long sinterstore(final byte[] dstKey, byte[] key1,
 	    final byte[]... keyN) {
-	runChecks();
-	client.sinterstore(dstKey, key1, keyN);
-	return client.getIntegerReply();
+	checkNotNull(dstKey);
+	checkNotNull(key1);
+	byte[][] args = new byte[2 + keyN.length][];
+	args[0] = dstKey;
+	args[1] = key1;
+	arraycopy(keyN, 0, args, 2, keyN.length);
+	conn.sendCommand(SINTERSTORE, args);
+	return conn.integerReply();
     }
 
     /*
@@ -1250,10 +1260,11 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sismember(byte[], byte[])
      */
     @Override
-    public Boolean sismember(final byte[] key, final byte[] member) {
-	runChecks();
-	client.sismember(key, member);
-	return client.getIntegerReply().equals(1L);
+    public Boolean sismember(final byte[] key, final byte[] value) {
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(SISMEMBER, key, value);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1262,9 +1273,10 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#slaveof(java.lang.String, int)
      */
     @Override
-    public String slaveof(final String host, final int port) {
-	client.slaveof(host, port);
-	return client.getStatusCodeReply();
+    public Boolean slaveof(final byte[] host, final int port) {
+	checkNotNull(host);
+	conn.sendCommand(SLAVEOF, host, asByte(port));
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1273,9 +1285,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#slaveofNoOne()
      */
     @Override
-    public String slaveofNoOne() {
-	client.slaveofNoOne();
-	return client.getStatusCodeReply();
+    public Boolean slaveofNoOne() {
+	conn.sendCommand(SLAVEOF, asByte("NO ONE"));
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1285,10 +1297,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Set<byte[]> smembers(final byte[] key) {
-	runChecks();
-	client.smembers(key);
-	final List<byte[]> members = client.getBinaryMultiBulkReply();
-	return new LinkedHashSet<byte[]>(members);
+	checkNotNull(key);
+	conn.sendCommand(SMEMBERS, key);
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1299,9 +1310,11 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Boolean smove(final byte[] srckey, final byte[] dstkey,
 	    final byte[] member) {
-	runChecks();
-	client.smove(srckey, dstkey, member);
-	return client.getIntegerReply().equals(1L);
+	checkNotNull(srckey);
+	checkNotNull(dstkey);
+	checkNotNull(member);
+	conn.sendCommand(SMOVE, srckey, dstkey, member);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1311,9 +1324,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public List<byte[]> sort(final byte[] key) {
-	runChecks();
-	client.sort(key);
-	return client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(SORT, key);
+	return conn.multiBulkReply();
     }
 
     /*
@@ -1323,9 +1336,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long sort(final byte[] key, final byte[] dstkey) {
-	runChecks();
-	client.sort(key, dstkey);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(dstkey);
+	conn.sendCommand(SORT, key, asByte("STORE"), dstkey);
+	return conn.integerReply();
     }
 
     /*
@@ -1337,9 +1351,15 @@ class RawJedisImpl implements RawJedis {
     @Override
     public List<byte[]> sort(final byte[] key,
 	    final SortParams sortingParameters) {
-	runChecks();
-	client.sort(key, sortingParameters);
-	return client.getBinaryMultiBulkReply();
+	checkNotNull(key);
+	int paramsLenght = sortingParameters.getParams().size();
+	byte[][] args = new byte[1 + paramsLenght][];
+	args[0] = key;
+	arraycopy(sortingParameters.getParams().toArray(new byte[0][]), 0,
+		args, 1, paramsLenght);
+
+	conn.sendCommand(SORT, args);
+	return conn.multiBulkReply();
     }
 
     /*
@@ -1351,9 +1371,18 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long sort(final byte[] key, final SortParams sortingParameters,
 	    final byte[] dstkey) {
-	runChecks();
-	client.sort(key, sortingParameters, dstkey);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(dstkey);
+	int paramsLenght = sortingParameters.getParams().size();
+	byte[][] args = new byte[3 + paramsLenght][];
+	args[0] = key;
+	arraycopy(sortingParameters.getParams().toArray(new byte[0][]), 0,
+		args, 1, paramsLenght);
+	args[1 + paramsLenght] = asByte("STORE");
+	args[2 + paramsLenght] = dstkey;
+
+	conn.sendCommand(SORT, args);
+	return conn.integerReply();
     }
 
     /*
@@ -1363,9 +1392,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] spop(final byte[] key) {
-	runChecks();
-	client.spop(key);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(SPOP, key);
+	return conn.bulkReply();
     }
 
     /*
@@ -1375,12 +1404,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] srandmember(final byte[] key) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(SRANDMEMBER, key);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(SRANDMEMBER, key);
+	return conn.bulkReply();
     }
 
     /*
@@ -1390,9 +1416,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean srem(final byte[] key, final byte[] member) {
-	runChecks();
-	client.srem(key, member);
-	return client.getIntegerReply().equals(1L);
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(SREM, key, member);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1402,23 +1429,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long strlen(final byte[] key) {
-	client.strlen(key);
-	return client.getIntegerReply();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.googlecode.jedis.RawJedis#subscribe(com.googlecode.jedis.JedisPubSub,
-     * java.lang.String)
-     */
-    @Override
-    public void subscribe(final JedisPubSub jedisPubSub,
-	    final String... channels) {
-	client.setTimeoutInfinite();
-	jedisPubSub.proceed(client, channels);
-	client.rollbackTimeout();
+	checkNotNull(key);
+	conn.sendCommand(STRLEN, key);
+	return conn.integerReply();
     }
 
     /*
@@ -1428,9 +1441,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public byte[] substr(final byte[] key, final int start, final int end) {
-	runChecks();
-	client.substr(key, start, end);
-	return client.getBinaryBulkReply();
+	checkNotNull(key);
+	conn.sendCommand(SUBSTR, key, asByte(start), asByte(end));
+	return conn.bulkReply();
     }
 
     /*
@@ -1440,17 +1453,12 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Set<byte[]> sunion(byte[] key1, final byte[]... keyN) {
-	if (key1 == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-
+	checkNotNull(key1);
 	byte[][] args = new byte[1 + keyN.length][];
 	args[0] = key1;
 	arraycopy(keyN, 0, args, 1, keyN.length);
-
-	client.sendCommand(SUNION, args);
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	conn.sendCommand(SUNION, args);
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1461,18 +1469,16 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long sunionstore(final byte[] dstKey, byte[] key1,
 	    final byte[]... keyN) {
-	if (dstKey == null || key1 == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
+	checkNotNull(key1);
+	checkNotNull(dstKey);
 
 	byte[][] args = new byte[keyN.length + 2][];
 	args[0] = dstKey;
 	args[1] = key1;
 	arraycopy(keyN, 0, args, 2, keyN.length);
 
-	client.sendCommand(SUNIONSTORE, args);
-	return client.getIntegerReply();
+	conn.sendCommand(SUNIONSTORE, args);
+	return conn.integerReply();
     }
 
     /*
@@ -1482,7 +1488,7 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public void sync() {
-	client.sync();
+	conn.sendCommand(SYNC);
     }
 
     /*
@@ -1492,9 +1498,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long ttl(final byte[] key) {
-	runChecks();
-	client.ttl(key);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	conn.sendCommand(TTL, key);
+	return conn.integerReply();
     }
 
     /*
@@ -1503,10 +1509,10 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#type(byte[])
      */
     @Override
-    public String type(final byte[] key) {
-	runChecks();
-	client.type(key);
-	return client.getStatusCodeReply();
+    public RedisType type(final byte[] key) {
+	checkNotNull(key);
+	conn.sendCommand(TYPE, key);
+	return RedisType.get(conn.statusCodeReply());
     }
 
     /*
@@ -1515,9 +1521,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#unwatch()
      */
     @Override
-    public String unwatch() {
-	client.unwatch();
-	return client.getStatusCodeReply();
+    public Boolean unwatch() {
+	conn.sendCommand(UNWATCH);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1526,9 +1532,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#watch(byte[])
      */
     @Override
-    public String watch(final byte[] key) {
-	client.watch(key);
-	return client.getStatusCodeReply();
+    public Boolean watch(final byte[] key) {
+	conn.sendCommand(WATCH, key);
+	return conn.statusCodeReplyAsBoolean();
     }
 
     /*
@@ -1538,12 +1544,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean zadd(final byte[] key, final double score, final byte[] value) {
-	if (key == null || value == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZADD, key, asByte(score), value);
-	return (client.getIntegerReply() == 1L);
+	checkNotNull(key);
+	checkNotNull(value);
+	conn.sendCommand(ZADD, key, asByte(score), value);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1554,14 +1558,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean zadd(final byte[] key, final Pair<byte[], Double> value) {
-	if (key == null || value == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZADD, key, asByte(value.getSecond()),
-		value.getFirst());
-
-	return (client.getIntegerReply() == 1L);
+	checkNotNull(key);
+	checkNotNull(value);
+	checkNotNull(value.getFirst());
+	conn.sendCommand(ZADD, key, asByte(value.getSecond()), value.getFirst());
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1571,12 +1572,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long zcard(final byte[] key) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZCARD, key);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	conn.sendCommand(ZCARD, key);
+	return conn.integerReply();
     }
 
     /*
@@ -1586,12 +1584,11 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long zcount(byte[] key, byte[] min, byte[] max) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZCOUNT, key, min, max);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZCOUNT, key, min, max);
+	return conn.integerReply();
     }
 
     /*
@@ -1601,12 +1598,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Double zincrby(byte[] key, byte[] member, double value) {
-	if (key == null || member == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZINCRBY, key, asByte(value), member);
-	return new Double(client.getBulkReply());
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(ZINCRBY, key, asByte(value), member);
+	return new Double(new String(conn.bulkReply(), DEFAULT_CHARSET));
     }
 
     private void zinterstoreHelper(String mode, byte[] dstKey,
@@ -1615,7 +1610,6 @@ class RawJedisImpl implements RawJedis {
 	checkNotNull(dstKey);
 	checkNotNull(ssetAndWeight1);
 	checkNotNull(ssetAndWeight1.getFirst());
-	runChecks();
 
 	// ZUNIONSTORE destination numkeys key1 key2 ... keyN [WEIGHTS
 	// weight1 weight2 ... weightN] [AGGREGATE SUM|MIN|MAX]
@@ -1635,8 +1629,7 @@ class RawJedisImpl implements RawJedis {
 	params.add(asByte("AGGREGATE"));
 	params.add(asByte(mode));
 
-	client.sendCommand(ZINTERSTORE,
-		params.toArray(new byte[params.size()][]));
+	conn.sendCommand(ZINTERSTORE, params.toArray(new byte[params.size()][]));
     }
 
     /*
@@ -1651,7 +1644,7 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double> ssetAndWeight1,
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	zinterstoreHelper("MAX", dstKey, ssetAndWeight1, ssetAndWeightN);
-	return client.getIntegerReply();
+	return conn.integerReply();
     }
 
     /*
@@ -1666,7 +1659,7 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double> ssetAndWeight1,
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	zinterstoreHelper("MIN", dstKey, ssetAndWeight1, ssetAndWeightN);
-	return client.getIntegerReply();
+	return conn.integerReply();
     }
 
     /*
@@ -1681,7 +1674,7 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double> ssetAndWeight1,
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	zinterstoreHelper("SUM", dstKey, ssetAndWeight1, ssetAndWeightN);
-	return client.getIntegerReply();
+	return conn.integerReply();
     }
 
     /*
@@ -1691,12 +1684,9 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Set<byte[]> zrange(final byte[] key, final long start, final long end) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZRANGE, key, asByte(start), asByte(end));
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	checkNotNull(key);
+	conn.sendCommand(ZRANGE, key, asByte(start), asByte(end));
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1707,12 +1697,11 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min,
 	    final byte[] max) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZRANGEBYSCORE, key, min, max);
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZRANGEBYSCORE, key, min, max);
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1724,13 +1713,12 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max,
 	    long offset, long count) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZRANGEBYSCORE, key, min, max,
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZRANGEBYSCORE, key, min, max,
 		Protocol.Keyword.LIMIT.raw, asByte(offset), asByte(count));
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1742,11 +1730,10 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<Pair<byte[], Double>> zrangeByScoreWithScores(byte[] key,
 	    byte[] min, byte[] max) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZRANGEBYSCORE, key, min, max,
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZRANGEBYSCORE, key, min, max,
 		Protocol.Keyword.WITHSCORES.raw);
 	return getBinaryPairSet();
     }
@@ -1760,11 +1747,10 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<Pair<byte[], Double>> zrangeByScoreWithScores(byte[] key,
 	    byte[] min, byte[] max, long offset, long count) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZRANGEBYSCORE, key, min, max,
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZRANGEBYSCORE, key, min, max,
 		Protocol.Keyword.WITHSCORES.raw, Protocol.Keyword.LIMIT.raw,
 		asByte(offset), asByte(count));
 	return getBinaryPairSet();
@@ -1778,11 +1764,8 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<Pair<byte[], Double>> zrangeWithScores(byte[] key, long start,
 	    long end) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZRANGE, key, asByte(start), asByte(end),
+	checkNotNull(key);
+	conn.sendCommand(ZRANGE, key, asByte(start), asByte(end),
 		asByte("WITHSCORES"));
 	return getBinaryPairSet();
     }
@@ -1794,12 +1777,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long zrank(final byte[] key, final byte[] member) {
-	if (key == null || member == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(Command.ZRANK, key, member);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(ZRANK, key, member);
+	return conn.integerReply();
     }
 
     /*
@@ -1809,12 +1790,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Boolean zrem(final byte[] key, final byte[] member) {
-	if (key == null || member == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.zrem(key, member);
-	return (client.getIntegerReply() == 1L);
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(ZREM, key, member);
+	return conn.integerReplyAsBoolean();
     }
 
     /*
@@ -1825,12 +1804,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long zremrangeByRank(final byte[] key, final long start,
 	    final long end) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREMRANGEBYRANK, key, asByte(start), asByte(end));
-	return client.getIntegerReply();
+	checkNotNull(key);
+	conn.sendCommand(ZREMRANGEBYRANK, key, asByte(start), asByte(end));
+	return conn.integerReply();
     }
 
     /*
@@ -1842,12 +1818,11 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Long zremrangeByScore(final byte[] key, final byte[] min,
 	    final byte[] max) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREMRANGEBYSCORE, key, min, max);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZREMRANGEBYSCORE, key, min, max);
+	return conn.integerReply();
     }
 
     /*
@@ -1858,12 +1833,9 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<byte[]> zrevrange(final byte[] key, final long start,
 	    final long end) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANGE, key, asByte(start), asByte(end));
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	checkNotNull(key);
+	conn.sendCommand(ZREVRANGE, key, asByte(start), asByte(end));
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1875,12 +1847,11 @@ class RawJedisImpl implements RawJedis {
     @Override
     public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] min,
 	    final byte[] max) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANGEBYSCORE, key, min, max);
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZREVRANGEBYSCORE, key, min, max);
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1890,15 +1861,14 @@ class RawJedisImpl implements RawJedis {
      * byte[], long, long)
      */
     @Override
-    public Set<byte[]> zrevrangeByScore(byte[] key, byte[] min, byte[] max,
-	    long offset, long count) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANGEBYSCORE, key, min, max,
+    public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] min,
+	    final byte[] max, final long offset, final long count) {
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZREVRANGEBYSCORE, key, min, max,
 		Protocol.Keyword.LIMIT.raw, asByte(offset), asByte(count));
-	return Sets.newLinkedHashSet(client.getBinaryMultiBulkReply());
+	return ImmutableSet.copyOf(conn.multiBulkReply());
     }
 
     /*
@@ -1908,13 +1878,12 @@ class RawJedisImpl implements RawJedis {
      * byte[], byte[])
      */
     @Override
-    public Set<Pair<byte[], Double>> zrevrangeByScoreWithScores(byte[] key,
-	    byte[] min, byte[] max) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANGEBYSCORE, key, min, max,
+    public Set<Pair<byte[], Double>> zrevrangeByScoreWithScores(
+	    final byte[] key, final byte[] min, final byte[] max) {
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZREVRANGEBYSCORE, key, min, max,
 		Protocol.Keyword.WITHSCORES.raw);
 	return getBinaryPairSet();
     }
@@ -1926,13 +1895,13 @@ class RawJedisImpl implements RawJedis {
      * byte[], byte[], long, long)
      */
     @Override
-    public Set<Pair<byte[], Double>> zrevrangeByScoreWithScores(byte[] key,
-	    byte[] min, byte[] max, long offset, long count) {
-	if (key == null || min == null || max == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANGEBYSCORE, key, min, max,
+    public Set<Pair<byte[], Double>> zrevrangeByScoreWithScores(
+	    final byte[] key, final byte[] min, final byte[] max,
+	    final long offset, final long count) {
+	checkNotNull(key);
+	checkNotNull(min);
+	checkNotNull(max);
+	conn.sendCommand(ZREVRANGEBYSCORE, key, min, max,
 		Protocol.Keyword.WITHSCORES.raw, Protocol.Keyword.LIMIT.raw,
 		asByte(offset), asByte(count));
 	return getBinaryPairSet();
@@ -1945,13 +1914,10 @@ class RawJedisImpl implements RawJedis {
      * long)
      */
     @Override
-    public Set<Pair<byte[], Double>> zrevrangeWithScores(byte[] key,
-	    long start, long end) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANGE, key, asByte(start), asByte(end),
+    public Set<Pair<byte[], Double>> zrevrangeWithScores(final byte[] key,
+	    final long start, final long end) {
+	checkNotNull(key);
+	conn.sendCommand(ZREVRANGE, key, asByte(start), asByte(end),
 		asByte("WITHSCORES"));
 	return getBinaryPairSet();
     }
@@ -1963,12 +1929,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Long zrevrank(final byte[] key, final byte[] member) {
-	if (key == null || member == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZREVRANK, key, member);
-	return client.getIntegerReply();
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(ZREVRANK, key, member);
+	return conn.integerReply();
     }
 
     /*
@@ -1978,13 +1942,12 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public Double zscore(final byte[] key, final byte[] member) {
-	if (key == null || member == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sendCommand(ZSCORE, key, member);
-	final String score = client.getBulkReply();
-	return (score != null ? new Double(score) : null);
+	checkNotNull(key);
+	checkNotNull(member);
+	conn.sendCommand(ZSCORE, key, member);
+	final byte[] score = conn.bulkReply();
+	return (score != null ? new Double(new String(score, DEFAULT_CHARSET))
+		: null);
     }
 
     private void zunionstoreHelper(String mode, byte[] dstKey,
@@ -1992,7 +1955,6 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	checkNotNull(dstKey);
 	checkNotNull(ssetAndWeight1);
-	runChecks();
 
 	// ZUNIONSTORE destination numkeys key1 key2 ... keyN [WEIGHTS
 	// weight1 weight2 ... weightN] [AGGREGATE SUM|MIN|MAX]
@@ -2012,8 +1974,7 @@ class RawJedisImpl implements RawJedis {
 	params.add(asByte("AGGREGATE"));
 	params.add(asByte(mode));
 
-	client.sendCommand(ZUNIONSTORE,
-		params.toArray(new byte[params.size()][]));
+	conn.sendCommand(ZUNIONSTORE, params.toArray(new byte[params.size()][]));
     }
 
     /*
@@ -2028,7 +1989,7 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double> ssetAndWeight1,
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	zunionstoreHelper("MAX", dstKey, ssetAndWeight1, ssetAndWeightN);
-	return client.getIntegerReply();
+	return conn.integerReply();
     }
 
     /*
@@ -2043,7 +2004,7 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double> ssetAndWeight1,
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	zunionstoreHelper("MIN", dstKey, ssetAndWeight1, ssetAndWeightN);
-	return client.getIntegerReply();
+	return conn.integerReply();
     }
 
     /*
@@ -2058,7 +2019,7 @@ class RawJedisImpl implements RawJedis {
 	    Pair<byte[], Double> ssetAndWeight1,
 	    Pair<byte[], Double>... ssetAndWeightN) {
 	zunionstoreHelper("SUM", dstKey, ssetAndWeight1, ssetAndWeightN);
-	return client.getIntegerReply();
+	return conn.integerReply();
     }
 
 }

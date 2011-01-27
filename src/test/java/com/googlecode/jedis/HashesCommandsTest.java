@@ -1,12 +1,7 @@
 package com.googlecode.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 import java.util.Map;
 
@@ -90,7 +85,6 @@ public class HashesCommandsTest extends JedisTestBase {
 
     @Test
     public void hmset() {
-
 	assertThat(jedis.hmset(foo, ImmutableMap.of(bar, car, car, bar)),
 		is(true));
 	assertThat(jedis.hget(foo, bar), is(car));

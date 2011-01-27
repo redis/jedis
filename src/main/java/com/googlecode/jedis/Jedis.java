@@ -4,6 +4,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The Jedis client interface.
+ * 
+ * Use {@link JedisFactory#newJedisInstance()} to get an instance.
+ * 
+ * @author Moritz Heuser <moritz.heuser@gmail.com>
+ * 
+ */
 public interface Jedis extends RawJedis {
 
     /**
@@ -40,7 +48,7 @@ public interface Jedis extends RawJedis {
      * @param password
      * @return Status code reply
      */
-    String auth(final String password);
+    Boolean auth(final String password);
 
     /**
      * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this
@@ -118,7 +126,7 @@ public interface Jedis extends RawJedis {
      *         client values will return false or nil accordingly to the
      *         programming language used.
      */
-    List<String> blpop(final long timeout, final String key1,
+    List<Pair<String, String>> blpop(final long timeout, final String key1,
 	    final String... keyN);
 
     /**
@@ -197,8 +205,90 @@ public interface Jedis extends RawJedis {
      *         client values will return false or nil accordingly to the
      *         programming language used.
      */
-    List<String> brpop(final long timeout, final String key1,
+    List<Pair<String, String>> brpop(final long timeout, final String key1,
 	    final String... keyN);
+
+    /**
+     * Retrieve the configuration of a running Redis server. Not all the
+     * configuration parameters are supported.
+     * <p>
+     * CONFIG GET returns the current configuration parameters. This sub command
+     * only accepts a single argument, that is glob style pattern. All the
+     * configuration parameters matching this parameter are reported as a list
+     * of key-value pairs.
+     * <p>
+     * <b>Example:</b>
+     * 
+     * <pre>
+     * $ redis-cli config get '*'
+     * 1. "dbfilename"
+     * 2. "dump.rdb"
+     * 3. "requirepass"
+     * 4. (nil)
+     * 5. "masterauth"
+     * 6. (nil)
+     * 7. "maxmemory"
+     * 8. "0\n"
+     * 9. "appendfsync"
+     * 10. "everysec"
+     * 11. "save"
+     * 12. "3600 1 300 100 60 10000"
+     * 
+     * $ redis-cli config get 'm*'
+     * 1. "masterauth"
+     * 2. (nil)
+     * 3. "maxmemory"
+     * 4. "0\n"
+     * </pre>
+     * 
+     * @param pattern
+     * @return Bulk reply.
+     */
+    List<String> configGet(final String pattern);
+
+    /**
+     * Alter the configuration of a running Redis server. Not all the
+     * configuration parameters are supported.
+     * <p>
+     * The list of configuration parameters supported by CONFIG SET can be
+     * obtained issuing a {@link #configGet(String) CONFIG GET *} command.
+     * <p>
+     * The configuration set using CONFIG SET is immediately loaded by the Redis
+     * server that will start acting as specified starting from the next
+     * command.
+     * <p>
+     * 
+     * <b>Parameters value format</b>
+     * <p>
+     * The value of the configuration parameter is the same as the one of the
+     * same parameter in the Redis configuration file, with the following
+     * exceptions:
+     * <p>
+     * <ul>
+     * <li>The save paramter is a list of space-separated integers. Every pair
+     * of integers specify the time and number of changes limit to trigger a
+     * save. For instance the command CONFIG SET save "3600 10 60 10000" will
+     * configure the server to issue a background saving of the RDB file every
+     * 3600 seconds if there are at least 10 changes in the dataset, and every
+     * 60 seconds if there are at least 10000 changes. To completely disable
+     * automatic snapshots just set the parameter as an empty string.
+     * <li>All the integer parameters representing memory are returned and
+     * accepted only using bytes as unit.
+     * </ul>
+     * 
+     * @param parameter
+     * @param value
+     * @return Status code reply
+     */
+    String configSet(final String parameter, final String value);
+
+    /**
+     * Send debug params.
+     * 
+     * @param params
+     * @return status code reply
+     */
+    String debug(final DebugParams params);
 
     /**
      * Decrement the number stored at key by one.
@@ -673,6 +763,23 @@ public interface Jedis extends RawJedis {
 
     /**
      * Add the value to the head (left) of the list stored at key.
+     * 
+     * If the key does not exist an empty list is created just before the append
+     * operation. If the key exists but is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     *            a pair with first elemt key and second value
+     * @return the number of elements inside the list after the push operation.
+     * 
+     * @throws JedisException
+     *             if data type at key is other then list.
+     */
+    Long lpush(Pair<String, String> keyValuePair);
+
+    /**
+     * Add the value to the head (left) of the list stored at key.
      * <p>
      * If the key does not exist an empty list is created just before the append
      * operation. If the key exists but is not a List an error is returned.
@@ -776,62 +883,83 @@ public interface Jedis extends RawJedis {
     Long lrem(final String key, final int count, final String value);
 
     /**
-     * Set a new value as the element at index position of the List at key.
+     * Sets the list element at index to value. For more information on the
+     * index argument, see {@link #lindex(String, int) LINDEX}.
      * <p>
-     * Out of range indexes will generate an error.
-     * <p>
-     * Similarly to other list commands accepting indexes, the index can be
-     * negative to access elements starting from the end of the list. So -1 is
-     * the last element, -2 is the penultimate, and so forth.
-     * <p>
-     * <b>Time complexity:</b>
-     * <p>
-     * O(N) (with N being the length of the list), setting the first or last
-     * elements of the list is O(1).
+     * Example:
      * 
+     * <pre>
+     * {@code
+     * redis>  RPUSH mylist "one"
+     * (integer) 1
+     * redis>  RPUSH mylist "two"
+     * (integer) 2
+     * redis>  RPUSH mylist "three"
+     * (integer) 3
+     * redis>  LSET mylist 0 "four"
+     * OK
+     * redis>  LSET mylist -2 "five"
+     * OK
+     * redis>  LRANGE mylist 0 -1
+     * 1) "four"
+     * 2) "five"
+     * 3) "three"
+     * redis>
+     * }
+     * </pre>
+     * <p>
+     * Time complexity: O(N) where N is the length of the list. Setting either
+     * the first or the last element of the list is O(1).
      * 
      * @param key
      * @param index
      * @param value
-     * @return Status code reply
+     * @return false for out of range indexes, else true.
      */
-    String lset(final String key, final int index, final String value);
+    Boolean lset(final String key, final int index, final String value);
 
     /**
      * Trim an existing list so that it will contain only the specified range of
-     * elements specified. Start and end are zero-based indexes. 0 is the first
-     * element of the list (the list head), 1 the next element and so on.
+     * elements specified. Both start and stop are zero-based indexes, where 0
+     * is the first element of the list (the head), 1 the next element and so
+     * on.
      * <p>
-     * For example LTRIM foobar 0 2 will modify the list stored at foobar key so
+     * For example: LTRIM foobar 0 2 will modify the list stored at foobar so
      * that only the first three elements of the list will remain.
      * <p>
      * start and end can also be negative numbers indicating offsets from the
-     * end of the list. For example -1 is the last element of the list, -2 the
+     * end of the list, where -1 is the last element of the list, -2 the
      * penultimate element and so on.
      * <p>
-     * Indexes out of range will not produce an error: if start is over the end
-     * of the list, or start > end, an empty list is left as value. If end over
-     * the end of the list Redis will threat it just like the last element of
-     * the list.
+     * Out of range indexes will not produce an error: if start is larger than
+     * the end of the list, or start > end, the result will be an empty list
+     * (which causes key to be removed). If end is larger than the end of the
+     * list, Redis will treat it like the last element of the list.
      * <p>
-     * Hint: the obvious use of LTRIM is together with LPUSH/RPUSH. For example:
+     * A common use of LTRIM is together with LPUSH/RPUSH. For example:
+     * 
+     * <pre>
+     * {@code
+     * LPUSH mylist someelement
+     * LTRIM mylist 0 99
+     * }
+     * </pre>
+     * 
+     * This pair of commands will push a new element on the list, while making
+     * sure that the list will not grow larger than 100 elements. This is very
+     * useful when using Redis to store logs for example. It is important to
+     * note that when used in this way LTRIM is an O(1) operation because in the
+     * average case just one element is removed from the tail of the list.
      * <p>
-     * {@code lpush("mylist", "someelement"); ltrim("mylist", 0, 99); * }
-     * <p>
-     * The above two commands will push elements in the list taking care that
-     * the list will not grow without limits. This is very useful when using
-     * Redis to store logs for example. It is important to note that when used
-     * in this way LTRIM is an O(1) operation because in the average case just
-     * one element is removed from the tail of the list.
-     * <p>
-     * Time complexity: O(n) (with n being len of list - len of range)
+     * Time complexity: O(N) where N is the number of elements to be removed by
+     * the operation.
      * 
      * @param key
      * @param start
      * @param end
-     * @return Status code reply
+     * @return true
      */
-    String ltrim(final String key, final int start, final int end);
+    Boolean ltrim(final String key, final int start, final int end);
 
     /**
      * Get the values of all the specified keys. If one or more keys dont exist
@@ -1028,6 +1156,23 @@ public interface Jedis extends RawJedis {
     String rpoplpush(final String srcKey, final String dstKey);
 
     /**
+     * Add the value to the head (left) of the list stored at key.
+     * 
+     * If the key does not exist an empty list is created just before the append
+     * operation. If the key exists but is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     *            a pair with first elemt key and second value
+     * @return the number of elements inside the list after the push operation.
+     * 
+     * @throws JedisException
+     *             if data type at key is other then list.
+     */
+    Long rpush(Pair<String, String> keyValuePair);
+
+    /**
      * Add the value to the tail (right) of the list stored at key.
      * <p>
      * If the key does not exist an empty list is created just before the append
@@ -1154,6 +1299,20 @@ public interface Jedis extends RawJedis {
      * <p>
      * Time complexity: O(1)
      * 
+     * @param keyValuePair
+     * @return always true since set can't fail.
+     * @throws NullPointerException
+     *             if key or value is null
+     */
+    Boolean set(Pair<String, String> keyValuePair);
+
+    /**
+     * Set key to hold the string value.
+     * <p>
+     * If key already holds a value, it is overwritten, regardless of its type.
+     * <p>
+     * Time complexity: O(1)
+     * 
      * @param key
      *            to set
      * @param value
@@ -1163,6 +1322,21 @@ public interface Jedis extends RawJedis {
      *             if key or value is null
      */
     Boolean set(final String key, String value);
+
+    /**
+     * Atomic set and expire.
+     * <p>
+     * The command is exactly equivalent to the following group of commands:
+     * {@link #set(byte[], byte[]) SET} + {@link #expire(byte[], long) EXPIRE}.
+     * The operation is atomic.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     * @param seconds
+     * @return Status code reply
+     */
+    Boolean setex(Pair<String, String> keyValuePair, int seconds);
 
     /**
      * The command is exactly equivalent to the following group of commands:
@@ -1176,7 +1350,23 @@ public interface Jedis extends RawJedis {
      * @param value
      * @return Status code reply
      */
-    String setex(final String key, final int seconds, final String value);
+    Boolean setex(String key, String value, int seconds);
+
+    /**
+     * Set key to hold string value if key does not exist.
+     * <p>
+     * In that case, it is equal to {@link #set(String, String) SET}. When key
+     * already holds a value, no operation is performed. SETNX is short for
+     * "SET if Not eXists".
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     * @return true if the key was set, false if the key was not set
+     * @throws NullPointerException
+     *             if key or value is null
+     */
+    Boolean setnx(Pair<String, String> keyValuePair);
 
     /**
      * Set key to hold string value if key does not exist.
@@ -1598,7 +1788,16 @@ public interface Jedis extends RawJedis {
      *         "zset" if the key contains a Sorted Set value "hash" if the key
      *         contains a Hash value
      */
-    String type(final String key);
+    RedisType type(final String key);
+
+    /**
+     * Marks the given keys to be watched for conditional execution of a
+     * transaction.
+     * 
+     * @param key
+     * @return always true
+     */
+    Boolean watch(final String key);
 
     String watch(final String... keys);
 

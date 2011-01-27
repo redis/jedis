@@ -2,36 +2,46 @@ package com.googlecode.jedis;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.transform;
-import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.googlecode.jedis.PairImpl.newPair;
+import static com.googlecode.jedis.util.Encoders.asByte;
+import static com.googlecode.jedis.util.Encoders.asString;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 
 class JedisImpl extends RawJedisImpl implements Jedis {
-
-    static private class BytePairToStringPair implements
-	    Function<Pair<byte[], Double>, Pair<String, Double>> {
-	@Override
-	public Pair<String, Double> apply(Pair<byte[], Double> input) {
-	    return newPair(asString(input.getFirst()), input.getSecond());
-	}
-    }
 
     private static class ByteToStringFunction implements
 	    Function<byte[], String> {
 	@Override
 	public String apply(byte[] input) {
 	    return asString(input);
+	}
+    }
+
+    private static class PairByteByteToPairStringString implements
+	    Function<Pair<byte[], byte[]>, Pair<String, String>> {
+	@Override
+	public Pair<String, String> apply(Pair<byte[], byte[]> input) {
+	    return newPair(asString(input.getFirst()),
+		    asString(input.getSecond()));
+	}
+    }
+
+    private static class PairByteDoubleToPairStringDouble implements
+	    Function<Pair<byte[], Double>, Pair<String, Double>> {
+	@Override
+	public Pair<String, Double> apply(Pair<byte[], Double> input) {
+	    return newPair(asString(input.getFirst()), input.getSecond());
 	}
     }
 
@@ -51,25 +61,22 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long append(final String key, final String value) {
-	runChecks();
-	client.append(key, value);
-	return client.getIntegerReply();
+	return append(asByte(key), asByte(value));
     }
 
-    private String asStringOrNull(byte[] value) {
-	return (value != null) ? asString(value) : (String) null;
-    }
-
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#blpop(long, java.lang.String,
+     * java.lang.String[])
+     */
     /*
      * (non-Javadoc)
      * 
      * @see com.googlecode.jedis.Jedis#auth(java.lang.String)
      */
     @Override
-    public String auth(final String password) {
-	if (password == null) {
-	    throw new NullPointerException();
-	}
+    public Boolean auth(final String password) {
 	return auth(asByte(password));
     }
 
@@ -80,21 +87,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String[])
      */
     @Override
-    public List<String> blpop(final long timeout, final String key1,
-	    final String... keyN) {
-	runChecks();
-	List<String> args = Lists.newArrayList();
-	args.add(key1);
-	for (final String key : keyN) {
-	    args.add(key);
-	}
-	args.add(String.valueOf(timeout));
-
-	client.blpop(args.toArray(new String[args.size()]));
-	client.setTimeoutInfinite();
-	final List<String> multiBulkReply = client.getMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+    public List<Pair<String, String>> blpop(final long timeout,
+	    final String key1, final String... keyN) {
+	return ImmutableList.copyOf(transform(
+		blpopRaw(timeout, asByte(key1), asByte(keyN)),
+		new PairByteByteToPairStringString()));
     }
 
     /*
@@ -104,22 +101,43 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String[])
      */
     @Override
-    public List<String> brpop(final long timeout, final String key1,
-	    final String... keyN) {
-	runChecks();
-	List<String> args = Lists.newArrayList();
-	args.add(key1);
-	for (String arg : keyN) {
-	    args.add(arg);
-	}
-	args.add(String.valueOf(timeout));
+    public List<Pair<String, String>> brpop(final long timeout,
+	    final String key1, final String... keyN) {
+	return ImmutableList.copyOf(transform(
+		brpopRaw(timeout, asByte(key1), asByte(keyN)),
+		new PairByteByteToPairStringString()));
+    }
 
-	client.brpop(args.toArray(new String[args.size()]));
-	client.setTimeoutInfinite();
-	List<String> multiBulkReply = client.getMultiBulkReply();
-	client.rollbackTimeout();
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#configGet(java.lang.String)
+     */
+    @Override
+    public List<String> configGet(String pattern) {
+	return Lists.newArrayList(transform(configGet(asByte(pattern)),
+		new ByteToStringFunction()));
+    }
 
-	return multiBulkReply;
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#configSet(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public String configSet(String parameter, String value) {
+	return asString(configSet(asByte(parameter), asByte(value)));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#debug(com.googlecode.jedis.DebugParams)
+     */
+    @Override
+    public String debug(final DebugParams params) {
+	return asString(debugRaw(params));
     }
 
     /*
@@ -129,7 +147,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long decr(final String key) {
-	checkNotNull(key);
 	return decr(asByte(key));
     }
 
@@ -140,7 +157,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long decrBy(final String key, final long value) {
-	checkNotNull(key);
 	return decrBy(asByte(key), value);
     }
 
@@ -151,7 +167,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long del(String key1, final String... keyN) {
-	checkNotNull(key1);
 	return del(asByte(key1), asByte(keyN));
     }
 
@@ -162,8 +177,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String echo(final String string) {
-	client.echo(string);
-	return client.getBulkReply();
+	return asString(echo(asByte(string)));
     }
 
     /*
@@ -173,9 +187,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean exists(final String key) {
-	runChecks();
-	client.exists(key);
-	return client.getIntegerReply() == 1;
+	return exists(asByte(key));
     }
 
     /*
@@ -185,7 +197,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean expire(final String key, final long seconds) {
-	checkNotNull(key);
 	return expire(asByte(key), seconds);
     }
 
@@ -196,7 +207,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean expireAt(final String key, final long unixTime) {
-	checkNotNull(key);
 	return expireAt(asByte(key), unixTime);
     }
 
@@ -207,8 +217,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String get(final String key) {
-	checkNotNull(key);
-	return asStringOrNull(get(asByte(key)));
+	return asString(get(asByte(key)));
     }
 
     /*
@@ -219,9 +228,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String getSet(final String key, final String value) {
-	if (key == null || value == null) {
-	    throw new NullPointerException();
-	}
 	return asString(getSet(asByte(key), asByte(value)));
     }
 
@@ -232,9 +238,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long hdel(final String key, final String field) {
-	runChecks();
-	client.hdel(key, field);
-	return client.getIntegerReply();
+	return hdel(asByte(key), asByte(field));
     }
 
     /*
@@ -245,9 +249,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean hexists(final String key, final String field) {
-	runChecks();
-	client.hexists(key, field);
-	return client.getIntegerReply() == 1;
+	return hexists(asByte(key), asByte(field));
     }
 
     /*
@@ -257,9 +259,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String hget(final String key, final String field) {
-	runChecks();
-	client.hget(key, field);
-	return client.getBulkReply();
+	return asString(hget(asByte(key), asByte(field)));
     }
 
     /*
@@ -269,16 +269,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Map<String, String> hgetAll(final String key) {
-	runChecks();
-	client.hgetAll(key);
-	final List<String> flatHash = client.getMultiBulkReply();
-	final Map<String, String> hash = new HashMap<String, String>();
-	final Iterator<String> iterator = flatHash.iterator();
-	while (iterator.hasNext()) {
-	    hash.put(iterator.next(), iterator.next());
+	Map<String, String> result = Maps.newHashMap();
+	for (Map.Entry<byte[], byte[]> it : hgetAll(asByte(key)).entrySet()) {
+	    result.put(asString(it.getKey()), asString(it.getValue()));
 	}
-
-	return hash;
+	return ImmutableMap.copyOf(result);
     }
 
     /*
@@ -289,9 +284,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long hincrBy(final String key, final String field, final long value) {
-	runChecks();
-	client.hincrBy(key, field, value);
-	return client.getIntegerReply();
+	return hincrBy(asByte(key), asByte(field), value);
     }
 
     /*
@@ -301,10 +294,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Set<String> hkeys(final String key) {
-	runChecks();
-	client.hkeys(key);
-	final List<String> lresult = client.getMultiBulkReply();
-	return new HashSet<String>(lresult);
+	return ImmutableSet.copyOf(Collections2.transform(hkeys(asByte(key)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -314,9 +305,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long hlen(final String key) {
-	runChecks();
-	client.hlen(key);
-	return client.getIntegerReply();
+	return hlen(asByte(key));
     }
 
     /*
@@ -326,9 +315,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public List<String> hmget(final String key, final String... fields) {
-	runChecks();
-	client.hmget(key, fields);
-	return client.getMultiBulkReply();
+	return Lists.newArrayList(transform(hmget(asByte(key), asByte(fields)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -338,9 +326,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean hmset(final String key, final Map<String, String> hash) {
-	runChecks();
-	client.hmset(key, hash);
-	return client.getStatusCodeReply().equals("OK");
+	Map<byte[], byte[]> bhash = Maps.newHashMap();
+	for (Map.Entry<String, String> it : hash.entrySet()) {
+	    bhash.put(asByte(it.getKey()), asByte(it.getValue()));
+	}
+	return hmset(asByte(key), bhash);
     }
 
     /*
@@ -351,9 +341,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long hset(final String key, final String field, final String value) {
-	runChecks();
-	client.hset(key, field, value);
-	return client.getIntegerReply();
+	return hset(asByte(key), asByte(field), asByte(value));
     }
 
     /*
@@ -364,9 +352,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long hsetnx(final String key, final String field, final String value) {
-	runChecks();
-	client.hsetnx(key, field, value);
-	return client.getIntegerReply();
+	return hsetnx(asByte(key), asByte(field), asByte(value));
     }
 
     /*
@@ -376,10 +362,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public List<String> hvals(final String key) {
-	runChecks();
-	client.hvals(key);
-	final List<String> lresult = client.getMultiBulkReply();
-	return lresult;
+	return ImmutableList.copyOf(transform(hvals(asByte(key)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -389,7 +373,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long incr(final String key) {
-	checkNotNull(key);
 	return incr(asByte(key));
     }
 
@@ -400,7 +383,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long incrBy(final String key, final long value) {
-	checkNotNull(key);
 	return incrBy(asByte(key), value);
     }
 
@@ -411,11 +393,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Set<String> keys(final String pattern) {
-	runChecks();
-	client.keys(pattern);
-	final HashSet<String> keySet = new HashSet<String>(
-		client.getMultiBulkReply());
-	return keySet;
+	return ImmutableSet.copyOf(transform(keys(asByte(pattern)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -425,9 +404,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String lindex(final String key, final int index) {
-	runChecks();
-	client.lindex(key, index);
-	return client.getBulkReply();
+	return asString(lindex(asByte(key), index));
     }
 
     /*
@@ -438,8 +415,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long linsertAfter(String key, String element, String value) {
-	client.linsertAfter(key, element, value);
-	return client.getIntegerReply();
+	return linsertAfter(asByte(key), asByte(element), asByte(value));
     }
 
     /*
@@ -450,8 +426,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long linsertBefore(String key, String element, String value) {
-	client.linsertBefore(key, element, value);
-	return client.getIntegerReply();
+	return linsertBefore(asByte(key), asByte(element), asByte(value));
     }
 
     /*
@@ -461,9 +436,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long llen(final String key) {
-	runChecks();
-	client.llen(key);
-	return client.getIntegerReply();
+	return llen(asByte(key));
     }
 
     /*
@@ -473,9 +446,17 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String lpop(final String key) {
-	runChecks();
-	client.lpop(key);
-	return client.getBulkReply();
+	return asString(lpop(asByte(key)));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#lpush(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Long lpush(Pair<String, String> keyValuePair) {
+	return lpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -485,9 +466,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long lpush(final String key, final String value) {
-	runChecks();
-	client.lpush(key, value);
-	return client.getIntegerReply();
+	return lpush(asByte(key), asByte(value));
     }
 
     /*
@@ -498,8 +477,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long lpushx(final String key, final String value) {
-	client.lpushx(key, value);
-	return client.getIntegerReply();
+	return lpushx(asByte(key), asByte(value));
     }
 
     /*
@@ -510,9 +488,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public List<String> lrange(final String key, final long start,
 	    final long end) {
-	runChecks();
-	client.lrange(key, start, end);
-	return client.getMultiBulkReply();
+	return ImmutableList.copyOf(transform(lrange(asByte(key), start, end),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -523,9 +500,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long lrem(final String key, final int count, final String value) {
-	runChecks();
-	client.lrem(key, count, value);
-	return client.getIntegerReply();
+	return lrem(asByte(key), count, asByte(value));
     }
 
     /*
@@ -535,10 +510,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String)
      */
     @Override
-    public String lset(final String key, final int index, final String value) {
-	runChecks();
-	client.lset(key, index, value);
-	return client.getStatusCodeReply();
+    public Boolean lset(final String key, final int index, final String value) {
+	return lset(asByte(key), index, asByte(value));
     }
 
     /*
@@ -547,10 +520,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#ltrim(java.lang.String, int, int)
      */
     @Override
-    public String ltrim(final String key, final int start, final int end) {
-	runChecks();
-	client.ltrim(key, start, end);
-	return client.getStatusCodeReply();
+    public Boolean ltrim(final String key, final int start, final int end) {
+	return ltrim(asByte(key), start, end);
     }
 
     /*
@@ -560,9 +531,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public List<String> mget(final String... keys) {
-	runChecks();
-	client.mget(keys);
-	return client.getMultiBulkReply();
+	return ImmutableList.copyOf(transform(mget(asByte(keys)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -572,10 +542,15 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean move(final String key, final long index) {
-	checkNotNull(key);
 	return move(asByte(key), index);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#mset(com.googlecode.jedis.Pair,
+     * com.googlecode.jedis.Pair<java.lang.String,java.lang.String>[])
+     */
     @Override
     public Boolean mset(Pair<String, String> keyValuePair1,
 	    Pair<String, String>... keyValuePairN) {
@@ -593,6 +568,12 @@ class JedisImpl extends RawJedisImpl implements Jedis {
 	return msetRaw(asByte(keyValuePair1), args);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#msetnx(com.googlecode.jedis.Pair,
+     * com.googlecode.jedis.Pair<java.lang.String,java.lang.String>[])
+     */
     @Override
     public Boolean msetnx(Pair<String, String> keyValuePair1,
 	    Pair<String, String>... keyValuePairN) {
@@ -617,13 +598,13 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean persist(final String key) {
-	checkNotNull(key);
 	return persist(asByte(key));
     }
 
     @Override
     public void pipelined() {
-	client.setPipelineMode(true);
+	// TODO
+	// conn.setPipelineMode(true);
     }
 
     /*
@@ -644,8 +625,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean rename(final String srcKey, final String dstKey) {
-	checkNotNull(srcKey);
-	checkNotNull(dstKey);
 	return rename(asByte(srcKey), asByte(dstKey));
     }
 
@@ -657,16 +636,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean renamenx(final String srcKey, final String dstKey) {
-	checkNotNull(srcKey);
-	checkNotNull(dstKey);
 	return renamenx(asByte(srcKey), asByte(dstKey));
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.googlecode.jedis.Jedis#select(int)
-     */
 
     /*
      * (non-Javadoc)
@@ -675,9 +646,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String rpop(final String key) {
-	runChecks();
-	client.rpop(key);
-	return client.getBulkReply();
+	return asString(rpop(asByte(key)));
     }
 
     /*
@@ -688,9 +657,18 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String rpoplpush(final String srckey, final String dstkey) {
-	runChecks();
-	client.rpoplpush(srckey, dstkey);
-	return client.getBulkReply();
+	return asString(rpoplpush(asByte(srckey), asByte(dstkey)));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedis#rpush(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Long rpush(Pair<String, String> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return rpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -699,10 +677,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#rpush(java.lang.String, java.lang.String)
      */
     @Override
-    public Long rpush(final String key, final String string) {
-	runChecks();
-	client.rpush(key, string);
-	return client.getIntegerReply();
+    public Long rpush(final String key, final String value) {
+	return rpush(asByte(key), asByte(value));
     }
 
     /*
@@ -712,9 +688,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String)
      */
     @Override
-    public Long rpushx(final String key, final String string) {
-	client.rpushx(key, string);
-	return client.getIntegerReply();
+    public Long rpushx(final String key, final String value) {
+	return rpushx(asByte(key), asByte(value));
     }
 
     /*
@@ -724,9 +699,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean sadd(final String key, final String member) {
-	runChecks();
-	client.sadd(key, member);
-	return client.getIntegerReply().equals(1L);
+	return sadd(asByte(key), asByte(member));
     }
 
     /*
@@ -736,9 +709,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long scard(final String key) {
-	runChecks();
-	client.scard(key);
-	return client.getIntegerReply();
+	return scard(asByte(key));
     }
 
     /*
@@ -749,12 +720,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Set<String> sdiff(final String key1, final String... keyN) {
-	if (key1 == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	return Sets.newLinkedHashSet(transform(
-		sdiff(asByte(key1), asByte(keyN)), new ByteToStringFunction()));
+	return ImmutableSet.copyOf(transform(sdiff(asByte(key1), asByte(keyN)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -766,8 +733,18 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Long sdiffstore(final String dstKey, final String key1,
 	    final String... keyN) {
-	runChecks();
 	return sdiffstore(asByte(dstKey), asByte(key1), asByte(keyN));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#set(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Boolean set(Pair<String, String> keyValuePair) {
+	checkNotNull(keyValuePair);
+	return set(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -777,10 +754,19 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean set(final String key, final String value) {
-	checkNotNull(key);
-	checkNotNull(value);
-
 	return set(asByte(key), asByte(value));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.RawJedisImpl#setex(com.googlecode.jedis.Pair,
+     * int)
+     */
+    @Override
+    public Boolean setex(Pair<String, String> keyValuePair, int seconds) {
+	checkNotNull(keyValuePair);
+	return setex(keyValuePair.getFirst(), keyValuePair.getSecond(), seconds);
     }
 
     /*
@@ -790,10 +776,18 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String)
      */
     @Override
-    public String setex(final String key, final int seconds, final String value) {
-	runChecks();
-	client.setex(key, seconds, value);
-	return client.getStatusCodeReply();
+    public Boolean setex(String key, String value, int seconds) {
+	return setex(asByte(key), asByte(value), seconds);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#setnx(com.googlecode.jedis.Pair)
+     */
+    @Override
+    public Boolean setnx(Pair<String, String> keyValuePair) {
+	return setnx(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
     /*
@@ -803,8 +797,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean setnx(final String key, final String value) {
-	checkNotNull(key);
-	checkNotNull(value);
 	return setnx(asByte(key), asByte(value));
     }
 
@@ -815,10 +807,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Set<String> sinter(String key1, final String... keyN) {
-	runChecks();
-	client.sinter(key1, keyN);
-	final List<String> members = client.getMultiBulkReply();
-	return new LinkedHashSet<String>(members);
+	return ImmutableSet
+		.copyOf(transform(sinter(asByte(key1), asByte(keyN)),
+			new ByteToStringFunction()));
     }
 
     /*
@@ -830,12 +821,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Long sinterstore(final String dstkey, String srcKey1,
 	    final String... scrKeyN) {
-	if (dstkey == null || srcKey1 == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sinterstore(dstkey, srcKey1, scrKeyN);
-	return client.getIntegerReply();
+	return sinterstore(asByte(dstkey), asByte(srcKey1), asByte(scrKeyN));
     }
 
     /*
@@ -846,12 +832,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean sismember(final String key, final String member) {
-	if (key == null || member == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	client.sismember(key, member);
-	return client.getIntegerReply().equals(1L);
+	return sismember(asByte(key), asByte(member));
     }
 
     /*
@@ -861,10 +842,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Set<String> smembers(final String key) {
-	runChecks();
-	client.smembers(key);
-	final List<String> members = client.getMultiBulkReply();
-	return new LinkedHashSet<String>(members);
+	return ImmutableSet.copyOf(transform(smembers(asByte(key)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -876,9 +855,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Boolean smove(final String srckey, final String dstkey,
 	    final String member) {
-	runChecks();
-	client.smove(srckey, dstkey, member);
-	return client.getIntegerReply().equals(1L);
+	return smove(asByte(srckey), asByte(dstkey), asByte(member));
     }
 
     /*
@@ -888,9 +865,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public List<String> sort(final String key) {
-	runChecks();
-	client.sort(key);
-	return client.getMultiBulkReply();
+	return ImmutableList.copyOf(transform(sort(asByte(key)),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -902,9 +878,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public List<String> sort(final String key,
 	    final SortParams sortingParameters) {
-	runChecks();
-	client.sort(key, sortingParameters);
-	return client.getMultiBulkReply();
+	return ImmutableList.copyOf(transform(
+		sort(asByte(key), sortingParameters),
+		new ByteToStringFunction()));
     }
 
     /*
@@ -916,9 +892,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Long sort(final String key, final SortParams sortingParameters,
 	    final String dstkey) {
-	runChecks();
-	client.sort(key, sortingParameters, dstkey);
-	return client.getIntegerReply();
+	return sort(asByte(key), sortingParameters, asByte(dstkey));
     }
 
     /*
@@ -928,9 +902,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long sort(final String key, final String dstkey) {
-	runChecks();
-	client.sort(key, dstkey);
-	return client.getIntegerReply();
+	return sort(asByte(key), asByte(dstkey));
     }
 
     /*
@@ -940,9 +912,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String spop(final String key) {
-	runChecks();
-	client.spop(key);
-	return client.getBulkReply();
+	return asString(spop(asByte(key)));
     }
 
     /*
@@ -952,12 +922,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String srandmember(final String key) {
-	if (key == null) {
-	    throw new NullPointerException();
-	}
-	runChecks();
-	byte[] ret = srandmember(asByte(key));
-	return (ret != null) ? asString(ret) : null;
+	return asString(srandmember(asByte(key)));
     }
 
     /*
@@ -967,9 +932,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean srem(final String key, final String member) {
-	runChecks();
-	client.srem(key, member);
-	return client.getIntegerReply().equals(1L);
+	return srem(asByte(key), asByte(member));
     }
 
     /*
@@ -979,29 +942,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long strlen(final String key) {
-	client.strlen(key);
-	return client.getIntegerReply();
+	return strlen(asByte(key));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * com.googlecode.jedis.Jedis#subscribe(com.googlecode.jedis.JedisPubSub,
-     * java.lang.String)
-     */
-    @Override
-    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-	client.setTimeoutInfinite();
-	jedisPubSub.proceed(client, channels);
-	client.rollbackTimeout();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see com.googlecode.jedis.Jedis#sunion(java.lang.String)
-     */
     /*
      * (non-Javadoc)
      * 
@@ -1009,18 +952,13 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String substr(final String key, final int start, final int end) {
-	runChecks();
-	client.substr(key, start, end);
-	return client.getBulkReply();
+	return asString(substr(asByte(key), start, end));
     }
 
     @Override
     public Set<String> sunion(String key1, final String... keyN) {
-	if (key1 == null) {
-	    throw new NullPointerException();
-	}
-	return Sets
-		.newLinkedHashSet(transform(sunion(asByte(key1), asByte(keyN)),
+	return ImmutableSet
+		.copyOf(transform(sunion(asByte(key1), asByte(keyN)),
 			new ByteToStringFunction()));
     }
 
@@ -1033,9 +971,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Long sunionstore(final String dstKey, String key1,
 	    final String... keyN) {
-	if (dstKey == null || key1 == null) {
-	    throw new NullPointerException();
-	}
 	return sunionstore(asByte(dstKey), asByte(key1), asByte(keyN));
     }
 
@@ -1046,9 +981,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long ttl(final String key) {
-	runChecks();
-	client.ttl(key);
-	return client.getIntegerReply();
+	return ttl(asByte(key));
     }
 
     /*
@@ -1057,10 +990,18 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#type(java.lang.String)
      */
     @Override
-    public String type(final String key) {
-	runChecks();
-	client.type(key);
-	return client.getStatusCodeReply();
+    public RedisType type(final String key) {
+	return type(asByte(key));
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see com.googlecode.jedis.Jedis#watch(java.lang.String)
+     */
+    @Override
+    public Boolean watch(String key) {
+	return watch(asByte(key));
     }
 
     /*
@@ -1070,8 +1011,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public String watch(final String... keys) {
-	client.watch(keys);
-	return client.getStatusCodeReply();
+	throw new UnsupportedOperationException();
     }
 
     /*
@@ -1082,8 +1022,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean zadd(final String key, final double score, final String value) {
-	checkNotNull(key);
-	checkNotNull(value);
 	return zadd(asByte(key), score, asByte(value));
     }
 
@@ -1095,8 +1033,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean zadd(String key, Pair<String, Double> value) {
-	checkNotNull(key);
-	checkNotNull(value);
 	return zadd(asByte(key), value.getSecond(), asByte(value.getFirst()));
     }
 
@@ -1107,7 +1043,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zcard(final String key) {
-	checkNotNull(key);
 	return zcard(asByte(key));
     }
 
@@ -1118,9 +1053,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zcount(final String key, final String min, final String max) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
 	return zcount(asByte(key), asByte(min), asByte(max));
     }
 
@@ -1132,8 +1064,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Double zincrby(String key, String member, double value) {
-	checkNotNull(key);
-	checkNotNull(member);
 	return zincrby(asByte(key), asByte(member), value);
     }
 
@@ -1148,8 +1078,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     public Long zinterstoreMax(final String dstKey,
 	    Pair<String, Double> ssetAndWeight1,
 	    Pair<String, Double>... ssetAndWeightN) {
-	checkNotNull(dstKey);
-	checkNotNull(ssetAndWeight1);
 
 	@SuppressWarnings("unchecked")
 	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
@@ -1176,8 +1104,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     public Long zinterstoreMin(final String dstKey,
 	    Pair<String, Double> ssetAndWeight1,
 	    Pair<String, Double>... ssetAndWeightN) {
-	checkNotNull(dstKey);
-	checkNotNull(ssetAndWeight1);
 
 	@SuppressWarnings("unchecked")
 	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
@@ -1204,8 +1130,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     public Long zinterstoreSum(final String dstKey,
 	    Pair<String, Double> ssetAndWeight1,
 	    Pair<String, Double>... ssetAndWeightN) {
-	checkNotNull(dstKey);
-	checkNotNull(ssetAndWeight1);
 
 	@SuppressWarnings("unchecked")
 	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
@@ -1229,8 +1153,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<String> zrange(final String key, final long start, final long end) {
 	checkNotNull(key);
-
-	return newLinkedHashSet(transform(zrange(asByte(key), start, end),
+	return ImmutableSet.copyOf(transform(zrange(asByte(key), start, end),
 		new ByteToStringFunction()));
     }
 
@@ -1243,11 +1166,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<String> zrangeByScore(final String key, final String min,
 	    final String max) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets.newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrangeByScore(asByte(key), asByte(min), asByte(max)),
 		new ByteToStringFunction()));
     }
@@ -1261,11 +1180,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<String> zrangeByScore(final String key, final String min,
 	    final String max, final long offset, final long count) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets.newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrangeByScore(asByte(key), asByte(min), asByte(max), offset,
 			count), new ByteToStringFunction()));
     }
@@ -1279,13 +1194,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<Pair<String, Double>> zrangeByScoreWithScores(String key,
 	    String min, String max) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets.newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrangeByScoreWithScores(asByte(key), asByte(min), asByte(max)),
-		new BytePairToStringPair()));
+		new PairByteDoubleToPairStringDouble()));
     }
 
     /*
@@ -1297,12 +1208,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<Pair<String, Double>> zrangeByScoreWithScores(String key,
 	    String min, String max, long offset, long count) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-	return Sets.newLinkedHashSet(transform(
-		zrangeByScoreWithScores(asByte(key), asByte(min), asByte(max),
-			offset, count), new BytePairToStringPair()));
+	return ImmutableSet
+		.copyOf(transform(
+			zrangeByScoreWithScores(asByte(key), asByte(min),
+				asByte(max), offset, count),
+			new PairByteDoubleToPairStringDouble()));
     }
 
     /*
@@ -1314,10 +1224,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<Pair<String, Double>> zrangeWithScores(String key, long start,
 	    long end) {
-	checkNotNull(key);
-	return newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrangeWithScores(asByte(key), start, end),
-		new BytePairToStringPair()));
+		new PairByteDoubleToPairStringDouble()));
     }
 
     /*
@@ -1327,8 +1236,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zrank(final String key, final String member) {
-	checkNotNull(key);
-	checkNotNull(member);
 	return zrank(asByte(key), asByte(member));
     }
 
@@ -1339,7 +1246,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean zrem(final String key, final String member) {
-	checkNotNull(key);
 	return zrem(asByte(key), asByte(member));
     }
 
@@ -1352,7 +1258,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Long zremrangeByRank(final String key, final long start,
 	    final long end) {
-	checkNotNull(key);
 	return zremrangeByRank(asByte(key), start, end);
     }
 
@@ -1365,7 +1270,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Long zremrangeByScore(final String key, final String min,
 	    final String max) {
-	checkNotNull(key);
 	return zremrangeByScore(asByte(key), asByte(min), asByte(max));
     }
 
@@ -1377,9 +1281,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<String> zrevrange(final String key, final long start,
 	    final long end) {
-	checkNotNull(key);
-	return newLinkedHashSet(transform(zrevrange(asByte(key), start, end),
-		new ByteToStringFunction()));
+	return ImmutableSet
+		.copyOf(transform(zrevrange(asByte(key), start, end),
+			new ByteToStringFunction()));
     }
 
     /*
@@ -1391,11 +1295,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<String> zrevrangeByScore(final String key, final String min,
 	    final String max) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets.newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrevrangeByScore(asByte(key), asByte(min), asByte(max)),
 		new ByteToStringFunction()));
     }
@@ -1409,11 +1309,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<String> zrevrangeByScore(final String key, final String min,
 	    final String max, final long offset, final long count) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets.newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrevrangeByScore(asByte(key), asByte(min), asByte(max), offset,
 			count), new ByteToStringFunction()));
     }
@@ -1428,13 +1324,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<Pair<String, Double>> zrevrangeByScoreWithScores(String key,
 	    String min, String max) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets.newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrevrangeByScoreWithScores(asByte(key), asByte(min),
-			asByte(max)), new BytePairToStringPair()));
+			asByte(max)), new PairByteDoubleToPairStringDouble()));
     }
 
     /*
@@ -1447,15 +1339,10 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<Pair<String, Double>> zrevrangeByScoreWithScores(String key,
 	    String min, String max, long offset, long count) {
-	checkNotNull(key);
-	checkNotNull(min);
-	checkNotNull(max);
-
-	return Sets
-		.newLinkedHashSet(transform(
-			zrevrangeByScoreWithScores(asByte(key), asByte(min),
-				asByte(max), offset, count),
-			new BytePairToStringPair()));
+	return ImmutableSet.copyOf(transform(
+		zrevrangeByScoreWithScores(asByte(key), asByte(min),
+			asByte(max), offset, count),
+		new PairByteDoubleToPairStringDouble()));
     }
 
     /*
@@ -1467,10 +1354,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     @Override
     public Set<Pair<String, Double>> zrevrangeWithScores(String key,
 	    long start, long end) {
-	checkNotNull(key);
-	return newLinkedHashSet(transform(
+	return ImmutableSet.copyOf(transform(
 		zrevrangeWithScores(asByte(key), start, end),
-		new BytePairToStringPair()));
+		new PairByteDoubleToPairStringDouble()));
     }
 
     /*
@@ -1481,8 +1367,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zrevrank(final String key, final String member) {
-	checkNotNull(key);
-	checkNotNull(member);
 	return zrevrank(asByte(key), asByte(member));
     }
 
@@ -1494,8 +1378,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Double zscore(final String key, final String member) {
-	checkNotNull(key);
-	checkNotNull(member);
 	return zscore(asByte(key), asByte(member));
     }
 
@@ -1510,9 +1392,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     public Long zunionstoreMax(final String dstKey,
 	    Pair<String, Double> ssetAndWeight1,
 	    Pair<String, Double>... ssetAndWeightN) {
-	checkNotNull(dstKey);
-	checkNotNull(ssetAndWeight1);
-
 	@SuppressWarnings("unchecked")
 	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
@@ -1538,9 +1417,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     public Long zunionstoreMin(final String dstKey,
 	    Pair<String, Double> ssetAndWeight1,
 	    Pair<String, Double>... ssetAndWeightN) {
-	checkNotNull(dstKey);
-	checkNotNull(ssetAndWeight1);
-
 	@SuppressWarnings("unchecked")
 	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
@@ -1566,9 +1442,6 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     public Long zunionstoreSum(final String dstKey,
 	    Pair<String, Double> ssetAndWeight1,
 	    Pair<String, Double>... ssetAndWeightN) {
-	checkNotNull(dstKey);
-	checkNotNull(ssetAndWeight1);
-
 	@SuppressWarnings("unchecked")
 	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 

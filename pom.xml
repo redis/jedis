@@ -54,12 +54,35 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>org.jboss.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>3.2.3.Final</version>
+    </dependency>
+
     <!-- utils & collections -->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>r07</version>
-      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>3.0.5.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aop</artifactId>
+      <version>3.0.5.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+      <version>1.5.5</version>
     </dependency>
 
     <!-- logging -->
@@ -220,19 +243,14 @@
     </plugins>
   </build>
 
-  <repositories>
-    <!-- JBoss.org repository -->
-    <repository>
-      <id>jboss.releases</id>
-      <name>JBoss releases</name>
-      <url>http://repository.jboss.org/maven2</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
+    <repositories>
+        <repository>
+            <id>repository.jboss.org</id>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
-  </repositories>
 </project>

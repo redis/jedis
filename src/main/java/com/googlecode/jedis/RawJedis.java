@@ -42,7 +42,7 @@ interface RawJedis {
      * @param password
      * @return Status code reply
      */
-    String auth(final byte[] password);
+    Boolean auth(final byte[] password);
 
     /**
      * Rewrite the append only file in background when it gets too big. Please
@@ -62,7 +62,7 @@ interface RawJedis {
      * 
      * @return Status code reply
      */
-    String bgrewriteaof();
+    Boolean bgrewriteaof();
 
     /**
      * Asynchronously save the DB on disk.
@@ -74,7 +74,7 @@ interface RawJedis {
      * 
      * @return Status code reply
      */
-    String bgsave();
+    Boolean bgsave();
 
     /**
      * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this
@@ -142,15 +142,17 @@ interface RawJedis {
      *            the first key to pop for
      * @param keyN
      *            the other keys to pop for, the order will be respected
-     * @return BLPOP returns a two-elements array via a multi bulk reply in
-     *         order to return both the unblocking key and the popped value.
+     * @return A empty list when no element could be popped and the timeout
+     *         expired.
      *         <p>
-     *         When a non-zero timeout is specified, and the BLPOP operation
-     *         timed out, the return value is a nil multi bulk reply. Most
-     *         client values will return false or nil accordingly to the
-     *         programming language used.
+     *         A list of pairs with the first element being the name of the key
+     *         where an element was popped and the second element being the
+     *         value of the popped element.
+     * 
+     * @throws NullPointerException
+     *             if key1 is null
      */
-    List<byte[]> blpop(final long timeout, final byte[] key1,
+    List<Pair<byte[], byte[]>> blpopRaw(final long timeout, final byte[] key1,
 	    final byte[]... keyN);
 
     /**
@@ -219,15 +221,17 @@ interface RawJedis {
      *            the first key to pop for
      * @param keyN
      *            the other keys to pop for, the order will be respected
-     * @return BLPOP returns a two-elements array via a multi bulk reply in
-     *         order to return both the unblocking key and the popped value.
+     * @return A empty list when no element could be popped and the timeout
+     *         expired.
      *         <p>
-     *         When a non-zero timeout is specified, and the BLPOP operation
-     *         timed out, the return value is a nil multi bulk reply. Most
-     *         client values will return false or nil accordingly to the
-     *         programming language used.
+     *         A list of pairs with the first element being the name of the key
+     *         where an element was popped and the second element being the
+     *         value of the popped element.
+     * 
+     * @throws NullPointerException
+     *             if key1 is null
      */
-    List<byte[]> brpop(final long timeout, final byte[] key1,
+    List<Pair<byte[], byte[]>> brpopRaw(final long timeout, final byte[] key1,
 	    final byte[]... keyN);
 
     /**
@@ -266,14 +270,14 @@ interface RawJedis {
      * @param pattern
      * @return Bulk reply.
      */
-    List<String> configGet(final String pattern);
+    public List<byte[]> configGet(final byte[] pattern);
 
     /**
      * Alter the configuration of a running Redis server. Not all the
      * configuration parameters are supported.
      * <p>
      * The list of configuration parameters supported by CONFIG SET can be
-     * obtained issuing a {@link #configGet(String) CONFIG GET *} command.
+     * obtained issuing a {@link #configGet(byte[]) CONFIG GET *} command.
      * <p>
      * The configuration set using CONFIG SET is immediately loaded by the Redis
      * server that will start acting as specified starting from the next
@@ -302,7 +306,7 @@ interface RawJedis {
      * @param value
      * @return Status code reply
      */
-    String configSet(final String parameter, final String value);
+    byte[] configSet(final byte[] parameter, final byte[] value);
 
     /**
      * Open connection to redis.
@@ -319,7 +323,13 @@ interface RawJedis {
      */
     Long dbSize();
 
-    String debug(final DebugParams params);
+    /**
+     * Send debug params.
+     * 
+     * @param params
+     * @return status code reply
+     */
+    byte[] debugRaw(final DebugParams params);
 
     /**
      * Decrement the number stored at key by one.
@@ -397,7 +407,7 @@ interface RawJedis {
      *             if not in pipelined mode.
      * @return a list of the results from the commands while in pipelined mode.
      */
-    List<byte[]> executeRaw();
+    // List<byte[]> executeRaw(); TODO
 
     /**
      * Test if the specified key exists. The command returns "0" if the key
@@ -624,13 +634,13 @@ interface RawJedis {
      * <p>
      * If key does not exist, a new key holding a hash is created.
      * <p>
-     * <b>Time complexity:</b> O(N) (with N being the number of fields)
+     * Time complexity: O(N) (with N being the number of fields)
      * 
      * @param key
      * @param hash
-     * @return Always OK because HMSET can't fail
+     * @return Always true because HMSET can't fail
      */
-    String hmset(final byte[] key, final Map<byte[], byte[]> hash);
+    Boolean hmset(final byte[] key, final Map<byte[], byte[]> hash);
 
     /**
      * 
@@ -746,8 +756,14 @@ interface RawJedis {
      * 
      * @return Bulk reply
      */
-    String info();
+    byte[] info();
 
+    /**
+     * Get the connection state.
+     * 
+     * @return true if the ConnectionImpl to the Redis server is open, else
+     *         false.
+     */
     boolean isConnected();
 
     /**
@@ -907,6 +923,23 @@ interface RawJedis {
     Long lpush(final byte[] key, final byte[] value);
 
     /**
+     * Add the value to the head (left) of the list stored at key.
+     * 
+     * If the key does not exist an empty list is created just before the append
+     * operation. If the key exists but is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     *            a pair with first elemt key and second value
+     * @return the number of elements inside the list after the push operation.
+     * 
+     * @throws JedisException
+     *             if data type at key is other then list.
+     */
+    Long lpushRaw(Pair<byte[], byte[]> keyValuePair);
+
+    /**
      * Add the value to the head (left) if there is a non empty list at key.
      * 
      * <p>
@@ -923,6 +956,22 @@ interface RawJedis {
      *             if data type at key is other then list.
      */
     Long lpushx(final byte[] key, final byte[] value);
+
+    /**
+     * Add the value to the head (left) if there is a non empty list at key.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     *            a pair with first element key and second value
+     * 
+     * @return the number of elements inside the list after the push operation,
+     *         0 if there is no list or a empty list before at key.
+     * 
+     * @throws JedisException
+     *             if data type at key is other then list.
+     */
+    Long lpushxRaw(final Pair<byte[], byte[]> keyValuePair);
 
     /**
      * Return the specified elements of the list stored at the specified key.
@@ -986,61 +1035,83 @@ interface RawJedis {
     Long lrem(final byte[] key, final int count, final byte[] value);
 
     /**
-     * Set a new value as the element at index position of the List at key.
+     * Sets the list element at index to value. For more information on the
+     * index argument, see {@link #lindex(byte[], int) LINDEX}.
      * <p>
-     * Out of range indexes will generate an error.
+     * Example:
+     * 
+     * <pre>
+     * {@code
+     * redis>  RPUSH mylist "one"
+     * (integer) 1
+     * redis>  RPUSH mylist "two"
+     * (integer) 2
+     * redis>  RPUSH mylist "three"
+     * (integer) 3
+     * redis>  LSET mylist 0 "four"
+     * OK
+     * redis>  LSET mylist -2 "five"
+     * OK
+     * redis>  LRANGE mylist 0 -1
+     * 1) "four"
+     * 2) "five"
+     * 3) "three"
+     * redis>
+     * }
+     * </pre>
      * <p>
-     * Similarly to other list commands accepting indexes, the index can be
-     * negative to access elements starting from the end of the list. So -1 is
-     * the last element, -2 is the penultimate, and so forth.
-     * <p>
-     * <b>Time complexity:</b>
-     * <p>
-     * O(N) (with N being the length of the list), setting the first or last
-     * elements of the list is O(1).
+     * Time complexity: O(N) where N is the length of the list. Setting either
+     * the first or the last element of the list is O(1).
      * 
      * @param key
      * @param index
      * @param value
-     * @return Status code reply
+     * @return false for out of range indexes, else true.
      */
-    String lset(final byte[] key, final int index, final byte[] value);
+    Boolean lset(final byte[] key, final int index, final byte[] value);
 
     /**
      * Trim an existing list so that it will contain only the specified range of
-     * elements specified. Start and end are zero-based indexes. 0 is the first
-     * element of the list (the list head), 1 the next element and so on.
+     * elements specified. Both start and stop are zero-based indexes, where 0
+     * is the first element of the list (the head), 1 the next element and so
+     * on.
      * <p>
-     * For example LTRIM foobar 0 2 will modify the list stored at foobar key so
+     * For example: LTRIM foobar 0 2 will modify the list stored at foobar so
      * that only the first three elements of the list will remain.
      * <p>
      * start and end can also be negative numbers indicating offsets from the
-     * end of the list. For example -1 is the last element of the list, -2 the
+     * end of the list, where -1 is the last element of the list, -2 the
      * penultimate element and so on.
      * <p>
-     * Indexes out of range will not produce an error: if start is over the end
-     * of the list, or start > end, an empty list is left as value. If end over
-     * the end of the list Redis will threat it just like the last element of
-     * the list.
+     * Out of range indexes will not produce an error: if start is larger than
+     * the end of the list, or start > end, the result will be an empty list
+     * (which causes key to be removed). If end is larger than the end of the
+     * list, Redis will treat it like the last element of the list.
      * <p>
-     * Hint: the obvious use of LTRIM is together with LPUSH/RPUSH. For example:
+     * A common use of LTRIM is together with LPUSH/RPUSH. For example:
+     * 
+     * <pre>
+     * {@code
+     * LPUSH mylist someelement
+     * LTRIM mylist 0 99
+     * }
+     * </pre>
+     * 
+     * This pair of commands will push a new element on the list, while making
+     * sure that the list will not grow larger than 100 elements. This is very
+     * useful when using Redis to store logs for example. It is important to
+     * note that when used in this way LTRIM is an O(1) operation because in the
+     * average case just one element is removed from the tail of the list.
      * <p>
-     * {@code lpush("mylist", "someelement"); ltrim("mylist", 0, 99); * }
-     * <p>
-     * The above two commands will push elements in the list taking care that
-     * the list will not grow without limits. This is very useful when using
-     * Redis to store logs for example. It is important to note that when used
-     * in this way LTRIM is an O(1) operation because in the average case just
-     * one element is removed from the tail of the list.
-     * <p>
-     * Time complexity: O(n) (with n being len of list - len of range)
+     * Time complexity: O(N) where N is the number of elements to be removed by
+     * the operation.
      * 
      * @param key
      * @param start
      * @param end
-     * @return Status code reply
+     * @return true
      */
-    String ltrim(final byte[] key, final int start, final int end);
+    Boolean ltrim(final byte[] key, final int start, final int end);
 
     /**
      * Get the values of all the specified keys. If one or more keys dont exist
@@ -1158,25 +1229,10 @@ interface RawJedis {
      */
     Boolean ping();
 
-    void psubscribe(final JedisPubSub jedisPubSub, final String pattern1,
-	    final String... patternN);
-
-    Long publish(final String channel, final String message);
-
     /**
      * Ask the server to silently close the connection.
      */
     void quit();
-
-    /**
-     * Return a randomly selected key from the currently selected DB.
-     * <p>
-     * Time complexity: O(1)
-     * 
-     * @return Singe line reply, specifically the randomly selected key or an
-     *         empty string is the database is empty
-     */
-    byte[] randomBinaryKey();
 
     /**
      * Return a randomly selected key from the currently selected DB.
@@ -1285,26 +1341,54 @@ interface RawJedis {
     Long rpush(final byte[] key, final byte[] value);
 
     /**
-     * Add the value to the tail (right) if there is a non empty list at key.
+     * Add the value to the head (left) of the list stored at key.
      * 
+     * If the key does not exist an empty list is created just before the append
+     * operation. If the key exists but is not a List an error is returned.
      * <p>
      * Time complexity: O(1)
      * 
-     * @see Jedis#rpushx(byte[], byte[])
-     * @see Jedis#lpush(byte[], byte[])
-     * @see Jedis#rpush(byte[], byte[])
+     * @param keyValuePair
+     *            a pair with first elemt key and second value
+     * @return the number of elements inside the list after the push operation.
+     * 
+     * @throws JedisException
+     *             if data type at key is other then list.
+     */
+    Long rpushRaw(Pair<byte[], byte[]> keyValuePair);
+
+    /**
+     * Add the value to the tail (right) if there is a non empty list at key.
+     * <p>
+     * Time complexity: O(1)
      * 
      * @param key
      *            the key
      * @param value
      *            the value to push
      * @return the number of elements inside the list after the push operation,
-     *         0 if there is no list or a empty list at key.
+     *         0 if there is no list or a empty list before at key.
      * 
      * @throws JedisException
      *             if data type at key is other then list.
      */
     Long rpushx(final byte[] key, final byte[] value);
+
+    /**
+     * Add the value to the tail (right) if there is a non empty list at key.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param keyValuePair
+     *            a pair with first elemt key and second value
+     * 
+     * @return the number of elements inside the list after the push operation,
+     *         0 if there is no list or a empty list before at key.
+     * 
+     * @throws JedisException
+     *             if data type at key is other then list.
+     */
+    Long rpushxRaw(final Pair<byte[], byte[]> keyValuePair);
 
     /**
      * Add a value to the set stored at key or create new set.
@@ -1342,7 +1426,7 @@ interface RawJedis {
      * 
      * @return Status code reply
      */
-    String save();
+    Boolean save();
 
     /**
      * Return the set cardinality (number of members).
@@ -1448,11 +1532,27 @@ interface RawJedis {
      * Time complexity: O(1)
      * 
      * @param key
-     * @param seconds
      * @param value
+     * @param seconds
      * @return Status code reply
      */
-    String setex(final byte[] key, final int seconds, final byte[] value);
+    Boolean setex(final byte[] key, final byte[] value, final int seconds);
+
+    /**
+     * Atomic set and expire.
+     * <p>
+     * The command is exactly equivalent to the following group of commands:
+     * {@link #set(byte[], byte[]) SET} + {@link #expire(byte[], long) EXPIRE}.
+     * The operation is atomic.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param key
+     * @param value
+     * @param seconds
+     * @return Status code reply
+     */
+    Boolean setexRaw(final Pair<byte[], byte[]> keyValuePair, final int seconds);
 
     /**
      * Set the config.
@@ -1482,6 +1582,42 @@ interface RawJedis {
     Boolean setnx(final byte[] key, final byte[] value);
 
     /**
+     * Set key to hold string value if key does not exist.
+     * <p>
+     * In that case, it is equal to {@link RawJedis#set(byte[], byte[]) SET}.
+     * When key already holds a value, no operation is performed. SETNX is short
+     * for "SET if Not eXists".
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param key
+     *            the key
+     * @param value
+     *            the value
+     * @return true if the key was set, false if the key was not set
+     * @throws NullPointerException
+     *             if key or value is null
+     */
+    Boolean setnxRaw(final Pair<byte[], byte[]> keyValuePair);
+
+    /**
+     * Set key to hold the string value.
+     * <p>
+     * If key already holds a value, it is overwritten, regardless of its type.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @param key
+     *            to set
+     * @param value
+     *            to set
+     * @return always true since set can't fail.
+     * @throws NullPointerException
+     *             if key or value is null
+     */
+    Boolean setRaw(final Pair<byte[], byte[]> keyValuePair);
+
+    /**
      * Synchronously save the DB on disk, then shutdown the server.
      * <p>
      * Stop all the clients, save the DB, then quit the server. This commands
@@ -1493,7 +1629,7 @@ interface RawJedis {
      * @return Status code reply on error. On success nothing is returned since
      *         the server quits and the connection is closed.
      */
-    String shutdown();
+    Boolean shutdown();
 
     /**
      * Return the members of a set resulting from the intersection of all the
@@ -1584,9 +1720,15 @@ interface RawJedis {
      * @param port
      * @return Status code reply
      */
-    String slaveof(final String host, final int port);
+    Boolean slaveof(final byte[] host, final int port);
 
-    String slaveofNoOne();
+    /**
+     * If a Redis server is arleady acting as slave, the command SLAVEOF NO ONE
+     * will turn off the replicaiton turning the Redis server into a MASTER.
+     * 
+     * @return Status code reply
+     */
+    Boolean slaveofNoOne();
 
     /**
      * Return all the members of the set at key.
@@ -1815,8 +1957,6 @@ interface RawJedis {
      */
     Long strlen(final byte[] key);
 
-    void subscribe(final JedisPubSub jedisPubSub, final String... channels);
-
     /**
      * Return a subset of the string from offset start to offset end (both
      * offsets are inclusive). Negative offsets can be used in order to provide
@@ -1917,11 +2057,26 @@ interface RawJedis {
      *         "zset" if the key contains a Sorted Set value "hash" if the key
      *         contains a Hash value
      */
-    String type(final byte[] key);
+    RedisType type(final byte[] key);
 
-    String unwatch();
+    /**
+     * Flushes all the previously watched keys for a transaction.
+     * <p>
+     * If you call EXEC or DISCARD, there's no need to manually call UNWATCH.
+     * Time complexity: O(1).
+     * 
+     * @return always true
+     */
+    Boolean unwatch();
 
-    String watch(final byte[] key);
+    /**
+     * Marks the given keys to be watched for conditional execution of a
+     * transaction.
+     * 
+     * @param key
+     * @return always true
+     */
+    Boolean watch(final byte[] key);
 
     /**
      * Add the specified member having the specifeid score to the sorted set

@@ -13,14 +13,13 @@ import org.testng.annotations.Test;
 public class ControlCommandsTest extends JedisTestBase {
     @Test
     public void bgrewriteaof() {
-	assertThat(jedis.bgrewriteaof(),
-		is("Background append only file rewriting started"));
+	assertThat(jedis.bgrewriteaof(), is(true));
     }
 
     @Test
     public void bgsave() {
 	try {
-	    assertThat(jedis.bgsave(), is("Background saving started"));
+	    assertThat(jedis.bgsave(), is(true));
 	} catch (JedisException e) {
 	    assertThat("ERR Background save already in progress",
 		    is(e.getMessage()));
@@ -56,13 +55,12 @@ public class ControlCommandsTest extends JedisTestBase {
     @Test
     public void lastsave() throws InterruptedException {
 	long before = jedis.lastsave();
-	String st = "";
-	while (!st.equals("OK")) {
+	Boolean saveHappend = false;
+	while (!saveHappend) {
 	    try {
 		Thread.sleep(1000);
-		st = jedis.save();
+		saveHappend = jedis.save();
 	    } catch (JedisException e) {
-
 	    }
 	}
 	long after = jedis.lastsave();
@@ -75,14 +73,14 @@ public class ControlCommandsTest extends JedisTestBase {
 	    @Override
 	    public void onCommand(String command) {
 		assertThat(command, containsString("OK"));
-		client.disconnect();
+		connection.disconnect();
 	    }
 	});
     }
 
     @Test
     public void save() {
-	assertThat(jedis.save(), is("OK"));
+	assertThat(jedis.save(), is(true));
     }
 
     @Test

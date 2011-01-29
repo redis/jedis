@@ -17,32 +17,28 @@ public final class PairImpl<F, S> implements Pair<F, S> {
     /**
      * Pair factory method.
      * 
-     * @param <F>
-     *            Type of first element.
-     * @param <S>
-     *            Type of second element.
      * @param first
      *            element
      * @param second
      *            element
      * @return a new Pair
      */
-    static public <F, S> Pair<F, S> newPair(F first, S second) {
+    static public <F, S> Pair<F, S> newPair(final F first, final S second) {
 	return new PairImpl<F, S>(first, second);
     }
 
     private final F first;
     private final S second;
 
-    private PairImpl(F first, S second) {
+    private PairImpl(final F first, final S second) {
 	this.first = first;
 	this.second = second;
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(final Object other) {
 	if (other instanceof Pair) {
-	    Pair<?, ?> otherPair = (Pair<?, ?>) other;
+	    final Pair<?, ?> otherPair = (Pair<?, ?>) other;
 	    return ((this.first == otherPair.getFirst() || (this.first != null
 		    && otherPair.getFirst() != null && this.first
 		    .equals(otherPair.getFirst()))) && (this.second == otherPair
@@ -76,8 +72,8 @@ public final class PairImpl<F, S> implements Pair<F, S> {
 
     @Override
     public int hashCode() {
-	int hashFirst = first != null ? first.hashCode() : 0;
-	int hashSecond = second != null ? second.hashCode() : 0;
+	final int hashFirst = first != null ? first.hashCode() : 0;
+	final int hashSecond = second != null ? second.hashCode() : 0;
 	return (hashFirst + hashSecond) * hashSecond + hashFirst;
     }
 

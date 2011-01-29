@@ -1,6 +1,5 @@
 package com.googlecode.jedis;
 
-
 public class PublishSubscribeCommandsTest extends JedisTestBase {
     // @Test
     // public void psubscribe() throws UnknownHostException, IOException,

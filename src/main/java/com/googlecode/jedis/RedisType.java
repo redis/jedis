@@ -12,31 +12,31 @@ import com.google.common.collect.Maps;
  * 
  */
 public enum RedisType {
-    STRING, LIST, SET, HASH, NONE;
-
-    String type;
+    HASH, LIST, NONE, SET, STRING;
 
     private static final Map<String, RedisType> lookup;
 
     static {
-	Map<String, RedisType> tmp = Maps.newHashMapWithExpectedSize(RedisType
-		.values().length);
-	for (RedisType it : RedisType.values()) {
+	final Map<String, RedisType> tmp = Maps
+		.newHashMapWithExpectedSize(RedisType.values().length);
+	for (final RedisType it : RedisType.values()) {
 	    tmp.put(it.type, it);
 	}
 	lookup = ImmutableMap.copyOf(tmp);
     }
 
-    protected static RedisType get(byte[] type) {
+    protected static RedisType get(final byte[] type) {
 	return lookup.get(new String(type, Protocol.DEFAULT_CHARSET));
     }
 
-    protected static RedisType get(String type) {
+    protected static RedisType get(final String type) {
 	return lookup.get(type);
     }
 
+    String type;
+
     private RedisType() {
-	this.type = this.name().toLowerCase();
+	type = name().toLowerCase();
     }
 
 }

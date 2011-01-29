@@ -21,11 +21,11 @@ public class JedisConfig {
 	return new JedisConfig();
     }
 
-    private Integer timeout;
-    private String host;
-    private Integer port;
-    private String password;
     private Charset charset;
+    private String host;
+    private String password;
+    private Integer port;
+    private Integer timeout;
 
     /**
      * Use {@link #newJedisConfig()} to create a JedisConfig.
@@ -143,7 +143,7 @@ public class JedisConfig {
      * @param charset
      *            the charset
      */
-    public void setCharset(Charset charset) {
+    public void setCharset(final Charset charset) {
 	this.charset = charset;
     }
 
@@ -153,7 +153,7 @@ public class JedisConfig {
      * @param host
      *            the host
      */
-    public void setHost(String host) {
+    public void setHost(final String host) {
 	this.host = host;
     }
 
@@ -163,7 +163,7 @@ public class JedisConfig {
      * @param password
      *            the password
      */
-    public void setPassword(String password) {
+    public void setPassword(final String password) {
 	this.password = password;
     }
 
@@ -173,7 +173,7 @@ public class JedisConfig {
      * @param port
      *            the port
      */
-    public void setPort(Integer port) {
+    public void setPort(final Integer port) {
 	this.port = port;
     }
 
@@ -183,7 +183,7 @@ public class JedisConfig {
      * @param timeout
      *            the timeout
      */
-    public void setTimeout(Integer timeout) {
+    public void setTimeout(final Integer timeout) {
 	this.timeout = timeout;
     }
 

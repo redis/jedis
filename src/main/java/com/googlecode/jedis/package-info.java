@@ -1,5 +1,5 @@
-package com.googlecode.jedis;
-
 /**
  * The Jedis package.
  */
+package com.googlecode.jedis;
+

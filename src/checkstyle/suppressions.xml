@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE suppressions PUBLIC
+     "-//Puppy Crawl//DTD Suppressions 1.0//EN"
+     "http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
+
+<!-- this config works with mvn checkstyle:checkstyle but not with mvn site
+  goal, don't know why... -->
+<suppressions>
+  <suppress checks="Javadoc" files="[a-zA-Z0-9]*.java" />
+  <suppress checks="FileTabCharacter" files="[a-zA-Z0-9]*.java" />
+  <suppress checks="RegexpSingleline" files="[a-zA-Z0-9]*.java" />
+</suppressions>

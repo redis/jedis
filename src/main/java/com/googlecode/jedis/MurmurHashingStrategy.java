@@ -2,7 +2,6 @@ package com.googlecode.jedis;
 
 import java.nio.charset.Charset;
 
-
 /**
  * Murmur hash 2.0.
  * 
@@ -23,10 +22,12 @@ public final class MurmurHashingStrategy implements HashingStrategy {
 
     private Charset charset = Protocol.DEFAULT_CHARSET;
 
+    @Override
     public Charset getCharset() {
-	return this.charset;
+	return charset;
     }
 
+    @Override
     public String getHashName() {
 	return "MurmurHash";
     }
@@ -62,7 +63,7 @@ public final class MurmurHashingStrategy implements HashingStrategy {
 	final int r = 24;
 	// Initialize the hash to a random value
 	int h = seed ^ length;
-	int length4 = length / 4;
+	final int length4 = length / 4;
 
 	for (int i = 0; i < length4; i++) {
 	    final int i4 = i * 4;
@@ -155,7 +156,8 @@ public final class MurmurHashingStrategy implements HashingStrategy {
 	return hash32(text.substring(from, from + length), charset);
     }
 
-    public long hash64(byte[] data) {
+    @Override
+    public long hash64(final byte[] data) {
 	return hash64(data, data.length);
     }
 
@@ -189,7 +191,7 @@ public final class MurmurHashingStrategy implements HashingStrategy {
 
 	long h = (seed & 0xffffffffL) ^ (length * m);
 
-	int length8 = length / 8;
+	final int length8 = length / 8;
 
 	for (int i = 0; i < length8; i++) {
 	    final int i8 = i * 8;
@@ -244,6 +246,7 @@ public final class MurmurHashingStrategy implements HashingStrategy {
      *            string to hash
      * @return 64 bit hash of the given string
      */
+    @Override
     public long hash64(final String text) {
 	final byte[] bytes = text.getBytes();
 	return hash64(bytes, bytes.length);
@@ -299,7 +302,8 @@ public final class MurmurHashingStrategy implements HashingStrategy {
     /**
      * Set the charset to transform string to byte[] before hashing.
      */
-    public void setCharset(Charset charset) {
+    @Override
+    public void setCharset(final Charset charset) {
 	this.charset = charset;
     }
 

@@ -19,14 +19,14 @@ public final class JedisFactory {
      * @return a Jedis instance
      */
     static public Jedis newJedisInstance() {
-	Jedis jedis = new JedisImpl();
+	final Jedis jedis = new JedisImpl();
 	jedis.setJedisConfig(newJedisConfig());
 	try {
 	    jedis.connect();
-	} catch (UnknownHostException e) {
+	} catch (final UnknownHostException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
-	} catch (IOException e) {
+	} catch (final IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
@@ -41,15 +41,15 @@ public final class JedisFactory {
      *            the config
      * @return a Jedis instance
      */
-    static public Jedis newJedisInstance(JedisConfig config) {
-	Jedis jedis = new JedisImpl();
+    static public Jedis newJedisInstance(final JedisConfig config) {
+	final Jedis jedis = new JedisImpl();
 	jedis.setJedisConfig(config);
 	try {
 	    jedis.connect();
-	} catch (UnknownHostException e) {
+	} catch (final UnknownHostException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
-	} catch (IOException e) {
+	} catch (final IOException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}

@@ -23,7 +23,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     private static class ByteToStringFunction implements
 	    Function<byte[], String> {
 	@Override
-	public String apply(byte[] input) {
+	public String apply(final byte[] input) {
 	    return asString(input);
 	}
     }
@@ -31,7 +31,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     private static class PairByteByteToPairStringString implements
 	    Function<Pair<byte[], byte[]>, Pair<String, String>> {
 	@Override
-	public Pair<String, String> apply(Pair<byte[], byte[]> input) {
+	public Pair<String, String> apply(final Pair<byte[], byte[]> input) {
 	    return newPair(asString(input.getFirst()),
 		    asString(input.getSecond()));
 	}
@@ -40,7 +40,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     private static class PairByteDoubleToPairStringDouble implements
 	    Function<Pair<byte[], Double>, Pair<String, Double>> {
 	@Override
-	public Pair<String, Double> apply(Pair<byte[], Double> input) {
+	public Pair<String, Double> apply(final Pair<byte[], Double> input) {
 	    return newPair(asString(input.getFirst()), input.getSecond());
 	}
     }
@@ -114,7 +114,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#configGet(java.lang.String)
      */
     @Override
-    public List<String> configGet(String pattern) {
+    public List<String> configGet(final String pattern) {
 	return Lists.newArrayList(transform(configGet(asByte(pattern)),
 		new ByteToStringFunction()));
     }
@@ -126,7 +126,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String)
      */
     @Override
-    public String configSet(String parameter, String value) {
+    public String configSet(final String parameter, final String value) {
 	return asString(configSet(asByte(parameter), asByte(value)));
     }
 
@@ -166,7 +166,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#del(java.lang.String)
      */
     @Override
-    public Long del(String key1, final String... keyN) {
+    public Long del(final String key1, final String... keyN) {
 	return del(asByte(key1), asByte(keyN));
     }
 
@@ -269,8 +269,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Map<String, String> hgetAll(final String key) {
-	Map<String, String> result = Maps.newHashMap();
-	for (Map.Entry<byte[], byte[]> it : hgetAll(asByte(key)).entrySet()) {
+	final Map<String, String> result = Maps.newHashMap();
+	for (final Map.Entry<byte[], byte[]> it : hgetAll(asByte(key))
+		.entrySet()) {
 	    result.put(asString(it.getKey()), asString(it.getValue()));
 	}
 	return ImmutableMap.copyOf(result);
@@ -326,8 +327,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Boolean hmset(final String key, final Map<String, String> hash) {
-	Map<byte[], byte[]> bhash = Maps.newHashMap();
-	for (Map.Entry<String, String> it : hash.entrySet()) {
+	final Map<byte[], byte[]> bhash = Maps.newHashMap();
+	for (final Map.Entry<String, String> it : hash.entrySet()) {
 	    bhash.put(asByte(it.getKey()), asByte(it.getValue()));
 	}
 	return hmset(asByte(key), bhash);
@@ -414,7 +415,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String)
      */
     @Override
-    public Long linsertAfter(String key, String element, String value) {
+    public Long linsertAfter(final String key, final String element,
+	    final String value) {
 	return linsertAfter(asByte(key), asByte(element), asByte(value));
     }
 
@@ -425,7 +427,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String)
      */
     @Override
-    public Long linsertBefore(String key, String element, String value) {
+    public Long linsertBefore(final String key, final String element,
+	    final String value) {
 	return linsertBefore(asByte(key), asByte(element), asByte(value));
     }
 
@@ -455,7 +458,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#lpush(com.googlecode.jedis.Pair)
      */
     @Override
-    public Long lpush(Pair<String, String> keyValuePair) {
+    public Long lpush(final Pair<String, String> keyValuePair) {
 	return lpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
@@ -552,14 +555,14 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * com.googlecode.jedis.Pair<java.lang.String,java.lang.String>[])
      */
     @Override
-    public Boolean mset(Pair<String, String> keyValuePair1,
-	    Pair<String, String>... keyValuePairN) {
+    public Boolean mset(final Pair<String, String> keyValuePair1,
+	    final Pair<String, String>... keyValuePairN) {
 	checkNotNull(keyValuePair1);
 	checkNotNull(keyValuePair1.getFirst());
 	checkNotNull(keyValuePair1.getSecond());
 
 	@SuppressWarnings("unchecked")
-	Pair<byte[], byte[]>[] args = new Pair[keyValuePairN.length];
+	final Pair<byte[], byte[]>[] args = new Pair[keyValuePairN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = asByte(keyValuePairN[i]);
@@ -575,14 +578,14 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * com.googlecode.jedis.Pair<java.lang.String,java.lang.String>[])
      */
     @Override
-    public Boolean msetnx(Pair<String, String> keyValuePair1,
-	    Pair<String, String>... keyValuePairN) {
+    public Boolean msetnx(final Pair<String, String> keyValuePair1,
+	    final Pair<String, String>... keyValuePairN) {
 	checkNotNull(keyValuePair1);
 	checkNotNull(keyValuePair1.getFirst());
 	checkNotNull(keyValuePair1.getSecond());
 
 	@SuppressWarnings("unchecked")
-	Pair<byte[], byte[]>[] args = new Pair[keyValuePairN.length];
+	final Pair<byte[], byte[]>[] args = new Pair[keyValuePairN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = asByte(keyValuePairN[i]);
@@ -666,7 +669,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.RawJedis#rpush(com.googlecode.jedis.Pair)
      */
     @Override
-    public Long rpush(Pair<String, String> keyValuePair) {
+    public Long rpush(final Pair<String, String> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return rpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -742,7 +745,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#set(com.googlecode.jedis.Pair)
      */
     @Override
-    public Boolean set(Pair<String, String> keyValuePair) {
+    public Boolean set(final Pair<String, String> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return set(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -764,7 +767,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * int)
      */
     @Override
-    public Boolean setex(Pair<String, String> keyValuePair, int seconds) {
+    public Boolean setex(final Pair<String, String> keyValuePair,
+	    final int seconds) {
 	checkNotNull(keyValuePair);
 	return setex(keyValuePair.getFirst(), keyValuePair.getSecond(), seconds);
     }
@@ -776,7 +780,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String)
      */
     @Override
-    public Boolean setex(String key, String value, int seconds) {
+    public Boolean setex(final String key, final String value, final int seconds) {
 	return setex(asByte(key), asByte(value), seconds);
     }
 
@@ -786,7 +790,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#setnx(com.googlecode.jedis.Pair)
      */
     @Override
-    public Boolean setnx(Pair<String, String> keyValuePair) {
+    public Boolean setnx(final Pair<String, String> keyValuePair) {
 	return setnx(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
@@ -806,7 +810,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#sinter(java.lang.String)
      */
     @Override
-    public Set<String> sinter(String key1, final String... keyN) {
+    public Set<String> sinter(final String key1, final String... keyN) {
 	return ImmutableSet
 		.copyOf(transform(sinter(asByte(key1), asByte(keyN)),
 			new ByteToStringFunction()));
@@ -819,7 +823,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String[])
      */
     @Override
-    public Long sinterstore(final String dstkey, String srcKey1,
+    public Long sinterstore(final String dstkey, final String srcKey1,
 	    final String... scrKeyN) {
 	return sinterstore(asByte(dstkey), asByte(srcKey1), asByte(scrKeyN));
     }
@@ -956,7 +960,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
     }
 
     @Override
-    public Set<String> sunion(String key1, final String... keyN) {
+    public Set<String> sunion(final String key1, final String... keyN) {
 	return ImmutableSet
 		.copyOf(transform(sunion(asByte(key1), asByte(keyN)),
 			new ByteToStringFunction()));
@@ -969,7 +973,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String[])
      */
     @Override
-    public Long sunionstore(final String dstKey, String key1,
+    public Long sunionstore(final String dstKey, final String key1,
 	    final String... keyN) {
 	return sunionstore(asByte(dstKey), asByte(key1), asByte(keyN));
     }
@@ -1000,7 +1004,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * @see com.googlecode.jedis.Jedis#watch(java.lang.String)
      */
     @Override
-    public Boolean watch(String key) {
+    public Boolean watch(final String key) {
 	return watch(asByte(key));
     }
 
@@ -1032,7 +1036,7 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * com.googlecode.jedis.Pair)
      */
     @Override
-    public Boolean zadd(String key, Pair<String, Double> value) {
+    public Boolean zadd(final String key, final Pair<String, Double> value) {
 	return zadd(asByte(key), value.getSecond(), asByte(value.getFirst()));
     }
 
@@ -1063,7 +1067,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, double)
      */
     @Override
-    public Double zincrby(String key, String member, double value) {
+    public Double zincrby(final String key, final String member,
+	    final double value) {
 	return zincrby(asByte(key), asByte(member), value);
     }
 
@@ -1076,11 +1081,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zinterstoreMax(final String dstKey,
-	    Pair<String, Double> ssetAndWeight1,
-	    Pair<String, Double>... ssetAndWeightN) {
+	    final Pair<String, Double> ssetAndWeight1,
+	    final Pair<String, Double>... ssetAndWeightN) {
 
 	@SuppressWarnings("unchecked")
-	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
+	final Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = newPair(asByte(ssetAndWeightN[i].getFirst()),
@@ -1102,11 +1107,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zinterstoreMin(final String dstKey,
-	    Pair<String, Double> ssetAndWeight1,
-	    Pair<String, Double>... ssetAndWeightN) {
+	    final Pair<String, Double> ssetAndWeight1,
+	    final Pair<String, Double>... ssetAndWeightN) {
 
 	@SuppressWarnings("unchecked")
-	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
+	final Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = newPair(asByte(ssetAndWeightN[i].getFirst()),
@@ -1128,11 +1133,11 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zinterstoreSum(final String dstKey,
-	    Pair<String, Double> ssetAndWeight1,
-	    Pair<String, Double>... ssetAndWeightN) {
+	    final Pair<String, Double> ssetAndWeight1,
+	    final Pair<String, Double>... ssetAndWeightN) {
 
 	@SuppressWarnings("unchecked")
-	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
+	final Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = newPair(asByte(ssetAndWeightN[i].getFirst()),
@@ -1192,8 +1197,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String)
      */
     @Override
-    public Set<Pair<String, Double>> zrangeByScoreWithScores(String key,
-	    String min, String max) {
+    public Set<Pair<String, Double>> zrangeByScoreWithScores(final String key,
+	    final String min, final String max) {
 	return ImmutableSet.copyOf(transform(
 		zrangeByScoreWithScores(asByte(key), asByte(min), asByte(max)),
 		new PairByteDoubleToPairStringDouble()));
@@ -1206,8 +1211,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String, long, long)
      */
     @Override
-    public Set<Pair<String, Double>> zrangeByScoreWithScores(String key,
-	    String min, String max, long offset, long count) {
+    public Set<Pair<String, Double>> zrangeByScoreWithScores(final String key,
+	    final String min, final String max, final long offset,
+	    final long count) {
 	return ImmutableSet
 		.copyOf(transform(
 			zrangeByScoreWithScores(asByte(key), asByte(min),
@@ -1222,8 +1228,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * long)
      */
     @Override
-    public Set<Pair<String, Double>> zrangeWithScores(String key, long start,
-	    long end) {
+    public Set<Pair<String, Double>> zrangeWithScores(final String key,
+	    final long start, final long end) {
 	return ImmutableSet.copyOf(transform(
 		zrangeWithScores(asByte(key), start, end),
 		new PairByteDoubleToPairStringDouble()));
@@ -1322,8 +1328,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String)
      */
     @Override
-    public Set<Pair<String, Double>> zrevrangeByScoreWithScores(String key,
-	    String min, String max) {
+    public Set<Pair<String, Double>> zrevrangeByScoreWithScores(
+	    final String key, final String min, final String max) {
 	return ImmutableSet.copyOf(transform(
 		zrevrangeByScoreWithScores(asByte(key), asByte(min),
 			asByte(max)), new PairByteDoubleToPairStringDouble()));
@@ -1337,8 +1343,9 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * java.lang.String, java.lang.String, long, long)
      */
     @Override
-    public Set<Pair<String, Double>> zrevrangeByScoreWithScores(String key,
-	    String min, String max, long offset, long count) {
+    public Set<Pair<String, Double>> zrevrangeByScoreWithScores(
+	    final String key, final String min, final String max,
+	    final long offset, final long count) {
 	return ImmutableSet.copyOf(transform(
 		zrevrangeByScoreWithScores(asByte(key), asByte(min),
 			asByte(max), offset, count),
@@ -1352,8 +1359,8 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      * long, long)
      */
     @Override
-    public Set<Pair<String, Double>> zrevrangeWithScores(String key,
-	    long start, long end) {
+    public Set<Pair<String, Double>> zrevrangeWithScores(final String key,
+	    final long start, final long end) {
 	return ImmutableSet.copyOf(transform(
 		zrevrangeWithScores(asByte(key), start, end),
 		new PairByteDoubleToPairStringDouble()));
@@ -1390,10 +1397,10 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zunionstoreMax(final String dstKey,
-	    Pair<String, Double> ssetAndWeight1,
-	    Pair<String, Double>... ssetAndWeightN) {
+	    final Pair<String, Double> ssetAndWeight1,
+	    final Pair<String, Double>... ssetAndWeightN) {
 	@SuppressWarnings("unchecked")
-	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
+	final Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = newPair(asByte(ssetAndWeightN[i].getFirst()),
@@ -1415,10 +1422,10 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zunionstoreMin(final String dstKey,
-	    Pair<String, Double> ssetAndWeight1,
-	    Pair<String, Double>... ssetAndWeightN) {
+	    final Pair<String, Double> ssetAndWeight1,
+	    final Pair<String, Double>... ssetAndWeightN) {
 	@SuppressWarnings("unchecked")
-	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
+	final Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = newPair(asByte(ssetAndWeightN[i].getFirst()),
@@ -1440,10 +1447,10 @@ class JedisImpl extends RawJedisImpl implements Jedis {
      */
     @Override
     public Long zunionstoreSum(final String dstKey,
-	    Pair<String, Double> ssetAndWeight1,
-	    Pair<String, Double>... ssetAndWeightN) {
+	    final Pair<String, Double> ssetAndWeight1,
+	    final Pair<String, Double>... ssetAndWeightN) {
 	@SuppressWarnings("unchecked")
-	Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
+	final Pair<byte[], Double>[] args = new Pair[ssetAndWeightN.length];
 
 	for (int i = 0; i < args.length; i++) {
 	    args[i] = newPair(asByte(ssetAndWeightN[i].getFirst()),

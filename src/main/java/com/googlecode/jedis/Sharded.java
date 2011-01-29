@@ -9,17 +9,21 @@ import java.util.regex.Matcher;
 
 import com.google.common.collect.Maps;
 
-public class Sharded {
+/**
+ * DO NOT USE YET!!!
+ * 
+ */
+class Sharded {
 
     public static final int DEFAULT_WEIGHT = 1;
 
-    private TreeMap<Long, ShardJedisConfig> shardConfigs;
-
     private final Map<ShardJedisConfig, Jedis> resources = Maps.newHashMap();
+
+    private TreeMap<Long, ShardJedisConfig> shardConfigs;
 
     ShardingJedisConfig shardingConfig;
 
-    protected Sharded(ShardingJedisConfig shardingConfig) {
+    protected Sharded(final ShardingJedisConfig shardingConfig) {
 	this.shardingConfig = shardingConfig;
 	init();
     }
@@ -39,9 +43,9 @@ public class Sharded {
      * @param key
      * @return The tag if it exists, or the original key
      */
-    public String getKeyTag(String key) {
+    public String getKeyTag(final String key) {
 	if (shardingConfig.getKeyTagPattern() != null) {
-	    Matcher m = shardingConfig.getKeyTagPattern().matcher(key);
+	    final Matcher m = shardingConfig.getKeyTagPattern().matcher(key);
 	    if (m.find()) {
 		return m.group(1);
 	    }
@@ -49,16 +53,16 @@ public class Sharded {
 	return key;
     }
 
-    public Jedis getShard(byte[] key) {
+    public Jedis getShard(final byte[] key) {
 	return resources.get(getShardInfo(key));
     }
 
-    public Jedis getShard(String key) {
+    public Jedis getShard(final String key) {
 	return resources.get(getShardInfo(key));
     }
 
-    private ShardJedisConfig getShardInfo(byte[] key) {
-	SortedMap<Long, ShardJedisConfig> tail = shardConfigs
+    private ShardJedisConfig getShardInfo(final byte[] key) {
+	final SortedMap<Long, ShardJedisConfig> tail = shardConfigs
 		.tailMap(shardingConfig.getHashingStrategy().hash64(key));
 	if (tail.size() == 0) {
 	    return shardConfigs.get(shardConfigs.firstKey());
@@ -66,14 +70,15 @@ public class Sharded {
 	return tail.get(tail.firstKey());
     }
 
-    public ShardJedisConfig getShardInfo(String key) {
+    public ShardJedisConfig getShardInfo(final String key) {
 	return getShardInfo(getKeyTag(key).getBytes());
     }
 
     private void init() {
 	shardConfigs = Maps.newTreeMap();
 
-	for (ShardJedisConfig shardConfig : shardingConfig.getShardConfigs()) {
+	for (final ShardJedisConfig shardConfig : shardingConfig
+		.getShardConfigs()) {
 	    for (int n = 0; n < 160 * shardConfig.getWeight(); n++) {
 		shardConfigs.put(
 			shardingConfig.getHashingStrategy()
@@ -81,7 +86,7 @@ public class Sharded {
 					shardConfig.toString(), n)),
 			shardConfig);
 	    }
-	    Jedis jedis = JedisFactory.newJedisInstance(shardConfig);
+	    final Jedis jedis = JedisFactory.newJedisInstance(shardConfig);
 	    resources.put(shardConfig, jedis);
 	}
     }

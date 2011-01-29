@@ -1,13 +1,7 @@
 package com.googlecode.jedis;
 
 import static com.googlecode.jedis.Protocol.DEFAULT_CHARSET;
-import static com.googlecode.jedis.Protocol.Keyword.ALPHA;
-import static com.googlecode.jedis.Protocol.Keyword.ASC;
-import static com.googlecode.jedis.Protocol.Keyword.BY;
-import static com.googlecode.jedis.Protocol.Keyword.DESC;
-import static com.googlecode.jedis.Protocol.Keyword.GET;
-import static com.googlecode.jedis.Protocol.Keyword.LIMIT;
-import static com.googlecode.jedis.Protocol.Keyword.NOSORT;
+import static com.googlecode.jedis.Protocol.Keyword.*;
 import static java.lang.String.valueOf;
 
 import java.util.ArrayList;
@@ -121,7 +115,7 @@ public final class SortParams {
      *            all other pattern
      * @return the SortParams Object
      */
-    public SortParams get(byte[] pattern1, byte[]... patternN) {
+    public SortParams get(final byte[] pattern1, final byte[]... patternN) {
 	params.add(GET.raw);
 	params.add(pattern1);
 	for (final byte[] pattern : patternN) {
@@ -149,7 +143,7 @@ public final class SortParams {
      *            all other pattern
      * @return the SortParams Object
      */
-    public SortParams get(String pattern1, String... patternN) {
+    public SortParams get(final String pattern1, final String... patternN) {
 	params.add(GET.raw);
 	params.add(pattern1.getBytes(DEFAULT_CHARSET));
 	for (final String pattern : patternN) {

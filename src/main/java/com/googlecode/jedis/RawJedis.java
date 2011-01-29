@@ -387,9 +387,8 @@ interface RawJedis {
     /**
      * Disconnect the jedis client from the redis server.
      * 
-     * @throws IOException
      */
-    void disconnect() throws IOException;
+    void disconnect();
 
     /**
      * Simple echo.

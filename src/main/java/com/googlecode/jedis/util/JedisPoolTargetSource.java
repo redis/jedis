@@ -1,11 +1,7 @@
 package com.googlecode.jedis.util;
 
-import java.io.IOException;
-
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.aop.target.CommonsPoolTargetSource;
 
 import com.googlecode.jedis.Jedis;
@@ -18,8 +14,6 @@ import com.googlecode.jedis.Jedis;
  */
 public class JedisPoolTargetSource extends CommonsPoolTargetSource {
 
-    Logger log = LoggerFactory.getLogger(JedisPoolTargetSource.class);
-
     /*
      * (non-Javadoc)
      * 
@@ -28,7 +22,7 @@ public class JedisPoolTargetSource extends CommonsPoolTargetSource {
      */
     @Override
     protected ObjectPool createObjectPool() {
-	GenericObjectPool gop = new GenericObjectPool(this);
+	final GenericObjectPool gop = new GenericObjectPool(this);
 	gop.setMaxActive(getMaxSize());
 	gop.setMaxIdle(getMaxIdle());
 	gop.setMinIdle(getMinIdle());
@@ -47,17 +41,12 @@ public class JedisPoolTargetSource extends CommonsPoolTargetSource {
      * destroyPrototypeInstance(java.lang.Object)
      */
     @Override
-    protected void destroyPrototypeInstance(Object target) {
+    protected void destroyPrototypeInstance(final Object target) {
 	super.destroyPrototypeInstance(target);
 
 	if (target instanceof Jedis) {
-	    Jedis jedis = (Jedis) target;
-	    try {
-		jedis.disconnect();
-	    } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	    }
+	    final Jedis jedis = (Jedis) target;
+	    jedis.disconnect();
 	}
     }
 
@@ -69,14 +58,11 @@ public class JedisPoolTargetSource extends CommonsPoolTargetSource {
      * (java.lang.Object)
      */
     @Override
-    public boolean validateObject(Object obj) {
+    public boolean validateObject(final Object obj) {
 	Boolean valid = false;
 
-	log.debug("validate object");
-
 	if (obj instanceof Jedis) {
-	    log.debug("Validation of a Jedis instance");
-	    Jedis jedis = (Jedis) obj;
+	    final Jedis jedis = (Jedis) obj;
 	    valid = jedis.isConnected();
 	}
 

@@ -16,18 +16,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 public class ListCommandsTest extends JedisTestBase {
-    final byte[] bfoo = "bfoo".getBytes(Protocol.DEFAULT_CHARSET);
-    final byte[] bbar = "bbar".getBytes(Protocol.DEFAULT_CHARSET);
-    final byte[] bcar = "bcar".getBytes(Protocol.DEFAULT_CHARSET);
-    final byte[] bsrc = "bsrc".getBytes(Protocol.DEFAULT_CHARSET);
-    final byte[] bdst = "bdst".getBytes(Protocol.DEFAULT_CHARSET);
-    final byte[] bA = { 0x0A };
-    final byte[] bB = { 0x0B };
-    final byte[] bC = { 0x0C };
     final byte[] b1 = { 0x01 };
     final byte[] b2 = { 0x02 };
     final byte[] b3 = { 0x03 };
+    final byte[] bA = { 0x0A };
+    final byte[] bB = { 0x0B };
+    final byte[] bbar = "bbar".getBytes(Protocol.DEFAULT_CHARSET);
+    final byte[] bC = { 0x0C };
+    final byte[] bcar = "bcar".getBytes(Protocol.DEFAULT_CHARSET);
+    final byte[] bdst = "bdst".getBytes(Protocol.DEFAULT_CHARSET);
+    final byte[] bfoo = "bfoo".getBytes(Protocol.DEFAULT_CHARSET);
     final byte[] bhello = { 0x04, 0x02 };
+    final byte[] bsrc = "bsrc".getBytes(Protocol.DEFAULT_CHARSET);
     final byte[] bx = { 0x02, 0x04 };
 
     @SuppressWarnings("unchecked")
@@ -40,10 +40,10 @@ public class ListCommandsTest extends JedisTestBase {
 	    @Override
 	    public void run() {
 		try {
-		    Jedis j = JedisFactory.newJedisInstance(c1);
+		    final Jedis j = JedisFactory.newJedisInstance(c1);
 		    j.lpush("foo", "bar");
 		    j.disconnect();
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 		    fail(ex.getMessage());
 		}
 	    }
@@ -62,10 +62,10 @@ public class ListCommandsTest extends JedisTestBase {
 	    @Override
 	    public void run() {
 		try {
-		    Jedis j = JedisFactory.newJedisInstance(c1);
+		    final Jedis j = JedisFactory.newJedisInstance(c1);
 		    j.lpush("foo", "bar");
 		    j.disconnect();
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 		    fail(ex.getMessage());
 		}
 	    }
@@ -201,7 +201,7 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test(expectedExceptions = JedisException.class)
     public void lpopRaw() {
-	for (byte[] it : ImmutableList.of(bA, bB, bC)) {
+	for (final byte[] it : ImmutableList.of(bA, bB, bC)) {
 	    jedis.rpush(bfoo, it);
 	}
 
@@ -219,7 +219,7 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test(expectedExceptions = JedisException.class)
     public void lpopString() {
-	for (String it : ImmutableList.of("a", "b", "c")) {
+	for (final String it : ImmutableList.of("a", "b", "c")) {
 	    jedis.rpush("foo", it);
 	}
 
@@ -315,23 +315,24 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test
     public void lrem() {
-	ImmutableList<String> list = ImmutableList.of("hello", "hello", "x",
-		"hello", "c", "b", "a");
-	for (String it : list) {
+	final ImmutableList<String> list = ImmutableList.of("hello", "hello",
+		"x", "hello", "c", "b", "a");
+	for (final String it : list) {
 	    jedis.lpush("foo", it);
 	}
 
 	assertThat(jedis.lrem("foo", -2, "hello"), is(2L));
 	assertThat(jedis.lrange("foo", 0, 1000),
 		contains("a", "b", "c", "hello", "x"));
-	List<String> expected = list.reverse().subList(0, list.size() - 2);
+	final List<String> expected = list.reverse()
+		.subList(0, list.size() - 2);
 	assertThat(jedis.lrange("foo", 0, 1000), is(expected));
 	assertThat(jedis.lrem("bar", 100, "foo"), is(0L));
 
 	// Binary
-	ImmutableList<byte[]> blist = ImmutableList.of(bhello, bhello, bx,
-		bhello, bC, bB, bA);
-	for (byte[] it : blist) {
+	final ImmutableList<byte[]> blist = ImmutableList.of(bhello, bhello,
+		bx, bhello, bC, bB, bA);
+	for (final byte[] it : blist) {
 	    jedis.lpush(bfoo, it);
 	}
 
@@ -381,10 +382,10 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test(expectedExceptions = JedisException.class)
     public void rpoplpushRaw() {
-	for (byte[] it : ImmutableSet.of(bA, bB, bC)) {
+	for (final byte[] it : ImmutableSet.of(bA, bB, bC)) {
 	    jedis.rpush(bsrc, it);
 	}
-	for (byte[] it : ImmutableSet.of(b1, b2)) {
+	for (final byte[] it : ImmutableSet.of(b1, b2)) {
 	    jedis.rpush(bdst, it);
 	}
 
@@ -413,10 +414,10 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test(expectedExceptions = JedisException.class)
     public void rpoplpushString() {
-	for (String it : ImmutableSet.of("a", "b", "c")) {
+	for (final String it : ImmutableSet.of("a", "b", "c")) {
 	    jedis.rpush("src", it);
 	}
-	for (String it : ImmutableSet.of("1", "2")) {
+	for (final String it : ImmutableSet.of("1", "2")) {
 	    jedis.rpush("dst", it);
 	}
 
@@ -446,7 +447,7 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test(expectedExceptions = JedisException.class)
     public void rpopRaw() {
-	for (byte[] it : ImmutableList.of(bA, bB, bC)) {
+	for (final byte[] it : ImmutableList.of(bA, bB, bC)) {
 	    jedis.rpush(bfoo, it);
 	}
 
@@ -464,7 +465,7 @@ public class ListCommandsTest extends JedisTestBase {
 
     @Test(expectedExceptions = JedisException.class)
     public void rpopString() {
-	for (String it : ImmutableList.of("a", "b", "c")) {
+	for (final String it : ImmutableList.of("a", "b", "c")) {
 	    jedis.rpush("foo", it);
 	}
 

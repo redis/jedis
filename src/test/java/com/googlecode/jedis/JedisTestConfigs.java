@@ -1,7 +1,5 @@
 package com.googlecode.jedis;
 
-import com.googlecode.jedis.JedisConfig;
-import com.googlecode.jedis.Protocol;
 
 public abstract class JedisTestConfigs {
 

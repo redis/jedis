@@ -5,32 +5,27 @@ import static com.google.common.base.Charsets.UTF_8;
 /**
  * Override to receive messages from the Monitor command.
  * 
- * @author mo
+ * @author Jonathan Leibiusky
+ * @author Moritz Heuser <moritz.heuser@gmail.com>
  * 
  */
 public abstract class JedisMonitor {
     protected Connection connection;
 
     /**
-     * Callback for every line written raw, optional.
-     * 
-     * @param line
-     */
-    public void onCommand(byte[] line) {
-    }
-
-    /**
-     * Callback for every line written, required.
+     * Callback for every line written.
      * 
      * @param line
      */
     public abstract void onCommand(String line);
 
-    protected void proceed(Connection connection) {
+    protected void proceed(final Connection connection) {
 	this.connection = connection;
 	do {
 	    byte[] line = connection.bulkReply();
-	    onCommand(line);
+	    if (line == null) {
+		line = "(nil)".getBytes(UTF_8);
+	    }
 	    onCommand(new String(line, UTF_8));
 	} while (connection.isConnected());
     }

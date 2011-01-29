@@ -10,16 +10,16 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 
 /**
- * Frames a single response line.
+ * Gets the {@link ResponseType} and frames a single response line.
  * 
- * @author Moritz Heuser
+ * @author Moritz Heuser <moritz.heuser@gmail.com>
  * 
  */
-class SingleLineFramer extends FrameDecoder {
+final class SingleLineFramer extends FrameDecoder {
 
     private static ChannelBufferIndexFinder CrAndLn = new ChannelBufferIndexFinder() {
 	@Override
-	public boolean find(ChannelBuffer buffer, int guessedIndex) {
+	public boolean find(final ChannelBuffer buffer, final int guessedIndex) {
 	    return (guessedIndex + 1 < buffer.writerIndex())
 		    && buffer.getByte(guessedIndex) == '\r'
 		    && buffer.getByte(guessedIndex + 1) == '\n';
@@ -27,8 +27,8 @@ class SingleLineFramer extends FrameDecoder {
     };
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel,
-	    ChannelBuffer buffer) throws Exception {
+    protected Object decode(final ChannelHandlerContext ctx,
+	    final Channel channel, final ChannelBuffer buffer) throws Exception {
 
 	byte[] line;
 	ResponseType responseType = ResponseType.Unknown;
@@ -58,15 +58,16 @@ class SingleLineFramer extends FrameDecoder {
 	return newPair(responseType, line);
     }
 
-    private byte[] decodeBulk(ChannelBuffer buffer) {
+    private byte[] decodeBulk(final ChannelBuffer buffer) {
 
 	// get bulk lenght
-	byte[] bulkLenghtStr = decodeSingleLine(buffer);
+	final byte[] bulkLenghtStr = decodeSingleLine(buffer);
 	if (bulkLenghtStr == null) {
 	    return null;
 	}
 
-	int bulkLenght = Integer.valueOf(new String(bulkLenghtStr, UTF_8));
+	final int bulkLenght = Integer
+		.valueOf(new String(bulkLenghtStr, UTF_8));
 
 	// test for null bulk reply
 	if (bulkLenght == -1) {
@@ -78,16 +79,16 @@ class SingleLineFramer extends FrameDecoder {
 	    return null;
 	}
 
-	byte[] line = new byte[bulkLenght];
+	final byte[] line = new byte[bulkLenght];
 	buffer.readBytes(line);
 	buffer.skipBytes(2); // CRLF
 	return line;
     }
 
-    private byte[] decodeSingleLine(ChannelBuffer buffer) {
+    private byte[] decodeSingleLine(final ChannelBuffer buffer) {
 	byte[] line = null;
 
-	int lineLenght = buffer.bytesBefore(CrAndLn);
+	final int lineLenght = buffer.bytesBefore(CrAndLn);
 	if (lineLenght == -1) {
 	    return null;
 	}

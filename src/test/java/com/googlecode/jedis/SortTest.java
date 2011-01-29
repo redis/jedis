@@ -20,7 +20,7 @@ public class SortTest extends JedisTestBase {
 
     @BeforeMethod
     public void insertTestData() {
-	Random rand = new Random(23453L);
+	final Random rand = new Random(23453L);
 
 	for (int i = 0; i < 50; i++) {
 	    jedis.lpush(lNumbers, String.valueOf(rand.nextDouble() * 100000.));
@@ -30,8 +30,8 @@ public class SortTest extends JedisTestBase {
     @Test
     public void sort() {
 
-	List<String> sorted = jedis.sort(lNumbers);
-	for (Iterator<String> it = sorted.iterator(); it.hasNext();) {
+	final List<String> sorted = jedis.sort(lNumbers);
+	for (final Iterator<String> it = sorted.iterator(); it.hasNext();) {
 	    assertThat(new Double(it.next()),
 		    lessThanOrEqualTo(new Double(it.next())));
 	}
@@ -39,14 +39,14 @@ public class SortTest extends JedisTestBase {
 
     @Test
     public void sortAlpha() {
-	Random rand = new Random(23453L);
+	final Random rand = new Random(23453L);
 	for (int i = 0; i < 50; i++) {
 	    jedis.lpush("foo", Long.toString(rand.nextLong() * 100000L, 36));
 	}
 
-	List<String> sorted = jedis.sort("foo", newSortParams().alpha());
+	final List<String> sorted = jedis.sort("foo", newSortParams().alpha());
 
-	for (Iterator<String> it = sorted.iterator(); it.hasNext();) {
+	for (final Iterator<String> it = sorted.iterator(); it.hasNext();) {
 	    assertThat(it.next(), lessThanOrEqualTo(it.next()));
 	}
     }
@@ -67,8 +67,9 @@ public class SortTest extends JedisTestBase {
 
     @Test
     public void sortDesc() {
-	List<String> sorted = jedis.sort(lNumbers, newSortParams().desc());
-	for (Iterator<String> it = sorted.iterator(); it.hasNext();) {
+	final List<String> sorted = jedis
+		.sort(lNumbers, newSortParams().desc());
+	for (final Iterator<String> it = sorted.iterator(); it.hasNext();) {
 	    assertThat(new Double(it.next()), greaterThanOrEqualTo(new Double(
 		    it.next())));
 	}
@@ -95,12 +96,12 @@ public class SortTest extends JedisTestBase {
 
     @Test
     public void sortLimit() {
-	List<String> sorted = jedis
-		.sort(lNumbers, newSortParams().limit(0, 10));
+	final List<String> sorted = jedis.sort(lNumbers,
+		newSortParams().limit(0, 10));
 
 	assertThat(sorted.size(), is(10));
 
-	for (Iterator<String> it = sorted.iterator(); it.hasNext();) {
+	for (final Iterator<String> it = sorted.iterator(); it.hasNext();) {
 	    assertThat(new Double(it.next()),
 		    lessThanOrEqualTo(new Double(it.next())));
 	}
@@ -111,14 +112,14 @@ public class SortTest extends JedisTestBase {
 
 	assertThat(jedis.sort(lNumbers, "dst"), is(50L));
 	List<String> sorted = jedis.sort("dst");
-	for (Iterator<String> it = sorted.iterator(); it.hasNext();) {
+	for (final Iterator<String> it = sorted.iterator(); it.hasNext();) {
 	    assertThat(new Double(it.next()),
 		    lessThanOrEqualTo(new Double(it.next())));
 	}
 
 	assertThat(jedis.sort(lNumbers, newSortParams().desc(), "dst"), is(50L));
 	sorted = jedis.lrange("dst", 0, -1);
-	for (Iterator<String> it = sorted.iterator(); it.hasNext();) {
+	for (final Iterator<String> it = sorted.iterator(); it.hasNext();) {
 	    assertThat(new Double(it.next()), greaterThanOrEqualTo(new Double(
 		    it.next())));
 	}

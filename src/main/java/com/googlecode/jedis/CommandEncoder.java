@@ -1,8 +1,9 @@
 package com.googlecode.jedis;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static java.lang.String.valueOf;
 import static org.jboss.netty.buffer.ChannelBuffers.dynamicBuffer;
+
+import java.util.List;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
@@ -13,43 +14,47 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 import com.googlecode.jedis.Protocol.Command;
 
 @Sharable
-class CommandEncoder extends OneToOneEncoder {
+final class CommandEncoder extends OneToOneEncoder {
 
     private static final byte[] CRNL = { '\r', '\n' };
 
     @Override
-    protected Object encode(ChannelHandlerContext ctx, Channel channel,
-	    Object msg) throws Exception {
-	if (!(msg instanceof Pair<?, ?>)) {
+    protected Object encode(final ChannelHandlerContext ctx,
+	    final Channel channel, final Object msg) throws Exception {
+	if (!(msg instanceof List<?>)) {
 	    return msg;
 	}
 
 	@SuppressWarnings("unchecked")
-	Pair<Command, byte[][]> pair = (Pair<Command, byte[][]>) msg;
+	final List<Pair<Command, byte[][]>> commands = (List<Pair<Command, byte[][]>>) msg;
 
-	Command cmd = pair.getFirst();
-	byte[][] args = pair.getSecond();
+	// TODO: benchmark how much this affect speed issues
+	final ChannelBuffer buffer = dynamicBuffer(commands.size() * 256);
 
-	ChannelBuffer buffer = dynamicBuffer();
+	for (final Pair<Command, byte[][]> command : commands) {
 
-	buffer.writeByte('*');
-	buffer.writeBytes(valueOf(1 + args.length).getBytes(UTF_8));
-	buffer.writeBytes(CRNL);
+	    final Command cmdName = command.getFirst();
+	    final byte[][] args = command.getSecond();
 
-	buffer.writeByte('$');
-	buffer.writeBytes(valueOf(cmd.raw.length).getBytes(UTF_8));
-	buffer.writeBytes(CRNL);
+	    buffer.writeByte('*');
+	    buffer.writeBytes(String.valueOf(1 + args.length).getBytes(UTF_8));
+	    buffer.writeBytes(CRNL);
 
-	buffer.writeBytes(cmd.raw);
-	buffer.writeBytes(CRNL);
-
-	for (byte[] arg : args) {
 	    buffer.writeByte('$');
-	    buffer.writeBytes(valueOf(arg.length).getBytes(UTF_8));
+	    buffer.writeBytes(cmdName.lenght);
 	    buffer.writeBytes(CRNL);
 
-	    buffer.writeBytes(arg);
+	    buffer.writeBytes(cmdName.raw);
 	    buffer.writeBytes(CRNL);
+
+	    for (final byte[] arg : args) {
+		buffer.writeByte('$');
+		buffer.writeBytes(String.valueOf(arg.length).getBytes(UTF_8));
+		buffer.writeBytes(CRNL);
+
+		buffer.writeBytes(arg);
+		buffer.writeBytes(CRNL);
+	    }
 	}
 
 	return buffer;

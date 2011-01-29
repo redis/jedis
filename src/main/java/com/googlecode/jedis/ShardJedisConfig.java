@@ -8,7 +8,7 @@ import com.google.common.base.Objects;
  * @author Moritz Heuser <moritz.heuser@gmail.com>
  * 
  */
-public class ShardJedisConfig extends JedisConfig {
+class ShardJedisConfig extends JedisConfig {
 
     /**
      * Get new ShardJedisConfig instance with default params.
@@ -27,11 +27,11 @@ public class ShardJedisConfig extends JedisConfig {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
 	if (!(obj instanceof ShardJedisConfig)) {
 	    return false;
 	}
-	ShardJedisConfig o = (ShardJedisConfig) obj;
+	final ShardJedisConfig o = (ShardJedisConfig) obj;
 	return getHost().equals(o.getHost()) && getPort().equals(o.getPort())
 		&& getPassword().equals(o.getPassword())
 		&& weight.equals(o.weight);

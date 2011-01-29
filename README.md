@@ -1,4 +1,50 @@
-# Jedis
+# (Fork with HUGE CHANGES of) Jedis, almost not compatible, you are warned :)
+
+I started this fork because of the need of a complete Jedis interface, got some problems before with cglib and spring [ProxyFactoryBean](http://static.springsource.org/spring/docs/3.0.x/reference/aop-api.html#aop-pfb "AOP Proxies").
+
+
+done:
+no arg constructor
+complete Jedis interface so you can use jdk proxies
+use of [Netty](http://www.jboss.org/netty "Netty") as io layer
+changed a lot method signatures (e.g. get boolean instead of 1/0)
+fluent config class
+changed tests to testng and hamcrest
+use of slf4j
+where possible return immutable lists and sets
+maven 3 compatible
+added a lot report plugins (findbugs, cobertura...)
+
+to be done:
+sharded (will be next)
+let netty test the connection before sending a command, not the pool (via HashedWheelTimer + ping maybe)
+pipelined
+
+broken and not planed to fix (yet):
+transaction
+pub/sub
+
+to use it with spring put this in a spring config:
+
+    <bean id="jedisTarget" class="com.googlecode.jedis.JedisFactory" factory-method="newJedisInstance" scope="prototype">
+        <bean id="jedisConfig" class="com.googlecode.jedis.JedisConfig">
+            <property name="host" value="localhost" />
+            <property name="password" value="foobared" />
+            <property name="timeout" value="10000"/><!-- in millis-->
+        </bean>
+    </bean>
+
+	<bean id="jedisPool" class="com.googlecode.jedis.util.JedisPoolTargetSource">
+		<property name="targetBeanName" value="jedisTarget" />
+		<property name="maxSize" value="25" />
+	</bean>
+
+	<bean id="jedis" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="targetSource" ref="jedisPool" />
+	</bean>
+
+Then just use the jedis bean in your beans to speak with redis.
+
 
 Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.
 
@@ -12,7 +58,7 @@ And of course, you can always serialize it and store it.
 
 ## Is there a Groovy client?
 
-Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :) 
+Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :)
 
 ## Community
 
@@ -31,34 +77,34 @@ All of the following redis features are supported:
 - Commands operating on lists
 - Commands operating on sets
 - Commands operating on sorted sets
-- Transactions
-- Pipelining
-- Publish/Subscribe
 - Persistence control commands
 - Remote server control commands
 - Connection pooling
+
+No More:
+- Pipelining
+- Publish/Subscribe
 - Sharding (MD5, MurmureHash)
 - Key-tags for sharding
 - Sharding with pipelining
+- Transactions
 
 ## How do I use it?
 
-You can download the latests build at: 
-    http://github.com/xetorthio/jedis/downloads
+clone this and mvn install -DskipTests=true
 
-Or use it as a maven dependency:
+then use it as a maven dependency:
 
     <dependency>
-        <groupId>redis.clients</groupId>
+        <groupId>com.googlecode.jedis</groupId>
         <artifactId>jedis</artifactId>
-        <version>1.3.0</version>
+        <version>2.0.1-SNAPSHOT</version>
         <type>jar</type>
-        <scope>compile</scope>
     </dependency>
 
 
 To use it just:
-    
+
     Jedis jedis = new Jedis("localhost");
     jedis.set("foo", "bar");
     String value = jedis.get("foo");
@@ -83,7 +129,7 @@ Thanks for helping!
 
 ## License
 
-Copyright (c) 2010 Jonathan Leibiusky
+Copyright (c) 2011 Jonathan Leibiusky, Moritz Heuser
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

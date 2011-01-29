@@ -10,15 +10,15 @@ public class JedisFactoryTest {
 
     @Test
     public void newJedisInstance() {
-	Jedis jedis = JedisFactory.newJedisInstance();
+	final Jedis jedis = JedisFactory.newJedisInstance();
 	assertThat(jedis.getJedisConfig().getHost(), is("localhost"));
 	assertThat(jedis.isConnected(), is(true));
     }
 
     @Test
     public void newJedisInstanceWithParams() {
-	Jedis jedis = JedisFactory.newJedisInstance(newJedisConfig().password(
-		"foobared"));
+	final Jedis jedis = JedisFactory.newJedisInstance(newJedisConfig()
+		.password("foobared"));
 	assertThat(jedis.isConnected(), is(true));
     }
 

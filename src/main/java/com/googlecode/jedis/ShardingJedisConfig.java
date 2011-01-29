@@ -11,29 +11,29 @@ import com.google.common.collect.Lists;
  * @author Moritz Heuser <moritz.heuser@gmail.com>
  * 
  */
-public class ShardingJedisConfig {
+class ShardingJedisConfig {
+
+    private static final HashingStrategy DEFAULT_HASHING_STRATEGY = new MurmurHashingStrategy();
 
     // the tag is anything between {}
     // TODO: use string pattern in config
     private static final Pattern DEFAULT_KEY_TAG_PATTERN = Pattern
 	    .compile("\\{(.+?)\\}");
 
-    private static final HashingStrategy DEFAULT_HASHING_STRATEGY = new MurmurHashingStrategy();
-
     static public ShardingJedisConfig newShardingJedisConfig() {
 	return new ShardingJedisConfig();
     }
 
-    private List<ShardJedisConfig> shardConfigs;
+    private HashingStrategy hashingStrategy;
 
     private Pattern keyTagPattern;
 
-    private HashingStrategy hashingStrategy;
+    private List<ShardJedisConfig> shardConfigs;
 
     private ShardingJedisConfig() {
-	this.hashingStrategy = DEFAULT_HASHING_STRATEGY;
-	this.keyTagPattern = DEFAULT_KEY_TAG_PATTERN;
-	this.shardConfigs = Lists.newArrayList();
+	hashingStrategy = DEFAULT_HASHING_STRATEGY;
+	keyTagPattern = DEFAULT_KEY_TAG_PATTERN;
+	shardConfigs = Lists.newArrayList();
     }
 
     /**
@@ -42,7 +42,7 @@ public class ShardingJedisConfig {
      * @param shard
      * @return the ShardingJedisConfig instance
      */
-    public ShardingJedisConfig addShard(ShardJedisConfig shard) {
+    public ShardingJedisConfig addShard(final ShardJedisConfig shard) {
 	shardConfigs.add(shard);
 	return this;
     }
@@ -80,7 +80,8 @@ public class ShardingJedisConfig {
      * @param hashingStrategy
      * @return the ShardingJedisConfig instance.
      */
-    public ShardingJedisConfig hashingStrategy(HashingStrategy hashingStrategy) {
+    public ShardingJedisConfig hashingStrategy(
+	    final HashingStrategy hashingStrategy) {
 	this.hashingStrategy = hashingStrategy;
 	return this;
     }
@@ -99,7 +100,7 @@ public class ShardingJedisConfig {
      *            the pattern
      * @return the ShardingJedisConfig instance
      */
-    public ShardingJedisConfig keyTagPattern(Pattern keyTagPattern) {
+    public ShardingJedisConfig keyTagPattern(final Pattern keyTagPattern) {
 	this.keyTagPattern = keyTagPattern;
 	return this;
     }
@@ -109,7 +110,7 @@ public class ShardingJedisConfig {
      * 
      * @param hashingStrategy
      */
-    public void setHashingStrategy(HashingStrategy hashingStrategy) {
+    public void setHashingStrategy(final HashingStrategy hashingStrategy) {
 	this.hashingStrategy = hashingStrategy;
     }
 
@@ -126,7 +127,7 @@ public class ShardingJedisConfig {
      * @param keyTagPattern
      *            the pattern
      */
-    public void setKeyTagPattern(Pattern keyTagPattern) {
+    public void setKeyTagPattern(final Pattern keyTagPattern) {
 	this.keyTagPattern = keyTagPattern;
     }
 
@@ -135,7 +136,7 @@ public class ShardingJedisConfig {
      * 
      * @param shardConfigs
      */
-    public void setShardConfigs(List<ShardJedisConfig> shardConfigs) {
+    public void setShardConfigs(final List<ShardJedisConfig> shardConfigs) {
 	this.shardConfigs = shardConfigs;
     }
 

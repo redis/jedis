@@ -2,6 +2,13 @@ package com.googlecode.jedis;
 
 import java.nio.charset.Charset;
 
+/**
+ * Hash to use with sharded jedis.
+ * 
+ * @author Jonathan Leibiusky
+ * @author Moritz Heuser <moritz.heuser@gmail.com>
+ * 
+ */
 public interface HashingStrategy {
 
     /**

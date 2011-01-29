@@ -1,10 +1,9 @@
 package com.googlecode.jedis;
 
-
 public class PipelineTest extends JedisTestBase {
 
-    String foo = "foo";
     String bar = "bar";
+    String foo = "foo";
 
     // @Test
     // public void pipelined() {

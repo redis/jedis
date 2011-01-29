@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 class RawJedisImpl implements RawJedis {
@@ -91,10 +92,10 @@ class RawJedisImpl implements RawJedis {
      */
     @Override
     public List<Pair<byte[], byte[]>> blpopRaw(final long timeout,
-	    final byte[] key1, byte[]... keyN) {
+	    final byte[] key1, final byte[]... keyN) {
 	checkNotNull(key1);
 
-	byte[][] args = new byte[2 + keyN.length][];
+	final byte[][] args = new byte[2 + keyN.length][];
 	args[0] = key1;
 	args[1 + keyN.length] = asByte(timeout);
 	arraycopy(keyN, 0, args, 1, keyN.length);
@@ -105,9 +106,10 @@ class RawJedisImpl implements RawJedis {
 	final List<byte[]> multiBulkReply = conn.multiBulkReply();
 	conn.rollbackTimeout();
 
-	List<Pair<byte[], byte[]>> result = Lists
+	final List<Pair<byte[], byte[]>> result = Lists
 		.newArrayListWithCapacity(multiBulkReply.size() / 2);
-	for (Iterator<byte[]> it = multiBulkReply.iterator(); it.hasNext();) {
+	for (final Iterator<byte[]> it = multiBulkReply.iterator(); it
+		.hasNext();) {
 	    result.add(newPair(it.next(), it.next()));
 	}
 
@@ -120,11 +122,11 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#brpop(long, byte[], byte[][])
      */
     @Override
-    public List<Pair<byte[], byte[]>> brpopRaw(long timeout, byte[] key1,
-	    byte[]... keyN) {
+    public List<Pair<byte[], byte[]>> brpopRaw(final long timeout,
+	    final byte[] key1, final byte[]... keyN) {
 	checkNotNull(key1);
 
-	byte[][] args = new byte[2 + keyN.length][];
+	final byte[][] args = new byte[2 + keyN.length][];
 	args[0] = key1;
 	args[1 + keyN.length] = asByte(timeout);
 	arraycopy(keyN, 0, args, 1, keyN.length);
@@ -133,9 +135,10 @@ class RawJedisImpl implements RawJedis {
 	conn.setTimeoutInfinite();
 	final List<byte[]> multiBulkReply = conn.multiBulkReply();
 	conn.rollbackTimeout();
-	List<Pair<byte[], byte[]>> result = Lists
+	final List<Pair<byte[], byte[]>> result = Lists
 		.newArrayListWithCapacity(multiBulkReply.size() / 2);
-	for (Iterator<byte[]> it = multiBulkReply.iterator(); it.hasNext();) {
+	for (final Iterator<byte[]> it = multiBulkReply.iterator(); it
+		.hasNext();) {
 	    result.add(newPair(it.next(), it.next()));
 	}
 
@@ -148,7 +151,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#configGet(byte[])
      */
     @Override
-    public List<byte[]> configGet(byte[] pattern) {
+    public List<byte[]> configGet(final byte[] pattern) {
 	conn.sendCommand(CONFIG, Protocol.Keyword.GET.raw, pattern);
 	return conn.multiBulkReply();
     }
@@ -159,7 +162,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#configSet(byte[], byte[])
      */
     @Override
-    public byte[] configSet(byte[] parameter, byte[] value) {
+    public byte[] configSet(final byte[] parameter, final byte[] value) {
 	conn.sendCommand(CONFIG, Protocol.Keyword.SET.raw, parameter, value);
 	return conn.statusCodeReply();
     }
@@ -174,11 +177,11 @@ class RawJedisImpl implements RawJedis {
 	if (!conn.isConnected()) {
 	    try {
 		conn.connect();
-	    } catch (Throwable e) {
+	    } catch (final Throwable e) {
 		log.error("could not connect: ", e);
 	    }
 	    if (conn.getJedisConfig().getPassword() != null) {
-		this.auth(conn.getJedisConfig().getPassword().getBytes(UTF_8));
+		auth(conn.getJedisConfig().getPassword().getBytes(UTF_8));
 	    }
 	}
     }
@@ -242,7 +245,7 @@ class RawJedisImpl implements RawJedis {
     public Long del(final byte[] key1, final byte[]... keyN) {
 	checkNotNull(key1);
 
-	byte[][] args = new byte[1 + keyN.length][];
+	final byte[][] args = new byte[1 + keyN.length][];
 	args[0] = key1;
 	System.arraycopy(keyN, 0, args, 1, keyN.length);
 	conn.sendCommand(DEL, args);
@@ -255,7 +258,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#disconnect()
      */
     @Override
-    public void disconnect() throws IOException {
+    public void disconnect() {
 	conn.disconnect();
     }
 
@@ -346,9 +349,9 @@ class RawJedisImpl implements RawJedis {
     }
 
     private Set<Pair<byte[], Double>> getBinaryPairSet() {
-	List<byte[]> membersWithScores = conn.multiBulkReply();
-	Iterator<byte[]> iterator = membersWithScores.iterator();
-	Set<Pair<byte[], Double>> set = Sets.newLinkedHashSet();
+	final List<byte[]> membersWithScores = conn.multiBulkReply();
+	final Iterator<byte[]> iterator = membersWithScores.iterator();
+	final Set<Pair<byte[], Double>> set = Sets.newLinkedHashSet();
 
 	while (iterator.hasNext()) {
 	    set.add(newPair(iterator.next(),
@@ -438,14 +441,14 @@ class RawJedisImpl implements RawJedis {
 	checkNotNull(key);
 
 	conn.sendCommand(HGETALL, key);
-	final List<byte[]> flatHash = conn.multiBulkReply();
-	final Map<byte[], byte[]> hash = new JedisByteHashMap();
+	List<byte[]> flatHash = conn.multiBulkReply();
+	final Map<byte[], byte[]> result = Maps
+		.newHashMapWithExpectedSize(flatHash.size() / 2);
 	final Iterator<byte[]> iterator = flatHash.iterator();
 	while (iterator.hasNext()) {
-	    hash.put(iterator.next(), iterator.next());
+	    result.put(iterator.next(), iterator.next());
 	}
-
-	return hash;
+	return result;
     }
 
     /*
@@ -498,7 +501,7 @@ class RawJedisImpl implements RawJedis {
     public List<byte[]> hmget(final byte[] key, final byte[]... fields) {
 	checkNotNull(key);
 	// checkNotNull(field);
-	byte[][] args = new byte[1 + fields.length][];
+	final byte[][] args = new byte[1 + fields.length][];
 	args[0] = key;
 	arraycopy(fields, 0, args, 1, fields.length);
 
@@ -515,11 +518,11 @@ class RawJedisImpl implements RawJedis {
     public Boolean hmset(final byte[] key, final Map<byte[], byte[]> hash) {
 	checkNotNull(key);
 	checkArgument(!(hash.isEmpty()));
-	int hashElements = hash.size() * 2;
-	byte[][] args = new byte[1 + hashElements][];
+	final int hashElements = hash.size() * 2;
+	final byte[][] args = new byte[1 + hashElements][];
 	int i = 0;
 	args[i++] = key;
-	for (Map.Entry<byte[], byte[]> it : hash.entrySet()) {
+	for (final Map.Entry<byte[], byte[]> it : hash.entrySet()) {
 	    args[i++] = it.getKey();
 	    args[i++] = it.getValue();
 	}
@@ -662,7 +665,8 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#linsertAfter(byte[], byte[], byte[])
      */
     @Override
-    public Long linsertAfter(byte[] key, byte[] element, byte[] value) {
+    public Long linsertAfter(final byte[] key, final byte[] element,
+	    final byte[] value) {
 	checkNotNull(key);
 	checkNotNull(element);
 	checkNotNull(value);
@@ -676,7 +680,8 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#linsertBefore(byte[], byte[], byte[])
      */
     @Override
-    public Long linsertBefore(byte[] key, byte[] element, byte[] value) {
+    public Long linsertBefore(final byte[] key, final byte[] element,
+	    final byte[] value) {
 	checkNotNull(key);
 	checkNotNull(element);
 	checkNotNull(value);
@@ -723,7 +728,7 @@ class RawJedisImpl implements RawJedis {
     }
 
     @Override
-    public Long lpushRaw(Pair<byte[], byte[]> keyValuePair) {
+    public Long lpushRaw(final Pair<byte[], byte[]> keyValuePair) {
 	return lpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
 
@@ -746,7 +751,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#lpushxRaw(com.googlecode.jedis.Pair)
      */
     @Override
-    public Long lpushxRaw(Pair<byte[], byte[]> keyValuePair) {
+    public Long lpushxRaw(final Pair<byte[], byte[]> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return lpushx(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -845,17 +850,17 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],byte[]>[])
      */
     @Override
-    public Boolean msetnxRaw(Pair<byte[], byte[]> keyValuePair1,
-	    Pair<byte[], byte[]>... keyValuePairN) {
+    public Boolean msetnxRaw(final Pair<byte[], byte[]> keyValuePair1,
+	    final Pair<byte[], byte[]>... keyValuePairN) {
 	checkNotNull(keyValuePair1);
 	checkNotNull(keyValuePair1.getFirst());
 	checkNotNull(keyValuePair1.getSecond());
 
-	List<byte[]> keysAndVals = Lists.newArrayList();
+	final List<byte[]> keysAndVals = Lists.newArrayList();
 	keysAndVals.add(keyValuePair1.getFirst());
 	keysAndVals.add(keyValuePair1.getSecond());
 
-	for (Pair<byte[], byte[]> it : keyValuePairN) {
+	for (final Pair<byte[], byte[]> it : keyValuePairN) {
 	    keysAndVals.add(it.getFirst());
 	    keysAndVals.add(it.getSecond());
 	}
@@ -872,17 +877,17 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],byte[]>[])
      */
     @Override
-    public Boolean msetRaw(Pair<byte[], byte[]> keyValuePair1,
-	    Pair<byte[], byte[]>... keyValuePairN) {
+    public Boolean msetRaw(final Pair<byte[], byte[]> keyValuePair1,
+	    final Pair<byte[], byte[]>... keyValuePairN) {
 	checkNotNull(keyValuePair1);
 	checkNotNull(keyValuePair1.getFirst());
 	checkNotNull(keyValuePair1.getSecond());
 
-	List<byte[]> keysAndVals = Lists.newArrayList();
+	final List<byte[]> keysAndVals = Lists.newArrayList();
 	keysAndVals.add(keyValuePair1.getFirst());
 	keysAndVals.add(keyValuePair1.getSecond());
 
-	for (Pair<byte[], byte[]> it : keyValuePairN) {
+	for (final Pair<byte[], byte[]> it : keyValuePairN) {
 	    keysAndVals.add(it.getFirst());
 	    keysAndVals.add(it.getSecond());
 	}
@@ -1008,7 +1013,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#rpushRaw(com.googlecode.jedis.Pair)
      */
     @Override
-    public Long rpushRaw(Pair<byte[], byte[]> keyValuePair) {
+    public Long rpushRaw(final Pair<byte[], byte[]> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return rpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -1032,7 +1037,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#rpushxRaw(com.googlecode.jedis.Pair)
      */
     @Override
-    public Long rpushxRaw(Pair<byte[], byte[]> keyValuePair) {
+    public Long rpushxRaw(final Pair<byte[], byte[]> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return rpush(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -1080,12 +1085,12 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sdiff(byte[], byte[][])
      */
     @Override
-    public Set<byte[]> sdiff(byte[] key1, final byte[]... keyN) {
+    public Set<byte[]> sdiff(final byte[] key1, final byte[]... keyN) {
 	if (key1 == null) {
 	    throw new NullPointerException();
 	}
 
-	byte[][] args = new byte[keyN.length + 1][];
+	final byte[][] args = new byte[keyN.length + 1][];
 	args[0] = key1;
 	arraycopy(keyN, 0, args, 1, keyN.length);
 	conn.sendCommand(SDIFF, args);
@@ -1098,13 +1103,13 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sdiffstore(byte[], byte[], byte[][])
      */
     @Override
-    public Long sdiffstore(final byte[] dstKey, byte[] key1,
+    public Long sdiffstore(final byte[] dstKey, final byte[] key1,
 	    final byte[]... keyN) {
 	if (dstKey == null || key1 == null) {
 	    throw new NullPointerException();
 	}
 
-	byte[][] args = new byte[keyN.length + 2][];
+	final byte[][] args = new byte[keyN.length + 2][];
 	args[0] = dstKey;
 	args[1] = key1;
 	arraycopy(keyN, 0, args, 2, keyN.length);
@@ -1144,7 +1149,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#setex(byte[], int, byte[])
      */
     @Override
-    public Boolean setex(byte[] key, byte[] value, int seconds) {
+    public Boolean setex(final byte[] key, final byte[] value, final int seconds) {
 	checkNotNull(key);
 	checkNotNull(value);
 	conn.sendCommand(SETEX, key, asByte(seconds), value);
@@ -1157,7 +1162,8 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#setex(com.googlecode.jedis.Pair, int)
      */
     @Override
-    public Boolean setexRaw(Pair<byte[], byte[]> keyValuePair, final int seconds) {
+    public Boolean setexRaw(final Pair<byte[], byte[]> keyValuePair,
+	    final int seconds) {
 	checkNotNull(keyValuePair);
 	return setex(keyValuePair.getFirst(), keyValuePair.getSecond(), seconds);
     }
@@ -1170,7 +1176,7 @@ class RawJedisImpl implements RawJedis {
      * )
      */
     @Override
-    public void setJedisConfig(JedisConfig config) {
+    public void setJedisConfig(final JedisConfig config) {
 	conn.setJedisConfig(config);
     }
 
@@ -1189,7 +1195,7 @@ class RawJedisImpl implements RawJedis {
     }
 
     @Override
-    public Boolean setnxRaw(Pair<byte[], byte[]> keyValuePair) {
+    public Boolean setnxRaw(final Pair<byte[], byte[]> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return setnx(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -1200,7 +1206,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#setRaw(com.googlecode.jedis.Pair)
      */
     @Override
-    public Boolean setRaw(Pair<byte[], byte[]> keyValuePair) {
+    public Boolean setRaw(final Pair<byte[], byte[]> keyValuePair) {
 	checkNotNull(keyValuePair);
 	return set(keyValuePair.getFirst(), keyValuePair.getSecond());
     }
@@ -1216,7 +1222,7 @@ class RawJedisImpl implements RawJedis {
 	Boolean status = null;
 	try {
 	    status = conn.statusCodeReplyAsBoolean();
-	} catch (JedisException ex) {
+	} catch (final JedisException ex) {
 	}
 	return status;
     }
@@ -1227,9 +1233,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sinter(byte)
      */
     @Override
-    public Set<byte[]> sinter(byte[] key1, final byte[]... keyN) {
+    public Set<byte[]> sinter(final byte[] key1, final byte[]... keyN) {
 	checkNotNull(key1);
-	byte[][] args = new byte[1 + keyN.length][];
+	final byte[][] args = new byte[1 + keyN.length][];
 	args[0] = key1;
 	arraycopy(keyN, 0, args, 1, keyN.length);
 	conn.sendCommand(SINTER, args);
@@ -1242,11 +1248,11 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sinterstore(byte[], byte)
      */
     @Override
-    public Long sinterstore(final byte[] dstKey, byte[] key1,
+    public Long sinterstore(final byte[] dstKey, final byte[] key1,
 	    final byte[]... keyN) {
 	checkNotNull(dstKey);
 	checkNotNull(key1);
-	byte[][] args = new byte[2 + keyN.length][];
+	final byte[][] args = new byte[2 + keyN.length][];
 	args[0] = dstKey;
 	args[1] = key1;
 	arraycopy(keyN, 0, args, 2, keyN.length);
@@ -1352,8 +1358,8 @@ class RawJedisImpl implements RawJedis {
     public List<byte[]> sort(final byte[] key,
 	    final SortParams sortingParameters) {
 	checkNotNull(key);
-	int paramsLenght = sortingParameters.getParams().size();
-	byte[][] args = new byte[1 + paramsLenght][];
+	final int paramsLenght = sortingParameters.getParams().size();
+	final byte[][] args = new byte[1 + paramsLenght][];
 	args[0] = key;
 	arraycopy(sortingParameters.getParams().toArray(new byte[0][]), 0,
 		args, 1, paramsLenght);
@@ -1373,8 +1379,8 @@ class RawJedisImpl implements RawJedis {
 	    final byte[] dstkey) {
 	checkNotNull(key);
 	checkNotNull(dstkey);
-	int paramsLenght = sortingParameters.getParams().size();
-	byte[][] args = new byte[3 + paramsLenght][];
+	final int paramsLenght = sortingParameters.getParams().size();
+	final byte[][] args = new byte[3 + paramsLenght][];
 	args[0] = key;
 	arraycopy(sortingParameters.getParams().toArray(new byte[0][]), 0,
 		args, 1, paramsLenght);
@@ -1452,9 +1458,9 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sunion(byte[], byte[][])
      */
     @Override
-    public Set<byte[]> sunion(byte[] key1, final byte[]... keyN) {
+    public Set<byte[]> sunion(final byte[] key1, final byte[]... keyN) {
 	checkNotNull(key1);
-	byte[][] args = new byte[1 + keyN.length][];
+	final byte[][] args = new byte[1 + keyN.length][];
 	args[0] = key1;
 	arraycopy(keyN, 0, args, 1, keyN.length);
 	conn.sendCommand(SUNION, args);
@@ -1467,12 +1473,12 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#sunionstore(byte[], byte[], byte[][])
      */
     @Override
-    public Long sunionstore(final byte[] dstKey, byte[] key1,
+    public Long sunionstore(final byte[] dstKey, final byte[] key1,
 	    final byte[]... keyN) {
 	checkNotNull(key1);
 	checkNotNull(dstKey);
 
-	byte[][] args = new byte[keyN.length + 2][];
+	final byte[][] args = new byte[keyN.length + 2][];
 	args[0] = dstKey;
 	args[1] = key1;
 	arraycopy(keyN, 0, args, 2, keyN.length);
@@ -1583,7 +1589,7 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#zcount(byte[], byte[], byte[])
      */
     @Override
-    public Long zcount(byte[] key, byte[] min, byte[] max) {
+    public Long zcount(final byte[] key, final byte[] min, final byte[] max) {
 	checkNotNull(key);
 	checkNotNull(min);
 	checkNotNull(max);
@@ -1597,16 +1603,17 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#zincrby(byte[], byte[], double)
      */
     @Override
-    public Double zincrby(byte[] key, byte[] member, double value) {
+    public Double zincrby(final byte[] key, final byte[] member,
+	    final double value) {
 	checkNotNull(key);
 	checkNotNull(member);
 	conn.sendCommand(ZINCRBY, key, asByte(value), member);
 	return new Double(new String(conn.bulkReply(), DEFAULT_CHARSET));
     }
 
-    private void zinterstoreHelper(String mode, byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    private void zinterstoreHelper(final String mode, final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	checkNotNull(dstKey);
 	checkNotNull(ssetAndWeight1);
 	checkNotNull(ssetAndWeight1.getFirst());
@@ -1614,16 +1621,16 @@ class RawJedisImpl implements RawJedis {
 	// ZUNIONSTORE destination numkeys key1 key2 ... keyN [WEIGHTS
 	// weight1 weight2 ... weightN] [AGGREGATE SUM|MIN|MAX]
 
-	List<byte[]> params = Lists.newArrayList();
+	final List<byte[]> params = Lists.newArrayList();
 	params.add(dstKey);
 	params.add(asByte(String.valueOf(1 + ssetAndWeightN.length)));
 	params.add(ssetAndWeight1.getFirst());
-	for (Pair<byte[], Double> it : ssetAndWeightN) {
+	for (final Pair<byte[], Double> it : ssetAndWeightN) {
 	    params.add(it.getFirst());
 	}
 	params.add(asByte("WEIGHTS"));
 	params.add(asByte(String.valueOf(ssetAndWeight1.getSecond())));
-	for (Pair<byte[], Double> it : ssetAndWeightN) {
+	for (final Pair<byte[], Double> it : ssetAndWeightN) {
 	    params.add(asByte(String.valueOf(it.getSecond())));
 	}
 	params.add(asByte("AGGREGATE"));
@@ -1640,9 +1647,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],java.lang.Double>[])
      */
     @Override
-    public Long zinterstoreMax(byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    public Long zinterstoreMax(final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	zinterstoreHelper("MAX", dstKey, ssetAndWeight1, ssetAndWeightN);
 	return conn.integerReply();
     }
@@ -1655,9 +1662,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],java.lang.Double>[])
      */
     @Override
-    public Long zinterstoreMin(byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    public Long zinterstoreMin(final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	zinterstoreHelper("MIN", dstKey, ssetAndWeight1, ssetAndWeightN);
 	return conn.integerReply();
     }
@@ -1670,9 +1677,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],java.lang.Double>[])
      */
     @Override
-    public Long zinterstoreSum(byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    public Long zinterstoreSum(final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	zinterstoreHelper("SUM", dstKey, ssetAndWeight1, ssetAndWeightN);
 	return conn.integerReply();
     }
@@ -1711,8 +1718,8 @@ class RawJedisImpl implements RawJedis {
      * long, long)
      */
     @Override
-    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max,
-	    long offset, long count) {
+    public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min,
+	    final byte[] max, final long offset, final long count) {
 	checkNotNull(key);
 	checkNotNull(min);
 	checkNotNull(max);
@@ -1728,8 +1735,8 @@ class RawJedisImpl implements RawJedis {
      * byte[], byte[])
      */
     @Override
-    public Set<Pair<byte[], Double>> zrangeByScoreWithScores(byte[] key,
-	    byte[] min, byte[] max) {
+    public Set<Pair<byte[], Double>> zrangeByScoreWithScores(final byte[] key,
+	    final byte[] min, final byte[] max) {
 	checkNotNull(key);
 	checkNotNull(min);
 	checkNotNull(max);
@@ -1745,8 +1752,9 @@ class RawJedisImpl implements RawJedis {
      * byte[], byte[], long, long)
      */
     @Override
-    public Set<Pair<byte[], Double>> zrangeByScoreWithScores(byte[] key,
-	    byte[] min, byte[] max, long offset, long count) {
+    public Set<Pair<byte[], Double>> zrangeByScoreWithScores(final byte[] key,
+	    final byte[] min, final byte[] max, final long offset,
+	    final long count) {
 	checkNotNull(key);
 	checkNotNull(min);
 	checkNotNull(max);
@@ -1762,8 +1770,8 @@ class RawJedisImpl implements RawJedis {
      * @see com.googlecode.jedis.RawJedis#zrangeWithScores(byte[], long, long)
      */
     @Override
-    public Set<Pair<byte[], Double>> zrangeWithScores(byte[] key, long start,
-	    long end) {
+    public Set<Pair<byte[], Double>> zrangeWithScores(final byte[] key,
+	    final long start, final long end) {
 	checkNotNull(key);
 	conn.sendCommand(ZRANGE, key, asByte(start), asByte(end),
 		asByte("WITHSCORES"));
@@ -1950,25 +1958,25 @@ class RawJedisImpl implements RawJedis {
 		: null);
     }
 
-    private void zunionstoreHelper(String mode, byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    private void zunionstoreHelper(final String mode, final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	checkNotNull(dstKey);
 	checkNotNull(ssetAndWeight1);
 
 	// ZUNIONSTORE destination numkeys key1 key2 ... keyN [WEIGHTS
 	// weight1 weight2 ... weightN] [AGGREGATE SUM|MIN|MAX]
 
-	List<byte[]> params = Lists.newArrayList();
+	final List<byte[]> params = Lists.newArrayList();
 	params.add(dstKey);
 	params.add(asByte(String.valueOf(1 + ssetAndWeightN.length)));
 	params.add(ssetAndWeight1.getFirst());
-	for (Pair<byte[], Double> it : ssetAndWeightN) {
+	for (final Pair<byte[], Double> it : ssetAndWeightN) {
 	    params.add(it.getFirst());
 	}
 	params.add(asByte("WEIGHTS"));
 	params.add(asByte(String.valueOf(ssetAndWeight1.getSecond())));
-	for (Pair<byte[], Double> it : ssetAndWeightN) {
+	for (final Pair<byte[], Double> it : ssetAndWeightN) {
 	    params.add(asByte(String.valueOf(it.getSecond())));
 	}
 	params.add(asByte("AGGREGATE"));
@@ -1985,9 +1993,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],java.lang.Double>[])
      */
     @Override
-    public Long zunionstoreMax(byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    public Long zunionstoreMax(final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	zunionstoreHelper("MAX", dstKey, ssetAndWeight1, ssetAndWeightN);
 	return conn.integerReply();
     }
@@ -2000,9 +2008,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],java.lang.Double>[])
      */
     @Override
-    public Long zunionstoreMin(byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    public Long zunionstoreMin(final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	zunionstoreHelper("MIN", dstKey, ssetAndWeight1, ssetAndWeightN);
 	return conn.integerReply();
     }
@@ -2015,9 +2023,9 @@ class RawJedisImpl implements RawJedis {
      * com.googlecode.jedis.Pair<byte[],java.lang.Double>[])
      */
     @Override
-    public Long zunionstoreSum(byte[] dstKey,
-	    Pair<byte[], Double> ssetAndWeight1,
-	    Pair<byte[], Double>... ssetAndWeightN) {
+    public Long zunionstoreSum(final byte[] dstKey,
+	    final Pair<byte[], Double> ssetAndWeight1,
+	    final Pair<byte[], Double>... ssetAndWeightN) {
 	zunionstoreHelper("SUM", dstKey, ssetAndWeight1, ssetAndWeightN);
 	return conn.integerReply();
     }

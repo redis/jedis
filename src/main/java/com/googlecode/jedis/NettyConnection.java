@@ -19,23 +19,24 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.googlecode.jedis.Protocol.Command;
 
-class NettyConnection implements Connection {
+final class NettyConnection implements Connection {
 
+    private ClientBootstrap bootstrap;
     private final CommandEncoder commandEncoder = new CommandEncoder();
+
+    private ChannelFactory factory;
+    private ChannelFuture future;
+    private boolean infiniteTimeout = false;
+    private JedisConfig jedisConfig;
     private final BlockingQueue<Pair<ResponseType, List<byte[]>>> queue = new ArrayBlockingQueue<Pair<ResponseType, List<byte[]>>>(
 	    128);
 
-    private ChannelFactory factory;
-    private ClientBootstrap bootstrap;
-    private ChannelFuture future;
-    private JedisConfig jedisConfig;
-    private boolean infiniteTimeout = false;
-
     @Override
     public byte[] bulkReply() {
-	Pair<ResponseType, List<byte[]>> result = fromQueue();
+	final Pair<ResponseType, List<byte[]>> result = fromQueue();
 
 	if ((result.getSecond()).size() == 1) {
 	    return (result.getSecond()).get(0);
@@ -54,7 +55,7 @@ class NettyConnection implements Connection {
 	bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 	    @Override
 	    public ChannelPipeline getPipeline() throws Exception {
-		ChannelPipeline p = Channels.pipeline();
+		final ChannelPipeline p = Channels.pipeline();
 		p.addLast("framer", new SingleLineFramer());
 		p.addLast("decoder", new ResponseDecoder(queue));
 		p.addLast("encoder", commandEncoder);
@@ -98,7 +99,7 @@ class NettyConnection implements Connection {
 		result = queue.poll(jedisConfig.getTimeout(),
 			TimeUnit.MILLISECONDS);
 	    }
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    throw new JedisException(e.getLocalizedMessage());
 	}
 
@@ -121,7 +122,7 @@ class NettyConnection implements Connection {
 
     @Override
     public Long integerReply() {
-	Pair<ResponseType, List<byte[]>> result = fromQueue();
+	final Pair<ResponseType, List<byte[]>> result = fromQueue();
 
 	if (result.getSecond().get(0) == null) {
 	    return null;
@@ -150,12 +151,12 @@ class NettyConnection implements Connection {
     }
 
     @Override
-    public void sendCommand(Command cmd, byte[]... args) {
-	future.getChannel().write(newPair(cmd, args));
+    public void sendCommand(final Command cmd, final byte[]... args) {
+	future.getChannel().write(ImmutableList.of(newPair(cmd, args)));
     }
 
     @Override
-    public void setJedisConfig(JedisConfig jedisConfig) {
+    public void setJedisConfig(final JedisConfig jedisConfig) {
 	this.jedisConfig = jedisConfig;
     }
 

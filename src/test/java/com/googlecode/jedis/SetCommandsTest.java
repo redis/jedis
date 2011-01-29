@@ -1,12 +1,7 @@
 package com.googlecode.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
@@ -14,15 +9,15 @@ import org.testng.annotations.Test;
 import com.google.common.collect.ImmutableList;
 
 public class SetCommandsTest extends JedisTestBase {
-    private final String foo = "foo";
-    private final String bar = "bar";
-    private final String car = "car";
-    private final String src = "src";
-    private final String dst = "dst";
     private final String a = "a";
     private final String b = "b";
+    private final String bar = "bar";
     private final String c = "c";
+    private final String car = "car";
     private final String d = "d";
+    private final String dst = "dst";
+    private final String foo = "foo";
+    private final String src = "src";
 
     @Test
     public void sadd() {
@@ -41,7 +36,7 @@ public class SetCommandsTest extends JedisTestBase {
 
     @Test
     public void sdiff() {
-	for (String it : ImmutableList.of(a, b, c)) {
+	for (final String it : ImmutableList.of(a, b, c)) {
 	    jedis.sadd(foo, it);
 	}
 	jedis.sadd(bar, c);
@@ -55,7 +50,7 @@ public class SetCommandsTest extends JedisTestBase {
 
     @Test
     public void sdiffstore() {
-	for (String it : ImmutableList.of(a, b, c)) {
+	for (final String it : ImmutableList.of(a, b, c)) {
 	    jedis.sadd(foo, it);
 	}
 	jedis.sadd(bar, c);

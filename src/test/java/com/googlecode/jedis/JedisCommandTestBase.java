@@ -8,9 +8,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.googlecode.jedis.Jedis;
-import com.googlecode.jedis.JedisConfig;
-
 public abstract class JedisCommandTestBase {
 
     protected Jedis jedis;
@@ -30,7 +27,7 @@ public abstract class JedisCommandTestBase {
 
     // TODO: remove
     @Test(dataProvider = "redis-config")
-    public void parameterIntTest(JedisConfig config) {
+    public void parameterIntTest(final JedisConfig config) {
 	System.out.println("Parameterized Config is : " + config.toString());
     }
 

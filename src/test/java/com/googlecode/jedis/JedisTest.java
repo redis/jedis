@@ -14,12 +14,12 @@ public class JedisTest extends JedisTestBase {
 
     @Test
     public void checkBinaryData() {
-	byte[] bigdata = new byte[1777];
+	final byte[] bigdata = new byte[1777];
 	for (int b = 0; b < bigdata.length; b++) {
 	    bigdata[b] = (byte) ((byte) b % 255);
 	}
-	Map<String, String> hash = ImmutableMap.of("data", new String(bigdata,
-		Charsets.UTF_8));
+	final Map<String, String> hash = ImmutableMap.of("data", new String(
+		bigdata, Charsets.UTF_8));
 
 	assertThat(jedis.hmset("foo", hash), is(true));
 	assertThat(jedis.hgetAll("foo"), is(hash));
@@ -37,7 +37,7 @@ public class JedisTest extends JedisTestBase {
 
     @Test
     public void useWithoutConnecting() {
-	Jedis jedis = JedisFactory.newJedisInstance();
+	final Jedis jedis = JedisFactory.newJedisInstance();
 	jedis.auth("foobared");
 	jedis.dbSize();
     }

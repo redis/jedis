@@ -46,7 +46,7 @@ public class HashesCommandsTest extends JedisTestBase {
     public void hgetAll() {
 	jedis.hmset(foo, ImmutableMap.of(bar, car, car, bar));
 
-	Map<String, String> result = jedis.hgetAll(foo);
+	final Map<String, String> result = jedis.hgetAll(foo);
 	assertThat(result.size(), is(2));
 	assertThat(result, allOf(hasEntry(car, bar), hasEntry(bar, car)));
     }

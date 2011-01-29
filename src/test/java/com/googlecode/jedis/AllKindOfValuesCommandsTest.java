@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableList;
 public class AllKindOfValuesCommandsTest extends JedisTestBase {
 
     String bar = "bar";
-    String foo = "foo";
     String car = "car";
+    String foo = "foo";
 
     @Test
     public void dbSize() {
@@ -24,11 +24,11 @@ public class AllKindOfValuesCommandsTest extends JedisTestBase {
 
     @Test
     public void del() {
-	for (String it : ImmutableList.of(foo, bar, car)) {
+	for (final String it : ImmutableList.of(foo, bar, car)) {
 	    jedis.set(it, it);
 	}
 	assertThat(jedis.del(foo, bar, car), is(3L));
-	for (String it : ImmutableList.of(foo, bar, car)) {
+	for (final String it : ImmutableList.of(foo, bar, car)) {
 	    assertThat(jedis.exists(it), is(false));
 	}
 
@@ -58,7 +58,7 @@ public class AllKindOfValuesCommandsTest extends JedisTestBase {
 
     @Test
     public void expireAt() {
-	long unixTime = (System.currentTimeMillis() / 1000L) + 20;
+	final long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
 	assertThat(jedis.expireAt(foo, unixTime), is(false));
 	jedis.set(foo, bar);

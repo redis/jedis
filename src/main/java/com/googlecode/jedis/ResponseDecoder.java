@@ -12,39 +12,47 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
+ * Decodes single lines to a proper return type.
+ * 
+ * TODO: pipelined mode!
  * 
  * @author Moritz Heuser
  * 
  */
-class ResponseDecoder extends SimpleChannelUpstreamHandler {
+final class ResponseDecoder extends SimpleChannelUpstreamHandler {
+
+    private static Logger log = LoggerFactory.getLogger("org.googlecode.jedis");
 
     private static final byte[] NULL = { '-', '1' };
 
-    private final BlockingQueue<Pair<ResponseType, List<byte[]>>> queue;
-
-    private List<byte[]> multiBulkStore;
-    private boolean multiBulkMode = false;
     private int multiBulkArgs;
 
-    public ResponseDecoder(BlockingQueue<Pair<ResponseType, List<byte[]>>> queue) {
+    private boolean multiBulkMode = false;
+    private List<byte[]> multiBulkStore;
+    private final BlockingQueue<Pair<ResponseType, List<byte[]>>> queue;
+
+    public ResponseDecoder(
+	    final BlockingQueue<Pair<ResponseType, List<byte[]>>> queue) {
 	this.queue = queue;
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
-	    throws Exception {
+    public void messageReceived(final ChannelHandlerContext ctx,
+	    final MessageEvent e) throws Exception {
 	super.messageReceived(ctx, e);
 
 	@SuppressWarnings("unchecked")
-	Pair<ResponseType, byte[]> responseLine = (Pair<ResponseType, byte[]>) e
+	final Pair<ResponseType, byte[]> responseLine = (Pair<ResponseType, byte[]>) e
 		.getMessage();
 
-	ResponseType responseType = responseLine.getFirst();
+	final ResponseType responseType = responseLine.getFirst();
 	byte[] line = responseLine.getSecond();
 
 	switch (responseType) {
@@ -52,7 +60,7 @@ class ResponseDecoder extends SimpleChannelUpstreamHandler {
 	    multiBulkArgs = Integer.valueOf(new String(line, UTF_8));
 	    if (multiBulkArgs <= 0) {
 		// empty multibulk response, blpop and brpop are returning -1
-		List<byte[]> response = ImmutableList.of();
+		final List<byte[]> response = ImmutableList.of();
 		toQueue(newPair(ResponseType.MultiBulk, response));
 	    } else {
 		multiBulkMode = true;
@@ -68,13 +76,15 @@ class ResponseDecoder extends SimpleChannelUpstreamHandler {
 		multiBulkStore.add(line);
 		if (multiBulkArgs == 0) {
 		    // can't use guava's immutable list because of null values
-		    List<byte[]> result = Lists.newArrayList(multiBulkStore);
+		    final List<byte[]> result = Lists
+			    .newArrayList(multiBulkStore);
 		    multiBulkStore.clear();
 		    multiBulkMode = false;
 		    toQueue(newPair(ResponseType.MultiBulk, result));
 		}
 	    } else {
-		// can't use guava's immutable list because of null values
+		// can't use guava's immutable list because of possible null
+		// values
 		toQueue(newPair(responseType, Collections.singletonList(line)));
 	    }
 	    break;
@@ -84,12 +94,11 @@ class ResponseDecoder extends SimpleChannelUpstreamHandler {
 
     }
 
-    private void toQueue(Pair<ResponseType, List<byte[]>> next) {
+    private void toQueue(final Pair<ResponseType, List<byte[]>> next) {
 	try {
 	    queue.offer(next, 1, TimeUnit.MINUTES);
-	} catch (InterruptedException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	} catch (final InterruptedException e) {
+	    log.error("Could not put a Response to the queue!", e);
 	}
     }
 }

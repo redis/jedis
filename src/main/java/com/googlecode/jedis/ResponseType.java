@@ -7,18 +7,20 @@ import com.google.common.collect.Maps;
 
 /**
  * The response types of redis.
+ * 
+ * @author Moritz Heuser <moritz.heuser@gmail.com>
  */
 enum ResponseType {
-    Bulk('$'), Error('-'), Integer(':'), MultiBulk('*'), SingleLine('+'),
-    Unknown('?');
+    Bulk('$'), Error('-'), Integer(':'), MultiBulk('*'), SingleLine('+'), Unknown(
+	    '?');
 
     private static final ImmutableMap<Byte, ResponseType> lookup;
 
     // init the lookup map
     static {
-	Map<Byte, ResponseType> tmp = Maps
+	final Map<Byte, ResponseType> tmp = Maps
 		.newHashMapWithExpectedSize(ResponseType.values().length);
-	for (ResponseType it : ResponseType.values()) {
+	for (final ResponseType it : ResponseType.values()) {
 	    tmp.put((byte) it.prefix, it);
 	}
 	lookup = ImmutableMap.copyOf(tmp);
@@ -36,7 +38,7 @@ enum ResponseType {
 
     private char prefix;
 
-    private ResponseType(char prefix) {
+    private ResponseType(final char prefix) {
 	this.prefix = prefix;
     }
 }

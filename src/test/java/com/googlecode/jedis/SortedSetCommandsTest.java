@@ -10,17 +10,16 @@ import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.googlecode.jedis.Pair;
 
 public class SortedSetCommandsTest extends JedisTestBase {
-    private final String foo = "foo";
-    private final String bar = "bar";
-    private final String car = "car";
     private final String a = "a";
     private final String b = "b";
+    private final String bar = "bar";
     private final String c = "c";
+    private final String car = "car";
     private final String d = "d";
     private final String e = "e";
+    private final String foo = "foo";
 
     @Test
     public void zadd() {
@@ -107,7 +106,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
     @SuppressWarnings("unchecked")
     @Test
     public void zrange() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}
@@ -125,7 +124,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
     @SuppressWarnings("unchecked")
     @Test
     public void zrangeByScore() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}
@@ -153,7 +152,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
 
     @Test
     public void zrank() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}
@@ -173,7 +172,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
 
     @Test
     public void zremrangeByRank() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}
@@ -183,7 +182,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
 
     @Test
     public void zremrangeByScore() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	    jedis.zadd(bar, it);
@@ -198,7 +197,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
     @SuppressWarnings("unchecked")
     @Test
     public void zrevrange() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}
@@ -216,7 +215,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
     @SuppressWarnings("unchecked")
     @Test
     public void zrevrangeByScore() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}
@@ -245,7 +244,7 @@ public class SortedSetCommandsTest extends JedisTestBase {
 
     @Test
     public void zrevrank() {
-	for (Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
+	for (final Pair<String, Double> it : ImmutableList.of(newPair(a, 0.),
 		newPair(b, 1.), newPair(c, 2.), newPair(d, 3.))) {
 	    jedis.zadd(foo, it);
 	}

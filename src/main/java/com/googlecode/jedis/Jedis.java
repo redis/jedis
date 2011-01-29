@@ -9,6 +9,7 @@ import java.util.Set;
  * 
  * Use {@link JedisFactory#newJedisInstance()} to get an instance.
  * 
+ * @author Jonathan Leibiusky
  * @author Moritz Heuser <moritz.heuser@gmail.com>
  * 
  */
@@ -997,8 +998,8 @@ public interface Jedis extends RawJedis {
      * Set the given key/value pairs.
      * <p>
      * MSET replaces existing values with new values, just as regular SET. See
-     * {@link #msetnx(Pair, Pair...) MSETNX} if you don't want to overwrite
-     * existing values.
+     * {@link #msetnx(Pair, Pair[])} if you don't want to overwrite existing
+     * values.
      * <p>
      * MSET is atomic, so all given keys are set at once. It is not possible for
      * clients to see that some of the keys were updated while others are
@@ -1269,7 +1270,7 @@ public interface Jedis extends RawJedis {
     /**
      * Store a difference of sets at destination set.
      * <p>
-     * This command works exactly like {@link #sinter(String, String...)} but
+     * This command works exactly like {@link #sinter(String, String[])} but
      * instead of being returned the resulting set is stored as dstkey. Any
      * existing value in dstkey will be over-written.
      * <p>
@@ -1327,8 +1328,8 @@ public interface Jedis extends RawJedis {
      * Atomic set and expire.
      * <p>
      * The command is exactly equivalent to the following group of commands:
-     * {@link #set(byte[], byte[]) SET} + {@link #expire(byte[], long) EXPIRE}.
-     * The operation is atomic.
+     * {@link #set(String, String)} + {@link #expire(String, long) EXPIRE}. The
+     * operation is atomic.
      * <p>
      * Time complexity: O(1)
      * 
@@ -1418,7 +1419,7 @@ public interface Jedis extends RawJedis {
      * Store the members of a set resulting from the intersection of all the
      * sets hold at the specified keys.
      * <p>
-     * This commnad works exactly like {@link #sinter(String, String...)} but
+     * This commnad works exactly like {@link #sinter(String, String[])} but
      * instead of being returned the resulting set is stored as dstkey.
      * <p>
      * Time complexity O(N*M) worst case where N is the cardinality of the
@@ -1440,7 +1441,7 @@ public interface Jedis extends RawJedis {
     /**
      * Return if member is a member of a set.
      * <p>
-     * Time complexity O(1)
+     * Time complexity: O(1)
      * 
      * @param key
      *            of the set
@@ -1455,9 +1456,9 @@ public interface Jedis extends RawJedis {
     /**
      * Return all the members of the set at key.
      * <p>
-     * This is just syntax glue for {@link #sinter(String, String...) SINTER}.
+     * This is just syntax glue for {@link #sinter(String, String[])}.
      * <p>
-     * Time complexity O(N)
+     * Time complexity: O(N)
      * 
      * @param key
      *            the key
@@ -1738,7 +1739,7 @@ public interface Jedis extends RawJedis {
     /**
      * Store a uniun of sets at destination set.
      * <p>
-     * This command works exactly like {@link #sunion(String, String...)} but
+     * This command works exactly like {@link #sunion(String, String[])} but
      * instead of being returned the resulting set is stored as dstkey. Any
      * existing value in dstkey will be over-written.
      * <p>

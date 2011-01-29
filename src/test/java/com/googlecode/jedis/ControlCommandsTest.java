@@ -20,7 +20,7 @@ public class ControlCommandsTest extends JedisTestBase {
     public void bgsave() {
 	try {
 	    assertThat(jedis.bgsave(), is(true));
-	} catch (JedisException e) {
+	} catch (final JedisException e) {
 	    assertThat("ERR Background save already in progress",
 		    is(e.getMessage()));
 	}
@@ -33,8 +33,8 @@ public class ControlCommandsTest extends JedisTestBase {
 
     @Test
     public void configSet() {
-	List<String> info = jedis.configGet("maxmemory");
-	String memory = info.get(1);
+	final List<String> info = jedis.configGet("maxmemory");
+	final String memory = info.get(1);
 	assertThat(jedis.configSet("maxmemory", "200"), is("OK"));
 	assertThat(jedis.configSet("maxmemory", memory), is("OK"));
     }
@@ -54,16 +54,16 @@ public class ControlCommandsTest extends JedisTestBase {
 
     @Test
     public void lastsave() throws InterruptedException {
-	long before = jedis.lastsave();
+	final long before = jedis.lastsave();
 	Boolean saveHappend = false;
 	while (!saveHappend) {
 	    try {
 		Thread.sleep(1000);
 		saveHappend = jedis.save();
-	    } catch (JedisException e) {
+	    } catch (final JedisException e) {
 	    }
 	}
-	long after = jedis.lastsave();
+	final long after = jedis.lastsave();
 	assertThat((after - before), greaterThan(0L));
     }
 
@@ -71,7 +71,7 @@ public class ControlCommandsTest extends JedisTestBase {
     public void monitor() {
 	jedis.monitor(new JedisMonitor() {
 	    @Override
-	    public void onCommand(String command) {
+	    public void onCommand(final String command) {
 		assertThat(command, containsString("OK"));
 		connection.disconnect();
 	    }

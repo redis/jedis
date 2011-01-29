@@ -8,9 +8,9 @@ import org.testng.annotations.Test;
 
 public class StringValuesCommandsTest extends JedisTestBase {
 
-    String foo = "foo";
     String bar = "bar";
     String car = "car";
+    String foo = "foo";
 
     @Test
     public void getSet() {

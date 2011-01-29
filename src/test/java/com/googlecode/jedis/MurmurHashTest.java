@@ -8,9 +8,6 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
-import com.googlecode.jedis.MurmurHashingStrategy;
-
-
 /**
  * Test class for the Java Murmur hash implementation.
  * 
@@ -67,24 +64,16 @@ public class MurmurHashTest {
      * Expected results - from the original C implementation.
      */
 
-    /** Murmur 32bit hash results, default library seed. */
-    static final int[] results32_standard = { 0x96814fb3, 0x485dcaba,
-	    0x331dc4ae, 0xc6a7bf2f, 0xcdf35de0, 0xd9dec7cc, 0x63a7318a,
-	    0xd0d3c2de, 0x90923aef, 0xaf35c1e2, 0x735377b2, 0x366c98f3,
-	    0x9c48ee29, 0x0b615790, 0xb4308ac1, 0xec98125a, 0x106e08d9 };
     /** Murmur 32bit hash results, special test seed. */
     static final int[] results32_seed = { 0xd92e493e, 0x8b50903b, 0xc3372a7b,
 	    0x48f07e9e, 0x8a5e4a6e, 0x57916df4, 0xa346171f, 0x1e319c86,
 	    0x9e1a03cd, 0x9f973e6c, 0x2d8c77f5, 0xabed8751, 0x296708b6,
 	    0x24f8078b, 0x111b1553, 0xa7da1996, 0xfe776c70 };
-    /** Murmur 64bit hash results, default library seed. */
-    static final long[] results64_standard = { 0x4987cb15118a83d9L,
-	    0x28e2a79e3f0394d9L, 0x8f4600d786fc5c05L, 0xa09b27fea4b54af3L,
-	    0x25f34447525bfd1eL, 0x32fad4c21379c7bfL, 0x4b30b99a9d931921L,
-	    0x4e5dab004f936cdbL, 0x06825c27bc96cf40L, 0xff4bf2f8a4823905L,
-	    0x7f7e950c064e6367L, 0x821ade90caaa5889L, 0x6d28c915d791686aL,
-	    0x9c32649372163ba2L, 0xd66ae956c14d5212L, 0x38ed30ee5161200fL,
-	    0x9bfae0a4e613fc3cL, };
+    /** Murmur 32bit hash results, default library seed. */
+    static final int[] results32_standard = { 0x96814fb3, 0x485dcaba,
+	    0x331dc4ae, 0xc6a7bf2f, 0xcdf35de0, 0xd9dec7cc, 0x63a7318a,
+	    0xd0d3c2de, 0x90923aef, 0xaf35c1e2, 0x735377b2, 0x366c98f3,
+	    0x9c48ee29, 0x0b615790, 0xb4308ac1, 0xec98125a, 0x106e08d9 };
     /** Murmur 64bit hash results, special test seed. */
     static final long[] results64_seed = { 0x0822b1481a92e97bL,
 	    0xf8a9223fef0822ddL, 0x4b49e56affae3a89L, 0xc970296e32e1d1c1L,
@@ -93,6 +82,14 @@ public class MurmurHashTest {
 	    0xdabba41293d5b035L, 0xacf326b0bb690d0eL, 0x0617f431bc1a8e04L,
 	    0x15b81f28d576e1b2L, 0x28c1fe59e4f8e5baL, 0x694dd315c9354ca9L,
 	    0xa97052a8f088ae6cL };
+    /** Murmur 64bit hash results, default library seed. */
+    static final long[] results64_standard = { 0x4987cb15118a83d9L,
+	    0x28e2a79e3f0394d9L, 0x8f4600d786fc5c05L, 0xa09b27fea4b54af3L,
+	    0x25f34447525bfd1eL, 0x32fad4c21379c7bfL, 0x4b30b99a9d931921L,
+	    0x4e5dab004f936cdbL, 0x06825c27bc96cf40L, 0xff4bf2f8a4823905L,
+	    0x7f7e950c064e6367L, 0x821ade90caaa5889L, 0x6d28c915d791686aL,
+	    0x9c32649372163ba2L, 0xd66ae956c14d5212L, 0x38ed30ee5161200fL,
+	    0x9bfae0a4e613fc3cL, };
 
     /** Dummy test text. */
     static final String text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit";
@@ -101,7 +98,7 @@ public class MurmurHashTest {
     public final void testHash32ByteArrayInt() {
 
 	for (int i = 0; i < input.length; i++) {
-	    int hash = new MurmurHashingStrategy().hash32(input[i],
+	    final int hash = new MurmurHashingStrategy().hash32(input[i],
 		    input[i].length);
 	    if (hash != results32_standard[i]) {
 		fail(String
@@ -114,7 +111,7 @@ public class MurmurHashTest {
     @Test
     public final void testHash32ByteArrayIntInt() {
 	for (int i = 0; i < input.length; i++) {
-	    int hash = new MurmurHashingStrategy().hash32(input[i],
+	    final int hash = new MurmurHashingStrategy().hash32(input[i],
 		    input[i].length, 0x71b4954d);
 	    if (hash != results32_seed[i]) {
 		fail(String
@@ -126,10 +123,10 @@ public class MurmurHashTest {
 
     @Test
     public final void testHash32String() {
-	int hash = new MurmurHashingStrategy().hash32(text);
+	final int hash = new MurmurHashingStrategy().hash32(text);
 	try {
 	    Thread.sleep(20);
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
@@ -138,7 +135,7 @@ public class MurmurHashTest {
 
     @Test
     public final void testHash32StringIntInt() {
-	int hash = new MurmurHashingStrategy().hash32(text, 2,
+	final int hash = new MurmurHashingStrategy().hash32(text, 2,
 		text.length() - 4);
 	assertTrue(hash == 0x4d666d90);
     }
@@ -146,7 +143,7 @@ public class MurmurHashTest {
     @Test
     public final void testHash64ByteArrayInt() {
 	for (int i = 0; i < input.length; i++) {
-	    long hash = new MurmurHashingStrategy().hash64(input[i],
+	    final long hash = new MurmurHashingStrategy().hash64(input[i],
 		    input[i].length);
 	    assertThat(
 		    format("Unexpected hash64 result for example %d: 0x%016x instead of 0x%016x",
@@ -158,7 +155,7 @@ public class MurmurHashTest {
     @Test
     public final void testHash64ByteArrayIntInt() {
 	for (int i = 0; i < input.length; i++) {
-	    long hash = new MurmurHashingStrategy().hash64(input[i],
+	    final long hash = new MurmurHashingStrategy().hash64(input[i],
 		    input[i].length, 0x344d1f5c);
 	    assertThat(
 		    format("Unexpected hash64 result for example %d: 0x%016x instead of 0x%016x",
@@ -169,13 +166,13 @@ public class MurmurHashTest {
 
     @Test
     public final void testHash64String() {
-	long hash = new MurmurHashingStrategy().hash64(text);
+	final long hash = new MurmurHashingStrategy().hash64(text);
 	assertTrue(hash == 0x0920e0c1b7eeb261L);
     }
 
     @Test
     public final void testHash64StringIntInt() {
-	long hash = new MurmurHashingStrategy().hash64(text, 2,
+	final long hash = new MurmurHashingStrategy().hash64(text, 2,
 		text.length() - 4);
 	assertTrue(hash == 0xa8b33145194985a2L);
     }

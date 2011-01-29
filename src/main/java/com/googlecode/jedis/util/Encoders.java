@@ -40,7 +40,7 @@ public class Encoders {
      * @param value
      * @return byte pair.
      */
-    static public Pair<byte[], byte[]> asByte(Pair<String, String> value) {
+    static public Pair<byte[], byte[]> asByte(final Pair<String, String> value) {
 	return PairImpl.newPair(asByte(value.getFirst()),
 		asByte(value.getSecond()));
     }
@@ -53,7 +53,7 @@ public class Encoders {
      * @throws NullPointerException
      *             if value is null
      */
-    static public byte[] asByte(String value) {
+    static public byte[] asByte(final String value) {
 	checkNotNull(value);
 	return value.getBytes(UTF_8);
     }
@@ -64,8 +64,8 @@ public class Encoders {
      * @param value
      * @return byte array
      */
-    static public byte[][] asByte(String[] value) {
-	byte[][] ret = new byte[value.length][];
+    static public byte[][] asByte(final String[] value) {
+	final byte[][] ret = new byte[value.length][];
 	for (int i = 0; i < value.length; i++) {
 	    ret[i] = asByte(value[i]);
 	}
@@ -79,7 +79,7 @@ public class Encoders {
      *            byte array or null
      * @return string or null if input is null
      */
-    static public String asString(byte[] value) {
+    static public String asString(final byte[] value) {
 	return (value != null) ? new String(value, UTF_8) : null;
     }
 
@@ -89,7 +89,7 @@ public class Encoders {
      * @param value
      * @return a string
      */
-    static public String asString(long value) {
+    static public String asString(final long value) {
 	return String.valueOf(value);
     }
 }

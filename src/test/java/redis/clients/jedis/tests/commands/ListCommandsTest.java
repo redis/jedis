@@ -1,7 +1,5 @@
 package redis.clients.jedis.tests.commands;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +8,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ListCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -76,16 +74,16 @@ public class ListCommandsTest extends JedisCommandTestBase {
         try {
             jedis.set("foo", "bar");
             jedis.llen("foo");
-            fail("JedisException expected");
-        } catch (final JedisException e) {
+            fail("JedisDataException expected");
+        } catch (final JedisDataException e) {
         }
 
         // Binary
         try {
             jedis.set(bfoo, bbar);
             jedis.llen(bfoo);
-            fail("JedisException expected");
-        } catch (final JedisException e) {
+            fail("JedisDataException expected");
+        } catch (final JedisDataException e) {
         }
 
     }
@@ -592,10 +590,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
                     j.lpush("foo", "a");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         })).start();
@@ -613,10 +607,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
                     Jedis j = createJedis();
                     j.lpush("foo", "a");
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

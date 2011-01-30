@@ -7,8 +7,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -113,7 +113,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
         assertTrue(Arrays.equals(bfoo, jedis.get(bbar)));
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void incrWrongValue() {
         jedis.set(bfoo, binaryValue);
         jedis.incr(bfoo);
@@ -127,7 +127,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
         assertEquals(2, value);
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void incrByWrongValue() {
         jedis.set(bfoo, binaryValue);
         jedis.incrBy(bfoo, 2);
@@ -141,7 +141,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
         assertEquals(4, value);
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void decrWrongValue() {
         jedis.set(bfoo, binaryValue);
         jedis.decr(bfoo);
@@ -155,7 +155,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
         assertEquals(-2, value);
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void decrByWrongValue() {
         jedis.set(bfoo, binaryValue);
         jedis.decrBy(bfoo, 2);

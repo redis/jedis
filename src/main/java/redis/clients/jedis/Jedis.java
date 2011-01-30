@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
     public Jedis(final String host) {
@@ -1647,19 +1646,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     private void runChecks() {
         if (client.isInMulti()) {
-            throw new JedisException(
+            throw new JedisDataException(
                     "Cannot use Jedis when in Multi. Please use JedisTransaction instead.");
         }
-        try {
-            this.connect();
-        } catch (UnknownHostException e) {
-            throw new JedisException(e);
-        } catch (IOException e) {
-            throw new JedisException(e);
-        }
+        this.connect();
     }
 
-    public void connect() throws UnknownHostException, IOException {
+    public void connect() {
         if (!client.isConnected()) {
             client.connect();
             if (this.password != null) {
@@ -1668,7 +1661,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         }
     }
 
-    public void disconnect() throws IOException {
+    public void disconnect() {
         client.disconnect();
     }
 

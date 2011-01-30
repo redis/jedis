@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class StringValuesCommandsTest extends JedisCommandTestBase {
     @Test
@@ -95,7 +95,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         assertEquals("foo", jedis.get("bar"));
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void incrWrongValue() {
         jedis.set("foo", "bar");
         jedis.incr("foo");
@@ -109,7 +109,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         assertEquals(2, value);
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void incrByWrongValue() {
         jedis.set("foo", "bar");
         jedis.incrBy("foo", 2);
@@ -123,7 +123,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         assertEquals(4, value);
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void decrWrongValue() {
         jedis.set("foo", "bar");
         jedis.decr("foo");
@@ -137,7 +137,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         assertEquals(-2, value);
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void decrByWrongValue() {
         jedis.set("foo", "bar");
         jedis.decrBy("foo", 2);
@@ -184,7 +184,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
                 Integer.MAX_VALUE));
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisDataException.class)
     public void incrReallyLargeNumbers() {
         jedis.set("foo", Long.toString(Long.MAX_VALUE));
         long value = jedis.incr("foo");

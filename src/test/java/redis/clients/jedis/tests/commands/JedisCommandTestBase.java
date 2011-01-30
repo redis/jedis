@@ -1,7 +1,5 @@
 package redis.clients.jedis.tests.commands;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -33,11 +31,11 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         jedis.disconnect();
     }
 
-    protected Jedis createJedis() throws UnknownHostException, IOException {
+    protected Jedis createJedis() {
         Jedis j = new Jedis(hnp.host, hnp.port);
         j.connect();
         j.auth("foobared");

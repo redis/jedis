@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         super(shards, algo, keyTagPattern);
     }
 
-    @Override
-    public void disconnect() throws IOException {
+    public void disconnect() {
         for (Jedis jedis : getAllShards()) {
             jedis.quit();
             jedis.disconnect();

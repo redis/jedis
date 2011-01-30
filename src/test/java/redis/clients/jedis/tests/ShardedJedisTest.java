@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class ShardedJedisTest extends Assert {
             .get(1);
 
     @Test
-    public void checkSharding() throws IOException {
+    public void checkSharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
         shards.add(new JedisShardInfo(redis1.host, redis1.port));
         shards.add(new JedisShardInfo(redis2.host, redis2.port));
@@ -35,7 +34,7 @@ public class ShardedJedisTest extends Assert {
     }
 
     @Test
-    public void trySharding() throws IOException {
+    public void trySharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
         JedisShardInfo si = new JedisShardInfo(redis1.host, redis1.port);
         si.setPassword("foobared");
@@ -62,7 +61,7 @@ public class ShardedJedisTest extends Assert {
     }
 
     @Test
-    public void tryShardingWithMurmure() throws IOException {
+    public void tryShardingWithMurmure() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
         JedisShardInfo si = new JedisShardInfo(redis1.host, redis1.port);
         si.setPassword("foobared");
@@ -154,7 +153,7 @@ public class ShardedJedisTest extends Assert {
     }
 
     @Test
-    public void testMD5Sharding() throws Exception {
+    public void testMD5Sharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
         shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
         shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
@@ -189,7 +188,7 @@ public class ShardedJedisTest extends Assert {
     }
 
     @Test
-    public void testMurmurSharding() throws Exception {
+    public void testMurmurSharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
         shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
         shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));

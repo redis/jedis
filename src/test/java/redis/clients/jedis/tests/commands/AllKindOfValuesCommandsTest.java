@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
@@ -205,16 +205,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         try {
             jedis.set("foo", "bar");
             jedis.rename("foo", "foo");
-            fail("JedisException expected");
-        } catch (final JedisException e) {
+            fail("JedisDataException expected");
+        } catch (final JedisDataException e) {
         }
 
         // Binary
         try {
             jedis.set(bfoo, bbar);
             jedis.rename(bfoo, bfoo);
-            fail("JedisException expected");
-        } catch (final JedisException e) {
+            fail("JedisDataException expected");
+        } catch (final JedisDataException e) {
         }
 
     }

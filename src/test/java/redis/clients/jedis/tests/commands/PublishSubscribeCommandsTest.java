@@ -8,14 +8,13 @@ import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
 public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
-    public void subscribe() throws UnknownHostException, IOException,
-            InterruptedException {
+    public void subscribe() throws InterruptedException {
         Thread t = new Thread(new Runnable() {
             public void run() {
                 try {
@@ -498,7 +497,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
             }, "foo");
         } catch (NullPointerException ex) {
             fail();
-        } catch (JedisException ex) {
+        } catch (JedisDataException ex) {
             // this is OK because we are not sending AUTH command
         }
     }

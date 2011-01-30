@@ -20,7 +20,8 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import redis.clients.jedis.JedisException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class RedisInputStream extends FilterInputStream {
 
@@ -87,13 +88,12 @@ public class RedisInputStream extends FilterInputStream {
         }
         String reply = sb.toString();
         if (reply.length() == 0) {
-            throw new JedisException(
+            throw new JedisConnectionException(
                     "It seems like server has closed the connection.");
         }
         return reply;
     }
 
-    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         if (count == limit) {
             fill();

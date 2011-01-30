@@ -3,11 +3,12 @@ package redis.clients.jedis;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -60,26 +61,14 @@ public class Connection {
     }
 
     protected Connection sendCommand(final Command cmd, final byte[]... args) {
-        try {
-            connect();
-        } catch (UnknownHostException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        } catch (IOException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        }
+        connect();
         protocol.sendCommand(outputStream, cmd, args);
         pipelinedCommands++;
         return this;
     }
 
     protected Connection sendCommand(final Command cmd) {
-        try {
-            connect();
-        } catch (UnknownHostException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        } catch (IOException e) {
-            throw new JedisException("Could not connect to redis-server", e);
-        }
+        connect();
         protocol.sendCommand(outputStream, cmd, new byte[0][]);
         pipelinedCommands++;
         return this;
@@ -110,12 +99,16 @@ public class Connection {
     public Connection() {
     }
 
-    public void connect() throws UnknownHostException, IOException {
+    public void connect() {
         if (!isConnected()) {
-            socket = new Socket(host, port);
-            socket.setSoTimeout(timeout);
-            outputStream = new RedisOutputStream(socket.getOutputStream());
-            inputStream = new RedisInputStream(socket.getInputStream());
+            try {
+                socket = new Socket(host, port);
+                socket.setSoTimeout(timeout);
+                outputStream = new RedisOutputStream(socket.getOutputStream());
+                inputStream = new RedisInputStream(socket.getInputStream());
+            } catch (IOException ex) {
+                throw new JedisConnectionException(ex);
+            }
         }
     }
 
@@ -128,7 +121,7 @@ public class Connection {
                     socket.close();
                 }
             } catch (IOException ex) {
-                throw new JedisException(ex);
+                throw new JedisConnectionException(ex);
             }
         }
     }

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -44,13 +46,13 @@ public final class Protocol {
             }
             os.flush();
         } catch (IOException e) {
-            throw new JedisException(e);
+            throw new JedisConnectionException(e);
         }
     }
 
     private void processError(final RedisInputStream is) {
         String message = is.readLine();
-        throw new JedisException(message);
+        throw new JedisDataException(message);
     }
 
     private Object process(final RedisInputStream is) {
@@ -67,10 +69,10 @@ public final class Protocol {
             } else if (b == PLUS_BYTE) {
                 return processStatusCodeReply(is);
             } else {
-                throw new JedisException("Unknown reply: " + (char) b);
+                throw new JedisConnectionException("Unknown reply: " + (char) b);
             }
         } catch (IOException e) {
-            throw new JedisException(e);
+            throw new JedisConnectionException(e);
         }
         return null;
     }
@@ -94,7 +96,7 @@ public final class Protocol {
             is.readByte();
             is.readByte();
         } catch (IOException e) {
-            throw new JedisException(e);
+            throw new JedisConnectionException(e);
         }
 
         return read;

@@ -3,7 +3,8 @@ package redis.clients.util;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
-import redis.clients.jedis.JedisException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class Pool<T> {
     private final GenericObjectPool internalPool;
@@ -18,8 +19,8 @@ public abstract class Pool<T> {
         try {
             return (T) internalPool.borrowObject();
         } catch (Exception e) {
-            throw new JedisException("Could not get a resource from the pool",
-                    e);
+            throw new JedisConnectionException(
+                    "Could not get a resource from the pool", e);
         }
     }
 

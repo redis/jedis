@@ -6,16 +6,16 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class JedisPoolTest extends Assert {
     private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
     @Test
-    public void checkConnections() throws Exception {
+    public void checkConnections() {
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
                 hnp.port, 2000);
         Jedis jedis = pool.getResource();
@@ -27,7 +27,7 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkConnectionWithDefaultPort() throws Exception {
+    public void checkConnectionWithDefaultPort() {
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
                 hnp.port);
         Jedis jedis = pool.getResource();
@@ -39,7 +39,7 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkJedisIsReusedWhenReturned() throws Exception {
+    public void checkJedisIsReusedWhenReturned() {
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
                 hnp.port);
         Jedis jedis = pool.getResource();
@@ -55,7 +55,7 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkPoolRepairedWhenJedisIsBroken() throws Exception {
+    public void checkPoolRepairedWhenJedisIsBroken() {
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
                 hnp.port);
         Jedis jedis = pool.getResource();
@@ -70,7 +70,7 @@ public class JedisPoolTest extends Assert {
         pool.destroy();
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisConnectionException.class)
     public void checkPoolOverflow() {
         Config config = new Config();
         config.maxActive = 1;

@@ -1,7 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,10 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisException;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class ShardedJedisPoolTest extends Assert {
@@ -27,7 +25,7 @@ public class ShardedJedisPoolTest extends Assert {
     private List<JedisShardInfo> shards;
 
     @Before
-    public void startUp() throws UnknownHostException, IOException {
+    public void startUp() {
         shards = new ArrayList<JedisShardInfo>();
         shards.add(new JedisShardInfo(redis1.host, redis1.port));
         shards.add(new JedisShardInfo(redis2.host, redis2.port));
@@ -77,7 +75,7 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
-    public void checkPoolRepairedWhenJedisIsBroken() throws Exception {
+    public void checkPoolRepairedWhenJedisIsBroken() {
         ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
         ShardedJedis jedis = pool.getResource();
         jedis.disconnect();
@@ -89,7 +87,7 @@ public class ShardedJedisPoolTest extends Assert {
         pool.destroy();
     }
 
-    @Test(expected = JedisException.class)
+    @Test(expected = JedisConnectionException.class)
     public void checkPoolOverflow() {
         Config config = new Config();
         config.maxActive = 1;

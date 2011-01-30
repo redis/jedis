@@ -10,6 +10,7 @@ import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
 import java.util.Arrays;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.SafeEncoder;
 
 public abstract class JedisPubSub {

@@ -1,7 +1,6 @@
 package redis.clients.jedis.tests;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.junit.Assert;
@@ -9,8 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.PipelineBlock;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.PipelineBlock;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
@@ -28,7 +27,7 @@ public class PipeliningTest extends Assert {
     }
 
     @Test
-    public void pipeline() throws UnknownHostException, IOException {
+    public void pipeline() throws UnsupportedEncodingException {
         List<Object> results = jedis.pipelined(new PipelineBlock() {
             public void execute() {
                 set("foo", "bar");

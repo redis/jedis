@@ -1546,8 +1546,7 @@ interface RawJedis {
      * <p>
      * Time complexity: O(1)
      * 
-     * @param key
-     * @param value
+     * @param keyValuePair
      * @param seconds
      * @return Status code reply
      */
@@ -1589,10 +1588,8 @@ interface RawJedis {
      * <p>
      * Time complexity: O(1)
      * 
-     * @param key
-     *            the key
-     * @param value
-     *            the value
+     * @param keyValuePair
+     *            the key value pair
      * @return true if the key was set, false if the key was not set
      * @throws NullPointerException
      *             if key or value is null
@@ -1606,10 +1603,8 @@ interface RawJedis {
      * <p>
      * Time complexity: O(1)
      * 
-     * @param key
-     *            to set
-     * @param value
-     *            to set
+     * @param keyValuePair
+     *            the key value pair
      * @return always true since set can't fail.
      * @throws NullPointerException
      *             if key or value is null

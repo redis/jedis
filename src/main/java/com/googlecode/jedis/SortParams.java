@@ -177,7 +177,7 @@ public final class SortParams {
      * No sorting.
      * <p>
      * This is useful if you want to retrieve a external key (using
-     * {@link #get(String, String...) GET}) but you don't want the sorting
+     * {@link #get(String, String[]) GET}) but you don't want the sorting
      * overhead.
      * 
      * @return the SortParams Object

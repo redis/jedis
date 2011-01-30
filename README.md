@@ -27,11 +27,13 @@ pub/sub
 to use it with spring put this in a spring config:
 
     <bean id="jedisTarget" class="com.googlecode.jedis.JedisFactory" factory-method="newJedisInstance" scope="prototype">
+    <constructor-arg>
         <bean id="jedisConfig" class="com.googlecode.jedis.JedisConfig">
             <property name="host" value="localhost" />
             <property name="password" value="foobared" />
             <property name="timeout" value="10000"/><!-- in millis-->
         </bean>
+    </constructor-arg>
     </bean>
 
 	<bean id="jedisPool" class="com.googlecode.jedis.util.JedisPoolTargetSource">
@@ -43,7 +45,47 @@ to use it with spring put this in a spring config:
 		<property name="targetSource" ref="jedisPool" />
 	</bean>
 
-Then just use the jedis bean in your beans to speak with redis.
+The much cooler Spring Java Config Way:
+
+    @Bean()
+    @Scope(value="prototype")
+    public Jedis jedisTarget(){
+        JedisConfig config = JedisConfig.newJedisConfig().host("localhost").password("foobared");
+        return JedisFactory.newJedisInstance(config);
+    }
+    
+    @Bean
+    public JedisPoolTargetSource jedisPoolTargetSource(){
+        JedisPoolTargetSource jedisPoolTargetSource = new JedisPoolTargetSource();
+        jedisPoolTargetSource.setTargetClass(Jedis.class);
+        jedisPoolTargetSource.setTargetBeanName("jedisTarget");
+        jedisPoolTargetSource.setMaxSize(25);
+        return jedisPoolTargetSource;
+    }
+    
+    @Bean
+    public ProxyFactoryBean jedisProxyFactoryBean(){
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.setTargetSource(jedisPoolTargetSource());
+        return proxyFactoryBean;        
+    }
+    
+    @Bean
+    public Jedis jedis(){
+        return (Jedis) jedisProxyFactoryBean().getObject();
+    }
+
+
+Then just use the jedis bean in your beans to speak with redis, e.g.:
+
+    @Autowired
+    Jedis jedis;
+
+    (getter-setter for jedis)
+
+    void somemethod(){
+        assert "foobar".equals(jedis.echo("foobar"));
+    }
 
 
 Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.

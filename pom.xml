@@ -1,337 +1,344 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>6</version>
-  </parent>
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>6</version>
+    </parent>
 
-  <modelVersion>4.0.0</modelVersion>
-  <packaging>jar</packaging>
-  <groupId>com.googlecode.jedis</groupId>
-  <artifactId>jedis</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
-  <name>Jedis</name>
-  <description>Jedis is a blazingly small and sane Redis java client.</description>
-  <url>http://code.google.com/p/jedis/</url>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <groupId>com.googlecode.jedis</groupId>
+    <artifactId>jedis</artifactId>
+    <version>2.0.2-SNAPSHOT</version>
+    <name>Jedis</name>
+    <description>Jedis is a blazingly small and sane Redis java client.</description>
+    <url>http://code.google.com/p/jedis/</url>
 
-  <properties>
-    <!--need to set targetJdk for PMD, see: http://jira.codehaus.org/browse/MPMD-86 -->
-    <targetJdk>1.6</targetJdk>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <!--need to set targetJdk for PMD, see: http://jira.codehaus.org/browse/MPMD-86 -->
+        <targetJdk>1.6</targetJdk>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-  <developers>
-    <developer>
-      <id>xetorthio</id>
-      <name>Jonathan Leibiusky</name>
-      <url>https://github.com/xetorthio</url>
-      <timezone>-3</timezone>
-    </developer>
+    <developers>
+        <developer>
+            <id>xetorthio</id>
+            <name>Jonathan Leibiusky</name>
+            <url>https://github.com/xetorthio</url>
+            <timezone>-3</timezone>
+        </developer>
 
-    <developer>
-      <id>mheuser</id>
-      <name>Moritz Heuser</name>
-      <url>https://github.com/mheuser</url>
-      <timezone>+1</timezone>
-    </developer>
-  </developers>
+        <developer>
+            <id>mheuser</id>
+            <name>Moritz Heuser</name>
+            <url>https://github.com/mheuser</url>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
 
-  <prerequisites>
-    <maven>3.0.1</maven>
-  </prerequisites>
+    <prerequisites>
+        <maven>3.0.1</maven>
+    </prerequisites>
 
-  <mailingLists>
-    <mailingList>
-      <name>Jedis Mailing List</name>
-      <post>jedis_redis@googlegroups.com</post>
-      <archive>http://groups.google.com/group/jedis_redis</archive>
-    </mailingList>
-  </mailingLists>
+    <mailingLists>
+        <mailingList>
+            <name>Jedis Mailing List</name>
+            <post>jedis_redis@googlegroups.com</post>
+            <archive>http://groups.google.com/group/jedis_redis</archive>
+        </mailingList>
+    </mailingLists>
 
-  <licenses>
-    <license>
-      <name>Jedis License</name>
-      <url>file://${project.basedir}/LICENSE.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+    <licenses>
+        <license>
+            <name>Jedis License</name>
+            <url>file://${project.basedir}/LICENSE.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-  <issueManagement>
-    <system>github</system>
-    <url>http://github.com/xetorthio/jedis/issues</url>
-  </issueManagement>
+    <issueManagement>
+        <system>github</system>
+        <url>http://github.com/xetorthio/jedis/issues</url>
+    </issueManagement>
 
-  <scm>
-    <url>http://github.com/xetorthio/jedis</url>
-    <connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
-    <developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
-  </scm>
+    <scm>
+        <url>http://github.com/xetorthio/jedis</url>
+        <connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
+        <developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
+    </scm>
 
-  <dependencies>
+    <dependencies>
 
-    <dependency>
-      <groupId>org.jboss.netty</groupId>
-      <artifactId>netty</artifactId>
-      <version>3.2.3.Final</version>
-    </dependency>
+        <dependency>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>3.2.3.Final</version>
+        </dependency>
 
-    <!-- utils & collections -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>r07</version>
-    </dependency>
+        <!-- utils & collections -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>r07</version>
+        </dependency>
 
-    <!-- The next three imports are only used for one util class, maybe move
+        <!-- The next three imports are only used for one util class, maybe move
       the class in a sub (spring support) module -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>3.0.5.RELEASE</version>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>3.0.5.RELEASE</version>
     </dependency>
 
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aop</artifactId>
-      <version>3.0.5.RELEASE</version>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>3.0.5.RELEASE</version>
     </dependency>
 
     <dependency>
-      <groupId>commons-pool</groupId>
-      <artifactId>commons-pool</artifactId>
-      <version>1.5.5</version>
+        <groupId>commons-pool</groupId>
+        <artifactId>commons-pool</artifactId>
+        <version>1.5.5</version>
     </dependency>
 
     <!-- logging -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.6.1</version>
-      <scope>compile</scope>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.6.1</version>
+        <scope>compile</scope>
     </dependency>
 
     <!-- test -->
 
     <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <version>5.14.2</version>
-      <scope>test</scope>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <version>5.14.2</version>
+        <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>1.2</version>
-      <scope>test</scope>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-library</artifactId>
+        <version>1.2</version>
+        <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <version>1.2</version>
-      <scope>test</scope>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>1.2</version>
+        <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>0.9.26</version>
-      <scope>test</scope>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>0.9.26</version>
+        <scope>test</scope>
     </dependency>
 
     <!-- just used for logback config file, could switch to xml -->
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
-      <version>1.7.5</version>
-      <scope>test</scope>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>1.7.5</version>
+        <scope>test</scope>
     </dependency>
 
-  </dependencies>
+</dependencies>
 
-  <build>
+<build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>2.1.2</version>
-        <configuration>
-          <attach>true</attach>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <bootclasspath>${sun.boot.class.path}</bootclasspath>
-          <doclet>com.google.doclava.Doclava</doclet>
-          <useStandardDocletOptions>false</useStandardDocletOptions>
-          <additionalJOption>-J-Xmx1024m</additionalJOption>
-          <docletArtifact>
-            <groupId>com.google.doclava</groupId>
-            <artifactId>doclava</artifactId>
-            <version>1.0.2</version>
-          </docletArtifact>
-          <additionalparam>
-            -federate JDK http://download.oracle.com/javase/6/docs/api/index.html?
-            -federationxml JDK http://doclava.googlecode.com/svn/static/api/openjdk-6.xml
-            -hdf project.name "${project.name}"
-            -d
-            ${project.build.directory}/apidocs
-              </additionalparam>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <phase>install</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-        <suppressionsLocation>${basedir}/src/checkstyle/suppressions.xml</suppressionsLocation>
-        <suppressionsFileExpression>${basedir}/src/checkstyle/suppressions.xml</suppressionsFileExpression>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.0-beta-3</version>
-        <configuration>
-          <reportPlugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-project-info-reports-plugin</artifactId>
-              <version>2.2</version>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-changelog-plugin</artifactId>
-              <version>2.2</version>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-javadoc-plugin</artifactId>
-              <version>2.7</version>
-              <configuration>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2</version>
+            <configuration>
+                <source>1.6</source>
+                <target>1.6</target>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.1.2</version>
+            <configuration>
+                <attach>true</attach>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>attach-sources</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.7</version>
+            <configuration>
                 <bootclasspath>${sun.boot.class.path}</bootclasspath>
                 <doclet>com.google.doclava.Doclava</doclet>
                 <useStandardDocletOptions>false</useStandardDocletOptions>
                 <additionalJOption>-J-Xmx1024m</additionalJOption>
                 <docletArtifact>
-                  <groupId>com.google.doclava</groupId>
-                  <artifactId>doclava</artifactId>
-                  <version>1.0.2</version>
+                    <groupId>com.google.doclava</groupId>
+                    <artifactId>doclava</artifactId>
+                    <version>1.0.2</version>
                 </docletArtifact>
                 <additionalparam>
-                  -federate JDK http://download.oracle.com/javase/6/docs/api/index.html?
-                  -federationxml JDK http://doclava.googlecode.com/svn/static/api/openjdk-6.xml
-                  -hdf project.name "${project.name}"
-                  -d
-                  ${project.reporting.outputDirectory}/apidocs
-               </additionalparam>
-              </configuration>
-              <reportSets>
-                <reportSet>
-                  <id>default</id>
-                  <reports>
-                    <report>javadoc</report>
-                  </reports>
-                </reportSet>
-              </reportSets>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jxr-plugin</artifactId>
-              <version>2.2</version>
-              <configuration>
-                <linkJavadoc>true</linkJavadoc>
-              </configuration>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-report-plugin</artifactId>
-              <version>2.6</version>
-            </plugin>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>cobertura-maven-plugin</artifactId>
-              <version>2.4</version>
-            </plugin>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>findbugs-maven-plugin</artifactId>
-              <version>2.3.1</version>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-pmd-plugin</artifactId>
-              <version>2.5</version>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-checkstyle-plugin</artifactId>
-              <version>2.6</version>
-            </plugin>
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>taglist-maven-plugin</artifactId>
-              <version>2.4</version>
-              <configuration>
-                <tagListOptions>
-                  <tagClasses>
-                    <tagClass>
-                      <displayName>Todo Work</displayName>
-                      <tags>
-                        <tag>
-                          <matchString>TODO</matchString>
-                          <matchType>ignoreCase</matchType>
-                        </tag>
-                        <tag>
-                          <matchString>FIXME</matchString>
-                          <matchType>ignoreCase</matchType>
-                        </tag>
-                      </tags>
-                    </tagClass>
-                  </tagClasses>
-                </tagListOptions>
-              </configuration>
-            </plugin>
-          </reportPlugins>
-        </configuration>
-      </plugin>
+                    -federate JDK http://download.oracle.com/javase/6/docs/api/index.html?
+                    -federationxml JDK http://doclava.googlecode.com/svn/static/api/openjdk-6.xml
+                    -hdf project.name "${project.name}"
+                    -d
+                    ${project.build.directory}/apidocs
+                </additionalparam>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>attach-javadocs</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>2.6</version>
+            <configuration>
+                <suppressionsLocation>${basedir}/src/checkstyle/suppressions.xml</suppressionsLocation>
+                <suppressionsFileExpression>${basedir}/src/checkstyle/suppressions.xml</suppressionsFileExpression>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <version>3.0-beta-3</version>
+            <configuration>
+                <reportPlugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <version>2.2</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-changelog-plugin</artifactId>
+                        <version>2.2</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.7</version>
+                        <configuration>
+                            <bootclasspath>${sun.boot.class.path}</bootclasspath>
+                            <doclet>com.google.doclava.Doclava</doclet>
+                            <useStandardDocletOptions>false</useStandardDocletOptions>
+                            <additionalJOption>-J-Xmx1024m</additionalJOption>
+                            <docletArtifact>
+                                <groupId>com.google.doclava</groupId>
+                                <artifactId>doclava</artifactId>
+                                <version>1.0.2</version>
+                            </docletArtifact>
+                            <additionalparam>
+                                -federate JDK http://download.oracle.com/javase/6/docs/api/index.html?
+                                -federationxml JDK http://doclava.googlecode.com/svn/static/api/openjdk-6.xml
+                                -hdf project.name "${project.name}"
+                                -d
+                                ${project.reporting.outputDirectory}/apidocs
+                            </additionalparam>
+                        </configuration>
+                        <reportSets>
+                            <reportSet>
+                                <id>default</id>
+                                <reports>
+                                    <report>javadoc</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jxr-plugin</artifactId>
+                        <version>2.2</version>
+                        <configuration>
+                            <linkJavadoc>true</linkJavadoc>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.6</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <version>2.4</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>findbugs-maven-plugin</artifactId>
+                        <version>2.3.1</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>2.5</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>2.6</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>taglist-maven-plugin</artifactId>
+                        <version>2.4</version>
+                        <configuration>
+                            <tagListOptions>
+                                <tagClasses>
+                                    <tagClass>
+                                        <displayName>Todo Work</displayName>
+                                        <tags>
+                                            <tag>
+                                                <matchString>TODO</matchString>
+                                                <matchType>ignoreCase</matchType>
+                                            </tag>
+                                            <tag>
+                                                <matchString>FIXME</matchString>
+                                                <matchType>ignoreCase</matchType>
+                                            </tag>
+                                        </tags>
+                                    </tagClass>
+                                </tagClasses>
+                            </tagListOptions>
+                        </configuration>
+                    </plugin>
+                </reportPlugins>
+            </configuration>
+        </plugin>
     </plugins>
-  </build>
+</build>
 
-  <repositories>
+<repositories>
     <!-- needed for netty, breaks sonatype compatibility -->
     <repository>
-      <id>repository.jboss.org</id>
-      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
+        <id>repository.jboss.org</id>
+        <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
     </repository>
-  </repositories>
+</repositories>
 
 </project>

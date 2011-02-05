@@ -4,25 +4,25 @@ I started this fork because of the need of a complete Jedis interface, got some 
 
 
 done:
-- no arg constructor
-- complete Jedis interface so you can use jdk proxies
-- use of [Netty](http://www.jboss.org/netty "Netty") as io layer
-- changed a lot method signatures (e.g. get boolean instead of 1/0)
-- fluent config class
-- changed tests to testng and hamcrest
-- use of slf4j
-- where possible return immutable lists and sets
-- maven 3 compatible
-- added a lot report plugins (findbugs, cobertura...)
+ - no arg constructor
+ - complete Jedis interface so you can use jdk proxies
+ - use of [Netty](http://www.jboss.org/netty "Netty") as io layer
+ - changed a lot method signatures (e.g. get boolean instead of 1/0)
+ - fluent config class
+ - changed tests to testng and hamcrest
+ - use of slf4j
+ - where possible return immutable lists and sets
+ - maven 3 compatible
+ - added a lot report plugins (findbugs, cobertura...)
 
 to be done:
-- sharded (will be next)
-- let netty test the connection before sending a command, not the pool (via HashedWheelTimer + ping maybe)
-- pipelined
+ - sharded (will be next)
+ - let netty test the connection before sending a command, not the pool (via HashedWheelTimer + ping maybe)
+ - pipelined
 
 broken and not planed to fix (yet):
-- transaction
-- pub/sub
+ - transaction
+ - pub/sub
 
 To use it with spring put this in a spring config:
 

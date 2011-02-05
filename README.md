@@ -3,7 +3,8 @@
 I started this fork because of the need of a complete Jedis interface, got some problems before with cglib and spring [ProxyFactoryBean](http://static.springsource.org/spring/docs/3.0.x/reference/aop-api.html#aop-pfb "AOP Proxies").
 
 
-done:
+Done so far:
+
  - no arg constructor
  - complete Jedis interface so you can use jdk proxies
  - use of [Netty](http://www.jboss.org/netty "Netty") as io layer
@@ -15,7 +16,8 @@ done:
  - maven 3 compatible
  - added a lot report plugins (findbugs, cobertura...)
 
-to be done:
+To be done:
+
  - sharded (will be next)
  - let netty test the connection before sending a command, not the pool (via HashedWheelTimer + ping maybe)
  - pipelined

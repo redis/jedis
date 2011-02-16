@@ -34,6 +34,7 @@ public class Connection {
 
     public void setTimeoutInfinite() {
         try {
+            socket.setKeepAlive(true);
             socket.setSoTimeout(0);
         } catch (SocketException ex) {
             throw new JedisException(ex);
@@ -43,6 +44,7 @@ public class Connection {
     public void rollbackTimeout() {
         try {
             socket.setSoTimeout(timeout);
+            socket.setKeepAlive(false);
         } catch (SocketException ex) {
             throw new JedisException(ex);
         }

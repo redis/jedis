@@ -5,11 +5,11 @@ import org.junit.Test;
 public class BitCommandsTest extends JedisCommandTestBase {
     @Test
     public void setAndgetbit() {
-        long bit = jedis.setbit("foo", 0, "1");
-        assertEquals(0, bit);
+        boolean bit = jedis.setbit("foo", 0, true);
+        assertEquals(false, bit);
 
         bit = jedis.getbit("foo", 0);
-        assertEquals(1, bit);
+        assertEquals(false, bit);
 
         long bbit = jedis.setbit("bfoo".getBytes(), 0, "1".getBytes());
         assertEquals(0, bbit);

@@ -2600,9 +2600,9 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param value
      * @return
      */
-    public Long setbit(String key, long offset, String value) {
+    public boolean setbit(String key, long offset, boolean value) {
         client.setbit(key, offset, value);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**
@@ -2612,8 +2612,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param offset
      * @return
      */
-    public Long getbit(String key, long offset) {
+    public boolean getbit(String key, long offset) {
         client.getbit(key, offset);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 }

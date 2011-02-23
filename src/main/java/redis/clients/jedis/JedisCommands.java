@@ -23,6 +23,10 @@ public interface JedisCommands {
 
     Long ttl(String key);
 
+    boolean setbit(String key, long offset, boolean value);
+
+    boolean getbit(String key, long offset);
+
     String getSet(String key, String value);
 
     Long setnx(String key, String value);

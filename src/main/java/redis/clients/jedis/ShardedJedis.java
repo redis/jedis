@@ -79,6 +79,16 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.getbit(key, offset);
     }
 
+    public long setrange(String key, long offset, String value) {
+        Jedis j = getShard(key);
+        return j.setrange(key, offset, value);
+    }
+
+    public String getrange(String key, long startOffset, long endOffset) {
+        Jedis j = getShard(key);
+        return j.getrange(key, startOffset, endOffset);
+    }
+
     public String getSet(String key, String value) {
         Jedis j = getShard(key);
         return j.getSet(key, value);

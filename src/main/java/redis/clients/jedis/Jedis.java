@@ -2616,4 +2616,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.getbit(key, offset);
         return client.getIntegerReply() == 1;
     }
+
+    public long setrange(String key, long offset, String value) {
+        client.setrange(key, offset, value);
+        return client.getIntegerReply();
+    }
+
+    public String getrange(String key, long startOffset, long endOffset) {
+        client.getrange(key, startOffset, endOffset);
+        return client.getBulkReply();
+    }
 }

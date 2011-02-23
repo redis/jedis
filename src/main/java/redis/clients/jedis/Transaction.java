@@ -413,6 +413,16 @@ public class Transaction extends BinaryTransaction {
         return client.getStatusCodeReply() == "1";
     }
 
+    public long setrange(String key, long offset, String value) {
+        client.setrange(key, offset, value);
+        return client.getIntegerReply();
+    }
+
+    public String getrange(String key, long startOffset, long endOffset) {
+        client.getrange(key, startOffset, endOffset);
+        return client.getBulkReply();
+    }
+
     public String linsert(final String key, final LIST_POSITION where,
             final String pivot, final String value) {
         client.linsert(key, where, pivot, value);

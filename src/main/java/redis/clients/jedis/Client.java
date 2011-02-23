@@ -517,6 +517,14 @@ public class Client extends BinaryClient implements Commands {
         getbit(SafeEncoder.encode(key), offset);
     }
 
+    public void setrange(String key, long offset, String value) {
+        setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
+    }
+
+    public void getrange(String key, long startOffset, long endOffset) {
+        getrange(SafeEncoder.encode(key), startOffset, endOffset);
+    }
+
     public void publish(final String channel, final String message) {
         publish(SafeEncoder.encode(channel), SafeEncoder.encode(message));
     }
@@ -552,5 +560,4 @@ public class Client extends BinaryClient implements Commands {
         }
         subscribe(cs);
     }
-
 }

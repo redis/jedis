@@ -644,4 +644,12 @@ public class BinaryClient extends Connection {
     public void getbit(byte[] key, long offset) {
         sendCommand(GETBIT, key, toByteArray(offset));
     }
+
+    public void setrange(byte[] key, long offset, byte[] value) {
+        sendCommand(SETRANGE, key, toByteArray(offset), value);
+    }
+
+    public void getrange(byte[] key, long startOffset, long endOffset) {
+        sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
+    }
 }

@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
-import java.util.Map;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
+import java.util.Map;
 
 public abstract class PipelineBlock implements Commands {
     private Client client;
@@ -53,6 +53,14 @@ public abstract class PipelineBlock implements Commands {
 
     public void get(String key) {
         client.get(key);
+    }
+
+    public void getbit(String key, long offset) {
+        client.getbit(key, offset);
+    }
+
+    public void getrange(String key, long startOffset, long endOffset) {
+        client.getrange(key, startOffset, endOffset);
     }
 
     public void getSet(String key, String value) {
@@ -224,12 +232,20 @@ public abstract class PipelineBlock implements Commands {
         client.set(key, value);
     }
 
+    public void setbit(String key, long offset, boolean value) {
+        client.setbit(key, offset, value);
+    }
+
     public void setex(String key, int seconds, String value) {
         client.setex(key, seconds, value);
     }
 
     public void setnx(String key, String value) {
         client.setnx(key, value);
+    }
+
+    public void setrange(String key, long offset, String value) {
+        client.setrange(key, offset, value);
     }
 
     public void sinter(String... keys) {

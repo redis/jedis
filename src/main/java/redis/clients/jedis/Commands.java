@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
-import java.util.Map;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
+import java.util.Map;
 
 public interface Commands {
 
@@ -27,6 +27,14 @@ public interface Commands {
     public void expireAt(final String key, final long unixTime);
 
     public void ttl(final String key);
+
+    public void setbit(String key, long offset, boolean value);
+
+    public void getbit(String key, long offset);
+
+    public void setrange(String key, long offset, String value);
+
+    public void getrange(String key, long startOffset, long endOffset);
 
     public void move(final String key, final int dbIndex);
 

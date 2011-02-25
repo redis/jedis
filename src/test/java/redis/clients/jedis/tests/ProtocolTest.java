@@ -22,11 +22,12 @@ public class ProtocolTest extends JedisTestBase {
         PipedInputStream pis = new PipedInputStream();
         BufferedInputStream bis = new BufferedInputStream(pis);
         PipedOutputStream pos = new PipedOutputStream(pis);
+        RedisOutputStream ros = new RedisOutputStream(pos);
 
         Protocol protocol = new Protocol();
-        protocol.sendCommand(new RedisOutputStream(pos), Protocol.Command.GET,
+        protocol.sendCommand(ros, Protocol.Command.GET,
                 "SOMEKEY".getBytes(Protocol.CHARSET));
-
+        ros.flush();
         pos.close();
         String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";
 

@@ -1636,13 +1636,13 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     public List<Object> multi(final TransactionBlock jedisTransaction) {
         List<Object> results = null;
+        jedisTransaction.setClient(client);
         try {
             client.multi();
-            jedisTransaction.setClient(client);
             jedisTransaction.execute();
             results = jedisTransaction.exec();
         } catch (Exception ex) {
-            client.discard();
+            jedisTransaction.discard();
         }
         return results;
     }

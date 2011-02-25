@@ -1627,15 +1627,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     public Transaction multi() {
         client.multi();
-        client.getStatusCodeReply();
         return new Transaction(client);
     }
 
-    public List<Object> multi(TransactionBlock jedisTransaction) {
+    public List<Object> multi(final TransactionBlock jedisTransaction) {
         List<Object> results = null;
         try {
+            client.multi();
             jedisTransaction.setClient(client);
-            multi();
             jedisTransaction.execute();
             results = jedisTransaction.exec();
         } catch (Exception ex) {

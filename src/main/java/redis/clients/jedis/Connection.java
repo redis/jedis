@@ -192,8 +192,12 @@ public class Connection {
     }
 
     public List<Object> getAll() {
+        return getAll(0);
+    }
+
+    public List<Object> getAll(int except) {
         List<Object> all = new ArrayList<Object>();
-        while (pipelinedCommands > 0) {
+        while (pipelinedCommands > except) {
             all.add(protocol.read(inputStream));
             pipelinedCommands--;
         }

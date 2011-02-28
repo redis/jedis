@@ -31,26 +31,32 @@ public abstract class BinaryJedisPubSub {
 
     public void unsubscribe() {
         client.unsubscribe();
+        client.flush();
     }
 
     public void unsubscribe(byte[]... channels) {
         client.unsubscribe(channels);
+        client.flush();
     }
 
     public void subscribe(byte[]... channels) {
         client.subscribe(channels);
+        client.flush();
     }
 
     public void psubscribe(byte[]... patterns) {
         client.psubscribe(patterns);
+        client.flush();
     }
 
     public void punsubscribe() {
         client.punsubscribe();
+        client.flush();
     }
 
     public void punsubscribe(byte[]... patterns) {
         client.punsubscribe(patterns);
+        client.flush();
     }
 
     public boolean isSubscribed() {

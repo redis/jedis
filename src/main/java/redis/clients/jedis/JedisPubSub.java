@@ -32,26 +32,32 @@ public abstract class JedisPubSub {
 
     public void unsubscribe() {
         client.unsubscribe();
+        client.flush();
     }
 
     public void unsubscribe(String... channels) {
         client.unsubscribe(channels);
+        client.flush();
     }
 
     public void subscribe(String... channels) {
         client.subscribe(channels);
+        client.flush();
     }
 
     public void psubscribe(String... patterns) {
         client.psubscribe(patterns);
+        client.flush();
     }
 
     public void punsubscribe() {
         client.punsubscribe();
+        client.flush();
     }
 
     public void punsubscribe(String... patterns) {
         client.punsubscribe(patterns);
+        client.flush();
     }
 
     public boolean isSubscribed() {
@@ -61,12 +67,14 @@ public abstract class JedisPubSub {
     public void proceedWithPatterns(Client client, String... patterns) {
         this.client = client;
         client.psubscribe(patterns);
+        client.flush();
         process(client);
     }
 
     public void proceed(Client client, String... channels) {
         this.client = client;
         client.subscribe(channels);
+        client.flush();
         process(client);
     }
 

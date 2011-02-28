@@ -2926,12 +2926,12 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getIntegerReply();
     }
 
-    private long setrange(byte[] key, long offset, byte[] value) {
+    public long setrange(byte[] key, long offset, byte[] value) {
         client.setrange(key, offset, value);
         return client.getIntegerReply();
     }
 
-    private String getrange(byte[] key, long startOffset, long endOffset) {
+    public String getrange(byte[] key, long startOffset, long endOffset) {
         client.getrange(key, startOffset, endOffset);
         return client.getBulkReply();
     }

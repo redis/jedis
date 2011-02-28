@@ -182,7 +182,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     public Set<byte[]> keys(final byte[] pattern) {
         checkIsInMulti();
         client.keys(pattern);
-        final HashSet<byte[]> keySet = new LinkedHashSet<byte[]>(client
+        final HashSet<byte[]> keySet = new HashSet<byte[]>(client
                 .getBinaryMultiBulkReply());
         return keySet;
     }
@@ -835,7 +835,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         checkIsInMulti();
         client.hkeys(key);
         final List<byte[]> lresult = client.getBinaryMultiBulkReply();
-        return new LinkedHashSet<byte[]>(lresult);
+        return new HashSet<byte[]>(lresult);
     }
 
     /**
@@ -1186,7 +1186,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         checkIsInMulti();
         client.smembers(key);
         final List<byte[]> members = client.getBinaryMultiBulkReply();
-        return new LinkedHashSet<byte[]>(members);
+        return new HashSet<byte[]>(members);
     }
 
     /**
@@ -1310,7 +1310,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         checkIsInMulti();
         client.sinter(keys);
         final List<byte[]> members = client.getBinaryMultiBulkReply();
-        return new LinkedHashSet<byte[]>(members);
+        return new HashSet<byte[]>(members);
     }
 
     /**
@@ -1350,7 +1350,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         checkIsInMulti();
         client.sunion(keys);
         final List<byte[]> members = client.getBinaryMultiBulkReply();
-        return new LinkedHashSet<byte[]>(members);
+        return new HashSet<byte[]>(members);
     }
 
     /**
@@ -1398,7 +1398,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         checkIsInMulti();
         client.sdiff(keys);
         final List<byte[]> members = client.getBinaryMultiBulkReply();
-        return new LinkedHashSet<byte[]>(members);
+        return new HashSet<byte[]>(members);
     }
 
     /**

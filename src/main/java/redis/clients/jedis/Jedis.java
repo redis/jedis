@@ -1182,7 +1182,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         runChecks();
         client.smembers(key);
         final List<String> members = client.getMultiBulkReply();
-        return new LinkedHashSet<String>(members);
+        return new HashSet<String>(members);
     }
 
     /**
@@ -1306,7 +1306,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         runChecks();
         client.sinter(keys);
         final List<String> members = client.getMultiBulkReply();
-        return new LinkedHashSet<String>(members);
+        return new HashSet<String>(members);
     }
 
     /**
@@ -1346,7 +1346,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         runChecks();
         client.sunion(keys);
         final List<String> members = client.getMultiBulkReply();
-        return new LinkedHashSet<String>(members);
+        return new HashSet<String>(members);
     }
 
     /**
@@ -1394,7 +1394,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         runChecks();
         client.sdiff(keys);
         final List<String> members = client.getMultiBulkReply();
-        return new LinkedHashSet<String>(members);
+        return new HashSet<String>(members);
     }
 
     /**

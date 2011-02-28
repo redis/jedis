@@ -54,11 +54,11 @@ public class Connection {
     }
 
     protected void flush() {
-      try {
-        outputStream.flush();
-      } catch (IOException e) {
-        throw new JedisConnectionException(e);
-      }
+        try {
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new JedisConnectionException(e);
+        }
     }
 
     protected Connection sendCommand(final Command cmd, final String... args) {
@@ -205,9 +205,13 @@ public class Connection {
     }
 
     public List<Object> getAll() {
+        return getAll(0);
+    }
+
+    public List<Object> getAll(int except) {
         List<Object> all = new ArrayList<Object>();
         flush();
-        while (pipelinedCommands > 0) {
+        while (pipelinedCommands > except) {
             all.add(protocol.read(inputStream));
             pipelinedCommands--;
         }

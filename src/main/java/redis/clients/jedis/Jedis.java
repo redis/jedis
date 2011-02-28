@@ -1625,25 +1625,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return (score != null ? new Double(score) : null);
     }
 
-    public Transaction multi() {
-        client.multi();
-        client.getStatusCodeReply();
-        return new Transaction(client);
-    }
-
-    public List<Object> multi(TransactionBlock jedisTransaction) {
-        List<Object> results = null;
-        try {
-            jedisTransaction.setClient(client);
-            multi();
-            jedisTransaction.execute();
-            results = jedisTransaction.exec();
-        } catch (Exception ex) {
-            client.discard();
-        }
-        return results;
-    }
-
     private void runChecks() {
         if (client.isInMulti()) {
             throw new JedisDataException(

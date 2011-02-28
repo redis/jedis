@@ -41,14 +41,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     public void multi() {
         Transaction trans = jedis.multi();
 
-        String status = trans.sadd("foo", "a");
-        assertEquals(Keyword.QUEUED.name(), status);
-
-        status = trans.sadd("foo", "b");
-        assertEquals(Keyword.QUEUED.name(), status);
-
-        status = trans.scard("foo");
-        assertEquals(Keyword.QUEUED.name(), status);
+        trans.sadd("foo", "a");
+        trans.sadd("foo", "b");
+        trans.scard("foo");
 
         List<Object> response = trans.exec();
 
@@ -61,14 +56,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         // Binary
         trans = jedis.multi();
 
-        status = trans.sadd(bfoo, ba);
-        assertEquals(Keyword.QUEUED.name(), status);
-
-        status = trans.sadd(bfoo, bb);
-        assertEquals(Keyword.QUEUED.name(), status);
-
-        status = trans.scard(bfoo);
-        assertEquals(Keyword.QUEUED.name(), status);
+        trans.sadd(bfoo, ba);
+        trans.sadd(bfoo, bb);
+        trans.scard(bfoo);
 
         response = trans.exec();
 
@@ -85,14 +75,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         List<Object> response = jedis.multi(new TransactionBlock() {
             @Override
             public void execute() {
-                String status = sadd("foo", "a");
-                assertEquals(Keyword.QUEUED.name(), status);
-
-                status = sadd("foo", "b");
-                assertEquals(Keyword.QUEUED.name(), status);
-
-                status = scard("foo");
-                assertEquals(Keyword.QUEUED.name(), status);
+                sadd("foo", "a");
+                sadd("foo", "b");
+                scard("foo");
             }
         });
 
@@ -106,14 +91,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         response = jedis.multi(new TransactionBlock() {
             @Override
             public void execute() {
-                String status = sadd(bfoo, ba);
-                assertEquals(Keyword.QUEUED.name(), status);
-
-                status = sadd(bfoo, bb);
-                assertEquals(Keyword.QUEUED.name(), status);
-
-                status = scard(bfoo);
-                assertEquals(Keyword.QUEUED.name(), status);
+                sadd(bfoo, ba);
+                sadd(bfoo, bb);
+                scard(bfoo);
             }
         });
 

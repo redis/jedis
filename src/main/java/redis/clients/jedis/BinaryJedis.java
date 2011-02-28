@@ -1631,19 +1631,18 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     public Transaction multi() {
         client.multi();
-        client.getStatusCodeReply();
         return new Transaction(client);
     }
 
     public List<Object> multi(final TransactionBlock jedisTransaction) {
         List<Object> results = null;
+        jedisTransaction.setClient(client);
         try {
-            jedisTransaction.setClient(client);
-            multi();
+            client.multi();
             jedisTransaction.execute();
             results = jedisTransaction.exec();
         } catch (Exception ex) {
-            client.discard();
+            jedisTransaction.discard();
         }
         return results;
     }

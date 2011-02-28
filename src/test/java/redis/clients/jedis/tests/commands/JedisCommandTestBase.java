@@ -1,11 +1,13 @@
 package redis.clients.jedis.tests.commands;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ComparisonFailure;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
@@ -52,10 +54,19 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
 
     protected void assertEquals(Set<byte[]> expected, Set<byte[]> actual) {
         assertEquals(expected.size(), actual.size());
-        Iterator<byte[]> iterator = expected.iterator();
-        Iterator<byte[]> iterator2 = actual.iterator();
-        while (iterator.hasNext() || iterator2.hasNext()) {
-            assertArrayEquals(iterator.next(), iterator2.next());
+        Iterator<byte[]> e = expected.iterator();
+        while (e.hasNext()) {
+            byte[] next = e.next();
+            boolean contained = false;
+            for (byte[] element : expected) {
+                if (Arrays.equals(next, element)) {
+                    contained = true;
+                }
+            }
+            if (!contained) {
+                throw new ComparisonFailure("element is missing", next
+                        .toString(), actual.toString());
+            }
         }
     }
 

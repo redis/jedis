@@ -1,7 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("foo", "a");
         jedis.sadd("foo", "b");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("a");
         expected.add("b");
 
@@ -49,7 +49,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bfoo, ba);
         jedis.sadd(bfoo, bb);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
         bexpected.add(ba);
 
@@ -57,7 +57,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         assertEquals(bexpected, bmembers);
     }
-
+    
     @Test
     public void srem() {
         jedis.sadd("foo", "a");
@@ -65,7 +65,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         long status = jedis.srem("foo", "a");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("b");
 
         assertEquals(1, status);
@@ -82,7 +82,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         long bstatus = jedis.srem(bfoo, ba);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
 
         assertEquals(1, bstatus);
@@ -130,10 +130,10 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         long status = jedis.smove("foo", "bar", "a");
 
-        Set<String> expectedSrc = new LinkedHashSet<String>();
+        Set<String> expectedSrc = new HashSet<String>();
         expectedSrc.add("b");
 
-        Set<String> expectedDst = new LinkedHashSet<String>();
+        Set<String> expectedDst = new HashSet<String>();
         expectedDst.add("c");
         expectedDst.add("a");
 
@@ -153,10 +153,10 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         long bstatus = jedis.smove(bfoo, bbar, ba);
 
-        Set<byte[]> bexpectedSrc = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpectedSrc = new HashSet<byte[]>();
         bexpectedSrc.add(bb);
 
-        Set<byte[]> bexpectedDst = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpectedDst = new HashSet<byte[]>();
         bexpectedDst.add(bc);
         bexpectedDst.add(ba);
 
@@ -221,7 +221,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("bar", "b");
         jedis.sadd("bar", "c");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("b");
 
         Set<String> intersection = jedis.sinter("foo", "bar");
@@ -234,7 +234,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bbar, bb);
         jedis.sadd(bbar, bc);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
 
         Set<byte[]> bintersection = jedis.sinter(bfoo, bbar);
@@ -249,7 +249,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("bar", "b");
         jedis.sadd("bar", "c");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("b");
 
         long status = jedis.sinterstore("car", "foo", "bar");
@@ -264,7 +264,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bbar, bb);
         jedis.sadd(bbar, bc);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
 
         long bstatus = jedis.sinterstore(bcar, bfoo, bbar);
@@ -282,7 +282,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("bar", "b");
         jedis.sadd("bar", "c");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("a");
         expected.add("b");
         expected.add("c");
@@ -297,7 +297,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bbar, bb);
         jedis.sadd(bbar, bc);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
         bexpected.add(bc);
         bexpected.add(ba);
@@ -315,7 +315,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("bar", "b");
         jedis.sadd("bar", "c");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("a");
         expected.add("b");
         expected.add("c");
@@ -332,7 +332,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bbar, bb);
         jedis.sadd(bbar, bc);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
         bexpected.add(bc);
         bexpected.add(ba);
@@ -356,7 +356,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("car", "a");
         jedis.sadd("car", "d");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("x");
         expected.add("b");
 
@@ -374,7 +374,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bcar, ba);
         jedis.sadd(bcar, bd);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bb);
         bexpected.add(bx);
 
@@ -395,7 +395,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd("car", "a");
         jedis.sadd("car", "d");
 
-        Set<String> expected = new LinkedHashSet<String>();
+        Set<String> expected = new HashSet<String>();
         expected.add("d");
         expected.add("a");
 
@@ -414,7 +414,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
         jedis.sadd(bcar, ba);
         jedis.sadd(bcar, bd);
 
-        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        Set<byte[]> bexpected = new HashSet<byte[]>();
         bexpected.add(bd);
         bexpected.add(ba);
 

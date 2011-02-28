@@ -44,7 +44,6 @@ public final class Protocol {
                 os.write(arg);
                 os.writeCrLf();
             }
-            os.flush();
         } catch (IOException e) {
             throw new JedisConnectionException(e);
         }

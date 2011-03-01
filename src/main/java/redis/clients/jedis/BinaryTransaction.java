@@ -363,6 +363,10 @@ public class BinaryTransaction {
         client.sort(key, dstkey);
     }
 
+    public void persist(byte[] key) {
+        client.persist(key);
+    }
+
     public void setbit(byte[] key, long offset, byte[] value) {
         client.setbit(key, offset, value);
     }

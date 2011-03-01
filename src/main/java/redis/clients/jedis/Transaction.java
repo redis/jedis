@@ -325,6 +325,10 @@ public class Transaction extends BinaryTransaction {
         client.sort(key, sortingParameters, dstkey);
     }
 
+    public void persist(String key) {
+        client.persist(key);
+    }
+
     public void setbit(String key, long offset, boolean value) {
         client.setbit(key, offset, value);
     }

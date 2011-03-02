@@ -135,8 +135,8 @@ public class ShardedJedisTest extends Assert {
         assertEquals(jedis2.getKeyTag("foo"), "foo");
         assertNotSame(jedis2.getKeyTag("foo{bar}"), "bar");
 
-        JedisShardInfo s5 = jedis2.getShardInfo("foo{bar}");
-        JedisShardInfo s6 = jedis2.getShardInfo("abc{bar}");
+        JedisShardInfo s5 = jedis2.getShardInfo(keys.get(0)+"{bar}");
+        JedisShardInfo s6 = jedis2.getShardInfo(keys.get(1)+"{bar}");
         assertNotSame(s5, s6);
     }
 

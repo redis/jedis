@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import redis.clients.util.SafeEncoder;
 
-public class Tuple {
+public class Tuple implements Comparable {
     private byte[] element;
     private Double score;
 
@@ -38,11 +38,21 @@ public class Tuple {
                 return false;
         } else if (!Arrays.equals(element, other.element))
             return false;
-        if (Double.doubleToLongBits(score) != Double
-                .doubleToLongBits(other.score))
-            return false;
         return true;
     }
+
+    public int compareTo(Tuple other) {
+        if (Arrays.equals(this.element, other.element))
+            return 0;
+        else
+            return this.score < other.getScore() ? -1 : 1;
+    }
+    public int compareTo(Object obj) {
+        if (getClass() != obj.getClass())
+            throw new ClassCastException();
+        return compareTo((Tuple) obj);
+    }
+    
 
     public Tuple(String element, Double score) {
         super();

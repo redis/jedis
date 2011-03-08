@@ -483,6 +483,47 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         expected.add("b");
 
         assertEquals(expected, range);
+
+        range = jedis.zrevrangeByScore("foo", "+inf", "(4");
+        expected = new LinkedHashSet<String>();
+        expected.add("e");
+
+        assertEquals(expected, range);
+
+        // Binary
+        jedis.zadd(bfoo, 1d, ba);
+        jedis.zadd(bfoo, 10d, bb);
+        jedis.zadd(bfoo, 0.1d, bc);
+        jedis.zadd(bfoo, 2d, ba);
+
+        Set<byte[]> brange = jedis.zrevrangeByScore(bfoo, 2d, 0d);
+
+        Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+        bexpected.add(bc);
+        bexpected.add(ba);
+
+        assertEquals(bexpected, brange);
+
+        brange = jedis.zrevrangeByScore(bfoo, 2d, 0d, 0, 1);
+
+        bexpected = new LinkedHashSet<byte[]>();
+        bexpected.add(ba);
+
+        assertEquals(bexpected, brange);
+
+        Set<byte[]> brange2 = jedis.zrevrangeByScore(bfoo, SafeEncoder
+                .encode("+inf"), SafeEncoder.encode("(2"));
+
+        bexpected = new LinkedHashSet<byte[]>();
+        bexpected.add(bb);
+
+        assertEquals(bexpected, brange2);
+
+        brange = jedis.zrevrangeByScore(bfoo, 2d, 0d, 1, 1);
+        bexpected = new LinkedHashSet<byte[]>();
+        bexpected.add(bc);
+
+        assertEquals(bexpected, brange);
     }
 
     @Test
@@ -579,6 +620,34 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         expected.add(new Tuple("b", 2.0d));
 
         assertEquals(expected, range);
+
+        // Binary
+        jedis.zadd(bfoo, 1d, ba);
+        jedis.zadd(bfoo, 10d, bb);
+        jedis.zadd(bfoo, 0.1d, bc);
+        jedis.zadd(bfoo, 2d, ba);
+
+        Set<Tuple> brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d);
+
+        Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+        bexpected.add(new Tuple(bc, 0.1d));
+        bexpected.add(new Tuple(ba, 2d));
+
+        assertEquals(bexpected, brange);
+
+        brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d, 0, 1);
+
+        bexpected = new LinkedHashSet<Tuple>();
+        bexpected.add(new Tuple(ba, 2d));
+
+        assertEquals(bexpected, brange);
+
+        brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d, 1, 1);
+
+        bexpected = new LinkedHashSet<Tuple>();
+        bexpected.add(new Tuple(bc, 0.1d));
+
+        assertEquals(bexpected, brange);
     }
 
     @Test

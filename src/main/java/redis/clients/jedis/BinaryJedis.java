@@ -2326,6 +2326,44 @@ public class BinaryJedis implements BinaryJedisCommands {
         return set;
     }
 
+    public Set<byte[]> zrevrangeByScore(final byte[] key, final double max,
+            final double min) {
+        checkIsInMulti();
+        client.zrevrangeByScore(key, max, min);
+        return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max,
+            final byte[] min) {
+        checkIsInMulti();
+        client.zrevrangeByScore(key, max, min);
+        return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    public Set<byte[]> zrevrangeByScore(final byte[] key, final double max,
+            final double min, final int offset, final int count) {
+        checkIsInMulti();
+        client.zrevrangeByScore(key, max, min, offset, count);
+        return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
+            final double max, final double min) {
+        checkIsInMulti();
+        client.zrevrangeByScoreWithScores(key, max, min);
+        Set<Tuple> set = getBinaryTupledSet();
+        return set;
+    }
+
+    public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
+            final double max, final double min, final int offset,
+            final int count) {
+        checkIsInMulti();
+        client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        Set<Tuple> set = getBinaryTupledSet();
+        return set;
+    }
+
     /**
      * Remove all elements in the sorted set at key with rank between start and
      * end. Start and end are 0-based with rank 0 being the element with the

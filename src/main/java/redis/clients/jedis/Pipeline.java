@@ -722,6 +722,51 @@ public class Pipeline implements Commands {
         client.zrangeByScoreWithScores(key, min, max, offset, count);
     }
 
+    //--
+    public void zrevrangeByScore(String key, double max, double min) {
+        client.zrevrangeByScore(key, max, min);
+    }
+
+    public void zrevrangeByScore(byte[] key, double max, double min) {
+        client.zrevrangeByScore(key, max, min);
+    }
+
+    public void zrevrangeByScore(String key, String max, String min) {
+        client.zrevrangeByScore(key, max, min);
+    }
+
+    public void zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+        client.zrevrangeByScore(key, max, min);
+    }
+
+    public void zrevrangeByScore(String key, double max, double min, int offset,
+            int count) {
+        client.zrevrangeByScore(key, max, min, offset, count);
+    }
+
+    public void zrevrangeByScore(byte[] key, double max, double min, int offset,
+            int count) {
+        client.zrevrangeByScore(key, max, min, offset, count);
+    }
+
+    public void zrevrangeByScoreWithScores(String key, double max, double min) {
+        client.zrevrangeByScoreWithScores(key, max, min);
+    }
+
+    public void zrevrangeByScoreWithScores(byte[] key, double max, double min) {
+        client.zrevrangeByScoreWithScores(key, max, min);
+    }
+
+    public void zrevrangeByScoreWithScores(String key, double max, double min,
+            int offset, int count) {
+        client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+    }
+
+    public void zrevrangeByScoreWithScores(byte[] key, double max, double min,
+            int offset, int count) {
+        client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+    }
+
     public void zrangeWithScores(String key, int start, int end) {
         client.zrangeWithScores(key, start, end);
     }

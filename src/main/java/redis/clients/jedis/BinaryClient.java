@@ -486,6 +486,10 @@ public class BinaryClient extends Connection {
             final byte[] max) {
         sendCommand(ZRANGEBYSCORE, key, min, max);
     }
+    public void zrevrangeByScore(final byte[] key, final byte[] max,
+            final byte[] min) {
+        sendCommand(ZREVRANGEBYSCORE, key, max, min);
+    }
 
     public void zrangeByScore(final byte[] key, final double min,
             final double max, final int offset, int count) {

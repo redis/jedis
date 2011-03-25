@@ -22,14 +22,31 @@ public class ShardedJedisTest extends Assert {
     private static HostAndPort redis2 = HostAndPortUtil.getRedisServers()
             .get(1);
 
+    private List<String> getKeysDifferentShard(ShardedJedis jedis) {
+        List<String> ret = new ArrayList<String> ();
+        JedisShardInfo first = jedis.getShardInfo("a0");
+        ret.add("a0");
+        for (int i =1; i < 100; ++i) {
+            JedisShardInfo actual = jedis.getShardInfo("a" + i);
+            if (actual != first) {
+                ret.add("a" + i);
+                break;
+
+            }
+
+        }
+        return ret;
+    }
+
     @Test
     public void checkSharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
         shards.add(new JedisShardInfo(redis1.host, redis1.port));
         shards.add(new JedisShardInfo(redis2.host, redis2.port));
         ShardedJedis jedis = new ShardedJedis(shards);
-        JedisShardInfo s1 = jedis.getShardInfo("a1");
-        JedisShardInfo s2 = jedis.getShardInfo("b2");
+        List<String> keys = getKeysDifferentShard(jedis);
+        JedisShardInfo s1 = jedis.getShardInfo(keys.get(0));
+        JedisShardInfo s2 = jedis.getShardInfo(keys.get(1));
         assertNotSame(s1, s2);
     }
 
@@ -108,8 +125,9 @@ public class ShardedJedisTest extends Assert {
         JedisShardInfo s2 = jedis.getShardInfo("foo{bar}");
         assertSame(s1, s2);
 
-        JedisShardInfo s3 = jedis.getShardInfo("a112");
-        JedisShardInfo s4 = jedis.getShardInfo("b112");
+        List<String> keys = getKeysDifferentShard(jedis);
+        JedisShardInfo s3 = jedis.getShardInfo(keys.get(0));
+        JedisShardInfo s4 = jedis.getShardInfo(keys.get(1));
         assertNotSame(s3, s4);
 
         ShardedJedis jedis2 = new ShardedJedis(shards);
@@ -117,8 +135,8 @@ public class ShardedJedisTest extends Assert {
         assertEquals(jedis2.getKeyTag("foo"), "foo");
         assertNotSame(jedis2.getKeyTag("foo{bar}"), "bar");
 
-        JedisShardInfo s5 = jedis2.getShardInfo("foo{bar}");
-        JedisShardInfo s6 = jedis2.getShardInfo("abc{bar}");
+        JedisShardInfo s5 = jedis2.getShardInfo(keys.get(0)+"{bar}");
+        JedisShardInfo s6 = jedis2.getShardInfo(keys.get(1)+"{bar}");
         assertNotSame(s5, s6);
     }
 
@@ -131,15 +149,16 @@ public class ShardedJedisTest extends Assert {
         shards.get(1).setPassword("foobared");
         ShardedJedis jedis = new ShardedJedis(shards);
 
-        jedis.set("a112", "a");
-        jedis.set("b112", "b");
+        final List<String> keys = getKeysDifferentShard(jedis);
+        jedis.set(keys.get(0), "a");
+        jedis.set(keys.get(1), "b");
 
-        assertNotSame(jedis.getShard("a112"), jedis.getShard("b112"));
+        assertNotSame(jedis.getShard(keys.get(0)), jedis.getShard(keys.get(1)));
 
         List<Object> results = jedis.pipelined(new ShardedJedisPipeline() {
             public void execute() {
-                get("a112");
-                get("b112");
+                get(keys.get(0));
+                get(keys.get(1));
             }
         });
 
@@ -222,3 +241,4 @@ public class ShardedJedisTest extends Assert {
         assertTrue(shard_6381 > 300 && shard_6381 < 400);
     }
 }
+

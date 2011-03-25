@@ -12,7 +12,7 @@ import redis.clients.util.Pool;
 public class ShardedJedisPool extends Pool<ShardedJedis> {
     public ShardedJedisPool(final GenericObjectPool.Config poolConfig,
             List<JedisShardInfo> shards) {
-        this(poolConfig, shards, Hashing.MD5);
+        this(poolConfig, shards, Hashing.MURMUR_HASH);
     }
 
     public ShardedJedisPool(final GenericObjectPool.Config poolConfig,
@@ -22,7 +22,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
     public ShardedJedisPool(final GenericObjectPool.Config poolConfig,
             List<JedisShardInfo> shards, Pattern keyTagPattern) {
-        this(poolConfig, shards, Hashing.MD5, keyTagPattern);
+        this(poolConfig, shards, Hashing.MURMUR_HASH, keyTagPattern);
     }
 
     public ShardedJedisPool(final GenericObjectPool.Config poolConfig,

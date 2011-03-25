@@ -61,7 +61,17 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         }
 
         public boolean validateObject(final Object obj) {
-            return true;
+        	try {
+                ShardedJedis jedis = (ShardedJedis) obj;
+                for (Jedis shard : jedis.getAllShards()) {
+                    if (!shard.isConnected() || !shard.ping().equals("PONG")) {
+                        return false;
+                    }
+                }
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
         }
     }
 }

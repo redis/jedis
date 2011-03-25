@@ -27,6 +27,8 @@ public class BinaryClient extends Connection {
     }
 
     private boolean isInMulti;
+    
+    private String password;
 
     public boolean isInMulti() {
         return isInMulti;
@@ -38,6 +40,21 @@ public class BinaryClient extends Connection {
 
     public BinaryClient(final String host, final int port) {
         super(host, port);
+    }
+    
+    public void setPassword(final String password) {
+        this.password = password;
+    }
+    
+    @Override
+    public void connect() {
+        if (!isConnected()) {
+            super.connect();
+            if (password != null) {
+                sendCommand(AUTH, password);
+                getStatusCodeReply();
+            }
+        }
     }
 
     public void ping() {
@@ -438,6 +455,7 @@ public class BinaryClient extends Connection {
     }
 
     public void auth(final String password) {
+    	setPassword(password);
         sendCommand(AUTH, password);
     }
 

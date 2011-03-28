@@ -70,7 +70,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
         return resources.get(getShardInfo(key));
     }
 
-    private S getShardInfo(byte[] key) {
+    public S getShardInfo(byte[] key) {
         SortedMap<Long, S> tail = nodes.tailMap(algo.hash(key));
         if (tail.size() == 0) {
             return nodes.get(nodes.firstKey());

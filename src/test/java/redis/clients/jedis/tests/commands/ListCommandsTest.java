@@ -585,7 +585,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
         (new Thread(new Runnable() {
             public void run() {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(2000);
                     Jedis j = createJedis();
                     j.lpush("foo", "a");
                 } catch (InterruptedException e) {

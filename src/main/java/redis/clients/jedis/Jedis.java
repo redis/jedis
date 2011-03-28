@@ -2570,7 +2570,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public String brpoplpush(String source, String destination, int timeout) {
         client.brpoplpush(source, destination, timeout);
-        return client.getBulkReply();
+        client.setTimeoutInfinite();
+        String reply = client.getBulkReply();
+        client.rollbackTimeout();
+        return reply;
     }
 
     /**

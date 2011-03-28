@@ -2898,7 +2898,10 @@ public class BinaryJedis implements BinaryJedisCommands {
      */
     public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
         client.brpoplpush(source, destination, timeout);
-        return client.getBinaryBulkReply();
+        client.setTimeoutInfinite();
+        byte[] reply = client.getBinaryBulkReply();
+        client.rollbackTimeout();
+        return reply;
     }
 
     /**

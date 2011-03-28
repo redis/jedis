@@ -240,5 +240,31 @@ public class ShardedJedisTest extends Assert {
         assertTrue(shard_6380 > 300 && shard_6380 < 400);
         assertTrue(shard_6381 > 300 && shard_6381 < 400);
     }
+
+    @Test
+    public void testMasterSlaveShardingConsistency() {
+        List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
+        shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
+        shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
+        shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
+        Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(
+                shards, Hashing.MURMUR_HASH);
+
+        List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
+        shards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT));
+        shards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1));
+        shards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2));
+        Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(
+                shards, Hashing.MURMUR_HASH);
+
+        for (int i = 0; i < 1000; i++) {
+            JedisShardInfo jedisShardInfo = sharded.getShardInfo(Integer
+                    .toString(i));
+            JedisShardInfo jedisShardInfo2 = sharded2.getShardInfo(Integer
+                    .toString(i));
+            assertEquals(shards.indexOf(jedisShardInfo), otherShards.indexOf(jedisShardInfo2));
+        }
+
+    }
 }
 

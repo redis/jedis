@@ -23,10 +23,19 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         return host + ":" + port + "*" + getWeight();
     }
 
+    public String shardName(int i) {
+        if (name != null)
+            return name +"*"+ getWeight();
+        else
+            return "SHARD-" + i + "-NODE-";
+
+    }
+
     private int timeout;
     private String host;
     private int port;
     private String password = null;
+    private String name = null;
 
     public String getHost() {
         return host;
@@ -39,13 +48,25 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     public JedisShardInfo(String host) {
         this(host, Protocol.DEFAULT_PORT);
     }
+    public JedisShardInfo(String host, String name) {
+        this(host, Protocol.DEFAULT_PORT, name);
+    }
 
     public JedisShardInfo(String host, int port) {
         this(host, port, 2000);
     }
 
+    public JedisShardInfo(String host, int port, String name) {
+        this(host, port, 2000, name);
+    }
+
     public JedisShardInfo(String host, int port, int timeout) {
         this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+    }
+
+    public JedisShardInfo(String host, int port, int timeout, String name) {
+        this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+        this.name = name;
     }
 
     public JedisShardInfo(String host, int port, int timeout, int weight) {
@@ -54,6 +75,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         this.port = port;
         this.timeout = timeout;
     }
+
 
     public String getPassword() {
         return password;
@@ -71,8 +93,13 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         this.timeout = timeout;
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     @Override
     public Jedis createResource() {
         return new Jedis(this);
     }
 }
+

@@ -3,6 +3,9 @@ package redis.clients.jedis;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
@@ -47,12 +50,20 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
         public Object makeObject() throws Exception {
             ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
+            Map<JedisShardInfo, Integer> retries = new HashMap<JedisShardInfo, Integer>();
+            for (JedisShardInfo i:shards)
+                retries.put(i, i.getRetries());
+
             boolean done = false;
             while (!done) {
                 try {
                     for (Jedis shard : jedis.getAllShards()) {
                         if (!shard.isConnected()) {
-                            shard.connect();
+                            JedisShardInfo info = shard.getShardInfo();
+                            Integer leftRetries = retries.get(info);
+                            retries.put(info, leftRetries -1);
+                            if (leftRetries > 0)
+                                shard.connect();
                         }
                     }
                     done = true;
@@ -91,3 +102,4 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         }
     }
 }
+

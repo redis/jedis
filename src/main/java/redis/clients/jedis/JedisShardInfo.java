@@ -36,6 +36,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     private int port;
     private String password = null;
     private String name = null;
+    private int retries = 10;
 
     public String getHost() {
         return host;
@@ -97,6 +98,13 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         return this.name;
     }
 
+    public int getRetries() {
+        return this.retries;
+    }
+
+    public void setRetries(int count) {
+        this.retries = count;
+    }
     @Override
     public Jedis createResource() {
         return new Jedis(this);

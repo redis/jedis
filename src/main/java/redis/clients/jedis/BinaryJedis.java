@@ -18,6 +18,7 @@ import redis.clients.util.SafeEncoder;
 public class BinaryJedis implements BinaryJedisCommands {
     protected Client client = null;
     protected String password = null;
+    protected JedisShardInfo shardInfo = null;
 
     public BinaryJedis(final String host) {
         client = new Client(host);
@@ -36,6 +37,7 @@ public class BinaryJedis implements BinaryJedisCommands {
         client = new Client(shardInfo.getHost(), shardInfo.getPort());
         client.setTimeout(shardInfo.getTimeout());
         this.password = shardInfo.getPassword();
+        this.shardInfo = shardInfo;
     }
 
     public String ping() {
@@ -44,12 +46,16 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getStatusCodeReply();
     }
 
+    public final JedisShardInfo getShardInfo() {
+        return this.shardInfo;
+    }
+
     /**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @param value
      * @return Status code reply
@@ -66,7 +72,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * error is returned because GET can only handle string values.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @return Bulk reply
      */
@@ -88,9 +94,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Test if the specified key exists. The command returns "0" if the key
      * exists, otherwise "1" is returned. Note that even keys set with an empty
      * string as value will return "1".
-     * 
+     *
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @return Integer reply, "1" if the key exists, otherwise "0"
      */
@@ -103,9 +109,9 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Remove the specified keys. If a given key does not exist no operation is
      * performed for this key. The command returns the number of keys removed.
-     * 
+     *
      * Time complexity: O(1)
-     * 
+     *
      * @param keys
      * @return Integer reply, specifically: an integer greater than 0 if one or
      *         more keys were removed 0 if none of the specified key existed
@@ -120,9 +126,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Return the type of the value stored at key in form of a string. The type
      * can be one of "none", "string", "list", "set". "none" is returned if the
      * key does not exist.
-     * 
+     *
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @return Status code reply, specifically: "none" if the key does not exist
      *         "string" if the key contains a String value "list" if the key
@@ -139,7 +145,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Delete all the keys of the currently selected DB. This command never
      * fails.
-     * 
+     *
      * @return Status code reply
      */
     public String flushDB() {
@@ -175,7 +181,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(n) (with n being the number of keys in the DB, and
      * assuming keys and pattern of limited length)
-     * 
+     *
      * @param pattern
      * @return Multi bulk reply
      */
@@ -191,7 +197,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Return a randomly selected key from the currently selected DB.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @return Singe line reply, specifically the randomly selected key or an
      *         empty string is the database is empty
      */
@@ -207,7 +213,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * exists it is overwritten.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param oldkey
      * @param newkey
      * @return Status code repy
@@ -223,7 +229,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * exists.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param oldkey
      * @param newkey
      * @return Integer reply, specifically: 1 if the key was renamed 0 if the
@@ -237,7 +243,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * Return the number of keys in the currently selected database.
-     * 
+     *
      * @return Integer reply
      */
     public Long dbSize() {
@@ -263,9 +269,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * PERSIST} command.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
-     * 
+     *
      * @param key
      * @param seconds
      * @return Integer reply, specifically: 1: the timeout was set. 0: the
@@ -299,9 +305,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * PERSIST} command.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
-     * 
+     *
      * @param key
      * @param unixTime
      * @return Integer reply, specifically: 1: the timeout was set. 0: the
@@ -321,7 +327,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * that has an {@link #expire(String, int) EXPIRE} set. This introspection
      * capability allows a Redis client to check how many seconds a given key
      * will continue to be part of the dataset.
-     * 
+     *
      * @param key
      * @return Integer reply, returns the remaining time to live in seconds of a
      *         key that has an EXPIRE. If the Key does not exists or does not
@@ -336,7 +342,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Select the DB with having the specified zero-based numeric index. For
      * default every new client connection is automatically selected to DB 0.
-     * 
+     *
      * @param index
      * @return Status code reply
      */
@@ -352,7 +358,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * successfully moved, and 0 if the target key was already there or if the
      * source key was not found at all, so it is possible to use MOVE as a
      * locking primitive.
-     * 
+     *
      * @param key
      * @param dbIndex
      * @return Integer reply, specifically: 1 if the key was moved 0 if the key
@@ -368,7 +374,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Delete all the keys of all the existing databases, not just the currently
      * selected one. This command never fails.
-     * 
+     *
      * @return Status code reply
      */
     public String flushAll() {
@@ -383,7 +389,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * string can't be longer than 1073741824 bytes (1 GB).
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @param value
      * @return Bulk reply
@@ -400,7 +406,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * of the specified key, but the operation never fails.
      * <p>
      * Time complexity: O(1) for every key
-     * 
+     *
      * @param keys
      * @return Multi bulk reply
      */
@@ -416,7 +422,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * SETNX actually means "SET if Not eXists".
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @param value
      * @return Integer reply, specifically: 1 if the key was set 0 if the key
@@ -434,7 +440,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * The operation is atomic.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @param seconds
      * @param value
@@ -460,9 +466,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * if the keys A and B are modified, another client talking to Redis can
      * either see the changes to both A and B at once, or no modification at
      * all.
-     * 
+     *
      * @see #msetnx(String...)
-     * 
+     *
      * @param keysvalues
      * @return Status code reply Basically +OK as MSET can't fail
      */
@@ -486,9 +492,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * if the keys A and B are modified, another client talking to Redis can
      * either see the changes to both A and B at once, or no modification at
      * all.
-     * 
+     *
      * @see #mset(String...)
-     * 
+     *
      * @param keysvalues
      * @return Integer reply, specifically: 1 if the all the keys were set 0 if
      *         no key was set (at least one key already existed)
@@ -511,11 +517,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * string.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see #incr(String)
      * @see #decr(String)
      * @see #incrBy(String, int)
-     * 
+     *
      * @param key
      * @param integer
      * @return Integer reply, this commands will reply with the new value of key
@@ -540,11 +546,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * string.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see #incr(String)
      * @see #incrBy(String, int)
      * @see #decrBy(String, int)
-     * 
+     *
      * @param key
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
@@ -567,11 +573,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * string.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see #incr(String)
      * @see #decr(String)
      * @see #decrBy(String, int)
-     * 
+     *
      * @param key
      * @param integer
      * @return Integer reply, this commands will reply with the new value of key
@@ -596,11 +602,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * string.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see #incrBy(String, int)
      * @see #decr(String)
      * @see #decrBy(String, int)
-     * 
+     *
      * @param key
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
@@ -621,7 +627,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * appended value is small and the already present value is of any size,
      * since the dynamic string library used by Redis will double the free space
      * available on every reallocation.
-     * 
+     *
      * @param key
      * @param value
      * @return Integer reply, specifically the total length of the string after
@@ -645,7 +651,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Time complexity: O(start+n) (with start being the start index and n the
      * total length of the requested range). Note that the lookup part of this
      * command is O(1) so for small strings this is actually an O(1) command.
-     * 
+     *
      * @param key
      * @param start
      * @param end
@@ -658,13 +664,13 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * 
+     *
      * Set the specified hash field to the specified value.
      * <p>
      * If key does not exist, a new key holding a hash is created.
      * <p>
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param field
      * @param value
@@ -686,7 +692,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * value is returned.
      * <p>
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param field
      * @return Bulk reply
@@ -698,10 +704,10 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * 
+     *
      * Set the specified hash field to the specified value if the field not
      * exists. <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param field
      * @param value
@@ -721,7 +727,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * If key does not exist, a new key holding a hash is created.
      * <p>
      * <b>Time complexity:</b> O(N) (with N being the number of fields)
-     * 
+     *
      * @param key
      * @param hash
      * @return Always OK because HMSET can't fail
@@ -739,7 +745,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Non existing keys are considered like empty hashes.
      * <p>
      * <b>Time complexity:</b> O(N) (with N being the number of fields)
-     * 
+     *
      * @param key
      * @param fields
      * @return Multi Bulk Reply specifically a list of all the values associated
@@ -762,7 +768,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * integers.
      * <p>
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param field
      * @param value
@@ -777,9 +783,9 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * Test for existence of a specified field in a hash.
-     * 
+     *
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param field
      * @return Return 1 if the hash stored at key contains the specified field.
@@ -795,7 +801,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Remove the specified field from an hash stored at key.
      * <p>
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param field
      * @return If the field was present in the hash it is deleted and 1 is
@@ -811,7 +817,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Return the number of items in a hash.
      * <p>
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @return The number of entries (fields) contained in the hash stored at
      *         key. If the specified key does not exist, 0 is returned assuming
@@ -827,7 +833,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Return all the fields in a hash.
      * <p>
      * <b>Time complexity:</b> O(N), where N is the total number of entries
-     * 
+     *
      * @param key
      * @return All the fields names contained into a hash.
      */
@@ -842,7 +848,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Return all the values in a hash.
      * <p>
      * <b>Time complexity:</b> O(N), where N is the total number of entries
-     * 
+     *
      * @param key
      * @return All the fields values contained into a hash.
      */
@@ -857,7 +863,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Return all the fields and associated values in a hash.
      * <p>
      * <b>Time complexity:</b> O(N), where N is the total number of entries
-     * 
+     *
      * @param key
      * @return All the fields and values contained into a hash.
      */
@@ -881,9 +887,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * is returned.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see BinaryJedis#lpush(String, String)
-     * 
+     *
      * @param key
      * @param string
      * @return Integer reply, specifically, the number of elements inside the
@@ -902,9 +908,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * is returned.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see BinaryJedis#rpush(String, String)
-     * 
+     *
      * @param key
      * @param string
      * @return Integer reply, specifically, the number of elements inside the
@@ -922,7 +928,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * If the value stored at key is not a list an error is returned.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @return The length of the list.
      */
@@ -963,7 +969,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(start+n) (with n being the length of the range and
      * start being the start offset)
-     * 
+     *
      * @param key
      * @param start
      * @param end
@@ -1004,7 +1010,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * one element is removed from the tail of the list.
      * <p>
      * Time complexity: O(n) (with n being len of list - len of range)
-     * 
+     *
      * @param key
      * @param start
      * @param end
@@ -1029,7 +1035,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * first or the last element of the list is O(1).
      * <p>
      * Time complexity: O(n) (with n being the length of the list)
-     * 
+     *
      * @param key
      * @param index
      * @return Bulk reply, specifically the requested element
@@ -1053,9 +1059,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * O(N) (with N being the length of the list), setting the first or last
      * elements of the list is O(1).
-     * 
+     *
      * @see #lindex(String, int)
-     * 
+     *
      * @param key
      * @param index
      * @param value
@@ -1079,7 +1085,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * against non existing keys will always return 0.
      * <p>
      * Time complexity: O(N) (with N being the length of the list)
-     * 
+     *
      * @param key
      * @param count
      * @param value
@@ -1099,9 +1105,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.
-     * 
+     *
      * @see #rpop(String)
-     * 
+     *
      * @param key
      * @return Bulk reply
      */
@@ -1118,9 +1124,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.
-     * 
+     *
      * @see #lpop(String)
-     * 
+     *
      * @param key
      * @return Bulk reply
      */
@@ -1143,7 +1149,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * first element of the list, so it's a "list rotation" command.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param srckey
      * @param dstkey
      * @return Bulk reply
@@ -1161,7 +1167,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * the key exists but does not hold a set value an error is returned.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param key
      * @param member
      * @return Integer reply, specifically: 1 if the new element was added 0 if
@@ -1178,7 +1184,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * just syntax glue for {@link #sinter(String...) SINTER}.
      * <p>
      * Time complexity O(N)
-     * 
+     *
      * @param key
      * @return Multi bulk reply
      */
@@ -1195,7 +1201,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * hold a set value an error is returned.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param key
      * @param member
      * @return Integer reply, specifically: 1 if the new element was removed 0
@@ -1215,7 +1221,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * returned element is not removed from the Set.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param key
      * @return Bulk reply
      */
@@ -1240,7 +1246,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * value.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param srckey
      * @param dstkey
      * @param member
@@ -1258,7 +1264,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Return the set cardinality (number of elements). If the key does not
      * exist 0 is returned, like for empty sets.
-     * 
+     *
      * @param key
      * @return Integer reply, specifically: the cardinality (number of elements)
      *         of the set as an integer.
@@ -1274,7 +1280,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * returned.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param key
      * @param member
      * @return Integer reply, specifically: 1 if the element is a member of the
@@ -1302,7 +1308,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(N*M) worst case where N is the cardinality of the
      * smallest set and M the number of sets
-     * 
+     *
      * @param keys
      * @return Multi bulk reply, specifically the list of common elements.
      */
@@ -1319,7 +1325,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(N*M) worst case where N is the cardinality of the
      * smallest set and M the number of sets
-     * 
+     *
      * @param dstkey
      * @param keys
      * @return Status code reply
@@ -1342,7 +1348,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(N) where N is the total number of elements in all the
      * provided sets
-     * 
+     *
      * @param keys
      * @return Multi bulk reply, specifically the list of common elements.
      */
@@ -1360,7 +1366,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(N) where N is the total number of elements in all the
      * provided sets
-     * 
+     *
      * @param dstkey
      * @param keys
      * @return Status code reply
@@ -1376,20 +1382,20 @@ public class BinaryJedis implements BinaryJedisCommands {
      * key2, ..., keyN
      * <p>
      * <b>Example:</b>
-     * 
+     *
      * <pre>
      * key1 = [x, a, b, c]
      * key2 = [c]
      * key3 = [a, d]
      * SDIFF key1,key2,key3 => [x, b]
      * </pre>
-     * 
+     *
      * Non existing keys are considered like empty sets.
      * <p>
      * <b>Time complexity:</b>
      * <p>
      * O(N) with N being the total number of elements of all the sets
-     * 
+     *
      * @param keys
      * @return Return the members of a set resulting from the difference between
      *         the first set provided and all the successive sets.
@@ -1404,7 +1410,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * This command works exactly like {@link #sdiff(String...) SDIFF} but
      * instead of being returned the resulting set is stored in dstkey.
-     * 
+     *
      * @param dstkey
      * @param keys
      * @return Status code reply
@@ -1423,7 +1429,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * (removed) from the Set.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param key
      * @return Bulk reply
      */
@@ -1446,7 +1452,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(log(N)) with N being the number of elements in the
      * sorted set
-     * 
+     *
      * @param key
      * @param score
      * @param member
@@ -1474,9 +1480,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(log(N)) with N being the number of elements in the
      * sorted set
-     * 
-     * 
-     * 
+     *
+     *
+     *
      * @param key
      * @param member
      * @return Integer reply, specifically: 1 if the new element was removed 0
@@ -1506,7 +1512,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity O(log(N)) with N being the number of elements in the
      * sorted set
-     * 
+     *
      * @param key
      * @param score
      * @param member
@@ -1531,9 +1537,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b>
      * <p>
      * O(log(N))
-     * 
+     *
      * @see #zrevrank(String, String)
-     * 
+     *
      * @param key
      * @param member
      * @return Integer reply or a nil bulk reply, specifically: the rank of the
@@ -1557,9 +1563,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b>
      * <p>
      * O(log(N))
-     * 
+     *
      * @see #zrank(String, String)
-     * 
+     *
      * @param key
      * @param member
      * @return Integer reply or a nil bulk reply, specifically: the rank of the
@@ -1601,7 +1607,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * not exist 0 is returned, like for empty sorted sets.
      * <p>
      * Time complexity O(1)
-     * 
+     *
      * @param key
      * @return the cardinality (number of elements) of the set as an integer.
      */
@@ -1617,7 +1623,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * not exist at all, a special 'nil' value is returned.
      * <p>
      * <b>Time complexity:</b> O(1)
-     * 
+     *
      * @param key
      * @param member
      * @return the score
@@ -1678,12 +1684,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Sort the elements contained in the List, Set, or Sorted Set value at key.
      * By default sorting is numeric with elements being compared as double
      * precision floating point numbers. This is the simplest form of SORT.
-     * 
+     *
      * @see #sort(String, String)
      * @see #sort(String, SortingParams)
      * @see #sort(String, SortingParams, String)
-     * 
-     * 
+     *
+     *
      * @param key
      * @return Assuming the Set/List at key contains a list of numbers, the
      *         return value will be the list of numbers ordered from the
@@ -1701,72 +1707,72 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>examples:</b>
      * <p>
      * Given are the following sets and key/values:
-     * 
+     *
      * <pre>
      * x = [1, 2, 3]
      * y = [a, b, c]
-     * 
+     *
      * k1 = z
      * k2 = y
      * k3 = x
-     * 
+     *
      * w1 = 9
      * w2 = 8
      * w3 = 7
      * </pre>
-     * 
+     *
      * Sort Order:
-     * 
+     *
      * <pre>
      * sort(x) or sort(x, sp.asc())
      * -> [1, 2, 3]
-     * 
+     *
      * sort(x, sp.desc())
      * -> [3, 2, 1]
-     * 
+     *
      * sort(y)
      * -> [c, a, b]
-     * 
+     *
      * sort(y, sp.alpha())
      * -> [a, b, c]
-     * 
+     *
      * sort(y, sp.alpha().desc())
      * -> [c, a, b]
      * </pre>
-     * 
+     *
      * Limit (e.g. for Pagination):
-     * 
+     *
      * <pre>
      * sort(x, sp.limit(0, 2))
      * -> [1, 2]
-     * 
+     *
      * sort(y, sp.alpha().desc().limit(1, 2))
      * -> [b, a]
      * </pre>
-     * 
+     *
      * Sorting by external keys:
-     * 
+     *
      * <pre>
      * sort(x, sb.by(w*))
      * -> [3, 2, 1]
-     * 
+     *
      * sort(x, sb.by(w*).desc())
      * -> [1, 2, 3]
      * </pre>
-     * 
+     *
      * Getting external keys:
-     * 
+     *
      * <pre>
      * sort(x, sp.by(w*).get(k*))
      * -> [x, y, z]
-     * 
+     *
      * sort(x, sp.by(w*).get(#).get(k*))
      * -> [3, x, 2, y, 1, z]
      * </pre>
-     * 
+     *
      * @see #sort(String)
      * @see #sort(String, SortingParams, String)
-     * 
+     *
      * @param key
      * @param sortingParameters
      * @return a list of sorted elements.
@@ -1837,9 +1843,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * MULTI/EXEC the time will flow at infinite speed :)
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see #brpop(int, String...)
-     * 
+     *
      * @param timeout
      * @param keys
      * @return BLPOP returns a two-elements array via a multi bulk reply in
@@ -1868,11 +1874,11 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Sort a Set or a List accordingly to the specified parameters and store
      * the result at dstkey.
-     * 
+     *
      * @see #sort(String, SortingParams)
      * @see #sort(String)
      * @see #sort(String, String)
-     * 
+     *
      * @param key
      * @param sortingParameters
      * @param dstkey
@@ -1892,11 +1898,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * and store the result at dstkey. By default sorting is numeric with
      * elements being compared as double precision floating point numbers. This
      * is the simplest form of SORT.
-     * 
+     *
      * @see #sort(String)
      * @see #sort(String, SortingParams)
      * @see #sort(String, SortingParams, String)
-     * 
+     *
      * @param key
      * @param dstkey
      * @return The number of elements of the list at dstkey.
@@ -1966,9 +1972,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * MULTI/EXEC the time will flow at infinite speed :)
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @see #blpop(int, String...)
-     * 
+     *
      * @param timeout
      * @param keys
      * @return BLPOP returns a two-elements array via a multi bulk reply in
@@ -2006,7 +2012,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * is possible to try a lot of passwords in parallel in very short time, so
      * make sure to generate a strong and very long password so that this attack
      * is infeasible.
-     * 
+     *
      * @param password
      * @return Status code reply
      */
@@ -2094,14 +2100,14 @@ public class BinaryJedis implements BinaryJedisCommands {
      * M the number of elements returned by the command, so if M is constant
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
-     * 
+     *
      * @see #zrangeByScore(String, double, double)
      * @see #zrangeByScore(String, double, double, int, int)
      * @see #zrangeByScoreWithScores(String, double, double)
      * @see #zrangeByScoreWithScores(String, String, String)
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
-     * 
+     *
      * @param key
      * @param min
      * @param max
@@ -2165,13 +2171,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * M the number of elements returned by the command, so if M is constant
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
-     * 
+     *
      * @see #zrangeByScore(String, double, double)
      * @see #zrangeByScore(String, double, double, int, int)
      * @see #zrangeByScoreWithScores(String, double, double)
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
-     * 
+     *
      * @param key
      * @param min
      * @param max
@@ -2228,13 +2234,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * M the number of elements returned by the command, so if M is constant
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
-     * 
+     *
      * @see #zrangeByScore(String, double, double)
      * @see #zrangeByScore(String, double, double, int, int)
      * @see #zrangeByScoreWithScores(String, double, double)
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
-     * 
+     *
      * @param key
      * @param min
      * @param max
@@ -2292,13 +2298,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * M the number of elements returned by the command, so if M is constant
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
-     * 
+     *
      * @see #zrangeByScore(String, double, double)
      * @see #zrangeByScore(String, double, double, int, int)
      * @see #zrangeByScoreWithScores(String, double, double)
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
-     * 
+     *
      * @param key
      * @param min
      * @param max
@@ -2337,7 +2343,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of
      * elements in the sorted set and M the number of elements removed by the
      * operation
-     * 
+     *
      */
     public Long zremrangeByRank(final byte[] key, final int start, final int end) {
         checkIsInMulti();
@@ -2353,7 +2359,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * O(log(N))+O(M) with N being the number of elements in the sorted set and
      * M the number of elements removed by the operation
-     * 
+     *
      * @param key
      * @param start
      * @param end
@@ -2393,12 +2399,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
-     * 
+     *
      * @see #zunionstore(String, String...)
      * @see #zunionstore(String, ZParams, String...)
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
-     * 
+     *
      * @param dstkey
      * @param sets
      * @return Integer reply, specifically the number of elements in the sorted
@@ -2437,12 +2443,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
-     * 
+     *
      * @see #zunionstore(String, String...)
      * @see #zunionstore(String, ZParams, String...)
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
-     * 
+     *
      * @param dstkey
      * @param sets
      * @param params
@@ -2483,12 +2489,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
-     * 
+     *
      * @see #zunionstore(String, String...)
      * @see #zunionstore(String, ZParams, String...)
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
-     * 
+     *
      * @param dstkey
      * @param sets
      * @return Integer reply, specifically the number of elements in the sorted
@@ -2527,12 +2533,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
-     * 
+     *
      * @see #zunionstore(String, String...)
      * @see #zunionstore(String, ZParams, String...)
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
-     * 
+     *
      * @param dstkey
      * @param sets
      * @param params
@@ -2559,7 +2565,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * is able to perform the saving in the background while the server
      * continues serving other clients.
      * <p>
-     * 
+     *
      * @return Status code reply
      */
     public String save() {
@@ -2574,7 +2580,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * forks, the parent continues to server the clients, the child saves the DB
      * on disk then exit. A client my be able to check if the operation
      * succeeded using the LASTSAVE command.
-     * 
+     *
      * @return Status code reply
      */
     public String bgsave() {
@@ -2597,7 +2603,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * guarantee the generation of the minimal number of commands needed to
      * rebuild the database.
      * <p>
-     * 
+     *
      * @return Status code reply
      */
     public String bgrewriteaof() {
@@ -2613,7 +2619,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * may check if a {@link #bgsave() BGSAVE} command succeeded reading the
      * LASTSAVE value, then issuing a BGSAVE command and checking at regular
      * intervals every N seconds if LASTSAVE changed.
-     * 
+     *
      * @return Integer reply, specifically an UNIX time stamp.
      */
     public Long lastsave() {
@@ -2629,7 +2635,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * is not guaranteed if the client uses simply {@link #save() SAVE} and then
      * {@link #quit() QUIT} because other clients may alter the DB data between
      * the two commands.
-     * 
+     *
      * @return Status code reply on error. On success nothing is returned since
      *         the server quits and the connection is closed.
      */
@@ -2654,7 +2660,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Format of the returned String:</b>
      * <p>
      * All the fields are in the form field:value
-     * 
+     *
      * <pre>
      * edis_version:0.07
      * connected_clients:1
@@ -2667,7 +2673,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * uptime_in_seconds:25
      * uptime_in_days:0
      * </pre>
-     * 
+     *
      * <b>Notes</b>
      * <p>
      * used_memory is returned in bytes, and is the total number of bytes
@@ -2681,7 +2687,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * to the number of operations that produced some kind of change in the
      * dataset.
      * <p>
-     * 
+     *
      * @return Bulk reply
      */
     public String info() {
@@ -2696,7 +2702,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * commands received by the Redis server. is very handy in order to
      * understand what is happening into the database. This command is used
      * directly via telnet.
-     * 
+     *
      * @param jedisMonitor
      */
     public void monitor(final JedisMonitor jedisMonitor) {
@@ -2724,7 +2730,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Redis server will be fixed it can be configured in order to work as
      * slave.
      * <p>
-     * 
+     *
      * @param host
      * @param port
      * @return Status code reply
@@ -2749,7 +2755,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * of key-value pairs.
      * <p>
      * <b>Example:</b>
-     * 
+     *
      * <pre>
      * $ redis-cli config get '*'
      * 1. "dbfilename"
@@ -2764,14 +2770,14 @@ public class BinaryJedis implements BinaryJedisCommands {
      * 10. "everysec"
      * 11. "save"
      * 12. "3600 1 300 100 60 10000"
-     * 
+     *
      * $ redis-cli config get 'm*'
      * 1. "masterauth"
      * 2. (nil)
      * 3. "maxmemory"
      * 4. "0\n"
      * </pre>
-     * 
+     *
      * @param pattern
      * @return Bulk reply.
      */
@@ -2782,7 +2788,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * Reset the stats returned by INFO
-     * 
+     *
      * @return
      */
     public String configResetStat() {
@@ -2801,7 +2807,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * server that will start acting as specified starting from the next
      * command.
      * <p>
-     * 
+     *
      * <b>Parameters value format</b>
      * <p>
      * The value of the configuration parameter is the same as the one of the
@@ -2819,7 +2825,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <li>All the integer parameters representing memory are returned and
      * accepted only using bytes as unit.
      * </ul>
-     * 
+     *
      * @param parameter
      * @param value
      * @return Status code reply
@@ -2852,7 +2858,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * a normal key.
      * <p>
      * Time complexity: O(1)
-     * 
+     *
      * @param key
      * @return Integer reply, specifically: 1: the key is now persist. 0: the
      *         key is not persist (only happens when key not set).
@@ -2890,7 +2896,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Pop a value from a list, push it to another list and return it; or block
      * until one is available
-     * 
+     *
      * @param source
      * @param destination
      * @param timeout
@@ -2906,7 +2912,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * Sets or clears the bit at offset in the string value stored at key
-     * 
+     *
      * @param key
      * @param offset
      * @param value
@@ -2919,7 +2925,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * Returns the bit value at offset in the string value stored at key
-     * 
+     *
      * @param key
      * @param offset
      * @return
@@ -2956,3 +2962,4 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.rollbackTimeout();
     }
 }
+

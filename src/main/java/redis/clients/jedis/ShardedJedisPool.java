@@ -47,22 +47,6 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
         public Object makeObject() throws Exception {
             ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
-            boolean done = false;
-            while (!done) {
-                try {
-                    for (Jedis shard : jedis.getAllShards()) {
-                        if (!shard.isConnected()) {
-                            shard.connect();
-                        }
-                    }
-                    done = true;
-                } catch (Exception e) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e1) {
-                    }
-                }
-            }
             return jedis;
         }
 
@@ -85,7 +69,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         }
 
         public boolean validateObject(final Object obj) {
-            try {
+        	try {
                 ShardedJedis jedis = (ShardedJedis) obj;
                 for (Jedis shard : jedis.getAllShards()) {
                     if (!shard.isConnected() || !shard.ping().equals("PONG")) {

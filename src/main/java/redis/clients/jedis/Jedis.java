@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
     public Jedis(final String host) {
@@ -29,7 +28,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     public String ping() {
-        runChecks();
+        checkIsInMulti();
         client.ping();
         return client.getStatusCodeReply();
     }
@@ -45,7 +44,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public String set(final String key, String value) {
-        runChecks();
+        checkIsInMulti();
         client.set(key, value);
         return client.getStatusCodeReply();
     }
@@ -61,7 +60,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String get(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.sendCommand(Protocol.Command.GET, key);
         return client.getBulkReply();
     }
@@ -71,7 +70,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
 
     public void quit() {
-        runChecks();
+        checkIsInMulti();
         client.quit();
     }
 
@@ -86,7 +85,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, "0" if the key exists, otherwise "1"
      */
     public Boolean exists(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.exists(key);
         return client.getIntegerReply() == 1;
     }
@@ -102,7 +101,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         more keys were removed 0 if none of the specified key existed
      */
     public Long del(final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.del(keys);
         return client.getIntegerReply();
     }
@@ -122,7 +121,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         contains a Hash value
      */
     public String type(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.type(key);
         return client.getStatusCodeReply();
     }
@@ -135,7 +134,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
 
     public String flushDB() {
-        runChecks();
+        checkIsInMulti();
         client.flushDB();
         return client.getStatusCodeReply();
     }
@@ -172,7 +171,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Multi bulk reply
      */
     public Set<String> keys(final String pattern) {
-        runChecks();
+        checkIsInMulti();
         client.keys(pattern);
         return BuilderFactory.STRING_SET
                 .build(client.getBinaryMultiBulkReply());
@@ -187,7 +186,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         empty string is the database is empty
      */
     public String randomKey() {
-        runChecks();
+        checkIsInMulti();
         client.randomKey();
         return client.getBulkReply();
     }
@@ -204,7 +203,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code repy
      */
     public String rename(final String oldkey, final String newkey) {
-        runChecks();
+        checkIsInMulti();
         client.rename(oldkey, newkey);
         return client.getStatusCodeReply();
     }
@@ -221,7 +220,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         target key already exist
      */
     public Long renamenx(final String oldkey, final String newkey) {
-        runChecks();
+        checkIsInMulti();
         client.renamenx(oldkey, newkey);
         return client.getIntegerReply();
     }
@@ -233,7 +232,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
 
     public Long dbSize() {
-        runChecks();
+        checkIsInMulti();
         client.dbSize();
         return client.getIntegerReply();
     }
@@ -267,7 +266,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         exist.
      */
     public Long expire(final String key, final int seconds) {
-        runChecks();
+        checkIsInMulti();
         client.expire(key, seconds);
         return client.getIntegerReply();
     }
@@ -303,7 +302,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         exist.
      */
     public Long expireAt(final String key, final long unixTime) {
-        runChecks();
+        checkIsInMulti();
         client.expireAt(key, unixTime);
         return client.getIntegerReply();
     }
@@ -320,7 +319,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         have an associated expire, -1 is returned.
      */
     public Long ttl(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.ttl(key);
         return client.getIntegerReply();
     }
@@ -334,7 +333,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
 
     public String select(final int index) {
-        runChecks();
+        checkIsInMulti();
         client.select(index);
         return client.getStatusCodeReply();
     }
@@ -353,7 +352,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         found in the current DB.
      */
     public Long move(final String key, final int dbIndex) {
-        runChecks();
+        checkIsInMulti();
         client.move(key, dbIndex);
         return client.getIntegerReply();
     }
@@ -366,7 +365,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
 
     public String flushAll() {
-        runChecks();
+        checkIsInMulti();
         client.flushAll();
         return client.getStatusCodeReply();
     }
@@ -383,7 +382,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String getSet(final String key, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.getSet(key, value);
         return client.getBulkReply();
     }
@@ -399,7 +398,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Multi bulk reply
      */
     public List<String> mget(final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.mget(keys);
         return client.getMultiBulkReply();
     }
@@ -417,7 +416,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         was not set
      */
     public Long setnx(final String key, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.setnx(key, value);
         return client.getIntegerReply();
     }
@@ -435,7 +434,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public String setex(final String key, final int seconds, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.setex(key, seconds, value);
         return client.getStatusCodeReply();
     }
@@ -461,7 +460,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply Basically +OK as MSET can't fail
      */
     public String mset(final String... keysvalues) {
-        runChecks();
+        checkIsInMulti();
         client.mset(keysvalues);
         return client.getStatusCodeReply();
     }
@@ -488,7 +487,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         no key was set (at least one key already existed)
      */
     public Long msetnx(final String... keysvalues) {
-        runChecks();
+        checkIsInMulti();
         client.msetnx(keysvalues);
         return client.getIntegerReply();
     }
@@ -516,7 +515,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         after the increment.
      */
     public Long decrBy(final String key, final long integer) {
-        runChecks();
+        checkIsInMulti();
         client.decrBy(key, integer);
         return client.getIntegerReply();
     }
@@ -544,7 +543,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         after the increment.
      */
     public Long decr(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.decr(key);
         return client.getIntegerReply();
     }
@@ -572,7 +571,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         after the increment.
      */
     public Long incrBy(final String key, final long integer) {
-        runChecks();
+        checkIsInMulti();
         client.incrBy(key, integer);
         return client.getIntegerReply();
     }
@@ -600,7 +599,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         after the increment.
      */
     public Long incr(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.incr(key);
         return client.getIntegerReply();
     }
@@ -622,7 +621,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         the append operation.
      */
     public Long append(final String key, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.append(key, value);
         return client.getIntegerReply();
     }
@@ -646,7 +645,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String substr(final String key, final int start, final int end) {
-        runChecks();
+        checkIsInMulti();
         client.substr(key, start, end);
         return client.getBulkReply();
     }
@@ -667,7 +666,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         1 is returned.
      */
     public Long hset(final String key, final String field, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.hset(key, field, value);
         return client.getIntegerReply();
     }
@@ -686,7 +685,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String hget(final String key, final String field) {
-        runChecks();
+        checkIsInMulti();
         client.hget(key, field);
         return client.getBulkReply();
     }
@@ -703,7 +702,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         field is created 1 is returned.
      */
     public Long hsetnx(final String key, final String field, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.hsetnx(key, field, value);
         return client.getIntegerReply();
     }
@@ -721,7 +720,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Always OK because HMSET can't fail
      */
     public String hmset(final String key, final Map<String, String> hash) {
-        runChecks();
+        checkIsInMulti();
         client.hmset(key, hash);
         return client.getStatusCodeReply();
     }
@@ -740,7 +739,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         with the specified fields, in the same order of the request.
      */
     public List<String> hmget(final String key, final String... fields) {
-        runChecks();
+        checkIsInMulti();
         client.hmget(key, fields);
         return client.getMultiBulkReply();
     }
@@ -764,7 +763,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         operation.
      */
     public Long hincrBy(final String key, final String field, final long value) {
-        runChecks();
+        checkIsInMulti();
         client.hincrBy(key, field, value);
         return client.getIntegerReply();
     }
@@ -780,7 +779,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         Return 0 if the key is not found or the field is not present.
      */
     public Boolean hexists(final String key, final String field) {
-        runChecks();
+        checkIsInMulti();
         client.hexists(key, field);
         return client.getIntegerReply() == 1;
     }
@@ -796,7 +795,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         returned, otherwise 0 is returned and no operation is performed.
      */
     public Long hdel(final String key, final String field) {
-        runChecks();
+        checkIsInMulti();
         client.hdel(key, field);
         return client.getIntegerReply();
     }
@@ -812,7 +811,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         an empty hash.
      */
     public Long hlen(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.hlen(key);
         return client.getIntegerReply();
     }
@@ -826,7 +825,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return All the fields names contained into a hash.
      */
     public Set<String> hkeys(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.hkeys(key);
         return BuilderFactory.STRING_SET
                 .build(client.getBinaryMultiBulkReply());
@@ -841,7 +840,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return All the fields values contained into a hash.
      */
     public List<String> hvals(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.hvals(key);
         final List<String> lresult = client.getMultiBulkReply();
         return lresult;
@@ -856,7 +855,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return All the fields and values contained into a hash.
      */
     public Map<String, String> hgetAll(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.hgetAll(key);
         return BuilderFactory.STRING_MAP
                 .build(client.getBinaryMultiBulkReply());
@@ -878,7 +877,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         list after the push operation.
      */
     public Long rpush(final String key, final String string) {
-        runChecks();
+        checkIsInMulti();
         client.rpush(key, string);
         return client.getIntegerReply();
     }
@@ -899,7 +898,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         list after the push operation.
      */
     public Long lpush(final String key, final String string) {
-        runChecks();
+        checkIsInMulti();
         client.lpush(key, string);
         return client.getIntegerReply();
     }
@@ -915,7 +914,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return The length of the list.
      */
     public Long llen(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.llen(key);
         return client.getIntegerReply();
     }
@@ -959,7 +958,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         specified range.
      */
     public List<String> lrange(final String key, final int start, final int end) {
-        runChecks();
+        checkIsInMulti();
         client.lrange(key, start, end);
         return client.getMultiBulkReply();
     }
@@ -999,7 +998,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public String ltrim(final String key, final int start, final int end) {
-        runChecks();
+        checkIsInMulti();
         client.ltrim(key, start, end);
         return client.getStatusCodeReply();
     }
@@ -1023,7 +1022,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply, specifically the requested element
      */
     public String lindex(final String key, final int index) {
-        runChecks();
+        checkIsInMulti();
         client.lindex(key, index);
         return client.getBulkReply();
     }
@@ -1050,7 +1049,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public String lset(final String key, final int index, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.lset(key, index, value);
         return client.getStatusCodeReply();
     }
@@ -1075,7 +1074,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         the operation succeeded
      */
     public Long lrem(final String key, final int count, final String value) {
-        runChecks();
+        checkIsInMulti();
         client.lrem(key, count, value);
         return client.getIntegerReply();
     }
@@ -1094,7 +1093,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String lpop(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.lpop(key);
         return client.getBulkReply();
     }
@@ -1113,7 +1112,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String rpop(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.rpop(key);
         return client.getBulkReply();
     }
@@ -1137,7 +1136,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String rpoplpush(final String srckey, final String dstkey) {
-        runChecks();
+        checkIsInMulti();
         client.rpoplpush(srckey, dstkey);
         return client.getBulkReply();
     }
@@ -1156,7 +1155,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         the element was already a member of the set
      */
     public Long sadd(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.sadd(key, member);
         return client.getIntegerReply();
     }
@@ -1171,7 +1170,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Multi bulk reply
      */
     public Set<String> smembers(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.smembers(key);
         final List<String> members = client.getMultiBulkReply();
         return new HashSet<String>(members);
@@ -1190,7 +1189,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         if the new element was not a member of the set
      */
     public Long srem(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.srem(key, member);
         return client.getIntegerReply();
     }
@@ -1208,7 +1207,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String spop(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.spop(key);
         return client.getBulkReply();
     }
@@ -1238,7 +1237,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long smove(final String srckey, final String dstkey,
             final String member) {
-        runChecks();
+        checkIsInMulti();
         client.smove(srckey, dstkey, member);
         return client.getIntegerReply();
     }
@@ -1252,7 +1251,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         of the set as an integer.
      */
     public Long scard(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.scard(key);
         return client.getIntegerReply();
     }
@@ -1270,7 +1269,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         does not exist
      */
     public Boolean sismember(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.sismember(key, member);
         return client.getIntegerReply() == 1;
     }
@@ -1295,7 +1294,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Multi bulk reply, specifically the list of common elements.
      */
     public Set<String> sinter(final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.sinter(keys);
         final List<String> members = client.getMultiBulkReply();
         return new HashSet<String>(members);
@@ -1313,7 +1312,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public Long sinterstore(final String dstkey, final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.sinterstore(dstkey, keys);
         return client.getIntegerReply();
     }
@@ -1335,7 +1334,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Multi bulk reply, specifically the list of common elements.
      */
     public Set<String> sunion(final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.sunion(keys);
         final List<String> members = client.getMultiBulkReply();
         return new HashSet<String>(members);
@@ -1354,7 +1353,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public Long sunionstore(final String dstkey, final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.sunionstore(dstkey, keys);
         return client.getIntegerReply();
     }
@@ -1383,7 +1382,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         the first set provided and all the successive sets.
      */
     public Set<String> sdiff(final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.sdiff(keys);
         return BuilderFactory.STRING_SET
                 .build(client.getBinaryMultiBulkReply());
@@ -1398,7 +1397,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public Long sdiffstore(final String dstkey, final String... keys) {
-        runChecks();
+        checkIsInMulti();
         client.sdiffstore(dstkey, keys);
         return client.getIntegerReply();
     }
@@ -1416,7 +1415,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Bulk reply
      */
     public String srandmember(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.srandmember(key);
         return client.getBulkReply();
     }
@@ -1443,13 +1442,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         was updated
      */
     public Long zadd(final String key, final double score, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.zadd(key, score, member);
         return client.getIntegerReply();
     }
 
     public Set<String> zrange(final String key, final int start, final int end) {
-        runChecks();
+        checkIsInMulti();
         client.zrange(key, start, end);
         final List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1471,7 +1470,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         if the new element was not a member of the set
      */
     public Long zrem(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.zrem(key, member);
         return client.getIntegerReply();
     }
@@ -1502,7 +1501,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Double zincrby(final String key, final double score,
             final String member) {
-        runChecks();
+        checkIsInMulti();
         client.zincrby(key, score, member);
         String newscore = client.getBulkReply();
         return Double.valueOf(newscore);
@@ -1529,7 +1528,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         reply if there is no such element.
      */
     public Long zrank(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.zrank(key, member);
         return client.getIntegerReply();
     }
@@ -1555,14 +1554,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         reply if there is no such element.
      */
     public Long zrevrank(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.zrevrank(key, member);
         return client.getIntegerReply();
     }
 
     public Set<String> zrevrange(final String key, final int start,
             final int end) {
-        runChecks();
+        checkIsInMulti();
         client.zrevrange(key, start, end);
         final List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
@@ -1570,7 +1569,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     public Set<Tuple> zrangeWithScores(final String key, final int start,
             final int end) {
-        runChecks();
+        checkIsInMulti();
         client.zrangeWithScores(key, start, end);
         Set<Tuple> set = getTupledSet();
         return set;
@@ -1578,7 +1577,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     public Set<Tuple> zrevrangeWithScores(final String key, final int start,
             final int end) {
-        runChecks();
+        checkIsInMulti();
         client.zrevrangeWithScores(key, start, end);
         Set<Tuple> set = getTupledSet();
         return set;
@@ -1594,7 +1593,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return the cardinality (number of elements) of the set as an integer.
      */
     public Long zcard(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.zcard(key);
         return client.getIntegerReply();
     }
@@ -1611,31 +1610,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return the score
      */
     public Double zscore(final String key, final String member) {
-        runChecks();
+        checkIsInMulti();
         client.zscore(key, member);
         final String score = client.getBulkReply();
         return (score != null ? new Double(score) : null);
-    }
-
-    private void runChecks() {
-        if (client.isInMulti()) {
-            throw new JedisDataException(
-                    "Cannot use Jedis when in Multi. Please use JedisTransaction instead.");
-        }
-        this.connect();
-    }
-
-    public void connect() {
-        if (!client.isConnected()) {
-            client.connect();
-            if (this.password != null) {
-                this.auth(this.password);
-            }
-        }
-    }
-
-    public void disconnect() {
-        client.disconnect();
     }
 
     public String watch(final String... keys) {
@@ -1661,7 +1639,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         smallest to the biggest number.
      */
     public List<String> sort(final String key) {
-        runChecks();
+        checkIsInMulti();
         client.sort(key);
         return client.getMultiBulkReply();
     }
@@ -1744,7 +1722,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public List<String> sort(final String key,
             final SortingParams sortingParameters) {
-        runChecks();
+        checkIsInMulti();
         client.sort(key, sortingParameters);
         return client.getMultiBulkReply();
     }
@@ -1822,7 +1800,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         programming language used.
      */
     public List<String> blpop(final int timeout, final String... keys) {
-        runChecks();
+        checkIsInMulti();
         List<String> args = new ArrayList<String>();
         for (String arg : keys) {
             args.add(arg);
@@ -1851,7 +1829,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long sort(final String key, final SortingParams sortingParameters,
             final String dstkey) {
-        runChecks();
+        checkIsInMulti();
         client.sort(key, sortingParameters, dstkey);
         return client.getIntegerReply();
     }
@@ -1873,7 +1851,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return The number of elements of the list at dstkey.
      */
     public Long sort(final String key, final String dstkey) {
-        runChecks();
+        checkIsInMulti();
         client.sort(key, dstkey);
         return client.getIntegerReply();
     }
@@ -1951,7 +1929,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         programming language used.
      */
     public List<String> brpop(final int timeout, final String... keys) {
-        runChecks();
+        checkIsInMulti();
         List<String> args = new ArrayList<String>();
         for (String arg : keys) {
             args.add(arg);
@@ -1983,33 +1961,35 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
 
     public String auth(final String password) {
-        runChecks();
+        checkIsInMulti();
         client.auth(password);
         return client.getStatusCodeReply();
     }
 
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-        runChecks();
+        checkIsInMulti();
+        connect();
         client.setTimeoutInfinite();
         jedisPubSub.proceed(client, channels);
         client.rollbackTimeout();
     }
 
     public Long publish(String channel, String message) {
-        runChecks();
+        checkIsInMulti();
         client.publish(channel, message);
         return client.getIntegerReply();
     }
 
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
-        runChecks();
+        checkIsInMulti();
+        connect();
         client.setTimeoutInfinite();
         jedisPubSub.proceedWithPatterns(client, patterns);
         client.rollbackTimeout();
     }
 
     public Long zcount(final String key, final double min, final double max) {
-        runChecks();
+        checkIsInMulti();
         client.zcount(key, min, max);
         return client.getIntegerReply();
     }
@@ -2073,14 +2053,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Set<String> zrangeByScore(final String key, final double min,
             final double max) {
-        runChecks();
+        checkIsInMulti();
         client.zrangeByScore(key, min, max);
         return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
 
     public Set<String> zrangeByScore(final String key, final String min,
             final String max) {
-        runChecks();
+        checkIsInMulti();
         client.zrangeByScore(key, min, max);
         return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
@@ -2143,7 +2123,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Set<String> zrangeByScore(final String key, final double min,
             final double max, final int offset, final int count) {
-        runChecks();
+        checkIsInMulti();
         client.zrangeByScore(key, min, max, offset, count);
         return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
@@ -2206,7 +2186,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Set<Tuple> zrangeByScoreWithScores(final String key,
             final double min, final double max) {
-        runChecks();
+        checkIsInMulti();
         client.zrangeByScoreWithScores(key, min, max);
         Set<Tuple> set = getTupledSet();
         return set;
@@ -2271,14 +2251,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Set<Tuple> zrangeByScoreWithScores(final String key,
             final double min, final double max, final int offset,
             final int count) {
-        runChecks();
+        checkIsInMulti();
         client.zrangeByScoreWithScores(key, min, max, offset, count);
         Set<Tuple> set = getTupledSet();
         return set;
     }
 
     private Set<Tuple> getTupledSet() {
-        runChecks();
+        checkIsInMulti();
         List<String> membersWithScores = client.getMultiBulkReply();
         Set<Tuple> set = new LinkedHashSet<Tuple>();
         Iterator<String> iterator = membersWithScores.iterator();
@@ -2304,7 +2284,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      */
     public Long zremrangeByRank(final String key, final int start, final int end) {
-        runChecks();
+        checkIsInMulti();
         client.zremrangeByRank(key, start, end);
         return client.getIntegerReply();
     }
@@ -2325,7 +2305,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long zremrangeByScore(final String key, final double start,
             final double end) {
-        runChecks();
+        checkIsInMulti();
         client.zremrangeByScore(key, start, end);
         return client.getIntegerReply();
     }
@@ -2369,7 +2349,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         set at dstkey
      */
     public Long zunionstore(final String dstkey, final String... sets) {
-        runChecks();
+        checkIsInMulti();
         client.zunionstore(dstkey, sets);
         return client.getIntegerReply();
     }
@@ -2415,7 +2395,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
-        runChecks();
+        checkIsInMulti();
         client.zunionstore(dstkey, params, sets);
         return client.getIntegerReply();
     }
@@ -2459,7 +2439,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      *         set at dstkey
      */
     public Long zinterstore(final String dstkey, final String... sets) {
-        runChecks();
+        checkIsInMulti();
         client.zinterstore(dstkey, sets);
         return client.getIntegerReply();
     }
@@ -2505,7 +2485,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long zinterstore(final String dstkey, final ZParams params,
             final String... sets) {
-        runChecks();
+        checkIsInMulti();
         client.zinterstore(dstkey, params, sets);
         return client.getIntegerReply();
     }

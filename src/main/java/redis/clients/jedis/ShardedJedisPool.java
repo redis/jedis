@@ -29,6 +29,11 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
         super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
     }
+    
+    @Override
+    public void destroy() {
+    	super.destroy();
+    }
 
     /**
      * PoolableObjectFactory custom impl.

@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -175,9 +174,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Set<String> keys(final String pattern) {
         runChecks();
         client.keys(pattern);
-        final HashSet<String> keySet = new HashSet<String>(client
-                .getMultiBulkReply());
-        return keySet;
+        return BuilderFactory.STRING_SET
+                .build(client.getBinaryMultiBulkReply());
     }
 
     /**
@@ -830,8 +828,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Set<String> hkeys(final String key) {
         runChecks();
         client.hkeys(key);
-        final List<String> lresult = client.getMultiBulkReply();
-        return new HashSet<String>(lresult);
+        return BuilderFactory.STRING_SET
+                .build(client.getBinaryMultiBulkReply());
     }
 
     /**
@@ -860,14 +858,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Map<String, String> hgetAll(final String key) {
         runChecks();
         client.hgetAll(key);
-        final List<String> flatHash = client.getMultiBulkReply();
-        final Map<String, String> hash = new HashMap<String, String>();
-        final Iterator<String> iterator = flatHash.iterator();
-        while (iterator.hasNext()) {
-            hash.put(iterator.next(), iterator.next());
-        }
-
-        return hash;
+        return BuilderFactory.STRING_MAP
+                .build(client.getBinaryMultiBulkReply());
     }
 
     /**
@@ -1393,8 +1385,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Set<String> sdiff(final String... keys) {
         runChecks();
         client.sdiff(keys);
-        final List<String> members = client.getMultiBulkReply();
-        return new HashSet<String>(members);
+        return BuilderFactory.STRING_SET
+                .build(client.getBinaryMultiBulkReply());
     }
 
     /**

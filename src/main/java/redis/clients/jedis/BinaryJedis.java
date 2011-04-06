@@ -2019,11 +2019,13 @@ public class BinaryJedis implements BinaryJedisCommands {
     public List<Object> pipelined(final PipelineBlock jedisPipeline) {
         jedisPipeline.setClient(client);
         jedisPipeline.execute();
-        return client.getAll();
+        return jedisPipeline.sync();
     }
 
     public Pipeline pipelined() {
-        return new Pipeline(client);
+        Pipeline pipeline = new Pipeline();
+        pipeline.setClient(client);
+        return pipeline;
     }
 
     public void subscribe(final JedisPubSub jedisPubSub,

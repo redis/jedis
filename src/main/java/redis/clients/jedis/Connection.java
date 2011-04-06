@@ -175,19 +175,7 @@ public class Connection {
     }
 
     public List<String> getMultiBulkReply() {
-        final List<byte[]> bresult = getBinaryMultiBulkReply();
-        if (null == bresult) {
-            return null;
-        }
-        final ArrayList<String> result = new ArrayList<String>(bresult.size());
-        for (final byte[] barray : bresult) {
-            if (barray == null) {
-                result.add(null);
-            } else {
-                result.add(SafeEncoder.encode(barray));
-            }
-        }
-        return result;
+        return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReply());
     }
 
     @SuppressWarnings("unchecked")

@@ -33,38 +33,35 @@ public class JedisPool extends Pool<Jedis> {
             final String host, final int port, final int timeout) {
         this(poolConfig, host, port, timeout, null);
     }
+    
+    public JedisPool(final GenericObjectPool.Config poolConfig, JedisShardInfo shardInfo) {
+    	super(poolConfig, new JedisFactory(shardInfo));
+    }
+    
+    @Override
+    public void destroy() {
+    	super.destroy();
+    }
 
     /**
      * PoolableObjectFactory custom impl.
      */
     private static class JedisFactory extends BasePoolableObjectFactory {
-        private final String host;
-        private final int port;
-        private final int timeout;
-        private final String password;
+
+    	private final JedisShardInfo shardInfo;
 
         public JedisFactory(final String host, final int port,
                 final int timeout, final String password) {
-            super();
-            this.host = host;
-            this.port = port;
-            this.timeout = (timeout > 0) ? timeout : -1;
-            this.password = password;
+            this(new JedisShardInfo(host, port, (timeout > 0) ? timeout : -1));
+        }
+        
+        public JedisFactory(JedisShardInfo shardInfo){
+        	super();
+        	this.shardInfo = shardInfo;
         }
 
         public Object makeObject() throws Exception {
-            final Jedis jedis;
-            if (timeout > 0) {
-                jedis = new Jedis(this.host, this.port, this.timeout);
-            } else {
-                jedis = new Jedis(this.host, this.port);
-            }
-
-            jedis.connect();
-            if (null != this.password) {
-                jedis.auth(this.password);
-            }
-            return jedis;
+            return shardInfo.createResource();
         }
 
         public void destroyObject(final Object obj) throws Exception {

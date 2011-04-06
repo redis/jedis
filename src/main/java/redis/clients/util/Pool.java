@@ -42,7 +42,7 @@ public abstract class Pool<T> {
         }
     }
 
-    public void destroy() {
+    protected void destroy() {
         try {
             internalPool.close();
         } catch (Exception e) {

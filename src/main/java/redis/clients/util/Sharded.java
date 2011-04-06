@@ -2,7 +2,7 @@ package redis.clients.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -15,7 +15,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
     public static final int DEFAULT_WEIGHT = 1;
     private TreeMap<Long, S> nodes;
     private final Hashing algo;
-    private final Map<ShardInfo<R>, R> resources = new HashMap<ShardInfo<R>, R>();
+    private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
 
     /**
      * The default pattern used for extracting a key tag. The pattern must have

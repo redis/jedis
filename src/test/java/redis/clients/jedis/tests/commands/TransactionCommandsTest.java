@@ -5,12 +5,13 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 import redis.clients.jedis.Protocol.Keyword;
@@ -152,8 +153,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         t.set("mykey", val);
         List<Object> resp = t.exec();
         assertEquals(1, resp.size());
-        assertArrayEquals(Keyword.OK.name().getBytes(Protocol.CHARSET),
-                (byte[]) resp.get(0));
+        assertEquals("OK", resp.get(0));
 
         // Binary
         jedis.watch(bmykey);
@@ -171,8 +171,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         t.set(bmykey, bval);
         resp = t.exec();
         assertEquals(1, resp.size());
-        assertArrayEquals(Keyword.OK.name().getBytes(Protocol.CHARSET),
-                (byte[]) resp.get(0));
+        assertEquals("OK", resp.get(0));
     }
 
     @Test(expected = JedisDataException.class)
@@ -186,5 +185,38 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         Transaction t = jedis.multi();
         String status = t.discard();
         assertEquals("OK", status);
+    }
+
+    @Test
+    public void transactionResponse() {
+        jedis.set("string", "foo");
+        jedis.lpush("list", "foo");
+        jedis.hset("hash", "foo", "bar");
+        jedis.zadd("zset", 1, "foo");
+        jedis.sadd("set", "foo");
+
+        Transaction t = jedis.multi();
+        Response<String> string = t.get("string");
+        Response<String> list = t.lpop("list");
+        Response<String> hash = t.hget("hash", "foo");
+        Response<Set<String>> zset = t.zrange("zset", 0, -1);
+        Response<String> set = t.spop("set");
+        t.exec();
+
+        assertEquals("foo", string.get());
+        assertEquals("foo", list.get());
+        assertEquals("bar", hash.get());
+        assertEquals("foo", zset.get().iterator().next());
+        assertEquals("foo", set.get());
+    }
+
+    @Test(expected = JedisDataException.class)
+    public void transactionResponseWithinPipeline() {
+        jedis.set("string", "foo");
+
+        Transaction t = jedis.multi();
+        Response<String> string = t.get("string");
+        string.get();
+        t.exec();
     }
 }

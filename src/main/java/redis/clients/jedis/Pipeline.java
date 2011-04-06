@@ -1,28 +1,17 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-public class Pipeline {
+public class Pipeline extends Queable {
     private Client client;
-    private Queue<Response<?>> pipelinedResponses = new LinkedList<Response<?>>();
 
     public void setClient(Client client) {
         this.client = client;
-    }
-
-    private Response<?> generateResponse(Object data) {
-        Response<?> response = pipelinedResponses.poll();
-        if (response != null) {
-            response.set(data);
-        }
-        return response;
     }
 
     public List<Object> sync() {
@@ -32,12 +21,6 @@ public class Pipeline {
             formatted.add(generateResponse(o).get());
         }
         return formatted;
-    }
-
-    private <T> Response<T> getResponse(Builder<T> builder) {
-        Response<T> lr = new Response<T>(builder);
-        pipelinedResponses.add(lr);
-        return lr;
     }
 
     public Response<Long> append(String key, String value) {

@@ -67,11 +67,19 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         }
 
         public void destroyObject(final Object obj) throws Exception {
-            if (obj != null) {
-                try {
-                    ((ShardedJedis) obj).disconnect();
-                } catch (Exception e) {
+            if ((obj != null) && (obj instanceof ShardedJedis)) {
+                ShardedJedis shardedJedis = (ShardedJedis) obj;
+                for (Jedis jedis : shardedJedis.getAllShards()) {
+                    try {
+                   		try {
+                   			jedis.quit();
+                        } catch (Exception e) {
 
+                        }
+                        jedis.disconnect();
+                    } catch (Exception e) {
+
+                    }
                 }
             }
         }

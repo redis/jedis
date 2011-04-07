@@ -60,6 +60,11 @@ public class JedisMultiPool {
     	return shardedJedisPools.getShard(key);
     }
     
+    public Pool<Jedis> getPool(JedisShardInfo shardInfo) {
+    	JedisPoolShardInfo pshi = new JedisPoolShardInfo(shardInfo, poolConfig);
+    	return shardedJedisPools.getShard(pshi);
+    }
+    
     public JedisShardInfo getShardInfo(byte[] key) {
     	return shardedJedisPools.getShardInfo(key).getShardInfo();
     }
@@ -86,6 +91,11 @@ public class JedisMultiPool {
     
     public Jedis getResource(String key) {
     	return shardedJedisPools.getShard(key).getResource();
+    }
+    
+    public Jedis getResource(JedisShardInfo shardInfo) {
+    	JedisPoolShardInfo pshi = new JedisPoolShardInfo(shardInfo, poolConfig);
+    	return shardedJedisPools.getShard(pshi).getResource();
     }
     
     public void returnResource(final Jedis resource) {

@@ -2270,6 +2270,44 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return set;
     }
 
+    public Set<String> zrevrangeByScore(final String key, final double max,
+            final double min) {
+        checkIsInMulti();
+        client.zrevrangeByScore(key, max, min);
+        return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    public Set<String> zrevrangeByScore(final String key, final String max,
+            final String min) {
+        checkIsInMulti();
+        client.zrevrangeByScore(key, max, min);
+        return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    public Set<String> zrevrangeByScore(final String key, final double max,
+            final double min, final int offset, final int count) {
+        checkIsInMulti();
+        client.zrevrangeByScore(key, max, min, offset, count);
+        return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    public Set<Tuple> zrevrangeByScoreWithScores(final String key,
+            final double max, final double min) {
+        checkIsInMulti();
+        client.zrevrangeByScoreWithScores(key, max, min);
+        Set<Tuple> set = getTupledSet();
+        return set;
+    }
+
+    public Set<Tuple> zrevrangeByScoreWithScores(final String key,
+            final double max, final double min, final int offset,
+            final int count) {
+        checkIsInMulti();
+        client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        Set<Tuple> set = getTupledSet();
+        return set;
+    }
+
     /**
      * Remove all elements in the sorted set at key with rank between start and
      * end. Start and end are 0-based with rank 0 being the element with the

@@ -922,6 +922,66 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
+    public Response<Set<String>> zrevrangeByScore(String key, double max,
+            double min) {
+        client.zrevrangeByScore(key, max, min);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, double max,
+            double min) {
+        client.zrevrangeByScore(key, max, min);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(String key, String max,
+            String min) {
+        client.zrevrangeByScore(key, max, min);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max,
+            byte[] min) {
+        client.zrevrangeByScore(key, max, min);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(String key, double max,
+            double min, int offset, int count) {
+        client.zrevrangeByScore(key, max, min, offset, count);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, double max,
+            double min, int offset, int count) {
+        client.zrevrangeByScore(key, max, min, offset, count);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
+            double max, double min) {
+        client.zrevrangeByScoreWithScores(key, max, min);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
+            double max, double min) {
+        client.zrevrangeByScoreWithScores(key, max, min);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
+            double max, double min, int offset, int count) {
+        client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
+            double max, double min, int offset, int count) {
+        client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
     public Response<Set<Tuple>> zrangeWithScores(String key, int start, int end) {
         client.zrangeWithScores(key, start, end);
         return getResponse(BuilderFactory.TUPLE_ZSET);

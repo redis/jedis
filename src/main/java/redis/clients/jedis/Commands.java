@@ -197,6 +197,21 @@ public interface Commands {
     public void zrangeByScoreWithScores(final String key, final double min,
             final double max, final int offset, final int count);
 
+    public void zrevrangeByScore(final String key, final double max,
+            final double min);
+
+    public void zrevrangeByScore(final String key, final String max,
+            final String min);
+
+    public void zrevrangeByScore(final String key, final double max,
+            final double min, final int offset, int count);
+
+    public void zrevrangeByScoreWithScores(final String key, final double max,
+            final double min);
+
+    public void zrevrangeByScoreWithScores(final String key, final double max,
+            final double min, final int offset, final int count);
+
     public void zremrangeByRank(final String key, final int start, final int end);
 
     public void zremrangeByScore(final String key, final double start,

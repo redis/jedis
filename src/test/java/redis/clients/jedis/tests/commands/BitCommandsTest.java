@@ -9,7 +9,7 @@ public class BitCommandsTest extends JedisCommandTestBase {
         assertEquals(false, bit);
 
         bit = jedis.getbit("foo", 0);
-        assertEquals(false, bit);
+        assertEquals(true, bit);
 
         long bbit = jedis.setbit("bfoo".getBytes(), 0, "1".getBytes());
         assertEquals(0, bbit);

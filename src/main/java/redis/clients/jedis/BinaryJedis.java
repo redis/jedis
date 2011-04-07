@@ -15,25 +15,32 @@ import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BinaryJedisCommands {
+	
     protected Client client = null;
+    
+    private final JedisShardInfo shardInfo;
 
     public BinaryJedis(final String host) {
-        client = new Client(host);
+        this(host, Protocol.DEFAULT_PORT);
     }
 
     public BinaryJedis(final String host, final int port) {
-        client = new Client(host, port);
+        this(host, port, Protocol.DEFAULT_TIMEOUT);
     }
 
     public BinaryJedis(final String host, final int port, final int timeout) {
-        client = new Client(host, port);
-        client.setTimeout(timeout);
+        this(new JedisShardInfo(host, port, null, timeout));
     }
 
     public BinaryJedis(final JedisShardInfo shardInfo) {
-        client = new Client(shardInfo.getHost(), shardInfo.getPort());
+    	this.shardInfo = shardInfo;
+    	client = new Client(shardInfo.getHost(), shardInfo.getPort());
         client.setTimeout(shardInfo.getTimeout());
         client.setPassword(shardInfo.getPassword());
+    }
+    
+    public JedisShardInfo getShardInfo(){
+    	return shardInfo;
     }
 
     public String ping() {

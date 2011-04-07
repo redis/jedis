@@ -23,10 +23,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         return host + ":" + port + "*" + getWeight();
     }
 
-    private int timeout;
-    private String host;
-    private int port;
-    private String password = null;
+    private final int timeout;
+    private final String host;
+    private final int port;
+    private final String password;
 
     public String getHost() {
         return host;
@@ -41,34 +41,31 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     }
 
     public JedisShardInfo(String host, int port) {
-        this(host, port, 2000);
+        this(host, port, null);
     }
 
-    public JedisShardInfo(String host, int port, int timeout) {
-        this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+    public JedisShardInfo(String host, int port, String password) {
+        this(host, port, password, Protocol.DEFAULT_TIMEOUT); 
     }
-
-    public JedisShardInfo(String host, int port, int timeout, int weight) {
+    
+    public JedisShardInfo(String host, int port, String password, int timeout) {
+    	this(host, port, password, timeout, Sharded.DEFAULT_WEIGHT);
+    }
+    
+    public JedisShardInfo(String host, int port, String password, int timeout, int weight) {
         super(weight);
         this.host = host;
         this.port = port;
         this.timeout = timeout;
+        this.password = password;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String auth) {
-        this.password = auth;
-    }
-
     public int getTimeout() {
         return timeout;
-    }
-
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
     }
 
     @Override

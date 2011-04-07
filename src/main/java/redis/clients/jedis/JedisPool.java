@@ -8,33 +8,30 @@ import redis.clients.util.Pool;
 
 public class JedisPool extends Pool<Jedis> {
 
-    public JedisPool(final GenericObjectPool.Config poolConfig,
+	public JedisPool(final GenericObjectPool.Config poolConfig,
             final String host) {
-        this(poolConfig, host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
-                null);
+        this(poolConfig, host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, null);
     }
 
     public JedisPool(String host, int port) {
-        super(new Config(), new JedisFactory(host, port,
-                Protocol.DEFAULT_TIMEOUT, null));
+        this(new Config(), host, port);
+    }
+    
+    public JedisPool(final Config poolConfig, final String host, final int port) {
+        this(poolConfig, host, port, Protocol.DEFAULT_TIMEOUT);
     }
 
-    public JedisPool(final Config poolConfig, final String host, int port,
-            int timeout, final String password) {
-        super(poolConfig, new JedisFactory(host, port, timeout, password));
-    }
-
-    public JedisPool(final GenericObjectPool.Config poolConfig,
-            final String host, final int port) {
-        this(poolConfig, host, port, Protocol.DEFAULT_TIMEOUT, null);
-    }
-
-    public JedisPool(final GenericObjectPool.Config poolConfig,
-            final String host, final int port, final int timeout) {
+    public JedisPool(final Config poolConfig, final String host, final int port, 
+    		final int timeout) {
         this(poolConfig, host, port, timeout, null);
     }
     
-    public JedisPool(final GenericObjectPool.Config poolConfig, JedisShardInfo shardInfo) {
+    public JedisPool(final Config poolConfig, final String host, int port,
+            int timeout, final String password) {
+    	this(poolConfig, new JedisShardInfo(host, port, password, timeout));
+    }
+    
+    public JedisPool(final Config poolConfig, JedisShardInfo shardInfo) {
     	super(poolConfig, new JedisFactory(shardInfo));
     }
     
@@ -50,11 +47,6 @@ public class JedisPool extends Pool<Jedis> {
 
     	private final JedisShardInfo shardInfo;
 
-        public JedisFactory(final String host, final int port,
-                final int timeout, final String password) {
-            this(new JedisShardInfo(host, port, (timeout > 0) ? timeout : -1));
-        }
-        
         public JedisFactory(JedisShardInfo shardInfo){
         	super();
         	this.shardInfo = shardInfo;

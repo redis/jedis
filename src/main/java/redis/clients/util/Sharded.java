@@ -62,6 +62,10 @@ public class Sharded<R, S extends ShardInfo<R>> {
         }
     }
 
+    public R getShard(ShardInfo<R> shardInfo) {
+        return resources.get(shardInfo);
+    }
+    
     public R getShard(byte[] key) {
         return resources.get(getShardInfo(key));
     }

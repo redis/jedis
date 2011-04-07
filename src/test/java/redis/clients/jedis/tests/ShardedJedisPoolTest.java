@@ -27,10 +27,8 @@ public class ShardedJedisPoolTest extends Assert {
     @Before
     public void startUp() {
         shards = new ArrayList<JedisShardInfo>();
-        shards.add(new JedisShardInfo(redis1.host, redis1.port));
-        shards.add(new JedisShardInfo(redis2.host, redis2.port));
-        shards.get(0).setPassword("foobared");
-        shards.get(1).setPassword("foobared");
+        shards.add(new JedisShardInfo(redis1.host, redis1.port, "foobared"));
+        shards.add(new JedisShardInfo(redis2.host, redis2.port, "foobared"));
         Jedis j = new Jedis(shards.get(0));
         j.connect();
         j.flushAll();

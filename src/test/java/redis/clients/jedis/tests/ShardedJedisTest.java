@@ -53,12 +53,8 @@ public class ShardedJedisTest extends Assert {
     @Test
     public void trySharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-        JedisShardInfo si = new JedisShardInfo(redis1.host, redis1.port);
-        si.setPassword("foobared");
-        shards.add(si);
-        si = new JedisShardInfo(redis2.host, redis2.port);
-        si.setPassword("foobared");
-        shards.add(si);
+        shards.add(new JedisShardInfo(redis1.host, redis1.port, "foobared"));
+        shards.add(new JedisShardInfo(redis2.host, redis2.port, "foobared"));
         ShardedJedis jedis = new ShardedJedis(shards);
         jedis.set("a", "bar");
         JedisShardInfo s1 = jedis.getShardInfo("a");
@@ -80,12 +76,8 @@ public class ShardedJedisTest extends Assert {
     @Test
     public void tryShardingWithMurmure() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-        JedisShardInfo si = new JedisShardInfo(redis1.host, redis1.port);
-        si.setPassword("foobared");
-        shards.add(si);
-        si = new JedisShardInfo(redis2.host, redis2.port);
-        si.setPassword("foobared");
-        shards.add(si);
+        shards.add(new JedisShardInfo(redis1.host, redis1.port, "foobared"));
+        shards.add(new JedisShardInfo(redis2.host, redis2.port, "foobared"));
         ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMUR_HASH);
         jedis.set("a", "bar");
         JedisShardInfo s1 = jedis.getShardInfo("a");
@@ -143,10 +135,8 @@ public class ShardedJedisTest extends Assert {
     @Test
     public void shardedPipeline() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-        shards.add(new JedisShardInfo(redis1.host, redis1.port));
-        shards.add(new JedisShardInfo(redis2.host, redis2.port));
-        shards.get(0).setPassword("foobared");
-        shards.get(1).setPassword("foobared");
+        shards.add(new JedisShardInfo(redis1.host, redis1.port, "foobared"));
+        shards.add(new JedisShardInfo(redis2.host, redis2.port, "foobared"));
         ShardedJedis jedis = new ShardedJedis(shards);
 
         final List<String> keys = getKeysDifferentShard(jedis);

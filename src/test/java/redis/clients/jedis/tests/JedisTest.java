@@ -36,9 +36,7 @@ public class JedisTest extends JedisCommandTestBase {
 
     @Test
     public void connectWithShardInfo() {
-        JedisShardInfo shardInfo = new JedisShardInfo("localhost",
-                Protocol.DEFAULT_PORT);
-        shardInfo.setPassword("foobared");
+        JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT, "foobared");
         Jedis jedis = new Jedis(shardInfo);
         jedis.get("foo");
     }

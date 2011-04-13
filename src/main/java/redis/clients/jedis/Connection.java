@@ -71,6 +71,15 @@ public class Connection {
         }
     }
 
+    protected void sendProtocolCommand(final Command cmd, final byte[]... args) {
+        try {
+            protocol.sendCommand(outputStream, cmd, args);
+        } catch (JedisConnectionException e) {
+            disconnect();
+            throw new JedisConnectionException(e);
+        }
+    }
+
     protected Connection sendCommand(final Command cmd, final String... args) {
         final byte[][] bargs = new byte[args.length][];
         for (int i = 0; i < args.length; i++) {
@@ -81,14 +90,14 @@ public class Connection {
 
     protected Connection sendCommand(final Command cmd, final byte[]... args) {
         connect();
-        protocol.sendCommand(outputStream, cmd, args);
+        sendProtocolCommand(cmd, args);
         pipelinedCommands++;
         return this;
     }
 
     protected Connection sendCommand(final Command cmd) {
         connect();
-        protocol.sendCommand(outputStream, cmd, new byte[0][]);
+        sendProtocolCommand(cmd, new byte[0][]);
         pipelinedCommands++;
         return this;
     }

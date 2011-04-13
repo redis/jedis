@@ -251,11 +251,11 @@ public class ShardedJedisTest extends Assert {
                 shards, Hashing.MURMUR_HASH);
 
         List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
-        shards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT));
-        shards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1));
-        shards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2));
+        otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT));
+        otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1));
+        otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2));
         Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(
-                shards, Hashing.MURMUR_HASH);
+                otherShards, Hashing.MURMUR_HASH);
 
         for (int i = 0; i < 1000; i++) {
             JedisShardInfo jedisShardInfo = sharded.getShardInfo(Integer

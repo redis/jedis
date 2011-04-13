@@ -42,10 +42,6 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getStatusCodeReply();
     }
 
-    public final JedisShardInfo getShardInfo() {
-        return this.shardInfo;
-    }
-
     /**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).

@@ -435,6 +435,33 @@ public class Client extends BinaryClient implements Commands {
                 count);
     }
 
+    public void zrevrangeByScore(final String key, final double max,
+                                 final double min) {
+        zrevrangeByScore(SafeEncoder.encode(key), max, min);
+    }
+
+    public void zrevrangeByScore(final String key, final String max,
+                                 final String min) {
+        zrevrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(max),
+                SafeEncoder.encode(min));
+    }
+    
+    public void zrevrangeByScore(final String key, final double max,
+                                 final double min, final int offset, int count) {
+        zrevrangeByScore(SafeEncoder.encode(key), max, min, offset, count);
+    }
+
+    public void zrevrangeByScoreWithScores(final String key, final double max,
+                                           final double min) {
+        zrevrangeByScoreWithScores(SafeEncoder.encode(key), max, min);
+    }
+
+    public void zrevrangeByScoreWithScores(final String key, final double max,
+            final double min, final int offset, final int count) {
+        zrevrangeByScoreWithScores(SafeEncoder.encode(key), max, min, offset,
+                count);
+    }
+
     public void zremrangeByRank(final String key, final int start, final int end) {
         zremrangeByRank(SafeEncoder.encode(key), start, end);
     }

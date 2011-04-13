@@ -136,13 +136,19 @@ public interface JedisCommands {
     Long zcount(String key, double min, double max);
 
     Set<String> zrangeByScore(String key, double min, double max);
+    Set<String> zrevrangeByScore(String key, double max, double min);
 
     Set<String> zrangeByScore(String key, double min, double max, int offset,
             int count);
+    Set<String> zrevrangeByScore(String key, double max, double min, int offset,
+            int count);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
+    Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max,
+            int offset, int count);
+    Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min,
             int offset, int count);
 
     Long zremrangeByRank(String key, int start, int end);

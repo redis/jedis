@@ -50,45 +50,29 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
         public Object makeObject() throws Exception {
             ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
-            Map<JedisShardInfo, Integer> retries = new HashMap<JedisShardInfo, Integer>();
-            for (JedisShardInfo i:shards)
-                retries.put(i, i.getRetries());
-
-            boolean done = false;
-            while (!done) {
-                try {
-                    for (Jedis shard : jedis.getAllShards()) {
-                        if (!shard.isConnected()) {
-                            JedisShardInfo info = shard.getShardInfo();
-                            Integer leftRetries = retries.get(info);
-                            retries.put(info, leftRetries -1);
-                            if (leftRetries > 0)
-                                shard.connect();
-                        }
-                    }
-                    done = true;
-                } catch (Exception e) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e1) {
-                    }
-                }
-            }
             return jedis;
         }
 
         public void destroyObject(final Object obj) throws Exception {
-            if (obj != null) {
-                try {
-                    ((ShardedJedis) obj).disconnect();
-                } catch (Exception e) {
+            if ((obj != null) && (obj instanceof ShardedJedis)) {
+                ShardedJedis shardedJedis = (ShardedJedis) obj;
+                for (Jedis jedis : shardedJedis.getAllShards()) {
+                    try {
+                   		try {
+                   			jedis.quit();
+                        } catch (Exception e) {
 
+                        }
+                        jedis.disconnect();
+                    } catch (Exception e) {
+
+                    }
                 }
             }
         }
 
         public boolean validateObject(final Object obj) {
-            try {
+        	try {
                 ShardedJedis jedis = (ShardedJedis) obj;
                 for (Jedis shard : jedis.getAllShards()) {
                     if (!shard.isConnected() || !shard.ping().equals("PONG")) {

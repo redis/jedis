@@ -14,7 +14,7 @@ import redis.clients.util.SafeEncoder;
 public class BuilderFactory {
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
         public Double build(Object data) {
-            return Double.valueOf((Long) data);
+            return Double.valueOf(STRING.build(data));
         }
 
         public String toString() {

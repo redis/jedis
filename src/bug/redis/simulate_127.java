@@ -3,7 +3,7 @@ package bug.redis;
 import java.util.HashMap;
 import redis.clients.jedis.*;
 
-class simulate {
+class simulate_127 {
 
 	public static void main(String args[])
 	{

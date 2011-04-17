@@ -4,6 +4,7 @@ import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import redis.clients.util.SafeEncoder;
@@ -479,6 +480,15 @@ public class Client extends BinaryClient implements Commands {
         zunionstore(SafeEncoder.encode(dstkey), bsets);
     }
 
+    public void zunionstore(final String dstkey, final Set<String> sets) {
+
+        final byte[][] bsets = new byte[sets.size()][];
+		int i=0;
+		for ( String item : sets) {
+            bsets[i++] = SafeEncoder.encode(item);
+        }
+        zunionstore(SafeEncoder.encode(dstkey), bsets);
+    }
     public void zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
         final byte[][] bsets = new byte[sets.length][];

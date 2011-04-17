@@ -2391,6 +2391,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.zunionstore(dstkey, sets);
         return client.getIntegerReply();
     }
+    
+	public Long zunionstore(final String dstkey, final Set<String> sets) {
+        checkIsInMulti();
+        client.zunionstore(dstkey, sets);
+        return client.getIntegerReply();
+    }
 
     /**
      * Creates a union or intersection of N sorted sets given by keys k1 through

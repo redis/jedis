@@ -1,7 +1,6 @@
 package redis.clients.jedis.tests;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -83,26 +82,6 @@ public class PipeliningTest extends Assert {
         Pipeline p = jedis.pipelined();
         Response<String> string = p.get("string");
         string.get();
-        p.sync();
-    }
-
-    @Test
-    public void lala() {
-
-        Pipeline p = jedis.pipelined();
-
-        HashMap<String, Integer> mydata = new HashMap<String, Integer>();
-
-        mydata.put("test1", 1);
-        mydata.put("test2", 1);
-        mydata.put("test3", 1);
-        mydata.put("test4", 1);
-        mydata.put("test5", 1);
-
-        for (String txtfield : mydata.keySet()) {
-            p.zadd("somekey", mydata.get(txtfield), txtfield);
-            p.zincrby("SUPERUNION", mydata.get(txtfield), txtfield);
-        }
         p.sync();
     }
 }

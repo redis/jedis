@@ -169,6 +169,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.hexists(key, field);
     }
 
+    public Long del(String key) {
+        Jedis j = getShard(key);
+        return j.del(key);
+    }
+
     public Long hdel(String key, String field) {
         Jedis j = getShard(key);
         return j.hdel(key, field);
@@ -353,6 +358,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         Jedis j = getShard(key);
         return j.zrangeByScore(key, min, max);
     }
+
     public Set<String> zrevrangeByScore(String key, double max, double min) {
         Jedis j = getShard(key);
         return j.zrevrangeByScore(key, max, min);
@@ -363,6 +369,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         Jedis j = getShard(key);
         return j.zrangeByScore(key, min, max, offset, count);
     }
+
     public Set<String> zrevrangeByScore(String key, double max, double min,
             int offset, int count) {
         Jedis j = getShard(key);
@@ -373,7 +380,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         Jedis j = getShard(key);
         return j.zrangeByScoreWithScores(key, min, max);
     }
-    public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
+
+    public Set<Tuple> zrevrangeByScoreWithScores(String key, double max,
+            double min) {
         Jedis j = getShard(key);
         return j.zrevrangeByScoreWithScores(key, max, min);
     }
@@ -383,6 +392,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         Jedis j = getShard(key);
         return j.zrangeByScoreWithScores(key, min, max, offset, count);
     }
+
     public Set<Tuple> zrevrangeByScoreWithScores(String key, double max,
             double min, int offset, int count) {
         Jedis j = getShard(key);

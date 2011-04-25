@@ -717,7 +717,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @param key
      * @param hash
-     * @return Always OK because HMSET can't fail
+     * @return Return OK or Exception if hash is empty
      */
     public String hmset(final String key, final Map<String, String> hash) {
         checkIsInMulti();

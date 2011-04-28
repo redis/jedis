@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public abstract class ShardedJedisPipeline {
     private BinaryShardedJedis jedis;
@@ -422,6 +422,30 @@ public abstract class ShardedJedisPipeline {
             String value) {
         Client c = jedis.getShard(key).getClient();
         c.linsert(key, where, pivot, value);
+        results.add(new FutureResult(c));
+    }
+
+    protected void getbit(String key, long offset) {
+        Client c = jedis.getShard(key).getClient();
+        c.getbit(key, offset);
+        results.add(new FutureResult(c));
+    }
+
+    public void setbit(String key, long offset, boolean value) {
+        Client c = jedis.getShard(key).getClient();
+        c.setbit(key, offset, value);
+        results.add(new FutureResult(c));
+    }
+
+    public void setrange(String key, long offset, String value) {
+        Client c = jedis.getShard(key).getClient();
+        c.setrange(key, offset, value);
+        results.add(new FutureResult(c));
+    }
+
+    public void getrange(String key, long startOffset, long endOffset) {
+        Client c = jedis.getShard(key).getClient();
+        c.getrange(key, startOffset, endOffset);
         results.add(new FutureResult(c));
     }
 

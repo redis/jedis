@@ -148,7 +148,8 @@ public class Client extends BinaryClient implements Commands {
         final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash
                 .size());
         for (final Entry<String, String> entry : hash.entrySet()) {
-            bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder
+			if (entry.getValue() != null)
+				bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder
                     .encode(entry.getValue()));
         }
         hmset(SafeEncoder.encode(key), bhash);
@@ -280,6 +281,15 @@ public class Client extends BinaryClient implements Commands {
         sinterstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
+    public void sunion(final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i] = SafeEncoder.encode(item);
+        }
+        sunion(bkeys);
+    }
+
     public void sunion(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
@@ -292,6 +302,15 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
             bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sunionstore(SafeEncoder.encode(dstkey), bkeys);
+    }
+    
+	public void sunionstore(final String dstkey, final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
         }
         sunionstore(SafeEncoder.encode(dstkey), bkeys);
     }
@@ -494,6 +513,16 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bsets = new byte[sets.length][];
         for (int i = 0; i < bsets.length; i++) {
             bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zunionstore(SafeEncoder.encode(dstkey), params, bsets);
+    }
+    
+	public void zunionstore(final String dstkey, final ZParams params,
+            final Set<String> sets) {
+        final byte[][] bsets = new byte[sets.size()][];
+		int i=0;
+        for (String item : sets) {
+            bsets[i++] = SafeEncoder.encode(item);
         }
         zunionstore(SafeEncoder.encode(dstkey), params, bsets);
     }

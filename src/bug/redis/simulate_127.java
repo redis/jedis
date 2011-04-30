@@ -25,6 +25,9 @@ class simulate_127 {
 		{
 			p.zadd("somekey", mydata.get(txtfield), txtfield );
 			p.zincrby("SUPERUNION", mydata.get(txtfield), txtfield );
+			p.sadd("setkey", "setstr1");
+			p.sadd("setkey", "setstr2");
+			p.sadd("setkey", "setstr1");
 		}
 		p.sync();
 

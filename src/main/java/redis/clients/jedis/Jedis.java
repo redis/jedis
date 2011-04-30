@@ -1340,6 +1340,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return new HashSet<String>(members);
     }
 
+    public Set<String> sunion(final Set<String> keys) {
+        checkIsInMulti();
+        client.sunion(keys);
+        final List<String> members = client.getMultiBulkReply();
+        return new HashSet<String>(members);
+    }
+
     /**
      * This command works exactly like {@link #sunion(String...) SUNION} but
      * instead of being returned the resulting set is stored as dstkey. Any
@@ -2439,6 +2446,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
+        checkIsInMulti();
+        client.zunionstore(dstkey, params, sets);
+        return client.getIntegerReply();
+    }
+    
+	public Long zunionstore(final String dstkey, final ZParams params,
+            final Set<String> sets) {
         checkIsInMulti();
         client.zunionstore(dstkey, params, sets);
         return client.getIntegerReply();

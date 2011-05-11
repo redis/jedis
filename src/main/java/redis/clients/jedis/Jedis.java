@@ -82,7 +82,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * Time complexity: O(1)
      * 
      * @param key
-     * @return Integer reply, "0" if the key exists, otherwise "1"
+     * @return Boolean reply, true if the key exists, otherwise false
      */
     public Boolean exists(final String key) {
         checkIsInMulti();

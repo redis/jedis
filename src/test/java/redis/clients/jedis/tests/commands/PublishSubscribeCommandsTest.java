@@ -9,6 +9,7 @@ import org.junit.Test;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
@@ -500,5 +501,30 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         } catch (JedisDataException ex) {
             // this is OK because we are not sending AUTH command
         }
+    }
+
+    @Test(expected = JedisConnectionException.class)
+    public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
+        JedisPubSub pubsub = new JedisPubSub() {
+            public void onMessage(String channel, String message) {
+            }
+
+            public void onPMessage(String pattern, String channel,
+                    String message) {
+            }
+
+            public void onSubscribe(String channel, int subscribedChannels) {
+            }
+
+            public void onUnsubscribe(String channel, int subscribedChannels) {
+            }
+
+            public void onPUnsubscribe(String pattern, int subscribedChannels) {
+            }
+
+            public void onPSubscribe(String pattern, int subscribedChannels) {
+            }
+        };
+        pubsub.unsubscribe();
     }
 }

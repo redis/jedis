@@ -69,9 +69,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * Ask the server to silently close the connection.
      */
 
-    public void quit() {
+    public String quit() {
         checkIsInMulti();
         client.quit();
+        return client.getStatusCodeReply();
     }
 
     /**

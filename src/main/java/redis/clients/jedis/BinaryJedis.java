@@ -77,9 +77,10 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Ask the server to silently close the connection.
      */
-    public void quit() {
+    public String quit() {
         checkIsInMulti();
         client.quit();
+        return client.getStatusCodeReply();
     }
 
     /**

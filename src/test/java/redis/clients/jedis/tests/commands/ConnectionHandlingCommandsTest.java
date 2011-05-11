@@ -2,9 +2,21 @@ package redis.clients.jedis.tests.commands;
 
 import org.junit.Test;
 
+import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
+
 public class ConnectionHandlingCommandsTest extends JedisCommandTestBase {
+    protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
+
     @Test
     public void quit() {
-        jedis.quit();
+        assertEquals("OK", jedis.quit());
+    }
+
+    @Test
+    public void binary_quit() {
+        BinaryJedis bj = new BinaryJedis(hnp.host);
+        assertEquals("OK", bj.quit());
     }
 }

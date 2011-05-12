@@ -2994,4 +2994,8 @@ public class BinaryJedis implements BinaryJedisCommands {
         jedisPubSub.proceedWithPatterns(client, patterns);
         client.rollbackTimeout();
     }
+
+    public Long getDB() {
+        return client.getDB();
+    }
 }

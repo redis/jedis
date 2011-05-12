@@ -4,11 +4,10 @@ import java.util.Arrays;
 
 import redis.clients.util.SafeEncoder;
 
-public class Tuple implements Comparable {
+public class Tuple implements Comparable<Tuple> {
     private byte[] element;
     private Double score;
 
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -24,7 +23,6 @@ public class Tuple implements Comparable {
         return result;
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -47,12 +45,6 @@ public class Tuple implements Comparable {
         else
             return this.score < other.getScore() ? -1 : 1;
     }
-    public int compareTo(Object obj) {
-        if (getClass() != obj.getClass())
-            throw new ClassCastException();
-        return compareTo((Tuple) obj);
-    }
-    
 
     public Tuple(String element, Double score) {
         super();

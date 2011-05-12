@@ -1155,4 +1155,14 @@ public class Pipeline extends Queable {
     public void multi() {
         client.multi();
     }
+
+    public Response<Long> publish(String channel, String message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> publish(byte[] channel, byte[] message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
 }

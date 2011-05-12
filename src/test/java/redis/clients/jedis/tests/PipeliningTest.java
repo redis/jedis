@@ -103,4 +103,15 @@ public class PipeliningTest extends Assert {
         string.get();
         p.sync();
     }
+
+    @Test
+    public void pipelineWithPubSub() {
+        Pipeline pipelined = jedis.pipelined();
+        Response<Long> p1 = pipelined.publish("foo", "bar");
+        Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar"
+                .getBytes());
+        pipelined.sync();
+        assertEquals(0, p1.get().longValue());
+        assertEquals(0, p2.get().longValue());
+    }
 }

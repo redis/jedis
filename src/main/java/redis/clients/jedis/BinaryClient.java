@@ -255,23 +255,23 @@ public class BinaryClient extends Connection {
         sendCommand(LLEN, key);
     }
 
-    public void lrange(final byte[] key, final int start, final int end) {
+    public void lrange(final byte[] key, final long start, final long end) {
         sendCommand(LRANGE, key, toByteArray(start), toByteArray(end));
     }
 
-    public void ltrim(final byte[] key, final int start, final int end) {
+    public void ltrim(final byte[] key, final long start, final long end) {
         sendCommand(LTRIM, key, toByteArray(start), toByteArray(end));
     }
 
-    public void lindex(final byte[] key, final int index) {
+    public void lindex(final byte[] key, final long index) {
         sendCommand(LINDEX, key, toByteArray(index));
     }
 
-    public void lset(final byte[] key, final int index, final byte[] value) {
+    public void lset(final byte[] key, final long index, final byte[] value) {
         sendCommand(LSET, key, toByteArray(index), value);
     }
 
-    public void lrem(final byte[] key, int count, final byte[] value) {
+    public void lrem(final byte[] key, long count, final byte[] value) {
         sendCommand(LREM, key, toByteArray(count), value);
     }
 

@@ -79,15 +79,15 @@ public interface JedisCommands {
 
     Long llen(String key);
 
-    List<String> lrange(String key, int start, int end);
+    List<String> lrange(String key, long start, long end);
 
-    String ltrim(String key, int start, int end);
+    String ltrim(String key, long start, long end);
 
-    String lindex(String key, int index);
+    String lindex(String key, long index);
 
-    String lset(String key, int index, String value);
+    String lset(String key, long index, String value);
 
-    Long lrem(String key, int count, String value);
+    Long lrem(String key, long count, String value);
 
     String lpop(String key);
 
@@ -136,18 +136,22 @@ public interface JedisCommands {
     Long zcount(String key, double min, double max);
 
     Set<String> zrangeByScore(String key, double min, double max);
+
     Set<String> zrevrangeByScore(String key, double max, double min);
 
     Set<String> zrangeByScore(String key, double min, double max, int offset,
             int count);
-    Set<String> zrevrangeByScore(String key, double max, double min, int offset,
-            int count);
+
+    Set<String> zrevrangeByScore(String key, double max, double min,
+            int offset, int count);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
+
     Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max,
             int offset, int count);
+
     Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min,
             int offset, int count);
 

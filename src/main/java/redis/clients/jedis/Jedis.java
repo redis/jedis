@@ -958,7 +958,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Multi bulk reply, specifically a list of elements in the
      *         specified range.
      */
-    public List<String> lrange(final String key, final int start, final int end) {
+    public List<String> lrange(final String key, final long start, final long end) {
         checkIsInMulti();
         client.lrange(key, start, end);
         return client.getMultiBulkReply();
@@ -998,7 +998,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param end
      * @return Status code reply
      */
-    public String ltrim(final String key, final int start, final int end) {
+    public String ltrim(final String key, final long start, final long end) {
         checkIsInMulti();
         client.ltrim(key, start, end);
         return client.getStatusCodeReply();
@@ -1022,7 +1022,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param index
      * @return Bulk reply, specifically the requested element
      */
-    public String lindex(final String key, final int index) {
+    public String lindex(final String key, final long index) {
         checkIsInMulti();
         client.lindex(key, index);
         return client.getBulkReply();
@@ -1049,7 +1049,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param value
      * @return Status code reply
      */
-    public String lset(final String key, final int index, final String value) {
+    public String lset(final String key, final long index, final String value) {
         checkIsInMulti();
         client.lset(key, index, value);
         return client.getStatusCodeReply();
@@ -1074,7 +1074,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer Reply, specifically: The number of removed elements if
      *         the operation succeeded
      */
-    public Long lrem(final String key, final int count, final String value) {
+    public Long lrem(final String key, final long count, final String value) {
         checkIsInMulti();
         client.lrem(key, count, value);
         return client.getIntegerReply();

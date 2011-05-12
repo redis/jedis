@@ -366,42 +366,42 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> lrange(String key, int start, int end) {
+    public Response<List<String>> lrange(String key, long start, long end) {
         client.lrange(key, start, end);
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> lrange(byte[] key, int start, int end) {
+    public Response<List<String>> lrange(byte[] key, long start, long end) {
         client.lrange(key, start, end);
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<Long> lrem(String key, int count, String value) {
+    public Response<Long> lrem(String key, long count, String value) {
         client.lrem(key, count, value);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lrem(byte[] key, int count, byte[] value) {
+    public Response<Long> lrem(byte[] key, long count, byte[] value) {
         client.lrem(key, count, value);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> lset(String key, int index, String value) {
+    public Response<String> lset(String key, long index, String value) {
         client.lset(key, index, value);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lset(byte[] key, int index, byte[] value) {
+    public Response<String> lset(byte[] key, long index, byte[] value) {
         client.lset(key, index, value);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> ltrim(String key, int start, int end) {
+    public Response<String> ltrim(String key, long start, long end) {
         client.ltrim(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> ltrim(byte[] key, int start, int end) {
+    public Response<String> ltrim(byte[] key, long start, long end) {
         client.ltrim(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }

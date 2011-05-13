@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.DebugParams;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -56,11 +57,32 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void monitor() {
+        new Thread(new Runnable() {
+            public void run() {
+                Jedis j = new Jedis("localhost");
+                j.auth("foobared");
+                for (int i = 0; i < 4; i++) {
+                    j.incr("foobared");
+                }
+                try {
+                    Thread.sleep(2500);
+                } catch (InterruptedException e) {
+                }
+                j.incr("foobared");
+                j.disconnect();
+            }
+        }).start();
+
         jedis.monitor(new JedisMonitor() {
-            @Override
+            private int count = 0;
+
             public void onCommand(String command) {
-                assertTrue(command.contains("OK"));
-                client.disconnect();
+                if (command.contains("INCR")) {
+                    count++;
+                }
+                if (count == 5) {
+                    client.disconnect();
+                }
             }
         });
     }

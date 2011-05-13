@@ -4,11 +4,10 @@ import java.util.Arrays;
 
 import redis.clients.util.SafeEncoder;
 
-public class Tuple {
+public class Tuple implements Comparable<Tuple> {
     private byte[] element;
     private Double score;
 
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -24,7 +23,6 @@ public class Tuple {
         return result;
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -38,10 +36,14 @@ public class Tuple {
                 return false;
         } else if (!Arrays.equals(element, other.element))
             return false;
-        if (Double.doubleToLongBits(score) != Double
-                .doubleToLongBits(other.score))
-            return false;
         return true;
+    }
+
+    public int compareTo(Tuple other) {
+        if (Arrays.equals(this.element, other.element))
+            return 0;
+        else
+            return this.score < other.getScore() ? -1 : 1;
     }
 
     public Tuple(String element, Double score) {

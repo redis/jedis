@@ -2,7 +2,7 @@ package redis.clients.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -15,7 +15,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
     public static final int DEFAULT_WEIGHT = 1;
     private TreeMap<Long, S> nodes;
     private final Hashing algo;
-    private final Map<ShardInfo<R>, R> resources = new HashMap<ShardInfo<R>, R>();
+    private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
 
     /**
      * The default pattern used for extracting a key tag. The pattern must have
@@ -56,7 +56,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
         for (int i = 0; i != shards.size(); ++i) {
             final S shardInfo = shards.get(i);
             for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
-                nodes.put(this.algo.hash(shardInfo.toString() + n), shardInfo);
+                nodes.put(this.algo.hash("SHARD-" + i + "-NODE-" + n), shardInfo);
             }
             resources.put(shardInfo, shardInfo.createResource());
         }
@@ -70,7 +70,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
         return resources.get(getShardInfo(key));
     }
 
-    private S getShardInfo(byte[] key) {
+    public S getShardInfo(byte[] key) {
         SortedMap<Long, S> tail = nodes.tailMap(algo.hash(key));
         if (tail.size() == 0) {
             return nodes.get(nodes.firstKey());
@@ -85,7 +85,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
     /**
      * A key tag is a special pattern inside a key that, if preset, is the only
      * part of the key hashed in order to select the server for this key.
-     * 
+     *
      * @see http://code.google.com/p/redis/wiki/FAQ#I
      *      'm_using_some_form_of_key_hashing_for_partitioning,_but_wh
      * @param key
@@ -108,3 +108,4 @@ public class Sharded<R, S extends ShardInfo<R>> {
         return Collections.unmodifiableCollection(resources.values());
     }
 }
+

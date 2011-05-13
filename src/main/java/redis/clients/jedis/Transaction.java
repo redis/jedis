@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
@@ -12,339 +14,567 @@ public class Transaction extends BinaryTransaction {
         super(client);
     }
 
-    public void set(final String key, final String value) {
-        client.set(key, value);
-    }
-
-    public void get(final String key) {
-        client.get(key);
-    }
-
-    public void exists(final String key) {
-        client.exists(key);
-    }
-
-    public void del(final String... keys) {
-        client.del(keys);
-    }
-
-    public void type(final String key) {
-        client.type(key);
-    }
-
-    public void keys(final String pattern) {
-        client.keys(pattern);
-    }
-
-    public void randomKey() {
-        client.randomKey();
-    }
-
-    public void rename(final String oldkey, final String newkey) {
-        client.rename(oldkey, newkey);
-    }
-
-    public void renamenx(final String oldkey, final String newkey) {
-        client.renamenx(oldkey, newkey);
-    }
-
-    public void expire(final String key, final int seconds) {
-        client.expire(key, seconds);
-    }
-
-    public void expireAt(final String key, final long unixTime) {
-        client.expireAt(key, unixTime);
-    }
-
-    public void ttl(final String key) {
-        client.ttl(key);
-    }
-
-    public void move(final String key, final int dbIndex) {
-        client.move(key, dbIndex);
-    }
-
-    public void getSet(final String key, final String value) {
-        client.getSet(key, value);
-    }
-
-    public void mget(final String... keys) {
-        client.mget(keys);
-    }
-
-    public void setnx(final String key, final String value) {
-        client.setnx(key, value);
-    }
-
-    public void setex(final String key, final int seconds, final String value) {
-        client.setex(key, seconds, value);
-    }
-
-    public void mset(final String... keysvalues) {
-        client.mset(keysvalues);
-    }
-
-    public void msetnx(final String... keysvalues) {
-        client.msetnx(keysvalues);
-    }
-
-    public void decrBy(final String key, final int integer) {
-        client.decrBy(key, integer);
-    }
-
-    public void decr(final String key) {
-        client.decr(key);
-    }
-
-    public void incrBy(final String key, final int integer) {
-        client.incrBy(key, integer);
-    }
-
-    public void incr(final String key) {
-        client.incr(key);
-    }
-
-    public void append(final String key, final String value) {
+    public Response<Long> append(String key, String value) {
         client.append(key, value);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public void substr(final String key, final int start, final int end) {
-        client.substr(key, start, end);
+    public Response<List<String>> blpop(String... args) {
+        client.blpop(args);
+        return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public void hset(final String key, final String field, final String value) {
-        client.hset(key, field, value);
+    public Response<List<String>> brpop(String... args) {
+        client.brpop(args);
+        return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public void hget(final String key, final String field) {
-        client.hget(key, field);
+    public Response<Long> decr(String key) {
+        client.decr(key);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public void hsetnx(final String key, final String field, final String value) {
-        client.hsetnx(key, field, value);
+    public Response<Long> decrBy(String key, long integer) {
+        client.decrBy(key, integer);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public void hmset(final String key, final Map<String, String> hash) {
-        client.hmset(key, hash);
+    public Response<Long> del(String... keys) {
+        client.del(keys);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public void hmget(final String key, final String... fields) {
-        client.hmget(key, fields);
+    public Response<String> echo(String string) {
+        client.echo(string);
+        return getResponse(BuilderFactory.STRING);
     }
 
-    public void hincrBy(final String key, final String field, final int value) {
-        client.hincrBy(key, field, value);
+    public Response<Boolean> exists(String key) {
+        client.exists(key);
+        return getResponse(BuilderFactory.BOOLEAN);
     }
 
-    public void hexists(final String key, final String field) {
-        client.hexists(key, field);
+    public Response<Long> expire(String key, int seconds) {
+        client.expire(key, seconds);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public void hdel(final String key, final String field) {
-        client.hdel(key, field);
+    public Response<Long> expireAt(String key, long unixTime) {
+        client.expireAt(key, unixTime);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public void hlen(final String key) {
-        client.hlen(key);
+    public Response<String> get(String key) {
+        client.get(key);
+        return getResponse(BuilderFactory.STRING);
     }
 
-    public void hkeys(final String key) {
-        client.hkeys(key);
-    }
-
-    public void hvals(final String key) {
-        client.hvals(key);
-    }
-
-    public void hgetAll(final String key) {
-        client.hgetAll(key);
-    }
-
-    public void rpush(final String key, final String string) {
-        client.rpush(key, string);
-    }
-
-    public void lpush(final String key, final String string) {
-        client.lpush(key, string);
-    }
-
-    public void llen(final String key) {
-        client.llen(key);
-    }
-
-    public void lrange(final String key, final int start, final int end) {
-        client.lrange(key, start, end);
-    }
-
-    public void ltrim(String key, final int start, final int end) {
-        client.ltrim(key, start, end);
-    }
-
-    public void lindex(final String key, final int index) {
-        client.lindex(key, index);
-    }
-
-    public void lset(final String key, final int index, final String value) {
-        client.lset(key, index, value);
-    }
-
-    public void lrem(final String key, final int count, final String value) {
-        client.lrem(key, count, value);
-    }
-
-    public void lpop(final String key) {
-        client.lpop(key);
-    }
-
-    public void rpop(final String key) {
-        client.rpop(key);
-    }
-
-    public void rpoplpush(final String srckey, final String dstkey) {
-        client.rpoplpush(srckey, dstkey);
-    }
-
-    public void sadd(final String key, final String member) {
-        client.sadd(key, member);
-    }
-
-    public void smembers(final String key) {
-        client.smembers(key);
-    }
-
-    public void srem(final String key, final String member) {
-        client.srem(key, member);
-    }
-
-    public void spop(final String key) {
-        client.spop(key);
-    }
-
-    public void smove(final String srckey, final String dstkey,
-            final String member) {
-        client.smove(srckey, dstkey, member);
-    }
-
-    public void scard(final String key) {
-        client.scard(key);
-    }
-
-    public void sismember(final String key, final String member) {
-        client.sismember(key, member);
-    }
-
-    public void sinter(final String... keys) {
-        client.sinter(keys);
-    }
-
-    public void sinterstore(final String dstkey, final String... keys) {
-        client.sinterstore(dstkey, keys);
-    }
-
-    public void sunion(final String... keys) {
-        client.sunion(keys);
-    }
-
-    public void sunionstore(final String dstkey, final String... keys) {
-        client.sunionstore(dstkey, keys);
-    }
-
-    public void sdiff(final String... keys) {
-        client.sdiff(keys);
-    }
-
-    public void sdiffstore(final String dstkey, final String... keys) {
-        client.sdiffstore(dstkey, keys);
-    }
-
-    public void srandmember(final String key) {
-        client.srandmember(key);
-    }
-
-    public void zadd(final String key, final double score, final String member) {
-        client.zadd(key, score, member);
-    }
-
-    public void zrange(final String key, final int start, final int end) {
-        client.zrange(key, start, end);
-    }
-
-    public void zrem(final String key, final String member) {
-        client.zrem(key, member);
-    }
-
-    public void zincrby(final String key, final double score,
-            final String member) {
-        client.zincrby(key, score, member);
-    }
-
-    public void zrank(final String key, final String member) {
-        client.zrank(key, member);
-    }
-
-    public void zrevrank(final String key, final String member) {
-        client.zrevrank(key, member);
-    }
-
-    public void zrevrange(final String key, final int start, final int end) {
-        client.zrevrange(key, start, end);
-    }
-
-    public void zrangeWithScores(final String key, final int start,
-            final int end) {
-        client.zrangeWithScores(key, start, end);
-    }
-
-    public void zrevrangeWithScores(final String key, final int start,
-            final int end) {
-        client.zrevrangeWithScores(key, start, end);
-    }
-
-    public void zcard(final String key) {
-        client.zcard(key);
-    }
-
-    public void zscore(final String key, final String member) {
-        client.zscore(key, member);
-    }
-
-    public void sort(final String key) {
-        client.sort(key);
-    }
-
-    public void sort(final String key, final SortingParams sortingParameters) {
-        client.sort(key, sortingParameters);
-    }
-
-    public void sort(final String key, final String dstkey) {
-        client.sort(key, dstkey);
-    }
-
-    public void sort(final String key, final SortingParams sortingParameters,
-            final String dstkey) {
-        client.sort(key, sortingParameters, dstkey);
-    }
-
-    public void setbit(String key, long offset, boolean value) {
-        client.setbit(key, offset, value);
-    }
-
-    public void getbit(String key, long offset) {
+    public Response<Boolean> getbit(String key, long offset) {
         client.getbit(key, offset);
+        return getResponse(BuilderFactory.BOOLEAN);
     }
 
-    public long setrange(String key, long offset, String value) {
-        client.setrange(key, offset, value);
-        return client.getIntegerReply();
-    }
-
-    public String getrange(String key, long startOffset, long endOffset) {
+    public Response<String> getrange(String key, long startOffset,
+            long endOffset) {
         client.getrange(key, startOffset, endOffset);
-        return client.getBulkReply();
+        return getResponse(BuilderFactory.STRING);
     }
 
-    public void linsert(final String key, final LIST_POSITION where,
-            final String pivot, final String value) {
-        client.linsert(key, where, pivot, value);
+    public Response<String> getSet(String key, String value) {
+        client.getSet(key, value);
+        return getResponse(BuilderFactory.STRING);
     }
+
+    public Response<Long> hdel(String key, String field) {
+        client.hdel(key, field);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Boolean> hexists(String key, String field) {
+        client.hexists(key, field);
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
+    public Response<String> hget(String key, String field) {
+        client.hget(key, field);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Map<String, String>> hgetAll(String key) {
+        client.hgetAll(key);
+        return getResponse(BuilderFactory.STRING_MAP);
+    }
+
+    public Response<Long> hincrBy(String key, String field, long value) {
+        client.hincrBy(key, field, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> hkeys(String key) {
+        client.hkeys(key);
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
+    public Response<Long> hlen(String key) {
+        client.hlen(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<List<String>> hmget(String key, String... fields) {
+        client.hmget(key, fields);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<String> hmset(String key, Map<String, String> hash) {
+        client.hmset(key, hash);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> hset(String key, String field, String value) {
+        client.hset(key, field, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> hsetnx(String key, String field, String value) {
+        client.hsetnx(key, field, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<List<String>> hvals(String key) {
+        client.hvals(key);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<Long> incr(String key) {
+        client.incr(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> incrBy(String key, long integer) {
+        client.incrBy(key, integer);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> keys(String pattern) {
+        client.keys(pattern);
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
+    public Response<String> lindex(String key, int index) {
+        client.lindex(key, index);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> linsert(String key, LIST_POSITION where,
+            String pivot, String value) {
+        client.linsert(key, where, pivot, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> llen(String key) {
+        client.llen(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> lpop(String key) {
+        client.lpop(key);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> lpush(String key, String string) {
+        client.lpush(key, string);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> lpushx(String key, String string) {
+        client.lpushx(key, string);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<List<String>> lrange(String key, long start, long end) {
+        client.lrange(key, start, end);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<Long> lrem(String key, long count, String value) {
+        client.lrem(key, count, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> lset(String key, long index, String value) {
+        client.lset(key, index, value);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> ltrim(String key, long start, long end) {
+        client.ltrim(key, start, end);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<List<String>> mget(String... keys) {
+        client.mget(keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<Long> move(String key, int dbIndex) {
+        client.move(key, dbIndex);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> mset(String... keysvalues) {
+        client.mset(keysvalues);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> msetnx(String... keysvalues) {
+        client.msetnx(keysvalues);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> persist(String key) {
+        client.persist(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> rename(String oldkey, String newkey) {
+        client.rename(oldkey, newkey);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> renamenx(String oldkey, String newkey) {
+        client.renamenx(oldkey, newkey);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> rpop(String key) {
+        client.rpop(key);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> rpoplpush(String srckey, String dstkey) {
+        client.rpoplpush(srckey, dstkey);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> rpush(String key, String string) {
+        client.rpush(key, string);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> rpushx(String key, String string) {
+        client.rpushx(key, string);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> sadd(String key, String member) {
+        client.sadd(key, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> scard(String key) {
+        client.scard(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> sdiff(String... keys) {
+        client.sdiff(keys);
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
+    public Response<Long> sdiffstore(String dstkey, String... keys) {
+        client.sdiffstore(dstkey, keys);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> set(String key, String value) {
+        client.set(key, value);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Boolean> setbit(String key, long offset, boolean value) {
+        client.setbit(key, offset, value);
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
+    public Response<String> setex(String key, int seconds, String value) {
+        client.setex(key, seconds, value);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> setnx(String key, String value) {
+        client.setnx(key, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> setrange(String key, long offset, String value) {
+        client.setrange(key, offset, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> sinter(String... keys) {
+        client.sinter(keys);
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
+    public Response<Long> sinterstore(String dstkey, String... keys) {
+        client.sinterstore(dstkey, keys);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Boolean> sismember(String key, String member) {
+        client.sismember(key, member);
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
+    public Response<Set<String>> smembers(String key) {
+        client.smembers(key);
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
+    public Response<Long> smove(String srckey, String dstkey, String member) {
+        client.smove(srckey, dstkey, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<List<String>> sort(String key) {
+        client.sort(key);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> sort(String key,
+            SortingParams sortingParameters) {
+        client.sort(key, sortingParameters);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> sort(String key,
+            SortingParams sortingParameters, String dstkey) {
+        client.sort(key, sortingParameters, dstkey);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> sort(String key, String dstkey) {
+        client.sort(key, dstkey);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<String> spop(String key) {
+        client.spop(key);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> srandmember(String key) {
+        client.srandmember(key);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> srem(String key, String member) {
+        client.srem(key, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> strlen(String key) {
+        client.strlen(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> substr(String key, int start, int end) {
+        client.substr(key, start, end);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Set<String>> sunion(String... keys) {
+        client.sunion(keys);
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
+    public Response<Long> sunionstore(String dstkey, String... keys) {
+        client.sunionstore(dstkey, keys);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> ttl(String key) {
+        client.ttl(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> type(String key) {
+        client.type(key);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> zadd(String key, double score, String member) {
+        client.zadd(key, score, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zcard(String key) {
+        client.zcard(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zcount(String key, double min, double max) {
+        client.zcount(key, min, max);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Double> zincrby(String key, double score, String member) {
+        client.zincrby(key, score, member);
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
+    public Response<Long> zinterstore(String dstkey, String... sets) {
+        client.zinterstore(dstkey, sets);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zinterstore(String dstkey, ZParams params,
+            String... sets) {
+        client.zinterstore(dstkey, params, sets);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> zrange(String key, int start, int end) {
+        client.zrange(key, start, end);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(String key, double min,
+            double max) {
+        client.zrangeByScore(key, min, max);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(String key, String min,
+            String max) {
+        client.zrangeByScore(key, min, max);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(String key, double min,
+            double max, int offset, int count) {
+        client.zrangeByScore(key, min, max, offset, count);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min,
+            double max) {
+        client.zrangeByScoreWithScores(key, min, max);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min,
+            double max, int offset, int count) {
+        client.zrangeByScoreWithScores(key, min, max, offset, count);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrangeWithScores(String key, int start, int end) {
+        client.zrangeWithScores(key, start, end);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Long> zrank(String key, String member) {
+        client.zrank(key, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zrem(String key, String member) {
+        client.zrem(key, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zremrangeByRank(String key, int start, int end) {
+        client.zremrangeByRank(key, start, end);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zremrangeByScore(String key, double start, double end) {
+        client.zremrangeByScore(key, start, end);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> zrevrange(String key, int start, int end) {
+        client.zrevrange(key, start, end);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeWithScores(String key, int start,
+            int end) {
+        client.zrevrangeWithScores(key, start, end);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Long> zrevrank(String key, String member) {
+        client.zrevrank(key, member);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Double> zscore(String key, String member) {
+        client.zscore(key, member);
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
+    public Response<Long> zunionstore(String dstkey, String... sets) {
+        client.zunionstore(dstkey, sets);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zunionstore(String dstkey, ZParams params,
+            String... sets) {
+        client.zunionstore(dstkey, params, sets);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> bgrewriteaof() {
+        client.bgrewriteaof();
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> bgsave() {
+        client.bgsave();
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> configGet(String pattern) {
+        client.configGet(pattern);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> configSet(String parameter, String value) {
+        client.configSet(parameter, value);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> brpoplpush(String source, String destination,
+            int timeout) {
+        client.brpoplpush(source, destination, timeout);
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> configResetStat() {
+        client.configResetStat();
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> save() {
+        client.save();
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> lastsave() {
+        client.lastsave();
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> publish(String channel, String message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> publish(byte[] channel, byte[] message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
+
 }

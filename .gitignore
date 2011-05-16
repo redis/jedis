@@ -4,6 +4,3 @@
 .gradle/
 target/
 build/
-/appendonly.aof
-/dump.rdb
-/nohup.out

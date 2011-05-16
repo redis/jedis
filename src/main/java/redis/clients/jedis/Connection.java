@@ -24,6 +24,10 @@ public class Connection {
     private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     public int getTimeout() {
         return timeout;
     }

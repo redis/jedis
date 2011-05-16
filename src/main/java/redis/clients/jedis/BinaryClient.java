@@ -53,7 +53,11 @@ public class BinaryClient extends Connection {
         if (!isConnected()) {
             super.connect();
             if (password != null) {
-                sendCommand(AUTH, password);
+                auth(password);
+                getStatusCodeReply();
+            }
+            if (db > 0) {
+                select(Long.valueOf(db).intValue());
                 getStatusCodeReply();
             }
         }

@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,5 +59,14 @@ public class JedisTest extends JedisCommandTestBase {
     @Test(expected = JedisDataException.class)
     public void failWhenSendingNullValues() {
         jedis.set("foo", null);
+    }
+
+    @Test
+    public void shouldReconnectToSameDB() throws IOException {
+        jedis.select(1);
+        jedis.set("foo", "bar");
+        jedis.getClient().getSocket().shutdownInput();
+        jedis.getClient().getSocket().shutdownOutput();
+        assertEquals("bar", jedis.get("foo"));
     }
 }

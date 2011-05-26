@@ -122,7 +122,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         assertEquals("bar", jedis.get("mykey"));
 
         // Binary
-        jedis.watch(bmykey);
+        jedis.watch(bmykey, "foobar".getBytes());
         t = jedis.multi();
 
         nj.connect();

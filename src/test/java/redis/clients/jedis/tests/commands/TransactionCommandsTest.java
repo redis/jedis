@@ -170,7 +170,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         t.set(bmykey, bval);
         resp = t.exec();
         assertEquals(1, resp.size());
-        assertEquals("OK", resp.get(0));
+        assertArrayEquals("OK".getBytes(), (byte[]) resp.get(0));
     }
 
     @Test(expected = JedisDataException.class)
@@ -207,6 +207,29 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         assertEquals("bar", hash.get());
         assertEquals("foo", zset.get().iterator().next());
         assertEquals("foo", set.get());
+    }
+
+    @Test
+    public void transactionResponseBinary() {
+        jedis.set("string", "foo");
+        jedis.lpush("list", "foo");
+        jedis.hset("hash", "foo", "bar");
+        jedis.zadd("zset", 1, "foo");
+        jedis.sadd("set", "foo");
+
+        Transaction t = jedis.multi();
+        Response<byte[]> string = t.get("string".getBytes());
+        Response<byte[]> list = t.lpop("list".getBytes());
+        Response<byte[]> hash = t.hget("hash".getBytes(), "foo".getBytes());
+        Response<Set<byte[]>> zset = t.zrange("zset".getBytes(), 0, -1);
+        Response<byte[]> set = t.spop("set".getBytes());
+        t.exec();
+
+        assertArrayEquals("foo".getBytes(), string.get());
+        assertArrayEquals("foo".getBytes(), list.get());
+        assertArrayEquals("bar".getBytes(), hash.get());
+        assertArrayEquals("foo".getBytes(), zset.get().iterator().next());
+        assertArrayEquals("foo".getBytes(), set.get());
     }
 
     @Test(expected = JedisDataException.class)

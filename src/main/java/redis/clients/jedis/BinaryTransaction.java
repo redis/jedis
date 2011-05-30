@@ -91,9 +91,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> get(byte[] key) {
+    public Response<byte[]> get(byte[] key) {
         client.get(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<String> getSet(byte[] key, byte[] value) {
@@ -111,9 +111,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
-    public Response<String> hget(byte[] key, byte[] field) {
+    public Response<byte[]> hget(byte[] key, byte[] field) {
         client.hget(key, field);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Map<String, String>> hgetAll(byte[] key) {
@@ -126,9 +126,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> hkeys(byte[] key) {
+    public Response<Set<byte[]>> hkeys(byte[] key) {
         client.hkeys(key);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> hlen(byte[] key) {
@@ -136,14 +136,14 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> hmget(byte[] key, byte[]... fields) {
+    public Response<List<byte[]>> hmget(byte[] key, byte[]... fields) {
         client.hmget(key, fields);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
-    public Response<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
+    public Response<byte[]> hmset(byte[] key, Map<byte[], byte[]> hash) {
         client.hmset(key, hash);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> hset(byte[] key, byte[] field, byte[] value) {
@@ -156,9 +156,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> hvals(byte[] key) {
+    public Response<List<byte[]>> hvals(byte[] key) {
         client.hvals(key);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> incr(byte[] key) {
@@ -171,14 +171,14 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> keys(byte[] pattern) {
+    public Response<Set<byte[]>> keys(byte[] pattern) {
         client.keys(pattern);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<String> lindex(byte[] key, int index) {
+    public Response<byte[]> lindex(byte[] key, long index) {
         client.lindex(key, index);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> linsert(byte[] key, LIST_POSITION where,
@@ -192,9 +192,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> lpop(byte[] key) {
+    public Response<byte[]> lpop(byte[] key) {
         client.lpop(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> lpush(byte[] key, byte[] string) {
@@ -207,9 +207,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> lrange(byte[] key, long start, int end) {
+    public Response<List<byte[]>> lrange(byte[] key, long start, long end) {
         client.lrange(key, start, end);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> lrem(byte[] key, long count, byte[] value) {
@@ -227,9 +227,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<List<String>> mget(byte[]... keys) {
+    public Response<List<byte[]>> mget(byte[]... keys) {
         client.mget(keys);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> move(byte[] key, int dbIndex) {
@@ -262,14 +262,14 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> rpop(byte[] key) {
+    public Response<byte[]> rpop(byte[] key) {
         client.rpop(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<String> rpoplpush(byte[] srckey, byte[] dstkey) {
+    public Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey) {
         client.rpoplpush(srckey, dstkey);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> rpush(byte[] key, byte[] string) {
@@ -292,9 +292,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> sdiff(byte[]... keys) {
+    public Response<Set<byte[]>> sdiff(byte[]... keys) {
         client.sdiff(keys);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> sdiffstore(byte[] dstkey, byte[]... keys) {
@@ -302,9 +302,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> set(byte[] key, byte[] value) {
+    public Response<byte[]> set(byte[] key, byte[] value) {
         client.set(key, value);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Boolean> setbit(String key, long offset, boolean value) {
@@ -322,9 +322,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> sinter(byte[]... keys) {
+    public Response<Set<byte[]>> sinter(byte[]... keys) {
         client.sinter(keys);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> sinterstore(byte[] dstkey, byte[]... keys) {
@@ -337,9 +337,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
-    public Response<Set<String>> smembers(byte[] key) {
+    public Response<Set<byte[]>> smembers(byte[] key) {
         client.smembers(key);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member) {
@@ -347,36 +347,36 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(byte[] key) {
+    public Response<List<byte[]>> sort(byte[] key) {
         client.sort(key);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
-    public Response<List<String>> sort(byte[] key,
+    public Response<List<byte[]>> sort(byte[] key,
             SortingParams sortingParameters) {
         client.sort(key, sortingParameters);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
-    public Response<List<String>> sort(byte[] key,
+    public Response<List<byte[]>> sort(byte[] key,
             SortingParams sortingParameters, byte[] dstkey) {
         client.sort(key, sortingParameters, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
-    public Response<List<String>> sort(byte[] key, byte[] dstkey) {
+    public Response<List<byte[]>> sort(byte[] key, byte[] dstkey) {
         client.sort(key, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
-    public Response<String> spop(byte[] key) {
+    public Response<byte[]> spop(byte[] key) {
         client.spop(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<String> srandmember(byte[] key) {
+    public Response<byte[]> srandmember(byte[] key) {
         client.srandmember(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> srem(byte[] key, byte[] member) {
@@ -389,14 +389,15 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> substr(byte[] key, int start, int end) {
+    public Response<String> substr(byte[] key, int start, int end) { // what's
+                                                                     // that?
         client.substr(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Set<String>> sunion(byte[]... keys) {
+    public Response<Set<byte[]>> sunion(byte[]... keys) {
         client.sunion(keys);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> sunionstore(byte[] dstkey, byte[]... keys) {
@@ -450,44 +451,44 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> zrange(byte[] key, int start, int end) {
+    public Response<Set<byte[]>> zrange(byte[] key, int start, int end) {
         client.zrange(key, start, end);
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, double min,
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
             double max) {
         client.zrangeByScore(key, min, max);
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, byte[] min,
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min,
             byte[] max) {
         client.zrangeByScore(key, min, max);
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, double min,
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
             double max, int offset, int count) {
         client.zrangeByScore(key, min, max, offset, count);
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
             double max) {
         client.zrangeByScoreWithScores(key, min, max);
-        return getResponse(BuilderFactory.TUPLE_ZSET);
+        return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
             double max, int offset, int count) {
         client.zrangeByScoreWithScores(key, min, max, offset, count);
-        return getResponse(BuilderFactory.TUPLE_ZSET);
+        return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
 
     public Response<Set<Tuple>> zrangeWithScores(byte[] key, int start, int end) {
         client.zrangeWithScores(key, start, end);
-        return getResponse(BuilderFactory.TUPLE_ZSET);
+        return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
 
     public Response<Long> zrank(byte[] key, byte[] member) {
@@ -510,15 +511,15 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> zrevrange(byte[] key, int start, int end) {
+    public Response<Set<byte[]>> zrevrange(byte[] key, int start, int end) {
         client.zrevrange(key, start, end);
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<Tuple>> zrevrangeWithScores(byte[] key, int start,
             int end) {
         client.zrevrangeWithScores(key, start, end);
-        return getResponse(BuilderFactory.TUPLE_ZSET);
+        return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
 
     public Response<Long> zrevrank(byte[] key, byte[] member) {
@@ -542,9 +543,9 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> brpoplpush(byte[] source, byte[] destination,
+    public Response<byte[]> brpoplpush(byte[] source, byte[] destination,
             int timeout) {
         client.brpoplpush(source, destination, timeout);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 }

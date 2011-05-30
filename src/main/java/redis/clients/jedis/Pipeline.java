@@ -14,7 +14,28 @@ public class Pipeline extends Queable {
         this.client = client;
     }
 
-    public List<Object> sync() {
+    /**
+     * Syncronize pipeline by reading all responses. This operation close the
+     * pipeline. In order to get return values from pipelined commands, capture
+     * the different Response<?> of the commands you execute.
+     */
+    public void sync() {
+        List<Object> unformatted = client.getAll();
+        for (Object o : unformatted) {
+            generateResponse(o);
+        }
+    }
+
+    /**
+     * Syncronize pipeline by reading all responses. This operation close the
+     * pipeline. Whenever possible try to avoid using this version and use
+     * Pipeline.sync() as it won't go through all the responses and generate the
+     * right response type (usually it is a waste of time).
+     * 
+     * @return A list of all the responses in the order you executed them.
+     * @see sync
+     */
+    public List<Object> syncAndReturnAll() {
         List<Object> unformatted = client.getAll();
         List<Object> formatted = new ArrayList<Object>();
         for (Object o : unformatted) {

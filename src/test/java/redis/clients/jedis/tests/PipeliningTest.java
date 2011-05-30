@@ -46,7 +46,7 @@ public class PipeliningTest extends Assert {
         Pipeline p = jedis.pipelined();
         p.set("foo", "bar");
         p.get("foo");
-        results = p.sync();
+        results = p.syncAndReturnAll();
 
         assertEquals(2, results.size());
         assertEquals("OK", results.get(0));

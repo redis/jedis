@@ -2015,10 +2015,19 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getStatusCodeReply();
     }
 
+    /**
+     * Starts a pipeline, which is a very efficient way to send lots of command
+     * and read all the responses when you finish sending them. Try to avoid
+     * this version and use pipelined() when possible as it will give better
+     * performance.
+     * 
+     * @param jedisPipeline
+     * @return The results of the command in the same order you've run them.
+     */
     public List<Object> pipelined(final PipelineBlock jedisPipeline) {
         jedisPipeline.setClient(client);
         jedisPipeline.execute();
-        return jedisPipeline.sync();
+        return jedisPipeline.syncAndReturnAll();
     }
 
     public Pipeline pipelined() {

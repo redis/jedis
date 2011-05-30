@@ -27,7 +27,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     Jedis nj;
 
-    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -218,16 +217,5 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         Response<String> string = t.get("string");
         string.get();
         t.exec();
-    }
-
-    @Test
-    public void lala() {
-        Transaction multi = jedis.multi();
-        Response<Long> publish = multi.publish("foo", "bar");
-        Response<Long> bpublish = multi.publish("foo".getBytes(), "bar"
-                .getBytes());
-        multi.exec();
-        assertEquals(0, publish.get().longValue());
-        assertEquals(0, bpublish.get().longValue());
     }
 }

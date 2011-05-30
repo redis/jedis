@@ -390,7 +390,7 @@ public class BinaryTransaction extends Queable {
     }
 
     public Response<String> substr(byte[] key, int start, int end) { // what's
-                                                                     // that?
+        // that?
         client.substr(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }
@@ -412,11 +412,6 @@ public class BinaryTransaction extends Queable {
 
     public Response<String> type(byte[] key) {
         client.type(key);
-        return getResponse(BuilderFactory.STRING);
-    }
-
-    public Response<String> watch(byte[]... keys) {
-        client.watch(keys);
         return getResponse(BuilderFactory.STRING);
     }
 

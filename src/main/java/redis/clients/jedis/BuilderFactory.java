@@ -1,15 +1,8 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.util.SafeEncoder;
+
+import java.util.*;
 
 public class BuilderFactory {
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
@@ -52,7 +45,7 @@ public class BuilderFactory {
     };
     public static final Builder<String> STRING = new Builder<String>() {
         public String build(Object data) {
-            return SafeEncoder.encode((byte[]) data);
+            return data == null ? null : SafeEncoder.encode((byte[]) data);
         }
 
         public String toString() {

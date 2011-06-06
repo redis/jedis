@@ -83,8 +83,12 @@ public class BuilderFactory {
             final Map<String, String> hash = new HashMap<String, String>();
             final Iterator<byte[]> iterator = flatHash.iterator();
             while (iterator.hasNext()) {
-                hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder
-                        .encode(iterator.next()));
+                byte[] next = iterator.next();
+
+                if (next != null) {
+                    hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder
+                            .encode(iterator.next()));
+                }
             }
 
             return hash;

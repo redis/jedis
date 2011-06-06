@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -53,6 +54,33 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         values = jedis.mget("foo", "bar");
 
         assertEquals(expected, values);
+    }
+
+    @Test
+    public void mgetMap() {
+        Map<String, String> values = jedis.mgetMap("foo", "bar");
+
+
+        assertTrue(values.isEmpty());
+
+        jedis.set("foo", "bar");
+
+        values = jedis.mgetMap("foo", "bar");
+
+        assertTrue(values.size() == 1);
+        assertTrue(values.containsKey("foo"));
+        assertEquals(values.get("foo"),"bar");
+
+        jedis.set("bar", "foo");
+
+
+        values = jedis.mgetMap("foo", "bar");
+
+        assertTrue(values.size() == 2);
+        assertTrue(values.containsKey("foo"));
+        assertEquals(values.get("foo"),"bar");
+        assertTrue(values.containsKey("bar"));
+        assertEquals(values.get("bar"),"foo");
     }
 
     @Test

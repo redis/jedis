@@ -20,12 +20,12 @@ Meet us on IRC: ##jedis on freenode.net
 
 Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://groups.google.com/group/jedis_redis)
 
-## Ok.. so what can I do with Jedis?
+## So what can I do with Jedis?
 All of the following redis features are supported:
 
 - Sorting
 - Connection handling
-- Commands operating on all the kind of values
+- Commands operating on any kind of values
 - Commands operating on string values
 - Commands operating on hashes
 - Commands operating on lists
@@ -43,7 +43,7 @@ All of the following redis features are supported:
 
 ## How do I use it?
 
-You can download the latests build at: 
+You can download the latest build at: 
     http://github.com/xetorthio/jedis/downloads
 
 Or use it as a maven dependency:
@@ -65,19 +65,19 @@ To use it just:
 
 For more usage examples check the tests.
 
-Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool stuff you should know!
+Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know!
 
 And you are done!
 
 ## I want to contribute!
 
-That is great! Just fork the project in github. Create a topic branch, write some tests and the feature that you wish to contribute.
+That is great! Just fork the project in github. Create a topic branch, write some code, and add some tests for your new code.
 
 To run the tests:
 
 - Use the latest redis master branch.
 
-- Run 2 instances of redis using conf files in conf folder. For the tests we use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
+- Run 2 instances of redis [using conf files in conf folder](https://github.com/xetorthio/jedis/wiki). For the tests we use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
 
 Thanks for helping!
 

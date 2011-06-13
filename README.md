@@ -7,7 +7,7 @@ Jedis was conceived to be EASY to use.
 Jedis is fully compatible with redis 2.0.0.
 
 ## I want to persist my objects in Redis. How can I do it?
-You should definitely check [JOhm](http://github.com/xetorthio/johm "JOhm")!!!
+You should definitely check [JOhm](http://github.com/xetorthio/johm "JOhm")!
 And of course, you can always serialize it and store it.
 
 ## Is there a Groovy client?
@@ -51,7 +51,7 @@ Or use it as a maven dependency:
     <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>1.3.0</version>
+        <version>2.0.0</version>
         <type>jar</type>
         <scope>compile</scope>
     </dependency>
@@ -65,7 +65,7 @@ To use it just:
 
 For more usage examples check the tests.
 
-Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know!
+Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
 And you are done!
 
@@ -83,7 +83,7 @@ Thanks for helping!
 
 ## License
 
-Copyright (c) 2010 Jonathan Leibiusky
+Copyright (c) 2011 Jonathan Leibiusky
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

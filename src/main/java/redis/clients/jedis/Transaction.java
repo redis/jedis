@@ -191,22 +191,22 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> lrange(String key, int start, int end) {
+    public Response<List<String>> lrange(String key, long start, long end) {
         client.lrange(key, start, end);
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<Long> lrem(String key, int count, String value) {
+    public Response<Long> lrem(String key, long count, String value) {
         client.lrem(key, count, value);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> lset(String key, int index, String value) {
+    public Response<String> lset(String key, long index, String value) {
         client.lset(key, index, value);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> ltrim(String key, int start, int end) {
+    public Response<String> ltrim(String key, long start, long end) {
         client.ltrim(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }
@@ -284,6 +284,11 @@ public class Transaction extends BinaryTransaction {
     public Response<Long> sdiffstore(String dstkey, String... keys) {
         client.sdiffstore(dstkey, keys);
         return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> select(int index) {
+        client.select(index);
+        return getResponse(BuilderFactory.STRING);
     }
 
     public Response<String> set(String key, String value) {
@@ -566,4 +571,15 @@ public class Transaction extends BinaryTransaction {
         client.lastsave();
         return getResponse(BuilderFactory.LONG);
     }
+
+    public Response<Long> publish(String channel, String message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> publish(byte[] channel, byte[] message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
+
 }

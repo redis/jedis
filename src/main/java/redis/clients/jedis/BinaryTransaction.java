@@ -313,6 +313,11 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<String> select(int index) {
+        client.select(index);
+        return getResponse(BuilderFactory.STRING);
+    }
+
 
     public Response<byte[]> set(byte[] key, byte[] value) {
         client.set(key, value);

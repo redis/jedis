@@ -112,5 +112,10 @@ public class Sharded<R, S extends ShardInfo<R>> {
     public Collection<R> getAllShards() {
         return Collections.unmodifiableCollection(resources.values());
     }
+    
+    public void dynamicUpdate(final DynamicShardProvider<R, S> provider) {
+    	throw new RuntimeException("Not yet implemented");
+    }
+    
 }
 

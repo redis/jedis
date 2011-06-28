@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +18,10 @@ public class Sharded<R, S extends ShardInfo<R>> {
     private TreeMap<Long, S> nodes;
     private final Hashing algo;
     private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
+    private final boolean useProvider;
+    private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
+    private final Lock readLock = rwlock.readLock();
+    private final Lock writeLock = rwlock.writeLock();
 
     /**
      * The default pattern used for extracting a key tag. The pattern must have
@@ -32,10 +38,31 @@ public class Sharded<R, S extends ShardInfo<R>> {
         this(shards, Hashing.MURMUR_HASH); // MD5 is really not good as we works
         // with 64-bits not 128
     }
+    
+    /**
+     * Constructor that depends on a shard provider.
+     * @param provider the shard provider
+     */
+    public Sharded(final DynamicShardProvider<R, S> provider) {
+    	this(provider, Hashing.MURMUR_HASH);
+    }
 
     public Sharded(List<S> shards, Hashing algo) {
+    	this.useProvider = false;
         this.algo = algo;
         initialize(shards);
+    }
+
+    /**
+     * Constructor that depends on a shard provider.
+     * @param provider the shard provider
+     * @param algo key hashing algorithm to be used
+     */
+    public Sharded(final DynamicShardProvider<R, S> provider, final Hashing algo) {
+    	this.useProvider = true;
+        this.algo = algo;
+        provider.register(this);
+        initialize(provider.getShards());
     }
 
     public Sharded(List<S> shards, Pattern tagPattern) {
@@ -44,47 +71,116 @@ public class Sharded<R, S extends ShardInfo<R>> {
         // 64-bits not 128
     }
 
+    /**
+     * Constructor that depends on a shard provider.
+     * @param provider the shard provider
+     * @param algo key hashing algorithm to be used
+     * @param tagPattern pattern to be used for key hashing
+     */
+    public Sharded(final DynamicShardProvider<R, S> provider, final Pattern tagPattern) {
+    	this(provider, Hashing.MURMUR_HASH, tagPattern);
+    }
+
     public Sharded(List<S> shards, Hashing algo, Pattern tagPattern) {
+    	this.useProvider = false;
         this.algo = algo;
         this.tagPattern = tagPattern;
         initialize(shards);
     }
 
-    private void initialize(List<S> shards) {
-        nodes = new TreeMap<Long, S>();
+    /**
+     * Constructor that depends on a shard provider.
+     * @param provider the shard provider
+     * @param tagPattern pattern to be used for key hashing
+     */
+    public Sharded(final DynamicShardProvider<R, S> provider, final Hashing algo, final Pattern tagPattern) {
+    	this.useProvider = false;
+        this.algo = algo;
+        this.tagPattern = tagPattern;
+        provider.register(this);
+        initialize(provider.getShards());
+    }
 
-        for (int i = 0; i != shards.size(); ++i) {
-            final S shardInfo = shards.get(i);
-            if (shardInfo.getName() == null)
-            	for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
-            		nodes.put(this.algo.hash("SHARD-" + i + "-NODE-" + n), shardInfo);
-            	}
-            else
-            	for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
-            		nodes.put(this.algo.hash(shardInfo.getName() + "*" + shardInfo.getWeight() + n), shardInfo);
-            	}
-            resources.put(shardInfo, shardInfo.createResource());
-        }
+    private void initialize(List<S> shards) {
+    	if(useProvider) {
+    		writeLock.lock();
+    	}
+    	try {
+	        nodes = new TreeMap<Long, S>();
+	
+	        for (int i = 0; i != shards.size(); ++i) {
+	            final S shardInfo = shards.get(i);
+	            if (shardInfo.getName() == null)
+	            	for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
+	            		nodes.put(this.algo.hash("SHARD-" + i + "-NODE-" + n), shardInfo);
+	            	}
+	            else
+	            	for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
+	            		nodes.put(this.algo.hash(shardInfo.getName() + "*" + shardInfo.getWeight() + n), shardInfo);
+	            	}
+	            resources.put(shardInfo, shardInfo.createResource());
+	        }
+    	} finally {
+    		if(useProvider) {
+    			writeLock.unlock();
+    		}
+    	}
     }
 
     public R getShard(byte[] key) {
-        return resources.get(getShardInfo(key));
+    	if(useProvider) {
+    		readLock.lock();
+    	}
+    	try {
+    		return resources.get(getShardInfo(key));
+   		} finally {
+   	    	if(useProvider) {
+    			readLock.unlock();
+   	    	}
+    	}
     }
 
     public R getShard(String key) {
-        return resources.get(getShardInfo(key));
+    	if(useProvider) {
+    		readLock.lock();
+    	}
+    	try {
+    		return resources.get(getShardInfo(key));
+   		} finally {
+   	    	if(useProvider) {
+    			readLock.unlock();
+   	    	}
+    	}
     }
 
     public S getShardInfo(byte[] key) {
-        SortedMap<Long, S> tail = nodes.tailMap(algo.hash(key));
-        if (tail.size() == 0) {
-            return nodes.get(nodes.firstKey());
-        }
-        return tail.get(tail.firstKey());
+    	if(useProvider) {
+    		readLock.lock();
+    	}
+    	try {
+	        SortedMap<Long, S> tail = nodes.tailMap(algo.hash(key));
+	        if (tail.size() == 0) {
+	            return nodes.get(nodes.firstKey());
+	        }
+	        return tail.get(tail.firstKey());
+    	} finally {
+        	if(useProvider) {
+        		readLock.unlock();
+        	}
+    	}
     }
 
     public S getShardInfo(String key) {
-        return getShardInfo(SafeEncoder.encode(getKeyTag(key)));
+    	if(useProvider) {
+    		readLock.lock();
+    	}
+    	try {
+    		return getShardInfo(SafeEncoder.encode(getKeyTag(key)));
+    	} finally {
+        	if(useProvider) {
+        		readLock.unlock();
+        	}
+    	}
     }
 
     /**
@@ -106,16 +202,35 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     public Collection<S> getAllShardInfo() {
-        return Collections.unmodifiableCollection(nodes.values());
+    	if(useProvider) {
+    		readLock.lock();
+    	}
+    	try {
+    		return Collections.unmodifiableCollection(nodes.values());
+		} finally {
+	    	if(useProvider) {
+	    		readLock.unlock();
+	    	}
+		}
     }
 
     public Collection<R> getAllShards() {
-        return Collections.unmodifiableCollection(resources.values());
+    	if(useProvider) {
+    		readLock.lock();
+    	}
+    	try {
+    		return Collections.unmodifiableCollection(resources.values());
+		} finally {
+	    	if(useProvider) {
+	    		readLock.unlock();
+	    	}
+		}
     }
     
     public void dynamicUpdate(final DynamicShardProvider<R, S> provider) {
-    	throw new RuntimeException("Not yet implemented");
+    	if(useProvider) {
+    		initialize(provider.getShards());
+    	}
     }
-    
 }
 

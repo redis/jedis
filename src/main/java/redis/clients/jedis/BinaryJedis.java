@@ -258,7 +258,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Since Redis 2.1.3 you can update the value of the timeout of a key
      * already having an expire set. It is also possible to undo the expire at
-     * all turning the key into a normal key using the {@link #persist(String)
+     * all turning the key into a normal key using the {@link #persist(byte[])
      * PERSIST} command.
      * <p>
      * Time complexity: O(1)
@@ -280,7 +280,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * EXPIREAT works exctly like {@link #expire(String, int) EXPIRE} but
+     * EXPIREAT works exctly like {@link #expire(byte[], int) EXPIRE} but
      * instead to get the number of seconds representing the Time To Live of the
      * key as a second argument (that is a relative way of specifing the TTL),
      * it takes an absolute one in the form of a UNIX timestamp (Number of
@@ -294,7 +294,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Since Redis 2.1.3 you can update the value of the timeout of a key
      * already having an expire set. It is also possible to undo the expire at
-     * all turning the key into a normal key using the {@link #persist(String)
+     * all turning the key into a normal key using the {@link #persist(byte[])
      * PERSIST} command.
      * <p>
      * Time complexity: O(1)
@@ -317,7 +317,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * The TTL command returns the remaining time to live in seconds of a key
-     * that has an {@link #expire(String, int) EXPIRE} set. This introspection
+     * that has an {@link #expire(byte[], int) EXPIRE} set. This introspection
      * capability allows a Redis client to check how many seconds a given key
      * will continue to be part of the dataset.
      * 
@@ -410,7 +410,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * SETNX works exactly like {@link #set(String, String) SET} with the only
+     * SETNX works exactly like {@link #set(byte[], byte[]) SET} with the only
      * difference that if the key already exists no operation is performed.
      * SETNX actually means "SET if Not eXists".
      * <p>
@@ -429,7 +429,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * The command is exactly equivalent to the following group of commands:
-     * {@link #set(String, String) SET} + {@link #expire(String, int) EXPIRE}.
+     * {@link #set(byte[], byte[]) SET} + {@link #expire(byte[], int) EXPIRE}.
      * The operation is atomic.
      * <p>
      * Time complexity: O(1)
@@ -511,9 +511,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #incr(String)
-     * @see #decr(String)
-     * @see #incrBy(String, int)
+     * @see #incr(byte[])
+     * @see #decr(byte[])
+     * @see #incrBy(byte[], long)
      * 
      * @param key
      * @param integer
@@ -540,9 +540,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #incr(String)
-     * @see #incrBy(String, int)
-     * @see #decrBy(String, int)
+     * @see #incr(byte[])
+     * @see #incrBy(byte[], long)
+     * @see #decrBy(byte[], long)
      * 
      * @param key
      * @return Integer reply, this commands will reply with the new value of key
@@ -555,7 +555,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * INCRBY work just like {@link #incr(String) INCR} but instead to increment
+     * INCRBY work just like {@link #incr(byte[]) INCR} but instead to increment
      * by 1 the increment is integer.
      * <p>
      * INCR commands are limited to 64 bit signed integers.
@@ -567,9 +567,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #incr(String)
-     * @see #decr(String)
-     * @see #decrBy(String, int)
+     * @see #incr(byte[])
+     * @see #decr(byte[])
+     * @see #decrBy(byte[], long)
      * 
      * @param key
      * @param integer
@@ -596,9 +596,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #incrBy(String, int)
-     * @see #decr(String)
-     * @see #decrBy(String, int)
+     * @see #incrBy(byte[], long)
+     * @see #decr(byte[])
+     * @see #decrBy(byte[], long)
      * 
      * @param key
      * @return Integer reply, this commands will reply with the new value of key
@@ -881,7 +881,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see BinaryJedis#lpush(String, String)
+     * @see BinaryJedis#lpush(byte[], byte[])
      * 
      * @param key
      * @param string
@@ -902,7 +902,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see BinaryJedis#rpush(String, String)
+     * @see BinaryJedis#rpush(byte[], byte[])
      * 
      * @param key
      * @param string
@@ -1053,7 +1053,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * O(N) (with N being the length of the list), setting the first or last
      * elements of the list is O(1).
      * 
-     * @see #lindex(String, int)
+     * @see #lindex(byte[], int)
      * 
      * @param key
      * @param index
@@ -1071,7 +1071,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * count is zero all the elements are removed. If count is negative elements
      * are removed from tail to head, instead to go from head to tail that is
      * the normal behaviour. So for example LREM with count -2 and hello as
-     * value to remove against the list (a,b,c,hello,x,hello,hello) will lave
+     * value to remove against the list (a,b,c,hello,x,hello,hello) will have
      * the list (a,b,c,hello,x). The number of removed elements is returned as
      * an integer, see below for more information about the returned value. Note
      * that non existing keys are considered like empty lists by LREM, so LREM
@@ -1099,7 +1099,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.
      * 
-     * @see #rpop(String)
+     * @see #rpop(byte[])
      * 
      * @param key
      * @return Bulk reply
@@ -1118,7 +1118,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.
      * 
-     * @see #lpop(String)
+     * @see #lpop(byte[])
      * 
      * @param key
      * @return Bulk reply
@@ -1210,7 +1210,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Remove a random element from a Set returning it as return value. If the
      * Set is empty or the key does not exist, a nil object is returned.
      * <p>
-     * The {@link #srandmember(String)} command does a similar work but the
+     * The {@link #srandmember(byte[])} command does a similar work but the
      * returned element is not removed from the Set.
      * <p>
      * Time complexity O(1)
@@ -1225,7 +1225,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * Move the specifided member from the set at srckey to the set at dstkey.
+     * Move the specified member from the set at srckey to the set at dstkey.
      * This operation is atomic, in every given moment the element will appear
      * to be in the source or destination set for accessing clients.
      * <p>
@@ -1289,10 +1289,10 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Return the members of a set resulting from the intersection of all the
      * sets hold at the specified keys. Like in
-     * {@link #lrange(String, int, int) LRANGE} the result is sent to the client
+     * {@link #lrange(byte[], int, int) LRANGE} the result is sent to the client
      * as a multi-bulk reply (see the protocol specification for more
      * information). If just a single key is specified, then this command
-     * produces the same result as {@link #smembers(String) SMEMBERS}. Actually
+     * produces the same result as {@link #smembers(byte[]) SMEMBERS}. Actually
      * SMEMBERS is just syntax sugar for SINTER.
      * <p>
      * Non existing keys are considered like empty sets, so if one of the keys
@@ -1331,10 +1331,10 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     /**
      * Return the members of a set resulting from the union of all the sets hold
-     * at the specified keys. Like in {@link #lrange(String, int, int) LRANGE}
+     * at the specified keys. Like in {@link #lrange(byte[], int, int) LRANGE}
      * the result is sent to the client as a multi-bulk reply (see the protocol
      * specification for more information). If just a single key is specified,
-     * then this command produces the same result as {@link #smembers(String)
+     * then this command produces the same result as {@link #smembers(byte[])
      * SMEMBERS}.
      * <p>
      * Non existing keys are considered like empty sets.
@@ -1531,7 +1531,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * O(log(N))
      * 
-     * @see #zrevrank(String, String)
+     * @see #zrevrank(byte[], byte[])
      * 
      * @param key
      * @param member
@@ -1557,7 +1557,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * O(log(N))
      * 
-     * @see #zrank(String, String)
+     * @see #zrank(byte[], byte[])
      * 
      * @param key
      * @param member
@@ -1678,9 +1678,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * By default sorting is numeric with elements being compared as double
      * precision floating point numbers. This is the simplest form of SORT.
      * 
-     * @see #sort(String, String)
-     * @see #sort(String, SortingParams)
-     * @see #sort(String, SortingParams, String)
+     * @see #sort(byte[], byte[])
+     * @see #sort(byte[], SortingParams)
+     * @see #sort(byte[], SortingParams, byte[])
      * 
      * 
      * @param key
@@ -1763,8 +1763,8 @@ public class BinaryJedis implements BinaryJedisCommands {
      * -> [3, x, 2, y, 1, z]
      * </pre>
      * 
-     * @see #sort(String)
-     * @see #sort(String, SortingParams, String)
+     * @see #sort(byte[])
+     * @see #sort(byte[], SortingParams, byte[])
      * 
      * @param key
      * @param sortingParameters
@@ -1868,9 +1868,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Sort a Set or a List accordingly to the specified parameters and store
      * the result at dstkey.
      * 
-     * @see #sort(String, SortingParams)
-     * @see #sort(String)
-     * @see #sort(String, String)
+     * @see #sort(byte[], SortingParams)
+     * @see #sort(byte[])
+     * @see #sort(byte[], byte[])
      * 
      * @param key
      * @param sortingParameters
@@ -1892,9 +1892,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * elements being compared as double precision floating point numbers. This
      * is the simplest form of SORT.
      * 
-     * @see #sort(String)
-     * @see #sort(String, SortingParams)
-     * @see #sort(String, SortingParams, String)
+     * @see #sort(byte[])
+     * @see #sort(byte[], SortingParams)
+     * @see #sort(byte[], SortingParams, byte[])
      * 
      * @param key
      * @param dstkey
@@ -2070,13 +2070,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * does not involve further computation).
      * <p>
      * Using the optional
-     * {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's
+     * {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's
      * possible to get only a range of the matching elements in an SQL-alike
      * way. Note that if offset is large the commands needs to traverse the list
      * for offset elements and this adds up to the O(M) figure.
      * <p>
-     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead
      * of returning the actual elements in the specified interval, it just
      * returns the number of matching elements.
      * <p>
@@ -2105,12 +2105,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
      * 
-     * @see #zrangeByScore(String, double, double)
-     * @see #zrangeByScore(String, double, double, int, int)
-     * @see #zrangeByScoreWithScores(String, double, double)
-     * @see #zrangeByScoreWithScores(String, String, String)
-     * @see #zrangeByScoreWithScores(String, double, double, int, int)
-     * @see #zcount(String, double, double)
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
      * 
      * @param key
      * @param min
@@ -2141,13 +2140,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * does not involve further computation).
      * <p>
      * Using the optional
-     * {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's
+     * {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's
      * possible to get only a range of the matching elements in an SQL-alike
      * way. Note that if offset is large the commands needs to traverse the list
      * for offset elements and this adds up to the O(M) figure.
      * <p>
-     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead
      * of returning the actual elements in the specified interval, it just
      * returns the number of matching elements.
      * <p>
@@ -2176,11 +2175,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
      * 
-     * @see #zrangeByScore(String, double, double)
-     * @see #zrangeByScore(String, double, double, int, int)
-     * @see #zrangeByScoreWithScores(String, double, double)
-     * @see #zrangeByScoreWithScores(String, double, double, int, int)
-     * @see #zcount(String, double, double)
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
      * 
      * @param key
      * @param min
@@ -2204,13 +2203,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * does not involve further computation).
      * <p>
      * Using the optional
-     * {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's
+     * {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's
      * possible to get only a range of the matching elements in an SQL-alike
      * way. Note that if offset is large the commands needs to traverse the list
      * for offset elements and this adds up to the O(M) figure.
      * <p>
-     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead
      * of returning the actual elements in the specified interval, it just
      * returns the number of matching elements.
      * <p>
@@ -2239,11 +2238,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
      * 
-     * @see #zrangeByScore(String, double, double)
-     * @see #zrangeByScore(String, double, double, int, int)
-     * @see #zrangeByScoreWithScores(String, double, double)
-     * @see #zrangeByScoreWithScores(String, double, double, int, int)
-     * @see #zcount(String, double, double)
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
      * 
      * @param key
      * @param min
@@ -2268,13 +2267,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * does not involve further computation).
      * <p>
      * Using the optional
-     * {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's
+     * {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's
      * possible to get only a range of the matching elements in an SQL-alike
      * way. Note that if offset is large the commands needs to traverse the list
      * for offset elements and this adds up to the O(M) figure.
      * <p>
-     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead
      * of returning the actual elements in the specified interval, it just
      * returns the number of matching elements.
      * <p>
@@ -2303,11 +2302,11 @@ public class BinaryJedis implements BinaryJedisCommands {
      * (for instance you always ask for the first ten elements with LIMIT) you
      * can consider it O(log(N))
      * 
-     * @see #zrangeByScore(String, double, double)
-     * @see #zrangeByScore(String, double, double, int, int)
-     * @see #zrangeByScoreWithScores(String, double, double)
-     * @see #zrangeByScoreWithScores(String, double, double, int, int)
-     * @see #zcount(String, double, double)
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
      * 
      * @param key
      * @param min
@@ -2896,7 +2895,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     /**
-     * Undo a {@link #expire(String, int) expire} at turning the expire key into
+     * Undo a {@link #expire(byte[], int) expire} at turning the expire key into
      * a normal key.
      * <p>
      * Time complexity: O(1)

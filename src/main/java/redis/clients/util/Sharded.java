@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class Sharded<R, S extends ShardInfo<R>> {
 
     public static final int DEFAULT_WEIGHT = 1;
-    private TreeMap<Long, S> nodes;
+    private final TreeMap<Long, S> nodes = new TreeMap<Long, S>();
     private final Hashing algo;
     private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
     private final boolean useProvider;
@@ -102,11 +102,8 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     private void initialize(List<S> shards) {
-    	if(useProvider) {
-    		writeLock.lock();
-    	}
-    	try {
-	        nodes = new TreeMap<Long, S>();
+	        nodes.clear();
+	        resources.clear();
 	
 	        for (int i = 0; i != shards.size(); ++i) {
 	            final S shardInfo = shards.get(i);
@@ -120,11 +117,6 @@ public class Sharded<R, S extends ShardInfo<R>> {
 	            	}
 	            resources.put(shardInfo, shardInfo.createResource());
 	        }
-    	} finally {
-    		if(useProvider) {
-    			writeLock.unlock();
-    		}
-    	}
     }
 
     public R getShard(byte[] key) {
@@ -171,16 +163,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     public S getShardInfo(String key) {
-    	if(useProvider) {
-    		readLock.lock();
-    	}
-    	try {
-    		return getShardInfo(SafeEncoder.encode(getKeyTag(key)));
-    	} finally {
-        	if(useProvider) {
-        		readLock.unlock();
-        	}
-    	}
+   		return getShardInfo(SafeEncoder.encode(getKeyTag(key)));
     }
 
     /**
@@ -229,7 +212,12 @@ public class Sharded<R, S extends ShardInfo<R>> {
     
     public void dynamicUpdate(final AbstractDynamicShardsProvider<R, S> provider) {
     	if(useProvider) {
-    		initialize(provider.getShards());
+    		writeLock.lock();
+    		try{
+    			initialize(provider.getShards());
+    		} finally {
+    			writeLock.unlock();
+    		}
     	}
     }
 }

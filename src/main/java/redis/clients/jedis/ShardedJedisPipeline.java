@@ -10,7 +10,7 @@ public abstract class ShardedJedisPipeline {
     private BinaryShardedJedis jedis;
     private List<FutureResult> results = new ArrayList<FutureResult>();
 
-    private class FutureResult {
+    private static class FutureResult {
         private Client client;
 
         public FutureResult(Client client) {

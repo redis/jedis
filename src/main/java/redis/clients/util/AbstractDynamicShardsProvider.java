@@ -7,7 +7,7 @@ import java.util.Observable;
 /**
  * Allow shards custom providers, inspired from {@linkplain Observable}.
  */
-public class DynamicShardProvider<R, S extends ShardInfo<R>> {
+public abstract class AbstractDynamicShardsProvider<R, S extends ShardInfo<R>> {
 	private final ArrayList<Sharded<R, S>> shardeds;
 	private final List<S> shards;
 	private boolean changed = false;
@@ -15,10 +15,25 @@ public class DynamicShardProvider<R, S extends ShardInfo<R>> {
 	/**
 	 * Default constructor that initialize an empty list of shards / sharded.
 	 */
-	public DynamicShardProvider() {
+	public AbstractDynamicShardsProvider() {
+		this(null);
+	}
+
+	/**
+	 * Default constructor with initial shards list.
+	 * @param initialShards initial shards list
+	 */
+	public AbstractDynamicShardsProvider(final List<S> initialShards) {
 		super();
-		this.shards = new ArrayList<S>(0);
-		this.shardeds = new ArrayList<Sharded<R,S>>(1);
+		if(null != initialShards && 0 != initialShards.size()) {
+			this.shards = new ArrayList<S>(initialShards.size());
+			this.shards.addAll(initialShards);
+		} else {
+			this.shards = new ArrayList<S>(0);
+		}
+		// We're not expecting a lot of dynamic Sharded waiting for updates ...
+		// So the initial size for those is set quite low
+		this.shardeds = new ArrayList<Sharded<R,S>>(3);
 	}
 
 	/**

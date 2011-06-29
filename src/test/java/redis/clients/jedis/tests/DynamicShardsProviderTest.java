@@ -1,35 +1,24 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.util.DynamicShardProvider;
+import redis.clients.util.AbstractDynamicShardsProvider;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 
-public class DynamicShardProviderTest {
-
-	private DynamicShardProvider<DummyRessource, DummyShardInfo> undertest;
-
-	@Before
-	public void setup() {
-		this.undertest = new DynamicShardProvider<DynamicShardProviderTest.DummyRessource, DynamicShardProviderTest.DummyShardInfo>();
-	}
-	
+public class DynamicShardsProviderTest {
 	@Test
-	public void testShardUpdates() throws InterruptedException {
-		List<DummyShardInfo> shards = new ArrayList<DynamicShardProviderTest.DummyShardInfo>();
+	public void testShardUpdatesWithoutRedisServer() throws InterruptedException {
+		DummyDynamicShardsProvider undertest = new DummyDynamicShardsProvider();
+		List<DummyShardInfo> shards = new ArrayList<DynamicShardsProviderTest.DummyShardInfo>();
 		shards.add(new DummyShardInfo("Shard1"));
 		shards.add(new DummyShardInfo("Shard2"));
 		shards.add(new DummyShardInfo("Shard3"));
@@ -82,8 +71,17 @@ public class DynamicShardProviderTest {
 		assertTrue(rr5.getValidCount() >= rr5.getInvalidCount());
 	}
 	
+	////////////////////////////////////
+	//   Inner class for mocked tests
+	////////////////////////////////////
+	
+	private static class DummyDynamicShardsProvider extends AbstractDynamicShardsProvider<DummyRessource, DummyShardInfo> {
+		public DummyDynamicShardsProvider() {
+			super();
+		}
+	}
+	
 	private static class DummyRessource {
-		
 	}
 	
 	private static class DummyShardInfo extends ShardInfo<DummyRessource> {
@@ -106,7 +104,7 @@ public class DynamicShardProviderTest {
 	}
 	
 	private static class DummySharded extends Sharded<DummyRessource, DummyShardInfo> {
-		public DummySharded(DynamicShardProvider<DummyRessource, DummyShardInfo> provider) {
+		public DummySharded(AbstractDynamicShardsProvider<DummyRessource, DummyShardInfo> provider) {
 			super(provider);
 		}
 		
@@ -154,9 +152,9 @@ public class DynamicShardProviderTest {
 	}
 
 	private static class WriteRunnable implements Runnable {
-		private final DynamicShardProvider<DummyRessource, DummyShardInfo> dynamic;
+		private final AbstractDynamicShardsProvider<DummyRessource, DummyShardInfo> dynamic;
 
-		public WriteRunnable(final DynamicShardProvider<DummyRessource, DummyShardInfo> dynamic) {
+		public WriteRunnable(final AbstractDynamicShardsProvider<DummyRessource, DummyShardInfo> dynamic) {
 			this.dynamic = dynamic;
 		}
 

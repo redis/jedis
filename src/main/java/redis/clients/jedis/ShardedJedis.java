@@ -7,23 +7,44 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
+import redis.clients.util.JedisDynamicShardsProvider;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public ShardedJedis(List<JedisShardInfo> shards) {
         super(shards);
     }
 
+    public ShardedJedis(final JedisDynamicShardsProvider provider) {
+        super(provider);
+    }
+
     public ShardedJedis(List<JedisShardInfo> shards, Hashing algo) {
         super(shards, algo);
+    }
+
+    public ShardedJedis(final JedisDynamicShardsProvider provider, //
+    					final Hashing algo) {
+        super(provider, algo);
     }
 
     public ShardedJedis(List<JedisShardInfo> shards, Pattern keyTagPattern) {
         super(shards, keyTagPattern);
     }
 
+    public ShardedJedis(final JedisDynamicShardsProvider provider, //
+    					final Pattern keyTagPattern) {
+        super(provider, keyTagPattern);
+    }
+
     public ShardedJedis(List<JedisShardInfo> shards, Hashing algo,
             Pattern keyTagPattern) {
         super(shards, algo, keyTagPattern);
+    }
+
+    public ShardedJedis(final JedisDynamicShardsProvider provider, //
+    					final Hashing algo, //
+    					final Pattern keyTagPattern) {
+        super(provider, algo, keyTagPattern);
     }
 
     public void disconnect() {

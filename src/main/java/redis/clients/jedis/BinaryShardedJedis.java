@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
+import redis.clients.util.JedisDynamicShardsProvider;
 import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
@@ -17,17 +18,35 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         super(shards);
     }
 
+    public BinaryShardedJedis(final JedisDynamicShardsProvider provider) {
+        super(provider);
+    }
+
     public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo) {
         super(shards, algo);
+    }
+
+    public BinaryShardedJedis(final JedisDynamicShardsProvider provider, final Hashing algo) {
+        super(provider, algo);
     }
 
     public BinaryShardedJedis(List<JedisShardInfo> shards, Pattern keyTagPattern) {
         super(shards, keyTagPattern);
     }
 
+    public BinaryShardedJedis(final JedisDynamicShardsProvider provider, final Pattern keyTagPattern) {
+        super(provider, keyTagPattern);
+    }
+
     public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo,
             Pattern keyTagPattern) {
         super(shards, algo, keyTagPattern);
+    }
+
+    public BinaryShardedJedis( 	final JedisDynamicShardsProvider provider, //
+    							final Hashing algo, //
+    							final Pattern keyTagPattern) {
+        super(provider, algo, keyTagPattern);
     }
 
     public void disconnect() throws IOException {

@@ -43,7 +43,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
      * Constructor that depends on a shard provider.
      * @param provider the shard provider
      */
-    public Sharded(final DynamicShardProvider<R, S> provider) {
+    public Sharded(final AbstractDynamicShardsProvider<R, S> provider) {
     	this(provider, Hashing.MURMUR_HASH);
     }
 
@@ -58,7 +58,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
      * @param provider the shard provider
      * @param algo key hashing algorithm to be used
      */
-    public Sharded(final DynamicShardProvider<R, S> provider, final Hashing algo) {
+    public Sharded(final AbstractDynamicShardsProvider<R, S> provider, final Hashing algo) {
     	this.useProvider = true;
         this.algo = algo;
         provider.register(this);
@@ -77,7 +77,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
      * @param algo key hashing algorithm to be used
      * @param tagPattern pattern to be used for key hashing
      */
-    public Sharded(final DynamicShardProvider<R, S> provider, final Pattern tagPattern) {
+    public Sharded(final AbstractDynamicShardsProvider<R, S> provider, final Pattern tagPattern) {
     	this(provider, Hashing.MURMUR_HASH, tagPattern);
     }
 
@@ -93,7 +93,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
      * @param provider the shard provider
      * @param tagPattern pattern to be used for key hashing
      */
-    public Sharded(final DynamicShardProvider<R, S> provider, final Hashing algo, final Pattern tagPattern) {
+    public Sharded(final AbstractDynamicShardsProvider<R, S> provider, final Hashing algo, final Pattern tagPattern) {
     	this.useProvider = false;
         this.algo = algo;
         this.tagPattern = tagPattern;
@@ -227,7 +227,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
 		}
     }
     
-    public void dynamicUpdate(final DynamicShardProvider<R, S> provider) {
+    public void dynamicUpdate(final AbstractDynamicShardsProvider<R, S> provider) {
     	if(useProvider) {
     		initialize(provider.getShards());
     	}

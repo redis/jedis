@@ -561,6 +561,11 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<String> select(int index) {
+        client.select(index);
+        return getResponse(BuilderFactory.STRING);
+    }
+
     public Response<String> set(byte[] key, byte[] value) {
         client.set(key, value);
         return getResponse(BuilderFactory.STRING);

@@ -457,20 +457,23 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd("foo", 4.0d, "d");
         jedis.zadd("foo", 5.0d, "e");
 
-        Set<String> range = jedis.zrevrangeByScore("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
+        Set<String> range = jedis.zrevrangeByScore("foo", 3d,
+                Double.NEGATIVE_INFINITY, 0, 1);
         Set<String> expected = new LinkedHashSet<String>();
         expected.add("c");
 
         assertEquals(expected, range);
 
-        range = jedis.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY, 0, 2);
+        range = jedis.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY,
+                0, 2);
         expected = new LinkedHashSet<String>();
         expected.add("c");
         expected.add("b");
 
         assertEquals(expected, range);
 
-        range = jedis.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY, 1, 1);
+        range = jedis.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY,
+                1, 1);
         expected = new LinkedHashSet<String>();
         expected.add("b");
 
@@ -594,20 +597,23 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd("foo", 4.0d, "d");
         jedis.zadd("foo", 5.0d, "e");
 
-        Set<Tuple> range = jedis.zrevrangeByScoreWithScores("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
+        Set<Tuple> range = jedis.zrevrangeByScoreWithScores("foo", 3d,
+                Double.NEGATIVE_INFINITY, 0, 1);
         Set<Tuple> expected = new LinkedHashSet<Tuple>();
         expected.add(new Tuple("c", 3.0d));
 
         assertEquals(expected, range);
 
-        range = jedis.zrevrangeByScoreWithScores("foo", 3.5d, Double.NEGATIVE_INFINITY, 0, 2);
+        range = jedis.zrevrangeByScoreWithScores("foo", 3.5d,
+                Double.NEGATIVE_INFINITY, 0, 2);
         expected = new LinkedHashSet<Tuple>();
         expected.add(new Tuple("c", 3.0d));
         expected.add(new Tuple("b", 2.0d));
 
         assertEquals(expected, range);
 
-        range = jedis.zrevrangeByScoreWithScores("foo", 3.5d, Double.NEGATIVE_INFINITY, 1, 1);
+        range = jedis.zrevrangeByScoreWithScores("foo", 3.5d,
+                Double.NEGATIVE_INFINITY, 1, 1);
         expected = new LinkedHashSet<Tuple>();
         expected.add(new Tuple("b", 2.0d));
 
@@ -861,5 +867,15 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
         assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder
                 .encode("dst"), 0, 100));
+    }
+
+    @Test
+    public void tupleCompare() {
+        Tuple t1 = new Tuple("foo", 1d);
+        Tuple t2 = new Tuple("bar", 2d);
+
+        assertEquals(-1, t1.compareTo(t2));
+        assertEquals(1, t2.compareTo(t1));
+        assertEquals(0, t2.compareTo(t2));
     }
 }

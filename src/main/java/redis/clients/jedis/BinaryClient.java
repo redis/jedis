@@ -27,8 +27,10 @@ public class BinaryClient extends Connection {
     }
 
     private boolean isInMulti;
-    
+
     private String password;
+
+    private long db;
 
     public boolean isInMulti() {
         return isInMulti;
@@ -41,17 +43,21 @@ public class BinaryClient extends Connection {
     public BinaryClient(final String host, final int port) {
         super(host, port);
     }
-    
+
     public void setPassword(final String password) {
         this.password = password;
     }
-    
+
     @Override
     public void connect() {
         if (!isConnected()) {
             super.connect();
             if (password != null) {
-                sendCommand(AUTH, password);
+                auth(password);
+                getStatusCodeReply();
+            }
+            if (db > 0) {
+                select(Long.valueOf(db).intValue());
                 getStatusCodeReply();
             }
         }
@@ -70,6 +76,7 @@ public class BinaryClient extends Connection {
     }
 
     public void quit() {
+        db = 0;
         sendCommand(QUIT);
     }
 
@@ -122,6 +129,7 @@ public class BinaryClient extends Connection {
     }
 
     public void select(final int index) {
+        db = index;
         sendCommand(SELECT, toByteArray(index));
     }
 
@@ -251,23 +259,23 @@ public class BinaryClient extends Connection {
         sendCommand(LLEN, key);
     }
 
-    public void lrange(final byte[] key, final int start, final int end) {
+    public void lrange(final byte[] key, final long start, final long end) {
         sendCommand(LRANGE, key, toByteArray(start), toByteArray(end));
     }
 
-    public void ltrim(final byte[] key, final int start, final int end) {
+    public void ltrim(final byte[] key, final long start, final long end) {
         sendCommand(LTRIM, key, toByteArray(start), toByteArray(end));
     }
 
-    public void lindex(final byte[] key, final int index) {
+    public void lindex(final byte[] key, final long index) {
         sendCommand(LINDEX, key, toByteArray(index));
     }
 
-    public void lset(final byte[] key, final int index, final byte[] value) {
+    public void lset(final byte[] key, final long index, final byte[] value) {
         sendCommand(LSET, key, toByteArray(index), value);
     }
 
-    public void lrem(final byte[] key, int count, final byte[] value) {
+    public void lrem(final byte[] key, long count, final byte[] value) {
         sendCommand(LREM, key, toByteArray(count), value);
     }
 
@@ -455,7 +463,7 @@ public class BinaryClient extends Connection {
     }
 
     public void auth(final String password) {
-    	setPassword(password);
+        setPassword(password);
         sendCommand(AUTH, password);
     }
 
@@ -495,6 +503,7 @@ public class BinaryClient extends Connection {
             final double max) {
         sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max));
     }
+
     public void zrevrangeByScore(final byte[] key, final double max,
             final double min) {
         sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min));
@@ -504,6 +513,7 @@ public class BinaryClient extends Connection {
             final byte[] max) {
         sendCommand(ZRANGEBYSCORE, key, min, max);
     }
+
     public void zrevrangeByScore(final byte[] key, final byte[] max,
             final byte[] min) {
         sendCommand(ZREVRANGEBYSCORE, key, max, min);
@@ -514,6 +524,7 @@ public class BinaryClient extends Connection {
         sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
                 LIMIT.raw, toByteArray(offset), toByteArray(count));
     }
+
     public void zrevrangeByScore(final byte[] key, final double max,
             final double min, final int offset, int count) {
         sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
@@ -525,6 +536,7 @@ public class BinaryClient extends Connection {
         sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
                 WITHSCORES.raw);
     }
+
     public void zrevrangeByScoreWithScores(final byte[] key, final double max,
             final double min) {
         sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
@@ -537,6 +549,7 @@ public class BinaryClient extends Connection {
                 LIMIT.raw, toByteArray(offset), toByteArray(count),
                 WITHSCORES.raw);
     }
+
     public void zrevrangeByScoreWithScores(final byte[] key, final double max,
             final double min, final int offset, final int count) {
         sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
@@ -692,6 +705,16 @@ public class BinaryClient extends Connection {
     }
 
     public void getrange(byte[] key, long startOffset, long endOffset) {
-        sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
+        sendCommand(GETRANGE, key, toByteArray(startOffset),
+                toByteArray(endOffset));
+    }
+
+    public Long getDB() {
+        return db;
+    }
+
+    public void disconnect() {
+        db = 0;
+        super.disconnect();
     }
 }

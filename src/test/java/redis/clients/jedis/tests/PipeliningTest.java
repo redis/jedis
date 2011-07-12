@@ -1,20 +1,17 @@
 package redis.clients.jedis.tests;
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.PipelineBlock;
-import redis.clients.jedis.Response;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
+
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 public class PipeliningTest extends Assert {
     private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -45,7 +42,7 @@ public class PipeliningTest extends Assert {
         Pipeline p = jedis.pipelined();
         p.set("foo", "bar");
         p.get("foo");
-        results = p.sync();
+        results = p.syncAndReturnAll();
 
         assertEquals(2, results.size());
         assertEquals("OK", results.get(0));
@@ -67,6 +64,16 @@ public class PipeliningTest extends Assert {
         Response<String> hash = p.hget("hash", "foo");
         Response<Set<String>> zset = p.zrange("zset", 0, -1);
         Response<String> set = p.spop("set");
+        Response<Boolean> blist = p.exists("list");
+        Response<Double> zincrby = p.zincrby("zset", 1, "foo");
+        Response<Long> zcard = p.zcard("zset");
+        p.lpush("list", "bar");
+        Response<List<String>> lrange = p.lrange("list", 0, -1);
+        Response<Map<String, String>> hgetAll = p.hgetAll("hash");
+        p.sadd("set", "foo");
+        Response<Set<String>> smembers = p.smembers("set");
+        Response<Set<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0,
+                -1);
         p.sync();
 
         assertEquals("foo", string.get());
@@ -74,6 +81,13 @@ public class PipeliningTest extends Assert {
         assertEquals("bar", hash.get());
         assertEquals("foo", zset.get().iterator().next());
         assertEquals("foo", set.get());
+        assertEquals(false, blist.get());
+        assertEquals(new Double(2), zincrby.get());
+        assertEquals(new Long(1), zcard.get());
+        assertEquals(1, lrange.get().size());
+        assertNotNull(hgetAll.get().get("foo"));
+        assertEquals(1, smembers.get().size());
+        assertEquals(1, zrangeWithScores.get().size());
     }
 
     @Test(expected = JedisDataException.class)
@@ -87,22 +101,21 @@ public class PipeliningTest extends Assert {
     }
 
     @Test
-    public void lala() {
+    public void pipelineWithPubSub() {
+        Pipeline pipelined = jedis.pipelined();
+        Response<Long> p1 = pipelined.publish("foo", "bar");
+        Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar"
+                .getBytes());
+        pipelined.sync();
+        assertEquals(0, p1.get().longValue());
+        assertEquals(0, p2.get().longValue());
+    }
 
+    @Test
+    public void canRetrieveUnsetKey() {
         Pipeline p = jedis.pipelined();
-
-        HashMap<String, Integer> mydata = new HashMap<String, Integer>();
-
-        mydata.put("test1", 1);
-        mydata.put("test2", 1);
-        mydata.put("test3", 1);
-        mydata.put("test4", 1);
-        mydata.put("test5", 1);
-
-        for (String txtfield : mydata.keySet()) {
-            p.zadd("somekey", mydata.get(txtfield), txtfield);
-            p.zincrby("SUPERUNION", mydata.get(txtfield), txtfield);
-        }
+        Response<String> shouldNotExist = p.get(UUID.randomUUID().toString());
         p.sync();
+        assertNull(shouldNotExist.get());
     }
 }

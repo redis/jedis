@@ -10,6 +10,7 @@ import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
 import java.util.Arrays;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.SafeEncoder;
 
@@ -31,6 +32,10 @@ public abstract class JedisPubSub {
     public abstract void onPSubscribe(String pattern, int subscribedChannels);
 
     public void unsubscribe() {
+        if (client == null) {
+            throw new JedisConnectionException(
+                    "JedisPubSub was not subscribed to a Jedis instance.");
+        }
         client.unsubscribe();
         client.flush();
     }

@@ -5,7 +5,7 @@ import java.net.UnknownHostException;
 import java.util.Calendar;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.PipelineBlock;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
@@ -22,15 +22,13 @@ public class PipelinedGetSetBenchmark {
 
         long begin = Calendar.getInstance().getTimeInMillis();
 
-        jedis.pipelined(new PipelineBlock() {
-            public void execute() {
-                for (int n = 0; n <= TOTAL_OPERATIONS; n++) {
-                    String key = "foo" + n;
-                    set(key, "bar" + n);
-                    get(key);
-                }
-            }
-        });
+        Pipeline p = jedis.pipelined();
+        for (int n = 0; n <= TOTAL_OPERATIONS; n++) {
+            String key = "foo" + n;
+            p.set(key, "bar" + n);
+            p.get(key);
+        }
+        p.sync();
 
         long elapsed = Calendar.getInstance().getTimeInMillis() - begin;
 

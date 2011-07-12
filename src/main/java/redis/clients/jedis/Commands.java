@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 import java.util.Map;
+
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public interface Commands {
 
@@ -92,15 +92,15 @@ public interface Commands {
 
     public void llen(final String key);
 
-    public void lrange(final String key, final int start, final int end);
+    public void lrange(final String key, final long start, final long end);
 
-    public void ltrim(final String key, final int start, final int end);
+    public void ltrim(final String key, final long start, final long end);
 
-    public void lindex(final String key, final int index);
+    public void lindex(final String key, final long index);
 
-    public void lset(final String key, final int index, final String value);
+    public void lset(final String key, final long index, final String value);
 
-    public void lrem(final String key, int count, final String value);
+    public void lrem(final String key, final long count, final String value);
 
     public void lpop(final String key);
 
@@ -253,10 +253,10 @@ public interface Commands {
     public void configGet(final String pattern);
 
     public void configResetStat();
-    
+
     public void multi();
-    
+
     public void exec();
-    
+
     public void discard();
 }

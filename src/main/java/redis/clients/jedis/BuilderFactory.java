@@ -1,15 +1,8 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.util.SafeEncoder;
+
+import java.util.*;
 
 public class BuilderFactory {
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
@@ -30,6 +23,16 @@ public class BuilderFactory {
             return "boolean";
         }
     };
+    public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
+        public byte[] build(Object data) {
+            return ((byte[]) data); // deleted == 1
+        }
+
+        public String toString() {
+            return "byte[]";
+        }
+    };
+
     public static final Builder<Long> LONG = new Builder<Long>() {
         public Long build(Object data) {
             return (Long) data;
@@ -42,7 +45,7 @@ public class BuilderFactory {
     };
     public static final Builder<String> STRING = new Builder<String>() {
         public String build(Object data) {
-            return SafeEncoder.encode((byte[]) data);
+            return data == null ? null : SafeEncoder.encode((byte[]) data);
         }
 
         public String toString() {
@@ -115,6 +118,39 @@ public class BuilderFactory {
         }
 
     };
+
+    public static final Builder<List<byte[]>> BYTE_ARRAY_LIST = new Builder<List<byte[]>>() {
+        @SuppressWarnings("unchecked")
+        public List<byte[]> build(Object data) {
+            if (null == data) {
+                return null;
+            }
+            List<byte[]> l = (List<byte[]>) data;
+
+            return l;
+        }
+
+        public String toString() {
+            return "List<byte[]>";
+        }
+    };
+
+    public static final Builder<Set<byte[]>> BYTE_ARRAY_ZSET = new Builder<Set<byte[]>>() {
+        @SuppressWarnings("unchecked")
+        public Set<byte[]> build(Object data) {
+            if (null == data) {
+                return null;
+            }
+            List<byte[]> l = (List<byte[]>) data;
+            final Set<byte[]> result = new LinkedHashSet<byte[]>(l);
+            return result;
+        }
+
+        public String toString() {
+            return "ZSet<byte[]>";
+        }
+    };
+
     public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
         @SuppressWarnings("unchecked")
         public Set<String> build(Object data) {
@@ -138,6 +174,7 @@ public class BuilderFactory {
         }
 
     };
+
     public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
         @SuppressWarnings("unchecked")
         public Set<Tuple> build(Object data) {
@@ -158,6 +195,29 @@ public class BuilderFactory {
             return "ZSet<Tuple>";
         }
 
+    };
+
+    public static final Builder<Set<Tuple>> TUPLE_ZSET_BINARY = new Builder<Set<Tuple>>() {
+        @SuppressWarnings("unchecked")
+        public Set<Tuple> build(Object data) {
+            if (null == data) {
+                return null;
+            }
+            List<byte[]> l = (List<byte[]>) data;
+            final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
+            Iterator<byte[]> iterator = l.iterator();
+            while (iterator.hasNext()) {
+                result.add(new Tuple(iterator.next(), Double
+                        .valueOf(SafeEncoder.encode(iterator.next()))));
+            }
+
+            return result;
+
+        }
+
+        public String toString() {
+            return "ZSet<Tuple>";
+        }
     };
 
 }

@@ -115,4 +115,56 @@ public class ShardedJedisPoolTest extends Assert {
 
         assertNotSame(j1.getShard("foo"), j2.getShard("foo"));
     }
+
+    @Test
+    public void checkFailedJedisServer() {
+        ShardedJedisPool pool = new ShardedJedisPool(new Config(), shards);
+        ShardedJedis jedis = pool.getResource();
+        jedis.incr("foo");
+        pool.returnResource(jedis);
+        pool.destroy();
+    }
+
+    @Test
+    public void shouldReturnActiveShardsWhenOneGoesOffline() {
+        Config redisConfig = new Config();
+        redisConfig.testOnBorrow = false;
+        ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+        ShardedJedis jedis = pool.getResource();
+        // fill the shards
+        for (int i = 0; i < 1000; i++) {
+            jedis.set("a-test-" + i, "0");
+        }
+        pool.returnResource(jedis);
+        // check quantity for each shard
+        Jedis j = new Jedis(shards.get(0));
+        j.connect();
+        Long c1 = j.dbSize();
+        j.disconnect();
+        j = new Jedis(shards.get(1));
+        j.connect();
+        Long c2 = j.dbSize();
+        j.disconnect();
+        // shutdown shard 2 and check thay the pool returns an instance with c1
+        // items on one shard
+        // alter shard 1 and recreate pool
+        pool.destroy();
+        shards.set(1, new JedisShardInfo("nohost", 1234));
+        pool = new ShardedJedisPool(redisConfig, shards);
+        jedis = pool.getResource();
+        Long actual = new Long(0);
+        Long fails = new Long(0);
+        for (int i = 0; i < 1000; i++) {
+            try {
+                jedis.get("a-test-" + i);
+                actual++;
+            } catch (RuntimeException e) {
+                fails++;
+            }
+        }
+        pool.returnResource(jedis);
+        pool.destroy();
+        assertEquals(actual, c1);
+        assertEquals(fails, c2);
+    }
 }

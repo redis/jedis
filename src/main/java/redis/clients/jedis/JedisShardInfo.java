@@ -1,18 +1,3 @@
-/*
- * Copyright 2009-2010 MBTE Sweden AB.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package redis.clients.jedis;
 
 import redis.clients.util.ShardInfo;
@@ -27,6 +12,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     private String host;
     private int port;
     private String password = null;
+    private String name = null;
 
     public String getHost() {
         return host;
@@ -40,12 +26,25 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         this(host, Protocol.DEFAULT_PORT);
     }
 
+    public JedisShardInfo(String host, String name) {
+        this(host, Protocol.DEFAULT_PORT, name);
+    }
+
     public JedisShardInfo(String host, int port) {
         this(host, port, 2000);
     }
 
+    public JedisShardInfo(String host, int port, String name) {
+        this(host, port, 2000, name);
+    }
+
     public JedisShardInfo(String host, int port, int timeout) {
         this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+    }
+
+    public JedisShardInfo(String host, int port, int timeout, String name) {
+        this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+        this.name = name;
     }
 
     public JedisShardInfo(String host, int port, int timeout, int weight) {
@@ -69,6 +68,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

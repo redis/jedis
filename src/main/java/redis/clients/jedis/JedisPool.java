@@ -48,17 +48,12 @@ public class JedisPool extends Pool<Jedis> {
             super();
             this.host = host;
             this.port = port;
-            this.timeout = (timeout > 0) ? timeout : -1;
+            this.timeout = timeout;
             this.password = password;
         }
 
         public Object makeObject() throws Exception {
-            final Jedis jedis;
-            if (timeout > 0) {
-                jedis = new Jedis(this.host, this.port, this.timeout);
-            } else {
-                jedis = new Jedis(this.host, this.port);
-            }
+            final Jedis jedis = new Jedis(this.host, this.port, this.timeout);
 
             jedis.connect();
             if (null != this.password) {

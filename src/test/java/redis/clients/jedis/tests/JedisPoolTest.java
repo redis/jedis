@@ -84,4 +84,15 @@ public class JedisPoolTest extends Assert {
         newJedis.auth("foobared");
         newJedis.incr("foo");
     }
+
+    @Test
+    public void securePool() {
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setTestOnBorrow(true);
+        JedisPool pool = new JedisPool(config, hnp.host, hnp.port, 2000, "foobared");
+        Jedis jedis = pool.getResource();
+        jedis.set("foo", "bar");
+        pool.returnResource(jedis);
+        pool.destroy();
+    }
 }

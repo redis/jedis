@@ -14,7 +14,28 @@ public class Pipeline extends Queable {
         this.client = client;
     }
 
-    public List<Object> sync() {
+    /**
+     * Syncronize pipeline by reading all responses. This operation close the
+     * pipeline. In order to get return values from pipelined commands, capture
+     * the different Response<?> of the commands you execute.
+     */
+    public void sync() {
+        List<Object> unformatted = client.getAll();
+        for (Object o : unformatted) {
+            generateResponse(o);
+        }
+    }
+
+    /**
+     * Syncronize pipeline by reading all responses. This operation close the
+     * pipeline. Whenever possible try to avoid using this version and use
+     * Pipeline.sync() as it won't go through all the responses and generate the
+     * right response type (usually it is a waste of time).
+     * 
+     * @return A list of all the responses in the order you executed them.
+     * @see sync
+     */
+    public List<Object> syncAndReturnAll() {
         List<Object> unformatted = client.getAll();
         List<Object> formatted = new ArrayList<Object>();
         for (Object o : unformatted) {
@@ -366,42 +387,42 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> lrange(String key, int start, int end) {
+    public Response<List<String>> lrange(String key, long start, long end) {
         client.lrange(key, start, end);
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> lrange(byte[] key, int start, int end) {
+    public Response<List<String>> lrange(byte[] key, long start, long end) {
         client.lrange(key, start, end);
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<Long> lrem(String key, int count, String value) {
+    public Response<Long> lrem(String key, long count, String value) {
         client.lrem(key, count, value);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lrem(byte[] key, int count, byte[] value) {
+    public Response<Long> lrem(byte[] key, long count, byte[] value) {
         client.lrem(key, count, value);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> lset(String key, int index, String value) {
+    public Response<String> lset(String key, long index, String value) {
         client.lset(key, index, value);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lset(byte[] key, int index, byte[] value) {
+    public Response<String> lset(byte[] key, long index, byte[] value) {
         client.lset(key, index, value);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> ltrim(String key, int start, int end) {
+    public Response<String> ltrim(String key, long start, long end) {
         client.ltrim(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> ltrim(byte[] key, int start, int end) {
+    public Response<String> ltrim(byte[] key, long start, long end) {
         client.ltrim(key, start, end);
         return getResponse(BuilderFactory.STRING);
     }
@@ -1154,5 +1175,15 @@ public class Pipeline extends Queable {
 
     public void multi() {
         client.multi();
+    }
+
+    public Response<Long> publish(String channel, String message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> publish(byte[] channel, byte[] message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
     }
 }

@@ -77,9 +77,10 @@ public class BinaryJedis implements BinaryJedisCommands {
     /**
      * Ask the server to silently close the connection.
      */
-    public void quit() {
+    public String quit() {
         checkIsInMulti();
         client.quit();
+        return client.getStatusCodeReply();
     }
 
     /**
@@ -1660,8 +1661,8 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.disconnect();
     }
 
-    public String watch(final byte[] key) {
-        client.watch(key);
+    public String watch(final byte[]... keys) {
+        client.watch(keys);
         return client.getStatusCodeReply();
     }
 
@@ -2014,10 +2015,19 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getStatusCodeReply();
     }
 
+    /**
+     * Starts a pipeline, which is a very efficient way to send lots of command
+     * and read all the responses when you finish sending them. Try to avoid
+     * this version and use pipelined() when possible as it will give better
+     * performance.
+     * 
+     * @param jedisPipeline
+     * @return The results of the command in the same order you've run them.
+     */
     public List<Object> pipelined(final PipelineBlock jedisPipeline) {
         jedisPipeline.setClient(client);
         jedisPipeline.execute();
-        return jedisPipeline.sync();
+        return jedisPipeline.syncAndReturnAll();
     }
 
     public Pipeline pipelined() {
@@ -2992,5 +3002,9 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.setTimeoutInfinite();
         jedisPubSub.proceedWithPatterns(client, patterns);
         client.rollbackTimeout();
+    }
+
+    public Long getDB() {
+        return client.getDB();
     }
 }

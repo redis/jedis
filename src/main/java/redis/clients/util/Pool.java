@@ -7,11 +7,20 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class Pool<T> {
-    private final GenericObjectPool internalPool;
+    private GenericObjectPool internalPool;
 
     public Pool(final GenericObjectPool.Config poolConfig,
             PoolableObjectFactory factory) {
-        this.internalPool = new GenericObjectPool(factory, poolConfig);
+        init(poolConfig, factory);
+    }
+
+    public Pool() {
+        internalPool = null;
+    }
+
+    protected void init(final GenericObjectPool.Config poolConfig,
+            PoolableObjectFactory factory) {
+        internalPool = new GenericObjectPool(factory, poolConfig);
     }
 
     @SuppressWarnings("unchecked")
@@ -47,6 +56,14 @@ public abstract class Pool<T> {
             internalPool.close();
         } catch (Exception e) {
             throw new JedisException("Could not destroy the pool", e);
+        }
+    }
+
+    public void clear() {
+        try {
+            internalPool.clear();
+        } catch (Exception e) {
+            throw new JedisException("Could not clear the pool", e);
         }
     }
 }

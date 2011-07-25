@@ -1,89 +1,63 @@
 package redis.clients.jedis.tests.benchmark;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.pool.impl.GenericObjectPool.Config;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class PoolBenchmark {
+    private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
     private static final int TOTAL_OPERATIONS = 100000;
 
-    public static void main(String[] args) throws UnknownHostException,
-	    IOException, TimeoutException, InterruptedException {
-	Jedis j = new Jedis("localhost");
-	j.connect();
-	j.auth("foobared");
-	j.flushAll();
-	j.quit();
-	j.disconnect();
-	long t = System.currentTimeMillis();
-	// withoutPool();
-	withPool();
-	long elapsed = System.currentTimeMillis() - t;
-	System.out.println(((1000 * 3 * TOTAL_OPERATIONS) / elapsed) + " ops");
+    public static void main(String[] args) throws Exception {
+        Jedis j = new Jedis(hnp.host, hnp.port);
+        j.connect();
+        j.auth("foobared");
+        j.flushAll();
+        j.quit();
+        j.disconnect();
+        long t = System.currentTimeMillis();
+        // withoutPool();
+        withPool();
+        long elapsed = System.currentTimeMillis() - t;
+        System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
     }
 
-    private static void withoutPool() throws InterruptedException {
-	List<Thread> tds = new ArrayList<Thread>();
+    private static void withPool() throws Exception {
+        final JedisPool pool = new JedisPool(new Config(), hnp.host, hnp.port,
+                2000, "foobared");
+        List<Thread> tds = new ArrayList<Thread>();
 
-	for (int i = 0; i < TOTAL_OPERATIONS; i++) {
-	    final String key = "foo" + i;
-	    Thread hj = new Thread(new Runnable() {
-		@Override
-		public void run() {
-		    Jedis j = new Jedis("localhost");
-		    try {
-			j.connect();
-			j.auth("foobared");
-			j.set(key, key);
-			j.get(key);
-			j.quit();
-			j.disconnect();
-		    } catch (UnknownHostException e) {
-			e.printStackTrace();
-		    } catch (IOException e) {
-			e.printStackTrace();
-		    }
-		}
-	    });
-	    tds.add(hj);
-	    hj.start();
-	}
-	for (Thread thread : tds) {
-	    thread.join();
-	}
-    }
+        final AtomicInteger ind = new AtomicInteger();
+        for (int i = 0; i < 50; i++) {
+            Thread hj = new Thread(new Runnable() {
+                public void run() {
+                    for (int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS;) {
+                        try {
+                            Jedis j = pool.getResource();
+                            final String key = "foo" + i;
+                            j.set(key, key);
+                            j.get(key);
+                            pool.returnResource(j);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+            tds.add(hj);
+            hj.start();
+        }
 
-    private static void withPool() throws InterruptedException {
-	final JedisPool pool = new JedisPool("localhost");
-	pool.setResourcesNumber(1000);
-	pool.setDefaultPoolWait(20);
-	pool.init();
-	List<Thread> tds = new ArrayList<Thread>();
+        for (Thread t : tds)
+            t.join();
 
-	for (int i = 0; i < TOTAL_OPERATIONS; i++) {
-	    final String key = "foo" + i;
-	    Thread hj = new Thread(new Runnable() {
-		@Override
-		public void run() {
-		    try {
-			Jedis j = pool.getResource();
-			j.auth("foobared");
-			j.set(key, key);
-			j.get(key);
-			pool.returnResource(j);
-		    } catch (Exception e) {
-			e.printStackTrace();
-		    }
-		}
-	    });
-	    tds.add(hj);
-	    hj.start();
-	}
-	pool.destroy();
+        pool.destroy();
     }
 }

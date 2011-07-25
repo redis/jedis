@@ -1,155 +1,218 @@
 package redis.clients.jedis;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
 
 public class Connection {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
     private Protocol protocol = new Protocol();
-    private DataOutputStream outputStream;
-    private DataInputStream inputStream;
+    private RedisOutputStream outputStream;
+    private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
-    private int timeout = 2000;
+    private int timeout = Protocol.DEFAULT_TIMEOUT;
 
-    public int getTimeout() {
-	return timeout;
+    public Socket getSocket() {
+        return socket;
     }
 
-    public void setTimeout(int timeout) {
-	this.timeout = timeout;
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(final int timeout) {
+        this.timeout = timeout;
     }
 
     public void setTimeoutInfinite() {
-	try {
-	    socket.setSoTimeout(0);
-	} catch (SocketException ex) {
-	    throw new JedisException(ex);
-	}
+        try {
+            socket.setSoTimeout(0);
+        } catch (SocketException ex) {
+            throw new JedisException(ex);
+        }
     }
 
     public void rollbackTimeout() {
-	try {
-	    socket.setSoTimeout(timeout);
-	} catch (SocketException ex) {
-	    throw new JedisException(ex);
-	}
+        try {
+            socket.setSoTimeout(timeout);
+        } catch (SocketException ex) {
+            throw new JedisException(ex);
+        }
     }
 
-    public Connection(String host) {
-	super();
-	this.host = host;
+    public Connection(final String host) {
+        super();
+        this.host = host;
     }
 
-    protected Connection sendCommand(String name, String... args) {
-		try {
-			connect();
-		} catch (UnknownHostException e) {
-			throw new JedisException("Could not connect to redis-server", e);
-		} catch (IOException e) {
-			throw new JedisException("Could not connect to redis-server", e);
-		}
-	protocol.sendCommand(outputStream, name, args);
-	pipelinedCommands++;
-	return this;
+    protected void flush() {
+        try {
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new JedisConnectionException(e);
+        }
     }
 
-    public Connection(String host, int port) {
-	super();
-	this.host = host;
-	this.port = port;
+    protected Connection sendCommand(final Command cmd, final String... args) {
+        final byte[][] bargs = new byte[args.length][];
+        for (int i = 0; i < args.length; i++) {
+            bargs[i] = SafeEncoder.encode(args[i]);
+        }
+        return sendCommand(cmd, bargs);
+    }
+
+    protected Connection sendCommand(final Command cmd, final byte[]... args) {
+        connect();
+        protocol.sendCommand(outputStream, cmd, args);
+        pipelinedCommands++;
+        return this;
+    }
+
+    protected Connection sendCommand(final Command cmd) {
+        connect();
+        protocol.sendCommand(outputStream, cmd, new byte[0][]);
+        pipelinedCommands++;
+        return this;
+    }
+
+    public Connection(final String host, final int port) {
+        super();
+        this.host = host;
+        this.port = port;
     }
 
     public String getHost() {
-	return host;
+        return host;
     }
 
-    public void setHost(String host) {
-	this.host = host;
+    public void setHost(final String host) {
+        this.host = host;
     }
 
     public int getPort() {
-	return port;
+        return port;
     }
 
-    public void setPort(int port) {
-	this.port = port;
+    public void setPort(final int port) {
+        this.port = port;
     }
 
     public Connection() {
     }
 
-    public void connect() throws UnknownHostException, IOException {
-	if (!isConnected()) {
-	    socket = new Socket(host, port);
-	    socket.setSoTimeout(timeout);
-	    outputStream = new DataOutputStream(socket.getOutputStream());
-	    inputStream = new DataInputStream(new BufferedInputStream(socket
-		    .getInputStream()));
-	}
+    public void connect() {
+        if (!isConnected()) {
+            try {
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(host, port), timeout);
+                socket.setSoTimeout(timeout);
+                outputStream = new RedisOutputStream(socket.getOutputStream());
+                inputStream = new RedisInputStream(socket.getInputStream());
+            } catch (IOException ex) {
+                throw new JedisConnectionException(ex);
+            }
+        }
     }
 
     public void disconnect() {
-	if (isConnected()) {
-	    try {
-		inputStream.close();
-		outputStream.close();
-		if (!socket.isClosed()) {
-		    socket.close();
-		}
-	    } catch (IOException ex) {
-		throw new JedisException(ex);
-	    }
-	}
+        if (isConnected()) {
+            try {
+                inputStream.close();
+                outputStream.close();
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (IOException ex) {
+                throw new JedisConnectionException(ex);
+            }
+        }
     }
 
     public boolean isConnected() {
-	return socket != null && socket.isBound() && !socket.isClosed()
-		&& socket.isConnected() && !socket.isInputShutdown()
-		&& !socket.isOutputShutdown();
+        return socket != null && socket.isBound() && !socket.isClosed()
+                && socket.isConnected() && !socket.isInputShutdown()
+                && !socket.isOutputShutdown();
     }
 
     protected String getStatusCodeReply() {
-	pipelinedCommands--;
-	return (String) protocol.read(inputStream);
+        flush();
+        pipelinedCommands--;
+        final byte[] resp = (byte[]) protocol.read(inputStream);
+        if (null == resp) {
+            return null;
+        } else {
+            return SafeEncoder.encode(resp);
+        }
     }
 
     public String getBulkReply() {
-	pipelinedCommands--;
-	return (String) protocol.read(inputStream);
+        final byte[] result = getBinaryBulkReply();
+        if (null != result) {
+            return SafeEncoder.encode(result);
+        } else {
+            return null;
+        }
     }
 
-    public int getIntegerReply() {
-	pipelinedCommands--;
-	return ((Integer) protocol.read(inputStream)).intValue();
+    public byte[] getBinaryBulkReply() {
+        flush();
+        pipelinedCommands--;
+        return (byte[]) protocol.read(inputStream);
+    }
+
+    public Long getIntegerReply() {
+        flush();
+        pipelinedCommands--;
+        return (Long) protocol.read(inputStream);
+    }
+
+    public List<String> getMultiBulkReply() {
+        return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReply());
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> getMultiBulkReply() {
-	pipelinedCommands--;
-	return (List<String>) protocol.read(inputStream);
+    public List<byte[]> getBinaryMultiBulkReply() {
+        flush();
+        pipelinedCommands--;
+        return (List<byte[]>) protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> getObjectMultiBulkReply() {
-	pipelinedCommands--;
-	return (List<Object>) protocol.read(inputStream);
+        flush();
+        pipelinedCommands--;
+        return (List<Object>) protocol.read(inputStream);
     }
 
     public List<Object> getAll() {
-	List<Object> all = new ArrayList<Object>();
-	while (pipelinedCommands > 0) {
-	    all.add(protocol.read(inputStream));
-	    pipelinedCommands--;
-	}
-	return all;
+        return getAll(0);
+    }
+
+    public List<Object> getAll(int except) {
+        List<Object> all = new ArrayList<Object>();
+        flush();
+        while (pipelinedCommands > except) {
+            all.add(protocol.read(inputStream));
+            pipelinedCommands--;
+        }
+        return all;
+    }
+
+    public Object getOne() {
+        flush();
+        pipelinedCommands--;
+        return protocol.read(inputStream);
     }
 }

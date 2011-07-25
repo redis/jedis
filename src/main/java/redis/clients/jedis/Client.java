@@ -1,566 +1,590 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.List;
+import redis.clients.util.SafeEncoder;
+
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-public class Client extends Connection {
-    private boolean isInMulti;
+import static redis.clients.jedis.Protocol.toByteArray;
 
-    public boolean isInMulti() {
-	return isInMulti;
+public class Client extends BinaryClient implements Commands {
+    public Client(final String host) {
+        super(host);
     }
 
-    public Client(String host) {
-	super(host);
+    public Client(final String host, final int port) {
+        super(host, port);
     }
 
-    public Client(String host, int port) {
-	super(host, port);
+    public void set(final String key, final String value) {
+        set(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
-    public void ping() {
-	sendCommand("PING");
+    public void get(final String key) {
+        get(SafeEncoder.encode(key));
     }
 
-    public void set(String key, String value) {
-	sendCommand("SET", key, value);
+    public void exists(final String key) {
+        exists(SafeEncoder.encode(key));
     }
 
-    public void get(String key) {
-	sendCommand("GET", key);
+    public void del(final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < keys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        del(bkeys);
     }
 
-    public void quit() {
-	sendCommand("QUIT");
+    public void type(final String key) {
+        type(SafeEncoder.encode(key));
     }
 
-    public void exists(String key) {
-	sendCommand("EXISTS", key);
+    public void keys(final String pattern) {
+        keys(SafeEncoder.encode(pattern));
     }
 
-    public void del(String... keys) {
-	sendCommand("DEL", keys);
+    public void rename(final String oldkey, final String newkey) {
+        rename(SafeEncoder.encode(oldkey), SafeEncoder.encode(newkey));
     }
 
-    public void type(String key) {
-	sendCommand("TYPE", key);
+    public void renamenx(final String oldkey, final String newkey) {
+        renamenx(SafeEncoder.encode(oldkey), SafeEncoder.encode(newkey));
     }
 
-    public void flushDB() {
-	sendCommand("FLUSHDB");
+    public void expire(final String key, final int seconds) {
+        expire(SafeEncoder.encode(key), seconds);
     }
 
-    public void keys(String pattern) {
-	sendCommand("KEYS", pattern);
+    public void expireAt(final String key, final long unixTime) {
+        expireAt(SafeEncoder.encode(key), unixTime);
     }
 
-    public void randomKey() {
-	sendCommand("RANDOMKEY");
+    public void ttl(final String key) {
+        ttl(SafeEncoder.encode(key));
     }
 
-    public void rename(String oldkey, String newkey) {
-	sendCommand("RENAME", oldkey, newkey);
+    public void move(final String key, final int dbIndex) {
+        move(SafeEncoder.encode(key), dbIndex);
     }
 
-    public void renamenx(String oldkey, String newkey) {
-	sendCommand("RENAMENX", oldkey, newkey);
+    public void getSet(final String key, final String value) {
+        getSet(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
-    public void dbSize() {
-	sendCommand("DBSIZE");
+    public void mget(final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        mget(bkeys);
     }
 
-    public void expire(String key, int seconds) {
-	sendCommand("EXPIRE", key, String.valueOf(seconds));
+    public void setnx(final String key, final String value) {
+        setnx(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
-    public void expireAt(String key, long unixTime) {
-	sendCommand("EXPIREAT", key, String.valueOf(unixTime));
+    public void setex(final String key, final int seconds, final String value) {
+        setex(SafeEncoder.encode(key), seconds, SafeEncoder.encode(value));
     }
 
-    public void ttl(String key) {
-	sendCommand("TTL", key);
+    public void mset(final String... keysvalues) {
+        final byte[][] bkeysvalues = new byte[keysvalues.length][];
+        for (int i = 0; i < keysvalues.length; i++) {
+            bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
+        }
+        mset(bkeysvalues);
     }
 
-    public void select(int index) {
-	sendCommand("SELECT", String.valueOf(index));
+    public void msetnx(final String... keysvalues) {
+        final byte[][] bkeysvalues = new byte[keysvalues.length][];
+        for (int i = 0; i < keysvalues.length; i++) {
+            bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
+        }
+        msetnx(bkeysvalues);
     }
 
-    public void move(String key, int dbIndex) {
-	sendCommand("MOVE", key, String.valueOf(dbIndex));
+    public void decrBy(final String key, final long integer) {
+        decrBy(SafeEncoder.encode(key), integer);
     }
 
-    public void flushAll() {
-	sendCommand("FLUSHALL");
+    public void decr(final String key) {
+        decr(SafeEncoder.encode(key));
     }
 
-    public void getSet(String key, String value) {
-	sendCommand("GETSET", key, value);
+    public void incrBy(final String key, final long integer) {
+        incrBy(SafeEncoder.encode(key), integer);
     }
 
-    public void mget(String... keys) {
-	sendCommand("MGET", keys);
+    public void incr(final String key) {
+        incr(SafeEncoder.encode(key));
     }
 
-    public void setnx(String key, String value) {
-	sendCommand("SETNX", key, value);
+    public void append(final String key, final String value) {
+        append(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
-    public void setex(String key, int seconds, String value) {
-	sendCommand("SETEX", key, String.valueOf(seconds), value);
+    public void substr(final String key, final int start, final int end) {
+        substr(SafeEncoder.encode(key), start, end);
     }
 
-    public void mset(String... keysvalues) {
-	sendCommand("MSET", keysvalues);
+    public void hset(final String key, final String field, final String value) {
+        hset(SafeEncoder.encode(key), SafeEncoder.encode(field), SafeEncoder
+                .encode(value));
     }
 
-    public void msetnx(String... keysvalues) {
-	sendCommand("MSETNX", keysvalues);
+    public void hget(final String key, final String field) {
+        hget(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
-    public void decrBy(String key, int integer) {
-	sendCommand("DECRBY", key, String.valueOf(integer));
+    public void hsetnx(final String key, final String field, final String value) {
+        hsetnx(SafeEncoder.encode(key), SafeEncoder.encode(field), SafeEncoder
+                .encode(value));
     }
 
-    public void decr(String key) {
-	sendCommand("DECR", key);
+    public void hmset(final String key, final Map<String, String> hash) {
+        final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash
+                .size());
+        for (final Entry<String, String> entry : hash.entrySet()) {
+            bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder
+                    .encode(entry.getValue()));
+        }
+        hmset(SafeEncoder.encode(key), bhash);
     }
 
-    public void incrBy(String key, int integer) {
-	sendCommand("INCRBY", key, String.valueOf(integer));
+    public void hmget(final String key, final String... fields) {
+        final byte[][] bfields = new byte[fields.length][];
+        for (int i = 0; i < bfields.length; i++) {
+            bfields[i] = SafeEncoder.encode(fields[i]);
+        }
+        hmget(SafeEncoder.encode(key), bfields);
     }
 
-    public void incr(String key) {
-	sendCommand("INCR", key);
+    public void hincrBy(final String key, final String field, final long value) {
+        hincrBy(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
     }
 
-    public void append(String key, String value) {
-	sendCommand("APPEND", key, value);
+    public void hexists(final String key, final String field) {
+        hexists(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
-    public void substr(String key, int start, int end) {
-	sendCommand("SUBSTR", key, String.valueOf(start), String.valueOf(end));
+    public void hdel(final String key, final String field) {
+        hdel(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
-    public void hset(String key, String field, String value) {
-	sendCommand("HSET", key, field, value);
+    public void hlen(final String key) {
+        hlen(SafeEncoder.encode(key));
     }
 
-    public void hget(String key, String field) {
-	sendCommand("HGET", key, field);
+    public void hkeys(final String key) {
+        hkeys(SafeEncoder.encode(key));
     }
 
-    public void hsetnx(String key, String field, String value) {
-	sendCommand("HSETNX", key, field, value);
+    public void hvals(final String key) {
+        hvals(SafeEncoder.encode(key));
     }
 
-    public void hmset(String key, Map<String, String> hash) {
-	List<String> params = new ArrayList<String>();
-	params.add(key);
-
-	for (String field : hash.keySet()) {
-	    params.add(field);
-	    params.add(hash.get(field));
-	}
-	sendCommand("HMSET", params.toArray(new String[params.size()]));
-    }
-
-    public void hmget(String key, String... fields) {
-	String[] params = new String[fields.length + 1];
-	params[0] = key;
-	System.arraycopy(fields, 0, params, 1, fields.length);
-	sendCommand("HMGET", params);
-    }
-
-    public void hincrBy(String key, String field, int value) {
-	sendCommand("HINCRBY", key, field, String.valueOf(value));
-    }
-
-    public void hexists(String key, String field) {
-	sendCommand("HEXISTS", key, field);
-    }
-
-    public void hdel(String key, String field) {
-	sendCommand("HDEL", key, field);
-    }
-
-    public void hlen(String key) {
-	sendCommand("HLEN", key);
-    }
-
-    public void hkeys(String key) {
-	sendCommand("HKEYS", key);
-    }
-
-    public void hvals(String key) {
-	sendCommand("HVALS", key);
-    }
-
-    public void hgetAll(String key) {
-	sendCommand("HGETALL", key);
-    }
-
-    public void rpush(String key, String string) {
-	sendCommand("RPUSH", key, string);
+    public void hgetAll(final String key) {
+        hgetAll(SafeEncoder.encode(key));
     }
 
-    public void lpush(String key, String string) {
-	sendCommand("LPUSH", key, string);
+    public void rpush(final String key, final String string) {
+        rpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
-    public void llen(String key) {
-	sendCommand("LLEN", key);
+    public void lpush(final String key, final String string) {
+        lpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
-    public void lrange(String key, int start, int end) {
-	sendCommand("LRANGE", key, String.valueOf(start), String.valueOf(end));
+    public void llen(final String key) {
+        llen(SafeEncoder.encode(key));
     }
 
-    public void ltrim(String key, int start, int end) {
-	sendCommand("LTRIM", key, String.valueOf(start), String.valueOf(end));
+    public void lrange(final String key, final long start, final long end) {
+        lrange(SafeEncoder.encode(key), start, end);
     }
 
-    public void lindex(String key, int index) {
-	sendCommand("LINDEX", key, String.valueOf(index));
+    public void ltrim(final String key, final long start, final long end) {
+        ltrim(SafeEncoder.encode(key), start, end);
     }
 
-    public void lset(String key, int index, String value) {
-	sendCommand("LSET", key, String.valueOf(index), value);
+    public void lindex(final String key, final long index) {
+        lindex(SafeEncoder.encode(key), index);
     }
 
-    public void lrem(String key, int count, String value) {
-	sendCommand("LREM", key, String.valueOf(count), value);
+    public void lset(final String key, final long index, final String value) {
+        lset(SafeEncoder.encode(key), index, SafeEncoder.encode(value));
     }
 
-    public void lpop(String key) {
-	sendCommand("LPOP", key);
+    public void lrem(final String key, long count, final String value) {
+        lrem(SafeEncoder.encode(key), count, SafeEncoder.encode(value));
     }
 
-    public void rpop(String key) {
-	sendCommand("RPOP", key);
+    public void lpop(final String key) {
+        lpop(SafeEncoder.encode(key));
     }
 
-    public void rpoplpush(String srckey, String dstkey) {
-	sendCommand("RPOPLPUSH", srckey, dstkey);
+    public void rpop(final String key) {
+        rpop(SafeEncoder.encode(key));
     }
 
-    public void sadd(String key, String member) {
-	sendCommand("SADD", key, member);
+    public void rpoplpush(final String srckey, final String dstkey) {
+        rpoplpush(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey));
     }
 
-    public void smembers(String key) {
-	sendCommand("SMEMBERS", key);
+    public void sadd(final String key, final String member) {
+        sadd(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void srem(String key, String member) {
-	sendCommand("SREM", key, member);
+    public void smembers(final String key) {
+        smembers(SafeEncoder.encode(key));
     }
 
-    public void spop(String key) {
-	sendCommand("SPOP", key);
+    public void srem(final String key, final String member) {
+        srem(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void smove(String srckey, String dstkey, String member) {
-	sendCommand("SMOVE", srckey, dstkey, member);
+    public void spop(final String key) {
+        spop(SafeEncoder.encode(key));
     }
 
-    public void scard(String key) {
-	sendCommand("SCARD", key);
+    public void smove(final String srckey, final String dstkey,
+            final String member) {
+        smove(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey),
+                SafeEncoder.encode(member));
     }
 
-    public void sismember(String key, String member) {
-	sendCommand("SISMEMBER", key, member);
+    public void scard(final String key) {
+        scard(SafeEncoder.encode(key));
     }
 
-    public void sinter(String... keys) {
-	sendCommand("SINTER", keys);
+    public void sismember(final String key, final String member) {
+        sismember(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void sinterstore(String dstkey, String... keys) {
-	String[] params = new String[keys.length + 1];
-	params[0] = dstkey;
-	System.arraycopy(keys, 0, params, 1, keys.length);
-	sendCommand("SINTERSTORE", params);
+    public void sinter(final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sinter(bkeys);
     }
 
-    public void sunion(String... keys) {
-	sendCommand("SUNION", keys);
+    public void sinterstore(final String dstkey, final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sinterstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
-    public void sunionstore(String dstkey, String... keys) {
-	String[] params = new String[keys.length + 1];
-	params[0] = dstkey;
-	System.arraycopy(keys, 0, params, 1, keys.length);
-	sendCommand("SUNIONSTORE", params);
+    public void sunion(final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sunion(bkeys);
     }
 
-    public void sdiff(String... keys) {
-	sendCommand("SDIFF", keys);
+    public void sunionstore(final String dstkey, final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sunionstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
-    public void sdiffstore(String dstkey, String... keys) {
-	String[] params = new String[keys.length + 1];
-	params[0] = dstkey;
-	System.arraycopy(keys, 0, params, 1, keys.length);
-	sendCommand("SDIFFSTORE", params);
+    public void sdiff(final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sdiff(bkeys);
     }
 
-    public void srandmember(String key) {
-	sendCommand("SRANDMEMBER", key);
+    public void sdiffstore(final String dstkey, final String... keys) {
+        final byte[][] bkeys = new byte[keys.length][];
+        for (int i = 0; i < bkeys.length; i++) {
+            bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sdiffstore(SafeEncoder.encode(dstkey), bkeys);
     }
 
-    public void zadd(String key, double score, String member) {
-	sendCommand("ZADD", key, String.valueOf(score), member);
+    public void srandmember(final String key) {
+        srandmember(SafeEncoder.encode(key));
     }
 
-    public void zrange(String key, int start, int end) {
-	sendCommand("ZRANGE", key, String.valueOf(start), String.valueOf(end));
+    public void zadd(final String key, final double score, final String member) {
+        zadd(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
     }
 
-    public void zrem(String key, String member) {
-	sendCommand("ZREM", key, member);
+    public void zrange(final String key, final int start, final int end) {
+        zrange(SafeEncoder.encode(key), start, end);
     }
 
-    public void zincrby(String key, double score, String member) {
-	sendCommand("ZINCRBY", key, String.valueOf(score), member);
+    public void zrem(final String key, final String member) {
+        zrem(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void zrank(String key, String member) {
-	sendCommand("ZRANK", key, member);
+    public void zincrby(final String key, final double score,
+            final String member) {
+        zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
     }
 
-    public void zrevrank(String key, String member) {
-	sendCommand("ZREVRANK", key, member);
+    public void zrank(final String key, final String member) {
+        zrank(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void zrevrange(String key, int start, int end) {
-	sendCommand("ZREVRANGE", key, String.valueOf(start), String
-		.valueOf(end));
+    public void zrevrank(final String key, final String member) {
+        zrevrank(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void zrangeWithScores(String key, int start, int end) {
-	sendCommand("ZRANGE", key, String.valueOf(start), String.valueOf(end),
-		"WITHSCORES");
+    public void zrevrange(final String key, final int start, final int end) {
+        zrevrange(SafeEncoder.encode(key), start, end);
     }
 
-    public void zrevrangeWithScores(String key, int start, int end) {
-	sendCommand("ZREVRANGE", key, String.valueOf(start), String
-		.valueOf(end), "WITHSCORES");
+    public void zrangeWithScores(final String key, final int start,
+            final int end) {
+        zrangeWithScores(SafeEncoder.encode(key), start, end);
     }
 
-    public void zcard(String key) {
-	sendCommand("ZCARD", key);
+    public void zrevrangeWithScores(final String key, final int start,
+            final int end) {
+        zrevrangeWithScores(SafeEncoder.encode(key), start, end);
     }
 
-    public void zscore(String key, String member) {
-	sendCommand("ZSCORE", key, member);
+    public void zcard(final String key) {
+        zcard(SafeEncoder.encode(key));
     }
 
-    public void multi() {
-	sendCommand("MULTI");
-	isInMulti = true;
+    public void zscore(final String key, final String member) {
+        zscore(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void discard() {
-	sendCommand("DISCARD");
-	isInMulti = false;
+    public void watch(final String... keys) {
+        final byte[][] bargs = new byte[keys.length][];
+        for (int i = 0; i < bargs.length; i++) {
+            bargs[i] = SafeEncoder.encode(keys[i]);
+        }
+        watch(bargs);
     }
 
-    public void exec() {
-	sendCommand("EXEC");
-	isInMulti = false;
+    public void sort(final String key) {
+        sort(SafeEncoder.encode(key));
     }
 
-    public void watch(String key) {
-	sendCommand("WATCH", key);
+    public void sort(final String key, final SortingParams sortingParameters) {
+        sort(SafeEncoder.encode(key), sortingParameters);
     }
 
-    public void unwatch() {
-	sendCommand("UNWATCH");
+    public void blpop(final String[] args) {
+        final byte[][] bargs = new byte[args.length][];
+        for (int i = 0; i < bargs.length; i++) {
+            bargs[i] = SafeEncoder.encode(args[i]);
+        }
+        blpop(bargs);
     }
 
-    public void sort(String key) {
-	sendCommand("SORT", key);
+    public void sort(final String key, final SortingParams sortingParameters,
+            final String dstkey) {
+        sort(SafeEncoder.encode(key), sortingParameters, SafeEncoder
+                .encode(dstkey));
     }
 
-    public void sort(String key, SortingParams sortingParameters) {
-	List<String> args = new ArrayList<String>();
-	args.add(key);
-	args.addAll(sortingParameters.getParams());
-	sendCommand("SORT", args.toArray(new String[args.size()]));
+    public void sort(final String key, final String dstkey) {
+        sort(SafeEncoder.encode(key), SafeEncoder.encode(dstkey));
     }
 
-    public void blpop(String[] args) {
-	sendCommand("BLPOP", args);
+    public void brpop(final String[] args) {
+        final byte[][] bargs = new byte[args.length][];
+        for (int i = 0; i < bargs.length; i++) {
+            bargs[i] = SafeEncoder.encode(args[i]);
+        }
+        brpop(bargs);
     }
 
-    public void sort(String key, SortingParams sortingParameters, String dstkey) {
-	List<String> args = new ArrayList<String>();
-	args.add(key);
-	args.addAll(sortingParameters.getParams());
-	args.add("STORE");
-	args.add(dstkey);
-	sendCommand("SORT", args.toArray(new String[args.size()]));
+    public void zcount(final String key, final double min, final double max) {
+        zcount(SafeEncoder.encode(key), min, max);
     }
 
-    public void sort(String key, String dstkey) {
-	sendCommand("SORT", key, "STORE", dstkey);
+    public void zrangeByScore(final String key, final double min,
+            final double max) {
+        zrangeByScore(SafeEncoder.encode(key), min, max);
     }
 
-    public void brpop(String[] args) {
-	sendCommand("BRPOP", args);
+    public void zrangeByScore(final String key, final String min,
+            final String max) {
+        zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min),
+                SafeEncoder.encode(max));
     }
 
-    public void auth(String password) {
-	sendCommand("AUTH", password);
+    public void zrangeByScore(final String key, final double min,
+            final double max, final int offset, int count) {
+        zrangeByScore(SafeEncoder.encode(key), min, max, offset, count);
     }
 
-    public void subscribe(String... channels) {
-	sendCommand("SUBSCRIBE", channels);
+    public void zrangeByScoreWithScores(final String key, final double min,
+            final double max) {
+        zrangeByScoreWithScores(SafeEncoder.encode(key), min, max);
     }
 
-    public void publish(String channel, String message) {
-	sendCommand("PUBLISH", channel, message);
+    public void zrangeByScoreWithScores(final String key, final double min,
+            final double max, final int offset, final int count) {
+        zrangeByScoreWithScores(SafeEncoder.encode(key), min, max, offset,
+                count);
     }
 
-    public void unsubscribe() {
-	sendCommand("UNSUBSCRIBE");
+    public void zrevrangeByScore(final String key, final double max,
+            final double min) {
+        zrevrangeByScore(SafeEncoder.encode(key), max, min);
     }
 
-    public void unsubscribe(String... channels) {
-	sendCommand("UNSUBSCRIBE", channels);
+    public void zrevrangeByScore(final String key, final String max,
+            final String min) {
+        zrevrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(max),
+                SafeEncoder.encode(min));
     }
 
-    public void psubscribe(String[] patterns) {
-	sendCommand("PSUBSCRIBE", patterns);
+    public void zrevrangeByScore(final String key, final double max,
+            final double min, final int offset, int count) {
+        zrevrangeByScore(SafeEncoder.encode(key), max, min, offset, count);
     }
 
-    public void punsubscribe() {
-	sendCommand("PUNSUBSCRIBE");
+    public void zrevrangeByScoreWithScores(final String key, final double max,
+            final double min) {
+        zrevrangeByScoreWithScores(SafeEncoder.encode(key), max, min);
     }
 
-    public void punsubscribe(String... patterns) {
-	sendCommand("PUNSUBSCRIBE", patterns);
+    public void zrevrangeByScoreWithScores(final String key, final double max,
+            final double min, final int offset, final int count) {
+        zrevrangeByScoreWithScores(SafeEncoder.encode(key), max, min, offset,
+                count);
     }
 
-    public void zcount(String key, double min, double max) {
-	sendCommand("ZCOUNT", key, String.valueOf(min), String.valueOf(max));
+    public void zremrangeByRank(final String key, final int start, final int end) {
+        zremrangeByRank(SafeEncoder.encode(key), start, end);
     }
 
-    public void zrangeByScore(String key, double min, double max) {
-	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
-		.valueOf(max));
+    public void zremrangeByScore(final String key, final double start,
+            final double end) {
+        zremrangeByScore(SafeEncoder.encode(key), start, end);
     }
 
-    public void zrangeByScore(String key, double min, double max, int offset,
-	    int count) {
-	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
-		.valueOf(max), "LIMIT", String.valueOf(offset), String
-		.valueOf(count));
+    public void zunionstore(final String dstkey, final String... sets) {
+        final byte[][] bsets = new byte[sets.length][];
+        for (int i = 0; i < bsets.length; i++) {
+            bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zunionstore(SafeEncoder.encode(dstkey), bsets);
     }
 
-    public void zrangeByScoreWithScores(String key, double min, double max) {
-	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
-		.valueOf(max), "WITHSCORES");
+    public void zunionstore(final String dstkey, final ZParams params,
+            final String... sets) {
+        final byte[][] bsets = new byte[sets.length][];
+        for (int i = 0; i < bsets.length; i++) {
+            bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zunionstore(SafeEncoder.encode(dstkey), params, bsets);
     }
 
-    public void zrangeByScoreWithScores(String key, double min, double max,
-	    int offset, int count) {
-	sendCommand("ZRANGEBYSCORE", key, String.valueOf(min), String
-		.valueOf(max), "LIMIT", String.valueOf(offset), String
-		.valueOf(count), "WITHSCORES");
+    public void zinterstore(final String dstkey, final String... sets) {
+        final byte[][] bsets = new byte[sets.length][];
+        for (int i = 0; i < bsets.length; i++) {
+            bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zinterstore(SafeEncoder.encode(dstkey), bsets);
     }
 
-    public void zremrangeByRank(String key, int start, int end) {
-	sendCommand("ZREMRANGEBYRANK", key, String.valueOf(start), String
-		.valueOf(end));
+    public void zinterstore(final String dstkey, final ZParams params,
+            final String... sets) {
+        final byte[][] bsets = new byte[sets.length][];
+        for (int i = 0; i < bsets.length; i++) {
+            bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }
 
-    public void zremrangeByScore(String key, double start, double end) {
-	sendCommand("ZREMRANGEBYSCORE", key, String.valueOf(start), String
-		.valueOf(end));
+    public void strlen(final String key) {
+        strlen(SafeEncoder.encode(key));
     }
 
-    public void zunionstore(String dstkey, String... sets) {
-	String[] params = new String[sets.length + 2];
-	params[0] = dstkey;
-	params[1] = String.valueOf(sets.length);
-	System.arraycopy(sets, 0, params, 2, sets.length);
-	sendCommand("ZUNIONSTORE", params);
+    public void lpushx(final String key, final String string) {
+        lpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
-    public void zunionstore(String dstkey, ZParams params, String... sets) {
-	List<String> args = new ArrayList<String>();
-	args.add(dstkey);
-	args.add(String.valueOf(sets.length));
-	for (String set : sets) {
-	    args.add(set);
-	}
-	args.addAll(params.getParams());
-	sendCommand("ZUNIONSTORE", args.toArray(new String[args.size()]));
+    public void persist(final String key) {
+        persist(SafeEncoder.encode(key));
     }
 
-    public void zinterstore(String dstkey, String... sets) {
-	String[] params = new String[sets.length + 2];
-	params[0] = dstkey;
-	params[1] = String.valueOf(sets.length);
-	System.arraycopy(sets, 0, params, 2, sets.length);
-	sendCommand("ZINTERSTORE", params);
+    public void rpushx(final String key, final String string) {
+        rpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
     }
 
-    public void zinterstore(String dstkey, ZParams params, String... sets) {
-	List<String> args = new ArrayList<String>();
-	args.add(dstkey);
-	args.add(String.valueOf(sets.length));
-	for (String set : sets) {
-	    args.add(set);
-	}
-	args.addAll(params.getParams());
-	sendCommand("ZINTERSTORE", args.toArray(new String[args.size()]));
+    public void echo(final String string) {
+        echo(SafeEncoder.encode(string));
     }
 
-    public void save() {
-	sendCommand("SAVE");
+    public void linsert(final String key, final LIST_POSITION where,
+            final String pivot, final String value) {
+        linsert(SafeEncoder.encode(key), where, SafeEncoder.encode(pivot),
+                SafeEncoder.encode(value));
     }
 
-    public void bgsave() {
-	sendCommand("BGSAVE");
+    public void brpoplpush(String source, String destination, int timeout) {
+        brpoplpush(SafeEncoder.encode(source), SafeEncoder.encode(destination),
+                timeout);
     }
 
-    public void bgrewriteaof() {
-	sendCommand("BGREWRITEAOF");
+    public void setbit(final String key, final long offset, final boolean value) {
+        setbit(SafeEncoder.encode(key), offset, toByteArray(value ? 1 : 0));
     }
 
-    public void lastsave() {
-	sendCommand("LASTSAVE");
+    public void getbit(String key, long offset) {
+        getbit(SafeEncoder.encode(key), offset);
     }
 
-    public void shutdown() {
-	sendCommand("SHUTDOWN");
+    public void setrange(String key, long offset, String value) {
+        setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
 
-    public void info() {
-	sendCommand("INFO");
+    public void getrange(String key, long startOffset, long endOffset) {
+        getrange(SafeEncoder.encode(key), startOffset, endOffset);
     }
 
-    public void monitor() {
-	sendCommand("MONITOR");
+    public void publish(final String channel, final String message) {
+        publish(SafeEncoder.encode(channel), SafeEncoder.encode(message));
     }
 
-    public void slaveof(String host, int port) {
-	sendCommand("SLAVEOF", host, String.valueOf(port));
+    public void unsubscribe(final String... channels) {
+        final byte[][] cs = new byte[channels.length][];
+        for (int i = 0; i < cs.length; i++) {
+            cs[i] = SafeEncoder.encode(channels[i]);
+        }
+        unsubscribe(cs);
     }
 
-    public void slaveofNoOne() {
-	sendCommand("SLAVEOF", "no", "one");
+    public void psubscribe(final String... patterns) {
+        final byte[][] ps = new byte[patterns.length][];
+        for (int i = 0; i < ps.length; i++) {
+            ps[i] = SafeEncoder.encode(patterns[i]);
+        }
+        psubscribe(ps);
     }
 
-    public void configGet(String pattern) {
-	sendCommand("CONFIG", "GET", pattern);
+    public void punsubscribe(final String... patterns) {
+        final byte[][] ps = new byte[patterns.length][];
+        for (int i = 0; i < ps.length; i++) {
+            ps[i] = SafeEncoder.encode(patterns[i]);
+        }
+        punsubscribe(ps);
     }
 
-    public void configSet(String parameter, String value) {
-	sendCommand("CONFIG", "SET", parameter, value);
+    public void subscribe(final String... channels) {
+        final byte[][] cs = new byte[channels.length][];
+        for (int i = 0; i < cs.length; i++) {
+            cs[i] = SafeEncoder.encode(channels[i]);
+        }
+        subscribe(cs);
     }
 }

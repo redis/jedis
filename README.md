@@ -1,26 +1,31 @@
 # Jedis
 
-Jedis is a blazingly small and sane redis java client.
+Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.
 
 Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.0.0.
 
-## Why Jedis is a Release Candidate?
-Because I want to add Sharding and add more documentation to the site. And also publish the benchmark results, which are pretty good (around 26 Kops for GETs and SETs, and 126 Kops for GETs and SETs in pipeling mode).
+## I want to persist my objects in Redis. How can I do it?
+You should definitely check [JOhm](http://github.com/xetorthio/johm "JOhm")!
+And of course, you can always serialize it and store it.
 
-## What will be available soon?
-- Sharding
-- More and more code and performance improvements
+## Is there a Groovy client?
 
-But stay close because things are going fast and all this will be implemented soon!
+Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :) 
 
-## Ok.. so what can I do with Jedis?
+## Community
+
+Meet us on IRC: ##jedis on freenode.net
+
+Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://groups.google.com/group/jedis_redis)
+
+## So what can I do with Jedis?
 All of the following redis features are supported:
 
 - Sorting
 - Connection handling
-- Commands operating on all the kind of values
+- Commands operating on any kind of values
 - Commands operating on string values
 - Commands operating on hashes
 - Commands operating on lists
@@ -32,27 +37,53 @@ All of the following redis features are supported:
 - Persistence control commands
 - Remote server control commands
 - Connection pooling
+- Sharding (MD5, MurmureHash)
+- Key-tags for sharding
+- Sharding with pipelining
 
 ## How do I use it?
 
-You can download the latests build at: 
+You can download the latest build at: 
     http://github.com/xetorthio/jedis/downloads
+
+Or use it as a maven dependency:
+
+    <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+        <version>2.0.0</version>
+        <type>jar</type>
+        <scope>compile</scope>
+    </dependency>
+
 
 To use it just:
     
     Jedis jedis = new Jedis("localhost");
-    jedis.connect();
     jedis.set("foo", "bar");
     String value = jedis.get("foo");
 
-For more usage examples check the tests. Soon I will add a nice wiki with everything you should know.
+For more usage examples check the tests.
+
+Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
 And you are done!
 
-License
--------
+## I want to contribute!
 
-Copyright (c) 2010 Jonathan Leibiusky
+That is great! Just fork the project in github. Create a topic branch, write some code, and add some tests for your new code.
+
+To run the tests:
+
+- Use the latest redis master branch.
+
+- Run 2 instances of redis [using conf files in conf folder](https://github.com/xetorthio/jedis/wiki). For the tests we use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
+
+Thanks for helping!
+
+## License
+
+Copyright (c) 2011 Jonathan Leibiusky
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

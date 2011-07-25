@@ -1,93 +1,98 @@
 package redis.clients.jedis.tests;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class JedisPoolTest extends Assert {
-    @Test
-    public void checkConnections() throws TimeoutException {
-	JedisPool pool = new JedisPool("localhost", Protocol.DEFAULT_PORT, 2000);
-	pool.setResourcesNumber(10);
-	pool.init();
+    private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-	Jedis jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.set("foo", "bar");
-	assertEquals("bar", jedis.get("foo"));
-	pool.returnResource(jedis);
-	pool.destroy();
+    @Test
+    public void checkConnections() {
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000);
+        Jedis jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.set("foo", "bar");
+        assertEquals("bar", jedis.get("foo"));
+        pool.returnResource(jedis);
+        pool.destroy();
     }
 
     @Test
-    public void checkConnectionWithDefaultPort() throws TimeoutException {
-	JedisPool pool = new JedisPool("localhost");
-	pool.setResourcesNumber(10);
-	pool.init();
-
-	Jedis jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.set("foo", "bar");
-	assertEquals("bar", jedis.get("foo"));
-	pool.returnResource(jedis);
-	pool.destroy();
+    public void checkConnectionWithDefaultPort() {
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port);
+        Jedis jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.set("foo", "bar");
+        assertEquals("bar", jedis.get("foo"));
+        pool.returnResource(jedis);
+        pool.destroy();
     }
 
     @Test
-    public void checkJedisIsReusedWhenReturned() throws TimeoutException {
-	JedisPool pool = new JedisPool("localhost");
-	pool.setResourcesNumber(1);
-	pool.init();
+    public void checkJedisIsReusedWhenReturned() {
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port);
+        Jedis jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.set("foo", "0");
+        pool.returnResource(jedis);
 
-	Jedis jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.set("foo", "0");
-	pool.returnResource(jedis);
-
-	jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.incr("foo");
-	pool.returnResource(jedis);
-	pool.destroy();
+        jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.incr("foo");
+        pool.returnResource(jedis);
+        pool.destroy();
     }
 
     @Test
-    public void checkPoolRepairedWhenJedisIsBroken() throws TimeoutException,
-	    IOException {
-	JedisPool pool = new JedisPool("localhost");
-	pool.setResourcesNumber(1);
-	pool.init();
+    public void checkPoolRepairedWhenJedisIsBroken() {
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port);
+        Jedis jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.quit();
+        pool.returnBrokenResource(jedis);
 
-	Jedis jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.quit();
-	pool.returnBrokenResource(jedis);
-
-	jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.incr("foo");
-	pool.returnResource(jedis);
-	pool.destroy();
+        jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.incr("foo");
+        pool.returnResource(jedis);
+        pool.destroy();
     }
 
-    @Test(expected = TimeoutException.class)
-    public void checkPoolOverflow() throws TimeoutException {
-	JedisPool pool = new JedisPool("localhost");
-	pool.setResourcesNumber(1);
-	pool.init();
+    @Test(expected = JedisConnectionException.class)
+    public void checkPoolOverflow() {
+        Config config = new Config();
+        config.maxActive = 1;
+        config.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_FAIL;
+        JedisPool pool = new JedisPool(config, hnp.host, hnp.port);
+        Jedis jedis = pool.getResource();
+        jedis.auth("foobared");
+        jedis.set("foo", "0");
 
-	Jedis jedis = pool.getResource(200);
-	jedis.auth("foobared");
-	jedis.set("foo", "0");
+        Jedis newJedis = pool.getResource();
+        newJedis.auth("foobared");
+        newJedis.incr("foo");
+    }
 
-	Jedis newJedis = pool.getResource(200);
-	newJedis.auth("foobared");
-	newJedis.incr("foo");
+    @Test
+    public void securePool() {
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setTestOnBorrow(true);
+        JedisPool pool = new JedisPool(config, hnp.host, hnp.port, 2000, "foobared");
+        Jedis jedis = pool.getResource();
+        jedis.set("foo", "bar");
+        pool.returnResource(jedis);
+        pool.destroy();
     }
 }

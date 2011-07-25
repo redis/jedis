@@ -1,9 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'maven'
 
-group = 'redis.clients'
+group = 'com.googlecode.jedis'
 archiveBaseName = 'jedis'
-version = '1.0.0-RC5.1'
+version = '1.5.0'
 
 repositories {
    mavenCentral()
@@ -11,6 +11,7 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:4.8.1'
+    compile 'commons-pool:commons-pool:1.5.5'
 }
 
 

@@ -24,8 +24,7 @@ public class ProtocolTest extends JedisTestBase {
         PipedOutputStream pos = new PipedOutputStream(pis);
         RedisOutputStream ros = new RedisOutputStream(pos);
 
-        Protocol protocol = new Protocol();
-        protocol.sendCommand(ros, Protocol.Command.GET,
+        Protocol.sendCommand(ros, Protocol.Command.GET,
                 "SOMEKEY".getBytes(Protocol.CHARSET));
         ros.flush();
         pos.close();
@@ -43,8 +42,7 @@ public class ProtocolTest extends JedisTestBase {
     @Test
     public void bulkReply() {
         InputStream is = new ByteArrayInputStream("$6\r\nfoobar\r\n".getBytes());
-        Protocol protocol = new Protocol();
-        byte[] response = (byte[]) protocol.read(new RedisInputStream(is));
+        byte[] response = (byte[]) Protocol.read(new RedisInputStream(is));
         assertArrayEquals(SafeEncoder.encode("foobar"), response);
     }
 
@@ -52,8 +50,7 @@ public class ProtocolTest extends JedisTestBase {
     public void fragmentedBulkReply() {
         FragmentedByteArrayInputStream fis = new FragmentedByteArrayInputStream(
                 "$30\r\n012345678901234567890123456789\r\n".getBytes());
-        Protocol protocol = new Protocol();
-        byte[] response = (byte[]) protocol.read(new RedisInputStream(fis));
+        byte[] response = (byte[]) Protocol.read(new RedisInputStream(fis));
         assertArrayEquals(SafeEncoder.encode("012345678901234567890123456789"),
                 response);
     }
@@ -61,24 +58,21 @@ public class ProtocolTest extends JedisTestBase {
     @Test
     public void nullBulkReply() {
         InputStream is = new ByteArrayInputStream("$-1\r\n".getBytes());
-        Protocol protocol = new Protocol();
-        String response = (String) protocol.read(new RedisInputStream(is));
+        String response = (String) Protocol.read(new RedisInputStream(is));
         assertEquals(null, response);
     }
 
     @Test
     public void singleLineReply() {
         InputStream is = new ByteArrayInputStream("+OK\r\n".getBytes());
-        Protocol protocol = new Protocol();
-        byte[] response = (byte[]) protocol.read(new RedisInputStream(is));
+        byte[] response = (byte[]) Protocol.read(new RedisInputStream(is));
         assertArrayEquals(SafeEncoder.encode("OK"), response);
     }
 
     @Test
     public void integerReply() {
         InputStream is = new ByteArrayInputStream(":123\r\n".getBytes());
-        Protocol protocol = new Protocol();
-        long response = (Long) protocol.read(new RedisInputStream(is));
+        long response = (Long) Protocol.read(new RedisInputStream(is));
         assertEquals(123, response);
     }
 
@@ -88,8 +82,7 @@ public class ProtocolTest extends JedisTestBase {
         InputStream is = new ByteArrayInputStream(
                 "*4\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$5\r\nHello\r\n$5\r\nWorld\r\n"
                         .getBytes());
-        Protocol protocol = new Protocol();
-        List<byte[]> response = (List<byte[]>) protocol
+        List<byte[]> response = (List<byte[]>) Protocol
                 .read(new RedisInputStream(is));
         List<byte[]> expected = new ArrayList<byte[]>();
         expected.add(SafeEncoder.encode("foo"));
@@ -104,8 +97,7 @@ public class ProtocolTest extends JedisTestBase {
     @Test
     public void nullMultiBulkReply() {
         InputStream is = new ByteArrayInputStream("*-1\r\n".getBytes());
-        Protocol protocol = new Protocol();
-        List<String> response = (List<String>) protocol
+        List<String> response = (List<String>) Protocol
                 .read(new RedisInputStream(is));
         assertNull(response);
     }

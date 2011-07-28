@@ -227,11 +227,19 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
+     * Resets the client.
+     * <p>
+     * Reads all remaining responses from the input.
+     */
+    public void reset() {
+        client.getAll();
+    }
+
+    /**
      * Return the number of keys in the currently selected database.
      * 
      * @return Integer reply
      */
-
     public Long dbSize() {
         checkIsInMulti();
         client.dbSize();
@@ -332,7 +340,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param index
      * @return Status code reply
      */
-
     public String select(final int index) {
         checkIsInMulti();
         client.select(index);
@@ -364,7 +371,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @return Status code reply
      */
-
     public String flushAll() {
         checkIsInMulti();
         client.flushAll();
@@ -1960,7 +1966,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param password
      * @return Status code reply
      */
-
     public String auth(final String password) {
         checkIsInMulti();
         client.auth(password);

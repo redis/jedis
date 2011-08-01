@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
@@ -240,5 +241,40 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         Response<String> string = t.get("string");
         string.get();
         t.exec();
+    }
+    
+    @Test
+    public void transactionResponseWithError() {
+    	Transaction t = jedis.multi();
+    	t.set("foo", "bar");
+        Response<Set<String>> error = t.smembers("foo");
+        Response<String> r = t.get("foo");
+        List<Object> l = t.exec();
+        assertEquals(JedisDataException.class, l.get(1).getClass());
+        try{
+        	error.get();
+        	fail("We expect exception here!");
+        }catch(JedisDataException e){
+        	//that is fine we should be here
+        }
+        assertEquals(r.get(), "bar");
+    }
+    
+    @Test
+    public void execGetResponse() {
+        Transaction t = jedis.multi();
+
+        t.set("foo", "bar");
+        t.smembers("foo");
+        t.get("foo");
+
+        List<Response<?>> lr = t.execGetResponse();
+        try{
+        	lr.get(1).get();
+        	fail("We expect exception here!");
+        }catch(JedisDataException e){
+        	//that is fine we should be here
+        }
+        assertEquals("bar", lr.get(2).get());
     }
 }

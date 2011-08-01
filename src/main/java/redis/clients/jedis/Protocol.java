@@ -113,7 +113,11 @@ public final class Protocol {
         }
         List<Object> ret = new ArrayList<Object>(num);
         for (int i = 0; i < num; i++) {
-            ret.add(process(is));
+        	try{
+        		ret.add(process(is));
+        	}catch(JedisDataException e){
+        		ret.add(e);
+        	}
         }
         return ret;
     }

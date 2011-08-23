@@ -47,6 +47,7 @@ public class Connection {
     public void rollbackTimeout() {
         try {
             socket.setSoTimeout(timeout);
+            pipelinedCommands = 0;
         } catch (SocketException ex) {
             throw new JedisException(ex);
         }
@@ -190,10 +191,14 @@ public class Connection {
     }
 
     @SuppressWarnings("unchecked")
+    public List<Object> rawGetObjectMultiBulkReply() {
+        return (List<Object>) protocol.read(inputStream);
+    }
+
     public List<Object> getObjectMultiBulkReply() {
         flush();
         pipelinedCommands--;
-        return (List<Object>) protocol.read(inputStream);
+        return rawGetObjectMultiBulkReply();
     }
 
     public List<Object> getAll() {

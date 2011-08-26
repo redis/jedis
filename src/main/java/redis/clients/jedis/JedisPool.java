@@ -8,30 +8,30 @@ import redis.clients.util.Pool;
 
 public class JedisPool extends Pool<Jedis> {
 
-    public JedisPool(final GenericObjectPool.Config poolConfig,
-            final String host) {
-        this(poolConfig, host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
-                null);
+    public JedisPool(final Config poolConfig, final String host) {
+        this(poolConfig, host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
     }
 
     public JedisPool(String host, int port) {
-        super(new Config(), new JedisFactory(host, port,
-                Protocol.DEFAULT_TIMEOUT, null));
+        this(new Config(), host, port, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
     }
 
     public JedisPool(final Config poolConfig, final String host, int port,
             int timeout, final String password) {
-        super(poolConfig, new JedisFactory(host, port, timeout, password));
+        this(poolConfig, host, port, timeout, password, Protocol.DEFAULT_DATABASE);
     }
 
-    public JedisPool(final GenericObjectPool.Config poolConfig,
-            final String host, final int port) {
-        this(poolConfig, host, port, Protocol.DEFAULT_TIMEOUT, null);
+    public JedisPool(final Config poolConfig, final String host, final int port) {
+        this(poolConfig, host, port, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
     }
 
-    public JedisPool(final GenericObjectPool.Config poolConfig,
-            final String host, final int port, final int timeout) {
-        this(poolConfig, host, port, timeout, null);
+    public JedisPool(final Config poolConfig, final String host, final int port, final int timeout) {
+        this(poolConfig, host, port, timeout, null, Protocol.DEFAULT_DATABASE);
+    }
+
+    public JedisPool(final Config poolConfig, final String host, int port, int timeout, final String password,
+                     final int database) {
+        super(poolConfig, new JedisFactory(host, port, timeout, password, database));
     }
 
     /**
@@ -42,14 +42,16 @@ public class JedisPool extends Pool<Jedis> {
         private final int port;
         private final int timeout;
         private final String password;
+        private final int database;
 
         public JedisFactory(final String host, final int port,
-                final int timeout, final String password) {
+                final int timeout, final String password, final int database) {
             super();
             this.host = host;
             this.port = port;
             this.timeout = timeout;
             this.password = password;
+            this.database = database;
         }
 
         public Object makeObject() throws Exception {
@@ -59,6 +61,10 @@ public class JedisPool extends Pool<Jedis> {
             if (null != this.password) {
                 jedis.auth(this.password);
             }
+            if( database != 0 ) {
+                jedis.select(database);
+            }
+            
             return jedis;
         }
 

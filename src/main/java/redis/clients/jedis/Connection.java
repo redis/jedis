@@ -116,6 +116,13 @@ public class Connection {
         if (!isConnected()) {
             try {
                 socket = new Socket();
+                //->@wjw_add
+                socket.setReuseAddress(true);
+                socket.setKeepAlive(true);  //Will monitor the TCP connection is valid
+                socket.setTcpNoDelay(true);  //Socket buffer Whetherclosed, to ensure timely delivery of data
+                socket.setSoLinger(true,0);  //Control calls close () method, the underlying socket is closed immediately
+                //<-@wjw_add
+								
                 socket.connect(new InetSocketAddress(host, port), timeout);
                 socket.setSoTimeout(timeout);
                 outputStream = new RedisOutputStream(socket.getOutputStream());

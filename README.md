@@ -48,20 +48,23 @@ You can download the latest build at:
 
 Or use it as a maven dependency:
 
-    <dependency>
-        <groupId>redis.clients</groupId>
-        <artifactId>jedis</artifactId>
-        <version>2.0.0</version>
-        <type>jar</type>
-        <scope>compile</scope>
-    </dependency>
-
+```xml
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>2.0.0</version>
+    <type>jar</type>
+    <scope>compile</scope>
+</dependency>
+```
 
 To use it just:
     
-    Jedis jedis = new Jedis("localhost");
-    jedis.set("foo", "bar");
-    String value = jedis.get("foo");
+```java
+Jedis jedis = new Jedis("localhost");
+jedis.set("foo", "bar");
+String value = jedis.get("foo");
+```
 
 For more usage examples check the tests.
 

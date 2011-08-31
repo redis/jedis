@@ -77,8 +77,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     /**
      * Test if the specified key exists. The command returns "1" if the key
-     * exists, otherwise "1" is returned. Note that even keys set with an empty
-     * string as value will return "0".
+     * exists, otherwise "0" is returned. Note that even keys set with an empty
+     * string as value will return "1".
      * 
      * Time complexity: O(1)
      * 

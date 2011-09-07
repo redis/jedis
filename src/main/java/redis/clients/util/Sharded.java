@@ -94,7 +94,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
      * @param tagPattern pattern to be used for key hashing
      */
     public Sharded(final AbstractDynamicShardsProvider<R, S> provider, final Hashing algo, final Pattern tagPattern) {
-    	this.useProvider = false;
+    	this.useProvider = true;
         this.algo = algo;
         this.tagPattern = tagPattern;
         provider.register(this);

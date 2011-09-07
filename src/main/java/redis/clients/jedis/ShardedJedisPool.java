@@ -56,6 +56,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         
         public ShardedJedisFactory(final JedisDynamicShardsProvider provider, final Hashing algo, final Pattern keyTagPattern) {
         	this.isDynamic = true;
+        	this.algo = algo;
         	this.provider = provider;
         	this.shards = null;
         	this.keyTagPattern = keyTagPattern;

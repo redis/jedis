@@ -174,6 +174,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.hexists(key, field);
     }
 
+    public Long del(byte[] key) {
+        Jedis j = getShard(key);
+        return j.del(key);
+    }
+
     public Long hdel(byte[] key, byte[] field) {
         Jedis j = getShard(key);
         return j.hdel(key, field);

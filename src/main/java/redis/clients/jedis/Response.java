@@ -24,6 +24,9 @@ public class Response<T> {
                     "Please close pipeline or multi block before calling this method.");
         }
         if (!built) {
+        	if (data instanceof JedisDataException){
+        		throw new JedisDataException((JedisDataException)data);
+        	}
             response = builder.build(data);
             this.data = null;
             built = true;

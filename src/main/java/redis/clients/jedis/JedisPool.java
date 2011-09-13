@@ -16,6 +16,10 @@ public class JedisPool extends Pool<Jedis> {
         this(new Config(), host, port, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
     }
 
+    public JedisPool(final String host) {
+        this(host, Protocol.DEFAULT_PORT);
+    }
+
     public JedisPool(final Config poolConfig, final String host, int port,
             int timeout, final String password) {
         this(poolConfig, host, port, timeout, password, Protocol.DEFAULT_DATABASE);

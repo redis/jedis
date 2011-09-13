@@ -11,6 +11,7 @@ import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
@@ -205,9 +206,9 @@ public class BinaryClient extends Connection {
         final List<byte[]> params = new ArrayList<byte[]>();
         params.add(key);
 
-        for (final byte[] field : hash.keySet()) {
-            params.add(field);
-            params.add(hash.get(field));
+        for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+            params.add(entry.getKey());
+            params.add(entry.getValue());
         }
         sendCommand(HMSET, params.toArray(new byte[params.size()][]));
     }

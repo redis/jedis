@@ -24,12 +24,17 @@ public final class Protocol {
     public static final byte MINUS_BYTE = '-';
     public static final byte COLON_BYTE = ':';
 
-    public void sendCommand(final RedisOutputStream os, final Command command,
-            final byte[]... args) {
+	private Protocol() {
+		// this prevent the class from instantiation
+	}
+
+    public static void sendCommand(final RedisOutputStream os,
+            final Command command, final byte[]... args) {
         sendCommand(os, command.raw, args);
     }
 
-    private void sendCommand(final RedisOutputStream os, final byte[] command,
+    private static void sendCommand(final RedisOutputStream os,
+            final byte[] command,
             final byte[]... args) {
         try {
             os.write(ASTERISK_BYTE);
@@ -50,12 +55,12 @@ public final class Protocol {
         }
     }
 
-    private void processError(final RedisInputStream is) {
+    private static void processError(final RedisInputStream is) {
         String message = is.readLine();
         throw new JedisDataException(message);
     }
 
-    private Object process(final RedisInputStream is) {
+    private static Object process(final RedisInputStream is) {
         try {
             byte b = is.readByte();
             if (b == MINUS_BYTE) {
@@ -77,11 +82,11 @@ public final class Protocol {
         return null;
     }
 
-    private byte[] processStatusCodeReply(final RedisInputStream is) {
+    private static byte[] processStatusCodeReply(final RedisInputStream is) {
         return SafeEncoder.encode(is.readLine());
     }
 
-    private byte[] processBulkReply(final RedisInputStream is) {
+    private static byte[] processBulkReply(final RedisInputStream is) {
         int len = Integer.parseInt(is.readLine());
         if (len == -1) {
             return null;
@@ -102,12 +107,12 @@ public final class Protocol {
         return read;
     }
 
-    private Long processInteger(final RedisInputStream is) {
+    private static Long processInteger(final RedisInputStream is) {
         String num = is.readLine();
         return Long.valueOf(num);
     }
 
-    private List<Object> processMultiBulkReply(final RedisInputStream is) {
+    private static List<Object> processMultiBulkReply(final RedisInputStream is) {
         int num = Integer.parseInt(is.readLine());
         if (num == -1) {
             return null;
@@ -119,7 +124,7 @@ public final class Protocol {
         return ret;
     }
 
-    public Object read(final RedisInputStream is) {
+    public static Object read(final RedisInputStream is) {
         return process(is);
     }
 

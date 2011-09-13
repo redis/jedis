@@ -95,4 +95,22 @@ public class JedisPoolTest extends Assert {
         pool.returnResource(jedis);
         pool.destroy();
     }
+
+    @Test
+    public void nonDefaultDatabase() {
+        JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000, "foobared");
+        Jedis jedis0 = pool0.getResource();
+        jedis0.set("foo", "bar");
+        assertEquals( "bar", jedis0.get("foo") );
+        pool0.returnResource(jedis0);
+        pool0.destroy();
+
+        JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000, "foobared", 1);
+        Jedis jedis1 = pool1.getResource();
+        assertNull( jedis1.get("foo") );
+        pool1.returnResource(jedis0);
+        pool1.destroy();
+    }
 }

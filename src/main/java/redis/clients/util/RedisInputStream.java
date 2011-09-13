@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
 
 public class RedisInputStream extends FilterInputStream {
 
@@ -84,7 +83,7 @@ public class RedisInputStream extends FilterInputStream {
                 }
             }
         } catch (IOException e) {
-            throw new JedisException(e);
+            throw new JedisConnectionException(e);
         }
         String reply = sb.toString();
         if (reply.length() == 0) {

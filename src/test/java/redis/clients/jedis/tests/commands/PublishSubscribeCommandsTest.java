@@ -472,7 +472,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         t.join();
     }
 
-    @Test
+    @Test @Ignore
     public void subscribeWithoutConnecting() {
         try {
             Jedis jedis = new Jedis(hnp.host, hnp.port);
@@ -504,7 +504,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         }
     }
 
-    @Test(expected = JedisConnectionException.class) @Ignore
+    @Test(expected = JedisConnectionException.class)
     public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
         JedisPubSub pubsub = new JedisPubSub() {
             public void onMessage(String channel, String message) {

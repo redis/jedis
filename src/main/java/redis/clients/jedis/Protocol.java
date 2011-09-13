@@ -14,6 +14,7 @@ public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_TIMEOUT = 2000;
+    public static final int DEFAULT_DATABASE = 0;
 
     public static final String CHARSET = "UTF-8";
 

@@ -116,6 +116,11 @@ public class Connection {
         if (!isConnected()) {
             try {
                 socket = new Socket();
+                socket.setReuseAddress(true);
+                socket.setKeepAlive(true);  
+                socket.setTcpNoDelay(true);  
+                socket.setSoLinger(true,0);  
+								
                 socket.connect(new InetSocketAddress(host, port), timeout);
                 socket.setSoTimeout(timeout);
                 outputStream = new RedisOutputStream(socket.getOutputStream());

@@ -118,4 +118,20 @@ public class PipeliningTest extends Assert {
         p.sync();
         assertNull(shouldNotExist.get());
     }
+    
+    @Test
+    public void piplineWithError(){
+    	Pipeline p = jedis.pipelined();
+    	p.set("foo", "bar");
+        Response<Set<String>> error = p.smembers("foo");
+        Response<String> r = p.get("foo");
+        p.sync();
+        try{
+        	error.get();
+        	fail();
+        }catch(JedisDataException e){
+        	//that is fine we should be here
+        }
+        assertEquals(r.get(), "bar");
+    }
 }

@@ -133,7 +133,6 @@ public class DynamicShardsProviderTest {
 			return invalidcount;
 		}
 
-		@Override
 		public void run() {
 			while(!stop) {
 				Collection<DummyShardInfo> result = sharded.getAllShardInfo();
@@ -158,7 +157,6 @@ public class DynamicShardsProviderTest {
 			this.dynamic = dynamic;
 		}
 
-		@Override
 		public void run() {
 			try {
 				Thread.currentThread().sleep(4500);

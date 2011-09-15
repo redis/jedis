@@ -15,6 +15,13 @@
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>http://code.google.com/p/jedis/</url>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>3rdPartySnapshots</id>
+			<url>http://nux-build:9080/content/repositories/3rdPartySnapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<mailingLists>
 		<mailingList>
 			<name>Jedis Mailing List</name>

@@ -280,7 +280,6 @@ public class JedisDynamicShardsProviderTest {
 			return failed;
 		}
 
-		@Override
 		public void run() {
 			String result1 = null;
 			String result2 = null;
@@ -355,7 +354,7 @@ public class JedisDynamicShardsProviderTest {
 		public void setStop() {
 			this.stop = true;
 		}
-		@Override
+
 		public void run() {
 			JedisShardInfo s1 = provider.getShards().get(0);
 			JedisShardInfo s2 = provider.getShards().get(1);

@@ -13,7 +13,7 @@ import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-public class SharedJedisPipelineTest {
+public class ShardedJedisPipelineTest {
     private static HostAndPortUtil.HostAndPort redis1 = HostAndPortUtil.getRedisServers()
             .get(0);
     private static HostAndPortUtil.HostAndPort redis2 = HostAndPortUtil.getRedisServers()

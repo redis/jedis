@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedisPubSub;
@@ -471,7 +472,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         t.join();
     }
 
-    @Test
+    @Test @Ignore
     public void subscribeWithoutConnecting() {
         try {
             Jedis jedis = new Jedis(hnp.host, hnp.port);

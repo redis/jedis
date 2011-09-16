@@ -14,6 +14,7 @@ public final class Protocol {
 
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_TIMEOUT = 2000;
+    public static final int DEFAULT_DATABASE = 0;
 
     public static final String CHARSET = "UTF-8";
 
@@ -113,7 +114,11 @@ public final class Protocol {
         }
         List<Object> ret = new ArrayList<Object>(num);
         for (int i = 0; i < num; i++) {
-            ret.add(process(is));
+        	try{
+        		ret.add(process(is));
+        	}catch(JedisDataException e){
+        		ret.add(e);
+        	}
         }
         return ret;
     }

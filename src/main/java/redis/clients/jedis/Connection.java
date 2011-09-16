@@ -9,6 +9,7 @@ import java.util.List;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
@@ -38,6 +39,7 @@ public class Connection {
 
     public void setTimeoutInfinite() {
         try {
+            socket.setKeepAlive(true);
             socket.setSoTimeout(0);
         } catch (SocketException ex) {
             throw new JedisException(ex);
@@ -47,6 +49,7 @@ public class Connection {
     public void rollbackTimeout() {
         try {
             socket.setSoTimeout(timeout);
+            socket.setKeepAlive(false);
         } catch (SocketException ex) {
             throw new JedisException(ex);
         }
@@ -116,6 +119,13 @@ public class Connection {
         if (!isConnected()) {
             try {
                 socket = new Socket();
+                //->@wjw_add
+                socket.setReuseAddress(true);
+                socket.setKeepAlive(true);  //Will monitor the TCP connection is valid
+                socket.setTcpNoDelay(true);  //Socket buffer Whetherclosed, to ensure timely delivery of data
+                socket.setSoLinger(true,0);  //Control calls close () method, the underlying socket is closed immediately
+                //<-@wjw_add
+								
                 socket.connect(new InetSocketAddress(host, port), timeout);
                 socket.setSoTimeout(timeout);
                 outputStream = new RedisOutputStream(socket.getOutputStream());
@@ -204,7 +214,11 @@ public class Connection {
         List<Object> all = new ArrayList<Object>();
         flush();
         while (pipelinedCommands > except) {
-            all.add(protocol.read(inputStream));
+        	try{
+        		all.add(protocol.read(inputStream));
+        	}catch(JedisDataException e){
+        		all.add(e);
+        	}
             pipelinedCommands--;
         }
         return all;

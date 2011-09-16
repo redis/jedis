@@ -88,7 +88,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
         return internalMap.values();
     }
 
-    private final class ByteArrayWrapper {
+    private static final class ByteArrayWrapper {
         private final byte[] data;
 
         public ByteArrayWrapper(byte[] data) {
@@ -110,7 +110,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
         }
     }
 
-    private final class JedisByteEntry implements Entry<byte[], byte[]> {
+    private static final class JedisByteEntry implements Entry<byte[], byte[]> {
         private byte[] value;
         private byte[] key;
 

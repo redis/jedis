@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class BinaryTransaction extends Queable {
     protected Client client = null;
@@ -28,9 +29,28 @@ public class BinaryTransaction extends Queable {
         }
         List<Object> formatted = new ArrayList<Object>();
         for (Object o : unformatted) {
-            formatted.add(generateResponse(o).get());
+        	try{
+        		formatted.add(generateResponse(o).get());
+        	}catch(JedisDataException e){
+        		formatted.add(e);
+        	}
         }
         return formatted;
+    }
+    
+    public List<Response<?>> execGetResponse() {
+        client.exec();
+        client.getAll(1); // Discard all but the last reply
+
+        List<Object> unformatted = client.getObjectMultiBulkReply();
+        if (unformatted == null) {
+            return null;
+        }
+        List<Response<?>> response = new ArrayList<Response<?>>();
+        for (Object o : unformatted) {
+        	response.add(generateResponse(o));
+        }
+        return response;
     }
 
     public String discard() {

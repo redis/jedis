@@ -1,48 +1,47 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-public class PipeliningTest extends Assert {
-    private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
-    private Jedis jedis;
+public class SharedJedisPipelineTest {
+    private static HostAndPortUtil.HostAndPort redis1 = HostAndPortUtil.getRedisServers()
+            .get(0);
+    private static HostAndPortUtil.HostAndPort redis2 = HostAndPortUtil.getRedisServers()
+            .get(1);
+
+    private ShardedJedis jedis;
 
     @Before
     public void setUp() throws Exception {
-        jedis = new Jedis(hnp.host, hnp.port, 500);
-        jedis.connect();
-        jedis.auth("foobared");
+        Jedis jedis = new Jedis(redis1.host, redis1.port);
         jedis.flushAll();
+        jedis.disconnect();
+        jedis = new Jedis(redis2.host, redis2.port);
+        jedis.flushAll();
+        jedis.disconnect();
+
+        List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+        shards.add(new JedisShardInfo(redis1.host, redis1.port));
+        shards.add(new JedisShardInfo(redis2.host, redis2.port));
+        this.jedis = new ShardedJedis(shards);
     }
 
     @Test
     public void pipeline() throws UnsupportedEncodingException {
-        List<Object> results = jedis.pipelined(new PipelineBlock() {
-            public void execute() {
-                set("foo", "bar");
-                get("foo");
-            }
-        });
-
-        assertEquals(2, results.size());
-        assertEquals("OK", results.get(0));
-        assertEquals("bar", results.get(1));
-
-        Pipeline p = jedis.pipelined();
+        ShardedJedisPipeline p = jedis.pipelined();
         p.set("foo", "bar");
         p.get("foo");
-        results = p.syncAndReturnAll();
+        List<Object> results = p.syncAndReturnAll();
 
         assertEquals(2, results.size());
         assertEquals("OK", results.get(0));
@@ -58,7 +57,7 @@ public class PipeliningTest extends Assert {
         jedis.zadd("zset", 1, "foo");
         jedis.sadd("set", "foo");
 
-        Pipeline p = jedis.pipelined();
+        ShardedJedisPipeline p = jedis.pipelined();
         Response<String> string = p.get("string");
         Response<String> list = p.lpop("list");
         Response<String> hash = p.hget("hash", "foo");
@@ -81,7 +80,7 @@ public class PipeliningTest extends Assert {
         assertEquals("bar", hash.get());
         assertEquals("foo", zset.get().iterator().next());
         assertEquals("foo", set.get());
-        assertEquals(false, blist.get());
+        assertFalse(blist.get());
         assertEquals(new Double(2), zincrby.get());
         assertEquals(new Long(1), zcard.get());
         assertEquals(1, lrange.get().size());
@@ -94,44 +93,17 @@ public class PipeliningTest extends Assert {
     public void pipelineResponseWithinPipeline() {
         jedis.set("string", "foo");
 
-        Pipeline p = jedis.pipelined();
+        ShardedJedisPipeline p = jedis.pipelined();
         Response<String> string = p.get("string");
         string.get();
         p.sync();
     }
 
     @Test
-    public void pipelineWithPubSub() {
-        Pipeline pipelined = jedis.pipelined();
-        Response<Long> p1 = pipelined.publish("foo", "bar");
-        Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar"
-                .getBytes());
-        pipelined.sync();
-        assertEquals(0, p1.get().longValue());
-        assertEquals(0, p2.get().longValue());
-    }
-
-    @Test
     public void canRetrieveUnsetKey() {
-        Pipeline p = jedis.pipelined();
+        ShardedJedisPipeline p = jedis.pipelined();
         Response<String> shouldNotExist = p.get(UUID.randomUUID().toString());
         p.sync();
         assertNull(shouldNotExist.get());
-    }
-    
-    @Test
-    public void piplineWithError(){
-    	Pipeline p = jedis.pipelined();
-    	p.set("foo", "bar");
-        Response<Set<String>> error = p.smembers("foo");
-        Response<String> r = p.get("foo");
-        p.sync();
-        try{
-        	error.get();
-        	fail();
-        }catch(JedisDataException e){
-        	//that is fine we should be here
-        }
-        assertEquals(r.get(), "bar");
     }
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Pipeline extends Queable {
     private Client client;
@@ -39,7 +40,11 @@ public class Pipeline extends Queable {
         List<Object> unformatted = client.getAll();
         List<Object> formatted = new ArrayList<Object>();
         for (Object o : unformatted) {
-            formatted.add(generateResponse(o).get());
+        	try{
+        		formatted.add(generateResponse(o).get());
+        	}catch(JedisDataException e){
+        		formatted.add(e);
+        	}
         }
         return formatted;
     }

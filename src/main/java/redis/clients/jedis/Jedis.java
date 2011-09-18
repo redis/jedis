@@ -107,6 +107,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
+	public Long del(final Set<String> keys) {
+        checkIsInMulti();
+        client.del(keys);
+        return client.getIntegerReply();
+	}
+
     /**
      * Return the type of the value stored at key in form of a string. The type
      * can be one of "none", "string", "list", "set". "none" is returned if the
@@ -404,6 +410,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getMultiBulkReply();
     }
 
+	public List<String> mget(final Set<String> keys) {
+        checkIsInMulti();
+        client.mget(keys);
+        return client.getMultiBulkReply();
+	}
     /**
      * SETNX works exactly like {@link #set(String, String) SET} with the only
      * difference that if the key already exists no operation is performed.
@@ -745,6 +756,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getMultiBulkReply();
     }
 
+    public List<String> hmget(final String key, final Set<String> fields) {
+        checkIsInMulti();
+        client.hmget(key, fields);
+        return client.getMultiBulkReply();
+    }
     /**
      * Increment the number stored at field in the hash at key by value. If key
      * does not exist, a new key holding a hash is created. If field does not
@@ -1300,6 +1316,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         final List<String> members = client.getMultiBulkReply();
         return new HashSet<String>(members);
     }
+    
+	public Set<String> sinter(final Set<String> keys) {
+        checkIsInMulti();
+        client.sinter(keys);
+        final List<String> members = client.getMultiBulkReply();
+        return new HashSet<String>(members);
+    }
 
     /**
      * This commnad works exactly like {@link #sinter(String...) SINTER} but
@@ -1313,6 +1336,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public Long sinterstore(final String dstkey, final String... keys) {
+        checkIsInMulti();
+        client.sinterstore(dstkey, keys);
+        return client.getIntegerReply();
+    }
+    
+	public Long sinterstore(final String dstkey, final Set<String> keys) {
         checkIsInMulti();
         client.sinterstore(dstkey, keys);
         return client.getIntegerReply();

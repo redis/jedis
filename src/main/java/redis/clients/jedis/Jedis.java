@@ -77,8 +77,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     /**
      * Test if the specified key exists. The command returns "1" if the key
-     * exists, otherwise "1" is returned. Note that even keys set with an empty
-     * string as value will return "0".
+     * exists, otherwise "0" is returned. Note that even keys set with an empty
+     * string as value will return "1".
      * 
      * Time complexity: O(1)
      * 
@@ -519,7 +519,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @see #incr(String)
      * @see #decr(String)
-     * @see #incrBy(String, int)
+     * @see #incrBy(String, long)
      * 
      * @param key
      * @param integer
@@ -547,8 +547,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * Time complexity: O(1)
      * 
      * @see #incr(String)
-     * @see #incrBy(String, int)
-     * @see #decrBy(String, int)
+     * @see #incrBy(String, long)
+     * @see #decrBy(String, long)
      * 
      * @param key
      * @return Integer reply, this commands will reply with the new value of key
@@ -575,7 +575,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * @see #incr(String)
      * @see #decr(String)
-     * @see #decrBy(String, int)
+     * @see #decrBy(String, long)
      * 
      * @param key
      * @param integer
@@ -602,9 +602,9 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #incrBy(String, int)
+     * @see #incrBy(String, long)
      * @see #decr(String)
-     * @see #decrBy(String, int)
+     * @see #decrBy(String, long)
      * 
      * @param key
      * @return Integer reply, this commands will reply with the new value of key
@@ -1058,7 +1058,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * O(N) (with N being the length of the list), setting the first or last
      * elements of the list is O(1).
      * 
-     * @see #lindex(String, int)
+     * @see #lindex(String, long)
      * 
      * @param key
      * @param index
@@ -1294,7 +1294,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     /**
      * Return the members of a set resulting from the intersection of all the
      * sets hold at the specified keys. Like in
-     * {@link #lrange(String, int, int) LRANGE} the result is sent to the client
+     * {@link #lrange(String, long, long) LRANGE} the result is sent to the client
      * as a multi-bulk reply (see the protocol specification for more
      * information). If just a single key is specified, then this command
      * produces the same result as {@link #smembers(String) SMEMBERS}. Actually
@@ -1349,7 +1349,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     /**
      * Return the members of a set resulting from the union of all the sets hold
-     * at the specified keys. Like in {@link #lrange(String, int, int) LRANGE}
+     * at the specified keys. Like in {@link #lrange(String, long, long) LRANGE}
      * the result is sent to the client as a multi-bulk reply (see the protocol
      * specification for more information). If just a single key is specified,
      * then this command produces the same result as {@link #smembers(String)

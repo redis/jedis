@@ -1,17 +1,27 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Before;
-import org.junit.Test;
-import redis.clients.jedis.*;
-import redis.clients.jedis.exceptions.JedisDataException;
-
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.ShardedJedisPipeline;
+import redis.clients.jedis.Tuple;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class SharedJedisPipelineTest {
     private static HostAndPortUtil.HostAndPort redis1 = HostAndPortUtil.getRedisServers()
@@ -81,8 +91,8 @@ public class SharedJedisPipelineTest {
         assertEquals("foo", zset.get().iterator().next());
         assertEquals("foo", set.get());
         assertFalse(blist.get());
-        assertEquals(new Double(2), zincrby.get());
-        assertEquals(new Long(1), zcard.get());
+        assertEquals(Double.valueOf(2), zincrby.get());
+        assertEquals(Long.valueOf(1), zcard.get());
         assertEquals(1, lrange.get().size());
         assertNotNull(hgetAll.get().get("foo"));
         assertEquals(1, smembers.get().size());

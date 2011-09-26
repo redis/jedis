@@ -8,6 +8,7 @@ public class Tuple implements Comparable<Tuple> {
     private byte[] element;
     private Double score;
 
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -23,6 +24,7 @@ public class Tuple implements Comparable<Tuple> {
         return result;
     }
 
+	@Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -74,6 +76,7 @@ public class Tuple implements Comparable<Tuple> {
         return score;
     }
 
+    @Override
     public String toString() {
         return '[' + Arrays.toString(element) + ',' + score + ']';
     }

@@ -11,11 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
-import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
@@ -28,6 +27,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     Jedis nj;
 
+	@Override
     @Before
     public void setUp() throws Exception {
         super.setUp();

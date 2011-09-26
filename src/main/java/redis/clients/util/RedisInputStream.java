@@ -93,6 +93,7 @@ public class RedisInputStream extends FilterInputStream {
         return reply;
     }
 
+	@Override
     public int read(byte[] b, int off, int len) throws IOException {
         if (count == limit) {
             fill();

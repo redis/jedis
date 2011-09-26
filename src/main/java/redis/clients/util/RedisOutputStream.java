@@ -1,6 +1,8 @@
 package redis.clients.util;
 
-import java.io.*;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * The class implements a buffered output stream without synchronization
@@ -38,10 +40,12 @@ public final class RedisOutputStream extends FilterOutputStream {
         }
     }
     
+	@Override
     public void write(final byte[] b) throws IOException {
     	write(b, 0, b.length);
     }
 
+    @Override
     public void write(final byte b[], final int off, final int len) throws IOException {
         if (len >= buf.length) {
             flushBuffer();
@@ -223,6 +227,7 @@ public final class RedisOutputStream extends FilterOutputStream {
         writeCrLf();
     }
 
+    @Override
     public void flush() throws IOException {
         flushBuffer();
         out.flush();

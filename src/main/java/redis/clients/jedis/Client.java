@@ -39,9 +39,10 @@ public class Client extends BinaryClient implements Commands {
     }
     
 	public void del(final Set<String> keys) {
+	    int i=0;
         final byte[][] bkeys = new byte[keys.size()][];
         for ( String item : keys) {
-            bkeys[i] = SafeEncoder.encode(item);
+            bkeys[i++] = SafeEncoder.encode(item);
         }
         del(bkeys);
     }
@@ -92,6 +93,7 @@ public class Client extends BinaryClient implements Commands {
     
 	public void mget(final Set<String> keys) {
         final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
         for (String item : keys) {
             bkeys[i] = SafeEncoder.encode(item);
         }
@@ -318,7 +320,7 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bkeys = new byte[keys.size()][];
 		int i=0;
         for (String item : keys) {
-            bkeys[i++] = SafeEncoder.encode(keys[i]);
+            bkeys[i++] = SafeEncoder.encode(item);
         }
         sinterstore(SafeEncoder.encode(dstkey), bkeys);
     }
@@ -452,8 +454,8 @@ public class Client extends BinaryClient implements Commands {
 	public void watch(final Set<String> keys) {
         final byte[][] bargs = new byte[keys.size()][];
 		int i=0;
-        for (String items : keys ) {
-            bargs[i++] = SafeEncoder.encode(keys[i]);
+        for (String item : keys ) {
+            bargs[i++] = SafeEncoder.encode(item);
         }
         watch(bargs);
     }
@@ -608,8 +610,17 @@ public class Client extends BinaryClient implements Commands {
 		int i=0;
         for (String item : sets)
             bsets[i] = SafeEncoder.encode(item);
-        }
+        
         zinterstore(SafeEncoder.encode(dstkey), bsets);
+    }
+
+    public void zinterstore(final String dstkey, final ZParams params,
+            final String... sets) {
+        final byte[][] bsets = new byte[sets.length][];
+        for (int i=0; i<bsets.length;i++) {
+            bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }
 
     public void zinterstore(final String dstkey, final ZParams params,
@@ -617,7 +628,7 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bsets = new byte[sets.size()][];
 		int i=0;
         for (String item : sets) {
-            bsets[i] = SafeEncoder.encode(item);
+            bsets[i++] = SafeEncoder.encode(item);
         }
         zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }

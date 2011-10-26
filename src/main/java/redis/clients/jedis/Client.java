@@ -95,7 +95,7 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bkeys = new byte[keys.size()][];
 		int i=0;
         for (String item : keys) {
-            bkeys[i] = SafeEncoder.encode(item);
+            bkeys[i++] = SafeEncoder.encode(item);
         }
         mget(bkeys);
     }
@@ -115,6 +115,15 @@ public class Client extends BinaryClient implements Commands {
         }
         mset(bkeysvalues);
     }
+    
+	public void mset(final Set<String> keysvalues) {
+		int i=0;
+        final byte[][] bkeysvalues = new byte[keysvalues.size()][];
+        for (String item : keysvalues) {
+            bkeysvalues[i++] = SafeEncoder.encode(item);
+        }
+        mset(bkeysvalues);
+    }
 
     public void msetnx(final String... keysvalues) {
         final byte[][] bkeysvalues = new byte[keysvalues.length][];
@@ -123,6 +132,15 @@ public class Client extends BinaryClient implements Commands {
         }
         msetnx(bkeysvalues);
     }
+
+    public void msetnx(final Set<String> keysvalues) {
+		int i=0;
+        final byte[][] bkeysvalues = new byte[keysvalues.size()][];
+        for (String item : keysvalues) {
+            bkeysvalues[i++] = SafeEncoder.encode(item);
+        }
+        msetnx(bkeysvalues);
+	}
 
     public void decrBy(final String key, final long integer) {
         decrBy(SafeEncoder.encode(key), integer);
@@ -609,7 +627,7 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bsets = new byte[sets.size()][];
 		int i=0;
         for (String item : sets)
-            bsets[i] = SafeEncoder.encode(item);
+            bsets[i++] = SafeEncoder.encode(item);
         
         zinterstore(SafeEncoder.encode(dstkey), bsets);
     }
@@ -691,6 +709,15 @@ public class Client extends BinaryClient implements Commands {
         }
         unsubscribe(cs);
     }
+    
+	public void unsubscribe(final Set<String> channels) {
+        final byte[][] cs = new byte[channels.size()][];
+		int i=0;
+        for (String item : channels) {
+            cs[i++] = SafeEncoder.encode(item);
+        }
+        unsubscribe(cs);
+    }
 
     public void psubscribe(final String... patterns) {
         final byte[][] ps = new byte[patterns.length][];
@@ -698,6 +725,15 @@ public class Client extends BinaryClient implements Commands {
             ps[i] = SafeEncoder.encode(patterns[i]);
         }
         psubscribe(ps);
+    }
+    
+	public void psubscribe(final Set<String> patterns) {
+        final byte[][] ps = new byte[patterns.size()][];
+		int i=0;
+        for (String item : patterns) {
+            ps[i++] = SafeEncoder.encode(item);
+        }
+        punsubscribe(ps);
     }
 
     public void punsubscribe(final String... patterns) {
@@ -707,11 +743,29 @@ public class Client extends BinaryClient implements Commands {
         }
         punsubscribe(ps);
     }
+    
+	public void punsubscribe(final Set<String> patterns) {
+        final byte[][] ps = new byte[patterns.size()][];
+		int i=0;
+        for (String item : patterns) {
+            ps[i++] = SafeEncoder.encode(item);
+        }
+        punsubscribe(ps);
+    }
 
     public void subscribe(final String... channels) {
         final byte[][] cs = new byte[channels.length][];
         for (int i = 0; i < cs.length; i++) {
             cs[i] = SafeEncoder.encode(channels[i]);
+        }
+        subscribe(cs);
+    }
+    
+	public void subscribe(final Set<String> channels) {
+        final byte[][] cs = new byte[channels.size()][];
+		int i=0;
+        for (String item : channels) {
+            cs[i++] = SafeEncoder.encode(item);
         }
         subscribe(cs);
     }

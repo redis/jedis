@@ -64,8 +64,8 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
                 }
             }
             if (!contained) {
-                throw new ComparisonFailure("element is missing", next
-                        .toString(), actual.toString());
+                throw new ComparisonFailure("element is missing",
+                        Arrays.toString(next), actual.toString());
             }
         }
     }

@@ -13,7 +13,7 @@ import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-public class SharedJedisPipelineTest {
+public class ShardedJedisPipelineTest {
     private static HostAndPortUtil.HostAndPort redis1 = HostAndPortUtil.getRedisServers()
             .get(0);
     private static HostAndPortUtil.HostAndPort redis2 = HostAndPortUtil.getRedisServers()
@@ -24,17 +24,24 @@ public class SharedJedisPipelineTest {
     @Before
     public void setUp() throws Exception {
         Jedis jedis = new Jedis(redis1.host, redis1.port);
+        jedis.auth("foobared");
         jedis.flushAll();
         jedis.disconnect();
         jedis = new Jedis(redis2.host, redis2.port);
+        jedis.auth("foobared");
         jedis.flushAll();
         jedis.disconnect();
 
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-        shards.add(new JedisShardInfo(redis1.host, redis1.port));
-        shards.add(new JedisShardInfo(redis2.host, redis2.port));
+        JedisShardInfo si1 = new JedisShardInfo(redis1.host, redis1.port);
+        si1.setPassword("foobared");
+        shards.add(si1);
+        JedisShardInfo si2 = new JedisShardInfo(redis2.host, redis2.port);
+        si2.setPassword("foobared");
+        shards.add(si2);
         this.jedis = new ShardedJedis(shards);
     }
+
 
     @Test
     public void pipeline() throws UnsupportedEncodingException {

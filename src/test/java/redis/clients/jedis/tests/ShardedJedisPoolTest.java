@@ -152,8 +152,8 @@ public class ShardedJedisPoolTest extends Assert {
         shards.set(1, new JedisShardInfo("nohost", 1234));
         pool = new ShardedJedisPool(redisConfig, shards);
         jedis = pool.getResource();
-        Long actual = new Long(0);
-        Long fails = new Long(0);
+        Long actual = Long.valueOf(0);
+        Long fails = Long.valueOf(0);
         for (int i = 0; i < 1000; i++) {
             try {
                 jedis.get("a-test-" + i);

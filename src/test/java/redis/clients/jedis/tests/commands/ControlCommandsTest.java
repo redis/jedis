@@ -29,8 +29,13 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void bgrewriteaof() {
+    	String scheduled = "Background append only file rewriting scheduled";
+        String started = "Background append only file rewriting started";
+        
         String status = jedis.bgrewriteaof();
-        assertEquals("Background append only file rewriting started", status);
+        
+        boolean ok = status.equals(scheduled) || status.equals(started);  
+        assertTrue(ok);
     }
 
     @Test

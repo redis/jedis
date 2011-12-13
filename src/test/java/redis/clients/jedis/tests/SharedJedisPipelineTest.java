@@ -24,15 +24,21 @@ public class SharedJedisPipelineTest {
     @Before
     public void setUp() throws Exception {
         Jedis jedis = new Jedis(redis1.host, redis1.port);
+        jedis.auth("foobared");
         jedis.flushAll();
         jedis.disconnect();
         jedis = new Jedis(redis2.host, redis2.port);
+        jedis.auth("foobared");
         jedis.flushAll();
         jedis.disconnect();
 
+        JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.host, redis1.port);
+        JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.host, redis2.port);
+        shardInfo1.setPassword("foobared");
+        shardInfo2.setPassword("foobared");
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-        shards.add(new JedisShardInfo(redis1.host, redis1.port));
-        shards.add(new JedisShardInfo(redis2.host, redis2.port));
+        shards.add(shardInfo1);
+        shards.add(shardInfo2);
         this.jedis = new ShardedJedis(shards);
     }
 
@@ -46,7 +52,6 @@ public class SharedJedisPipelineTest {
         assertEquals(2, results.size());
         assertEquals("OK", results.get(0));
         assertEquals("bar", results.get(1));
-
     }
 
     @Test

@@ -89,6 +89,29 @@ public class PipeliningTest extends Assert {
         assertEquals(1, smembers.get().size());
         assertEquals(1, zrangeWithScores.get().size());
     }
+    
+    @Test
+    public void pipelineResponseWithData() {
+        jedis.zadd("zset", 1, "foo");
+        
+        Pipeline p = jedis.pipelined();
+        Response<Double> score = p.zscore("zset", "foo");
+        p.sync();
+
+        assertNotNull(score.get());    
+    }
+    
+    @Test
+    public void pipelineResponseWithoutData() {
+        jedis.zadd("zset", 1, "foo");
+        
+        Pipeline p = jedis.pipelined();
+        Response<Double> score = p.zscore("zset", "bar");
+        p.sync();
+
+        assertNull(score.get());
+    }
+
 
     @Test(expected = JedisDataException.class)
     public void pipelineResponseWithinPipeline() {

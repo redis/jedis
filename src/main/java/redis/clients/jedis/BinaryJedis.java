@@ -3006,4 +3006,26 @@ public class BinaryJedis implements BinaryJedisCommands {
     public Long getDB() {
         return client.getDB();
     }
+    
+    /**
+     * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
+     * <p>
+     * 
+     * @return Script result
+     */
+	public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+	    client.setTimeoutInfinite();
+        client.eval(script, keys, args);
+        return client.getOne();
+	}
+	
+	/**
+     * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
+     * <p>
+     * 
+     * @return Script result
+     */
+	public Object eval(byte[] script, List<byte[]> keys) {
+		return eval(script,keys, new ArrayList<byte[]>());
+	}
 }

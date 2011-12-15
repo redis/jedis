@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hamcrest.core.IsInstanceOf;
+
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.SafeEncoder;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
     public Jedis(final String host) {
@@ -2688,5 +2691,53 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public String configSet(final String parameter, final String value) {
         client.configSet(parameter, value);
         return client.getStatusCodeReply();
-    }    
+    }
+
+    public Object eval(String script, String... keys) {
+    	List<String> s = new ArrayList<String>(keys.length);
+    	for(String key : keys)
+    		s.add(key);
+    	
+    	return eval(script, s);
+    }
+	
+    public Object eval(String script, List<String> keys, String... args) {
+		client.setTimeoutInfinite();
+        client.eval(script, keys, args);
+        
+        return getEvalResult();
+	}
+    
+    private Object getEvalResult(){
+    	Object result = client.getOne();
+        
+        if(result instanceof byte[])
+        	return SafeEncoder.encode((byte[])result);
+        
+        if(result instanceof List<?>) {
+        	List<?> list = (List<?>)result;
+        	List<String> listResult = new ArrayList<String>(list.size());
+        	for(Object bin: list)
+        		listResult.add(SafeEncoder.encode((byte[])bin));
+        	
+        	return listResult;
+        }
+        
+        return result;
+    }
+    
+    public Object evalsha(String sha1, String... keys) {
+    	List<String> s = new ArrayList<String>(keys.length);
+    	for(String key : keys)
+    		s.add(key);
+    	
+    	return evalsha(sha1, s);
+    }
+    
+	public Object evalsha(String sha1, List<String> keys, String... args) {
+		checkIsInMulti();
+        client.evalsha(sha1, keys, args);
+        
+        return getEvalResult();
+    }
 }

@@ -3037,9 +3037,9 @@ public class BinaryJedis implements BinaryJedisCommands {
     	return client.getBinaryBulkReply();
     }
 	
-    public List<byte[]> scriptExists(byte[]... sha1){
+    public List<Long> scriptExists(byte[]... sha1){
 		client.scriptExists(sha1);
-		return client.getBinaryMultiBulkReply();
+		return client.getIntegerMultiBulkReply();
     }
     
     public byte[] scriptLoad(byte[] script){

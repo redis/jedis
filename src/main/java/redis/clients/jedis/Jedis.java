@@ -2749,11 +2749,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
 	public List<Boolean> scriptExists(String... sha1){
 		client.scriptExists(sha1);
-		List<Object> result = client.getObjectMultiBulkReply();
+		List<Long> result = client.getIntegerMultiBulkReply();
 		List<Boolean> exists = new ArrayList<Boolean>();
 		
-		for(Object value : result)
-			exists.add(((Long)value) == 1);
+		for(Long value : result)
+			exists.add(value == 1);
 		
 		return exists;
     }

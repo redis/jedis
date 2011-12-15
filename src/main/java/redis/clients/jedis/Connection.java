@@ -205,6 +205,13 @@ public class Connection {
         pipelinedCommands--;
         return (List<Object>) protocol.read(inputStream);
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<Long> getIntegerMultiBulkReply() {
+        flush();
+        pipelinedCommands--;
+        return (List<Long>) protocol.read(inputStream);
+    }
 
     public List<Object> getAll() {
         return getAll(0);

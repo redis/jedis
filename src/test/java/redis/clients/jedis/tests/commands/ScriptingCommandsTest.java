@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.SafeEncoder;
 
 public class ScriptingCommandsTest extends JedisCommandTestBase {
     
@@ -94,9 +95,26 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	
 	@SuppressWarnings("unchecked")
 	@Test
+    public void scriptExistsBinary() {
+		jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
+		List<Long> exists = jedis.scriptExists(SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791")); 
+		assertEquals(new Long(0), exists.get(0));
+		assertEquals(new Long(1), exists.get(1));
+    }
+	
+	@SuppressWarnings("unchecked")
+	@Test
     public void scriptLoad() {
 		jedis.scriptLoad("return redis.call('get','foo')");
 		assertTrue(jedis.scriptExists("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    }
+	
+	@SuppressWarnings("unchecked")
+	@Test
+    public void scriptLoadBinary() {
+		jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
+		List<Long> exists = jedis.scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791")); 
+		assertEquals(new Long(1), exists.get(0));
     }
 	
 	@SuppressWarnings("unchecked")

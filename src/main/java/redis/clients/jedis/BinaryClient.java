@@ -744,4 +744,25 @@ public class BinaryClient extends Connection {
     public void evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args){
     	sendEvalCommand(EVALSHA, sha1, keys, args);
     }
+    
+    public void scriptFlush(){
+    	sendCommand(SCRIPT, Keyword.FLUSH.raw);
+    }
+    
+    public void scriptExists(byte[]... sha1){
+    	byte[][] args = new byte[sha1.length + 1][];
+    	args[0] = Keyword.EXISTS.raw;
+    	for(int i=0;i<sha1.length; i++)
+    		args[i+1] = sha1[i];
+    	
+    	sendCommand(SCRIPT, args);
+    }
+    
+    public void scriptLoad(byte[] script){
+    	sendCommand(SCRIPT, Keyword.LOAD.raw, script);
+    }
+    
+    public void scriptKill(){
+    	sendCommand(SCRIPT, Keyword.KILL.raw);
+    }
 }

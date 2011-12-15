@@ -2740,4 +2740,26 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         
         return getEvalResult();
     }
+	
+	public Boolean scriptExists(String sha1){
+		String[] a = new String[1];
+		a[0] = sha1;
+		return scriptExists(a).get(0);
+    }
+
+	public List<Boolean> scriptExists(String... sha1){
+		client.scriptExists(sha1);
+		List<Object> result = client.getObjectMultiBulkReply();
+		List<Boolean> exists = new ArrayList<Boolean>();
+		
+		for(Object value : result)
+			exists.add(((Long)value) == 1);
+		
+		return exists;
+    }
+	
+    public String scriptLoad(String script){
+    	client.scriptLoad(script);
+    	return client.getBulkReply();
+    }
 }

@@ -120,6 +120,11 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptKill() {
-		jedis.scriptKill();
-    }
+		try {
+			jedis.scriptKill();
+		}
+		catch(JedisDataException e) {
+			assertEquals("ERR No scripts in execution right now.", e.getMessage());
+		}
+	}
 }

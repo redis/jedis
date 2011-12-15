@@ -3047,7 +3047,8 @@ public class BinaryJedis implements BinaryJedisCommands {
     	return client.getBinaryBulkReply();
     }
     
-    public void scriptKill(){
+    public byte[] scriptKill(){
     	client.scriptKill();
+    	return client.getBinaryBulkReply();
     }
 }

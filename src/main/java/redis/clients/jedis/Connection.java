@@ -82,7 +82,7 @@ public class Connection {
         pipelinedCommands++;
         return this;
     }
-
+    
     protected Connection sendCommand(final Command cmd) {
         connect();
         protocol.sendCommand(outputStream, cmd, new byte[0][]);

@@ -2,7 +2,9 @@ package redis.clients.jedis;
 
 import redis.clients.util.SafeEncoder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -587,4 +589,28 @@ public class Client extends BinaryClient implements Commands {
         }
         subscribe(cs);
     }
+
+	public void eval(String script, List<String> keys, String... args) {
+		List<byte[]> k = new ArrayList<byte[]>();
+		for(String key:keys){
+			k.add(SafeEncoder.encode(key));
+		}
+		List<byte[]> a = new ArrayList<byte[]>();
+		for(String arg:args){
+			a.add(SafeEncoder.encode(arg));
+		}
+		eval(SafeEncoder.encode(script),k,a);		
+	}
+	
+	public void evalsha(String sha1, List<String> keys, String... args) {
+		List<byte[]> k = new ArrayList<byte[]>();
+		for(String key:keys){
+			k.add(SafeEncoder.encode(key));
+		}
+		List<byte[]> a = new ArrayList<byte[]>();
+		for(String arg:args){
+			a.add(SafeEncoder.encode(arg));
+		}
+		evalsha(SafeEncoder.encode(sha1),k,a);		
+	}
 }

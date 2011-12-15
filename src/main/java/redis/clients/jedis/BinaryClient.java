@@ -718,4 +718,30 @@ public class BinaryClient extends Connection {
         db = 0;
         super.disconnect();
     }
+    
+    private void sendEvalCommand(Command command, byte[] script, List<byte[]> keys, List<byte[]> args){
+    	int keysSize = keys.size();
+    	int argsSize = args.size();
+    	
+    	final byte[][] allArgs = new byte[keysSize + argsSize + 2][];
+    	
+    	allArgs[0] = script;
+    	allArgs[1] =toByteArray(keysSize);
+    	
+    	for(int i=0;i<keysSize; i++)
+    		allArgs[i+2] = keys.get(i);
+    	
+    	for(int i=0;i<argsSize; i++)
+    		allArgs[i+2+keysSize] = args.get(i);
+    	
+    	sendCommand(command, allArgs );
+    }
+    
+    public void eval(byte[] script, List<byte[]> keys, List<byte[]> args){
+    	sendEvalCommand(EVAL, script, keys, args );
+    }
+    
+    public void evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args){
+    	sendEvalCommand(EVALSHA, sha1, keys, args);
+    }
 }

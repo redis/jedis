@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.util.SafeEncoder;
 
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,6 +10,10 @@ import java.util.Map.Entry;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 public class Client extends BinaryClient implements Commands {
+	public Client(final Socket socket){
+		super(socket);
+	}
+	
     public Client(final String host) {
         super(host);
     }

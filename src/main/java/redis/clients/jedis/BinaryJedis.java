@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +35,10 @@ public class BinaryJedis implements BinaryJedisCommands {
         client = new Client(shardInfo.getHost(), shardInfo.getPort());
         client.setTimeout(shardInfo.getTimeout());
         client.setPassword(shardInfo.getPassword());
+    }
+    
+    protected BinaryJedis(final Socket socket){
+    	client = new Client(socket);
     }
 
     public String ping() {

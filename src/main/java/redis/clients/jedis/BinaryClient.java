@@ -362,7 +362,7 @@ public class BinaryClient extends Connection {
         sendCommand(ZADD, key, toByteArray(score), member);
     }
 
-    public void zrange(final byte[] key, final int start, final int end) {
+    public void zrange(final byte[] key, final long start, final long end) {
         sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));
     }
 
@@ -383,18 +383,18 @@ public class BinaryClient extends Connection {
         sendCommand(ZREVRANK, key, member);
     }
 
-    public void zrevrange(final byte[] key, final int start, final int end) {
+    public void zrevrange(final byte[] key, final long start, final long end) {
         sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
     }
 
-    public void zrangeWithScores(final byte[] key, final int start,
-            final int end) {
+    public void zrangeWithScores(final byte[] key, final long start,
+            final long end) {
         sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end),
                 WITHSCORES.raw);
     }
 
-    public void zrevrangeWithScores(final byte[] key, final int start,
-            final int end) {
+    public void zrevrangeWithScores(final byte[] key, final long start,
+            final long end) {
         sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end),
                 WITHSCORES.raw);
     }
@@ -558,7 +558,7 @@ public class BinaryClient extends Connection {
                 WITHSCORES.raw);
     }
 
-    public void zremrangeByRank(final byte[] key, final int start, final int end) {
+    public void zremrangeByRank(final byte[] key, final long start, final long end) {
         sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
     }
 

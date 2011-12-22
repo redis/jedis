@@ -1436,7 +1436,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
-    public Set<String> zrange(final String key, final int start, final int end) {
+    public Set<String> zrange(final String key, final long start, final long end) {
         checkIsInMulti();
         client.zrange(key, start, end);
         final List<String> members = client.getMultiBulkReply();
@@ -1548,24 +1548,24 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
-    public Set<String> zrevrange(final String key, final int start,
-            final int end) {
+    public Set<String> zrevrange(final String key, final long start,
+            final long end) {
         checkIsInMulti();
         client.zrevrange(key, start, end);
         final List<String> members = client.getMultiBulkReply();
         return new LinkedHashSet<String>(members);
     }
 
-    public Set<Tuple> zrangeWithScores(final String key, final int start,
-            final int end) {
+    public Set<Tuple> zrangeWithScores(final String key, final long start,
+            final long end) {
         checkIsInMulti();
         client.zrangeWithScores(key, start, end);
         Set<Tuple> set = getTupledSet();
         return set;
     }
 
-    public Set<Tuple> zrevrangeWithScores(final String key, final int start,
-            final int end) {
+    public Set<Tuple> zrevrangeWithScores(final String key, final long start,
+            final long end) {
         checkIsInMulti();
         client.zrevrangeWithScores(key, start, end);
         Set<Tuple> set = getTupledSet();
@@ -2310,7 +2310,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * operation
      * 
      */
-    public Long zremrangeByRank(final String key, final int start, final int end) {
+    public Long zremrangeByRank(final String key, final long start, final long end) {
         checkIsInMulti();
         client.zremrangeByRank(key, start, end);
         return client.getIntegerReply();

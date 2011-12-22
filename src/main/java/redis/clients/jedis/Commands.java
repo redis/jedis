@@ -139,7 +139,7 @@ public interface Commands {
 
     public void zadd(final String key, final double score, final String member);
 
-    public void zrange(final String key, final int start, final int end);
+    public void zrange(final String key, final long start, final long end);
 
     public void zrem(final String key, final String member);
 
@@ -150,13 +150,13 @@ public interface Commands {
 
     public void zrevrank(final String key, final String member);
 
-    public void zrevrange(final String key, final int start, final int end);
+    public void zrevrange(final String key, final long start, final long end);
 
-    public void zrangeWithScores(final String key, final int start,
-            final int end);
+    public void zrangeWithScores(final String key, final long start,
+            final long end);
 
-    public void zrevrangeWithScores(final String key, final int start,
-            final int end);
+    public void zrevrangeWithScores(final String key, final long start,
+            final long end);
 
     public void zcard(final String key);
 
@@ -212,7 +212,7 @@ public interface Commands {
     public void zrevrangeByScoreWithScores(final String key, final double max,
             final double min, final int offset, final int count);
 
-    public void zremrangeByRank(final String key, final int start, final int end);
+    public void zremrangeByRank(final String key, final long start, final long end);
 
     public void zremrangeByScore(final String key, final double start,
             final double end);

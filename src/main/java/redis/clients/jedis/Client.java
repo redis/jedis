@@ -319,7 +319,7 @@ public class Client extends BinaryClient implements Commands {
         zadd(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
     }
 
-    public void zrange(final String key, final int start, final int end) {
+    public void zrange(final String key, final long start, final long end) {
         zrange(SafeEncoder.encode(key), start, end);
     }
 
@@ -340,17 +340,17 @@ public class Client extends BinaryClient implements Commands {
         zrevrank(SafeEncoder.encode(key), SafeEncoder.encode(member));
     }
 
-    public void zrevrange(final String key, final int start, final int end) {
+    public void zrevrange(final String key, final long start, final long end) {
         zrevrange(SafeEncoder.encode(key), start, end);
     }
 
-    public void zrangeWithScores(final String key, final int start,
-            final int end) {
+    public void zrangeWithScores(final String key, final long start,
+            final long end) {
         zrangeWithScores(SafeEncoder.encode(key), start, end);
     }
 
-    public void zrevrangeWithScores(final String key, final int start,
-            final int end) {
+    public void zrevrangeWithScores(final String key, final long start,
+            final long end) {
         zrevrangeWithScores(SafeEncoder.encode(key), start, end);
     }
 
@@ -462,7 +462,7 @@ public class Client extends BinaryClient implements Commands {
                 count);
     }
 
-    public void zremrangeByRank(final String key, final int start, final int end) {
+    public void zremrangeByRank(final String key, final long start, final long end) {
         zremrangeByRank(SafeEncoder.encode(key), start, end);
     }
 

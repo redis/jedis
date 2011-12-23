@@ -2035,8 +2035,8 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @see #zcount(String, double, double)
      * 
      * @param key
-     * @param min
-     * @param max
+     * @param min a double or Double.MIN_VALUE for "-inf"
+     * @param max a double or Double.MAX_VALUE for "+inf"
      * @return Multi bulk reply specifically a list of elements in the specified
      *         score range.
      */

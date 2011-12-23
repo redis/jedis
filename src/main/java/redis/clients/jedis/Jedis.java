@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +12,11 @@ import java.util.Set;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
-    public Jedis(final String host) {
+	protected Jedis(final Socket socket){
+    	super(socket);
+    }
+	
+	public Jedis(final String host) {
         super(host);
     }
 

@@ -54,6 +54,17 @@ public class Connection {
             throw new JedisException(ex);
         }
     }
+    
+    public Connection(final Socket socket){
+    	super();
+    	this.socket = socket;
+    	try {
+    		outputStream = new RedisOutputStream(socket.getOutputStream());
+    		inputStream = new RedisInputStream(socket.getInputStream());
+    	} catch(IOException e){
+    		throw new JedisConnectionException("Could not connect.", e);
+    	}
+    }
 
     public Connection(final String host) {
         super();
@@ -151,7 +162,7 @@ public class Connection {
     }
 
     public boolean isConnected() {
-        return socket != null && socket.isBound() && !socket.isClosed()
+        return socket != null && !socket.isClosed()
                 && socket.isConnected() && !socket.isInputShutdown()
                 && !socket.isOutputShutdown();
     }

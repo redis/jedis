@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.SCRIPT;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
@@ -1660,7 +1663,7 @@ public class BinaryJedis implements BinaryJedisCommands {
     public void disconnect() {
         client.disconnect();
     }
-
+    
     public String watch(final byte[]... keys) {
         client.watch(keys);
         return client.getStatusCodeReply();
@@ -3005,5 +3008,47 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     public Long getDB() {
         return client.getDB();
+    }
+    
+    /**
+     * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
+     * <p>
+     * 
+     * @return Script result
+     */
+	public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+	    client.setTimeoutInfinite();
+        client.eval(script, keys, args);
+        return client.getOne();
+	}
+	
+	/**
+     * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
+     * <p>
+     * 
+     * @return Script result
+     */
+	public Object eval(byte[] script, List<byte[]> keys) {
+		return eval(script,keys, new ArrayList<byte[]>());
+	}
+	
+	public byte[] scriptFlush(){
+    	client.scriptFlush();
+    	return client.getBinaryBulkReply();
+    }
+	
+    public List<Long> scriptExists(byte[]... sha1){
+		client.scriptExists(sha1);
+		return client.getIntegerMultiBulkReply();
+    }
+    
+    public byte[] scriptLoad(byte[] script){
+    	client.scriptLoad(script);
+    	return client.getBinaryBulkReply();
+    }
+    
+    public byte[] scriptKill(){
+    	client.scriptKill();
+    	return client.getBinaryBulkReply();
     }
 }

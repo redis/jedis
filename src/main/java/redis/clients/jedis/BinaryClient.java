@@ -718,4 +718,51 @@ public class BinaryClient extends Connection {
         db = 0;
         super.disconnect();
     }
+    
+    private void sendEvalCommand(Command command, byte[] script, List<byte[]> keys, List<byte[]> args){
+    	int keysSize = keys.size();
+    	int argsSize = args.size();
+    	
+    	final byte[][] allArgs = new byte[keysSize + argsSize + 2][];
+    	
+    	allArgs[0] = script;
+    	allArgs[1] =toByteArray(keysSize);
+    	
+    	for(int i=0;i<keysSize; i++)
+    		allArgs[i+2] = keys.get(i);
+    	
+    	for(int i=0;i<argsSize; i++)
+    		allArgs[i+2+keysSize] = args.get(i);
+    	
+    	sendCommand(command, allArgs );
+    }
+    
+    public void eval(byte[] script, List<byte[]> keys, List<byte[]> args){
+    	sendEvalCommand(EVAL, script, keys, args );
+    }
+    
+    public void evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args){
+    	sendEvalCommand(EVALSHA, sha1, keys, args);
+    }
+    
+    public void scriptFlush(){
+    	sendCommand(SCRIPT, Keyword.FLUSH.raw);
+    }
+    
+    public void scriptExists(byte[]... sha1){
+    	byte[][] args = new byte[sha1.length + 1][];
+    	args[0] = Keyword.EXISTS.raw;
+    	for(int i=0;i<sha1.length; i++)
+    		args[i+1] = sha1[i];
+    	
+    	sendCommand(SCRIPT, args);
+    }
+    
+    public void scriptLoad(byte[] script){
+    	sendCommand(SCRIPT, Keyword.LOAD.raw, script);
+    }
+    
+    public void scriptKill(){
+    	sendCommand(SCRIPT, Keyword.KILL.raw);
+    }
 }

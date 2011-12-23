@@ -40,11 +40,11 @@ public class Pipeline extends Queable {
         List<Object> unformatted = client.getAll();
         List<Object> formatted = new ArrayList<Object>();
         for (Object o : unformatted) {
-        	try{
-        		formatted.add(generateResponse(o).get());
-        	}catch(JedisDataException e){
-        		formatted.add(e);
-        	}
+            try {
+                formatted.add(generateResponse(o).get());
+            } catch (JedisDataException e) {
+                formatted.add(e);
+            }
         }
         return formatted;
     }
@@ -1191,4 +1191,39 @@ public class Pipeline extends Queable {
         client.publish(channel, message);
         return getResponse(BuilderFactory.LONG);
     }
+
+    public Response<String> flushDB() {
+        client.flushDB();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> flushAll() {
+        client.flushAll();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> info() {
+        client.info();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> dbSize() {
+        client.dbSize();
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<String> shutdown() {
+        client.shutdown();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> ping() {
+        client.ping();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> randomKey() {
+        client.randomKey();
+        return getResponse(BuilderFactory.STRING);
+    }   
 }

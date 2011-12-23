@@ -587,4 +587,12 @@ public class Client extends BinaryClient implements Commands {
         }
         subscribe(cs);
     }
+
+    public void configSet(String parameter, String value) {
+        configSet(SafeEncoder.encode(parameter), SafeEncoder.encode(value));
+    }
+
+    public void configGet(String pattern) {
+        configGet(SafeEncoder.encode(pattern));
+    }
 }

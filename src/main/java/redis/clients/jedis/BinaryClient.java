@@ -643,12 +643,12 @@ public class BinaryClient extends Connection {
         sendCommand(SLAVEOF, NO.raw, ONE.raw);
     }
 
-    public void configGet(final String pattern) {
-        sendCommand(CONFIG, Keyword.GET.name(), pattern);
+    public void configGet(final byte[] pattern) {
+        sendCommand(CONFIG, Keyword.GET.raw, pattern);
     }
 
-    public void configSet(final String parameter, final String value) {
-        sendCommand(CONFIG, Keyword.SET.name(), parameter, value);
+    public void configSet(final byte[] parameter, final byte[] value) {
+        sendCommand(CONFIG, Keyword.SET.raw, parameter, value);
     }
 
     public void strlen(final byte[] key) {

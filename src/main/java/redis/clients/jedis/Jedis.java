@@ -27,6 +27,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         super(shardInfo);
     }
 
+	@Override
     public String ping() {
         checkIsInMulti();
         client.ping();
@@ -69,6 +70,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * Ask the server to silently close the connection.
      */
 
+    @Override
     public String quit() {
         checkIsInMulti();
         client.quit();
@@ -134,6 +136,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
 
+    @Override
     public String flushDB() {
         checkIsInMulti();
         client.flushDB();
@@ -232,6 +235,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply
      */
 
+    @Override
     public Long dbSize() {
         checkIsInMulti();
         client.dbSize();
@@ -333,6 +337,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
 
+    @Override
     public String select(final int index) {
         checkIsInMulti();
         client.select(index);
@@ -365,6 +370,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
 
+    @Override
     public String flushAll() {
         checkIsInMulti();
         client.flushAll();
@@ -1961,12 +1967,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
 
+    @Override
     public String auth(final String password) {
         checkIsInMulti();
         client.auth(password);
         return client.getStatusCodeReply();
     }
 
+    @Override
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
         checkIsInMulti();
         connect();
@@ -1975,12 +1983,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.rollbackTimeout();
     }
 
+    @Override
     public Long publish(String channel, String message) {
         checkIsInMulti();
         client.publish(channel, message);
         return client.getIntegerReply();
     }
 
+    @Override
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
         checkIsInMulti();
         connect();

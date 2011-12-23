@@ -81,6 +81,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
         jedis.monitor(new JedisMonitor() {
             private int count = 0;
 
+			@Override
             public void onCommand(String command) {
                 if (command.contains("INCR")) {
                     count++;

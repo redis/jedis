@@ -11,8 +11,8 @@ import org.junit.ComparisonFailure;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
+import redis.clients.jedis.tests.JedisTestBase;
 
 public abstract class JedisCommandTestBase extends JedisTestBase {
     protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -45,6 +45,7 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
         return j;
     }
 
+	@Override
     protected void assertEquals(List<byte[]> expected, List<byte[]> actual) {
         assertEquals(expected.size(), actual.size());
         for (int n = 0; n < expected.size(); n++) {
@@ -52,6 +53,7 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
         }
     }
 
+    @Override
     protected void assertEquals(Set<byte[]> expected, Set<byte[]> actual) {
         assertEquals(expected.size(), actual.size());
         Iterator<byte[]> e = expected.iterator();

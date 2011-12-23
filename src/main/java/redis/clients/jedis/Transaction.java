@@ -291,6 +291,7 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.STRING);
     }
 
+	@Override
     public Response<Boolean> setbit(String key, long offset, boolean value) {
         client.setbit(key, offset, value);
         return getResponse(BuilderFactory.BOOLEAN);

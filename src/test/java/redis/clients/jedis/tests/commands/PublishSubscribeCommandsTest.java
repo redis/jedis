@@ -31,28 +31,34 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.subscribe(new JedisPubSub() {
+            @Override
             public void onMessage(String channel, String message) {
                 assertEquals("foo", channel);
                 assertEquals("exit", message);
                 unsubscribe();
             }
 
+			@Override
             public void onSubscribe(String channel, int subscribedChannels) {
                 assertEquals("foo", channel);
                 assertEquals(1, subscribedChannels);
             }
 
+            @Override
             public void onUnsubscribe(String channel, int subscribedChannels) {
                 assertEquals("foo", channel);
                 assertEquals(0, subscribedChannels);
             }
 
+            @Override
             public void onPSubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(String pattern, String channel,
                     String message) {
             }
@@ -79,22 +85,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.subscribe(new JedisPubSub() {
+            @Override
             public void onMessage(String channel, String message) {
                 unsubscribe(channel);
             }
 
+            @Override
             public void onSubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(String pattern, String channel,
                     String message) {
             }
@@ -119,25 +131,31 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.psubscribe(new JedisPubSub() {
+            @Override
             public void onMessage(String channel, String message) {
             }
 
+            @Override
             public void onSubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(String pattern, int subscribedChannels) {
                 assertEquals("foo.*", pattern);
                 assertEquals(1, subscribedChannels);
             }
 
+            @Override
             public void onPUnsubscribe(String pattern, int subscribedChannels) {
                 assertEquals("foo.*", pattern);
                 assertEquals(0, subscribedChannels);
             }
 
+            @Override
             public void onPMessage(String pattern, String channel,
                     String message) {
                 assertEquals("foo.*", pattern);
@@ -168,21 +186,27 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.psubscribe(new JedisPubSub() {
+            @Override
             public void onMessage(String channel, String message) {
             }
 
+            @Override
             public void onSubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(String pattern, String channel,
                     String message) {
                 punsubscribe(pattern);
@@ -195,22 +219,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void subscribeLazily() throws UnknownHostException, IOException,
             InterruptedException {
         final JedisPubSub pubsub = new JedisPubSub() {
+            @Override
             public void onMessage(String channel, String message) {
                 unsubscribe(channel);
             }
 
+            @Override
             public void onSubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(String pattern, String channel,
                     String message) {
                 punsubscribe(pattern);
@@ -256,28 +286,34 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.subscribe(new BinaryJedisPubSub() {
+            @Override
             public void onMessage(byte[] channel, byte[] message) {
                 assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
                 assertTrue(Arrays.equals(SafeEncoder.encode("exit"), message));
                 unsubscribe();
             }
 
+            @Override
             public void onSubscribe(byte[] channel, int subscribedChannels) {
                 assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
                 assertEquals(1, subscribedChannels);
             }
 
+            @Override
             public void onUnsubscribe(byte[] channel, int subscribedChannels) {
                 assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
                 assertEquals(0, subscribedChannels);
             }
 
+            @Override
             public void onPSubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(byte[] pattern, byte[] channel,
                     byte[] message) {
             }
@@ -306,22 +342,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.subscribe(new BinaryJedisPubSub() {
+            @Override
             public void onMessage(byte[] channel, byte[] message) {
                 unsubscribe(channel);
             }
 
+            @Override
             public void onSubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(byte[] pattern, byte[] channel,
                     byte[] message) {
             }
@@ -347,25 +389,31 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.psubscribe(new BinaryJedisPubSub() {
+            @Override
             public void onMessage(byte[] channel, byte[] message) {
             }
 
+            @Override
             public void onSubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(byte[] pattern, int subscribedChannels) {
                 assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
                 assertEquals(1, subscribedChannels);
             }
 
+            @Override
             public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
                 assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
                 assertEquals(0, subscribedChannels);
             }
 
+            @Override
             public void onPMessage(byte[] pattern, byte[] channel,
                     byte[] message) {
                 assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
@@ -399,21 +447,27 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         });
         t.start();
         jedis.psubscribe(new BinaryJedisPubSub() {
+            @Override
             public void onMessage(byte[] channel, byte[] message) {
             }
 
+            @Override
             public void onSubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(byte[] pattern, byte[] channel,
                     byte[] message) {
                 punsubscribe(pattern);
@@ -426,22 +480,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void binarySubscribeLazily() throws UnknownHostException,
             IOException, InterruptedException {
         final BinaryJedisPubSub pubsub = new BinaryJedisPubSub() {
+            @Override
             public void onMessage(byte[] channel, byte[] message) {
                 unsubscribe(channel);
             }
 
+            @Override
             public void onSubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(byte[] channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPMessage(byte[] pattern, byte[] channel,
                     byte[] message) {
                 punsubscribe(pattern);
@@ -477,23 +537,29 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         try {
             Jedis jedis = new Jedis(hnp.host, hnp.port);
             jedis.subscribe(new JedisPubSub() {
+                @Override
                 public void onMessage(String channel, String message) {
                 }
 
+                @Override
                 public void onPMessage(String pattern, String channel,
                         String message) {
                 }
 
+                @Override
                 public void onSubscribe(String channel, int subscribedChannels) {
                 }
 
+                @Override
                 public void onUnsubscribe(String channel, int subscribedChannels) {
                 }
 
+                @Override
                 public void onPUnsubscribe(String pattern,
                         int subscribedChannels) {
                 }
 
+                @Override
                 public void onPSubscribe(String pattern, int subscribedChannels) {
                 }
             }, "foo");
@@ -507,22 +573,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test(expected = JedisConnectionException.class)
     public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
         JedisPubSub pubsub = new JedisPubSub() {
+            @Override
             public void onMessage(String channel, String message) {
             }
 
+            @Override
             public void onPMessage(String pattern, String channel,
                     String message) {
             }
 
+            @Override
             public void onSubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onUnsubscribe(String channel, int subscribedChannels) {
             }
 
+            @Override
             public void onPUnsubscribe(String pattern, int subscribedChannels) {
             }
 
+            @Override
             public void onPSubscribe(String pattern, int subscribedChannels) {
             }
         };

@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 
 import redis.clients.util.Pool;
@@ -58,6 +57,7 @@ public class JedisPool extends Pool<Jedis> {
             this.database = database;
         }
 
+		@Override
         public Object makeObject() throws Exception {
             final Jedis jedis = new Jedis(this.host, this.port, this.timeout);
 
@@ -72,6 +72,7 @@ public class JedisPool extends Pool<Jedis> {
             return jedis;
         }
 
+        @Override
         public void destroyObject(final Object obj) throws Exception {
             if (obj instanceof Jedis) {
                 final Jedis jedis = (Jedis) obj;
@@ -89,6 +90,7 @@ public class JedisPool extends Pool<Jedis> {
             }
         }
 
+        @Override
         public boolean validateObject(final Object obj) {
             if (obj instanceof Jedis) {
                 final Jedis jedis = (Jedis) obj;

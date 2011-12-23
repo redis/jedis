@@ -4,6 +4,7 @@ import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
+	@Override
     public String toString() {
         return host + ":" + port + "*" + getWeight();
     }
@@ -70,6 +71,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         this.timeout = timeout;
     }
 
+    @Override
     public String getName() {
         return name;
     }

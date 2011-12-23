@@ -563,4 +563,9 @@ public class BinaryTransaction extends Queable {
         client.brpoplpush(source, destination, timeout);
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
+    
+    public Response<String> select(final int index) {
+        client.select(index);
+        return getResponse(BuilderFactory.STRING);
+    }
 }

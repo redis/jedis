@@ -576,5 +576,4 @@ public class Transaction extends BinaryTransaction {
         client.publish(channel, message);
         return getResponse(BuilderFactory.LONG);
     }
-
 }

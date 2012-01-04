@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 
 import redis.clients.util.Pool;

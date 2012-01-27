@@ -233,18 +233,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
-     * Return the number of keys in the currently selected database.
-     * 
-     * @return Integer reply
-     */
-
-    public Long dbSize() {
-        checkIsInMulti();
-        client.dbSize();
-        return client.getIntegerReply();
-    }
-
-    /**
      * Set a timeout on the specified key. After the timeout the key will be
      * automatically deleted by the server. A key with an associated timeout is
      * said to be volatile in Redis terminology.
@@ -2734,7 +2722,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param value
      * @return
      */
-    public boolean setbit(String key, long offset, boolean value) {
+    public Boolean setbit(String key, long offset, boolean value) {
         client.setbit(key, offset, value);
         return client.getIntegerReply() == 1;
     }
@@ -2746,12 +2734,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @param offset
      * @return
      */
-    public boolean getbit(String key, long offset) {
+    public Boolean getbit(String key, long offset) {
         client.getbit(key, offset);
         return client.getIntegerReply() == 1;
     }
 
-    public long setrange(String key, long offset, String value) {
+    public Long setrange(String key, long offset, String value) {
         client.setrange(key, offset, value);
         return client.getIntegerReply();
     }
@@ -2760,4 +2748,84 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.getrange(key, startOffset, endOffset);
         return client.getBulkReply();
     }
+    
+    /**
+     * Retrieve the configuration of a running Redis server. Not all the
+     * configuration parameters are supported.
+     * <p>
+     * CONFIG GET returns the current configuration parameters. This sub command
+     * only accepts a single argument, that is glob style pattern. All the
+     * configuration parameters matching this parameter are reported as a list
+     * of key-value pairs.
+     * <p>
+     * <b>Example:</b>
+     * 
+     * <pre>
+     * $ redis-cli config get '*'
+     * 1. "dbfilename"
+     * 2. "dump.rdb"
+     * 3. "requirepass"
+     * 4. (nil)
+     * 5. "masterauth"
+     * 6. (nil)
+     * 7. "maxmemory"
+     * 8. "0\n"
+     * 9. "appendfsync"
+     * 10. "everysec"
+     * 11. "save"
+     * 12. "3600 1 300 100 60 10000"
+     * 
+     * $ redis-cli config get 'm*'
+     * 1. "masterauth"
+     * 2. (nil)
+     * 3. "maxmemory"
+     * 4. "0\n"
+     * </pre>
+     * 
+     * @param pattern
+     * @return Bulk reply.
+     */
+    public List<String> configGet(final String pattern) {
+        client.configGet(pattern);
+        return client.getMultiBulkReply();
+    }
+    
+    /**
+     * Alter the configuration of a running Redis server. Not all the
+     * configuration parameters are supported.
+     * <p>
+     * The list of configuration parameters supported by CONFIG SET can be
+     * obtained issuing a {@link #configGet(String) CONFIG GET *} command.
+     * <p>
+     * The configuration set using CONFIG SET is immediately loaded by the Redis
+     * server that will start acting as specified starting from the next
+     * command.
+     * <p>
+     * 
+     * <b>Parameters value format</b>
+     * <p>
+     * The value of the configuration parameter is the same as the one of the
+     * same parameter in the Redis configuration file, with the following
+     * exceptions:
+     * <p>
+     * <ul>
+     * <li>The save paramter is a list of space-separated integers. Every pair
+     * of integers specify the time and number of changes limit to trigger a
+     * save. For instance the command CONFIG SET save "3600 10 60 10000" will
+     * configure the server to issue a background saving of the RDB file every
+     * 3600 seconds if there are at least 10 changes in the dataset, and every
+     * 60 seconds if there are at least 10000 changes. To completely disable
+     * automatic snapshots just set the parameter as an empty string.
+     * <li>All the integer parameters representing memory are returned and
+     * accepted only using bytes as unit.
+     * </ul>
+     * 
+     * @param parameter
+     * @param value
+     * @return Status code reply
+     */
+    public String configSet(final String parameter, final String value) {
+        client.configSet(parameter, value);
+        return client.getStatusCodeReply();
+    }    
 }

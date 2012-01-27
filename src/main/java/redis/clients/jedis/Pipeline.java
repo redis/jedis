@@ -40,11 +40,11 @@ public class Pipeline extends Queable {
         List<Object> unformatted = client.getAll();
         List<Object> formatted = new ArrayList<Object>();
         for (Object o : unformatted) {
-        	try{
-        		formatted.add(generateResponse(o).get());
-        	}catch(JedisDataException e){
-        		formatted.add(e);
-        	}
+            try {
+                formatted.add(generateResponse(o).get());
+            } catch (JedisDataException e) {
+                formatted.add(e);
+            }
         }
         return formatted;
     }
@@ -154,9 +154,9 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> get(byte[] key) {
+    public Response<byte[]> get(byte[] key) {
         client.get(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Boolean> getbit(String key, long offset) {
@@ -175,9 +175,9 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> getSet(byte[] key, byte[] value) {
+    public Response<byte[]> getSet(byte[] key, byte[] value) {
         client.getSet(key, value);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> hdel(String key, String field) {
@@ -1191,4 +1191,39 @@ public class Pipeline extends Queable {
         client.publish(channel, message);
         return getResponse(BuilderFactory.LONG);
     }
+
+    public Response<String> flushDB() {
+        client.flushDB();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> flushAll() {
+        client.flushAll();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> info() {
+        client.info();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> dbSize() {
+        client.dbSize();
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<String> shutdown() {
+        client.shutdown();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> ping() {
+        client.ping();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> randomKey() {
+        client.randomKey();
+        return getResponse(BuilderFactory.STRING);
+    }   
 }

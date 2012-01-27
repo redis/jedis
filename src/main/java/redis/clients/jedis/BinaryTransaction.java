@@ -563,4 +563,89 @@ public class BinaryTransaction extends Queable {
         client.brpoplpush(source, destination, timeout);
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
+    
+    public Response<String> select(final int index) {
+        client.select(index);
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> flushDB() {
+        client.flushDB();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> flushAll() {
+        client.flushAll();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> save() {
+        client.save();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> info() {
+        client.info();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> lastsave() {
+        client.lastsave();
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> dbSize() {
+        client.dbSize();
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<List<byte[]>> configGet(final byte[] pattern) {
+        client.configGet(pattern);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+    
+    public Response<byte[]> configSet(final byte[] parameter, final byte[] value) {
+        client.configSet(parameter, value);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+    
+    public Response<String> configResetStat() {
+        client.configResetStat();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> shutdown() {
+        client.shutdown();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Boolean> getbit(final byte[] key, final long offset) {
+        client.getbit(key, offset);
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+    
+    public Response<Boolean> setbit(final byte[] key, final long offset, final byte[] value) {
+        client.setbit(key, offset, value);
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+    
+    public Response<String> ping() {
+        client.ping();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> setrange(byte[] key, long offset, byte[] value) {
+        client.setrange(key, offset, value);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<String> randomKey() {
+        client.randomKey();
+        return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> publish(byte[] channel, byte[] message) {
+        client.publish(channel, message);
+        return getResponse(BuilderFactory.LONG);
+    }
 }

@@ -248,12 +248,18 @@ public class BinaryClient extends Connection {
         sendCommand(HGETALL, key);
     }
 
-    public void rpush(final byte[] key, final byte[] string) {
-        sendCommand(RPUSH, key, string);
+    public void rpush(final byte[] key, final byte[]... vals) {
+        byte[][] args = new byte[vals.length+1][];
+        args[0] = key;
+        System.arraycopy(vals, 0, args, 1, vals.length);
+        sendCommand(RPUSH, args);
     }
 
-    public void lpush(final byte[] key, final byte[] string) {
-        sendCommand(LPUSH, key, string);
+    public void lpush(final byte[] key, final byte[]... vals) {
+        byte [][] args = new byte[vals.length+1][];
+        args[0] = key;
+        System.arraycopy(vals, 0, args, 1, vals.length);
+        sendCommand(LPUSH, args);
     }
 
     public void llen(final byte[] key) {

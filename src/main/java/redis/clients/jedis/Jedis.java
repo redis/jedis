@@ -27,6 +27,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         super(shardInfo);
     }
 
+    protected String connectedTo() {
+        return client.getHost() + ":" + client.getPort();
+    }
+
     public String ping() {
         checkIsInMulti();
         client.ping();

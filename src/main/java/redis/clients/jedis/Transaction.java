@@ -506,6 +506,12 @@ public class Transaction extends BinaryTransaction {
     }
     
     public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double min,
+            double max) {
+        client.zrevrangeByScoreWithScores(key, min, max);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+    
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double min,
             double max, int offset, int count) {
         client.zrevrangeByScoreWithScores(key, min, max, offset, count);
         return getResponse(BuilderFactory.TUPLE_ZSET);

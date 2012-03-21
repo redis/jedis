@@ -80,11 +80,13 @@ public class JedisPool extends Pool<Jedis> implements JedisPoolMBean {
         this(poolConfig, host, port, timeout, null, Protocol.DEFAULT_DATABASE);
     }
 
-    public JedisPool(final Config poolConfig, final String host, int port, int timeout, final String password,
-                     final int database) {
-        super(poolConfig, new JedisFactory(host, port, timeout, password, database));
+    public JedisPool(final Config poolConfig, final String host, int port, int timeout,
+            final String password, final int database) {
+        super();
+        factory = new JedisFactory(host, port, timeout, password, database);
+        init(poolConfig, factory);
     }
-    
+
     /**
      * Register itself to jmx
      * @param poolName
@@ -180,7 +182,7 @@ public class JedisPool extends Pool<Jedis> implements JedisPoolMBean {
         public String getHost() {
             return host;
         }
-        
+
         public int getPort() {
             return port;
         }

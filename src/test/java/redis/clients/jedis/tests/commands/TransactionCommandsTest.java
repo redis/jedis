@@ -277,4 +277,22 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         }
         assertEquals("bar", lr.get(2).get());
     }
+    
+    @Test
+    public void select() {
+        jedis.select(1);
+        jedis.set("foo", "bar");
+        jedis.watch("foo");
+        Transaction t = jedis.multi();
+        t.select(0);
+        t.set("bar", "foo");
+        
+        Jedis jedis2 = createJedis();
+        jedis2.select(1);
+        jedis2.set("foo", "bar2");
+        
+        List<Object> results = t.exec();
+        
+        assertNull(results);
+    }
 }

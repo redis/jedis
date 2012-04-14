@@ -22,11 +22,11 @@ public interface JedisCommands {
 
     Long ttl(String key);
 
-    boolean setbit(String key, long offset, boolean value);
+    Boolean setbit(String key, long offset, boolean value);
 
-    boolean getbit(String key, long offset);
+    Boolean getbit(String key, long offset);
 
-    long setrange(String key, long offset, String value);
+    Long setrange(String key, long offset, String value);
 
     String getrange(String key, long startOffset, long endOffset);
 

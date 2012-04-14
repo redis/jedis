@@ -82,8 +82,8 @@ public class PipeliningTest extends Assert {
         assertEquals("foo", zset.get().iterator().next());
         assertEquals("foo", set.get());
         assertEquals(false, blist.get());
-        assertEquals(new Double(2), zincrby.get());
-        assertEquals(new Long(1), zcard.get());
+        assertEquals(Double.valueOf(2), zincrby.get());
+        assertEquals(Long.valueOf(1), zcard.get());
         assertEquals(1, lrange.get().size());
         assertNotNull(hgetAll.get().get("foo"));
         assertEquals(1, smembers.get().size());

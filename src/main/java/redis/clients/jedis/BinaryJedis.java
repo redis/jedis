@@ -2822,9 +2822,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param pattern
      * @return Bulk reply.
      */
-    public List<String> configGet(final String pattern) {
+    public List<byte[]> configGet(final byte[] pattern) {
         client.configGet(pattern);
-        return client.getMultiBulkReply();
+        return client.getBinaryMultiBulkReply();
     }
 
     /**
@@ -2871,9 +2871,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param value
      * @return Status code reply
      */
-    public String configSet(final String parameter, final String value) {
+    public byte[] configSet(final byte[] parameter, final byte[] value) {
         client.configSet(parameter, value);
-        return client.getStatusCodeReply();
+        return client.getBinaryBulkReply();
     }
 
     public boolean isConnected() {
@@ -2959,9 +2959,9 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param value
      * @return
      */
-    public Long setbit(byte[] key, long offset, byte[] value) {
+    public Boolean setbit(byte[] key, long offset, byte[] value) {
         client.setbit(key, offset, value);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
     /**
@@ -2971,12 +2971,12 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @param offset
      * @return
      */
-    public Long getbit(byte[] key, long offset) {
+    public Boolean getbit(byte[] key, long offset) {
         client.getbit(key, offset);
-        return client.getIntegerReply();
+        return client.getIntegerReply() == 1;
     }
 
-    public long setrange(byte[] key, long offset, byte[] value) {
+    public Long setrange(byte[] key, long offset, byte[] value) {
         client.setrange(key, offset, value);
         return client.getIntegerReply();
     }

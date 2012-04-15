@@ -16,6 +16,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryJedis implements BinaryJedisCommands {
     protected Client client = null;
@@ -3018,18 +3019,25 @@ public class BinaryJedis implements BinaryJedisCommands {
      */
 	public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
 	    client.setTimeoutInfinite();
-        client.eval(script, keys, args);
+        client.eval(script, toByteArray(keys.size()), getParams(keys, args));
         return client.getOne();
 	}
-	
-	/**
-     * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
-     * <p>
-     * 
-     * @return Script result
-     */
-	public Object eval(byte[] script, List<byte[]> keys) {
-		return eval(script,keys, new ArrayList<byte[]>());
+	private byte[][] getParams(List<byte[]> keys, List<byte[]> args){
+    	int keyCount = keys.size();
+    	byte[][] params = new byte[keyCount + args.size()][];
+    	
+    	for(int i=0;i<keyCount;i++)
+    		params[i] = keys.get(i);
+    	
+    	for(int i=0;i<keys.size();i++)
+    		params[keyCount + i] = args.get(i);
+    	
+    	return params;
+    }
+	public Object eval(byte[] script, byte[] keyCount, byte[][] params) {
+	    client.setTimeoutInfinite();
+        client.eval(script, keyCount, params);
+        return client.getOne();
 	}
 	
 	public byte[] scriptFlush(){

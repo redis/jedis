@@ -600,28 +600,20 @@ public class Client extends BinaryClient implements Commands {
         configGet(SafeEncoder.encode(pattern));
     }
 
-    public void eval(String script, List<String> keys, String... args) {
-		List<byte[]> k = new ArrayList<byte[]>();
-		for(String key:keys){
-			k.add(SafeEncoder.encode(key));
-		}
-		List<byte[]> a = new ArrayList<byte[]>();
-		for(String arg:args){
-			a.add(SafeEncoder.encode(arg));
-		}
-		eval(SafeEncoder.encode(script),k,a);		
+    private byte[][] getByteParams(String... params){
+    	byte[][] p = new byte[params.length][];
+		for(int i=0;i<params.length;i++)
+			p[i] = SafeEncoder.encode(params[i]);
+		
+		return p;
+    }
+    
+    public void eval(String script, int keyCount, String... params) {
+		eval(SafeEncoder.encode(script),toByteArray(keyCount), getByteParams(params));		
 	}
-	
-	public void evalsha(String sha1, List<String> keys, String... args) {
-		List<byte[]> k = new ArrayList<byte[]>();
-		for(String key:keys){
-			k.add(SafeEncoder.encode(key));
-		}
-		List<byte[]> a = new ArrayList<byte[]>();
-		for(String arg:args){
-			a.add(SafeEncoder.encode(arg));
-		}
-		evalsha(SafeEncoder.encode(sha1),k,a);		
+
+	public void evalsha(String sha1, int keyCount, String... params) {
+		evalsha(SafeEncoder.encode(sha1),toByteArray(keyCount), getByteParams(params));				
 	}
 	
 	public void scriptExists(String... sha1){

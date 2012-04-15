@@ -2693,19 +2693,38 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getStatusCodeReply();
     }
 
-    public Object eval(String script, String... keys) {
-    	List<String> s = new ArrayList<String>(keys.length);
-    	for(String key : keys)
-    		s.add(key);
-    	
-    	return eval(script, s);
-    }
-	
-    public Object eval(String script, List<String> keys, String... args) {
-		client.setTimeoutInfinite();
-        client.eval(script, keys, args);
+    public Object eval(String script, int keyCount, String... params) {
+    	client.setTimeoutInfinite();
+        client.eval(script, keyCount, params);
         
         return getEvalResult();
+    }
+	
+    private String[] getParams(List<String> keys, List<String> args){
+    	int keyCount = keys.size();
+		int argCount = args.size();
+    	
+    	String[] params = new String[keyCount + args.size()];
+    	
+    	for(int i=0;i<keyCount;i++)
+    		params[i] = keys.get(i);
+    	
+    	for(int i=0;i<argCount;i++)
+    		params[keyCount + i] = args.get(i);
+    	
+    	return params;
+    }
+    
+    public Object eval(String script, List<String> keys, List<String> args) {
+    	return eval(script, keys.size(), getParams(keys, args));
+	}
+
+	public Object eval(String script) {
+		return eval(script,0);		
+	}
+
+	public Object evalsha(String script) {
+		return evalsha(script,0);		
 	}
     
     private Object getEvalResult(){
@@ -2726,17 +2745,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return result;
     }
     
-    public Object evalsha(String sha1, String... keys) {
-    	List<String> s = new ArrayList<String>(keys.length);
-    	for(String key : keys)
-    		s.add(key);
-    	
-    	return evalsha(sha1, s);
+    public Object evalsha(String sha1, List<String> keys, List<String> args) {
+    	return evalsha(sha1, keys.size(), getParams(keys, args));
     }
     
-	public Object evalsha(String sha1, List<String> keys, String... args) {
+	public Object evalsha(String sha1, int keyCount, String... params) {
 		checkIsInMulti();
-        client.evalsha(sha1, keys, args);
+        client.evalsha(sha1, keyCount, params);
         
         return getEvalResult();
     }

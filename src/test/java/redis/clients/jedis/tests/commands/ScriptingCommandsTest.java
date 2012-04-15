@@ -19,7 +19,11 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     	keys.add("key1");
     	keys.add("key2");
     	
-        List<String> response = (List<String>)jedis.eval(script, keys, "first", "second" );
+    	List<String> args = new ArrayList<String>();
+    	args.add("first");
+    	args.add("second");
+    	
+        List<String> response = (List<String>)jedis.eval(script, keys, args );
         
         assertEquals(4, response.size());
         assertEquals("key1", response.get(0));
@@ -34,7 +38,10 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     	List<String> keys = new ArrayList<String>();
     	keys.add("key1");
     	
-        String response = (String)jedis.eval(script, keys);
+    	List<String> args = new ArrayList<String>();
+    	args.add("first");
+    	
+        String response = (String)jedis.eval(script, keys, args);
         
         assertEquals("key1", response);        
     }
@@ -45,7 +52,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     	List<String> keys = new ArrayList<String>();
     	keys.add("key1");
     	
-    	Long response = (Long)jedis.eval(script, keys);
+    	Long response = (Long)jedis.eval(script, keys, new ArrayList<String>());
         
         assertEquals(new Long(2), response);
     }
@@ -53,8 +60,9 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@Test
     public void evalNoArgs() {
     	String script = "return KEYS[1]";
-    	
-    	String response = (String)jedis.eval(script, "key1");
+    	List<String> keys = new ArrayList<String>();
+    	keys.add("key1");
+    	String response = (String)jedis.eval(script, keys, new ArrayList<String>());
         
         assertEquals("key1", response);
     }

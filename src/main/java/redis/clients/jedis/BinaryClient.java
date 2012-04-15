@@ -719,30 +719,25 @@ public class BinaryClient extends Connection {
         super.disconnect();
     }
     
-    private void sendEvalCommand(Command command, byte[] script, List<byte[]> keys, List<byte[]> args){
-    	int keysSize = keys.size();
-    	int argsSize = args.size();
+    private void sendEvalCommand(Command command, byte[] script, byte[] keyCount, byte[][] params){
     	
-    	final byte[][] allArgs = new byte[keysSize + argsSize + 2][];
+    	final byte[][] allArgs = new byte[params.length + 2][];
     	
     	allArgs[0] = script;
-    	allArgs[1] =toByteArray(keysSize);
+    	allArgs[1] = keyCount;
     	
-    	for(int i=0;i<keysSize; i++)
-    		allArgs[i+2] = keys.get(i);
-    	
-    	for(int i=0;i<argsSize; i++)
-    		allArgs[i+2+keysSize] = args.get(i);
+    	for(int i=0;i<params.length; i++)
+    		allArgs[i+2] = params[i];
     	
     	sendCommand(command, allArgs );
     }
     
-    public void eval(byte[] script, List<byte[]> keys, List<byte[]> args){
-    	sendEvalCommand(EVAL, script, keys, args );
+    public void eval(byte[] script, byte[] keyCount, byte[][] params){
+    	sendEvalCommand(EVAL, script, keyCount, params );
     }
     
-    public void evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args){
-    	sendEvalCommand(EVALSHA, sha1, keys, args);
+    public void evalsha(byte[] sha1, byte[] keyCount, byte[][] params){
+    	sendEvalCommand(EVALSHA, sha1, keyCount, params);
     }
     
     public void scriptFlush(){

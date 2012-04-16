@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 group = 'com.googlecode.jedis'
 archiveBaseName = 'jedis'
-version = '1.5.0'
+version = '1.5.0-vv'
 
 repositories {
    mavenCentral()

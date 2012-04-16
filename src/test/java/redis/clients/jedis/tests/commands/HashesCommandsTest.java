@@ -101,13 +101,23 @@ public class HashesCommandsTest extends JedisCommandTestBase {
         hash.put("car", "bar");
         jedis.hmset("foo", hash);
 
-        List<String> values = jedis.hmget("foo", "bar", "car", "foo");
         List<String> expected = new ArrayList<String>();
         expected.add("car");
         expected.add("bar");
         expected.add(null);
 
+        List<String> values = jedis.hmget("foo", "bar", "car", "foo");
         assertEquals(expected, values);
+
+		//Set
+		LinkedHashSet<String> items = new LinkedHashSet<String>();
+		items.add("bar");
+		items.add("car");
+		items.add("foo");
+
+        List<String> output = jedis.hmget("foo", items);
+        assertEquals(expected, output);
+
 
         // Binary
         Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();

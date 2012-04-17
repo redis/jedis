@@ -1226,4 +1226,9 @@ public class Pipeline extends Queable {
         client.randomKey();
         return getResponse(BuilderFactory.STRING);
     }   
+    
+    public Response<String> select(int index){
+    	client.select(index);
+    	return getResponse(BuilderFactory.STRING);
+    }
 }

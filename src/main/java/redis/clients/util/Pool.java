@@ -23,8 +23,8 @@ public abstract class Pool<T> {
                     "Could not get a resource from the pool", e);
         }
     }
-
-    public void returnResource(final T resource) {
+        
+    public void returnResourceObject(final Object resource) {
         try {
             internalPool.returnObject(resource);
         } catch (Exception e) {
@@ -32,8 +32,16 @@ public abstract class Pool<T> {
                     "Could not return the resource to the pool", e);
         }
     }
-
+    
     public void returnBrokenResource(final T resource) {
+    	returnBrokenResourceObject(resource);
+    }
+    
+    public void returnResource(final T resource) {
+    	returnResourceObject(resource);
+    }
+
+    protected void returnBrokenResourceObject(final Object resource) {
         try {
             internalPool.invalidateObject(resource);
         } catch (Exception e) {

@@ -80,7 +80,7 @@ To run the tests:
 
 - Use the latest redis master branch.
 
-- Run 2 instances of redis [using conf files in conf folder](https://github.com/xetorthio/jedis/wiki). For the tests we use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
+- Run ```make test```. This will run 2 instances of redis. We use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
 
 Thanks for helping!
 

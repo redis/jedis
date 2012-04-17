@@ -189,12 +189,22 @@ public class Client extends BinaryClient implements Commands {
         hgetAll(SafeEncoder.encode(key));
     }
 
-    public void rpush(final String key, final String string) {
-        rpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
+
+    public void rpush(final String key, final String... vals) {
+        final byte[][] bvals = new byte[vals.length][];
+        for (int i = 0; i < bvals.length; i++) {
+            bvals[i] = SafeEncoder.encode(vals[i]);
+        }
+        rpush(SafeEncoder.encode(key), bvals);
     }
 
-    public void lpush(final String key, final String string) {
-        lpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
+
+    public void lpush(final String key, final String... vals) {
+        final byte[][] bvals = new byte[vals.length][];
+        for (int i = 0; i < bvals.length; i++) {
+            bvals[i] = SafeEncoder.encode(vals[i]);
+        }
+        lpush(SafeEncoder.encode(key), bvals);
     }
 
     public void llen(final String key) {

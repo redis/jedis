@@ -351,7 +351,7 @@ public class ShardedJedisPipeline extends Queable {
         Client c = getClient(key);
         c.zrange(key, start, end);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.STRING_ZSET);
     }
 
     public Response<Long> zrem(String key, String member) {

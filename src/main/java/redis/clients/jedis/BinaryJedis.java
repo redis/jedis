@@ -888,7 +888,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long rpush(final byte[] key, final byte[] string) {
+    public Long rpush(final byte[] key, final byte[]... string) {
         checkIsInMulti();
         client.rpush(key, string);
         return client.getIntegerReply();
@@ -909,7 +909,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long lpush(final byte[] key, final byte[] string) {
+    public Long lpush(final byte[] key, final byte[]... string) {
         checkIsInMulti();
         client.lpush(key, string);
         return client.getIntegerReply();

@@ -86,9 +86,9 @@ public interface Commands {
 
     public void hgetAll(final String key);
 
-    public void rpush(final String key, final String string);
+    public void rpush(final String key, final String... string);
 
-    public void lpush(final String key, final String string);
+    public void lpush(final String key, final String... string);
 
     public void llen(final String key);
 

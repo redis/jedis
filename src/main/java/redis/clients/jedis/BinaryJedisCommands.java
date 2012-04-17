@@ -67,9 +67,9 @@ public interface BinaryJedisCommands {
 
     Map<byte[], byte[]> hgetAll(byte[] key);
 
-    Long rpush(byte[] key, byte[] string);
+    Long rpush(byte[] key, byte[]... string);
 
-    Long lpush(byte[] key, byte[] string);
+    Long lpush(byte[] key, byte[]... string);
 
     Long llen(byte[] key);
 

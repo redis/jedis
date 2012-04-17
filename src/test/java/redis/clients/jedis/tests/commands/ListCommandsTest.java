@@ -30,12 +30,17 @@ public class ListCommandsTest extends JedisCommandTestBase {
         assertEquals(1, size);
         size = jedis.rpush("foo", "foo");
         assertEquals(2, size);
+        size = jedis.rpush("foo", "bar", "foo");
+        assertEquals(4, size);
+            
 
         // Binary
         long bsize = jedis.rpush(bfoo, bbar);
         assertEquals(1, bsize);
         bsize = jedis.rpush(bfoo, bfoo);
         assertEquals(2, bsize);
+        bsize = jedis.rpush(bfoo, bbar, bfoo);
+        assertEquals(4, bsize);
 
     }
 
@@ -45,12 +50,16 @@ public class ListCommandsTest extends JedisCommandTestBase {
         assertEquals(1, size);
         size = jedis.lpush("foo", "foo");
         assertEquals(2, size);
+        size = jedis.lpush("foo", "bar", "foo");
+        assertEquals(4, size);
 
         // Binary
         long bsize = jedis.lpush(bfoo, bbar);
         assertEquals(1, bsize);
         bsize = jedis.lpush(bfoo, bfoo);
         assertEquals(2, bsize);
+        bsize = jedis.lpush(bfoo, bbar, bfoo);
+        assertEquals(4, bsize);
 
     }
 

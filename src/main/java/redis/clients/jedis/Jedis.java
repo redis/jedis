@@ -865,7 +865,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long rpush(final String key, final String string) {
+    public Long rpush(final String key, final String... string) {
         checkIsInMulti();
         client.rpush(key, string);
         return client.getIntegerReply();
@@ -886,7 +886,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long lpush(final String key, final String string) {
+    public Long lpush(final String key, final String... string) {
         checkIsInMulti();
         client.lpush(key, string);
         return client.getIntegerReply();

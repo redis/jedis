@@ -102,6 +102,13 @@ public class PipeliningTest extends Assert {
     }
     
     @Test
+    public void pipelineSelect() {
+        Pipeline p = jedis.pipelined();
+        p.select(1);
+        p.sync();
+    }
+    
+    @Test
     public void pipelineResponseWithoutData() {
         jedis.zadd("zset", 1, "foo");
         

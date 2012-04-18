@@ -154,4 +154,8 @@ public interface BinaryJedisCommands {
     Long zremrangeByScore(byte[] key, double start, double end);
 
     Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value);
+
+    Long lpushx(byte[] key, byte[] string);    
+
+    Long rpushx(byte[] key, byte[] string); 
 }

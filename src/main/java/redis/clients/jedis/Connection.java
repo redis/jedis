@@ -82,7 +82,7 @@ public class Connection {
         pipelinedCommands++;
         return this;
     }
-
+    
     protected Connection sendCommand(final Command cmd) {
         connect();
         protocol.sendCommand(outputStream, cmd, new byte[0][]);
@@ -204,6 +204,13 @@ public class Connection {
         flush();
         pipelinedCommands--;
         return (List<Object>) protocol.read(inputStream);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Long> getIntegerMultiBulkReply() {
+        flush();
+        pipelinedCommands--;
+        return (List<Long>) protocol.read(inputStream);
     }
 
     public List<Object> getAll() {

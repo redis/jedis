@@ -169,8 +169,8 @@ public class Client extends BinaryClient implements Commands {
         hexists(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
 
-    public void hdel(final String key, final String field) {
-        hdel(SafeEncoder.encode(key), SafeEncoder.encode(field));
+    public void hdel(final String key, final String... fields) {
+        hdel(SafeEncoder.encode(key), SafeEncoder.encodeMany(fields));
     }
 
     public void hlen(final String key) {
@@ -189,12 +189,12 @@ public class Client extends BinaryClient implements Commands {
         hgetAll(SafeEncoder.encode(key));
     }
 
-    public void rpush(final String key, final String string) {
-        rpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
+    public void rpush(final String key, final String... string) {
+        rpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
     }
 
-    public void lpush(final String key, final String string) {
-        lpush(SafeEncoder.encode(key), SafeEncoder.encode(string));
+    public void lpush(final String key, final String... string) {
+        lpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
     }
 
     public void llen(final String key) {
@@ -233,16 +233,16 @@ public class Client extends BinaryClient implements Commands {
         rpoplpush(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey));
     }
 
-    public void sadd(final String key, final String member) {
-        sadd(SafeEncoder.encode(key), SafeEncoder.encode(member));
+    public void sadd(final String key, final String... members) {
+        sadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
     }
 
     public void smembers(final String key) {
         smembers(SafeEncoder.encode(key));
     }
 
-    public void srem(final String key, final String member) {
-        srem(SafeEncoder.encode(key), SafeEncoder.encode(member));
+    public void srem(final String key, final String... members) {
+        srem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
     }
 
     public void spop(final String key) {
@@ -323,8 +323,8 @@ public class Client extends BinaryClient implements Commands {
         zrange(SafeEncoder.encode(key), start, end);
     }
 
-    public void zrem(final String key, final String member) {
-        zrem(SafeEncoder.encode(key), SafeEncoder.encode(member));
+    public void zrem(final String key, final String... members) {
+        zrem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
     }
 
     public void zincrby(final String key, final double score,
@@ -595,4 +595,14 @@ public class Client extends BinaryClient implements Commands {
     public void configGet(String pattern) {
         configGet(SafeEncoder.encode(pattern));
     }
+
+	public void zadd(String key, Map<Double, String> scoreMembers) {
+		HashMap<Double,byte[]> binaryScoreMembers = new HashMap<Double,byte[]>();
+		
+		for(Map.Entry<Double,String> entry : scoreMembers.entrySet()){
+			binaryScoreMembers.put(entry.getKey(), SafeEncoder.encode(entry.getValue()));
+		}
+	    
+		zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
+	}
 }

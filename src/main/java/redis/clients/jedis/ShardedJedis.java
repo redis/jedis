@@ -173,9 +173,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.del(key);
     }
 
-    public Long hdel(String key, String field) {
+    public Long hdel(String key, String... fields) {
         Jedis j = getShard(key);
-        return j.hdel(key, field);
+        return j.hdel(key, fields);
     }
 
     public Long hlen(String key) {
@@ -198,14 +198,14 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.hgetAll(key);
     }
 
-    public Long rpush(String key, String string) {
+    public Long rpush(String key, String... strings) {
         Jedis j = getShard(key);
-        return j.rpush(key, string);
+        return j.rpush(key, strings);
     }
 
-    public Long lpush(String key, String string) {
+    public Long lpush(String key, String... strings) {
         Jedis j = getShard(key);
-        return j.lpush(key, string);
+        return j.lpush(key, strings);
     }
 
     public Long llen(String key) {
@@ -248,9 +248,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.rpop(key);
     }
 
-    public Long sadd(String key, String member) {
+    public Long sadd(String key, String... members) {
         Jedis j = getShard(key);
-        return j.sadd(key, member);
+        return j.sadd(key, members);
     }
 
     public Set<String> smembers(String key) {
@@ -258,9 +258,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         return j.smembers(key);
     }
 
-    public Long srem(String key, String member) {
+    public Long srem(String key, String... members) {
         Jedis j = getShard(key);
-        return j.srem(key, member);
+        return j.srem(key, members);
     }
 
     public String spop(String key) {
@@ -287,15 +287,20 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
         Jedis j = getShard(key);
         return j.zadd(key, score, member);
     }
+    
+    public Long zadd(String key, Map<Double,String> scoreMembers) {
+        Jedis j = getShard(key);
+        return j.zadd(key, scoreMembers);
+    }
 
     public Set<String> zrange(String key, int start, int end) {
         Jedis j = getShard(key);
         return j.zrange(key, start, end);
     }
 
-    public Long zrem(String key, String member) {
+    public Long zrem(String key, String... members) {
         Jedis j = getShard(key);
-        return j.zrem(key, member);
+        return j.zrem(key, members);
     }
 
     public Double zincrby(String key, double score, String member) {

@@ -796,13 +796,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <b>Time complexity:</b> O(1)
      * 
      * @param key
-     * @param field
+     * @param fields
      * @return If the field was present in the hash it is deleted and 1 is
      *         returned, otherwise 0 is returned and no operation is performed.
      */
-    public Long hdel(final byte[] key, final byte[] field) {
+    public Long hdel(final byte[] key, final byte[]... fields) {
         checkIsInMulti();
-        client.hdel(key, field);
+        client.hdel(key, fields);
         return client.getIntegerReply();
     }
 
@@ -881,16 +881,16 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see BinaryJedis#lpush(byte[], byte[])
+     * @see BinaryJedis#rpush(byte[], byte[]...)
      * 
      * @param key
-     * @param string
+     * @param strings
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long rpush(final byte[] key, final byte[] string) {
+    public Long rpush(final byte[] key, final byte[]... strings) {
         checkIsInMulti();
-        client.rpush(key, string);
+        client.rpush(key, strings);
         return client.getIntegerReply();
     }
 
@@ -902,16 +902,16 @@ public class BinaryJedis implements BinaryJedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see BinaryJedis#rpush(byte[], byte[])
+     * @see BinaryJedis#rpush(byte[], byte[]...)
      * 
      * @param key
-     * @param string
+     * @param strings
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long lpush(final byte[] key, final byte[] string) {
+    public Long lpush(final byte[] key, final byte[]... strings) {
         checkIsInMulti();
-        client.lpush(key, string);
+        client.lpush(key, strings);
         return client.getIntegerReply();
     }
 
@@ -1162,13 +1162,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * Time complexity O(1)
      * 
      * @param key
-     * @param member
+     * @param members
      * @return Integer reply, specifically: 1 if the new element was added 0 if
      *         the element was already a member of the set
      */
-    public Long sadd(final byte[] key, final byte[] member) {
+    public Long sadd(final byte[] key, final byte[]... members) {
         checkIsInMulti();
-        client.sadd(key, member);
+        client.sadd(key, members);
         return client.getIntegerReply();
     }
 
@@ -1200,7 +1200,7 @@ public class BinaryJedis implements BinaryJedisCommands {
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Long srem(final byte[] key, final byte[] member) {
+    public Long srem(final byte[] key, final byte[]... member) {
         checkIsInMulti();
         client.srem(key, member);
         return client.getIntegerReply();
@@ -1458,6 +1458,12 @@ public class BinaryJedis implements BinaryJedisCommands {
         client.zadd(key, score, member);
         return client.getIntegerReply();
     }
+    
+    public Long zadd(final byte[] key, final Map<Double, byte[]> scoreMembers) {
+        checkIsInMulti();
+        client.zaddBinary(key, scoreMembers);
+        return client.getIntegerReply();
+    }
 
     public Set<byte[]> zrange(final byte[] key, final int start, final int end) {
         checkIsInMulti();
@@ -1477,13 +1483,13 @@ public class BinaryJedis implements BinaryJedisCommands {
      * 
      * 
      * @param key
-     * @param member
+     * @param members
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Long zrem(final byte[] key, final byte[] member) {
+    public Long zrem(final byte[] key, final byte[]... members) {
         checkIsInMulti();
-        client.zrem(key, member);
+        client.zrem(key, members);
         return client.getIntegerReply();
     }
 

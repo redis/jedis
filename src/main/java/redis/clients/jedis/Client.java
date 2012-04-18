@@ -1,12 +1,16 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.util.SafeEncoder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import static redis.clients.jedis.Protocol.toByteArray;
+import static redis.clients.jedis.Protocol.Command.SCRIPT;
 
 public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
@@ -604,5 +608,33 @@ public class Client extends BinaryClient implements Commands {
 
     public void configGet(String pattern) {
         configGet(SafeEncoder.encode(pattern));
+    }
+
+    private byte[][] getByteParams(String... params){
+    	byte[][] p = new byte[params.length][];
+		for(int i=0;i<params.length;i++)
+			p[i] = SafeEncoder.encode(params[i]);
+		
+		return p;
+    }
+    
+    public void eval(String script, int keyCount, String... params) {
+		eval(SafeEncoder.encode(script),toByteArray(keyCount), getByteParams(params));		
+	}
+
+	public void evalsha(String sha1, int keyCount, String... params) {
+		evalsha(SafeEncoder.encode(sha1),toByteArray(keyCount), getByteParams(params));				
+	}
+	
+	public void scriptExists(String... sha1){
+		final byte[][] bsha1 = new byte[sha1.length][];
+        for (int i = 0; i < bsha1.length; i++) {
+        	bsha1[i] = SafeEncoder.encode(sha1[i]);
+        }
+		scriptExists(bsha1);
+    }
+	
+    public void scriptLoad(String script){
+    	scriptLoad(SafeEncoder.encode(script));
     }
 }

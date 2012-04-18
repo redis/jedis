@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.SafeEncoder;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
     public Jedis(final String host) {
@@ -2688,5 +2689,90 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public String configSet(final String parameter, final String value) {
         client.configSet(parameter, value);
         return client.getStatusCodeReply();
-    }    
+    }
+
+    public Object eval(String script, int keyCount, String... params) {
+    	client.setTimeoutInfinite();
+        client.eval(script, keyCount, params);
+        
+        return getEvalResult();
+    }
+	
+    private String[] getParams(List<String> keys, List<String> args){
+    	int keyCount = keys.size();
+		int argCount = args.size();
+    	
+    	String[] params = new String[keyCount + args.size()];
+    	
+    	for(int i=0;i<keyCount;i++)
+    		params[i] = keys.get(i);
+    	
+    	for(int i=0;i<argCount;i++)
+    		params[keyCount + i] = args.get(i);
+    	
+    	return params;
+    }
+    
+    public Object eval(String script, List<String> keys, List<String> args) {
+    	return eval(script, keys.size(), getParams(keys, args));
+	}
+
+	public Object eval(String script) {
+		return eval(script,0);		
+	}
+
+	public Object evalsha(String script) {
+		return evalsha(script,0);		
+	}
+    
+    private Object getEvalResult(){
+    	Object result = client.getOne();
+        
+        if(result instanceof byte[])
+        	return SafeEncoder.encode((byte[])result);
+        
+        if(result instanceof List<?>) {
+        	List<?> list = (List<?>)result;
+        	List<String> listResult = new ArrayList<String>(list.size());
+        	for(Object bin: list)
+        		listResult.add(SafeEncoder.encode((byte[])bin));
+        	
+        	return listResult;
+        }
+        
+        return result;
+    }
+    
+    public Object evalsha(String sha1, List<String> keys, List<String> args) {
+    	return evalsha(sha1, keys.size(), getParams(keys, args));
+    }
+    
+	public Object evalsha(String sha1, int keyCount, String... params) {
+		checkIsInMulti();
+        client.evalsha(sha1, keyCount, params);
+        
+        return getEvalResult();
+    }
+	
+	public Boolean scriptExists(String sha1){
+		String[] a = new String[1];
+		a[0] = sha1;
+		return scriptExists(a).get(0);
+    }
+
+	public List<Boolean> scriptExists(String... sha1){
+		client.scriptExists(sha1);
+		List<Long> result = client.getIntegerMultiBulkReply();
+		List<Boolean> exists = new ArrayList<Boolean>();
+		
+		for(Long value : result)
+			exists.add(value == 1);
+		
+		return exists;
+    }
+	
+    public String scriptLoad(String script){
+    	client.scriptLoad(script);
+    	return client.getBulkReply();
+    }
 }

@@ -186,7 +186,7 @@ public class Connection {
     public Long getIntegerReply() {
         flush();
         pipelinedCommands--;
-        return (Long)protocol.read(inputStream);
+        return (Long) protocol.read(inputStream);
     }
 
     public List<String> getMultiBulkReply() {

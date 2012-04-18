@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hamcrest.core.IsInstanceOf;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 

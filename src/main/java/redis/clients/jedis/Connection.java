@@ -209,7 +209,7 @@ public class Connection {
     public List<Long> getIntegerMultiBulkReply() {
         flush();
         pipelinedCommands--;
-        return (List<Long>) protocol.read(inputStream);
+        return (List<Long>) Protocol.read(inputStream);
     }
 
     public List<Object> getAll() {

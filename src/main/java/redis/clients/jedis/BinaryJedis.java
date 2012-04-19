@@ -3007,8 +3007,9 @@ public class BinaryJedis implements BinaryJedisCommands {
         return client.getDB();
     }
     
-	public void slowlogReset() {
+	public byte[] slowlogReset() {
 		client.slowlogReset();
+		return client.getBinaryBulkReply();
 	}
 	
 	public long slowlogLen() {

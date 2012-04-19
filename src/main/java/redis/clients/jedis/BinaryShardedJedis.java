@@ -407,4 +407,19 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         pipeline.setShardedJedis(this);
         return pipeline;
     }
+    
+    public Long objectRefcount(byte[] key) {
+    	Jedis j = getShard(key);
+		return j.objectRefcount(key);
+	}
+	
+	public byte[] objectEncoding(byte[] key) {
+		Jedis j = getShard(key);
+		return j.objectEncoding(key);
+	}
+
+	public Long objectIdletime(byte[] key) {
+		Jedis j = getShard(key);
+		return j.objectIdletime(key);
+	}
 }

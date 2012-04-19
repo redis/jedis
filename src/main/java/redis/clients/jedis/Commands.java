@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.util.Map;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.SafeEncoder;
 
 public interface Commands {
 
@@ -259,4 +260,10 @@ public interface Commands {
     public void exec();
 
     public void discard();
+    
+    public void objectRefcount(String key);
+	
+	public void objectIdletime(String key);
+	
+	public void objectEncoding(String key);
 }

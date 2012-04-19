@@ -78,6 +78,7 @@ public final class Protocol {
                 throw new JedisConnectionException("Unknown reply: " + (char) b);
             }
         } catch (IOException e) {
+		    e.printStackTrace();
             throw new JedisConnectionException(e);
         }
         return null;

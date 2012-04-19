@@ -9,6 +9,7 @@ import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -45,12 +46,26 @@ public abstract class JedisPubSub {
         client.flush();
     }
 
+    public void unsubscribe(Set<String> channels) {
+        client.unsubscribe(channels);
+        client.flush();
+    }
     public void subscribe(String... channels) {
         client.subscribe(channels);
         client.flush();
     }
 
+    public void subscribe(Set<String> channels) {
+        client.subscribe(channels);
+        client.flush();
+    }
+
     public void psubscribe(String... patterns) {
+        client.psubscribe(patterns);
+        client.flush();
+    }
+    
+	public void psubscribe(Set<String> patterns) {
         client.psubscribe(patterns);
         client.flush();
     }
@@ -61,6 +76,11 @@ public abstract class JedisPubSub {
     }
 
     public void punsubscribe(String... patterns) {
+        client.punsubscribe(patterns);
+        client.flush();
+    }
+    
+	public void punsubscribe(Set<String> patterns) {
         client.punsubscribe(patterns);
         client.flush();
     }
@@ -75,8 +95,22 @@ public abstract class JedisPubSub {
         client.flush();
         process(client);
     }
+    
+	public void proceedWithPatterns(Client client, Set<String> patterns) {
+        this.client = client;
+        client.psubscribe(patterns);
+        client.flush();
+        process(client);
+    }
 
     public void proceed(Client client, String... channels) {
+        this.client = client;
+        client.subscribe(channels);
+        client.flush();
+        process(client);
+    }
+    
+	public void proceed(Client client, Set<String> channels) {
         this.client = client;
         client.subscribe(channels);
         client.flush();

@@ -108,6 +108,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
+	public Long del(final Set<String> keys) {
+        checkIsInMulti();
+        client.del(keys);
+        return client.getIntegerReply();
+	}
+
     /**
      * Return the type of the value stored at key in form of a string. The type
      * can be one of "none", "string", "list", "set". "none" is returned if the
@@ -393,6 +399,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getMultiBulkReply();
     }
 
+	public List<String> mget(final Set<String> keys) {
+        checkIsInMulti();
+        client.mget(keys);
+        return client.getMultiBulkReply();
+	}
     /**
      * SETNX works exactly like {@link #set(String, String) SET} with the only
      * difference that if the key already exists no operation is performed.
@@ -455,6 +466,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getStatusCodeReply();
     }
 
+    public String mset(final Set<String> keysvalues) {
+        checkIsInMulti();
+        client.mset(keysvalues);
+        return client.getStatusCodeReply();
+    }
+
     /**
      * Set the the respective keys to the respective values.
      * {@link #mset(String...) MSET} will replace old values with new values,
@@ -482,6 +499,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
+    public Long msetnx(final Set<String> keysvalues) {
+        checkIsInMulti();
+        client.msetnx(keysvalues);
+        return client.getIntegerReply();
+    }
     /**
      * IDECRBY work just like {@link #decr(String) INCR} but instead to
      * decrement by 1 the decrement is integer.
@@ -734,6 +756,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getMultiBulkReply();
     }
 
+    public List<String> hmget(final String key, final Set<String> fields) {
+        checkIsInMulti();
+        client.hmget(key, fields);
+        return client.getMultiBulkReply();
+    }
     /**
      * Increment the number stored at field in the hash at key by value. If key
      * does not exist, a new key holding a hash is created. If field does not
@@ -1289,6 +1316,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         final List<String> members = client.getMultiBulkReply();
         return new HashSet<String>(members);
     }
+    
+	public Set<String> sinter(final Set<String> keys) {
+        checkIsInMulti();
+        client.sinter(keys);
+        final List<String> members = client.getMultiBulkReply();
+        return new HashSet<String>(members);
+    }
 
     /**
      * This commnad works exactly like {@link #sinter(String...) SINTER} but
@@ -1302,6 +1336,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public Long sinterstore(final String dstkey, final String... keys) {
+        checkIsInMulti();
+        client.sinterstore(dstkey, keys);
+        return client.getIntegerReply();
+    }
+    
+	public Long sinterstore(final String dstkey, final Set<String> keys) {
         checkIsInMulti();
         client.sinterstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1330,6 +1370,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return new HashSet<String>(members);
     }
 
+    public Set<String> sunion(final Set<String> keys) {
+        checkIsInMulti();
+        client.sunion(keys);
+        final List<String> members = client.getMultiBulkReply();
+        return new HashSet<String>(members);
+    }
+
     /**
      * This command works exactly like {@link #sunion(String...) SUNION} but
      * instead of being returned the resulting set is stored as dstkey. Any
@@ -1348,6 +1395,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
+
+    public Long sunionstore(final String dstkey, final Set<String> keys) {
+        checkIsInMulti();
+        client.sunionstore(dstkey, keys);
+        return client.getIntegerReply();
+    }
     /**
      * Return the difference between the Set stored at key1 and all the Sets
      * key2, ..., keyN
@@ -1378,6 +1431,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
                 .build(client.getBinaryMultiBulkReply());
     }
 
+    public Set<String> sdiff(final Set<String> keys) {
+        checkIsInMulti();
+        client.sdiff(keys);
+        return BuilderFactory.STRING_SET
+                .build(client.getBinaryMultiBulkReply());
+    }
     /**
      * This command works exactly like {@link #sdiff(String...) SDIFF} but
      * instead of being returned the resulting set is stored in dstkey.
@@ -1387,6 +1446,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @return Status code reply
      */
     public Long sdiffstore(final String dstkey, final String... keys) {
+        checkIsInMulti();
+        client.sdiffstore(dstkey, keys);
+        return client.getIntegerReply();
+    }
+    
+	public Long sdiffstore(final String dstkey, final Set<String> keys) {
         checkIsInMulti();
         client.sdiffstore(dstkey, keys);
         return client.getIntegerReply();
@@ -1611,6 +1676,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getStatusCodeReply();
     }
 
+    public String watch(final Set<String> keys) {
+        client.watch(keys);
+        return client.getStatusCodeReply();
+    }
     /**
      * Sort a Set or a List.
      * <p>
@@ -1804,6 +1873,20 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return multiBulkReply;
     }
 
+    public List<String> blpop(final int timeout, final Set<String> keys) {
+        checkIsInMulti();
+        List<String> args = new ArrayList<String>();
+        for (String arg : keys) {
+            args.add(arg);
+        }
+        args.add(String.valueOf(timeout));
+
+        client.blpop(args.toArray(new String[args.size()]));
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
     /**
      * Sort a Set or a List accordingly to the specified parameters and store
      * the result at dstkey.
@@ -1934,6 +2017,21 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return multiBulkReply;
     }
 
+    public List<String> brpop(final int timeout, final Set<String> keys) {
+        checkIsInMulti();
+        List<String> args = new ArrayList<String>();
+        for (String arg : keys) {
+            args.add(arg);
+        }
+        args.add(String.valueOf(timeout));
+
+        client.brpop(args.toArray(new String[args.size()]));
+        client.setTimeoutInfinite();
+        List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+
+        return multiBulkReply;
+    }
     /**
      * Request for authentication in a password protected Redis server. A Redis
      * server can be instructed to require a password before to allow clients to
@@ -1963,6 +2061,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         jedisPubSub.proceed(client, channels);
         client.rollbackTimeout();
     }
+    
+	public void subscribe(JedisPubSub jedisPubSub, Set<String> channels) {
+        checkIsInMulti();
+        connect();
+        client.setTimeoutInfinite();
+        jedisPubSub.proceed(client, channels);
+        client.rollbackTimeout();
+    }
 
     public Long publish(String channel, String message) {
         checkIsInMulti();
@@ -1978,6 +2084,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.rollbackTimeout();
     }
 
+    public void psubscribe(JedisPubSub jedisPubSub, Set<String> patterns) {
+        checkIsInMulti();
+        connect();
+        client.setTimeoutInfinite();
+        jedisPubSub.proceedWithPatterns(client, patterns);
+        client.rollbackTimeout();
+    }
     public Long zcount(final String key, final double min, final double max) {
         checkIsInMulti();
         client.zcount(key, min, max);
@@ -2381,6 +2494,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         client.zunionstore(dstkey, sets);
         return client.getIntegerReply();
     }
+    
+	public Long zunionstore(final String dstkey, final Set<String> sets) {
+        checkIsInMulti();
+        client.zunionstore(dstkey, sets);
+        return client.getIntegerReply();
+    }
 
     /**
      * Creates a union or intersection of N sorted sets given by keys k1 through
@@ -2423,6 +2542,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
+        checkIsInMulti();
+        client.zunionstore(dstkey, params, sets);
+        return client.getIntegerReply();
+    }
+    
+	public Long zunionstore(final String dstkey, final ZParams params,
+            final Set<String> sets) {
         checkIsInMulti();
         client.zunionstore(dstkey, params, sets);
         return client.getIntegerReply();
@@ -2472,6 +2598,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
         return client.getIntegerReply();
     }
 
+    public Long zinterstore(final String dstkey, final Set<String> sets) {
+        checkIsInMulti();
+        client.zinterstore(dstkey, sets);
+        return client.getIntegerReply();
+    }
+
     /**
      * Creates a union or intersection of N sorted sets given by keys k1 through
      * kN, and stores it at dstkey. It is mandatory to provide the number of
@@ -2513,6 +2645,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      */
     public Long zinterstore(final String dstkey, final ZParams params,
             final String... sets) {
+        checkIsInMulti();
+        client.zinterstore(dstkey, params, sets);
+        return client.getIntegerReply();
+    }
+    
+	public Long zinterstore(final String dstkey, final ZParams params,
+            final Set<String> sets) {
         checkIsInMulti();
         client.zinterstore(dstkey, params, sets);
         return client.getIntegerReply();

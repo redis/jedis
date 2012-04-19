@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import static redis.clients.jedis.Protocol.toByteArray;
@@ -37,6 +38,15 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < keys.length; i++) {
             bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        del(bkeys);
+    }
+    
+	public void del(final Set<String> keys) {
+	    int i=0;
+        final byte[][] bkeys = new byte[keys.size()][];
+        for ( String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
         }
         del(bkeys);
     }
@@ -84,6 +94,15 @@ public class Client extends BinaryClient implements Commands {
         }
         mget(bkeys);
     }
+    
+	public void mget(final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
+        }
+        mget(bkeys);
+    }
 
     public void setnx(final String key, final String value) {
         setnx(SafeEncoder.encode(key), SafeEncoder.encode(value));
@@ -100,6 +119,15 @@ public class Client extends BinaryClient implements Commands {
         }
         mset(bkeysvalues);
     }
+    
+	public void mset(final Set<String> keysvalues) {
+		int i=0;
+        final byte[][] bkeysvalues = new byte[keysvalues.size()][];
+        for (String item : keysvalues) {
+            bkeysvalues[i++] = SafeEncoder.encode(item);
+        }
+        mset(bkeysvalues);
+    }
 
     public void msetnx(final String... keysvalues) {
         final byte[][] bkeysvalues = new byte[keysvalues.length][];
@@ -108,6 +136,15 @@ public class Client extends BinaryClient implements Commands {
         }
         msetnx(bkeysvalues);
     }
+
+    public void msetnx(final Set<String> keysvalues) {
+		int i=0;
+        final byte[][] bkeysvalues = new byte[keysvalues.size()][];
+        for (String item : keysvalues) {
+            bkeysvalues[i++] = SafeEncoder.encode(item);
+        }
+        msetnx(bkeysvalues);
+	}
 
     public void decrBy(final String key, final long integer) {
         decrBy(SafeEncoder.encode(key), integer);
@@ -151,7 +188,8 @@ public class Client extends BinaryClient implements Commands {
         final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash
                 .size());
         for (final Entry<String, String> entry : hash.entrySet()) {
-            bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder
+			if (entry.getValue() != null)
+				bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder
                     .encode(entry.getValue()));
         }
         hmset(SafeEncoder.encode(key), bhash);
@@ -165,6 +203,14 @@ public class Client extends BinaryClient implements Commands {
         hmget(SafeEncoder.encode(key), bfields);
     }
 
+    public void hmget(final String key, final Set<String> fields) {
+        final byte[][] bfields = new byte[fields.size()][];
+		int i=0;
+        for (String item : fields) {
+            bfields[i++] = SafeEncoder.encode(item);
+        }
+        hmget(SafeEncoder.encode(key), bfields);
+    }
     public void hincrBy(final String key, final String field, final long value) {
         hincrBy(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
     }
@@ -284,6 +330,15 @@ public class Client extends BinaryClient implements Commands {
         }
         sinter(bkeys);
     }
+    
+	public void sinter(final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
+        }
+        sinter(bkeys);
+    }
 
     public void sinterstore(final String dstkey, final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
@@ -291,6 +346,24 @@ public class Client extends BinaryClient implements Commands {
             bkeys[i] = SafeEncoder.encode(keys[i]);
         }
         sinterstore(SafeEncoder.encode(dstkey), bkeys);
+    }
+    
+	public void sinterstore(final String dstkey, final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
+        }
+        sinterstore(SafeEncoder.encode(dstkey), bkeys);
+    }
+
+    public void sunion(final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
+        }
+        sunion(bkeys);
     }
 
     public void sunion(final String... keys) {
@@ -308,6 +381,15 @@ public class Client extends BinaryClient implements Commands {
         }
         sunionstore(SafeEncoder.encode(dstkey), bkeys);
     }
+    
+	public void sunionstore(final String dstkey, final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
+        }
+        sunionstore(SafeEncoder.encode(dstkey), bkeys);
+    }
 
     public void sdiff(final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
@@ -317,10 +399,27 @@ public class Client extends BinaryClient implements Commands {
         sdiff(bkeys);
     }
 
+    public void sdiff(final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys) {
+            bkeys[i++] = SafeEncoder.encode(item);
+        }
+        sdiff(bkeys);
+    }
     public void sdiffstore(final String dstkey, final String... keys) {
         final byte[][] bkeys = new byte[keys.length][];
         for (int i = 0; i < bkeys.length; i++) {
             bkeys[i] = SafeEncoder.encode(keys[i]);
+        }
+        sdiffstore(SafeEncoder.encode(dstkey), bkeys);
+    }
+    
+	public void sdiffstore(final String dstkey, final Set<String> keys) {
+        final byte[][] bkeys = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys ) {
+            bkeys[i++] = SafeEncoder.encode(item);
         }
         sdiffstore(SafeEncoder.encode(dstkey), bkeys);
     }
@@ -380,6 +479,15 @@ public class Client extends BinaryClient implements Commands {
         final byte[][] bargs = new byte[keys.length][];
         for (int i = 0; i < bargs.length; i++) {
             bargs[i] = SafeEncoder.encode(keys[i]);
+        }
+        watch(bargs);
+    }
+    
+	public void watch(final Set<String> keys) {
+        final byte[][] bargs = new byte[keys.size()][];
+		int i=0;
+        for (String item : keys ) {
+            bargs[i++] = SafeEncoder.encode(item);
         }
         watch(bargs);
     }
@@ -493,11 +601,30 @@ public class Client extends BinaryClient implements Commands {
         zunionstore(SafeEncoder.encode(dstkey), bsets);
     }
 
+    public void zunionstore(final String dstkey, final Set<String> sets) {
+
+        final byte[][] bsets = new byte[sets.size()][];
+		int i=0;
+		for ( String item : sets) {
+            bsets[i++] = SafeEncoder.encode(item);
+        }
+        zunionstore(SafeEncoder.encode(dstkey), bsets);
+    }
     public void zunionstore(final String dstkey, final ZParams params,
             final String... sets) {
         final byte[][] bsets = new byte[sets.length][];
         for (int i = 0; i < bsets.length; i++) {
             bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zunionstore(SafeEncoder.encode(dstkey), params, bsets);
+    }
+    
+	public void zunionstore(final String dstkey, final ZParams params,
+            final Set<String> sets) {
+        final byte[][] bsets = new byte[sets.size()][];
+		int i=0;
+        for (String item : sets) {
+            bsets[i++] = SafeEncoder.encode(item);
         }
         zunionstore(SafeEncoder.encode(dstkey), params, bsets);
     }
@@ -509,12 +636,31 @@ public class Client extends BinaryClient implements Commands {
         }
         zinterstore(SafeEncoder.encode(dstkey), bsets);
     }
+    
+	public void zinterstore(final String dstkey, final Set<String> sets) {
+        final byte[][] bsets = new byte[sets.size()][];
+		int i=0;
+        for (String item : sets)
+            bsets[i++] = SafeEncoder.encode(item);
+        
+        zinterstore(SafeEncoder.encode(dstkey), bsets);
+    }
 
     public void zinterstore(final String dstkey, final ZParams params,
             final String... sets) {
         final byte[][] bsets = new byte[sets.length][];
-        for (int i = 0; i < bsets.length; i++) {
+        for (int i=0; i<bsets.length;i++) {
             bsets[i] = SafeEncoder.encode(sets[i]);
+        }
+        zinterstore(SafeEncoder.encode(dstkey), params, bsets);
+    }
+
+    public void zinterstore(final String dstkey, final ZParams params,
+            final Set<String> sets) {
+        final byte[][] bsets = new byte[sets.size()][];
+		int i=0;
+        for (String item : sets) {
+            bsets[i++] = SafeEncoder.encode(item);
         }
         zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }
@@ -577,6 +723,15 @@ public class Client extends BinaryClient implements Commands {
         }
         unsubscribe(cs);
     }
+    
+	public void unsubscribe(final Set<String> channels) {
+        final byte[][] cs = new byte[channels.size()][];
+		int i=0;
+        for (String item : channels) {
+            cs[i++] = SafeEncoder.encode(item);
+        }
+        unsubscribe(cs);
+    }
 
     public void psubscribe(final String... patterns) {
         final byte[][] ps = new byte[patterns.length][];
@@ -585,11 +740,29 @@ public class Client extends BinaryClient implements Commands {
         }
         psubscribe(ps);
     }
+    
+	public void psubscribe(final Set<String> patterns) {
+        final byte[][] ps = new byte[patterns.size()][];
+		int i=0;
+        for (String item : patterns) {
+            ps[i++] = SafeEncoder.encode(item);
+        }
+        punsubscribe(ps);
+    }
 
     public void punsubscribe(final String... patterns) {
         final byte[][] ps = new byte[patterns.length][];
         for (int i = 0; i < ps.length; i++) {
             ps[i] = SafeEncoder.encode(patterns[i]);
+        }
+        punsubscribe(ps);
+    }
+    
+	public void punsubscribe(final Set<String> patterns) {
+        final byte[][] ps = new byte[patterns.size()][];
+		int i=0;
+        for (String item : patterns) {
+            ps[i++] = SafeEncoder.encode(item);
         }
         punsubscribe(ps);
     }
@@ -601,6 +774,15 @@ public class Client extends BinaryClient implements Commands {
         }
         subscribe(cs);
     }
+    
+	public void subscribe(final Set<String> channels) {
+        final byte[][] cs = new byte[channels.size()][];
+		int i=0;
+        for (String item : channels) {
+            cs[i++] = SafeEncoder.encode(item);
+        }
+        subscribe(cs);
+	}
 
     public void configSet(String parameter, String value) {
         configSet(SafeEncoder.encode(parameter), SafeEncoder.encode(value));

@@ -7,6 +7,8 @@ import static redis.clients.jedis.Protocol.Keyword.NO;
 import static redis.clients.jedis.Protocol.Keyword.ONE;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import static redis.clients.jedis.Protocol.Keyword.RESET;
+import static redis.clients.jedis.Protocol.Keyword.LEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -718,4 +720,20 @@ public class BinaryClient extends Connection {
         db = 0;
         super.disconnect();
     }
+
+	public void slowlogGet() {
+		sendCommand(SLOWLOG, Keyword.GET.raw);
+	}
+	
+	public void slowlogGet(long entries) {
+		sendCommand(SLOWLOG, Keyword.GET.raw, toByteArray(entries));
+	}
+	
+	public void slowlogReset() {
+		sendCommand(SLOWLOG, RESET.raw);
+	}
+	
+	public void slowlogLen() {
+		sendCommand(SLOWLOG, LEN.raw);
+	}
 }

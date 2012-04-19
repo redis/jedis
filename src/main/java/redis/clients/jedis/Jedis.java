@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
     public Jedis(final String host) {
@@ -2688,5 +2689,15 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public String configSet(final String parameter, final String value) {
         client.configSet(parameter, value);
         return client.getStatusCodeReply();
-    }    
+    }
+    
+    public List<Slowlog> slowlogGet() {
+		client.slowlogGet();
+		return Slowlog.from(client.getObjectMultiBulkReply());
+	}
+	
+	public List<Slowlog> slowlogGet(long entries) {
+		client.slowlogGet(entries);
+		return Slowlog.from(client.getObjectMultiBulkReply());
+	}
 }

@@ -108,7 +108,7 @@ public interface JedisCommands {
 
     Long zadd(String key, double score, String member);
 
-    Set<String> zrange(String key, int start, int end);
+    Set<String> zrange(String key, long start, long end);
 
     Long zrem(String key, String member);
 
@@ -118,11 +118,11 @@ public interface JedisCommands {
 
     Long zrevrank(String key, String member);
 
-    Set<String> zrevrange(String key, int start, int end);
+    Set<String> zrevrange(String key, long start, long end);
 
-    Set<Tuple> zrangeWithScores(String key, int start, int end);
+    Set<Tuple> zrangeWithScores(String key, long start, long end);
 
-    Set<Tuple> zrevrangeWithScores(String key, int start, int end);
+    Set<Tuple> zrevrangeWithScores(String key, long start, long end);
 
     Long zcard(String key);
 
@@ -154,7 +154,7 @@ public interface JedisCommands {
     Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min,
             int offset, int count);
 
-    Long zremrangeByRank(String key, int start, int end);
+    Long zremrangeByRank(String key, long start, long end);
 
     Long zremrangeByScore(String key, double start, double end);
 

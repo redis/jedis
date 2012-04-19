@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.util.Slowlog;
-
 /**
  * Common interface for sharded and non-sharded Jedis
  */
@@ -162,5 +160,4 @@ public interface JedisCommands {
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
             String value);
-	
 }

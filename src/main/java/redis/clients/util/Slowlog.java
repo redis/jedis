@@ -12,9 +12,9 @@ public class Slowlog {
 	@SuppressWarnings("unchecked")
 	public static List<Slowlog> from(List<Object> nestedMultiBulkReply){
 		List<Slowlog> logs = new ArrayList<Slowlog>(nestedMultiBulkReply.size());
-		for(Object obj:nestedMultiBulkReply){
-			List<Object> list = (List<Object>)obj;
-			logs.add(new Slowlog(list));
+		for(Object obj : nestedMultiBulkReply){
+			List<Object> properties = (List<Object>)obj;
+			logs.add(new Slowlog(properties));
 		}
 		
 		return logs;

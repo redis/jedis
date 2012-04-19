@@ -7,3 +7,4 @@
 .gradle/
 target/
 build/
+bin/

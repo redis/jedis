@@ -7,7 +7,8 @@ import java.util.*;
 public class BuilderFactory {
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
         public Double build(Object data) {
-            return Double.valueOf(STRING.build(data));
+            String asString = STRING.build(data);
+            return asString == null ? null : Double.valueOf(asString);
         }
 
         public String toString() {

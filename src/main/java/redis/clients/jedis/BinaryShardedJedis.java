@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import redis.clients.util.JedisDynamicShardsProvider;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         implements BinaryJedisCommands {
@@ -18,17 +19,35 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         super(shards);
     }
 
+    public BinaryShardedJedis(final JedisDynamicShardsProvider provider) {
+        super(provider);
+    }
+
     public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo) {
         super(shards, algo);
+    }
+
+    public BinaryShardedJedis(final JedisDynamicShardsProvider provider, final Hashing algo) {
+        super(provider, algo);
     }
 
     public BinaryShardedJedis(List<JedisShardInfo> shards, Pattern keyTagPattern) {
         super(shards, keyTagPattern);
     }
 
+    public BinaryShardedJedis(final JedisDynamicShardsProvider provider, final Pattern keyTagPattern) {
+        super(provider, keyTagPattern);
+    }
+
     public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo,
             Pattern keyTagPattern) {
         super(shards, algo, keyTagPattern);
+    }
+
+    public BinaryShardedJedis( 	final JedisDynamicShardsProvider provider, //
+    							final Hashing algo, //
+    							final Pattern keyTagPattern) {
+        super(provider, algo, keyTagPattern);
     }
 
     public void disconnect() throws IOException {
@@ -154,6 +173,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     public Boolean hexists(byte[] key, byte[] field) {
         Jedis j = getShard(key);
         return j.hexists(key, field);
+    }
+
+    public Long del(byte[] key) {
+        Jedis j = getShard(key);
+        return j.del(key);
     }
 
     public Long hdel(byte[] key, byte[] field) {

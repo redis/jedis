@@ -672,14 +672,14 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(String key) {
+    public Response<Long> sort(String key) {
         client.sort(key);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(byte[] key) {
+    public Response<Long> sort(byte[] key) {
         client.sort(key);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
     public Response<List<String>> sort(String key,

@@ -7,6 +7,8 @@ import static redis.clients.jedis.Protocol.Keyword.NO;
 import static redis.clients.jedis.Protocol.Keyword.ONE;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import static redis.clients.jedis.Protocol.Keyword.RESET;
+import static redis.clients.jedis.Protocol.Keyword.LEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +21,12 @@ import redis.clients.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
     public enum LIST_POSITION {
-        BEFORE, AFTER;
-        public final byte[] raw;
+	BEFORE, AFTER;
+	public final byte[] raw;
 
-        private LIST_POSITION() {
-            raw = SafeEncoder.encode(name());
-        }
+	private LIST_POSITION() {
+	    raw = SafeEncoder.encode(name());
+	}
     }
 
     private boolean isInMulti;
@@ -34,736 +36,753 @@ public class BinaryClient extends Connection {
     private long db;
 
     public boolean isInMulti() {
-        return isInMulti;
+	return isInMulti;
     }
 
     public BinaryClient(final String host) {
-        super(host);
+	super(host);
     }
 
     public BinaryClient(final String host, final int port) {
-        super(host, port);
+	super(host, port);
     }
 
     public void setPassword(final String password) {
-        this.password = password;
+	this.password = password;
     }
 
     @Override
     public void connect() {
-        if (!isConnected()) {
-            super.connect();
-            if (password != null) {
-                auth(password);
-                getStatusCodeReply();
-            }
-            if (db > 0) {
-                select(Long.valueOf(db).intValue());
-                getStatusCodeReply();
-            }
-        }
+	if (!isConnected()) {
+	    super.connect();
+	    if (password != null) {
+		auth(password);
+		getStatusCodeReply();
+	    }
+	    if (db > 0) {
+		select(Long.valueOf(db).intValue());
+		getStatusCodeReply();
+	    }
+	}
     }
 
     public void ping() {
-        sendCommand(PING);
+	sendCommand(PING);
     }
 
     public void set(final byte[] key, final byte[] value) {
-        sendCommand(Command.SET, key, value);
+	sendCommand(Command.SET, key, value);
     }
 
     public void get(final byte[] key) {
-        sendCommand(Command.GET, key);
+	sendCommand(Command.GET, key);
     }
 
     public void quit() {
-        db = 0;
-        sendCommand(QUIT);
+	db = 0;
+	sendCommand(QUIT);
     }
 
     public void exists(final byte[] key) {
-        sendCommand(EXISTS, key);
+	sendCommand(EXISTS, key);
     }
 
     public void del(final byte[]... keys) {
-        sendCommand(DEL, keys);
+	sendCommand(DEL, keys);
     }
 
     public void type(final byte[] key) {
-        sendCommand(TYPE, key);
+	sendCommand(TYPE, key);
     }
 
     public void flushDB() {
-        sendCommand(FLUSHDB);
+	sendCommand(FLUSHDB);
     }
 
     public void keys(final byte[] pattern) {
-        sendCommand(KEYS, pattern);
+	sendCommand(KEYS, pattern);
     }
 
     public void randomKey() {
-        sendCommand(RANDOMKEY);
+	sendCommand(RANDOMKEY);
     }
 
     public void rename(final byte[] oldkey, final byte[] newkey) {
-        sendCommand(RENAME, oldkey, newkey);
+	sendCommand(RENAME, oldkey, newkey);
     }
 
     public void renamenx(final byte[] oldkey, final byte[] newkey) {
-        sendCommand(RENAMENX, oldkey, newkey);
+	sendCommand(RENAMENX, oldkey, newkey);
     }
 
     public void dbSize() {
-        sendCommand(DBSIZE);
+	sendCommand(DBSIZE);
     }
 
     public void expire(final byte[] key, final int seconds) {
-        sendCommand(EXPIRE, key, toByteArray(seconds));
+	sendCommand(EXPIRE, key, toByteArray(seconds));
     }
 
     public void expireAt(final byte[] key, final long unixTime) {
-        sendCommand(EXPIREAT, key, toByteArray(unixTime));
+	sendCommand(EXPIREAT, key, toByteArray(unixTime));
     }
 
     public void ttl(final byte[] key) {
-        sendCommand(TTL, key);
+	sendCommand(TTL, key);
     }
 
     public void select(final int index) {
-        db = index;
-        sendCommand(SELECT, toByteArray(index));
+	db = index;
+	sendCommand(SELECT, toByteArray(index));
     }
 
     public void move(final byte[] key, final int dbIndex) {
-        sendCommand(MOVE, key, toByteArray(dbIndex));
+	sendCommand(MOVE, key, toByteArray(dbIndex));
     }
 
     public void flushAll() {
-        sendCommand(FLUSHALL);
+	sendCommand(FLUSHALL);
     }
 
     public void getSet(final byte[] key, final byte[] value) {
-        sendCommand(GETSET, key, value);
+	sendCommand(GETSET, key, value);
     }
 
     public void mget(final byte[]... keys) {
-        sendCommand(MGET, keys);
+	sendCommand(MGET, keys);
     }
 
     public void setnx(final byte[] key, final byte[] value) {
-        sendCommand(SETNX, key, value);
+	sendCommand(SETNX, key, value);
     }
 
     public void setex(final byte[] key, final int seconds, final byte[] value) {
-        sendCommand(SETEX, key, toByteArray(seconds), value);
+	sendCommand(SETEX, key, toByteArray(seconds), value);
     }
 
     public void mset(final byte[]... keysvalues) {
-        sendCommand(MSET, keysvalues);
+	sendCommand(MSET, keysvalues);
     }
 
     public void msetnx(final byte[]... keysvalues) {
-        sendCommand(MSETNX, keysvalues);
+	sendCommand(MSETNX, keysvalues);
     }
 
     public void decrBy(final byte[] key, final long integer) {
-        sendCommand(DECRBY, key, toByteArray(integer));
+	sendCommand(DECRBY, key, toByteArray(integer));
     }
 
     public void decr(final byte[] key) {
-        sendCommand(DECR, key);
+	sendCommand(DECR, key);
     }
 
     public void incrBy(final byte[] key, final long integer) {
-        sendCommand(INCRBY, key, toByteArray(integer));
+	sendCommand(INCRBY, key, toByteArray(integer));
     }
 
     public void incr(final byte[] key) {
-        sendCommand(INCR, key);
+	sendCommand(INCR, key);
     }
 
     public void append(final byte[] key, final byte[] value) {
-        sendCommand(APPEND, key, value);
+	sendCommand(APPEND, key, value);
     }
 
     public void substr(final byte[] key, final int start, final int end) {
-        sendCommand(SUBSTR, key, toByteArray(start), toByteArray(end));
+	sendCommand(SUBSTR, key, toByteArray(start), toByteArray(end));
     }
 
     public void hset(final byte[] key, final byte[] field, final byte[] value) {
-        sendCommand(HSET, key, field, value);
+	sendCommand(HSET, key, field, value);
     }
 
     public void hget(final byte[] key, final byte[] field) {
-        sendCommand(HGET, key, field);
+	sendCommand(HGET, key, field);
     }
 
     public void hsetnx(final byte[] key, final byte[] field, final byte[] value) {
-        sendCommand(HSETNX, key, field, value);
+	sendCommand(HSETNX, key, field, value);
     }
 
     public void hmset(final byte[] key, final Map<byte[], byte[]> hash) {
-        final List<byte[]> params = new ArrayList<byte[]>();
-        params.add(key);
+	final List<byte[]> params = new ArrayList<byte[]>();
+	params.add(key);
 
-        for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
-            params.add(entry.getKey());
-            params.add(entry.getValue());
-        }
-        sendCommand(HMSET, params.toArray(new byte[params.size()][]));
+	for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+	    params.add(entry.getKey());
+	    params.add(entry.getValue());
+	}
+	sendCommand(HMSET, params.toArray(new byte[params.size()][]));
     }
 
     public void hmget(final byte[] key, final byte[]... fields) {
-        final byte[][] params = new byte[fields.length + 1][];
-        params[0] = key;
-        System.arraycopy(fields, 0, params, 1, fields.length);
-        sendCommand(HMGET, params);
+	final byte[][] params = new byte[fields.length + 1][];
+	params[0] = key;
+	System.arraycopy(fields, 0, params, 1, fields.length);
+	sendCommand(HMGET, params);
     }
 
     public void hincrBy(final byte[] key, final byte[] field, final long value) {
-        sendCommand(HINCRBY, key, field, toByteArray(value));
+	sendCommand(HINCRBY, key, field, toByteArray(value));
     }
 
     public void hexists(final byte[] key, final byte[] field) {
-        sendCommand(HEXISTS, key, field);
+	sendCommand(HEXISTS, key, field);
     }
 
     public void hdel(final byte[] key, final byte[] field) {
-        sendCommand(HDEL, key, field);
+	sendCommand(HDEL, key, field);
     }
 
     public void hlen(final byte[] key) {
-        sendCommand(HLEN, key);
+	sendCommand(HLEN, key);
     }
 
     public void hkeys(final byte[] key) {
-        sendCommand(HKEYS, key);
+	sendCommand(HKEYS, key);
     }
 
     public void hvals(final byte[] key) {
-        sendCommand(HVALS, key);
+	sendCommand(HVALS, key);
     }
 
     public void hgetAll(final byte[] key) {
-        sendCommand(HGETALL, key);
+	sendCommand(HGETALL, key);
     }
 
     public void rpush(final byte[] key, final byte[]... vals) {
-        byte[][] args = new byte[vals.length+1][];
-        args[0] = key;
-        System.arraycopy(vals, 0, args, 1, vals.length);
-        sendCommand(RPUSH, args);
+	byte[][] args = new byte[vals.length + 1][];
+	args[0] = key;
+	System.arraycopy(vals, 0, args, 1, vals.length);
+	sendCommand(RPUSH, args);
     }
 
     public void lpush(final byte[] key, final byte[]... vals) {
-        byte [][] args = new byte[vals.length+1][];
-        args[0] = key;
-        System.arraycopy(vals, 0, args, 1, vals.length);
-        sendCommand(LPUSH, args);
+	byte[][] args = new byte[vals.length + 1][];
+	args[0] = key;
+	System.arraycopy(vals, 0, args, 1, vals.length);
+	sendCommand(LPUSH, args);
     }
 
     public void llen(final byte[] key) {
-        sendCommand(LLEN, key);
+	sendCommand(LLEN, key);
     }
 
     public void lrange(final byte[] key, final long start, final long end) {
-        sendCommand(LRANGE, key, toByteArray(start), toByteArray(end));
+	sendCommand(LRANGE, key, toByteArray(start), toByteArray(end));
     }
 
     public void ltrim(final byte[] key, final long start, final long end) {
-        sendCommand(LTRIM, key, toByteArray(start), toByteArray(end));
+	sendCommand(LTRIM, key, toByteArray(start), toByteArray(end));
     }
 
     public void lindex(final byte[] key, final long index) {
-        sendCommand(LINDEX, key, toByteArray(index));
+	sendCommand(LINDEX, key, toByteArray(index));
     }
 
     public void lset(final byte[] key, final long index, final byte[] value) {
-        sendCommand(LSET, key, toByteArray(index), value);
+	sendCommand(LSET, key, toByteArray(index), value);
     }
 
     public void lrem(final byte[] key, long count, final byte[] value) {
-        sendCommand(LREM, key, toByteArray(count), value);
+	sendCommand(LREM, key, toByteArray(count), value);
     }
 
     public void lpop(final byte[] key) {
-        sendCommand(LPOP, key);
+	sendCommand(LPOP, key);
     }
 
     public void rpop(final byte[] key) {
-        sendCommand(RPOP, key);
+	sendCommand(RPOP, key);
     }
 
     public void rpoplpush(final byte[] srckey, final byte[] dstkey) {
-        sendCommand(RPOPLPUSH, srckey, dstkey);
+	sendCommand(RPOPLPUSH, srckey, dstkey);
     }
 
     public void sadd(final byte[] key, final byte[] member) {
-        sendCommand(SADD, key, member);
+	sendCommand(SADD, key, member);
     }
 
     public void smembers(final byte[] key) {
-        sendCommand(SMEMBERS, key);
+	sendCommand(SMEMBERS, key);
     }
 
     public void srem(final byte[] key, final byte[] member) {
-        sendCommand(SREM, key, member);
+	sendCommand(SREM, key, member);
     }
 
     public void spop(final byte[] key) {
-        sendCommand(SPOP, key);
+	sendCommand(SPOP, key);
     }
 
     public void smove(final byte[] srckey, final byte[] dstkey,
-            final byte[] member) {
-        sendCommand(SMOVE, srckey, dstkey, member);
+	    final byte[] member) {
+	sendCommand(SMOVE, srckey, dstkey, member);
     }
 
     public void scard(final byte[] key) {
-        sendCommand(SCARD, key);
+	sendCommand(SCARD, key);
     }
 
     public void sismember(final byte[] key, final byte[] member) {
-        sendCommand(SISMEMBER, key, member);
+	sendCommand(SISMEMBER, key, member);
     }
 
     public void sinter(final byte[]... keys) {
-        sendCommand(SINTER, keys);
+	sendCommand(SINTER, keys);
     }
 
     public void sinterstore(final byte[] dstkey, final byte[]... keys) {
-        final byte[][] params = new byte[keys.length + 1][];
-        params[0] = dstkey;
-        System.arraycopy(keys, 0, params, 1, keys.length);
-        sendCommand(SINTERSTORE, params);
+	final byte[][] params = new byte[keys.length + 1][];
+	params[0] = dstkey;
+	System.arraycopy(keys, 0, params, 1, keys.length);
+	sendCommand(SINTERSTORE, params);
     }
 
     public void sunion(final byte[]... keys) {
-        sendCommand(SUNION, keys);
+	sendCommand(SUNION, keys);
     }
 
     public void sunionstore(final byte[] dstkey, final byte[]... keys) {
-        byte[][] params = new byte[keys.length + 1][];
-        params[0] = dstkey;
-        System.arraycopy(keys, 0, params, 1, keys.length);
-        sendCommand(SUNIONSTORE, params);
+	byte[][] params = new byte[keys.length + 1][];
+	params[0] = dstkey;
+	System.arraycopy(keys, 0, params, 1, keys.length);
+	sendCommand(SUNIONSTORE, params);
     }
 
     public void sdiff(final byte[]... keys) {
-        sendCommand(SDIFF, keys);
+	sendCommand(SDIFF, keys);
     }
 
     public void sdiffstore(final byte[] dstkey, final byte[]... keys) {
-        byte[][] params = new byte[keys.length + 1][];
-        params[0] = dstkey;
-        System.arraycopy(keys, 0, params, 1, keys.length);
-        sendCommand(SDIFFSTORE, params);
+	byte[][] params = new byte[keys.length + 1][];
+	params[0] = dstkey;
+	System.arraycopy(keys, 0, params, 1, keys.length);
+	sendCommand(SDIFFSTORE, params);
     }
 
     public void srandmember(final byte[] key) {
-        sendCommand(SRANDMEMBER, key);
+	sendCommand(SRANDMEMBER, key);
     }
 
     public void zadd(final byte[] key, final double score, final byte[] member) {
-        sendCommand(ZADD, key, toByteArray(score), member);
+	sendCommand(ZADD, key, toByteArray(score), member);
     }
 
     public void zrange(final byte[] key, final int start, final int end) {
-        sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));
+	sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));
     }
 
     public void zrem(final byte[] key, final byte[] member) {
-        sendCommand(ZREM, key, member);
+	sendCommand(ZREM, key, member);
     }
 
     public void zincrby(final byte[] key, final double score,
-            final byte[] member) {
-        sendCommand(ZINCRBY, key, toByteArray(score), member);
+	    final byte[] member) {
+	sendCommand(ZINCRBY, key, toByteArray(score), member);
     }
 
     public void zrank(final byte[] key, final byte[] member) {
-        sendCommand(ZRANK, key, member);
+	sendCommand(ZRANK, key, member);
     }
 
     public void zrevrank(final byte[] key, final byte[] member) {
-        sendCommand(ZREVRANK, key, member);
+	sendCommand(ZREVRANK, key, member);
     }
 
     public void zrevrange(final byte[] key, final int start, final int end) {
-        sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
+	sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
     }
 
     public void zrangeWithScores(final byte[] key, final int start,
-            final int end) {
-        sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end),
-                WITHSCORES.raw);
+	    final int end) {
+	sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end),
+		WITHSCORES.raw);
     }
 
     public void zrevrangeWithScores(final byte[] key, final int start,
-            final int end) {
-        sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end),
-                WITHSCORES.raw);
+	    final int end) {
+	sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end),
+		WITHSCORES.raw);
     }
 
     public void zcard(final byte[] key) {
-        sendCommand(ZCARD, key);
+	sendCommand(ZCARD, key);
     }
 
     public void zscore(final byte[] key, final byte[] member) {
-        sendCommand(ZSCORE, key, member);
+	sendCommand(ZSCORE, key, member);
     }
 
     public void multi() {
-        sendCommand(MULTI);
-        isInMulti = true;
+	sendCommand(MULTI);
+	isInMulti = true;
     }
 
     public void discard() {
-        sendCommand(DISCARD);
-        isInMulti = false;
+	sendCommand(DISCARD);
+	isInMulti = false;
     }
 
     public void exec() {
-        sendCommand(EXEC);
-        isInMulti = false;
+	sendCommand(EXEC);
+	isInMulti = false;
     }
 
     public void watch(final byte[]... keys) {
-        sendCommand(WATCH, keys);
+	sendCommand(WATCH, keys);
     }
 
     public void unwatch() {
-        sendCommand(UNWATCH);
+	sendCommand(UNWATCH);
     }
 
     public void sort(final byte[] key) {
-        sendCommand(SORT, key);
+	sendCommand(SORT, key);
     }
 
     public void sort(final byte[] key, final SortingParams sortingParameters) {
-        final List<byte[]> args = new ArrayList<byte[]>();
-        args.add(key);
-        args.addAll(sortingParameters.getParams());
-        sendCommand(SORT, args.toArray(new byte[args.size()][]));
+	final List<byte[]> args = new ArrayList<byte[]>();
+	args.add(key);
+	args.addAll(sortingParameters.getParams());
+	sendCommand(SORT, args.toArray(new byte[args.size()][]));
     }
 
     public void blpop(final byte[][] args) {
-        sendCommand(BLPOP, args);
+	sendCommand(BLPOP, args);
     }
 
     public void sort(final byte[] key, final SortingParams sortingParameters,
-            final byte[] dstkey) {
-        final List<byte[]> args = new ArrayList<byte[]>();
-        args.add(key);
-        args.addAll(sortingParameters.getParams());
-        args.add(STORE.raw);
-        args.add(dstkey);
-        sendCommand(SORT, args.toArray(new byte[args.size()][]));
+	    final byte[] dstkey) {
+	final List<byte[]> args = new ArrayList<byte[]>();
+	args.add(key);
+	args.addAll(sortingParameters.getParams());
+	args.add(STORE.raw);
+	args.add(dstkey);
+	sendCommand(SORT, args.toArray(new byte[args.size()][]));
     }
 
     public void sort(final byte[] key, final byte[] dstkey) {
-        sendCommand(SORT, key, STORE.raw, dstkey);
+	sendCommand(SORT, key, STORE.raw, dstkey);
     }
 
     public void brpop(final byte[][] args) {
-        sendCommand(BRPOP, args);
+	sendCommand(BRPOP, args);
     }
 
     public void auth(final String password) {
-        setPassword(password);
-        sendCommand(AUTH, password);
+	setPassword(password);
+	sendCommand(AUTH, password);
     }
 
     public void subscribe(final byte[]... channels) {
-        sendCommand(SUBSCRIBE, channels);
+	sendCommand(SUBSCRIBE, channels);
     }
 
     public void publish(final byte[] channel, final byte[] message) {
-        sendCommand(PUBLISH, channel, message);
+	sendCommand(PUBLISH, channel, message);
     }
 
     public void unsubscribe() {
-        sendCommand(UNSUBSCRIBE);
+	sendCommand(UNSUBSCRIBE);
     }
 
     public void unsubscribe(final byte[]... channels) {
-        sendCommand(UNSUBSCRIBE, channels);
+	sendCommand(UNSUBSCRIBE, channels);
     }
 
     public void psubscribe(final byte[]... patterns) {
-        sendCommand(PSUBSCRIBE, patterns);
+	sendCommand(PSUBSCRIBE, patterns);
     }
 
     public void punsubscribe() {
-        sendCommand(PUNSUBSCRIBE);
+	sendCommand(PUNSUBSCRIBE);
     }
 
     public void punsubscribe(final byte[]... patterns) {
-        sendCommand(PUNSUBSCRIBE, patterns);
+	sendCommand(PUNSUBSCRIBE, patterns);
     }
 
     public void zcount(final byte[] key, final double min, final double max) {
-        sendCommand(ZCOUNT, key, toByteArray(min), toByteArray(max));
+	sendCommand(ZCOUNT, key, toByteArray(min), toByteArray(max));
     }
 
     public void zrangeByScore(final byte[] key, final double min,
-            final double max) {
-        sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max));
+	    final double max) {
+	sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max));
     }
 
     public void zrevrangeByScore(final byte[] key, final double max,
-            final double min) {
-        sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min));
+	    final double min) {
+	sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min));
     }
 
     public void zrangeByScore(final byte[] key, final byte[] min,
-            final byte[] max) {
-        sendCommand(ZRANGEBYSCORE, key, min, max);
+	    final byte[] max) {
+	sendCommand(ZRANGEBYSCORE, key, min, max);
     }
 
     public void zrevrangeByScore(final byte[] key, final byte[] max,
-            final byte[] min) {
-        sendCommand(ZREVRANGEBYSCORE, key, max, min);
+	    final byte[] min) {
+	sendCommand(ZREVRANGEBYSCORE, key, max, min);
     }
 
     public void zrangeByScore(final byte[] key, final double min,
-            final double max, final int offset, int count) {
-        sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
-                LIMIT.raw, toByteArray(offset), toByteArray(count));
+	    final double max, final int offset, int count) {
+	sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
+		LIMIT.raw, toByteArray(offset), toByteArray(count));
     }
 
     public void zrevrangeByScore(final byte[] key, final double max,
-            final double min, final int offset, int count) {
-        sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
-                LIMIT.raw, toByteArray(offset), toByteArray(count));
+	    final double min, final int offset, int count) {
+	sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
+		LIMIT.raw, toByteArray(offset), toByteArray(count));
     }
 
     public void zrangeByScoreWithScores(final byte[] key, final double min,
-            final double max) {
-        sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
-                WITHSCORES.raw);
+	    final double max) {
+	sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
+		WITHSCORES.raw);
     }
 
     public void zrevrangeByScoreWithScores(final byte[] key, final double max,
-            final double min) {
-        sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
-                WITHSCORES.raw);
+	    final double min) {
+	sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
+		WITHSCORES.raw);
     }
 
     public void zrangeByScoreWithScores(final byte[] key, final double min,
-            final double max, final int offset, final int count) {
-        sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
-                LIMIT.raw, toByteArray(offset), toByteArray(count),
-                WITHSCORES.raw);
+	    final double max, final int offset, final int count) {
+	sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max),
+		LIMIT.raw, toByteArray(offset), toByteArray(count),
+		WITHSCORES.raw);
     }
 
     public void zrevrangeByScoreWithScores(final byte[] key, final double max,
-            final double min, final int offset, final int count) {
-        sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
-                LIMIT.raw, toByteArray(offset), toByteArray(count),
-                WITHSCORES.raw);
+	    final double min, final int offset, final int count) {
+	sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min),
+		LIMIT.raw, toByteArray(offset), toByteArray(count),
+		WITHSCORES.raw);
     }
 
     public void zremrangeByRank(final byte[] key, final int start, final int end) {
-        sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
+	sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
     }
 
     public void zremrangeByScore(final byte[] key, final double start,
-            final double end) {
-        sendCommand(ZREMRANGEBYSCORE, key, toByteArray(start), toByteArray(end));
+	    final double end) {
+	sendCommand(ZREMRANGEBYSCORE, key, toByteArray(start), toByteArray(end));
     }
 
     public void zunionstore(final byte[] dstkey, final byte[]... sets) {
-        final byte[][] params = new byte[sets.length + 2][];
-        params[0] = dstkey;
-        params[1] = toByteArray(sets.length);
-        System.arraycopy(sets, 0, params, 2, sets.length);
-        sendCommand(ZUNIONSTORE, params);
+	final byte[][] params = new byte[sets.length + 2][];
+	params[0] = dstkey;
+	params[1] = toByteArray(sets.length);
+	System.arraycopy(sets, 0, params, 2, sets.length);
+	sendCommand(ZUNIONSTORE, params);
     }
 
     public void zunionstore(final byte[] dstkey, final ZParams params,
-            final byte[]... sets) {
-        final List<byte[]> args = new ArrayList<byte[]>();
-        args.add(dstkey);
-        args.add(Protocol.toByteArray(sets.length));
-        for (final byte[] set : sets) {
-            args.add(set);
-        }
-        args.addAll(params.getParams());
-        sendCommand(ZUNIONSTORE, args.toArray(new byte[args.size()][]));
+	    final byte[]... sets) {
+	final List<byte[]> args = new ArrayList<byte[]>();
+	args.add(dstkey);
+	args.add(Protocol.toByteArray(sets.length));
+	for (final byte[] set : sets) {
+	    args.add(set);
+	}
+	args.addAll(params.getParams());
+	sendCommand(ZUNIONSTORE, args.toArray(new byte[args.size()][]));
     }
 
     public void zinterstore(final byte[] dstkey, final byte[]... sets) {
-        final byte[][] params = new byte[sets.length + 2][];
-        params[0] = dstkey;
-        params[1] = Protocol.toByteArray(sets.length);
-        System.arraycopy(sets, 0, params, 2, sets.length);
-        sendCommand(ZINTERSTORE, params);
+	final byte[][] params = new byte[sets.length + 2][];
+	params[0] = dstkey;
+	params[1] = Protocol.toByteArray(sets.length);
+	System.arraycopy(sets, 0, params, 2, sets.length);
+	sendCommand(ZINTERSTORE, params);
     }
 
     public void zinterstore(final byte[] dstkey, final ZParams params,
-            final byte[]... sets) {
-        final List<byte[]> args = new ArrayList<byte[]>();
-        args.add(dstkey);
-        args.add(Protocol.toByteArray(sets.length));
-        for (final byte[] set : sets) {
-            args.add(set);
-        }
-        args.addAll(params.getParams());
-        sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
+	    final byte[]... sets) {
+	final List<byte[]> args = new ArrayList<byte[]>();
+	args.add(dstkey);
+	args.add(Protocol.toByteArray(sets.length));
+	for (final byte[] set : sets) {
+	    args.add(set);
+	}
+	args.addAll(params.getParams());
+	sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
     }
 
     public void save() {
-        sendCommand(SAVE);
+	sendCommand(SAVE);
     }
 
     public void bgsave() {
-        sendCommand(BGSAVE);
+	sendCommand(BGSAVE);
     }
 
     public void bgrewriteaof() {
-        sendCommand(BGREWRITEAOF);
+	sendCommand(BGREWRITEAOF);
     }
 
     public void lastsave() {
-        sendCommand(LASTSAVE);
+	sendCommand(LASTSAVE);
     }
 
     public void shutdown() {
-        sendCommand(SHUTDOWN);
+	sendCommand(SHUTDOWN);
     }
 
     public void info() {
-        sendCommand(INFO);
+	sendCommand(INFO);
     }
 
     public void monitor() {
-        sendCommand(MONITOR);
+	sendCommand(MONITOR);
     }
 
     public void slaveof(final String host, final int port) {
-        sendCommand(SLAVEOF, host, String.valueOf(port));
+	sendCommand(SLAVEOF, host, String.valueOf(port));
     }
 
     public void slaveofNoOne() {
-        sendCommand(SLAVEOF, NO.raw, ONE.raw);
+	sendCommand(SLAVEOF, NO.raw, ONE.raw);
     }
 
     public void configGet(final byte[] pattern) {
-        sendCommand(CONFIG, Keyword.GET.raw, pattern);
+	sendCommand(CONFIG, Keyword.GET.raw, pattern);
     }
 
     public void configSet(final byte[] parameter, final byte[] value) {
-        sendCommand(CONFIG, Keyword.SET.raw, parameter, value);
+	sendCommand(CONFIG, Keyword.SET.raw, parameter, value);
     }
 
     public void strlen(final byte[] key) {
-        sendCommand(STRLEN, key);
+	sendCommand(STRLEN, key);
     }
 
     public void sync() {
-        sendCommand(SYNC);
+	sendCommand(SYNC);
     }
 
     public void lpushx(final byte[] key, final byte[] string) {
-        sendCommand(LPUSHX, key, string);
+	sendCommand(LPUSHX, key, string);
     }
 
     public void persist(final byte[] key) {
-        sendCommand(PERSIST, key);
+	sendCommand(PERSIST, key);
     }
 
     public void rpushx(final byte[] key, final byte[] string) {
-        sendCommand(RPUSHX, key, string);
+	sendCommand(RPUSHX, key, string);
     }
 
     public void echo(final byte[] string) {
-        sendCommand(ECHO, string);
+	sendCommand(ECHO, string);
     }
 
     public void linsert(final byte[] key, final LIST_POSITION where,
-            final byte[] pivot, final byte[] value) {
-        sendCommand(LINSERT, key, where.raw, pivot, value);
+	    final byte[] pivot, final byte[] value) {
+	sendCommand(LINSERT, key, where.raw, pivot, value);
     }
 
     public void debug(final DebugParams params) {
-        sendCommand(DEBUG, params.getCommand());
+	sendCommand(DEBUG, params.getCommand());
     }
 
     public void brpoplpush(final byte[] source, final byte[] destination,
-            final int timeout) {
-        sendCommand(BRPOPLPUSH, source, destination, toByteArray(timeout));
+	    final int timeout) {
+	sendCommand(BRPOPLPUSH, source, destination, toByteArray(timeout));
     }
 
     public void configResetStat() {
-        sendCommand(CONFIG, Keyword.RESETSTAT.name());
+	sendCommand(CONFIG, Keyword.RESETSTAT.name());
     }
 
     public void setbit(byte[] key, long offset, byte[] value) {
-        sendCommand(SETBIT, key, toByteArray(offset), value);
+	sendCommand(SETBIT, key, toByteArray(offset), value);
     }
 
     public void getbit(byte[] key, long offset) {
-        sendCommand(GETBIT, key, toByteArray(offset));
+	sendCommand(GETBIT, key, toByteArray(offset));
     }
 
     public void setrange(byte[] key, long offset, byte[] value) {
-        sendCommand(SETRANGE, key, toByteArray(offset), value);
+	sendCommand(SETRANGE, key, toByteArray(offset), value);
     }
 
     public void getrange(byte[] key, long startOffset, long endOffset) {
-        sendCommand(GETRANGE, key, toByteArray(startOffset),
-                toByteArray(endOffset));
+	sendCommand(GETRANGE, key, toByteArray(startOffset),
+		toByteArray(endOffset));
     }
 
     public Long getDB() {
-        return db;
+	return db;
     }
 
     public void disconnect() {
-        db = 0;
-        super.disconnect();
+	db = 0;
+	super.disconnect();
     }
-    
-    private void sendEvalCommand(Command command, byte[] script, byte[] keyCount, byte[][] params){
-    	
-    	final byte[][] allArgs = new byte[params.length + 2][];
-    	
-    	allArgs[0] = script;
-    	allArgs[1] = keyCount;
-    	
-    	for(int i=0;i<params.length; i++)
-    		allArgs[i+2] = params[i];
-    	
-    	sendCommand(command, allArgs );
+
+    private void sendEvalCommand(Command command, byte[] script,
+	    byte[] keyCount, byte[][] params) {
+
+	final byte[][] allArgs = new byte[params.length + 2][];
+
+	allArgs[0] = script;
+	allArgs[1] = keyCount;
+
+	for (int i = 0; i < params.length; i++)
+	    allArgs[i + 2] = params[i];
+
+	sendCommand(command, allArgs);
     }
-    
-    public void eval(byte[] script, byte[] keyCount, byte[][] params){
-    	sendEvalCommand(EVAL, script, keyCount, params );
+
+    public void eval(byte[] script, byte[] keyCount, byte[][] params) {
+	sendEvalCommand(EVAL, script, keyCount, params);
     }
-    
-    public void evalsha(byte[] sha1, byte[] keyCount, byte[][] params){
-    	sendEvalCommand(EVALSHA, sha1, keyCount, params);
+
+    public void evalsha(byte[] sha1, byte[] keyCount, byte[][] params) {
+	sendEvalCommand(EVALSHA, sha1, keyCount, params);
     }
-    
-    public void scriptFlush(){
-    	sendCommand(SCRIPT, Keyword.FLUSH.raw);
+
+    public void scriptFlush() {
+	sendCommand(SCRIPT, Keyword.FLUSH.raw);
     }
-    
-    public void scriptExists(byte[]... sha1){
-    	byte[][] args = new byte[sha1.length + 1][];
-    	args[0] = Keyword.EXISTS.raw;
-    	for(int i=0;i<sha1.length; i++)
-    		args[i+1] = sha1[i];
-    	
-    	sendCommand(SCRIPT, args);
+
+    public void scriptExists(byte[]... sha1) {
+	byte[][] args = new byte[sha1.length + 1][];
+	args[0] = Keyword.EXISTS.raw;
+	for (int i = 0; i < sha1.length; i++)
+	    args[i + 1] = sha1[i];
+
+	sendCommand(SCRIPT, args);
     }
-    
-    public void scriptLoad(byte[] script){
-    	sendCommand(SCRIPT, Keyword.LOAD.raw, script);
+
+    public void scriptLoad(byte[] script) {
+	sendCommand(SCRIPT, Keyword.LOAD.raw, script);
     }
-    
-    public void scriptKill(){
-    	sendCommand(SCRIPT, Keyword.KILL.raw);
+
+    public void scriptKill() {
+	sendCommand(SCRIPT, Keyword.KILL.raw);
+    }
+
+    public void slowlogGet() {
+	sendCommand(SLOWLOG, Keyword.GET.raw);
+    }
+
+    public void slowlogGet(long entries) {
+	sendCommand(SLOWLOG, Keyword.GET.raw, toByteArray(entries));
+    }
+
+    public void slowlogReset() {
+	sendCommand(SLOWLOG, RESET.raw);
+    }
+
+    public void slowlogLen() {
+	sendCommand(SLOWLOG, LEN.raw);
     }
 }

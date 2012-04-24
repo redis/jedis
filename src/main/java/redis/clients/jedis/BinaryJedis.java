@@ -3086,4 +3086,19 @@ public class BinaryJedis implements BinaryJedisCommands {
 	client.slowlogGet(entries);
 	return client.getBinaryMultiBulkReply();
     }
+    
+    public Long objectRefcount(byte[] key) {
+		client.objectRefcount(key);
+		return client.getIntegerReply();
+	}
+	
+	public byte[] objectEncoding(byte[] key) {
+		client.objectEncoding(key);
+		return client.getBinaryBulkReply();
+	}
+
+	public Long objectIdletime(byte[] key) {
+		client.objectIdletime(key);
+		return client.getIntegerReply();
+	}
 }

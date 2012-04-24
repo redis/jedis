@@ -2791,4 +2791,19 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.slowlogGet(entries);
 	return Slowlog.from(client.getObjectMultiBulkReply());
     }
+
+    public Long objectRefcount(String string) {
+	client.objectRefcount(string);
+	return client.getIntegerReply();
+    }
+
+    public String objectEncoding(String string) {
+	client.objectEncoding(string);
+	return client.getBulkReply();
+    }
+
+    public Long objectIdletime(String string) {
+	client.objectIdletime(string);
+	return client.getIntegerReply();
+    }
 }

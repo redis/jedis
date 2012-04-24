@@ -8,6 +8,9 @@ import static redis.clients.jedis.Protocol.Keyword.NO;
 import static redis.clients.jedis.Protocol.Keyword.ONE;
 import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
+import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
+import static redis.clients.jedis.Protocol.Keyword.ENCODING;
+import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 
 import java.util.ArrayList;
@@ -805,4 +808,16 @@ public class BinaryClient extends Connection {
     public void slowlogLen() {
 	sendCommand(SLOWLOG, LEN.raw);
     }
+    
+    public void objectRefcount(byte[] key) {
+		sendCommand(OBJECT, REFCOUNT.raw, key);
+	}
+	
+	public void objectIdletime(byte[] key) {
+		sendCommand(OBJECT, IDLETIME.raw, key);
+	}
+	
+	public void objectEncoding(byte[] key) {
+		sendCommand(OBJECT, ENCODING.raw, key);
+	}
 }

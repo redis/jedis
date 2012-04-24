@@ -261,4 +261,10 @@ public interface Commands {
     public void exec();
 
     public void discard();
+
+    public void objectRefcount(String key);
+
+    public void objectIdletime(String key);
+
+    public void objectEncoding(String key);
 }

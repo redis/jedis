@@ -636,4 +636,16 @@ public class Client extends BinaryClient implements Commands {
 
 	zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
     }
+
+	public void objectRefcount(String key) {
+		objectRefcount(SafeEncoder.encode(key));
+	}
+	
+	public void objectIdletime(String key) {
+		objectIdletime(SafeEncoder.encode(key));
+	}
+	
+	public void objectEncoding(String key) {
+		objectEncoding(SafeEncoder.encode(key));
+	}
 }

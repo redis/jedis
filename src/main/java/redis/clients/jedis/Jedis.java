@@ -781,13 +781,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * <b>Time complexity:</b> O(1)
      * 
      * @param key
-     * @param field
+     * @param fields
      * @return If the field was present in the hash it is deleted and 1 is
      *         returned, otherwise 0 is returned and no operation is performed.
      */
-    public Long hdel(final String key, final String field) {
+    public Long hdel(final String key, final String... fields) {
 	checkIsInMulti();
-	client.hdel(key, field);
+	client.hdel(key, fields);
 	return client.getIntegerReply();
     }
 
@@ -863,13 +863,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @see Jedis#lpush(String, String)
      * 
      * @param key
-     * @param string
+     * @param strings
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long rpush(final String key, final String... string) {
+    public Long rpush(final String key, final String... strings) {
 	checkIsInMulti();
-	client.rpush(key, string);
+	client.rpush(key, strings);
 	return client.getIntegerReply();
     }
 
@@ -884,13 +884,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * @see Jedis#rpush(String, String)
      * 
      * @param key
-     * @param string
+     * @param strings
      * @return Integer reply, specifically, the number of elements inside the
      *         list after the push operation.
      */
-    public Long lpush(final String key, final String... string) {
+    public Long lpush(final String key, final String... strings) {
 	checkIsInMulti();
-	client.lpush(key, string);
+	client.lpush(key, strings);
 	return client.getIntegerReply();
     }
 
@@ -1142,13 +1142,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * Time complexity O(1)
      * 
      * @param key
-     * @param member
+     * @param members
      * @return Integer reply, specifically: 1 if the new element was added 0 if
      *         the element was already a member of the set
      */
-    public Long sadd(final String key, final String member) {
+    public Long sadd(final String key, final String... members) {
 	checkIsInMulti();
-	client.sadd(key, member);
+	client.sadd(key, members);
 	return client.getIntegerReply();
     }
 
@@ -1176,13 +1176,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * Time complexity O(1)
      * 
      * @param key
-     * @param member
+     * @param members
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Long srem(final String key, final String member) {
+    public Long srem(final String key, final String... members) {
 	checkIsInMulti();
-	client.srem(key, member);
+	client.srem(key, members);
 	return client.getIntegerReply();
     }
 
@@ -1439,6 +1439,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
+    public Long zadd(final String key, final Map<Double, String> scoreMembers) {
+	checkIsInMulti();
+	client.zadd(key, scoreMembers);
+	return client.getIntegerReply();
+    }
+
     public Set<String> zrange(final String key, final int start, final int end) {
 	checkIsInMulti();
 	client.zrange(key, start, end);
@@ -1457,13 +1463,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * 
      * 
      * @param key
-     * @param member
+     * @param members
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
-    public Long zrem(final String key, final String member) {
+    public Long zrem(final String key, final String... members) {
 	checkIsInMulti();
-	client.zrem(key, member);
+	client.zrem(key, members);
 	return client.getIntegerReply();
     }
 

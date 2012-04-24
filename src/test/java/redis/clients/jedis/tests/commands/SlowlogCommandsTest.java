@@ -11,6 +11,7 @@ public class SlowlogCommandsTest extends JedisCommandTestBase {
     @Test
     public void slowlog() {
     	//do something
+	jedis.configSet("slowlog-log-slower-than", "0");
     	jedis.set("foo", "bar");
     	jedis.set("foo2", "bar2");
     	

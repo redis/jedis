@@ -62,7 +62,7 @@ public interface JedisCommands {
 
     Boolean hexists(String key, String field);
 
-    Long hdel(String key, String field);
+    Long hdel(String key, String... field);
 
     Long hlen(String key);
 
@@ -92,11 +92,11 @@ public interface JedisCommands {
 
     String rpop(String key);
 
-    Long sadd(String key, String member);
+    Long sadd(String key, String... member);
 
     Set<String> smembers(String key);
 
-    Long srem(String key, String member);
+    Long srem(String key, String... member);
 
     String spop(String key);
 
@@ -107,10 +107,12 @@ public interface JedisCommands {
     String srandmember(String key);
 
     Long zadd(String key, double score, String member);
+    
+    Long zadd(String key, Map<Double, String> scoreMembers);
 
     Set<String> zrange(String key, int start, int end);
 
-    Long zrem(String key, String member);
+    Long zrem(String key, String... member);
 
     Double zincrby(String key, double score, String member);
 

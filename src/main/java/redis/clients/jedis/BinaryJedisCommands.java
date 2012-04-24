@@ -57,7 +57,7 @@ public interface BinaryJedisCommands {
 
     Boolean hexists(byte[] key, byte[] field);
 
-    Long hdel(byte[] key, byte[] field);
+    Long hdel(byte[] key, byte[]... field);
 
     Long hlen(byte[] key);
 
@@ -87,11 +87,11 @@ public interface BinaryJedisCommands {
 
     byte[] rpop(byte[] key);
 
-    Long sadd(byte[] key, byte[] member);
+    Long sadd(byte[] key, byte[]... member);
 
     Set<byte[]> smembers(byte[] key);
 
-    Long srem(byte[] key, byte[] member);
+    Long srem(byte[] key, byte[]... member);
 
     byte[] spop(byte[] key);
 
@@ -102,10 +102,12 @@ public interface BinaryJedisCommands {
     byte[] srandmember(byte[] key);
 
     Long zadd(byte[] key, double score, byte[] member);
+    
+    Long zadd(byte[] key, Map<Double, byte[]> scoreMembers);
 
     Set<byte[]> zrange(byte[] key, int start, int end);
 
-    Long zrem(byte[] key, byte[] member);
+    Long zrem(byte[] key, byte[]... member);
 
     Double zincrby(byte[] key, double score, byte[] member);
 

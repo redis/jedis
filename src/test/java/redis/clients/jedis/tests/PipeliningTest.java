@@ -171,7 +171,7 @@ public class PipeliningTest extends Assert {
         p.multi();
         Response<Long> r1 = p.hincrBy("a", "f1", -1);
         Response<Long> r2 = p.hincrBy("a", "f1", -2);
-        p.exec();
+        Response<List<Object>> r3 = p.exec();
         List<Object> result = p.syncAndReturnAll();
         
         assertEquals(new Long(-1), r1.get());
@@ -188,5 +188,9 @@ public class PipeliningTest extends Assert {
 		List<Object> multiResult = (List<Object>) result.get(3);
         assertEquals(new Long(-1), multiResult.get(0));
         assertEquals(new Long(-3), multiResult.get(1));
+        
+        assertEquals(new Long(-1), r3.get().get(0));
+        assertEquals(new Long(-3), r3.get().get(1));
+        
     }
 }

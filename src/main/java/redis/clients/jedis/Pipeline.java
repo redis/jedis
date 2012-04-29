@@ -1218,10 +1218,11 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public void exec() {
+    public Response<List<Object>> exec() {
         client.exec();
-        super.getResponse(currentMulti);
+        Response<List<Object>> response = super.getResponse(currentMulti);
         currentMulti = null;
+        return response;
     }
 
     public void multi() {
@@ -1279,5 +1280,4 @@ public class Pipeline extends Queable {
     	client.select(index);
     	return getResponse(BuilderFactory.STRING);
     }    
-   
 }

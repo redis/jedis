@@ -1,8 +1,11 @@
 package redis.clients.jedis;
 
+import java.net.URI;
+
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 
+import redis.clients.util.ConnectionInfo;
 import redis.clients.util.Pool;
 
 public class JedisPool extends Pool<Jedis> {
@@ -37,8 +40,39 @@ public class JedisPool extends Pool<Jedis> {
         super(poolConfig, new JedisFactory(host, port, timeout, password, database));
     }
 
+    public JedisPool(final Config poolConfig,URI uri) {
+    	this(new ConnectionInfo(uri));
+    }
+    
+    public JedisPool(final Config poolConfig,URI uri, int timeout) {
+    	this(new ConnectionInfo(uri), timeout);
+    }
 
-    public void returnBrokenResource(final BinaryJedis resource) {
+    public JedisPool(final Config poolConfig,ConnectionInfo conn){
+    	this(conn, Protocol.DEFAULT_TIMEOUT);
+    }
+    
+    public JedisPool(final Config poolConfig,ConnectionInfo conn, int timeout) {
+		this(poolConfig,conn.getHost(), conn.getPort(), timeout, conn.getPassword(), conn.getDatabase());
+	}
+
+    public JedisPool(URI uri) {
+    	this(new ConnectionInfo(uri));
+    }
+    
+    public JedisPool(URI uri, int timeout) {
+    	this(new ConnectionInfo(uri), timeout);
+    }
+
+    public JedisPool(ConnectionInfo conn){
+    	this(conn, Protocol.DEFAULT_TIMEOUT);
+    }
+    
+    public JedisPool(ConnectionInfo conn, int timeout) {
+		this(new Config(), conn, timeout);
+	}
+
+	public void returnBrokenResource(final BinaryJedis resource) {
     	returnBrokenResourceObject(resource);
     }
     

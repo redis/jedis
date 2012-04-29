@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Command.SCRIPT;
-
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.ConnectionInfo;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 import static redis.clients.jedis.Protocol.toByteArray;
@@ -21,6 +20,15 @@ import static redis.clients.jedis.Protocol.toByteArray;
 public class BinaryJedis implements BinaryJedisCommands {
     protected Client client = null;
 
+    public BinaryJedis(URI uri){
+    	this(new ConnectionInfo(uri));
+    }
+    
+    public BinaryJedis(ConnectionInfo info){
+    	client = new Client(info.getHost(), info.getPort());
+        client.setPassword(info.getPassword());
+    }
+    
     public BinaryJedis(final String host) {
         client = new Client(host);
     }

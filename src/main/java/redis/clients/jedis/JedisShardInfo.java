@@ -1,25 +1,18 @@
 package redis.clients.jedis;
 
+import redis.clients.util.ConnectionInfo;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
-public class JedisShardInfo extends ShardInfo<Jedis> {
-    public String toString() {
-        return host + ":" + port + "*" + getWeight();
-    }
-
+public class JedisShardInfo extends ConnectionInfo implements ShardInfo<Jedis> {
+    
     private int timeout;
-    private String host;
-    private int port;
-    private String password = null;
+    private int weight;
     private String name = null;
-
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
+    
+    @Override
+    public String toString() {
+        return super.toString() + "*" + getWeight();
     }
 
     public JedisShardInfo(String host) {
@@ -48,18 +41,9 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     }
 
     public JedisShardInfo(String host, int port, int timeout, int weight) {
-        super(weight);
-        this.host = host;
-        this.port = port;
+    	super(host, port);
+        this.weight = weight;
         this.timeout = timeout;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String auth) {
-        this.password = auth;
     }
 
     public int getTimeout() {
@@ -74,8 +58,11 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         return name;
     }
 
-    @Override
     public Jedis createResource() {
         return new Jedis(this);
     }
+
+	public int getWeight() {
+		return weight;
+	}
 }

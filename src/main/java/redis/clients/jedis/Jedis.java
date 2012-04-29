@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,6 +14,11 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 
 public class Jedis extends BinaryJedis implements JedisCommands {
+	
+	public Jedis( URI uri){
+		super(uri);
+	}
+	
     public Jedis(final String host) {
         super(host);
     }

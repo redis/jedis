@@ -85,8 +85,7 @@ public class Pipeline extends Queable {
         
         for (Object o : unformatted) {
             try {
-            	Response<?> pr = generateResponse(o);
-            	formatted.add(pr.get());
+            	formatted.add(generateResponse(o).get());
             } catch (JedisDataException e) {
                 formatted.add(e);
             }

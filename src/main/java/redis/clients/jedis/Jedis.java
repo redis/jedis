@@ -1991,6 +1991,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.zcount(key, min, max);
 	return client.getIntegerReply();
     }
+    
+    public Long zcount(final String key, final String min, final String max) {
+    	checkIsInMulti();
+    	client.zcount(key, min, max);
+    	return client.getIntegerReply();
+    }
 
     /**
      * Return the all the elements in the sorted set at key with a score between
@@ -2125,6 +2131,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.zrangeByScore(key, min, max, offset, count);
 	return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
+    
+    public Set<String> zrangeByScore(final String key, final String min,
+    	    final String max, final int offset, final int count) {
+	checkIsInMulti();
+	client.zrangeByScore(key, min, max, offset, count);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
 
     /**
      * Return the all the elements in the sorted set at key with a score between
@@ -2189,6 +2202,14 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	Set<Tuple> set = getTupledSet();
 	return set;
     }
+    
+    public Set<Tuple> zrangeByScoreWithScores(final String key,
+    	    final String min, final String max) {
+    	checkIsInMulti();
+    	client.zrangeByScoreWithScores(key, min, max);
+    	Set<Tuple> set = getTupledSet();
+    	return set;
+        }
 
     /**
      * Return the all the elements in the sorted set at key with a score between
@@ -2254,6 +2275,15 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	Set<Tuple> set = getTupledSet();
 	return set;
     }
+    
+    public Set<Tuple> zrangeByScoreWithScores(final String key,
+    	    final String min, final String max, final int offset,
+    	    final int count) {
+    	checkIsInMulti();
+    	client.zrangeByScoreWithScores(key, min, max, offset, count);
+    	Set<Tuple> set = getTupledSet();
+    	return set;
+        }
 
     private Set<Tuple> getTupledSet() {
 	checkIsInMulti();
@@ -2303,6 +2333,30 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	Set<Tuple> set = getTupledSet();
 	return set;
     }
+    
+    public Set<Tuple> zrevrangeByScoreWithScores(final String key,
+	    final String max, final String min, final int offset,
+	    final int count) {
+	checkIsInMulti();
+	client.zrevrangeByScoreWithScores(key, max, min, offset, count);
+	Set<Tuple> set = getTupledSet();
+	return set;
+    }
+
+    public Set<String> zrevrangeByScore(final String key, final String max,
+	    final String min, final int offset, final int count) {
+	checkIsInMulti();
+	client.zrevrangeByScore(key, max, min, offset, count);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    public Set<Tuple> zrevrangeByScoreWithScores(final String key,
+	    final String max, final String min) {
+	checkIsInMulti();
+	client.zrevrangeByScoreWithScores(key, max, min);
+	Set<Tuple> set = getTupledSet();
+	return set;
+    }
 
     /**
      * Remove all elements in the sorted set at key with rank between start and
@@ -2343,6 +2397,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.zremrangeByScore(key, start, end);
 	return client.getIntegerReply();
     }
+    
+    public Long zremrangeByScore(final String key, final String start,
+    	    final String end) {
+    	checkIsInMulti();
+    	client.zremrangeByScore(key, start, end);
+    	return client.getIntegerReply();
+        }
 
     /**
      * Creates a union or intersection of N sorted sets given by keys k1 through

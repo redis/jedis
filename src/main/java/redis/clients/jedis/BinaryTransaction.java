@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.toByteArray;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -446,6 +448,10 @@ public class BinaryTransaction extends Queable {
     }
 
     public Response<Long> zcount(byte[] key, double min, double max) {
+        return zcount(key, toByteArray(min), toByteArray(max));
+    }
+    
+    public Response<Long> zcount(byte[] key, byte[] min, byte[] max) {
         client.zcount(key, min, max);
         return getResponse(BuilderFactory.LONG);
     }
@@ -473,30 +479,44 @@ public class BinaryTransaction extends Queable {
 
     public Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
             double max) {
+        return zrangeByScore(key, toByteArray(min), toByteArray(max));
+    }
+    
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min,
+    		byte[] max) {
         client.zrangeByScore(key, min, max);
         return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min,
-            byte[] max) {
-        client.zrangeByScore(key, min, max);
-        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
-    }
-
-    public Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
-            double max, int offset, int count) {
+    		byte[] max, int offset, int count) {
         client.zrangeByScore(key, min, max, offset, count);
         return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+    }
+    
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
+            double max, int offset, int count) {
+        return zrangeByScore(key, toByteArray(min), toByteArray(max), offset, count);
     }
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
             double max) {
-        client.zrangeByScoreWithScores(key, min, max);
-        return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
+        return zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max));
     }
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
             double max, int offset, int count) {
+        return zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max), offset, count);
+    }
+    
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min,
+    		byte[] max) {
+        client.zrangeByScoreWithScores(key, min, max);
+        return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
+    }
+
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min,
+    		byte[] max, int offset, int count) {
         client.zrangeByScoreWithScores(key, min, max, offset, count);
         return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
@@ -522,6 +542,10 @@ public class BinaryTransaction extends Queable {
     }
 
     public Response<Long> zremrangeByScore(byte[] key, double start, double end) {
+        return zremrangeByScore(key, toByteArray(start), toByteArray(end));
+    }
+    
+    public Response<Long> zremrangeByScore(byte[] key, byte[] start, byte[] end) {
         client.zremrangeByScore(key, start, end);
         return getResponse(BuilderFactory.LONG);
     }

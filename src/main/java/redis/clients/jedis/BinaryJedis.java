@@ -2064,11 +2064,15 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     public Long zcount(final byte[] key, final double min, final double max) {
-	checkIsInMulti();
-	client.zcount(key, min, max);
-	return client.getIntegerReply();
+    	return zcount(key, toByteArray(min), toByteArray(max));
     }
-
+    
+    public Long zcount(final byte[] key, final byte[] min, final byte[] max) {
+    	checkIsInMulti();
+    	client.zcount(key, min, max);
+    	return client.getIntegerReply();
+    }
+    
     /**
      * Return the all the elements in the sorted set at key with a score between
      * min and max (including elements with score equal to min or max).
@@ -2127,10 +2131,8 @@ public class BinaryJedis implements BinaryJedisCommands {
      */
     public Set<byte[]> zrangeByScore(final byte[] key, final double min,
 	    final double max) {
-	checkIsInMulti();
-	client.zrangeByScore(key, min, max);
-	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
-    }
+	return zrangeByScore(key, toByteArray(min), toByteArray(max));
+	}
 
     public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min,
 	    final byte[] max) {
@@ -2197,10 +2199,15 @@ public class BinaryJedis implements BinaryJedisCommands {
      */
     public Set<byte[]> zrangeByScore(final byte[] key, final double min,
 	    final double max, final int offset, final int count) {
-	checkIsInMulti();
-	client.zrangeByScore(key, min, max, offset, count);
-	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+	return zrangeByScore(key, toByteArray(min),toByteArray(max),offset, count);
     }
+    
+    public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min,
+    	    final byte[] max, final int offset, final int count) {
+    	checkIsInMulti();
+    	client.zrangeByScore(key, min, max, offset, count);
+    	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+        }
 
     /**
      * Return the all the elements in the sorted set at key with a score between
@@ -2260,11 +2267,16 @@ public class BinaryJedis implements BinaryJedisCommands {
      */
     public Set<Tuple> zrangeByScoreWithScores(final byte[] key,
 	    final double min, final double max) {
-	checkIsInMulti();
-	client.zrangeByScoreWithScores(key, min, max);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max));
     }
+    
+    public Set<Tuple> zrangeByScoreWithScores(final byte[] key,
+    	    final byte[] min, final byte[] max) {
+    	checkIsInMulti();
+    	client.zrangeByScoreWithScores(key, min, max);
+    	Set<Tuple> set = getBinaryTupledSet();
+    	return set;
+        }
 
     /**
      * Return the all the elements in the sorted set at key with a score between
@@ -2325,11 +2337,17 @@ public class BinaryJedis implements BinaryJedisCommands {
     public Set<Tuple> zrangeByScoreWithScores(final byte[] key,
 	    final double min, final double max, final int offset,
 	    final int count) {
-	checkIsInMulti();
-	client.zrangeByScoreWithScores(key, min, max, offset, count);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max), offset, count);
     }
+    
+    public Set<Tuple> zrangeByScoreWithScores(final byte[] key,
+    	    final byte[] min, final byte[] max, final int offset,
+    	    final int count) {
+    	checkIsInMulti();
+    	client.zrangeByScoreWithScores(key, min, max, offset, count);
+    	Set<Tuple> set = getBinaryTupledSet();
+    	return set;
+        }
 
     private Set<Tuple> getBinaryTupledSet() {
 	checkIsInMulti();
@@ -2345,9 +2363,7 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     public Set<byte[]> zrevrangeByScore(final byte[] key, final double max,
 	    final double min) {
-	checkIsInMulti();
-	client.zrevrangeByScore(key, max, min);
-	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+	return zrevrangeByScore(key, toByteArray(max), toByteArray(min));
     }
 
     public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max,
@@ -2359,13 +2375,29 @@ public class BinaryJedis implements BinaryJedisCommands {
 
     public Set<byte[]> zrevrangeByScore(final byte[] key, final double max,
 	    final double min, final int offset, final int count) {
-	checkIsInMulti();
-	client.zrevrangeByScore(key, max, min, offset, count);
-	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+	return zrevrangeByScore(key, toByteArray(max), toByteArray(min), offset, count);
     }
+    
+    public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max,
+    	    final byte[] min, final int offset, final int count) {
+    	checkIsInMulti();
+    	client.zrevrangeByScore(key, max, min, offset, count);
+    	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+        }
 
     public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
 	    final double max, final double min) {
+	return zrevrangeByScoreWithScores(key, toByteArray(max), toByteArray(min));
+    }
+
+    public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
+	    final double max, final double min, final int offset,
+	    final int count) {
+    	return zrevrangeByScoreWithScores(key, toByteArray(max), toByteArray(min), offset, count);
+    }
+    
+    public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
+    	    final byte[] max, final byte[] min) {
 	checkIsInMulti();
 	client.zrevrangeByScoreWithScores(key, max, min);
 	Set<Tuple> set = getBinaryTupledSet();
@@ -2373,13 +2405,13 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
-	    final double max, final double min, final int offset,
+	    final byte[] max, final byte[] min, final int offset,
 	    final int count) {
 	checkIsInMulti();
 	client.zrevrangeByScoreWithScores(key, max, min, offset, count);
 	Set<Tuple> set = getBinaryTupledSet();
 	return set;
-    }
+    }    
 
     /**
      * Remove all elements in the sorted set at key with rank between start and
@@ -2416,10 +2448,15 @@ public class BinaryJedis implements BinaryJedisCommands {
      */
     public Long zremrangeByScore(final byte[] key, final double start,
 	    final double end) {
-	checkIsInMulti();
-	client.zremrangeByScore(key, start, end);
-	return client.getIntegerReply();
+	return zremrangeByScore(key, toByteArray(start), toByteArray(end));
     }
+    
+    public Long zremrangeByScore(final byte[] key, final byte[] start,
+    	    final byte[] end) {
+    	checkIsInMulti();
+    	client.zremrangeByScore(key, start, end);
+    	return client.getIntegerReply();
+        }
 
     /**
      * Creates a union or intersection of N sorted sets given by keys k1 through

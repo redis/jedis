@@ -183,6 +183,8 @@ public interface Commands {
 	    final int timeout);
 
     public void zcount(final String key, final double min, final double max);
+    
+    public void zcount(final String key, final String min, final String max);
 
     public void zrangeByScore(final String key, final double min,
 	    final double max);
@@ -199,7 +201,13 @@ public interface Commands {
     public void zrangeByScoreWithScores(final String key, final double min,
 	    final double max, final int offset, final int count);
 
-    public void zrevrangeByScore(final String key, final double max,
+    public void zrangeByScoreWithScores(final String key, final String min,
+    	    final String max);
+
+        public void zrangeByScoreWithScores(final String key, final String min,
+    	    final String max, final int offset, final int count);
+
+        public void zrevrangeByScore(final String key, final double max,
 	    final double min);
 
     public void zrevrangeByScore(final String key, final String max,
@@ -213,12 +221,21 @@ public interface Commands {
 
     public void zrevrangeByScoreWithScores(final String key, final double max,
 	    final double min, final int offset, final int count);
+    
+    public void zrevrangeByScoreWithScores(final String key, final String max,
+    	    final String min);
+
+    public void zrevrangeByScoreWithScores(final String key, final String max,
+    	    final String min, final int offset, final int count);
 
     public void zremrangeByRank(final String key, final int start, final int end);
 
     public void zremrangeByScore(final String key, final double start,
 	    final double end);
 
+    public void zremrangeByScore(final String key, final String start,
+    	    final String end);
+    
     public void zunionstore(final String dstkey, final String... sets);
 
     public void zunionstore(final String dstkey, final ZParams params,

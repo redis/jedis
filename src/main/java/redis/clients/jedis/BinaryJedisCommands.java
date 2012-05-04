@@ -131,6 +131,8 @@ public interface BinaryJedisCommands {
 
     Long zcount(byte[] key, double min, double max);
 
+    Long zcount(byte[] key, byte[] min, byte[] max);
+
     Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
     Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset,
@@ -141,9 +143,19 @@ public interface BinaryJedisCommands {
     Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max,
 	    int offset, int count);
 
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
+
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max,
+	    int offset, int count);
+
     Set<byte[]> zrevrangeByScore(byte[] key, double max, double min);
 
     Set<byte[]> zrevrangeByScore(byte[] key, double max, double min,
+	    int offset, int count);
+
+    Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
+
+    Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min,
 	    int offset, int count);
 
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
@@ -151,10 +163,17 @@ public interface BinaryJedisCommands {
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min,
 	    int offset, int count);
 
+    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
+
+    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min,
+	    int offset, int count);
+
     Long zremrangeByRank(byte[] key, int start, int end);
 
     Long zremrangeByScore(byte[] key, double start, double end);
 
+    Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
+    
     Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value);
 
     Long objectRefcount(byte[] key);

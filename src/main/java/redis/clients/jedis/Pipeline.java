@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.toByteArray;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -842,7 +843,7 @@ public class Pipeline extends Queable {
     }
 
     public Response<Long> zcount(byte[] key, double min, double max) {
-        client.zcount(key, min, max);
+        client.zcount(key, toByteArray(min), toByteArray(max));
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -896,10 +897,9 @@ public class Pipeline extends Queable {
 
     public Response<Set<String>> zrangeByScore(byte[] key, double min,
             double max) {
-        client.zrangeByScore(key, min, max);
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return zrangeByScore(key, toByteArray(min), toByteArray(max));
     }
-
+    
     public Response<Set<String>> zrangeByScore(String key, String min,
             String max) {
         client.zrangeByScore(key, min, max);
@@ -920,6 +920,11 @@ public class Pipeline extends Queable {
 
     public Response<Set<String>> zrangeByScore(byte[] key, double min,
             double max, int offset, int count) {
+        return zrangeByScore(key, toByteArray(min), toByteArray(max), offset, count);
+    }
+    
+    public Response<Set<String>> zrangeByScore(byte[] key, byte[] min,
+    		byte[] max, int offset, int count) {
         client.zrangeByScore(key, min, max, offset, count);
         return getResponse(BuilderFactory.STRING_ZSET);
     }
@@ -932,6 +937,11 @@ public class Pipeline extends Queable {
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
             double max) {
+        return zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max));
+    }
+    
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min,
+    		byte[] max) {
         client.zrangeByScoreWithScores(key, min, max);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
@@ -944,6 +954,12 @@ public class Pipeline extends Queable {
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
             double max, int offset, int count) {
+        client.zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max), offset, count);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+    
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min,
+    		byte[] max, int offset, int count) {
         client.zrangeByScoreWithScores(key, min, max, offset, count);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
@@ -956,7 +972,7 @@ public class Pipeline extends Queable {
 
     public Response<Set<String>> zrevrangeByScore(byte[] key, double max,
             double min) {
-        client.zrevrangeByScore(key, max, min);
+        client.zrevrangeByScore(key, toByteArray(max), toByteArray(min));
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
@@ -980,6 +996,12 @@ public class Pipeline extends Queable {
 
     public Response<Set<String>> zrevrangeByScore(byte[] key, double max,
             double min, int offset, int count) {
+        client.zrevrangeByScore(key, toByteArray(max), toByteArray(min), offset, count);
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+    
+    public Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max,
+    		byte[] min, int offset, int count) {
         client.zrevrangeByScore(key, max, min, offset, count);
         return getResponse(BuilderFactory.STRING_ZSET);
     }
@@ -992,6 +1014,12 @@ public class Pipeline extends Queable {
 
     public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
             double max, double min) {
+        client.zrevrangeByScoreWithScores(key, toByteArray(max), toByteArray(min));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+    
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
+    		byte[] max, byte[] min) {
         client.zrevrangeByScoreWithScores(key, max, min);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
@@ -1004,6 +1032,12 @@ public class Pipeline extends Queable {
 
     public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
             double max, double min, int offset, int count) {
+        client.zrevrangeByScoreWithScores(key, toByteArray(max), toByteArray(min), offset, count);
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+    
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
+    		byte[] max, byte[] min, int offset, int count) {
         client.zrevrangeByScoreWithScores(key, max, min, offset, count);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
@@ -1054,6 +1088,11 @@ public class Pipeline extends Queable {
     }
 
     public Response<Long> zremrangeByScore(byte[] key, double start, double end) {
+        client.zremrangeByScore(key, toByteArray(start), toByteArray(end));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> zremrangeByScore(byte[] key, byte[] start, byte[] end) {
         client.zremrangeByScore(key, start, end);
         return getResponse(BuilderFactory.LONG);
     }

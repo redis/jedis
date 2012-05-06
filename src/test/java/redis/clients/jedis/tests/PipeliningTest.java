@@ -164,4 +164,33 @@ public class PipeliningTest extends Assert {
         }
         assertEquals(r.get(), "bar");
     }
+
+    @Test
+    public void multi(){
+        Pipeline p = jedis.pipelined();
+        p.multi();
+        Response<Long> r1 = p.hincrBy("a", "f1", -1);
+        Response<Long> r2 = p.hincrBy("a", "f1", -2);
+        Response<List<Object>> r3 = p.exec();
+        List<Object> result = p.syncAndReturnAll();
+        
+        assertEquals(new Long(-1), r1.get());
+        assertEquals(new Long(-3), r2.get());
+        
+        assertEquals(4, result.size());
+        
+        assertEquals("OK", result.get(0));
+        assertEquals("QUEUED", result.get(1));
+        assertEquals("QUEUED", result.get(2));
+        
+        //4th result is a list with the results from the multi
+        @SuppressWarnings("unchecked")
+		List<Object> multiResult = (List<Object>) result.get(3);
+        assertEquals(new Long(-1), multiResult.get(0));
+        assertEquals(new Long(-3), multiResult.get(1));
+        
+        assertEquals(new Long(-1), r3.get().get(0));
+        assertEquals(new Long(-3), r3.get().get(1));
+        
+    }
 }

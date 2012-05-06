@@ -173,7 +173,7 @@ public interface BinaryJedisCommands {
     Long zremrangeByScore(byte[] key, double start, double end);
 
     Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
-    
+
     Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value);
 
     Long objectRefcount(byte[] key);
@@ -181,4 +181,8 @@ public interface BinaryJedisCommands {
     Long objectIdletime(byte[] key);
 
     byte[] objectEncoding(byte[] key);
+
+    Long lpushx(byte[] key, byte[] string);
+
+    Long rpushx(byte[] key, byte[] string);
 }

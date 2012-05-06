@@ -186,4 +186,8 @@ public interface JedisCommands {
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
             String value);
+    
+    Long lpushx(String key, String string);
+    
+    Long rpushx(String key, String string); 
 }

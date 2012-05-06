@@ -2,15 +2,15 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Keyword.ENCODING;
+import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
 import static redis.clients.jedis.Protocol.Keyword.LEN;
 import static redis.clients.jedis.Protocol.Keyword.LIMIT;
 import static redis.clients.jedis.Protocol.Keyword.NO;
 import static redis.clients.jedis.Protocol.Keyword.ONE;
+import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
 import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 
 import java.util.ArrayList;
@@ -393,7 +393,7 @@ public class BinaryClient extends Connection {
 	sendCommand(ZADD, argsArray);
     }
 
-    public void zrange(final byte[] key, final int start, final int end) {
+    public void zrange(final byte[] key, final long start, final long end) {
 	sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));
     }
 
@@ -414,18 +414,18 @@ public class BinaryClient extends Connection {
 	sendCommand(ZREVRANK, key, member);
     }
 
-    public void zrevrange(final byte[] key, final int start, final int end) {
+    public void zrevrange(final byte[] key, final long start, final long end) {
 	sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
     }
 
-    public void zrangeWithScores(final byte[] key, final int start,
-	    final int end) {
+    public void zrangeWithScores(final byte[] key, final long start,
+	    final long end) {
 	sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end),
 		WITHSCORES.raw);
     }
 
-    public void zrevrangeWithScores(final byte[] key, final int start,
-	    final int end) {
+    public void zrevrangeWithScores(final byte[] key, final long start,
+	    final long end) {
 	sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end),
 		WITHSCORES.raw);
     }
@@ -543,43 +543,40 @@ public class BinaryClient extends Connection {
 
     public void zrangeByScore(final byte[] key, final byte[] min,
 	    final byte[] max, final int offset, int count) {
-	sendCommand(ZRANGEBYSCORE, key, min, max,
-		LIMIT.raw, toByteArray(offset), toByteArray(count));
+	sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.raw,
+		toByteArray(offset), toByteArray(count));
     }
 
     public void zrevrangeByScore(final byte[] key, final byte[] max,
 	    final byte[] min, final int offset, int count) {
-	sendCommand(ZREVRANGEBYSCORE, key, max, min,
-		LIMIT.raw, toByteArray(offset), toByteArray(count));
+	sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.raw,
+		toByteArray(offset), toByteArray(count));
     }
 
     public void zrangeByScoreWithScores(final byte[] key, final byte[] min,
 	    final byte[] max) {
-	sendCommand(ZRANGEBYSCORE, key, min, max,
-		WITHSCORES.raw);
+	sendCommand(ZRANGEBYSCORE, key, min, max, WITHSCORES.raw);
     }
 
     public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
 	    final byte[] min) {
-	sendCommand(ZREVRANGEBYSCORE, key, max, min,
-		WITHSCORES.raw);
+	sendCommand(ZREVRANGEBYSCORE, key, max, min, WITHSCORES.raw);
     }
 
     public void zrangeByScoreWithScores(final byte[] key, final byte[] min,
 	    final byte[] max, final int offset, final int count) {
-	sendCommand(ZRANGEBYSCORE, key, min, max,
-		LIMIT.raw, toByteArray(offset), toByteArray(count),
-		WITHSCORES.raw);
+	sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.raw,
+		toByteArray(offset), toByteArray(count), WITHSCORES.raw);
     }
 
     public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
 	    final byte[] min, final int offset, final int count) {
-	sendCommand(ZREVRANGEBYSCORE, key, max, min,
-		LIMIT.raw, toByteArray(offset), toByteArray(count),
-		WITHSCORES.raw);
+	sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.raw,
+		toByteArray(offset), toByteArray(count), WITHSCORES.raw);
     }
 
-    public void zremrangeByRank(final byte[] key, final int start, final int end) {
+    public void zremrangeByRank(final byte[] key, final long start,
+	    final long end) {
 	sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
     }
 
@@ -798,16 +795,16 @@ public class BinaryClient extends Connection {
     public void slowlogLen() {
 	sendCommand(SLOWLOG, LEN.raw);
     }
-    
+
     public void objectRefcount(byte[] key) {
-		sendCommand(OBJECT, REFCOUNT.raw, key);
-	}
-	
-	public void objectIdletime(byte[] key) {
-		sendCommand(OBJECT, IDLETIME.raw, key);
-	}
-	
-	public void objectEncoding(byte[] key) {
-		sendCommand(OBJECT, ENCODING.raw, key);
-	}
+	sendCommand(OBJECT, REFCOUNT.raw, key);
+    }
+
+    public void objectIdletime(byte[] key) {
+	sendCommand(OBJECT, IDLETIME.raw, key);
+    }
+
+    public void objectEncoding(byte[] key) {
+	sendCommand(OBJECT, ENCODING.raw, key);
+    }
 }

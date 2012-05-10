@@ -38,11 +38,11 @@
 		<url>http://github.com/xetorthio/jedis/issues</url>
 	</issueManagement>
 
-	<scm>
-		<url>http://github.com/xetorthio/jedis</url>
-		<connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
-		<developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
-	</scm>
+         <scm>
+            <connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
+            <url>scm:git:git@github.com:xetorthio/jedis.git</url>
+            <developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
+        </scm>
 
 	<properties>
 		<redis-hosts>localhost:6379,localhost:6380</redis-hosts>
@@ -102,6 +102,11 @@
 					<aggregate>true</aggregate>
 				</configuration>
 			</plugin>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-release-plugin</artifactId>
+                                <version>2.0-beta-9</version>
+                        </plugin>
 		</plugins>
 	</build>
 </project>

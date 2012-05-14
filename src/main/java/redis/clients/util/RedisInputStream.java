@@ -106,7 +106,10 @@ public class RedisInputStream extends FilterInputStream {
     }
 
     private void fill() throws IOException {
-        limit = in.read(buf);
-        count = 0;
+        try {
+            limit = in.read(buf);
+        } finally {
+            count = 0;
+        }
     }
 }

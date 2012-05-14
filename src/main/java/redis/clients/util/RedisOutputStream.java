@@ -26,8 +26,11 @@ public final class RedisOutputStream extends FilterOutputStream {
 
     private void flushBuffer() throws IOException {
         if (count > 0) {
-            out.write(buf, 0, count);
-            count = 0;
+            try {
+                out.write(buf, 0, count);
+            } finally {
+                count = 0;
+            }
         }
     }
 
@@ -37,7 +40,7 @@ public final class RedisOutputStream extends FilterOutputStream {
             flushBuffer();
         }
     }
-    
+
     public void write(final byte[] b) throws IOException {
     	write(b, 0, b.length);
     }

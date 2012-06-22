@@ -260,9 +260,9 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING_MAP);
     }
 
-    public Response<Map<String, String>> hgetAll(byte[] key) {
+    public Response<Map<byte[], byte[]>> hgetAll(byte[] key) {
         client.hgetAll(key);
-        return getResponse(BuilderFactory.STRING_MAP);
+        return getResponse(BuilderFactory.BYTE_ARRAY_MAP);
     }
 
     public Response<Long> hincrBy(String key, String field, long value) {

@@ -108,17 +108,10 @@ public class ShardedJedisPipeline extends Queable {
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
-    
-    public Response<Long> del(String... keys) {
-        Client c = getClient(keys);
-        c.del(keys);
-        results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.LONG);
-    }
-    
-    public Response<Long> del(byte[]... keys) {
-    	Client c = getClient(keys);
-        c.del(keys);
+
+    public Response<Long> del(String key) {
+        Client c = getClient(key);
+        c.del(key);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }

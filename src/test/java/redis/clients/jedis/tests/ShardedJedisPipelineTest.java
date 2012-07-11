@@ -88,7 +88,11 @@ public class ShardedJedisPipelineTest {
         Response<Set<String>> smembers = p.smembers("set");
         Response<Set<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0,
                 -1);
-        p.sync();
+        p.set("del","foo");
+	Response<String> shouldExist = p.get("del");
+	p.del("del");
+	Response<String> shouldNotExist = p.get("del");
+	p.sync();
 
         assertEquals("foo", string.get());
         assertEquals("foo", list.get());
@@ -102,6 +106,8 @@ public class ShardedJedisPipelineTest {
         assertNotNull(hgetAll.get().get("foo"));
         assertEquals(1, smembers.get().size());
         assertEquals(1, zrangeWithScores.get().size());
+	assertNotNull(shouldExist.get());
+	assertNull(shouldNotExist.get());
     }
 
     @Test(expected = JedisDataException.class)

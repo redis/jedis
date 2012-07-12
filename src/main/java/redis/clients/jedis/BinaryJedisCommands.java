@@ -58,6 +58,8 @@ public interface BinaryJedisCommands {
     Boolean hexists(byte[] key, byte[] field);
 
     Long hdel(byte[] key, byte[]... field);
+    
+    Long hdel(byte[] key, Set<byte[]> fields);
 
     Long hlen(byte[] key);
 
@@ -68,8 +70,12 @@ public interface BinaryJedisCommands {
     Map<byte[], byte[]> hgetAll(byte[] key);
 
     Long rpush(byte[] key, byte[]... string);
+    
+    Long rpush(byte[] key, List<byte[]> strings);
 
     Long lpush(byte[] key, byte[]... string);
+    
+    Long lpush(byte[] key, List<byte[]> strings);
 
     Long llen(byte[] key);
 
@@ -88,10 +94,14 @@ public interface BinaryJedisCommands {
     byte[] rpop(byte[] key);
 
     Long sadd(byte[] key, byte[]... member);
+    
+    Long sadd(byte[] key, Set<byte[]> members);
 
     Set<byte[]> smembers(byte[] key);
 
     Long srem(byte[] key, byte[]... member);
+    
+    Long srem(byte[] key, Set<byte[]> members);
 
     byte[] spop(byte[] key);
 
@@ -108,6 +118,8 @@ public interface BinaryJedisCommands {
     Set<byte[]> zrange(byte[] key, int start, int end);
 
     Long zrem(byte[] key, byte[]... member);
+    
+    Long zrem(byte[] key, Set<byte[]> members);
 
     Double zincrby(byte[] key, double score, byte[] member);
 

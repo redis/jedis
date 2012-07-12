@@ -123,8 +123,13 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> hdel(byte[] key, byte[] field) {
-        client.hdel(key, field);
+    public Response<Long> hdel(byte[] key, byte[] fields) {
+        client.hdel(key, fields);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> hdel(byte[] key, Set<byte[]> fields) {
+        client.hdel(key, fields);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -219,11 +224,16 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> lpush(byte[] key, byte[] string) {
-        client.lpush(key, string);
+    public Response<Long> lpush(byte[] key, byte[] strings) {
+        client.lpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> lpush(byte[] key, List<byte[]> strings) {
+        client.lpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
     public Response<Long> lpushx(byte[] key, byte[] bytes) {
         client.lpushx(key, bytes);
         return getResponse(BuilderFactory.LONG);
@@ -294,8 +304,13 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> rpush(byte[] key, byte[] string) {
-        client.rpush(key, string);
+    public Response<Long> rpush(byte[] key, byte[] strings) {
+        client.rpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> rpush(byte[] key, List<byte[]> strings) {
+        client.rpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -304,11 +319,16 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> sadd(byte[] key, byte[] member) {
-        client.sadd(key, member);
+    public Response<Long> sadd(byte[] key, byte[] members) {
+        client.sadd(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> sadd(byte[] key, Set<byte[]> members) {
+        client.sadd(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
     public Response<Long> scard(byte[] key) {
         client.scard(key);
         return getResponse(BuilderFactory.LONG);
@@ -401,8 +421,13 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> srem(byte[] key, byte[] member) {
-        client.srem(key, member);
+    public Response<Long> srem(byte[] key, byte[] members) {
+        client.srem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> srem(byte[] key, Set<byte[]> members) {
+        client.srem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -531,8 +556,8 @@ public class BinaryTransaction extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zrem(byte[] key, byte[] member) {
-        client.zrem(key, member);
+    public Response<Long> zrem(byte[] key, Set<byte[]> members) {
+        client.zrem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 

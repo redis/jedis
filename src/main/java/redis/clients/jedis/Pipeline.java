@@ -225,13 +225,23 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> hdel(String key, String field) {
-        client.hdel(key, field);
+    public Response<Long> hdel(String key, String... fields) {
+        client.hdel(key, fields);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> hdel(byte[] key, byte[] field) {
-        client.hdel(key, field);
+    public Response<Long> hdel(byte[] key, byte[]... fields) {
+        client.hdel(key, fields);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> hdel(String key, Set<String> fields) {
+        client.hdel(key, fields);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> hdel(byte[] key, Set<byte[]> fields) {
+        client.hdel(key, fields);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -417,13 +427,23 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> lpush(String key, String string) {
-        client.lpush(key, string);
+    public Response<Long> lpush(String key, String... strings) {
+        client.lpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lpush(byte[] key, byte[] string) {
-        client.lpush(key, string);
+    public Response<Long> lpush(byte[] key, byte[]... strings) {
+        client.lpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> lpush(String key, List<String> strings) {
+        client.lpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> lpush(byte[] key, List<byte[]> strings) {
+        client.lpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -567,13 +587,23 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> rpush(String key, String string) {
-        client.rpush(key, string);
+    public Response<Long> rpush(String key, String... strings) {
+        client.rpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> rpush(byte[] key, byte[] string) {
-        client.rpush(key, string);
+    public Response<Long> rpush(byte[] key, byte[]... strings) {
+        client.rpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> rpush(String key, List<String> strings) {
+        client.rpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> rpush(byte[] key, List<byte[]> strings) {
+        client.rpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -587,13 +617,23 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> sadd(String key, String member) {
-        client.sadd(key, member);
+    public Response<Long> sadd(String key, String... members) {
+        client.sadd(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> sadd(byte[] key, byte[] member) {
-        client.sadd(key, member);
+    public Response<Long> sadd(byte[] key, byte[]... members) {
+        client.sadd(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> sadd(String key, Set<String> members) {
+        client.sadd(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> sadd(byte[] key, Set<byte[]> members) {
+        client.sadd(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -781,13 +821,23 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> srem(String key, String member) {
-        client.srem(key, member);
+    public Response<Long> srem(String key, String... members) {
+        client.srem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> srem(byte[] key, byte[] member) {
-        client.srem(key, member);
+    public Response<Long> srem(byte[] key, byte[]... members) {
+        client.srem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> srem(String key, Set<String> members) {
+        client.srem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> srem(byte[] key, Set<byte[]> members) {
+        client.srem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -1106,13 +1156,23 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zrem(String key, String member) {
-        client.zrem(key, member);
+    public Response<Long> zrem(String key, String... members) {
+        client.zrem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zrem(byte[] key, byte[] member) {
-        client.zrem(key, member);
+    public Response<Long> zrem(byte[] key, byte[]... members) {
+        client.zrem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> zrem(String key, Set<String> members) {
+        client.zrem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zrem(byte[] key, Set<byte[]> members) {
+        client.zrem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 

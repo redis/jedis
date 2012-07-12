@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
@@ -57,6 +58,20 @@ public class BinaryClient extends Connection {
 	    result[i + 1] = rest[i];
 	}
 	return result;
+    }
+    
+    private byte[][] joinParameters(byte[] first, Set<byte[]> rest) {
+    byte[][] result = new byte[rest.size() + 1][];
+    result[0] = first;
+    System.arraycopy(rest.toArray(new byte[rest.size()][]), 0, result, 1, rest.size());
+    return result;
+    }
+
+    private byte[][] joinParameters(byte[] first, List<byte[]> rest) {
+    byte[][] result = new byte[rest.size() + 1][];
+    result[0] = first;
+    System.arraycopy(rest.toArray(new byte[rest.size()][]), 0, result, 1, rest.size());
+    return result;
     }
 
     public void setPassword(final String password) {
@@ -246,6 +261,10 @@ public class BinaryClient extends Connection {
 	sendCommand(HDEL, joinParameters(key, fields));
     }
 
+    public void hdel(final byte[] key, final Set<byte[]> fields) {
+    sendCommand(HDEL, joinParameters(key, fields));
+    }
+
     public void hlen(final byte[] key) {
 	sendCommand(HLEN, key);
     }
@@ -266,8 +285,16 @@ public class BinaryClient extends Connection {
 	sendCommand(RPUSH, joinParameters(key, strings));
     }
 
+    public void rpush(final byte[] key, final List<byte[]> strings) {
+    sendCommand(RPUSH, joinParameters(key, strings));
+    }
+
     public void lpush(final byte[] key, final byte[]... strings) {
 	sendCommand(LPUSH, joinParameters(key, strings));
+    }
+
+    public void lpush(final byte[] key, final List<byte[]> strings) {
+    sendCommand(LPUSH, joinParameters(key, strings));
     }
 
     public void llen(final byte[] key) {
@@ -310,12 +337,20 @@ public class BinaryClient extends Connection {
 	sendCommand(SADD, joinParameters(key, members));
     }
 
+    public void sadd(final byte[] key, final Set<byte[]> members) {
+    sendCommand(SADD, joinParameters(key, members));
+    }
+
     public void smembers(final byte[] key) {
 	sendCommand(SMEMBERS, key);
     }
 
     public void srem(final byte[] key, final byte[]... members) {
 	sendCommand(SREM, joinParameters(key, members));
+    }
+
+    public void srem(final byte[] key, final Set<byte[]> members) {
+    sendCommand(SREM, joinParameters(key, members));
     }
 
     public void spop(final byte[] key) {
@@ -399,6 +434,10 @@ public class BinaryClient extends Connection {
 
     public void zrem(final byte[] key, final byte[]... members) {
 	sendCommand(ZREM, joinParameters(key, members));
+    }
+
+    public void zrem(final byte[] key, final Set<byte[]> members) {
+    sendCommand(ZREM, joinParameters(key, members));
     }
 
     public void zincrby(final byte[] key, final double score,

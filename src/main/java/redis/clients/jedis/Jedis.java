@@ -790,6 +790,22 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.hdel(key, fields);
 	return client.getIntegerReply();
     }
+    
+    /**
+     * Remove the specified field from an hash stored at key.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     * 
+     * @param key
+     * @param fields
+     * @return If the field was present in the hash it is deleted and 1 is
+     *         returned, otherwise 0 is returned and no operation is performed.
+     */
+    public Long hdel(final String key, final Set<String> fields) {
+    checkIsInMulti();
+    client.hdel(key, fields);
+    return client.getIntegerReply();
+    }
 
     /**
      * Return the number of items in a hash.
@@ -872,6 +888,27 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.rpush(key, strings);
 	return client.getIntegerReply();
     }
+    
+    /**
+     * Add the string value to the head (LPUSH) or tail (RPUSH) of the list
+     * stored at key. If the key does not exist an empty list is created just
+     * before the append operation. If the key exists but is not a List an error
+     * is returned.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @see Jedis#lpush(String, String)
+     * 
+     * @param key
+     * @param strings
+     * @return Integer reply, specifically, the number of elements inside the
+     *         list after the push operation.
+     */
+    public Long rpush(final String key, final List<String> strings) {
+    checkIsInMulti();
+    client.rpush(key, strings);
+    return client.getIntegerReply();
+    }
 
     /**
      * Add the string value to the head (LPUSH) or tail (RPUSH) of the list
@@ -892,6 +929,27 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.lpush(key, strings);
 	return client.getIntegerReply();
+    }
+    
+    /**
+     * Add the string value to the head (LPUSH) or tail (RPUSH) of the list
+     * stored at key. If the key does not exist an empty list is created just
+     * before the append operation. If the key exists but is not a List an error
+     * is returned.
+     * <p>
+     * Time complexity: O(1)
+     * 
+     * @see Jedis#rpush(String, String)
+     * 
+     * @param key
+     * @param strings
+     * @return Integer reply, specifically, the number of elements inside the
+     *         list after the push operation.
+     */
+    public Long lpush(final String key, final List<String> strings) {
+    checkIsInMulti();
+    client.lpush(key, strings);
+    return client.getIntegerReply();
     }
 
     /**
@@ -1151,6 +1209,25 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.sadd(key, members);
 	return client.getIntegerReply();
     }
+    
+    /**
+     * Add the specified member to the set value stored at key. If member is
+     * already a member of the set no operation is performed. If key does not
+     * exist a new set with the specified member as sole member is created. If
+     * the key exists but does not hold a set value an error is returned.
+     * <p>
+     * Time complexity O(1)
+     * 
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was added 0 if
+     *         the element was already a member of the set
+     */
+    public Long sadd(final String key, final Set<String> members) {
+    checkIsInMulti();
+    client.sadd(key, members);
+    return client.getIntegerReply();
+    }
 
     /**
      * Return all the members (elements) of the set value stored at key. This is
@@ -1184,6 +1261,24 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.srem(key, members);
 	return client.getIntegerReply();
+    }
+    
+    /**
+     * Remove the specified member from the set value stored at key. If member
+     * was not a member of the set no operation is performed. If key does not
+     * hold a set value an error is returned.
+     * <p>
+     * Time complexity O(1)
+     * 
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was removed 0
+     *         if the new element was not a member of the set
+     */
+    public Long srem(final String key, final Set<String> members) {
+    checkIsInMulti();
+    client.srem(key, members);
+    return client.getIntegerReply();
     }
 
     /**
@@ -1471,6 +1566,27 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.zrem(key, members);
 	return client.getIntegerReply();
+    }
+    
+    /**
+     * Remove the specified member from the sorted set value stored at key. If
+     * member was not a member of the set no operation is performed. If key does
+     * not not hold a set value an error is returned.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the
+     * sorted set
+     * 
+     * 
+     * 
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was removed 0
+     *         if the new element was not a member of the set
+     */
+    public Long zrem(final String key, final Set<String> members) {
+    checkIsInMulti();
+    client.zrem(key, members);
+    return client.getIntegerReply();
     }
 
     /**

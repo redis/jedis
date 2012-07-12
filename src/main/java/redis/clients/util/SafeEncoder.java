@@ -1,8 +1,8 @@
 package redis.clients.util;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -20,6 +20,26 @@ public class SafeEncoder {
 		}
 		return many;
 	}
+	
+    public static byte[][] encodeMany(final Set<String> strs){
+        byte[][] many = new byte[strs.size()][];
+        int i=0;
+        for (String str : strs){
+            many[i] = encode(str);
+            i++;
+        }
+        return many;
+    }
+    
+    public static byte[][] encodeMany(final List<String> strs){
+        byte[][] many = new byte[strs.size()][];
+        int i=0;
+        for (String str : strs){
+            many[i] = encode(str);
+            i++;
+        }
+        return many;
+    }
 	
     public static byte[] encode(final String str) {
         try {

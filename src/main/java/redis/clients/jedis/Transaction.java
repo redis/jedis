@@ -85,8 +85,13 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> hdel(String key, String field) {
-        client.hdel(key, field);
+    public Response<Long> hdel(String key, String... fields) {
+        client.hdel(key, fields);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> hdel(String key, Set<String> fields) {
+        client.hdel(key, fields);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -181,11 +186,16 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> lpush(String key, String string) {
-        client.lpush(key, string);
+    public Response<Long> lpush(String key, String... strings) {
+        client.lpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> lpush(String key, List<String> strings) {
+        client.lpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
     public Response<Long> lpushx(String key, String string) {
         client.lpushx(key, string);
         return getResponse(BuilderFactory.LONG);
@@ -256,8 +266,13 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> rpush(String key, String string) {
-        client.rpush(key, string);
+    public Response<Long> rpush(String key, String... strings) {
+        client.rpush(key, strings);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> rpush(String key, List<String> strings) {
+        client.rpush(key, strings);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -266,8 +281,13 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> sadd(String key, String member) {
-        client.sadd(key, member);
+    public Response<Long> sadd(String key, String... members) {
+        client.sadd(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> sadd(String key, Set<String> members) {
+        client.sadd(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -368,8 +388,13 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> srem(String key, String member) {
-        client.srem(key, member);
+    public Response<Long> srem(String key, String... members) {
+        client.srem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> srem(String key, Set<String> members) {
+        client.srem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -479,8 +504,13 @@ public class Transaction extends BinaryTransaction {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zrem(String key, String member) {
-        client.zrem(key, member);
+    public Response<Long> zrem(String key, String... members) {
+        client.zrem(key, members);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> zrem(String key, Set<String> members) {
+        client.zrem(key, members);
         return getResponse(BuilderFactory.LONG);
     }
 

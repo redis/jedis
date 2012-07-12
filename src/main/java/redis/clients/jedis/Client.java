@@ -3,8 +3,10 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import redis.clients.util.SafeEncoder;
 
@@ -172,6 +174,10 @@ public class Client extends BinaryClient implements Commands {
     public void hdel(final String key, final String... fields) {
 	hdel(SafeEncoder.encode(key), SafeEncoder.encodeMany(fields));
     }
+    
+    public void hdel(final String key, final Set<String> fields) {
+    hdel(SafeEncoder.encode(key), SafeEncoder.encodeMany(fields));
+    }
 
     public void hlen(final String key) {
 	hlen(SafeEncoder.encode(key));
@@ -193,8 +199,16 @@ public class Client extends BinaryClient implements Commands {
 	rpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
     }
 
+    public void rpush(final String key, final List<String> string) {
+    rpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
+    }
+
     public void lpush(final String key, final String... string) {
 	lpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
+    }
+    
+    public void lpush(final String key, final List<String> string) {
+    lpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
     }
 
     public void llen(final String key) {
@@ -236,6 +250,10 @@ public class Client extends BinaryClient implements Commands {
     public void sadd(final String key, final String... members) {
 	sadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
     }
+    
+    public void sadd(final String key, final Set<String> members) {
+    sadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+    }
 
     public void smembers(final String key) {
 	smembers(SafeEncoder.encode(key));
@@ -243,6 +261,10 @@ public class Client extends BinaryClient implements Commands {
 
     public void srem(final String key, final String... members) {
 	srem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+    }
+    
+    public void srem(final String key, final Set<String> members) {
+    srem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
     }
 
     public void spop(final String key) {
@@ -325,6 +347,10 @@ public class Client extends BinaryClient implements Commands {
 
     public void zrem(final String key, final String... members) {
 	zrem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+    }
+    
+    public void zrem(final String key, final Set<String> members) {
+    zrem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
     }
 
     public void zincrby(final String key, final double score,

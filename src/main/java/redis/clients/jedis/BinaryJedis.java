@@ -1556,9 +1556,9 @@ public class BinaryJedis implements BinaryJedisCommands {
 	return client.getIntegerReply();
     }
 
-    public Long zadd(final byte[] key, final Map<Double, byte[]> scoreMembers) {
+    public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
 	checkIsInMulti();
-	client.zaddBinary(key, scoreMembers);
+	client.zadd(key, scoreMembers);
 	return client.getIntegerReply();
     }
 

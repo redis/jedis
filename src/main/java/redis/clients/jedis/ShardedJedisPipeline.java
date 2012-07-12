@@ -381,6 +381,13 @@ public class ShardedJedisPipeline extends Queable {
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<Long> zadd(String key, Map<String, Double> scoreMembers) {
+        Client c = getClient(key);
+        c.zadd(key, scoreMembers);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
 
     public Response<Set<String>> zrange(String key, int start, int end) {
         Client c = getClient(key);

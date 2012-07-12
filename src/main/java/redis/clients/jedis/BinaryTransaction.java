@@ -466,6 +466,11 @@ public class BinaryTransaction extends Queable {
         client.zadd(key, score, member);
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers) {
+        client.zadd(key, scoreMembers);
+        return getResponse(BuilderFactory.LONG);
+    }
 
     public Response<Long> zcard(byte[] key) {
         client.zcard(key);

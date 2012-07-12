@@ -323,7 +323,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.zadd(key, score, member);
     }
 
-    public Long zadd(String key, Map<Double, String> scoreMembers) {
+    public Long zadd(String key, Map<String, Double> scoreMembers) {
 	Jedis j = getShard(key);
 	return j.zadd(key, scoreMembers);
     }

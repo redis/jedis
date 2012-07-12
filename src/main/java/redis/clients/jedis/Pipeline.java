@@ -920,6 +920,16 @@ public class Pipeline extends Queable {
         client.zadd(key, score, member);
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<Long> zadd(String key, Map<String, Double> scoreMembers) {
+        client.zadd(key, scoreMembers);
+        return getResponse(BuilderFactory.LONG);
+    }
+//
+//    public Response<Long> zadd(String key, Map<byte[], Double> scoreMembers) {
+//        client.zadd(key, scoreMembers);
+//        return getResponse(BuilderFactory.LONG);
+//    }
 
     public Response<Long> zcard(String key) {
         client.zcard(key);

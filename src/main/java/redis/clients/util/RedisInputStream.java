@@ -16,6 +16,7 @@
 
 package redis.clients.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,9 +52,10 @@ public class RedisInputStream extends FilterInputStream {
     public String readLine() {
         int b;
         byte c;
-        StringBuilder sb = new StringBuilder();
+        ByteArrayOutputStream baos = null;
 
         try {
+        	baos = new ByteArrayOutputStream();
             while (true) {
                 if (count == limit) {
                     fill();
@@ -68,7 +70,7 @@ public class RedisInputStream extends FilterInputStream {
                     }
 
                     if (limit == -1) {
-                        sb.append((char) b);
+                        baos.write(b);
                         break;
                     }
 
@@ -76,21 +78,27 @@ public class RedisInputStream extends FilterInputStream {
                     if (c == '\n') {
                         break;
                     }
-                    sb.append((char) b);
-                    sb.append((char) c);
+                    baos.write(b);
+                    baos.write(c);
                 } else {
-                    sb.append((char) b);
+                    baos.write(b);
                 }
             }
+            String reply = new String(baos.toByteArray(), "UTF-8");
+            if (reply.length() == 0) {
+                throw new JedisConnectionException(
+                        "It seems like server has closed the connection.");
+            }
+            return reply;
         } catch (IOException e) {
             throw new JedisConnectionException(e);
+        } finally {
+        	if(baos != null) {
+        		try{
+        			baos.close();
+        		} catch (IOException ignore) {}
+        	}
         }
-        String reply = sb.toString();
-        if (reply.length() == 0) {
-            throw new JedisConnectionException(
-                    "It seems like server has closed the connection.");
-        }
-        return reply;
     }
 
     public int read(byte[] b, int off, int len) throws IOException {

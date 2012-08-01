@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,6 +28,10 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     public Jedis(JedisShardInfo shardInfo) {
 	super(shardInfo);
+    }
+
+    public Jedis(URI uri) {
+	super(uri);
     }
 
     public String ping() {

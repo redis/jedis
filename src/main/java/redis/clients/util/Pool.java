@@ -7,8 +7,12 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class Pool<T> {
-    private final GenericObjectPool internalPool;
+    protected GenericObjectPool internalPool;
 
+    protected Pool() {
+	this.internalPool = null;
+    }
+    
     public Pool(final GenericObjectPool.Config poolConfig,
             PoolableObjectFactory factory) {
         this.internalPool = new GenericObjectPool(factory, poolConfig);

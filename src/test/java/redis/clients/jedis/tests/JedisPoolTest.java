@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.junit.Assert;
@@ -122,5 +125,29 @@ public class JedisPoolTest extends Assert {
         BinaryJedis jedis = pool.getResource();
         pool.returnResource(jedis);
         pool.destroy();
+    }
+    
+    @Test
+    public void startWithUrlString() {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.select(2);
+	j.set("foo", "bar");
+	JedisPool pool = new JedisPool("redis://:foobared@localhost:6380/2");
+	Jedis jedis = pool.getResource();
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
+    }
+    
+    @Test
+    public void startWithUrl() throws URISyntaxException {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.select(2);
+	j.set("foo", "bar");
+	JedisPool pool = new JedisPool(new URI("redis://:foobared@localhost:6380/2"));
+	Jedis jedis = pool.getResource();
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
     }
 }

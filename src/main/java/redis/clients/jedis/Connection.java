@@ -38,6 +38,9 @@ public class Connection {
 
     public void setTimeoutInfinite() {
         try {
+            if(!isConnected()) {
+        	connect();
+            }
             socket.setKeepAlive(true);
             socket.setSoTimeout(0);
         } catch (SocketException ex) {

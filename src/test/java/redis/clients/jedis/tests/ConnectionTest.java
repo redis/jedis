@@ -33,4 +33,12 @@ public class ConnectionTest extends Assert {
         client.setPort(55665);
         client.connect();
     }
+    
+    @Test
+    public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
+	client.setHost("localhost");
+        client.setPort(6379);
+	client.setTimeoutInfinite();
+    }
+
 }

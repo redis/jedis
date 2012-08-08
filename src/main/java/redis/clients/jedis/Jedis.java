@@ -2873,4 +2873,25 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.objectIdletime(string);
 	return client.getIntegerReply();
     }
+
+    public Boolean bitcount(final String key, Integer start, Integer end) {
+        // TODO: implement bitcount.
+        return null;
+    }
+
+    public Integer bitop(BitOP op, final String destKey, String... srcKeys) {
+        // TODO: implement bitop.
+        return null;
+    }
+
+    public Integer getbit(final String key, Integer offset) {
+        // TODO: implement getbit.
+        return null;
+    }
+
+    public Integer setbit(final String key, Integer offset, Integer value) {
+        // TODO: implement setbit.
+        return null;
+    }
+
 }

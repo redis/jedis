@@ -2874,22 +2874,22 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
-    public Boolean bitcount(final String key, Integer start, Integer end) {
+    public Long bitcount(final String key, Long start, Long end) {
         // TODO: implement bitcount.
         return null;
     }
 
-    public Integer bitop(BitOP op, final String destKey, String... srcKeys) {
+    public Long bitop(BitOP op, final String destKey, String... srcKeys) {
         // TODO: implement bitop.
         return null;
     }
 
-    public Integer getbit(final String key, Integer offset) {
+    public Long getbit(final String key, Long offset) {
         // TODO: implement getbit.
         return null;
     }
 
-    public Integer setbit(final String key, Integer offset, Integer value) {
+    public Long setbit(final String key, Long offset, Long value) {
         // TODO: implement setbit.
         return null;
     }

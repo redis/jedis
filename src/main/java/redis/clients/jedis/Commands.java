@@ -285,4 +285,8 @@ public interface Commands {
     public void objectIdletime(String key);
 
     public void objectEncoding(String key);
+
+    public void bitcount(final String key, Long start, Long end);
+
+    public void bitop(BitOP op, final String destKey, String... srcKeys);
 }

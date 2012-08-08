@@ -2875,14 +2875,13 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     public Long bitcount(final String key, Long start, Long end) {
-        //client.bitcount(key, start, end);
-	//return client.getIntegerReply();
-        return null;
+        client.bitcount(key, start, end);
+        return client.getIntegerReply();
     }
 
     public Long bitop(BitOP op, final String destKey, String... srcKeys) {
-        // TODO: implement bitop.
-        return null;
+        client.bitop(op, destKey, srcKeys);
+        return client.getIntegerReply();
     }
 
 }

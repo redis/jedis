@@ -190,4 +190,9 @@ public interface JedisCommands {
     Long lpushx(String key, String string);
     
     Long rpushx(String key, String string); 
+
+    Long bitcount(final String key, Long start, Long end);
+
+    Long bitop(BitOP op, final String destKey, String... srcKeys);
+
 }

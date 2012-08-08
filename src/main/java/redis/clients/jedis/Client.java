@@ -705,10 +705,10 @@ public class Client extends BinaryClient implements Commands {
     }
 
     public void bitcount(final String key, Long start, Long end) {
-        // TODO: implement bitcount.
+        bitcount(SafeEncoder.encode(key), start, end);
     }
 
     public void bitop(BitOP op, final String destKey, String... srcKeys) {
-        // TODO: implement bitop.
+        bitop(op, SafeEncoder.encode(destKey), srcKeys);
     }
 }

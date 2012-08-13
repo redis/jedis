@@ -77,7 +77,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
 
     public S getShardInfo(byte[] key) {
         SortedMap<Long, S> tail = nodes.tailMap(algo.hash(key));
-        if (tail.size() == 0) {
+        if (tail.isEmpty()) {
             return nodes.get(nodes.firstKey());
         }
         return tail.get(tail.firstKey());

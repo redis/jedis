@@ -103,7 +103,7 @@ public interface BinaryJedisCommands {
 
     Long zadd(byte[] key, double score, byte[] member);
 
-    Long zadd(byte[] key, Map<Double, byte[]> scoreMembers);
+    Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
     Set<byte[]> zrange(byte[] key, int start, int end);
 

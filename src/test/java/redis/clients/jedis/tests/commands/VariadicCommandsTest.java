@@ -140,7 +140,7 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
 
         bscoreMembers.clear();
 	 	bscoreMembers.put(bcar, 0.1d);
-	 	bscoreMembers.put(bbar, 2d );
+	 	bscoreMembers.put(bbar, 2d);
 	 		        
         status = jedis.zadd(bfoo, bscoreMembers);
         assertEquals(1, status);

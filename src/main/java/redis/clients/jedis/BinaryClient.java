@@ -376,15 +376,15 @@ public class BinaryClient extends Connection {
 	sendCommand(ZADD, key, toByteArray(score), member);
     }
 
-    public void zaddBinary(final byte[] key, Map<Double, byte[]> scoreMembers) {
+    public void zaddBinary(final byte[] key, Map<byte[], Double> scoreMembers) {
 	ArrayList<byte[]> args = new ArrayList<byte[]>(
 		scoreMembers.size() * 2 + 1);
 
 	args.add(key);
 
-	for (Map.Entry<Double, byte[]> entry : scoreMembers.entrySet()) {
-	    args.add(toByteArray(entry.getKey()));
-	    args.add(entry.getValue());
+	for (Map.Entry<byte[], Double> entry : scoreMembers.entrySet()) {
+	    args.add(toByteArray(entry.getValue()));
+	    args.add(entry.getKey());
 	}
 
 	byte[][] argsArray = new byte[args.size()][];

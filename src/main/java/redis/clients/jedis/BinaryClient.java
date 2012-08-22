@@ -808,15 +808,12 @@ public class BinaryClient extends Connection {
 	sendCommand(OBJECT, ENCODING.raw, key);
     }
 
-    public void bitcount(byte[] key, Long start, Long end) {
-        if (start == null) {
-            sendCommand(BITCOUNT, key);
-        } else if (end == null) {
-            sendCommand(BITCOUNT, key, toByteArray(start.longValue()));
-        } else {
-            sendCommand(BITCOUNT, key, toByteArray(start.longValue()),
-                    toByteArray(end.longValue()));
-        }
+    public void bitcount(byte[] key) {
+        sendCommand(BITCOUNT, key);
+    }
+
+    public void bitcount(byte[] key, long start, long end) {
+        sendCommand(BITCOUNT, key, toByteArray(start), toByteArray(end));
     }
 
     public void bitop(BitOP op, byte[] destKey, String... srcKeys) {

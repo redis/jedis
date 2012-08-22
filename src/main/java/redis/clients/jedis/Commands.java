@@ -286,7 +286,9 @@ public interface Commands {
 
     public void objectEncoding(String key);
 
-    public void bitcount(final String key, Long start, Long end);
+    public void bitcount(final String key);
+
+    public void bitcount(final String key, long start, long end);
 
     public void bitop(BitOP op, final String destKey, String... srcKeys);
 }

@@ -2874,7 +2874,12 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
-    public Long bitcount(final String key, Long start, Long end) {
+    public Long bitcount(final String key) {
+        client.bitcount(key);
+        return client.getIntegerReply();
+    }
+
+    public Long bitcount(final String key, long start, long end) {
         client.bitcount(key, start, end);
         return client.getIntegerReply();
     }

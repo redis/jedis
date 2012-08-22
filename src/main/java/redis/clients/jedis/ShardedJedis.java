@@ -484,7 +484,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.linsert(key, where, pivot, value);
     }
 
-    public Long bitcount(final String key, Long start, Long end) {
+    public Long bitcount(final String key) {
+	Jedis j = getShard(key);
+	return j.bitcount(key);
+    }
+
+    public Long bitcount(final String key, long start, long end) {
 	Jedis j = getShard(key);
 	return j.bitcount(key, start, end);
     }

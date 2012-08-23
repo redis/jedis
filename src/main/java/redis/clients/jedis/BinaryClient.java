@@ -807,4 +807,41 @@ public class BinaryClient extends Connection {
     public void objectEncoding(byte[] key) {
 	sendCommand(OBJECT, ENCODING.raw, key);
     }
+
+    public void bitcount(byte[] key) {
+        sendCommand(BITCOUNT, key);
+    }
+
+    public void bitcount(byte[] key, long start, long end) {
+        sendCommand(BITCOUNT, key, toByteArray(start), toByteArray(end));
+    }
+
+    public void bitop(BitOP op, byte[] destKey, String... srcKeys) {
+        Keyword kw = Keyword.AND;
+        int len = srcKeys.length;
+        switch (op) {
+            case AND:
+                kw = Keyword.AND;
+                break;
+            case OR:
+                kw = Keyword.OR;
+                break;
+            case XOR:
+                kw = Keyword.XOR;
+                break;
+            case NOT:
+                kw = Keyword.NOT;
+                len = Math.min(1, len);
+                break;
+        }
+
+        byte[][] bargs = new byte[len + 2][];
+        bargs[0] = kw.raw;
+        bargs[1] = destKey;
+        for (int i = 0; i < len; ++i) {
+            bargs[i + 2] = SafeEncoder.encode(srcKeys[i]);
+        }
+
+        sendCommand(BITOP, bargs);
+    }
 }

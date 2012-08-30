@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import redis.clients.util.SafeEncoder;
 
 public class PipeliningTest extends Assert {
     private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -192,5 +193,23 @@ public class PipeliningTest extends Assert {
         assertEquals(new Long(-1), r3.get().get(0));
         assertEquals(new Long(-3), r3.get().get(1));
         
+    }
+    
+    @Test
+    public void pipelineResponseMGet() {
+         byte[] key1 = SafeEncoder.encode("key1");
+         byte[] key2 = SafeEncoder.encode("key2");
+         byte[] value1 = SafeEncoder.encode("value1");
+         byte[] value2 = SafeEncoder.encode("value2");
+        jedis.set(key1,value1);
+        jedis.set(key2,value2);
+       
+        Pipeline p = jedis.pipelined();
+        Response<List<byte[]>> response = p.mget(key1,key2);
+       
+        p.sync();
+
+        assertEquals("value1", SafeEncoder.encode(response.get().get(0)));
+        assertEquals("value2", SafeEncoder.encode(response.get().get(1)));      
     }
 }

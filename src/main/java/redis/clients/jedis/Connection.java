@@ -5,7 +5,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -23,6 +26,10 @@ public class Connection {
     private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
+
+    private Thread pumpThread;
+    BlockingQueue<Response<?>> asyncResponses = new LinkedBlockingQueue<Response<?>>();
+
 
     public Socket getSocket() {
         return socket;
@@ -147,8 +154,14 @@ public class Connection {
                 if (!socket.isClosed()) {
                     socket.close();
                 }
+                if(pumpThread != null){
+                    pumpThread.interrupt();
+                    pumpThread.join();
+                }
             } catch (IOException ex) {
                 throw new JedisConnectionException(ex);
+            } catch (InterruptedException ie){
+                // throw?
             }
         }
     }
@@ -223,8 +236,70 @@ public class Connection {
     }
 
     public Object getOne() {
+        waitForAsyncReadsToComplete();
         flush();
         pipelinedCommands--;
         return Protocol.read(inputStream);
+    }
+
+    public void flushAsync(Collection<Response<?>> responses) {
+        flush();
+        asyncResponses.addAll(responses);
+        startResponsePump();
+    }
+
+    private void startResponsePump() {
+        if (pumpThread == null) {
+            pumpThread = new Thread(new ResponsePump());
+            pumpThread.start();
+        }
+    }
+
+    private void wakeNextWriter() {
+        if (asyncResponses.isEmpty()) {
+            synchronized (pumpThread) {
+                pumpThread.notify();
+            }
+        }
+    }
+
+    private void waitForAsyncReadsToComplete() {
+        if (!asyncResponses.isEmpty()) {
+            while (!asyncResponses.isEmpty()) {
+                try {
+                    synchronized (pumpThread) {
+                        pumpThread.wait();
+                    }
+                } catch (InterruptedException e) {
+                    // wait some more
+                }
+            }
+        }
+    }
+
+    private class ResponsePump implements Runnable {
+        @Override
+        public void run() {
+            JedisDataException exception = null;
+            try {
+                while (isConnected()) {
+                    Response<?> response = asyncResponses.take();
+                    Object data = Protocol.read(inputStream);
+                    response.set(data);
+                    wakeNextWriter();
+                }
+
+            } catch (Exception ioe) {
+                exception = new JedisDataException(ioe);
+            }
+            if (exception == null) {
+                exception = new JedisDataException("Disconnected");
+            }
+            // if something went wrong
+            Response<?> response;
+            while ((response = asyncResponses.poll()) != null) {
+                response.set(exception);
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     @SuppressWarnings("unchecked")
 	@Test
     public void evalMultiBulk() {
+        requiresVersion("2.6.0");
     	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
     	List<String> keys = new ArrayList<String>();
     	keys.add("key1");
@@ -34,6 +35,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     
 	@Test
     public void evalBulk() {
+        requiresVersion("2.6.0");
     	String script = "return KEYS[1]";
     	List<String> keys = new ArrayList<String>();
     	keys.add("key1");
@@ -48,6 +50,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	
 	@Test
     public void evalInt() {
+        requiresVersion("2.6.0");
     	String script = "return 2";
     	List<String> keys = new ArrayList<String>();
     	keys.add("key1");
@@ -59,6 +62,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	
 	@Test
     public void evalNoArgs() {
+        requiresVersion("2.6.0");
     	String script = "return KEYS[1]";
     	List<String> keys = new ArrayList<String>();
     	keys.add("key1");
@@ -70,6 +74,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void evalsha() {
+        requiresVersion("2.6.0");
 		jedis.set("foo", "bar");
 		jedis.eval("return redis.call('get','foo')");
 		String result = (String)jedis.evalsha("6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
@@ -78,14 +83,21 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     }
 	
 	@SuppressWarnings("unchecked")
-	@Test(expected=JedisDataException.class)
+	@Test
     public void evalshaShaNotFound() {
-		jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
+        requiresVersion("2.6.0");
+		try{
+            jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
+            assertTrue(false);
+        }catch(JedisDataException e){
+            assertTrue(e.getMessage().contains("SHA"));
+        }
     }
 	
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptFlush() {
+        requiresVersion("2.6.0");
 		jedis.set("foo", "bar");
 		jedis.eval("return redis.call('get','foo')");
 		jedis.scriptFlush();
@@ -95,6 +107,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptExists() {
+        requiresVersion("2.6.0");
 		jedis.scriptLoad("return redis.call('get','foo')");
 		List<Boolean> exists = jedis.scriptExists("ffffffffffffffffffffffffffffffffffffffff","6b1bf486c81ceb7edf3c093f4c48582e38c0e791"); 
 		assertFalse(exists.get(0));
@@ -104,6 +117,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptExistsBinary() {
+        requiresVersion("2.6.0");
 		jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
 		List<Long> exists = jedis.scriptExists(SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791")); 
 		assertEquals(new Long(0), exists.get(0));
@@ -113,6 +127,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptLoad() {
+        requiresVersion("2.6.0");
 		jedis.scriptLoad("return redis.call('get','foo')");
 		assertTrue(jedis.scriptExists("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
     }
@@ -120,6 +135,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptLoadBinary() {
+        requiresVersion("2.6.0");
 		jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
 		List<Long> exists = jedis.scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791")); 
 		assertEquals(new Long(1), exists.get(0));
@@ -128,6 +144,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	@SuppressWarnings("unchecked")
 	@Test
     public void scriptKill() {
+        requiresVersion("2.6.0");
 		try {
 			jedis.scriptKill();
 		}

@@ -484,9 +484,4 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.objectIdletime(key);
     }
-    
-    public Long persist(byte[] key) {
-    	Jedis j = getShard(key);
-    	return j.persist(key);
-    }
 }

@@ -160,9 +160,7 @@ public class Connection {
     }
 
     protected String getStatusCodeReply() {
-        flush();
-        pipelinedCommands--;
-        final byte[] resp = (byte[]) Protocol.read(inputStream);
+        final byte[] resp = (byte[]) getOne();
         if (null == resp) {
             return null;
         } else {
@@ -180,15 +178,11 @@ public class Connection {
     }
 
     public byte[] getBinaryBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (byte[]) Protocol.read(inputStream);
+        return (byte[]) getOne();
     }
 
     public Long getIntegerReply() {
-        flush();
-        pipelinedCommands--;
-        return (Long) Protocol.read(inputStream);
+        return (Long) getOne();
     }
 
     public List<String> getMultiBulkReply() {
@@ -197,23 +191,17 @@ public class Connection {
 
     @SuppressWarnings("unchecked")
     public List<byte[]> getBinaryMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (List<byte[]>) Protocol.read(inputStream);
+        return (List<byte[]>) getOne();
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> getObjectMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (List<Object>) Protocol.read(inputStream);
+        return (List<Object>) getOne();
     }
     
     @SuppressWarnings("unchecked")
     public List<Long> getIntegerMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (List<Long>) Protocol.read(inputStream);
+        return (List<Long>) getOne();
     }
 
     public List<Object> getAll() {

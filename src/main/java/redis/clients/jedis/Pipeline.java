@@ -94,6 +94,10 @@ public class Pipeline extends Queable {
         return formatted;
     }
 
+    public void flushAsync(){
+        client.flushAsync(getPipelinedResponses());
+    }
+
     public Response<Long> append(String key, String value) {
         client.append(key, value);
         return getResponse(BuilderFactory.LONG);

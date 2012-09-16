@@ -24,4 +24,9 @@ public class Queable {
         return lr;
     }
 
+    public Queue<Response<?>> getPipelinedResponses() {
+        Queue<Response<?>> temp = pipelinedResponses;
+        pipelinedResponses = new LinkedList<Response<?>>();
+        return temp;
+    }
 }

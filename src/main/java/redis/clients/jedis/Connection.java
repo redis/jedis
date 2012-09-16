@@ -5,7 +5,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -23,6 +26,10 @@ public class Connection {
     private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
+
+    private Thread pumpThread;
+    BlockingQueue<Response<?>> asyncResponses = new LinkedBlockingQueue<Response<?>>();
+
 
     public Socket getSocket() {
         return socket;
@@ -147,8 +154,14 @@ public class Connection {
                 if (!socket.isClosed()) {
                     socket.close();
                 }
+                if(pumpThread != null){
+                    pumpThread.interrupt();
+                    pumpThread.join();
+                }
             } catch (IOException ex) {
                 throw new JedisConnectionException(ex);
+            } catch (InterruptedException ie){
+                // throw?
             }
         }
     }
@@ -160,9 +173,7 @@ public class Connection {
     }
 
     protected String getStatusCodeReply() {
-        flush();
-        pipelinedCommands--;
-        final byte[] resp = (byte[]) Protocol.read(inputStream);
+        final byte[] resp = (byte[]) getOne();
         if (null == resp) {
             return null;
         } else {
@@ -180,15 +191,11 @@ public class Connection {
     }
 
     public byte[] getBinaryBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (byte[]) Protocol.read(inputStream);
+        return (byte[]) getOne();
     }
 
     public Long getIntegerReply() {
-        flush();
-        pipelinedCommands--;
-        return (Long) Protocol.read(inputStream);
+        return (Long) getOne();
     }
 
     public List<String> getMultiBulkReply() {
@@ -197,23 +204,17 @@ public class Connection {
 
     @SuppressWarnings("unchecked")
     public List<byte[]> getBinaryMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (List<byte[]>) Protocol.read(inputStream);
+        return (List<byte[]>) getOne();
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> getObjectMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (List<Object>) Protocol.read(inputStream);
+        return (List<Object>) getOne();
     }
     
     @SuppressWarnings("unchecked")
     public List<Long> getIntegerMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return (List<Long>) Protocol.read(inputStream);
+        return (List<Long>) getOne();
     }
 
     public List<Object> getAll() {
@@ -235,8 +236,70 @@ public class Connection {
     }
 
     public Object getOne() {
+        waitForAsyncReadsToComplete();
         flush();
         pipelinedCommands--;
         return Protocol.read(inputStream);
+    }
+
+    public void flushAsync(Collection<Response<?>> responses) {
+        flush();
+        asyncResponses.addAll(responses);
+        startResponsePump();
+    }
+
+    private void startResponsePump() {
+        if (pumpThread == null) {
+            pumpThread = new Thread(new ResponsePump());
+            pumpThread.start();
+        }
+    }
+
+    private void wakeNextWriter() {
+        if (asyncResponses.isEmpty()) {
+            synchronized (pumpThread) {
+                pumpThread.notify();
+            }
+        }
+    }
+
+    private void waitForAsyncReadsToComplete() {
+        if (!asyncResponses.isEmpty()) {
+            while (!asyncResponses.isEmpty()) {
+                try {
+                    synchronized (pumpThread) {
+                        pumpThread.wait();
+                    }
+                } catch (InterruptedException e) {
+                    // wait some more
+                }
+            }
+        }
+    }
+
+    private class ResponsePump implements Runnable {
+        @Override
+        public void run() {
+            JedisDataException exception = null;
+            try {
+                while (isConnected()) {
+                    Response<?> response = asyncResponses.take();
+                    Object data = Protocol.read(inputStream);
+                    response.set(data);
+                    wakeNextWriter();
+                }
+
+            } catch (Exception ioe) {
+                exception = new JedisDataException(ioe);
+            }
+            if (exception == null) {
+                exception = new JedisDataException("Disconnected");
+            }
+            // if something went wrong
+            Response<?> response;
+            while ((response = asyncResponses.poll()) != null) {
+                response.set(exception);
+            }
+        }
     }
 }

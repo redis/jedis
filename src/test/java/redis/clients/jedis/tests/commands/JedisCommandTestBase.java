@@ -14,6 +14,8 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
+import static org.junit.Assume.assumeTrue;
+
 public abstract class JedisCommandTestBase extends JedisTestBase {
     protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
@@ -92,5 +94,37 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
             }
         }
         return false;
+    }
+
+    protected void requiresVersion(String minimumVersion) {
+        assumeTrue(compareVersions(minimumVersion, getServerVersion()) >= 0);
+    }
+
+    private static String serverVersion;
+
+    private String getServerVersion() {
+        if (serverVersion == null) {
+            String[] lines = jedis.info().split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                String[] keyValue = lines[i].split(":");
+                if (keyValue[0].equals("redis_version")) {
+                    serverVersion = keyValue[1].trim();
+                }
+            }
+        }
+        return serverVersion;
+    }
+
+    private int compareVersions(String minimumVersion, String currentVersion) {
+        String[] thatParts = minimumVersion.split("\\.");
+        String[] thisParts = currentVersion.split("\\.");
+        int length = Math.max(thisParts.length, thatParts.length);
+        for (int i = 0; i < length; i++) {
+            int thisPart = i < thisParts.length ? Integer.parseInt(thisParts[i]) : 0;
+            int thatPart = i < thatParts.length ? Integer.parseInt(thatParts[i]) : 0;
+            if (thisPart < thatPart) return -1;
+            if (thisPart > thatPart) return 1;
+        }
+        return 0;
     }
 }

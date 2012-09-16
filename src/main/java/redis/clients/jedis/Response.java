@@ -8,14 +8,22 @@ public class Response<T> {
     private boolean set = false;
     private Builder<T> builder;
     private Object data;
+    ResponseListener<T> listener;
 
     public Response(Builder<T> b) {
         this.builder = b;
     }
 
-    public void set(Object data) {
+    public synchronized void set(Object data) {
         this.data = data;
         set = true;
+        if (listener != null) listener.onComplete(this);
+        notify();
+    }
+
+    public synchronized void setListener(ResponseListener<T> listener) {
+        this.listener = listener;
+        if (set) listener.onComplete(this);
     }
 
     public T get() {
@@ -34,6 +42,15 @@ public class Response<T> {
             built = true;
         }
         return response;
+    }
+
+    public synchronized T await() {
+        try {
+            if (!set) wait();
+        } catch (InterruptedException ie) {
+            // were probably shutting down,
+        }
+        return get();
     }
 
     public String toString() {

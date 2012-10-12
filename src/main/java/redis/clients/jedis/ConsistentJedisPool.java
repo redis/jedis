@@ -1,11 +1,13 @@
 package redis.clients.jedis;
 
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.Hashing;
@@ -34,6 +36,7 @@ public class ConsistentJedisPool {
 		this.hashAlg = hashAlg;
 
 		init();
+
 	}
 
 	public void destroy() {

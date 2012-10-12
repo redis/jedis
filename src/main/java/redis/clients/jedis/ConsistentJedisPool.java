@@ -38,6 +38,16 @@ public class ConsistentJedisPool {
 		init();
 
 	}
+	
+	public ConsistentJedisPool(List<String> addresses, int numberOfReplicas,
+			JedisPoolConfig config) {
+		this.addresses = addresses;
+		this.numberOfReplicas = numberOfReplicas;
+		this.config = config;
+		this.hashAlg = Hashing.MURMUR_HASH;
+
+		init();
+	}
 
 	public void destroy() {
 		try {

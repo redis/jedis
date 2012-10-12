@@ -13,15 +13,24 @@ package redis.clients.jedis;
 public class RedisClient {
 
 	private ConsistentJedisPool consistentPool;
+	private String password;
 
 	public RedisClient(ConsistentJedisPool consistentPool) {
 		this.consistentPool = consistentPool;
 	}
 
-	public void setex(final String key, final int seconds,
-			final String value) throws Throwable {
+	public RedisClient(ConsistentJedisPool consistentPool, String password) {
+		this.consistentPool = consistentPool;
+		this.password = password;
+	}
+
+	public void setex(final String key, final int seconds, final String value)
+			throws Throwable {
 		consistentPool.redisCall(new RedisCallback() {
 			public Object doInRedis(Jedis jedis) {
+				if (null != password) {
+					jedis.auth(password);
+				}
 				return jedis.setex(key, seconds, value);
 			}
 
@@ -34,6 +43,9 @@ public class RedisClient {
 	public Object get(final String key) throws Throwable {
 		return consistentPool.redisCall(new RedisCallback() {
 			public Object doInRedis(Jedis jedis) {
+				if (null != password) {
+					jedis.auth(password);
+				}
 				return jedis.get(key);
 			}
 
@@ -47,6 +59,9 @@ public class RedisClient {
 	public void set(final String key, final String value) throws Throwable {
 		consistentPool.redisCall(new RedisCallback() {
 			public Object doInRedis(Jedis jedis) {
+				if (null != password) {
+					jedis.auth(password);
+				}
 				return jedis.set(key, value);
 			}
 

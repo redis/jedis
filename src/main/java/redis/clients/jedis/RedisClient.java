@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+
 /**
  * RedisClient Class Using the ConsistenJedisPool to make the redis-servers easy
  * distributing and clustering, RedisCallback is to ease the connection resource
@@ -13,24 +14,15 @@ package redis.clients.jedis;
 public class RedisClient {
 
 	private ConsistentJedisPool consistentPool;
-	private String password;
 
 	public RedisClient(ConsistentJedisPool consistentPool) {
 		this.consistentPool = consistentPool;
-	}
-
-	public RedisClient(ConsistentJedisPool consistentPool, String password) {
-		this.consistentPool = consistentPool;
-		this.password = password;
 	}
 
 	public void setex(final String key, final int seconds, final String value)
 			throws Throwable {
 		consistentPool.redisCall(new RedisCallback() {
 			public Object doInRedis(Jedis jedis) {
-				if (null != password) {
-					jedis.auth(password);
-				}
 				return jedis.setex(key, seconds, value);
 			}
 
@@ -43,9 +35,6 @@ public class RedisClient {
 	public Object get(final String key) throws Throwable {
 		return consistentPool.redisCall(new RedisCallback() {
 			public Object doInRedis(Jedis jedis) {
-				if (null != password) {
-					jedis.auth(password);
-				}
 				return jedis.get(key);
 			}
 
@@ -59,9 +48,6 @@ public class RedisClient {
 	public void set(final String key, final String value) throws Throwable {
 		consistentPool.redisCall(new RedisCallback() {
 			public Object doInRedis(Jedis jedis) {
-				if (null != password) {
-					jedis.auth(password);
-				}
 				return jedis.set(key, value);
 			}
 
@@ -70,6 +56,44 @@ public class RedisClient {
 			}
 		});
 
+	}
+
+	public Boolean exists(final String key) throws Throwable {
+		return (Boolean) consistentPool.redisCall(new RedisCallback() {
+			public Object doInRedis(Jedis jedis) {
+				return jedis.exists(key);
+			}
+
+			public String getKey() {
+				return key;
+			}
+		});
+	}
+
+	public Long expire(final String key, final int seconds) throws Throwable {
+		return (Long) consistentPool.redisCall(new RedisCallback() {
+			public Object doInRedis(Jedis jedis) {
+				return jedis.expire(key, seconds);
+			}
+
+			public String getKey() {
+				return key;
+			}
+		});
+
+	}
+
+	public Long expireAt(final String key, final long unixTime)
+			throws Throwable {
+		return (Long) consistentPool.redisCall(new RedisCallback() {
+			public Object doInRedis(Jedis jedis) {
+				return jedis.expireAt(key, unixTime);
+			}
+
+			public String getKey() {
+				return key;
+			}
+		});
 	}
 
 }

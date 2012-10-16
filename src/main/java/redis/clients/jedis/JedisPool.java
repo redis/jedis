@@ -10,13 +10,14 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.util.Pool;
 
-public class JedisPool extends Pool<Jedis> implements JedisPoolMBean {
+public class JedisPool extends Pool<Jedis> implements JedisPoolMXBean {
 
     protected static Logger logger = LoggerFactory.getLogger(JedisPool.class);
     private JedisFactory factory;
@@ -132,6 +133,64 @@ public class JedisPool extends Pool<Jedis> implements JedisPoolMBean {
     @Override
     public int getTimeout() {
         return factory.getTimeout();
+    }
+
+    @Override
+    public WhenExhaustedAction getWhenExhaustedAction() {
+        switch (getWhenExhaustedActionByte()) {
+            case GenericObjectPool.WHEN_EXHAUSTED_FAIL:
+                return WhenExhaustedAction.FAIL;
+            case GenericObjectPool.WHEN_EXHAUSTED_GROW:
+                return WhenExhaustedAction.GROW;
+            case GenericObjectPool.WHEN_EXHAUSTED_BLOCK:
+            default:
+                return WhenExhaustedAction.BLOCK;
+        }
+    }
+
+    @Override
+    public void setWhenExhaustedAction(WhenExhaustedAction whenExhaustedAction) {
+        switch (whenExhaustedAction) {
+            case FAIL:
+                setWhenExhaustedActionByte(GenericObjectPool.WHEN_EXHAUSTED_FAIL);
+                break;
+            case BLOCK:
+                setWhenExhaustedActionByte(GenericObjectPool.WHEN_EXHAUSTED_BLOCK);
+                break;
+            case GROW:
+                setWhenExhaustedActionByte(GenericObjectPool.WHEN_EXHAUSTED_GROW);
+                break;
+            default:
+                setWhenExhaustedActionByte(GenericObjectPool.DEFAULT_WHEN_EXHAUSTED_ACTION);
+                break;
+        }
+    }
+
+    /**
+     * Get Status as String
+     */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" Host:").append(getHost());
+        sb.append(" Port:").append(getPort());
+        sb.append(" Timeout:").append(getTimeout());
+        sb.append(" NumActive:").append(getNumActive());
+        sb.append(" NumIdle:").append(getNumIdle());
+        sb.append(" Lifo?:").append(getLifo());
+        sb.append(" MaxActive:").append(getMaxActive());
+        sb.append(" MaxIdle:").append(getMaxIdle());
+        sb.append(" MaxWait:").append(getMaxWait());
+        sb.append(" MinEvictableIdleTimeMillis:").append(getMinEvictableIdleTimeMillis());
+        sb.append(" MinIdle:").append(getMinIdle());
+        sb.append(" NumTestsPerEvictionRun:").append(getNumTestsPerEvictionRun());
+        sb.append(" SoftMinEvictableIdleTimeMillis:").append(getSoftMinEvictableIdleTimeMillis());
+        sb.append(" TestOnBorrow?:").append(getTestOnBorrow());
+        sb.append(" TestOnReturn?:").append(getTestOnReturn());
+        sb.append(" TestOnReturn?:").append(getTestOnReturn());
+        sb.append(" TimeBetweenEvictionRunsMillis:").append(getTimeBetweenEvictionRunsMillis());
+        sb.append(" WhenExhaustedAction:").append(getWhenExhaustedAction());
+        return sb.toString();
     }
 
     /**

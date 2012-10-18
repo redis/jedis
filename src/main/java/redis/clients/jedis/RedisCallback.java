@@ -7,9 +7,9 @@ package redis.clients.jedis;
  * 
  */
 
-public interface RedisCallback {
+public interface RedisCallback<T> {
 
-	Object doInRedis(Jedis jedis);
+	T doInRedis(Jedis jedis);
 
 	String getKey();
 

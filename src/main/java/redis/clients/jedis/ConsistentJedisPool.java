@@ -116,7 +116,7 @@ public class ConsistentJedisPool {
 		return resRun;
 	}
 
-	public Object redisCall(RedisCallback callback) throws Throwable {
+	public<T> T redisCall(RedisCallback<T> callback) {
 		Jedis jedis = null;
 		JedisPool pool = null;
 		try {
@@ -125,18 +125,18 @@ public class ConsistentJedisPool {
 			String key = resRun.firstKey();
 			pool = poolMap.get(key);
 
-			Object ret = callback.doInRedis(jedis);
+			T ret =  callback.doInRedis(jedis);
 			return ret;
 		} catch (Throwable e) {
-			// log.error("Failed to call redis",e);
 			if (jedis != null) {
 				pool.returnBrokenResource(jedis);
 			}
-			throw e;
+			throw new JedisException("Failed to call redis",e);
 		} finally {
 			if (jedis != null) {
 				pool.returnResource(jedis);
 			}
 		}
+
 	}
 }

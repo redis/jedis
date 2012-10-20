@@ -389,6 +389,36 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
+    public Response<Set<String>> zrevrangeByScore(String key, double max, double min) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, max, min);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(String key, double max, double min,
+                                                  int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, max, min, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, max, min);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min,
+                                                           int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
     public Response<Set<Tuple>> zrangeWithScores(String key, int start, int end) {
         Client c = getClient(key);
         c.zrangeWithScores(key, start, end);

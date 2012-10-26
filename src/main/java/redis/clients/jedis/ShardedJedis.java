@@ -483,4 +483,19 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.linsert(key, where, pivot, value);
     }
+    
+    public Transaction multi(String key) {
+        Jedis j = getShard(key);
+        return j.multi();
+    }
+    
+    public String watch(String key) {
+        Jedis j = getShard(key);
+        return j.watch(key);
+    }
+    
+    public String unwatch(String key) {
+        Jedis j = getShard(key);
+        return j.unwatch();
+    }
 }

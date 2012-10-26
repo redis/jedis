@@ -341,6 +341,21 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.sort(key);
     }
 
+    public Transaction multi(byte[] key) {
+        Jedis j = getShard(key);
+        return j.multi();
+    }
+    
+    public String watch(byte[] key) {
+        Jedis j = getShard(key);
+        return j.watch(key);
+    }
+
+    public String unwatch(byte[] key) {
+        Jedis j = getShard(key);      
+        return j.unwatch();
+    }
+  
     public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
 	Jedis j = getShard(key);
 	return j.sort(key, sortingParameters);

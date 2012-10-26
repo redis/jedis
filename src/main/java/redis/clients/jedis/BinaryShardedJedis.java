@@ -100,6 +100,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.decr(key);
     }
 
+    public Long del(byte[] key) {
+        Jedis j = getShard(key);
+        return j.del(key);
+    }
+    
     public Long incrBy(byte[] key, long integer) {
 	Jedis j = getShard(key);
 	return j.incrBy(key, integer);

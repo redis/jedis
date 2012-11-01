@@ -168,6 +168,20 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.hexists(key, field);
     }
 
+    public Long del(String... keys) { 
+      int deleted = 0;
+      for (String key : keys) {
+        Jedis j = getShard(key);
+        deleted += j.del(key);
+      }
+
+      return new Long(deleted);
+    }
+
+    /**
+     * @deprecated  Replaced by {@link #del(String... keys)}
+     */
+    @Deprecated
     public Long del(String key) {
 	Jedis j = getShard(key);
 	return j.del(key);

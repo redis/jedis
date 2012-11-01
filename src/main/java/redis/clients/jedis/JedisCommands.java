@@ -14,6 +14,8 @@ public interface JedisCommands {
 
     Boolean exists(String key);
 
+    Long del(String... keys);
+
     String type(String key);
 
     Long expire(String key, int seconds);

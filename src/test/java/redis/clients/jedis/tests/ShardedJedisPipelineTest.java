@@ -74,6 +74,8 @@ public class ShardedJedisPipelineTest {
 
         ShardedJedisPipeline p = jedis.pipelined();
         Response<String> string = p.get("string");
+        Response<Long> del = p.del("string");
+        Response<String> emptyString = p.get("string");
         Response<String> list = p.lpop("list");
         Response<String> hash = p.hget("hash", "foo");
         Response<Set<String>> zset = p.zrange("zset", 0, -1);
@@ -91,6 +93,8 @@ public class ShardedJedisPipelineTest {
         p.sync();
 
         assertEquals("foo", string.get());
+        assertEquals(Long.valueOf(1), del.get());
+        assertNull(emptyString.get());
         assertEquals("foo", list.get());
         assertEquals("bar", hash.get());
         assertEquals("foo", zset.get().iterator().next());

@@ -807,4 +807,9 @@ public class BinaryClient extends Connection {
     public void objectEncoding(byte[] key) {
 	sendCommand(OBJECT, ENCODING.raw, key);
     }
+
+    public void sentinel(final byte[]... args) {
+  sendCommand(SENTINEL, args);
+    }
+
 }

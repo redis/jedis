@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -2873,4 +2874,142 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.objectIdletime(string);
 	return client.getIntegerReply();
     }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381> sentinel masters
+   * 1)  1) "name"
+   *     2) "mymaster"
+   *     3) "ip"
+   *     4) "127.0.0.1"
+   *     5) "port"
+   *     6) "6379"
+   *     7) "runid"
+   *     8) "93d4d4e6e9c06d0eea36e27f31924ac26576081d"
+   *     9) "flags"
+   *    10) "master"
+   *    11) "pending-commands"
+   *    12) "0"
+   *    13) "last-ok-ping-reply"
+   *    14) "423"
+   *    15) "last-ping-reply"
+   *    16) "423"
+   *    17) "info-refresh"
+   *    18) "6107"
+   *    19) "num-slaves"
+   *    20) "1"
+   *    21) "num-other-sentinels"
+   *    22) "2"
+   *    23) "quorum"
+   *    24) "2"
+   *
+   * </pre>
+   *
+   * @return
+   */
+  public List<Map<String, String>> sentinelMasters() {
+    client.sentinel(Protocol.SENTINEL_MASTERS);
+    final List<Object> reply = client.getObjectMultiBulkReply();
+
+    final List<Map<String,String>> masters = new ArrayList<Map<String,String>>();
+    for (Object obj : reply) {
+      masters.add(BuilderFactory.STRING_MAP.build((List) obj));
+    }
+    return masters;
+  }
+
+  
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381> sentinel get-master-addr-by-name mymaster
+   * 1) "127.0.0.1"
+   * 2) "6379"
+   * </pre>
+   * 
+   * @param masterName
+   * @return two elements list of strings : host and port.
+   */
+  public List<String> sentinelGetMasterAddrByName(String masterName) {
+    client.sentinel(Protocol.SENTINEL_GET_MASTER_ADDR_BY_NAME, masterName);
+    final List<Object> reply = client.getObjectMultiBulkReply();
+    return BuilderFactory.STRING_LIST.build(reply);
+  }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381> sentinel reset mymaster
+   * (integer) 1
+   * </pre>
+   * 
+   * @param pattern
+   * @return
+   */
+  public Long sentinelReset(String pattern) {
+    client.sentinel(Protocol.SENTINEL_RESET, pattern);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381> sentinel slaves mymaster
+   * 1)  1) "name"
+   *     2) "127.0.0.1:6380"
+   *     3) "ip"
+   *     4) "127.0.0.1"
+   *     5) "port"
+   *     6) "6380"
+   *     7) "runid"
+   *     8) "d7f6c0ca7572df9d2f33713df0dbf8c72da7c039"
+   *     9) "flags"
+   *    10) "slave"
+   *    11) "pending-commands"
+   *    12) "0"
+   *    13) "last-ok-ping-reply"
+   *    14) "47"
+   *    15) "last-ping-reply"
+   *    16) "47"
+   *    17) "info-refresh"
+   *    18) "657"
+   *    19) "master-link-down-time"
+   *    20) "0"
+   *    21) "master-link-status"
+   *    22) "ok"
+   *    23) "master-host"
+   *    24) "localhost"
+   *    25) "master-port"
+   *    26) "6379"
+   *    27) "slave-priority"
+   *    28) "100"
+   * </pre>
+   * 
+   * @param masterName
+   * @return
+   */
+  public List<Map<String, String>> sentinelSlaves(String masterName) {
+    client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
+    final List<Object> reply = client.getObjectMultiBulkReply();
+
+    final List<Map<String,String>> slaves = new ArrayList<Map<String,String>>();
+    for (Object obj : reply) {
+      slaves.add(BuilderFactory.STRING_MAP.build((List) obj));
+    }
+    return slaves;
+  }
+  
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381> SENTINEL is-master-down-by-addr 127.0.0.1 1
+   * 1) (integer) 0
+   * 2) "?"
+   * redis 127.0.0.1:26381> SENTINEL is-master-down-by-addr 127.0.0.1 6379
+   * 1) (integer) 0
+   * 2) "aaef11fbb2712346a386078c7f9834e72ed51e96"
+   * </pre>
+   * @return Long followed by the String (runid)
+   */
+  public List<? extends Object> sentinelIsMasterDownByAddr(String host, int port) {
+    client.sentinel(Protocol.SENTINEL_IS_MASTER_DOWN_BY_ADDR, host, port);
+    final List<Object> reply = client.getObjectMultiBulkReply();
+    return Arrays.asList(BuilderFactory.LONG.build(reply.get(0)), BuilderFactory.STRING.build(reply.get(1)));
+  }
 }

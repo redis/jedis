@@ -703,4 +703,18 @@ public class Client extends BinaryClient implements Commands {
     public void objectEncoding(String key) {
 	objectEncoding(SafeEncoder.encode(key));
     }
+
+
+  public void sentinel(final String... args) {
+    final byte[][] arg = new byte[args.length][];
+    for (int i = 0; i < arg.length; i++) {
+      arg[i] = SafeEncoder.encode(args[i]);
+    }
+    sentinel(arg);
+  }
+
+  public void sentinel(final String cmd, String arg1, int arg2) {
+    sentinel(SafeEncoder.encode(cmd), SafeEncoder.encode(arg1), toByteArray(arg2));
+  }
+
 }

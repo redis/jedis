@@ -1,15 +1,15 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Hashing;
+import redis.clients.util.Sharded;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.Hashing;
-import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	implements BinaryJedisCommands {
@@ -199,7 +199,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         Jedis j = getShard(key);
         return j.lpushx(key, string);
     }
-    
+
+    public Long persist(final byte[] key) {
+        Jedis j = getShard(key);
+    	return j.persist(key);
+    }
 
     public Long rpushx(byte[] key, byte[] string) {
         Jedis j = getShard(key);

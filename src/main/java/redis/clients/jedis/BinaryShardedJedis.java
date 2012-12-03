@@ -498,4 +498,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.objectIdletime(key);
     }
+
+    public Boolean setbit(byte[] key, long offset, byte[] value) {
+    Jedis j = getShard(key);
+    return j.setbit(key, offset, value);
+    }
+
+    public Boolean getbit(byte[] key, long offset) {
+    Jedis j = getShard(key);
+    return j.getbit(key, offset);
+    }
+
+    public Long setrange(byte[] key, long offset, byte[] value) {
+    Jedis j = getShard(key);
+    return j.setrange(key, offset, value);
+    }
+
+    public String getrange(byte[] key, long startOffset, long endOffset) {
+    Jedis j = getShard(key);
+    return j.getrange(key, startOffset, endOffset);
+    }
 }

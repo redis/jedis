@@ -213,6 +213,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.lpushx(key, string);
     }
 
+    public Long strlen(final String key) {
+    Jedis j = getShard(key);
+    return j.strlen(key);
+    }
+
     public Long rpushx(String key, String string) {
 	Jedis j = getShard(key);
 	return j.rpushx(key, string);

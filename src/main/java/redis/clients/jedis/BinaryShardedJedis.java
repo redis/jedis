@@ -1,15 +1,15 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Hashing;
+import redis.clients.util.Sharded;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.Hashing;
-import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	implements BinaryJedisCommands {
@@ -195,11 +195,20 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.lpush(key, strings);
     }
 
+    public Long strlen(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.strlen(key);
+    }
+
     public Long lpushx(byte[] key, byte[] string) {
         Jedis j = getShard(key);
         return j.lpushx(key, string);
     }
-    
+
+    public Long persist(final byte[] key) {
+        Jedis j = getShard(key);
+    	return j.persist(key);
+    }
 
     public Long rpushx(byte[] key, byte[] string) {
         Jedis j = getShard(key);
@@ -488,5 +497,25 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     public Long objectIdletime(byte[] key) {
 	Jedis j = getShard(key);
 	return j.objectIdletime(key);
+    }
+
+    public Boolean setbit(byte[] key, long offset, byte[] value) {
+    Jedis j = getShard(key);
+    return j.setbit(key, offset, value);
+    }
+
+    public Boolean getbit(byte[] key, long offset) {
+    Jedis j = getShard(key);
+    return j.getbit(key, offset);
+    }
+
+    public Long setrange(byte[] key, long offset, byte[] value) {
+    Jedis j = getShard(key);
+    return j.setrange(key, offset, value);
+    }
+
+    public String getrange(byte[] key, long startOffset, long endOffset) {
+    Jedis j = getShard(key);
+    return j.getrange(key, startOffset, endOffset);
     }
 }

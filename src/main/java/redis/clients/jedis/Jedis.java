@@ -350,6 +350,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     /**
+     * Get the values of all the specified keys. If one or more keys dont exist
+     * or is not of type String, a 'nil' value is returned instead of the value
+     * of the specified key, but the operation never fails.
+     * <p>
+     * Time complexity: O(1) for every key
+     * 
+     * @param keys
+     * @return Multi bulk reply
+     */
+    public List<String> mget(final List<String> keys) {
+	checkIsInMulti();
+	client.mget(keys);
+	return client.getMultiBulkReply();
+    }
+
+    /**
      * SETNX works exactly like {@link #set(String, String) SET} with the only
      * difference that if the key already exists no operation is performed.
      * SETNX actually means "SET if Not eXists".
@@ -412,6 +428,32 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     /**
+     * Set the the respective keys to the respective values. MSET will replace
+     * old values with new values, while {@link #msetnx(String...) MSETNX} will
+     * not perform any operation at all even if just a single key already
+     * exists.
+     * <p>
+     * Because of this semantic MSETNX can be used in order to set different
+     * keys representing different fields of an unique logic object in a way
+     * that ensures that either all the fields or none at all are set.
+     * <p>
+     * Both MSET and MSETNX are atomic operations. This means that for instance
+     * if the keys A and B are modified, another client talking to Redis can
+     * either see the changes to both A and B at once, or no modification at
+     * all.
+     * 
+     * @see #msetnx(String...)
+     * 
+     * @param keysvalues
+     * @return Status code reply Basically +OK as MSET can't fail
+     */
+    public String mset(final List<String> keysvalues) {
+	checkIsInMulti();
+	client.mset(keysvalues);
+	return client.getStatusCodeReply();
+    }
+
+    /**
      * Set the the respective keys to the respective values.
      * {@link #mset(String...) MSET} will replace old values with new values,
      * while MSETNX will not perform any operation at all even if just a single
@@ -433,6 +475,33 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      *         no key was set (at least one key already existed)
      */
     public Long msetnx(final String... keysvalues) {
+	checkIsInMulti();
+	client.msetnx(keysvalues);
+	return client.getIntegerReply();
+    }
+
+    /**
+     * Set the the respective keys to the respective values.
+     * {@link #mset(String...) MSET} will replace old values with new values,
+     * while MSETNX will not perform any operation at all even if just a single
+     * key already exists.
+     * <p>
+     * Because of this semantic MSETNX can be used in order to set different
+     * keys representing different fields of an unique logic object in a way
+     * that ensures that either all the fields or none at all are set.
+     * <p>
+     * Both MSET and MSETNX are atomic operations. This means that for instance
+     * if the keys A and B are modified, another client talking to Redis can
+     * either see the changes to both A and B at once, or no modification at
+     * all.
+     * 
+     * @see #mset(String...)
+     * 
+     * @param keysvalues
+     * @return Integer reply, specifically: 1 if the all the keys were set 0 if
+     *         no key was set (at least one key already existed)
+     */
+    public Long msetnx(final List<String> keysvalues) {
 	checkIsInMulti();
 	client.msetnx(keysvalues);
 	return client.getIntegerReply();
@@ -685,6 +754,25 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      *         with the specified fields, in the same order of the request.
      */
     public List<String> hmget(final String key, final String... fields) {
+	checkIsInMulti();
+	client.hmget(key, fields);
+	return client.getMultiBulkReply();
+    }
+
+    /**
+     * Retrieve the values associated to the specified fields.
+     * <p>
+     * If some of the specified fields do not exist, nil values are returned.
+     * Non existing keys are considered like empty hashes.
+     * <p>
+     * <b>Time complexity:</b> O(N) (with N being the number of fields)
+     * 
+     * @param key
+     * @param fields
+     * @return Multi Bulk Reply specifically a list of all the values associated
+     *         with the specified fields, in the same order of the request.
+     */
+    public List<String> hmget(final String key, final List<String> fields) {
 	checkIsInMulti();
 	client.hmget(key, fields);
 	return client.getMultiBulkReply();

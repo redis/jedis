@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -81,6 +82,14 @@ public class Client extends BinaryClient implements Commands {
 	mget(bkeys);
     }
 
+    public void mget(final List<String> keys) {
+	final byte[][] bkeys = new byte[keys.size()][];
+	for (int i = 0; i < bkeys.length; i++) {
+	    bkeys[i] = SafeEncoder.encode(keys.get(i));
+	}
+	mget(bkeys);
+    }
+
     public void setnx(final String key, final String value) {
 	setnx(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
@@ -97,10 +106,26 @@ public class Client extends BinaryClient implements Commands {
 	mset(bkeysvalues);
     }
 
+    public void mset(final List<String> keysvalues) {
+	final byte[][] bkeysvalues = new byte[keysvalues.size()][];
+	for (int i = 0; i < keysvalues.size(); i++) {
+	    bkeysvalues[i] = SafeEncoder.encode(keysvalues.get(i));
+	}
+	mset(bkeysvalues);
+    }
+
     public void msetnx(final String... keysvalues) {
 	final byte[][] bkeysvalues = new byte[keysvalues.length][];
 	for (int i = 0; i < keysvalues.length; i++) {
 	    bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
+	}
+	msetnx(bkeysvalues);
+    }
+
+    public void msetnx(final List<String> keysvalues) {
+	final byte[][] bkeysvalues = new byte[keysvalues.size()][];
+	for (int i = 0; i < keysvalues.size(); i++) {
+	    bkeysvalues[i] = SafeEncoder.encode(keysvalues.get(i));
 	}
 	msetnx(bkeysvalues);
     }
@@ -157,6 +182,14 @@ public class Client extends BinaryClient implements Commands {
 	final byte[][] bfields = new byte[fields.length][];
 	for (int i = 0; i < bfields.length; i++) {
 	    bfields[i] = SafeEncoder.encode(fields[i]);
+	}
+	hmget(SafeEncoder.encode(key), bfields);
+    }
+
+    public void hmget(final String key, final List<String> fields) {
+	final byte[][] bfields = new byte[fields.size()][];
+	for (int i = 0; i < bfields.length; i++) {
+	    bfields[i] = SafeEncoder.encode(fields.get(i));
 	}
 	hmget(SafeEncoder.encode(key), bfields);
     }

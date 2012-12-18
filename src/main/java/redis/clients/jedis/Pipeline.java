@@ -482,9 +482,9 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> mget(byte[]... keys) {
+    public Response<List<byte[]>> mget(byte[]... keys) {
         client.mget(keys);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> move(String key, int dbIndex) {

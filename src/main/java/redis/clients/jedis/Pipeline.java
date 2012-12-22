@@ -78,7 +78,6 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
      * right response type (usually it is a waste of time).
      * 
      * @return A list of all the responses in the order you executed them.
-     * @see sync
      */
     public List<Object> syncAndReturnAll() {
         List<Object> unformatted = client.getAll();
@@ -109,9 +108,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> blpop(byte[]... args) {
+    public Response<List<byte[]>> blpop(byte[]... args) {
         client.blpop(args);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<List<String>> brpop(String... args) {
@@ -119,9 +118,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> brpop(byte[]... args) {
+    public Response<List<byte[]>> brpop(byte[]... args) {
         client.brpop(args);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> decr(String key) {
@@ -159,9 +158,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> echo(byte[] string) {
+    public Response<byte[]> echo(byte[] string) {
         client.echo(string);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Boolean> exists(String key) {
@@ -260,9 +259,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> hget(byte[] key, byte[] field) {
+    public Response<byte[]> hget(byte[] key, byte[] field) {
         client.hget(key, field);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Map<String, String>> hgetAll(String key) {
@@ -270,9 +269,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_MAP);
     }
 
-    public Response<Map<String, String>> hgetAll(byte[] key) {
+    public Response<Map<byte[], byte[]>> hgetAll(byte[] key) {
         client.hgetAll(key);
-        return getResponse(BuilderFactory.STRING_MAP);
+        return getResponse(BuilderFactory.BYTE_ARRAY_MAP);
     }
 
     public Response<Long> hincrBy(String key, String field, long value) {
@@ -290,9 +289,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> hkeys(byte[] key) {
+    public Response<Set<byte[]>> hkeys(byte[] key) {
         client.hkeys(key);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> hlen(String key) {
@@ -310,9 +309,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> hmget(byte[] key, byte[]... fields) {
+    public Response<List<byte[]>> hmget(byte[] key, byte[]... fields) {
         client.hmget(key, fields);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<String> hmset(String key, Map<String, String> hash) {
@@ -350,9 +349,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> hvals(byte[] key) {
+    public Response<List<byte[]>> hvals(byte[] key) {
         client.hvals(key);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> incr(String key) {
@@ -380,9 +379,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> keys(byte[] pattern) {
+    public Response<Set<byte[]>> keys(byte[] pattern) {
         client.keys(pattern);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<String> lindex(String key, int index) {
@@ -390,9 +389,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lindex(byte[] key, int index) {
+    public Response<byte[]> lindex(byte[] key, int index) {
         client.lindex(key, index);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> linsert(String key, LIST_POSITION where,
@@ -422,9 +421,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lpop(byte[] key) {
+    public Response<byte[]> lpop(byte[] key) {
         client.lpop(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> lpush(String key, String string) {
@@ -452,9 +451,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> lrange(byte[] key, long start, long end) {
+    public Response<List<byte[]>> lrange(byte[] key, long start, long end) {
         client.lrange(key, start, end);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> lrem(String key, long count, String value) {
@@ -492,9 +491,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> mget(byte[]... keys) {
+    public Response<List<byte[]>> mget(byte[]... keys) {
         client.mget(keys);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> move(String key, int dbIndex) {
@@ -562,9 +561,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> rpop(byte[] key) {
+    public Response<byte[]> rpop(byte[] key) {
         client.rpop(key);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<String> rpoplpush(String srckey, String dstkey) {
@@ -572,9 +571,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> rpoplpush(byte[] srckey, byte[] dstkey) {
+    public Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey) {
         client.rpoplpush(srckey, dstkey);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> rpush(String key, String string) {
@@ -622,9 +621,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> sdiff(byte[]... keys) {
+    public Response<Set<byte[]>> sdiff(byte[]... keys) {
         client.sdiff(keys);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> sdiffstore(String dstkey, String... keys) {

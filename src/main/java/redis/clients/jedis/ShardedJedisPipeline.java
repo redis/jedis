@@ -55,6 +55,63 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
+    public Response<List<byte[]>> blpop(byte[] arg) {
+        byte[][] temp = new byte[1][];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.blpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<List<byte[]>> brpop(byte[] arg) {
+        byte[][] temp = new byte[1][];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.blpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<List<String>> blpop(String arg) {
+        String[] temp = new String[1];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.blpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> brpop(String arg) {
+        String[] temp = new String[1];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.brpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<byte[]> echo(byte[] string) {
+        Client c = getClient(string);
+        c.echo(string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
+    public Response<String> echo(String string) {
+        Client c = getClient(string);
+        c.echo(string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> del(byte[] key) {
+        Client c = getClient(key);
+        c.del(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> del(String key) {
         Client c = getClient(key);
         c.del(key);
@@ -279,11 +336,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> hget(byte[] key, byte[] field) {
+    public Response<byte[]> hget(byte[] key, byte[] field) {
         Client c = getClient(key);
         c.hget(key, field);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> hsetnx(String key, String field, String value) {
@@ -321,11 +378,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> hmget(byte[] key, byte[]... fields) {
+    public Response<List<byte[]>> hmget(byte[] key, byte[]... fields) {
         Client c = getClient(key);
         c.hmget(key, fields);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> hincrBy(String key, String field, long value) {
@@ -391,11 +448,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> hkeys(byte[] key) {
+    public Response<Set<byte[]>> hkeys(byte[] key) {
         Client c = getClient(key);
         c.hkeys(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<List<String>> hvals(String key) {
@@ -405,11 +462,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> hvals(byte[] key) {
+    public Response<List<byte[]>> hvals(byte[] key) {
         Client c = getClient(key);
         c.hvals(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Map<String, String>> hgetAll(String key) {
@@ -419,11 +476,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_MAP);
     }
 
-    public Response<Map<String, String>> hgetAll(byte[] key) {
+    public Response<Map<byte[], byte[]>> hgetAll(byte[] key) {
         Client c = getClient(key);
         c.hgetAll(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_MAP);
+        return getResponse(BuilderFactory.BYTE_ARRAY_MAP);
     }
 
     public Response<Long> rpush(String key, String string) {
@@ -503,11 +560,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> lrange(byte[] key, long start, long end) {
+    public Response<List<byte[]>> lrange(byte[] key, long start, long end) {
         Client c = getClient(key);
         c.lrange(key, start, end);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<String> ltrim(String key, long start, long end) {
@@ -545,11 +602,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lindex(byte[] key, int index) {
+    public Response<byte[]> lindex(byte[] key, int index) {
         Client c = getClient(key);
         c.lindex(key, index);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<String> lset(String key, long index, String value) {
@@ -587,11 +644,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lpop(byte[] key) {
+    public Response<byte[]> lpop(byte[] key) {
         Client c = getClient(key);
         c.lpop(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<String> rpop(String key) {
@@ -601,11 +658,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> rpop(byte[] key) {
+    public Response<byte[]> rpop(byte[] key) {
         Client c = getClient(key);
         c.rpop(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> sadd(String key, String member) {

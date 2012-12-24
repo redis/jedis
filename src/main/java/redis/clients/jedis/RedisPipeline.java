@@ -10,9 +10,17 @@ import java.util.Set;
 public interface RedisPipeline {
     Response<Long> append(String key, String value);
 
+    Response<List<String>> blpop(String arg);
+
+    Response<List<String>> brpop(String arg);
+
     Response<Long> decr(String key);
 
     Response<Long> decrBy(String key, long integer);
+
+    Response<Long> del(String key);
+
+    Response<String> echo(String string);
 
     Response<Boolean> exists(String key);
 
@@ -101,6 +109,8 @@ public interface RedisPipeline {
     Response<String> setex(String key, int seconds, String value);
 
     Response<Long> setnx(String key, String value);
+
+    Response<Long> setrange(String key, long offset, String value);
 
     Response<Set<String>> smembers(String key);
 

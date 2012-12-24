@@ -9,7 +9,12 @@ import java.util.Set;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipeline {
+public class Pipeline extends Queable implements
+        BasicRedisPipeline,
+        BinaryRedisPipeline,
+        RedisPipeline,
+        MultiKeyBinaryRedisPipeline,
+        MultiKeyCommandsPipeline {
 	
     private MultiResponseBuilder currentMulti;
     
@@ -59,6 +64,8 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         this.client = client;
     }
 
+
+
     /**
      * Syncronize pipeline by reading all responses. This operation close the
      * pipeline. In order to get return values from pipelined commands, capture
@@ -103,6 +110,34 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<List<String>> blpop(String arg) {
+        String[] temp = new String[1];
+        temp[0] = arg;
+        client.blpop(temp);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> brpop(String arg) {
+        String[] temp = new String[1];
+        temp[0] = arg;
+        client.brpop(temp);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<byte[]>> blpop(byte[] arg) {
+        byte[][] temp = new byte[1][];
+        temp[0] = arg;
+        client.blpop(temp);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<List<byte[]>> brpop(byte[] arg) {
+        byte[][] temp = new byte[1][];
+        temp[0] = arg;
+        client.brpop(temp);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
     public Response<List<String>> blpop(String... args) {
         client.blpop(args);
         return getResponse(BuilderFactory.STRING_LIST);
@@ -143,8 +178,18 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> del(String key) {
+        client.del(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> del(String... keys) {
         client.del(keys);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> del(byte[] key) {
+        client.del(key);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -541,9 +586,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> rename(byte[] oldkey, byte[] newkey) {
+    public Response<byte[]> rename(byte[] oldkey, byte[] newkey) {
         client.rename(oldkey, newkey);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> renamenx(String oldkey, String newkey) {
@@ -691,9 +736,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> sinter(byte[]... keys) {
+    public Response<Set<byte[]>> sinter(byte[]... keys) {
         client.sinter(keys);
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> sinterstore(String dstkey, String... keys) {
@@ -764,10 +809,10 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> sort(byte[] key,
+    public Response<List<byte[]>> sort(byte[] key,
                                        SortingParams sortingParameters, byte[] dstkey) {
         client.sort(key, sortingParameters, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<List<String>> sort(String key, String dstkey) {
@@ -775,9 +820,9 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> sort(byte[] key, byte[] dstkey) {
+    public Response<List<byte[]>> sort(byte[] key, byte[] dstkey) {
         client.sort(key, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<String> spop(String key) {
@@ -1250,10 +1295,10 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> brpoplpush(byte[] source, byte[] destination,
+    public Response<byte[]> brpoplpush(byte[] source, byte[] destination,
             int timeout) {
         client.brpoplpush(source, destination, timeout);
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<String> configResetStat() {
@@ -1283,10 +1328,11 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         return response;
     }
 
-    public void multi() {
+    public Response<String> multi() {
         client.multi();
-        getResponse(BuilderFactory.STRING); //Expecting OK
+        Response<String> response = getResponse(BuilderFactory.STRING); //Expecting OK
         currentMulti = new MultiResponseBuilder();
+        return response;
     }
 
     public Response<Long> publish(String channel, String message) {
@@ -1297,6 +1343,16 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
     public Response<Long> publish(byte[] channel, byte[] message) {
         client.publish(channel, message);
         return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> randomKey() {
+        client.randomKey();
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<byte[]> randomKeyBinary() {
+        client.randomKey();
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<String> flushDB() {
@@ -1328,11 +1384,6 @@ public class Pipeline extends Queable implements BinaryRedisPipeline, RedisPipel
         client.ping();
         return getResponse(BuilderFactory.STRING);
     }
-    
-    public Response<String> randomKey() {
-        client.randomKey();
-        return getResponse(BuilderFactory.STRING);
-    }   
     
     public Response<String> select(int index){
     	client.select(index);

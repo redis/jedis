@@ -10,9 +10,17 @@ import java.util.Set;
 public interface BinaryRedisPipeline {
     Response<Long> append(byte[] key, byte[] value);
 
+    Response<List<byte[]>> blpop(byte[] arg);
+
+    Response<List<byte[]>> brpop(byte[] arg);
+
     Response<Long> decr(byte[] key);
 
     Response<Long> decrBy(byte[] key, long integer);
+
+    Response<Long> del(byte[] keys);
+
+    Response<byte[]> echo(byte[] string);
 
     Response<Boolean> exists(byte[] key);
 
@@ -32,17 +40,17 @@ public interface BinaryRedisPipeline {
 
     Response<Boolean> hexists(byte[] key, byte[] field);
 
-    Response<String> hget(byte[] key, byte[] field);
+    Response<byte[]> hget(byte[] key, byte[] field);
 
-    Response<Map<String, String>> hgetAll(byte[] key);
+    Response<Map<byte[], byte[]>> hgetAll(byte[] key);
 
     Response<Long> hincrBy(byte[] key, byte[] field, long value);
 
-    Response<Set<String>> hkeys(byte[] key);
+    Response<Set<byte[]>> hkeys(byte[] key);
 
     Response<Long> hlen(byte[] key);
 
-    Response<List<String>> hmget(byte[] key, byte[]... fields);
+    Response<List<byte[]>> hmget(byte[] key, byte[]... fields);
 
     Response<String> hmset(byte[] key, Map<byte[], byte[]> hash);
 
@@ -50,26 +58,26 @@ public interface BinaryRedisPipeline {
 
     Response<Long> hsetnx(byte[] key, byte[] field, byte[] value);
 
-    Response<List<String>> hvals(byte[] key);
+    Response<List<byte[]>> hvals(byte[] key);
 
     Response<Long> incr(byte[] key);
 
     Response<Long> incrBy(byte[] key, long integer);
 
-    Response<String> lindex(byte[] key, int index);
+    Response<byte[]> lindex(byte[] key, int index);
 
     Response<Long> linsert(byte[] key, BinaryClient.LIST_POSITION where,
                            byte[] pivot, byte[] value);
 
     Response<Long> llen(byte[] key);
 
-    Response<String> lpop(byte[] key);
+    Response<byte[]> lpop(byte[] key);
 
     Response<Long> lpush(byte[] key, byte[] string);
 
     Response<Long> lpushx(byte[] key, byte[] bytes);
 
-    Response<List<String>> lrange(byte[] key, long start, long end);
+    Response<List<byte[]>> lrange(byte[] key, long start, long end);
 
     Response<Long> lrem(byte[] key, long count, byte[] value);
 
@@ -79,7 +87,7 @@ public interface BinaryRedisPipeline {
 
     Response<Long> persist(byte[] key);
 
-    Response<String> rpop(byte[] key);
+    Response<byte[]> rpop(byte[] key);
 
     Response<Long> rpush(byte[] key, byte[] string);
 

@@ -43,6 +43,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.get(key);
     }
 
+    public String echo(String string) {
+        Jedis j = getShard(string);
+        return j.echo(string);
+    }
+
     public Boolean exists(String key) {
 	Jedis j = getShard(key);
 	return j.exists(key);
@@ -101,6 +106,16 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public String setex(String key, int seconds, String value) {
 	Jedis j = getShard(key);
 	return j.setex(key, seconds, value);
+    }
+
+    public List<String> blpop(String arg) {
+        Jedis j = getShard(arg);
+        return j.blpop(arg);
+    }
+
+    public List<String> brpop(String arg) {
+        Jedis j = getShard(arg);
+        return j.brpop(arg);
     }
 
     public Long decrBy(String key, long integer) {
@@ -216,6 +231,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public Long strlen(final String key) {
     Jedis j = getShard(key);
     return j.strlen(key);
+    }
+
+    public Long move(String key, int dbIndex) {
+        Jedis j = getShard(key);
+        return j.move(key, dbIndex);
     }
 
     public Long rpushx(String key, String string) {

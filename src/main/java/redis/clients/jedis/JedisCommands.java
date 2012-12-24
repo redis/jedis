@@ -14,6 +14,8 @@ public interface JedisCommands {
 
     Boolean exists(String key);
 
+    Long persist(String key);
+
     String type(String key);
 
     Long expire(String key, int seconds);
@@ -106,6 +108,8 @@ public interface JedisCommands {
 
     String srandmember(String key);
 
+    Long strlen(String key);
+
     Long zadd(String key, double score, String member);
     
     Long zadd(String key, Map<Double, String> scoreMembers);
@@ -190,4 +194,14 @@ public interface JedisCommands {
     Long lpushx(String key, String string);
     
     Long rpushx(String key, String string); 
+
+    List<String> blpop(String arg);
+
+    List<String> brpop(String arg);
+
+    Long del(String key);
+
+    String echo(String string);
+
+    Long move(String key, int dbIndex);
 }

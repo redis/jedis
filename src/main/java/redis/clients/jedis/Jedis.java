@@ -13,7 +13,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
-public class Jedis extends BinaryJedis implements JedisCommands {
+public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, JedisBasicCommands {
     public Jedis(final String host) {
 	super(host);
     }
@@ -112,6 +112,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.del(keys);
 	return client.getIntegerReply();
+    }
+
+    public Long del(String key) {
+        client.del(key);
+        return client.getIntegerReply();
     }
 
     /**
@@ -1815,6 +1820,42 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	final List<String> multiBulkReply = client.getMultiBulkReply();
 	client.rollbackTimeout();
 	return multiBulkReply;
+    }
+
+    public List<String> blpop(String... args) {
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> brpop(String... args) {
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> blpop(String arg) {
+        String[] args = new String[1];
+        args[0] = arg;
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> brpop(String arg) {
+        String[] args = new String[1];
+        args[0] = arg;
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
     }
 
     /**

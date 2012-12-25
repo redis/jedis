@@ -2070,12 +2070,16 @@ public class BinaryJedis implements BinaryJedisCommands {
     }
 
     public Long publish(final String channel, final String message) {
+    checkIsInMulti();
+    connect();
 	client.publish(channel, message);
 	return client.getIntegerReply();
     }
 
     public void psubscribe(final JedisPubSub jedisPubSub,
 	    final String... patterns) {
+    checkIsInMulti();
+    connect();
 	client.setTimeoutInfinite();
 	jedisPubSub.proceedWithPatterns(client, patterns);
 	client.rollbackTimeout();

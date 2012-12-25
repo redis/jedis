@@ -2605,6 +2605,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return client.getIntegerReply() == 1;
     }
 
+    public Boolean setbit(String key, long offset, String value) {
+    client.setbit(key, offset, value);
+    return client.getIntegerReply() == 1;
+    }
+
     /**
      * Returns the bit value at offset in the string value stored at key
      * 

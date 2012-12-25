@@ -715,6 +715,10 @@ public class BinaryClient extends Connection {
 	sendCommand(SETBIT, key, toByteArray(offset), value);
     }
 
+    public void setbit(byte[] key, long offset, boolean value) {
+    sendCommand(SETBIT, key, toByteArray(offset), toByteArray(value));
+    }
+
     public void getbit(byte[] key, long offset) {
 	sendCommand(GETBIT, key, toByteArray(offset));
     }

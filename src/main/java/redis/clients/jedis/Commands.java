@@ -30,6 +30,8 @@ public interface Commands {
 
     public void setbit(String key, long offset, boolean value);
 
+    public void setbit(String key, long offset, String value);
+
     public void getbit(String key, long offset);
 
     public void setrange(String key, long offset, String value);

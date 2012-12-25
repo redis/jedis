@@ -26,6 +26,8 @@ public interface JedisCommands {
 
     Boolean setbit(String key, long offset, boolean value);
 
+    Boolean setbit(String key, long offset, String value);
+
     Boolean getbit(String key, long offset);
 
     Long setrange(String key, long offset, String value);

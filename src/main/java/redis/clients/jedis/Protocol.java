@@ -131,6 +131,10 @@ public final class Protocol {
 	return process(is);
     }
 
+    public static final byte[] toByteArray(final boolean value) {
+    return toByteArray(value ? 1 : 0);
+    }
+
     public static final byte[] toByteArray(final int value) {
 	return SafeEncoder.encode(String.valueOf(value));
     }

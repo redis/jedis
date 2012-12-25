@@ -592,7 +592,11 @@ public class Client extends BinaryClient implements Commands {
     }
 
     public void setbit(final String key, final long offset, final boolean value) {
-	setbit(SafeEncoder.encode(key), offset, toByteArray(value ? 1 : 0));
+	setbit(SafeEncoder.encode(key), offset, value);
+    }
+
+    public void setbit(final String key, final long offset, final String value) {
+    setbit(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
 
     public void getbit(String key, long offset) {

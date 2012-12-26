@@ -164,6 +164,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.hdel(key, fields);
     }
+    
+    public Long hdel(byte[] key, Set<byte[]> fields) {
+    Jedis j = getShard(key);
+    return j.hdel(key, fields);
+    }
 
     public Long hlen(byte[] key) {
 	Jedis j = getShard(key);
@@ -189,10 +194,20 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.rpush(key, strings);
     }
+    
+    public Long rpush(byte[] key, List<byte[]> strings) {
+    Jedis j = getShard(key);
+    return j.rpush(key, strings);
+    }
 
     public Long lpush(byte[] key, byte[]... strings) {
 	Jedis j = getShard(key);
 	return j.lpush(key, strings);
+    }
+    
+    public Long lpush(byte[] key, List<byte[]> strings) {
+    Jedis j = getShard(key);
+    return j.lpush(key, strings);
     }
 
     public Long lpushx(byte[] key, byte[] string) {
@@ -250,6 +265,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.sadd(key, members);
     }
+    
+    public Long sadd(byte[] key, Set<byte[]> members) {
+    Jedis j = getShard(key);
+    return j.sadd(key, members);
+    }
 
     public Set<byte[]> smembers(byte[] key) {
 	Jedis j = getShard(key);
@@ -259,6 +279,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     public Long srem(byte[] key, byte[]... members) {
 	Jedis j = getShard(key);
 	return j.srem(key, members);
+    }
+    
+    public Long srem(byte[] key, Set<byte[]> members) {
+    Jedis j = getShard(key);
+    return j.srem(key, members);
     }
 
     public byte[] spop(byte[] key) {
@@ -286,7 +311,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.zadd(key, score, member);
     }
 
-    public Long zadd(byte[] key, Map<Double, byte[]> scoreMembers) {
+    public Long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
 	Jedis j = getShard(key);
 	return j.zadd(key, scoreMembers);
     }
@@ -299,6 +324,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     public Long zrem(byte[] key, byte[]... members) {
 	Jedis j = getShard(key);
 	return j.zrem(key, members);
+    }
+    
+    public Long zrem(byte[] key, Set<byte[]> members) {
+    Jedis j = getShard(key);
+    return j.zrem(key, members);
     }
 
     public Double zincrby(byte[] key, double score, byte[] member) {

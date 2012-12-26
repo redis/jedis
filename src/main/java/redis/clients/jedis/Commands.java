@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
@@ -77,6 +79,8 @@ public interface Commands {
     public void hexists(final String key, final String field);
 
     public void hdel(final String key, final String... fields);
+    
+    public void hdel(final String key, final Set<String> fields);
 
     public void hlen(final String key);
 
@@ -87,8 +91,12 @@ public interface Commands {
     public void hgetAll(final String key);
 
     public void rpush(final String key, final String... strings);
+    
+    public void rpush(final String key, final List<String> strings);
 
     public void lpush(final String key, final String... strings);
+    
+    public void lpush(final String key, final List<String> strings);
 
     public void llen(final String key);
 
@@ -109,10 +117,14 @@ public interface Commands {
     public void rpoplpush(final String srckey, final String dstkey);
 
     public void sadd(final String key, final String... members);
+    
+    public void sadd(final String key, final Set<String> members);
 
     public void smembers(final String key);
 
     public void srem(final String key, final String... member);
+    
+    public void srem(final String key, final Set<String> member);
 
     public void spop(final String key);
 
@@ -139,11 +151,13 @@ public interface Commands {
 
     public void zadd(final String key, final double score, final String member);
 
-    public void zadd(final String key, final Map<Double, String> scoreMembers);
+    public void zadd(final String key, final Map<String, Double> scoreMembers);
 
     public void zrange(final String key, final long start, final long end);
 
     public void zrem(final String key, final String... members);
+    
+    public void zrem(final String key, final Set<String> members);
 
     public void zincrby(final String key, final double score,
 	    final String member);

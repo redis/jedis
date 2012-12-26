@@ -193,9 +193,16 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
-    public Response<Long> hdel(String key, String field) {
+    public Response<Long> hdel(String key, String... fields) {
         Client c = getClient(key);
-        c.hdel(key, field);
+        c.hdel(key, fields);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> hdel(String key, Set<String> fields) {
+        Client c = getClient(key);
+        c.hdel(key, fields);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
@@ -228,16 +235,30 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_MAP);
     }
 
-    public Response<Long> rpush(String key, String string) {
+    public Response<Long> rpush(String key, String... strings) {
         Client c = getClient(key);
-        c.rpush(key, string);
+        c.rpush(key, strings);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> rpush(String key, List<String> strings) {
+        Client c = getClient(key);
+        c.rpush(key, strings);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lpush(String key, String string) {
+    public Response<Long> lpush(String key, String... strings) {
         Client c = getClient(key);
-        c.lpush(key, string);
+        c.lpush(key, strings);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> lpush(String key, List<String> strings) {
+        Client c = getClient(key);
+        c.lpush(key, strings);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
@@ -298,9 +319,16 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> sadd(String key, String member) {
+    public Response<Long> sadd(String key, String... members) {
         Client c = getClient(key);
-        c.sadd(key, member);
+        c.sadd(key, members);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> sadd(String key, Set<String> members) {
+        Client c = getClient(key);
+        c.sadd(key, members);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
@@ -312,9 +340,16 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Long> srem(String key, String member) {
+    public Response<Long> srem(String key, String... members) {
         Client c = getClient(key);
-        c.srem(key, member);
+        c.srem(key, members);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> srem(String key, Set<String> members) {
+        Client c = getClient(key);
+        c.srem(key, members);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
@@ -353,6 +388,13 @@ public class ShardedJedisPipeline extends Queable {
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<Long> zadd(String key, Map<String, Double> scoreMembers) {
+        Client c = getClient(key);
+        c.zadd(key, scoreMembers);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
 
     public Response<Set<String>> zrange(String key, int start, int end) {
         Client c = getClient(key);
@@ -361,9 +403,16 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Long> zrem(String key, String member) {
+    public Response<Long> zrem(String key, String... members) {
         Client c = getClient(key);
-        c.zrem(key, member);
+        c.zrem(key, members);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> zrem(String key, Set<String> members) {
+        Client c = getClient(key);
+        c.zrem(key, members);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }

@@ -177,6 +177,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.hdel(key, fields);
     }
+    
+    public Long hdel(String key, Set<String> fields) {
+    Jedis j = getShard(key);
+    return j.hdel(key, fields);
+    }
 
     public Long hlen(String key) {
 	Jedis j = getShard(key);
@@ -202,10 +207,20 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.rpush(key, strings);
     }
+    
+    public Long rpush(String key, List<String> strings) {
+    Jedis j = getShard(key);
+    return j.rpush(key, strings);
+    }
 
     public Long lpush(String key, String... strings) {
 	Jedis j = getShard(key);
 	return j.lpush(key, strings);
+    }
+    
+    public Long lpush(String key, List<String> strings) {
+    Jedis j = getShard(key);
+    return j.lpush(key, strings);
     }
 
     public Long lpushx(String key, String string) {
@@ -262,6 +277,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.sadd(key, members);
     }
+    
+    public Long sadd(String key, Set<String> members) {
+    Jedis j = getShard(key);
+    return j.sadd(key, members);
+    }
 
     public Set<String> smembers(String key) {
 	Jedis j = getShard(key);
@@ -271,6 +291,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public Long srem(String key, String... members) {
 	Jedis j = getShard(key);
 	return j.srem(key, members);
+    }
+    
+    public Long srem(String key, Set<String> members) {
+    Jedis j = getShard(key);
+    return j.srem(key, members);
     }
 
     public String spop(String key) {
@@ -298,7 +323,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.zadd(key, score, member);
     }
 
-    public Long zadd(String key, Map<Double, String> scoreMembers) {
+    public Long zadd(String key, Map<String, Double> scoreMembers) {
 	Jedis j = getShard(key);
 	return j.zadd(key, scoreMembers);
     }
@@ -311,6 +336,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public Long zrem(String key, String... members) {
 	Jedis j = getShard(key);
 	return j.zrem(key, members);
+    }
+    
+    public Long zrem(String key, Set<String> members) {
+    Jedis j = getShard(key);
+    return j.zrem(key, members);
     }
 
     public Double zincrby(String key, double score, String member) {

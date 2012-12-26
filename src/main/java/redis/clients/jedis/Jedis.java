@@ -1444,7 +1444,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
-    public Long zadd(final String key, final Map<Double, String> scoreMembers) {
+    public Long zadd(final String key, final Map<String, Double> scoreMembers) {
 	checkIsInMulti();
 	client.zadd(key, scoreMembers);
 	return client.getIntegerReply();

@@ -681,12 +681,12 @@ public class Client extends BinaryClient implements Commands {
 	scriptLoad(SafeEncoder.encode(script));
     }
 
-    public void zadd(String key, Map<Double, String> scoreMembers) {
-	HashMap<Double, byte[]> binaryScoreMembers = new HashMap<Double, byte[]>();
+    public void zadd(String key, Map<String, Double> scoreMembers) {
+	HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
 
-	for (Map.Entry<Double, String> entry : scoreMembers.entrySet()) {
-	    binaryScoreMembers.put(entry.getKey(),
-		    SafeEncoder.encode(entry.getValue()));
+	for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
+	    binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()),
+		    entry.getValue());
 	}
 
 	zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);

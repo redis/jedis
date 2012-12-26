@@ -136,6 +136,24 @@ public class BuilderFactory {
         }
     };
 
+    public static final Builder<Map<byte[],byte[]>> BYTE_ARRAY_MAP = new Builder<Map<byte[],byte[]>>() {
+        @SuppressWarnings("unchecked")
+        public Map<byte[], byte[]> build(Object data) {
+            final List<byte[]> flatHash = (List<byte[]>) data;
+            final Map<byte[], byte[]> hash = new HashMap<byte[], byte[]>();
+            final Iterator<byte[]> iterator = flatHash.iterator();
+            while (iterator.hasNext()) {
+                hash.put(iterator.next(), iterator.next());
+            }
+
+            return hash;
+        }
+
+        public String toString() {
+            return "Map<byte[],byte[]>";
+        }
+    };
+
     public static final Builder<Set<byte[]>> BYTE_ARRAY_ZSET = new Builder<Set<byte[]>>() {
         @SuppressWarnings("unchecked")
         public Set<byte[]> build(Object data) {

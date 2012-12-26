@@ -6,8 +6,10 @@ import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
+import redis.clients.util.SafeEncoder;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,6 +90,23 @@ public class PipeliningTest extends Assert {
         assertNotNull(hgetAll.get().get("foo"));
         assertEquals(1, smembers.get().size());
         assertEquals(1, zrangeWithScores.get().size());
+    }
+    
+    @Test
+    public void pipelineBinaryHGetAll() throws UnsupportedEncodingException {
+    	jedis.hset("hash", "a", "1");
+    	jedis.hset("hash", "b", "2");
+    	
+    	Pipeline p = jedis.pipelined();
+    	Response<Map<byte[], byte[]>> bhash = p.hgetAll(SafeEncoder.encode("hash"));
+    	p.sync();
+    	
+    	Map<String,String> hash = new HashMap<String, String>();
+    	for(Map.Entry<byte[], byte[]> entry : bhash.get().entrySet())
+    		hash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
+    	
+    	assertEquals("1", hash.get("a"));
+    	assertEquals("2", hash.get("b"));
     }
     
     @Test

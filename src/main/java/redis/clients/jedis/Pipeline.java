@@ -442,9 +442,9 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> lrange(byte[] key, long start, long end) {
+    public Response<List<byte[]>> lrange(byte[] key, long start, long end) {
         client.lrange(key, start, end);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> lrem(String key, long count, String value) {

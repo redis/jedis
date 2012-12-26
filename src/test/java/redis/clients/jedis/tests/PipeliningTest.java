@@ -69,6 +69,7 @@ public class PipeliningTest extends Assert {
         Response<Long> zcard = p.zcard("zset");
         p.lpush("list", "bar");
         Response<List<String>> lrange = p.lrange("list", 0, -1);
+        Response<List<byte[]>> lrangeBytes = p.lrange("list".getBytes(), 0, 1);
         Response<Map<String, String>> hgetAll = p.hgetAll("hash");
         p.sadd("set", "foo");
         Response<Set<String>> smembers = p.smembers("set");
@@ -85,6 +86,7 @@ public class PipeliningTest extends Assert {
         assertEquals(Double.valueOf(2), zincrby.get());
         assertEquals(Long.valueOf(1), zcard.get());
         assertEquals(1, lrange.get().size());
+        assertEquals(1, lrangeBytes.get().size());
         assertNotNull(hgetAll.get().get("foo"));
         assertEquals(1, smembers.get().size());
         assertEquals(1, zrangeWithScores.get().size());

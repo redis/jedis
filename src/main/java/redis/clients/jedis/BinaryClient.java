@@ -759,8 +759,16 @@ public class BinaryClient extends Connection {
 	sendEvalCommand(EVAL, script, keyCount, params);
     }
 
-    public void evalsha(byte[] sha1, byte[] keyCount, byte[][] params) {
+    public void eval(byte[] script, int keyCount, byte[]... params) {
+    	eval(script, toByteArray(keyCount), params);
+    }
+
+    public void evalsha(byte[] sha1, byte[] keyCount, byte[]... params) {
 	sendEvalCommand(EVALSHA, sha1, keyCount, params);
+    }
+
+    public void evalsha(byte[] sha1, int keyCount, byte[]... params) {
+    sendEvalCommand(EVALSHA, sha1, toByteArray(keyCount), params);
     }
 
     public void scriptFlush() {

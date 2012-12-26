@@ -49,6 +49,8 @@ public interface MultiKeyBinaryCommands {
 
     String watch(byte[]... keys);
 
+    String unwatch();
+
     Long zinterstore(byte[] dstkey, byte[]... sets);
 
     Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
@@ -60,6 +62,10 @@ public interface MultiKeyBinaryCommands {
     byte[] brpoplpush(byte[] source, byte[] destination, int timeout);
 
     Long publish(byte[] channel, byte[] message);
+
+    void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels);
+
+    void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns);
 
     byte[] randomBinaryKey();
 }

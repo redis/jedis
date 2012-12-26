@@ -49,6 +49,8 @@ public interface MultiKeyCommands {
 
     String watch(String... keys);
 
+    String unwatch();
+
     Long zinterstore(String dstkey, String... sets);
 
     Long zinterstore(String dstkey, ZParams params, String... sets);
@@ -60,6 +62,10 @@ public interface MultiKeyCommands {
     String brpoplpush(String source, String destination, int timeout);
 
     Long publish(String channel, String message);
+
+    void subscribe(JedisPubSub jedisPubSub, String... channels);
+
+    void psubscribe(JedisPubSub jedisPubSub, String... patterns);
 
     String randomKey();
 }

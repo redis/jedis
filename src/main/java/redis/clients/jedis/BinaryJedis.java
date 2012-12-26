@@ -17,7 +17,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 
-public class BinaryJedis implements BinaryJedisCommands, MultiKeyBinaryCommands {
+public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands, AdvancedBinaryJedisCommands, BinaryScriptingCommands {
     protected Client client = null;
 
     public BinaryJedis(final String host) {
@@ -2108,29 +2108,6 @@ public class BinaryJedis implements BinaryJedisCommands, MultiKeyBinaryCommands 
 	return pipeline;
     }
 
-    public void subscribe(final JedisPubSub jedisPubSub,
-	    final String... channels) {
-	client.setTimeoutInfinite();
-	jedisPubSub.proceed(client, channels);
-	client.rollbackTimeout();
-    }
-
-    public Long publish(final String channel, final String message) {
-    checkIsInMulti();
-    connect();
-	client.publish(channel, message);
-	return client.getIntegerReply();
-    }
-
-    public void psubscribe(final JedisPubSub jedisPubSub,
-	    final String... patterns) {
-    checkIsInMulti();
-    connect();
-	client.setTimeoutInfinite();
-	jedisPubSub.proceedWithPatterns(client, patterns);
-	client.rollbackTimeout();
-    }
-
     public Long zcount(final byte[] key, final double min, final double max) {
     	return zcount(key, toByteArray(min), toByteArray(max));
     }
@@ -3151,20 +3128,50 @@ public class BinaryJedis implements BinaryJedisCommands, MultiKeyBinaryCommands 
 	return params;
     }
 
-    public Object eval(byte[] script, byte[] keyCount, byte[][] params) {
+    public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
 	client.setTimeoutInfinite();
 	client.eval(script, keyCount, params);
 	return client.getOne();
     }
 
-    public byte[] scriptFlush() {
+    public Object eval(byte[] script, int keyCount, byte[]... params) {
+        client.setTimeoutInfinite();
+        client.eval(script, SafeEncoder.encode(Integer.toString(keyCount)), params);
+        return client.getOne();
+    }
+
+    public Object eval(byte[] script) {
+        client.setTimeoutInfinite();
+        client.eval(script, 0);
+        return client.getOne();
+    }
+
+    public Object evalsha(byte[] sha1) {
+        client.setTimeoutInfinite();
+        client.evalsha(sha1, 0);
+        return client.getOne();
+    }
+
+    public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+        client.setTimeoutInfinite();
+        client.evalsha(sha1, keys.size(), keys.toArray(new byte[0][]));
+        return client.getOne();
+    }
+
+    public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
+        client.setTimeoutInfinite();
+        client.evalsha(sha1, keyCount, params);
+        return client.getOne();
+    }
+
+    public String scriptFlush() {
 	client.scriptFlush();
-	return client.getBinaryBulkReply();
+	return client.getStatusCodeReply();
     }
 
     public List<Long> scriptExists(byte[]... sha1) {
 	client.scriptExists(sha1);
-	return client.getIntegerMultiBulkReply();
+    return client.getIntegerMultiBulkReply();
     }
 
     public byte[] scriptLoad(byte[] script) {
@@ -3172,17 +3179,17 @@ public class BinaryJedis implements BinaryJedisCommands, MultiKeyBinaryCommands 
 	return client.getBinaryBulkReply();
     }
 
-    public byte[] scriptKill() {
+    public String scriptKill() {
 	client.scriptKill();
-	return client.getBinaryBulkReply();
+	return client.getStatusCodeReply();
     }
 
-    public byte[] slowlogReset() {
+    public String slowlogReset() {
 	client.slowlogReset();
-	return client.getBinaryBulkReply();
+	return client.getBulkReply();
     }
 
-    public long slowlogLen() {
+    public Long slowlogLen() {
 	client.slowlogLen();
 	return client.getIntegerReply();
     }

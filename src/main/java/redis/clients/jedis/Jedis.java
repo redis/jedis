@@ -13,7 +13,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
-public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, JedisBasicCommands {
+public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands {
     public Jedis(final String host) {
 	super(host);
     }
@@ -2717,6 +2717,29 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	client.eval(script, keyCount, params);
 
 	return getEvalResult();
+    }
+
+    public void subscribe(final JedisPubSub jedisPubSub,
+        final String... channels) {
+    client.setTimeoutInfinite();
+    jedisPubSub.proceed(client, channels);
+    client.rollbackTimeout();
+    }
+
+    public Long publish(final String channel, final String message) {
+    checkIsInMulti();
+    connect();
+    client.publish(channel, message);
+    return client.getIntegerReply();
+    }
+
+    public void psubscribe(final JedisPubSub jedisPubSub,
+        final String... patterns) {
+    checkIsInMulti();
+    connect();
+    client.setTimeoutInfinite();
+    jedisPubSub.proceedWithPatterns(client, patterns);
+    client.rollbackTimeout();
     }
 
     private String[] getParams(List<String> keys, List<String> args) {

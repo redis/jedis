@@ -17,7 +17,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 
-public class BinaryJedis implements BinaryJedisCommands {
+public class BinaryJedis implements BinaryJedisCommands, MultiKeyBinaryCommands {
     protected Client client = null;
 
     public BinaryJedis(final String host) {
@@ -2041,6 +2041,24 @@ public class BinaryJedis implements BinaryJedisCommands {
         checkIsInMulti();
         byte[][] args = new byte[1][];
         args[0] = arg;
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<byte[]> blpop(byte[]... args) {
+        checkIsInMulti();
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<byte[]> brpop(byte[]... args) {
+        checkIsInMulti();
         client.brpop(args);
         client.setTimeoutInfinite();
         final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();

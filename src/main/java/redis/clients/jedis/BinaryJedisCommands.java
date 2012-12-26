@@ -149,6 +149,8 @@ public interface BinaryJedisCommands {
 
     Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
+    Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
+
     Set<byte[]> zrevrangeByScore(byte[] key, double max, double min);
 
     Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset,

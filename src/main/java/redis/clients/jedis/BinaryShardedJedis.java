@@ -391,7 +391,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.zrangeByScoreWithScores(key, min, max, offset, count);
     }
-    
+
+    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+        Jedis j = getShard(key);
+        return j.zrangeByScore(key, min, max);
+    }
 
     public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
 	Jedis j = getShard(key);

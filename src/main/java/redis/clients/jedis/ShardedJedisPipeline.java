@@ -116,6 +116,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> del(String key) {
+        Client c = getClient(key);
+        c.del(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> incrBy(String key, int integer) {
         Client c = getClient(key);
         c.incrBy(key, integer);

@@ -715,6 +715,10 @@ public class BinaryClient extends Connection {
 	sendCommand(SETBIT, key, toByteArray(offset), value);
     }
 
+    public void setbit(byte[] key, long offset, boolean value) {
+    sendCommand(SETBIT, key, toByteArray(offset), toByteArray(value));
+    }
+
     public void getbit(byte[] key, long offset) {
 	sendCommand(GETBIT, key, toByteArray(offset));
     }
@@ -755,8 +759,16 @@ public class BinaryClient extends Connection {
 	sendEvalCommand(EVAL, script, keyCount, params);
     }
 
-    public void evalsha(byte[] sha1, byte[] keyCount, byte[][] params) {
+    public void eval(byte[] script, int keyCount, byte[]... params) {
+    	eval(script, toByteArray(keyCount), params);
+    }
+
+    public void evalsha(byte[] sha1, byte[] keyCount, byte[]... params) {
 	sendEvalCommand(EVALSHA, sha1, keyCount, params);
+    }
+
+    public void evalsha(byte[] sha1, int keyCount, byte[]... params) {
+    sendEvalCommand(EVALSHA, sha1, toByteArray(keyCount), params);
     }
 
     public void scriptFlush() {

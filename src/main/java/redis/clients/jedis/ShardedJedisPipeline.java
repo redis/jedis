@@ -4,7 +4,9 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 import java.util.*;
 
-public class ShardedJedisPipeline extends Queable {
+import static redis.clients.jedis.Protocol.toByteArray;
+
+public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline, RedisPipeline {
     private BinaryShardedJedis jedis;
     private List<FutureResult> results = new ArrayList<FutureResult>();
     private Queue<Client> clients = new LinkedList<Client>();
@@ -32,11 +34,96 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<String> set(byte[] key, byte[] value) {
+        Client c = getClient(key);
+        c.set(key, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
     public Response<String> get(String key) {
         Client c = getClient(key);
         c.get(key);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<byte[]> get(byte[] key) {
+        Client c = getClient(key);
+        c.get(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
+    public Response<List<byte[]>> blpop(byte[] arg) {
+        byte[][] temp = new byte[1][];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.blpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<List<byte[]>> brpop(byte[] arg) {
+        byte[][] temp = new byte[1][];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.blpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<List<String>> blpop(String arg) {
+        String[] temp = new String[1];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.blpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> brpop(String arg) {
+        String[] temp = new String[1];
+        temp[0] = arg;
+        Client c = getClient(arg);
+        c.brpop(temp);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<Long> move(byte[] key, int dbIndex) {
+        Client c = getClient(key);
+        c.move(key, dbIndex);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> move(String key, int dbIndex) {
+        Client c = getClient(key);
+        c.move(key, dbIndex);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<byte[]> echo(byte[] string) {
+        Client c = getClient(string);
+        c.echo(string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
+    public Response<String> echo(String string) {
+        Client c = getClient(string);
+        c.echo(string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> del(byte[] key) {
+        Client c = getClient(key);
+        c.del(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
     }
 
     public Response<Long> del(String key) {
@@ -53,14 +140,35 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
-    public Response<Boolean> type(String key) {
+    public Response<Boolean> exists(byte[] key) {
         Client c = getClient(key);
-        c.type(key);
+        c.exists(key);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
+    public Response<String> type(String key) {
+        Client c = getClient(key);
+        c.type(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> type(byte[] key) {
+        Client c = getClient(key);
+        c.type(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
     public Response<Long> expire(String key, int seconds) {
+        Client c = getClient(key);
+        c.expire(key, seconds);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> expire(byte[] key, int seconds) {
         Client c = getClient(key);
         c.expire(key, seconds);
         results.add(new FutureResult(c));
@@ -74,7 +182,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> expireAt(byte[] key, long unixTime) {
+        Client c = getClient(key);
+        c.expireAt(key, unixTime);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> ttl(String key) {
+        Client c = getClient(key);
+        c.ttl(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> ttl(byte[] key) {
         Client c = getClient(key);
         c.ttl(key);
         results.add(new FutureResult(c));
@@ -88,6 +210,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<byte[]> getSet(byte[] key, byte[] value) {
+        Client c = getClient(key);
+        c.getSet(key, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
     public Response<Long> setnx(String key, String value) {
         Client c = getClient(key);
         c.setnx(key, value);
@@ -95,14 +224,35 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> setex(String key, int seconds, String value) {
+    public Response<Long> setnx(byte[] key, byte[] value) {
+        Client c = getClient(key);
+        c.setnx(key, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> setex(String key, int seconds, String value) {
         Client c = getClient(key);
         c.setex(key, seconds, value);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.LONG);        
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> setex(byte[] key, int seconds, byte[] value) {
+        Client c = getClient(key);
+        c.setex(key, seconds, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
     }
 
     public Response<Long> decrBy(String key, long integer) {
+        Client c = getClient(key);
+        c.decrBy(key, integer);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> decrBy(byte[] key, long integer) {
         Client c = getClient(key);
         c.decrBy(key, integer);
         results.add(new FutureResult(c));
@@ -116,7 +266,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> incrBy(String key, int integer) {
+    public Response<Long> decr(byte[] key) {
+        Client c = getClient(key);
+        c.decr(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> incrBy(String key, long integer) {
+        Client c = getClient(key);
+        c.incrBy(key, integer);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> incrBy(byte[] key, long integer) {
         Client c = getClient(key);
         c.incrBy(key, integer);
         results.add(new FutureResult(c));
@@ -130,7 +294,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> incr(byte[] key) {
+        Client c = getClient(key);
+        c.incr(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> append(String key, String value) {
+        Client c = getClient(key);
+        c.append(key, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> append(byte[] key, byte[] value) {
         Client c = getClient(key);
         c.append(key, value);
         results.add(new FutureResult(c));
@@ -144,7 +322,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<String> substr(byte[] key, int start, int end) {
+        Client c = getClient(key);
+        c.substr(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
     public Response<Long> hset(String key, String field, String value) {
+        Client c = getClient(key);
+        c.hset(key, field, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> hset(byte[] key, byte[] field, byte[] value) {
         Client c = getClient(key);
         c.hset(key, field, value);
         results.add(new FutureResult(c));
@@ -158,7 +350,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<byte[]> hget(byte[] key, byte[] field) {
+        Client c = getClient(key);
+        c.hget(key, field);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
     public Response<Long> hsetnx(String key, String field, String value) {
+        Client c = getClient(key);
+        c.hsetnx(key, field, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> hsetnx(byte[] key, byte[] field, byte[] value) {
         Client c = getClient(key);
         c.hsetnx(key, field, value);
         results.add(new FutureResult(c));
@@ -172,6 +378,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
+        Client c = getClient(key);
+        c.hmset(key, hash);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
     public Response<List<String>> hmget(String key, String... fields) {
         Client c = getClient(key);
         c.hmget(key, fields);
@@ -179,7 +392,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<Long> hincrBy(String key, String field, int value) {
+    public Response<List<byte[]>> hmget(byte[] key, byte[]... fields) {
+        Client c = getClient(key);
+        c.hmget(key, fields);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<Long> hincrBy(String key, String field, long value) {
+        Client c = getClient(key);
+        c.hincrBy(key, field, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> hincrBy(byte[] key, byte[] field, long value) {
         Client c = getClient(key);
         c.hincrBy(key, field, value);
         results.add(new FutureResult(c));
@@ -193,7 +420,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
+    public Response<Boolean> hexists(byte[] key, byte[] field) {
+        Client c = getClient(key);
+        c.hexists(key, field);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
     public Response<Long> hdel(String key, String field) {
+        Client c = getClient(key);
+        c.hdel(key, field);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> hdel(byte[] key, byte[] field) {
         Client c = getClient(key);
         c.hdel(key, field);
         results.add(new FutureResult(c));
@@ -207,6 +448,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> hlen(byte[] key) {
+        Client c = getClient(key);
+        c.hlen(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Set<String>> hkeys(String key) {
         Client c = getClient(key);
         c.hkeys(key);
@@ -214,11 +462,25 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> hvals(String key) {
+    public Response<Set<byte[]>> hkeys(byte[] key) {
+        Client c = getClient(key);
+        c.hkeys(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+    }
+
+    public Response<List<String>> hvals(String key) {
         Client c = getClient(key);
         c.hvals(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<byte[]>> hvals(byte[] key) {
+        Client c = getClient(key);
+        c.hvals(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Map<String, String>> hgetAll(String key) {
@@ -228,9 +490,37 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_MAP);
     }
 
+    public Response<Map<byte[], byte[]>> hgetAll(byte[] key) {
+        Client c = getClient(key);
+        c.hgetAll(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_MAP);
+    }
+
     public Response<Long> rpush(String key, String string) {
         Client c = getClient(key);
         c.rpush(key, string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> rpush(byte[] key, byte[] string) {
+        Client c = getClient(key);
+        c.rpush(key, string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> rpushx(String key, String string) {
+        Client c = getClient(key);
+        c.rpushx(key, string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> rpushx(byte[] key, byte[] string) {
+        Client c = getClient(key);
+        c.rpushx(key, string);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
     }
@@ -242,6 +532,27 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> lpush(byte[] key, byte[] string) {
+        Client c = getClient(key);
+        c.lpush(key, string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> lpushx(String key, String string) {
+        Client c = getClient(key);
+        c.lpushx(key, string);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> lpushx(byte[] key, byte[] bytes) {
+        Client c = getClient(key);
+        c.lpushx(key, bytes);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> llen(String key) {
         Client c = getClient(key);
         c.llen(key);
@@ -249,18 +560,53 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> lrange(String key, int start, int end) {
+    public Response<Long> llen(byte[] key) {
+        Client c = getClient(key);
+        c.llen(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<List<String>> lrange(String key, long start, long end) {
         Client c = getClient(key);
         c.lrange(key, start, end);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<String> ltrim(String key, int start, int end) {
+    public Response<List<byte[]>> lrange(byte[] key, long start, long end) {
+        Client c = getClient(key);
+        c.lrange(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+
+    public Response<String> ltrim(String key, long start, long end) {
         Client c = getClient(key);
         c.ltrim(key, start, end);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> ltrim(byte[] key, long start, long end) {
+        Client c = getClient(key);
+        c.ltrim(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> persist(String key) {
+        Client c = getClient(key);
+        c.persist(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> persist(byte[] key) {
+        Client c = getClient(key);
+        c.persist(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
     }
 
     public Response<String> lindex(String key, int index) {
@@ -270,14 +616,35 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> lset(String key, int index, String value) {
+    public Response<byte[]> lindex(byte[] key, int index) {
+        Client c = getClient(key);
+        c.lindex(key, index);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
+    public Response<String> lset(String key, long index, String value) {
         Client c = getClient(key);
         c.lset(key, index, value);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<Long> lrem(String key, int count, String value) {
+    public Response<String> lset(byte[] key, long index, byte[] value) {
+        Client c = getClient(key);
+        c.lset(key, index, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> lrem(String key, long count, String value) {
+        Client c = getClient(key);
+        c.lrem(key, count, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> lrem(byte[] key, long count, byte[] value) {
         Client c = getClient(key);
         c.lrem(key, count, value);
         results.add(new FutureResult(c));
@@ -291,6 +658,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<byte[]> lpop(byte[] key) {
+        Client c = getClient(key);
+        c.lpop(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
     public Response<String> rpop(String key) {
         Client c = getClient(key);
         c.rpop(key);
@@ -298,7 +672,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<byte[]> rpop(byte[] key) {
+        Client c = getClient(key);
+        c.rpop(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+
     public Response<Long> sadd(String key, String member) {
+        Client c = getClient(key);
+        c.sadd(key, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> sadd(byte[] key, byte[] member) {
         Client c = getClient(key);
         c.sadd(key, member);
         results.add(new FutureResult(c));
@@ -312,6 +700,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_SET);
     }
 
+    public Response<Set<String>> smembers(byte[] key) {
+        Client c = getClient(key);
+        c.smembers(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_SET);
+    }
+
     public Response<Long> srem(String key, String member) {
         Client c = getClient(key);
         c.srem(key, member);
@@ -319,7 +714,35 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> srem(byte[] key, byte[] member) {
+        Client c = getClient(key);
+        c.srem(key, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> strlen(String key) {
+        Client c = getClient(key);
+        c.strlen(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> strlen(byte[] key) {
+        Client c = getClient(key);
+        c.strlen(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<String> spop(String key) {
+        Client c = getClient(key);
+        c.spop(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> spop(byte[] key) {
         Client c = getClient(key);
         c.spop(key);
         results.add(new FutureResult(c));
@@ -333,7 +756,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> scard(byte[] key) {
+        Client c = getClient(key);
+        c.scard(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Boolean> sismember(String key, String member) {
+        Client c = getClient(key);
+        c.sismember(key, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
+    public Response<Boolean> sismember(byte[] key, byte[] member) {
         Client c = getClient(key);
         c.sismember(key, member);
         results.add(new FutureResult(c));
@@ -347,7 +784,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING);
     }
 
+    public Response<String> srandmember(byte[] key) {
+        Client c = getClient(key);
+        c.srandmember(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
     public Response<Long> zadd(String key, double score, String member) {
+        Client c = getClient(key);
+        c.zadd(key, score, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zadd(byte[] key, double score, byte[] member) {
         Client c = getClient(key);
         c.zadd(key, score, member);
         results.add(new FutureResult(c));
@@ -361,7 +812,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
+    public Response<Set<String>> zrange(byte[] key, int start, int end) {
+        Client c = getClient(key);
+        c.zrange(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
     public Response<Long> zrem(String key, String member) {
+        Client c = getClient(key);
+        c.zrem(key, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zrem(byte[] key, byte[] member) {
         Client c = getClient(key);
         c.zrem(key, member);
         results.add(new FutureResult(c));
@@ -375,7 +840,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.DOUBLE);
     }
 
+    public Response<Double> zincrby(byte[] key, double score, byte[] member) {
+        Client c = getClient(key);
+        c.zincrby(key, score, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
     public Response<Long> zrank(String key, String member) {
+        Client c = getClient(key);
+        c.zrank(key, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zrank(byte[] key, byte[] member) {
         Client c = getClient(key);
         c.zrank(key, member);
         results.add(new FutureResult(c));
@@ -389,7 +868,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> zrevrank(byte[] key, byte[] member) {
+        Client c = getClient(key);
+        c.zrevrank(key, member);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Set<String>> zrevrange(String key, int start, int end) {
+        Client c = getClient(key);
+        c.zrevrange(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrange(byte[] key, int start, int end) {
         Client c = getClient(key);
         c.zrevrange(key, start, end);
         results.add(new FutureResult(c));
@@ -403,7 +896,21 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
+    public Response<Set<Tuple>> zrangeWithScores(byte[] key, int start, int end) {
+        Client c = getClient(key);
+        c.zrangeWithScores(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
     public Response<Set<Tuple>> zrevrangeWithScores(String key, int start, int end) {
+        Client c = getClient(key);
+        c.zrevrangeWithScores(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeWithScores(byte[] key, int start, int end) {
         Client c = getClient(key);
         c.zrevrangeWithScores(key, start, end);
         results.add(new FutureResult(c));
@@ -417,6 +924,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> zcard(byte[] key) {
+        Client c = getClient(key);
+        c.zcard(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Double> zscore(String key, String member) {
         Client c = getClient(key);
         c.zscore(key, member);
@@ -424,14 +938,35 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.DOUBLE);
     }
 
-    public Response<Double> sort(String key) {
+    public Response<Double> zscore(byte[] key, byte[] member) {
         Client c = getClient(key);
-        c.sort(key);
+        c.zscore(key, member);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.DOUBLE);
     }
 
+    public Response<Long> sort(String key) {
+        Client c = getClient(key);
+        c.sort(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> sort(byte[] key) {
+        Client c = getClient(key);
+        c.sort(key);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<List<String>> sort(String key, SortingParams sortingParameters) {
+        Client c = getClient(key);
+        c.sort(key, sortingParameters);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<List<String>> sort(byte[] key, SortingParams sortingParameters) {
         Client c = getClient(key);
         c.sort(key, sortingParameters);
         results.add(new FutureResult(c));
@@ -445,7 +980,84 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> zcount(byte[] key, double min, double max) {
+        Client c = getClient(key);
+        c.zcount(key, toByteArray(min), toByteArray(max));
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(String key, String max, String min) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(String key, double max, double min) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, double max, double min) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, toByteArray(min), toByteArray(max));
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, min, max, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, toByteArray(min), toByteArray(max), offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScore(key, min, max, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(String key, String min, String max) {
+        Client c = getClient(key);
+        c.zrangeByScore(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
     public Response<Set<String>> zrangeByScore(String key, double min, double max) {
+        Client c = getClient(key);
+        c.zrangeByScore(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(byte[] key, double min, double max) {
+        Client c = getClient(key);
+        c.zrangeByScore(key, toByteArray(min), toByteArray(max));
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
         Client c = getClient(key);
         c.zrangeByScore(key, min, max);
         results.add(new FutureResult(c));
@@ -460,7 +1072,37 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
+    public Response<Set<String>> zrangeByScore(byte[] key, double min, double max,
+                                               int offset, int count) {
+        Client c = getClient(key);
+        c.zrangeByScore(key, toByteArray(min), toByteArray(max), offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    public Response<Set<String>> zrangeByScore(byte[] key, byte[] min, byte[] max,
+                                               int offset, int count) {
+        Client c = getClient(key);
+        c.zrangeByScore(key, min, max, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
     public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
+        Client c = getClient(key);
+        c.zrangeByScoreWithScores(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
+        Client c = getClient(key);
+        c.zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max));
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
         Client c = getClient(key);
         c.zrangeByScoreWithScores(key, min, max);
         results.add(new FutureResult(c));
@@ -475,6 +1117,64 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max,
+            int offset, int count) {
+        Client c = getClient(key);
+        c.zrangeByScoreWithScores(key, toByteArray(min), toByteArray(max), offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max,
+            int offset, int count) {
+        Client c = getClient(key);
+        c.zrangeByScoreWithScores(key, min, max, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, toByteArray(min), toByteArray(max));
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, min, max);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, min, max, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, toByteArray(min), toByteArray(max), offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
+        Client c = getClient(key);
+        c.zrevrangeByScoreWithScores(key, min, max, offset, count);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+
     public Response<Long> zremrangeByRank(String key, int start, int end) {
         Client c = getClient(key);
         c.zremrangeByRank(key, start, end);
@@ -482,7 +1182,28 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> zremrangeByRank(byte[] key, int start, int end) {
+        Client c = getClient(key);
+        c.zremrangeByRank(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> zremrangeByScore(String key, double start, double end) {
+        Client c = getClient(key);
+        c.zremrangeByScore(key, start, end);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zremrangeByScore(byte[] key, double start, double end) {
+        Client c = getClient(key);
+        c.zremrangeByScore(key, toByteArray(start), toByteArray(end));
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> zremrangeByScore(byte[] key, byte[] start, byte[] end) {
         Client c = getClient(key);
         c.zremrangeByScore(key, start, end);
         results.add(new FutureResult(c));
@@ -497,7 +1218,22 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> linsert(byte[] key, LIST_POSITION where, byte[] pivot,
+                                  byte[] value) {
+        Client c = getClient(key);
+        c.linsert(key, where, pivot, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Boolean> getbit(String key, long offset) {
+        Client c = getClient(key);
+        c.getbit(key, offset);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
+    public Response<Boolean> getbit(byte[] key, long offset) {
         Client c = getClient(key);
         c.getbit(key, offset);
         results.add(new FutureResult(c));
@@ -511,15 +1247,35 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.BOOLEAN);
     }
 
+    public Response<Boolean> setbit(byte[] key, long offset, byte[] value) {
+        Client c = getClient(key);
+        c.setbit(key, offset, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.BOOLEAN);
+    }
+
     public Response<Long> setrange(String key, long offset, String value) {
         Client c = getClient(key);
         c.setrange(key, offset, value);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
-
     }
 
-    public Response<Long> getrange(String key, long startOffset, long endOffset) {
+    public Response<Long> setrange(byte[] key, long offset, byte[] value) {
+        Client c = getClient(key);
+        c.setrange(key, offset, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<String> getrange(String key, long startOffset, long endOffset) {
+        Client c = getClient(key);
+        c.getrange(key, startOffset, endOffset);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<Long> getrange(byte[] key, long startOffset, long endOffset) {
         Client c = getClient(key);
         c.getrange(key, startOffset, endOffset);
         results.add(new FutureResult(c));
@@ -570,6 +1326,12 @@ public class ShardedJedisPipeline extends Queable {
     }
 
     private Client getClient(String key) {
+        Client client = jedis.getShard(key).getClient();
+        clients.add(client);
+        return client;
+    }
+
+    private Client getClient(byte[] key) {
         Client client = jedis.getShard(key).getClient();
         clients.add(client);
         return client;

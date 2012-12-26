@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Hashing;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public ShardedJedis(List<JedisShardInfo> shards) {
@@ -26,13 +26,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	super(shards, algo, keyTagPattern);
     }
 
-    public void disconnect() {
-	for (Jedis jedis : getAllShards()) {
-	    jedis.quit();
-	    jedis.disconnect();
-	}
-    }
-
     public String set(String key, String value) {
 	Jedis j = getShard(key);
 	return j.set(key, value);
@@ -41,6 +34,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public String get(String key) {
 	Jedis j = getShard(key);
 	return j.get(key);
+    }
+
+    public String echo(String string) {
+        Jedis j = getShard(string);
+        return j.echo(string);
     }
 
     public Boolean exists(String key) {
@@ -73,6 +71,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.setbit(key, offset, value);
     }
 
+    public Boolean setbit(String key, long offset, String value) {
+    Jedis j = getShard(key);
+    return j.setbit(key, offset, value);
+    }
+
     public Boolean getbit(String key, long offset) {
 	Jedis j = getShard(key);
 	return j.getbit(key, offset);
@@ -101,6 +104,16 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public String setex(String key, int seconds, String value) {
 	Jedis j = getShard(key);
 	return j.setex(key, seconds, value);
+    }
+
+    public List<String> blpop(String arg) {
+        Jedis j = getShard(arg);
+        return j.blpop(arg);
+    }
+
+    public List<String> brpop(String arg) {
+        Jedis j = getShard(arg);
+        return j.brpop(arg);
     }
 
     public Long decrBy(String key, long integer) {
@@ -213,9 +226,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.lpushx(key, string);
     }
 
+    public Long strlen(final String key) {
+    Jedis j = getShard(key);
+    return j.strlen(key);
+    }
+
+    public Long move(String key, int dbIndex) {
+        Jedis j = getShard(key);
+        return j.move(key, dbIndex);
+    }
+
     public Long rpushx(String key, String string) {
 	Jedis j = getShard(key);
 	return j.rpushx(key, string);
+    }
+
+    public Long persist(final String key) {
+    Jedis j = getShard(key);
+    return j.persist(key);
     }
 
     public Long llen(String key) {

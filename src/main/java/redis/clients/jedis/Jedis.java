@@ -13,7 +13,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
-public class Jedis extends BinaryJedis implements JedisCommands {
+public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands {
     public Jedis(final String host) {
 	super(host);
     }
@@ -32,12 +32,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     public Jedis(URI uri) {
 	super(uri);
-    }
-
-    public String ping() {
-	checkIsInMulti();
-	client.ping();
-	return client.getStatusCodeReply();
     }
 
     /**
@@ -73,16 +67,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
-     * Ask the server to silently close the connection.
-     */
-
-    public String quit() {
-	checkIsInMulti();
-	client.quit();
-	return client.getStatusCodeReply();
-    }
-
-    /**
      * Test if the specified key exists. The command returns "1" if the key
      * exists, otherwise "0" is returned. Note that even keys set with an empty
      * string as value will return "1".
@@ -114,6 +98,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
+    public Long del(String key) {
+        client.del(key);
+        return client.getIntegerReply();
+    }
+
     /**
      * Return the type of the value stored at key in form of a string. The type
      * can be one of "none", "string", "list", "set". "none" is returned if the
@@ -131,19 +120,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public String type(final String key) {
 	checkIsInMulti();
 	client.type(key);
-	return client.getStatusCodeReply();
-    }
-
-    /**
-     * Delete all the keys of the currently selected DB. This command never
-     * fails.
-     * 
-     * @return Status code reply
-     */
-
-    public String flushDB() {
-	checkIsInMulti();
-	client.flushDB();
 	return client.getStatusCodeReply();
     }
 
@@ -321,20 +297,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
-     * Select the DB with having the specified zero-based numeric index. For
-     * default every new client connection is automatically selected to DB 0.
-     * 
-     * @param index
-     * @return Status code reply
-     */
-
-    public String select(final int index) {
-	checkIsInMulti();
-	client.select(index);
-	return client.getStatusCodeReply();
-    }
-
-    /**
      * Move the specified key from the currently selected DB to the specified
      * destination DB. Note that this command returns 1 only if the key was
      * successfully moved, and 0 if the target key was already there or if the
@@ -351,19 +313,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.move(key, dbIndex);
 	return client.getIntegerReply();
-    }
-
-    /**
-     * Delete all the keys of all the existing databases, not just the currently
-     * selected one. This command never fails.
-     * 
-     * @return Status code reply
-     */
-
-    public String flushAll() {
-	checkIsInMulti();
-	client.flushAll();
-	return client.getStatusCodeReply();
     }
 
     /**
@@ -1817,6 +1766,42 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return multiBulkReply;
     }
 
+    public List<String> blpop(String... args) {
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> brpop(String... args) {
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> blpop(String arg) {
+        String[] args = new String[1];
+        args[0] = arg;
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> brpop(String arg) {
+        String[] args = new String[1];
+        args[0] = arg;
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
     /**
      * Sort a Set or a List accordingly to the specified parameters and store
      * the result at dstkey.
@@ -1947,49 +1932,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return multiBulkReply;
     }
 
-    /**
-     * Request for authentication in a password protected Redis server. A Redis
-     * server can be instructed to require a password before to allow clients to
-     * issue commands. This is done using the requirepass directive in the Redis
-     * configuration file. If the password given by the client is correct the
-     * server replies with an OK status code reply and starts accepting commands
-     * from the client. Otherwise an error is returned and the clients needs to
-     * try a new password. Note that for the high performance nature of Redis it
-     * is possible to try a lot of passwords in parallel in very short time, so
-     * make sure to generate a strong and very long password so that this attack
-     * is infeasible.
-     * 
-     * @param password
-     * @return Status code reply
-     */
 
-    public String auth(final String password) {
-	checkIsInMulti();
-	client.auth(password);
-	return client.getStatusCodeReply();
-    }
-
-    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-	checkIsInMulti();
-	connect();
-	client.setTimeoutInfinite();
-	jedisPubSub.proceed(client, channels);
-	client.rollbackTimeout();
-    }
-
-    public Long publish(String channel, String message) {
-	checkIsInMulti();
-	client.publish(channel, message);
-	return client.getIntegerReply();
-    }
-
-    public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
-	checkIsInMulti();
-	connect();
-	client.setTimeoutInfinite();
-	jedisPubSub.proceedWithPatterns(client, patterns);
-	client.rollbackTimeout();
-    }
 
     public Long zcount(final String key, final double min, final double max) {
 	checkIsInMulti();
@@ -2662,6 +2605,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply() == 1;
     }
 
+    public Boolean setbit(String key, long offset, String value) {
+    client.setbit(key, offset, value);
+    return client.getIntegerReply() == 1;
+    }
+
     /**
      * Returns the bit value at offset in the string value stored at key
      * 
@@ -2769,6 +2717,29 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	client.eval(script, keyCount, params);
 
 	return getEvalResult();
+    }
+
+    public void subscribe(final JedisPubSub jedisPubSub,
+        final String... channels) {
+    client.setTimeoutInfinite();
+    jedisPubSub.proceed(client, channels);
+    client.rollbackTimeout();
+    }
+
+    public Long publish(final String channel, final String message) {
+    checkIsInMulti();
+    connect();
+    client.publish(channel, message);
+    return client.getIntegerReply();
+    }
+
+    public void psubscribe(final JedisPubSub jedisPubSub,
+        final String... patterns) {
+    checkIsInMulti();
+    connect();
+    client.setTimeoutInfinite();
+    jedisPubSub.proceedWithPatterns(client, patterns);
+    client.rollbackTimeout();
     }
 
     private String[] getParams(List<String> keys, List<String> args) {

@@ -14,6 +14,8 @@ public interface JedisCommands {
 
     Boolean exists(String key);
 
+    Long persist(String key);
+
     String type(String key);
 
     Long expire(String key, int seconds);
@@ -23,6 +25,8 @@ public interface JedisCommands {
     Long ttl(String key);
 
     Boolean setbit(String key, long offset, boolean value);
+
+    Boolean setbit(String key, long offset, String value);
 
     Boolean getbit(String key, long offset);
 
@@ -105,6 +109,8 @@ public interface JedisCommands {
     Boolean sismember(String key, String member);
 
     String srandmember(String key);
+
+    Long strlen(String key);
 
     Long zadd(String key, double score, String member);
     
@@ -190,4 +196,14 @@ public interface JedisCommands {
     Long lpushx(String key, String string);
     
     Long rpushx(String key, String string); 
+
+    List<String> blpop(String arg);
+
+    List<String> brpop(String arg);
+
+    Long del(String key);
+
+    String echo(String string);
+
+    Long move(String key, int dbIndex);
 }

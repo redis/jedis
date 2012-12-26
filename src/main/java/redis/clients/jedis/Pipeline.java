@@ -203,6 +203,11 @@ public class Pipeline extends Queable {
         client.get(key);
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
+    
+    public Response<byte[]> getBytes(byte[] key) {
+        client.get(key);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
 
     public Response<Boolean> getbit(String key, long offset) {
         client.getbit(key, offset);

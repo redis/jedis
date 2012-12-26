@@ -88,6 +88,8 @@ public interface RedisPipeline {
 
     Response<String> ltrim(String key, long start, long end);
 
+    Response<Long> move(String key, int dbIndex);
+
     Response<Long> persist(String key);
 
     Response<String> rpop(String key);

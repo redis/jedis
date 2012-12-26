@@ -85,6 +85,8 @@ public interface BinaryRedisPipeline {
 
     Response<String> ltrim(byte[] key, long start, long end);
 
+    Response<Long> move(byte[] key, int dbIndex);
+
     Response<Long> persist(byte[] key);
 
     Response<byte[]> rpop(byte[] key);

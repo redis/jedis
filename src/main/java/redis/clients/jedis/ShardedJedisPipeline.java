@@ -91,6 +91,20 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
+    public Response<Long> move(byte[] key, int dbIndex) {
+        Client c = getClient(key);
+        c.move(key, dbIndex);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> move(String key, int dbIndex) {
+        Client c = getClient(key);
+        c.move(key, dbIndex);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<byte[]> echo(byte[] string) {
         Client c = getClient(string);
         c.echo(string);

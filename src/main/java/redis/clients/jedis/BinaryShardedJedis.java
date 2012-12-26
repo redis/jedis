@@ -30,10 +30,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	super(shards, algo, keyTagPattern);
     }
 
-    public void disconnect() throws IOException {
-	for (Jedis jedis : getAllShards()) {
-	    jedis.disconnect();
-	}
+    public void disconnect() {
+    for (Jedis jedis : getAllShards()) {
+        jedis.quit();
+        jedis.disconnect();
+    }
     }
 
     protected Jedis create(JedisShardInfo shard) {

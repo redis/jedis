@@ -26,13 +26,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	super(shards, algo, keyTagPattern);
     }
 
-    public void disconnect() {
-	for (Jedis jedis : getAllShards()) {
-	    jedis.quit();
-	    jedis.disconnect();
-	}
-    }
-
     public String set(String key, String value) {
 	Jedis j = getShard(key);
 	return j.set(key, value);

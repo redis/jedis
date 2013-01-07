@@ -124,6 +124,22 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test(expected = JedisDataException.class)
+    public void incrByFloatWrongValue() {
+        jedis.set("foo", "bar");
+        jedis.incrByFloat("foo", 2d);
+    }
+
+    @Test
+    public void incrByFloat() {
+        Double value = jedis.incrByFloat("foo", 2d);
+        assertEquals((Double)2d, value);
+        value = jedis.incrByFloat("foo", 2.5d);
+        assertEquals((Double)4.5d, value);
+        value = jedis.incrByFloat("foo", -6.5d);
+        assertEquals(Double.compare(-2d, value), 0);
+    }
+
+    @Test(expected = JedisDataException.class)
     public void decrWrongValue() {
         jedis.set("foo", "bar");
         jedis.decr("foo");

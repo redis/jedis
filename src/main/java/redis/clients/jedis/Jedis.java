@@ -573,6 +573,31 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
+     * INCRBYFLOAT
+     * <p>
+     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are
+     * not "double" types. Simply the string stored at the key is parsed as a
+     * base double precision floating point value, incremented, and then
+     * converted back as a string.  There is no DECRYBYFLOAT but providing a
+     * negative value will work as expected.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Double reply, this commands will reply with the new value of key
+     *         after the increment.
+     */
+    public Double incrByFloat(final String key, final double value) {
+        checkIsInMulti();
+        client.incrByFloat(key, value);
+        String dval = client.getBulkReply();
+        return (dval != null ? new Double(dval) : null);
+    }
+
+    /**
      * Increment the number stored at key by one. If the key does not exist or
      * contains a value of a wrong type, set the key to the value of "0" before
      * to perform the increment operation.
@@ -762,6 +787,32 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.hincrBy(key, field, value);
 	return client.getIntegerReply();
+    }
+
+    /**
+     * Increment the number stored at field in the hash at key by a double
+     * precision floating point value. If key does not exist,
+     * a new key holding a hash is created. If field does not
+     * exist or holds a string, the value is set to 0 before applying the
+     * operation. Since the value argument is signed you can use this command to
+     * perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBYFLOAT is limited to
+     * double precision floating point values.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Double precision floating point reply The new value at field after the increment
+     *         operation.
+     */
+    public Double hincrByFloat(final String key, final String field, final double value) {
+        checkIsInMulti();
+        client.hincrByFloat(key, field, value);
+        final String dval = client.getBulkReply();
+        return (dval != null ? new Double(dval) : null);
     }
 
     /**

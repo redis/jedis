@@ -144,6 +144,25 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
+    public void hincrByFloat() {
+        Double value = jedis.hincrByFloat("foo", "bar", 1.5d);
+        assertEquals((Double) 1.5d, value);
+        value = jedis.hincrByFloat("foo", "bar", -1.5d);
+        assertEquals((Double) 0d, value);
+        value = jedis.hincrByFloat("foo", "bar", -10.7d);
+        assertEquals(Double.compare(-10.7d, value), 0);
+
+        // Binary
+        double bvalue = jedis.hincrByFloat(bfoo, bbar, 1.5d);
+        assertEquals(Double.compare(1.5d, bvalue), 0);
+        bvalue = jedis.hincrByFloat(bfoo, bbar, -1.5d);
+        assertEquals(Double.compare(0d, bvalue), 0);
+        bvalue = jedis.hincrByFloat(bfoo, bbar, -10.7d);
+        assertEquals(Double.compare(-10.7d, value), 0);
+
+    }
+
+    @Test
     public void hexists() {
         Map<String, String> hash = new HashMap<String, String>();
         hash.put("bar", "car");

@@ -123,6 +123,13 @@ public class ShardedJedisPipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Double> incrByFloat(String key, double value) {
+        Client c = getClient(key);
+        c.incrByFloat(key, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
     public Response<Long> incr(String key) {
         Client c = getClient(key);
         c.incr(key);
@@ -184,6 +191,13 @@ public class ShardedJedisPipeline extends Queable {
         c.hincrBy(key, field, value);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Double> hincrByFloat(String key, String field, double value) {
+        Client c = getClient(key);
+        c.hincrByFloat(key, field, value);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.DOUBLE);
     }
 
     public Response<Boolean> hexists(String key, String field) {

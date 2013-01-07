@@ -118,6 +118,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.incrBy(key, integer);
     }
 
+    public Double incrByFloat(String key, double integer) {
+        Jedis j = getShard(key);
+        return j.incrByFloat(key, integer);
+    }
+
     public Long incr(String key) {
 	Jedis j = getShard(key);
 	return j.incr(key);
@@ -161,6 +166,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public Long hincrBy(String key, String field, long value) {
 	Jedis j = getShard(key);
 	return j.hincrBy(key, field, value);
+    }
+
+    public Double hincrByFloat(String key, String field, double value) {
+        Jedis j = getShard(key);
+        return j.hincrByFloat(key, field, value);
     }
 
     public Boolean hexists(String key, String field) {

@@ -132,7 +132,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 			jedis.scriptKill();
 		}
 		catch(JedisDataException e) {
-			assertEquals("ERR No scripts in execution right now.", e.getMessage());
+			assertTrue(e.getMessage().contains("No scripts in execution right now."));
 		}
 	}
 }

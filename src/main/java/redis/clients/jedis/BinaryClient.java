@@ -192,6 +192,10 @@ public class BinaryClient extends Connection {
 	sendCommand(INCRBY, key, toByteArray(integer));
     }
 
+    public void incrByFloat(final byte[] key, final double value) {
+        sendCommand(INCRBYFLOAT, key, toByteArray(value));
+    }
+
     public void incr(final byte[] key) {
 	sendCommand(INCR, key);
     }
@@ -236,6 +240,10 @@ public class BinaryClient extends Connection {
 
     public void hincrBy(final byte[] key, final byte[] field, final long value) {
 	sendCommand(HINCRBY, key, field, toByteArray(value));
+    }
+
+    public void hincrByFloat(final byte[] key, final byte[] field, final double value) {
+        sendCommand(HINCRBYFLOAT, key, field, toByteArray(value));
     }
 
     public void hexists(final byte[] key, final byte[] field) {

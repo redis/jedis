@@ -275,6 +275,16 @@ public class Pipeline extends Queable {
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Double> hincrByFloat(String key, String field, double value) {
+        client.hincrByFloat(key, field, value);
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
+    public Response<Double> hincrByFloat(byte[] key, byte[] field, double value) {
+        client.hincrByFloat(key, field, value);
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
     public Response<Set<String>> hkeys(String key) {
         client.hkeys(key);
         return getResponse(BuilderFactory.STRING_SET);
@@ -363,6 +373,16 @@ public class Pipeline extends Queable {
     public Response<Long> incrBy(byte[] key, long integer) {
         client.incrBy(key, integer);
         return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Double> incrByFloat(String key, double value) {
+        client.incrByFloat(key, value);
+        return getResponse(BuilderFactory.DOUBLE);
+    }
+
+    public Response<Double> incrByFloat(byte[] key, double value) {
+        client.incrByFloat(key, value);
+        return getResponse(BuilderFactory.DOUBLE);
     }
 
     public Response<Set<String>> keys(String pattern) {

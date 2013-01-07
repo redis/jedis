@@ -117,6 +117,10 @@ public class Client extends BinaryClient implements Commands {
 	incrBy(SafeEncoder.encode(key), integer);
     }
 
+    public void incrByFloat(final String key, final double value) {
+        incrByFloat(SafeEncoder.encode(key), value);
+    }
+
     public void incr(final String key) {
 	incr(SafeEncoder.encode(key));
     }
@@ -163,6 +167,10 @@ public class Client extends BinaryClient implements Commands {
 
     public void hincrBy(final String key, final String field, final long value) {
 	hincrBy(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
+    }
+
+    public void hincrByFloat(final String key, final String field, final double value) {
+        hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
     }
 
     public void hexists(final String key, final String field) {

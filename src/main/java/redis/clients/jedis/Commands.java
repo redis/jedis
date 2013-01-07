@@ -56,6 +56,8 @@ public interface Commands {
 
     public void incrBy(final String key, final long integer);
 
+    public void incrByFloat(final String key, final double value);
+
     public void incr(final String key);
 
     public void append(final String key, final String value);
@@ -73,6 +75,8 @@ public interface Commands {
     public void hmget(final String key, final String... fields);
 
     public void hincrBy(final String key, final String field, final long value);
+
+    public void hincrByFloat(final String key, final String field, final double value);
 
     public void hexists(final String key, final String field);
 

@@ -23,7 +23,7 @@ public interface MultiKeyBinaryRedisPipeline {
 
     Response<Long> msetnx(byte[]... keysvalues);
 
-    Response<byte[]> rename(byte[] oldkey, byte[] newkey);
+    Response<String> rename(byte[] oldkey, byte[] newkey);
 
     Response<Long> renamenx(byte[] oldkey, byte[] newkey);
 
@@ -43,7 +43,7 @@ public interface MultiKeyBinaryRedisPipeline {
 
     Response<List<byte[]>> sort(byte[] key, byte[] dstkey);
 
-    Response<Set<String>> sunion(byte[]... keys);
+    Response<Set<byte[]>> sunion(byte[]... keys);
 
     Response<Long> sunionstore(byte[] dstkey, byte[]... keys);
 

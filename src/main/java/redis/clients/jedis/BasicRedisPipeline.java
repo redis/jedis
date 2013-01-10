@@ -22,12 +22,6 @@ public interface BasicRedisPipeline {
 
     Response<Long> lastsave();
 
-    Response<String> discard();
-
-    Response<List<Object>> exec();
-
-    Response<String> multi();
-
     Response<String> flushDB();
 
     Response<String> flushAll();

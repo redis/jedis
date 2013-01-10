@@ -116,7 +116,7 @@ public interface RedisPipeline {
 
     Response<Set<String>> smembers(String key);
 
-    Response<Long> sort(String key);
+    Response<List<String>> sort(String key);
 
     Response<List<String>> sort(String key,
                                 SortingParams sortingParameters);

@@ -700,11 +700,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_SET);
     }
 
-    public Response<Set<String>> smembers(byte[] key) {
+    public Response<Set<byte[]>> smembers(byte[] key) {
         Client c = getClient(key);
         c.smembers(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_SET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> srem(String key, String member) {
@@ -742,11 +742,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> spop(byte[] key) {
+    public Response<byte[]> spop(byte[] key) {
         Client c = getClient(key);
         c.spop(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> scard(String key) {
@@ -784,11 +784,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<String> srandmember(byte[] key) {
+    public Response<byte[]> srandmember(byte[] key) {
         Client c = getClient(key);
         c.srandmember(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING);
+        return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> zadd(String key, double score, String member) {
@@ -812,11 +812,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<String>> zrange(byte[] key, int start, int end) {
+    public Response<Set<byte[]>> zrange(byte[] key, int start, int end) {
         Client c = getClient(key);
         c.zrange(key, start, end);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Long> zrem(String key, String member) {
@@ -882,11 +882,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<String>> zrevrange(byte[] key, int start, int end) {
+    public Response<Set<byte[]>> zrevrange(byte[] key, int start, int end) {
         Client c = getClient(key);
         c.zrevrange(key, start, end);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<Tuple>> zrangeWithScores(String key, int start, int end) {
@@ -945,18 +945,18 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.DOUBLE);
     }
 
-    public Response<Long> sort(String key) {
+    public Response<List<String>> sort(String key) {
         Client c = getClient(key);
         c.sort(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.LONG);
+        return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<Long> sort(byte[] key) {
+    public Response<List<byte[]>> sort(byte[] key) {
         Client c = getClient(key);
         c.sort(key);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.LONG);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<List<String>> sort(String key, SortingParams sortingParameters) {
@@ -966,11 +966,11 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_LIST);
     }
 
-    public Response<List<String>> sort(byte[] key, SortingParams sortingParameters) {
+    public Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters) {
         Client c = getClient(key);
         c.sort(key, sortingParameters);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
 
     public Response<Long> zcount(String key, double min, double max) {
@@ -1001,18 +1001,18 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<String>> zrevrangeByScore(byte[] key, double max, double min) {
+    public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
         Client c = getClient(key);
         c.zrevrangeByScore(key, toByteArray(min), toByteArray(max));
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+    public Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
         Client c = getClient(key);
         c.zrevrangeByScore(key, min, max);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
@@ -1022,18 +1022,18 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<String>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+    public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
         Client c = getClient(key);
         c.zrevrangeByScore(key, toByteArray(min), toByteArray(max), offset, count);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+    public Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
         Client c = getClient(key);
         c.zrevrangeByScore(key, min, max, offset, count);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<String>> zrangeByScore(String key, String min, String max) {
@@ -1050,18 +1050,18 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, double min, double max) {
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, double min, double max) {
         Client c = getClient(key);
         c.zrangeByScore(key, toByteArray(min), toByteArray(max));
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
         Client c = getClient(key);
         c.zrangeByScore(key, min, max);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<String>> zrangeByScore(String key, double min, double max,
@@ -1072,20 +1072,20 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, double min, double max,
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, double min, double max,
                                                int offset, int count) {
         Client c = getClient(key);
         c.zrangeByScore(key, toByteArray(min), toByteArray(max), offset, count);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<String>> zrangeByScore(byte[] key, byte[] min, byte[] max,
+    public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max,
                                                int offset, int count) {
         Client c = getClient(key);
         c.zrangeByScore(key, min, max, offset, count);
         results.add(new FutureResult(c));
-        return getResponse(BuilderFactory.STRING_ZSET);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {

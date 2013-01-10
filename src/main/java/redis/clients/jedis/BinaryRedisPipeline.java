@@ -111,18 +111,18 @@ public interface BinaryRedisPipeline {
 
     Response<Long> setrange(String key, long offset, String value);
 
-    Response<Set<String>> smembers(byte[] key);
+    Response<Set<byte[]>> smembers(byte[] key);
 
     Response<Boolean> sismember(byte[] key, byte[] member);
 
-    Response<Long> sort(byte[] key);
+    Response<List<byte[]>> sort(byte[] key);
 
-    Response<List<String>> sort(byte[] key,
+    Response<List<byte[]>> sort(byte[] key,
                                 SortingParams sortingParameters);
 
-    Response<String> spop(byte[] key);
+    Response<byte[]> spop(byte[] key);
 
-    Response<String> srandmember(byte[] key);
+    Response<byte[]> srandmember(byte[] key);
 
     Response<Long> srem(byte[] key, byte[] member);
 
@@ -142,18 +142,18 @@ public interface BinaryRedisPipeline {
 
     Response<Double> zincrby(byte[] key, double score, byte[] member);
 
-    Response<Set<String>> zrange(byte[] key, int start, int end);
+    Response<Set<byte[]>> zrange(byte[] key, int start, int end);
 
-    Response<Set<String>> zrangeByScore(byte[] key, double min,
+    Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
                                         double max);
 
-    Response<Set<String>> zrangeByScore(byte[] key, byte[] min,
+    Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min,
                                         byte[] max);
 
-    Response<Set<String>> zrangeByScore(byte[] key, double min,
+    Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
                                         double max, int offset, int count);
 
-    Response<Set<String>> zrangeByScore(byte[] key, byte[] min,
+    Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min,
                                         byte[] max, int offset, int count);
 
     Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
@@ -168,16 +168,16 @@ public interface BinaryRedisPipeline {
     Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min,
                                                  byte[] max, int offset, int count);
 
-    Response<Set<String>> zrevrangeByScore(byte[] key, double max,
+    Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max,
                                            double min);
 
-    Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max,
+    Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max,
                                            byte[] min);
 
-    Response<Set<String>> zrevrangeByScore(byte[] key, double max,
+    Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max,
                                            double min, int offset, int count);
 
-    Response<Set<String>> zrevrangeByScore(byte[] key, byte[] max,
+    Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max,
                                            byte[] min, int offset, int count);
 
     Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
@@ -204,7 +204,7 @@ public interface BinaryRedisPipeline {
 
     Response<Long> zremrangeByScore(byte[] key, byte[] start, byte[] end);
 
-    Response<Set<String>> zrevrange(byte[] key, int start, int end);
+    Response<Set<byte[]>> zrevrange(byte[] key, int start, int end);
 
     Response<Set<Tuple>> zrevrangeWithScores(byte[] key, int start,
                                              int end);

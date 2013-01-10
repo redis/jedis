@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.SafeEncoder;
 
 import java.util.*;
 
@@ -243,6 +244,13 @@ public class ShardedJedisPipeline extends Queable implements BinaryRedisPipeline
         c.setex(key, seconds, value);
         results.add(new FutureResult(c));
         return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> setex(String key, int seconds, byte[] bytes) {
+        Client c = getClient(key);
+        c.setex(SafeEncoder.encode(key), seconds, bytes);
+        results.add(new FutureResult(c));
+        return getResponse(BuilderFactory.LONG);        
     }
 
     public Response<Long> decrBy(String key, long integer) {

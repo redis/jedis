@@ -3218,4 +3218,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 		client.objectIdletime(key);
 		return client.getIntegerReply();
 	}
+
+    public Long bitcount(final byte[] key) {
+        client.bitcount(key);
+        return client.getIntegerReply();
+    }
+
+    public Long bitcount(final byte[] key, long start, long end) {
+        client.bitcount(key, start, end);
+        return client.getIntegerReply();
+    }
+
+    public Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys) {
+        client.bitop(op, destKey, srcKeys);
+        return client.getIntegerReply();
+    }
 }

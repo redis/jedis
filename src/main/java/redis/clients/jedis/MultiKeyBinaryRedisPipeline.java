@@ -62,4 +62,6 @@ public interface MultiKeyBinaryRedisPipeline {
     Response<Long> publish(byte[] channel, byte[] message);
 
     Response<byte[]> randomKeyBinary();
+
+    Response<Long> bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
 }

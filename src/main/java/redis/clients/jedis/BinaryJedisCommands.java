@@ -209,4 +209,8 @@ public interface BinaryJedisCommands {
     byte[] echo(byte[] arg);
 
     Long move(byte[] key, int dbIndex);
+
+    Long bitcount(final byte[] key);
+
+    Long bitcount(final byte[] key, long start, long end);
 }

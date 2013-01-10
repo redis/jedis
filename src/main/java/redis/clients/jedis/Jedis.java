@@ -814,8 +814,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * <p>
      * Time complexity: O(1)
      * 
-     * @see Jedis#lpush(String, String)
-     * 
      * @param key
      * @param strings
      * @return Integer reply, specifically, the number of elements inside the
@@ -834,8 +832,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * is returned.
      * <p>
      * Time complexity: O(1)
-     * 
-     * @see Jedis#rpush(String, String)
      * 
      * @param key
      * @param strings
@@ -2843,5 +2839,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     public Long objectIdletime(String string) {
 	client.objectIdletime(string);
 	return client.getIntegerReply();
+    }
+
+    public Long bitcount(final String key) {
+        client.bitcount(key);
+        return client.getIntegerReply();
+    }
+
+    public Long bitcount(final String key, long start, long end) {
+        client.bitcount(key, start, end);
+        return client.getIntegerReply();
+    }
+
+    public Long bitop(BitOP op, final String destKey, String... srcKeys) {
+        client.bitop(op, destKey, srcKeys);
+        return client.getIntegerReply();
     }
 }

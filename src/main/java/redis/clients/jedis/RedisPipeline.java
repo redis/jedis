@@ -193,4 +193,8 @@ public interface RedisPipeline {
     Response<Long> zrevrank(String key, String member);
 
     Response<Double> zscore(String key, String member);
+
+    Response<Long> bitcount(String key);
+
+    Response<Long> bitcount(String key, long start, long end);
 }

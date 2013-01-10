@@ -206,4 +206,8 @@ public interface JedisCommands {
     String echo(String string);
 
     Long move(String key, int dbIndex);
+
+    Long bitcount(final String key);
+
+    Long bitcount(final String key, long start, long end);
 }

@@ -212,4 +212,8 @@ public interface BinaryRedisPipeline {
     Response<Long> zrevrank(byte[] key, byte[] member);
 
     Response<Double> zscore(byte[] key, byte[] member);
+
+    Response<Long> bitcount(byte[] key);
+
+    Response<Long> bitcount(byte[] key, long start, long end);
 }

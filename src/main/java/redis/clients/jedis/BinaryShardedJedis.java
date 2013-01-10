@@ -554,5 +554,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
         return j.blpop(arg);
     }
 
+    public Long bitcount(byte[] key) {
+        Jedis j = getShard(key);
+        return j.bitcount(key);
+    }
 
+    public Long bitcount(byte[] key, long start, long end) {
+        Jedis j = getShard(key);
+        return j.bitcount(key, start, end);
+    }
 }

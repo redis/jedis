@@ -707,4 +707,16 @@ public class Client extends BinaryClient implements Commands {
     public void objectEncoding(String key) {
 	objectEncoding(SafeEncoder.encode(key));
     }
+
+    public void bitcount(final String key) {
+        bitcount(SafeEncoder.encode(key));
+    }
+
+    public void bitcount(final String key, long start, long end) {
+        bitcount(SafeEncoder.encode(key), start, end);
+    }
+
+    public void bitop(BitOP op, final String destKey, String... srcKeys) {
+        bitop(op, SafeEncoder.encode(destKey), getByteParams(srcKeys));
+    }
 }

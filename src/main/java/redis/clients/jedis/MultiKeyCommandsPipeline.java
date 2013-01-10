@@ -62,4 +62,6 @@ public interface MultiKeyCommandsPipeline {
     Response<Long> publish(String channel, String message);
 
     Response<String> randomKey();
+
+    Response<Long> bitop(BitOP op, final String destKey, String... srcKeys);
 }

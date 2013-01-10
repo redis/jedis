@@ -1388,5 +1388,35 @@ public class Pipeline extends Queable implements
     public Response<String> select(int index){
     	client.select(index);
     	return getResponse(BuilderFactory.STRING);
-    }    
+    }
+
+    public Response<Long> bitcount(String key) {
+        client.bitcount(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> bitcount(String key, long start, long end) {
+        client.bitcount(key, start, end);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> bitcount(byte[] key) {
+        client.bitcount(key);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> bitcount(byte[] key, long start, long end) {
+        client.bitcount(key, start, end);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
+        client.bitop(op, destKey, srcKeys);
+        return getResponse(BuilderFactory.LONG);
+    }
+
+    public Response<Long> bitop(BitOP op, String destKey, String... srcKeys) {
+        client.bitop(op, destKey, srcKeys);
+        return getResponse(BuilderFactory.LONG);
+    }
 }

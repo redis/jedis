@@ -68,4 +68,6 @@ public interface MultiKeyBinaryCommands {
     void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns);
 
     byte[] randomBinaryKey();
+
+    Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
 }

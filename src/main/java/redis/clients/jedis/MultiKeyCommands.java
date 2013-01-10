@@ -68,4 +68,6 @@ public interface MultiKeyCommands {
     void psubscribe(JedisPubSub jedisPubSub, String... patterns);
 
     String randomKey();
+
+    Long bitop(BitOP op, final String destKey, String... srcKeys);
 }

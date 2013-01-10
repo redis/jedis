@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Transaction is nearly identical to Pipeline, only differences are the multi/discard behaviors
  */
-public class Transaction extends PipelineBase {
+public class Transaction extends MultiKeyPipelineBase {
 
     protected boolean inTransaction = true;
 
@@ -18,6 +18,16 @@ public class Transaction extends PipelineBase {
 
     public Transaction(final Client client) {
         this.client = client;
+    }
+
+    @Override
+    protected Client getClient(String key) {
+        return client;
+    }
+
+    @Override
+    protected Client getClient(byte[] key) {
+        return client;
     }
 
     public List<Object> exec() {

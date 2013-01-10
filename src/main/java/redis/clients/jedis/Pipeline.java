@@ -5,7 +5,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pipeline extends PipelineBase {
+public class Pipeline extends MultiKeyPipelineBase {
 	
     private MultiResponseBuilder currentMulti;
     
@@ -53,7 +53,15 @@ public class Pipeline extends PipelineBase {
         this.client = client;
     }
 
+    @Override
+    protected Client getClient(byte[] key) {
+        return client;
+    }
 
+    @Override
+    protected Client getClient(String key) {
+        return client;
+    }
 
     /**
      * Syncronize pipeline by reading all responses. This operation close the

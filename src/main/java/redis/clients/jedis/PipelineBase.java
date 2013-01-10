@@ -305,16 +305,6 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> keys(String pattern) {
-        getClient(pattern).keys(pattern);
-        return getResponse(BuilderFactory.STRING_SET);
-    }
-
-    public Response<Set<byte[]>> keys(byte[] pattern) {
-        getClient(pattern).keys(pattern);
-        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
-    }
-
     public Response<String> lindex(String key, int index) {
         getClient(key).lindex(key, index);
         return getResponse(BuilderFactory.STRING);
@@ -357,22 +347,22 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> lpush(String key, String string) {
+    public Response<Long> lpush(String key, String... string) {
         getClient(key).lpush(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lpush(byte[] key, byte[] string) {
+    public Response<Long> lpush(byte[] key, byte[]... string) {
         getClient(key).lpush(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lpushx(String key, String string) {
+    public Response<Long> lpushx(String key, String... string) {
         getClient(key).lpushx(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> lpushx(byte[] key, byte[] bytes) {
+    public Response<Long> lpushx(byte[] key, byte[]... bytes) {
         getClient(key).lpushx(key, bytes);
         return getResponse(BuilderFactory.LONG);
     }
@@ -447,32 +437,32 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> rpush(String key, String string) {
+    public Response<Long> rpush(String key, String... string) {
         getClient(key).rpush(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> rpush(byte[] key, byte[] string) {
+    public Response<Long> rpush(byte[] key, byte[]... string) {
         getClient(key).rpush(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> rpushx(String key, String string) {
+    public Response<Long> rpushx(String key, String... string) {
         getClient(key).rpushx(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> rpushx(byte[] key, byte[] string) {
+    public Response<Long> rpushx(byte[] key, byte[]... string) {
         getClient(key).rpushx(key, string);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> sadd(String key, String member) {
+    public Response<Long> sadd(String key, String... member) {
         getClient(key).sadd(key, member);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> sadd(byte[] key, byte[] member) {
+    public Response<Long> sadd(byte[] key, byte[]... member) {
         getClient(key).sadd(key, member);
         return getResponse(BuilderFactory.LONG);
     }

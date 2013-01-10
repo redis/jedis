@@ -73,9 +73,9 @@ public interface BinaryRedisPipeline {
 
     Response<byte[]> lpop(byte[] key);
 
-    Response<Long> lpush(byte[] key, byte[] string);
+    Response<Long> lpush(byte[] key, byte[]... string);
 
-    Response<Long> lpushx(byte[] key, byte[] bytes);
+    Response<Long> lpushx(byte[] key, byte[]... bytes);
 
     Response<List<byte[]>> lrange(byte[] key, long start, long end);
 
@@ -91,11 +91,11 @@ public interface BinaryRedisPipeline {
 
     Response<byte[]> rpop(byte[] key);
 
-    Response<Long> rpush(byte[] key, byte[] string);
+    Response<Long> rpush(byte[] key, byte[]... string);
 
-    Response<Long> rpushx(byte[] key, byte[] string);
+    Response<Long> rpushx(byte[] key, byte[]... string);
 
-    Response<Long> sadd(byte[] key, byte[] member);
+    Response<Long> sadd(byte[] key, byte[]... member);
 
     Response<Long> scard(byte[] key);
 

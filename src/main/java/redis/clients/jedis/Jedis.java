@@ -2535,7 +2535,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return client.getIntegerReply();
     }
 
-    public Long lpushx(final String key, final String string) {
+    public Long lpushx(final String key, final String... string) {
 	client.lpushx(key, string);
 	return client.getIntegerReply();
     }
@@ -2555,7 +2555,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return client.getIntegerReply();
     }
 
-    public Long rpushx(final String key, final String string) {
+    public Long rpushx(final String key, final String... string) {
 	client.rpushx(key, string);
 	return client.getIntegerReply();
     }

@@ -196,9 +196,9 @@ public interface BinaryJedisCommands {
     Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot,
             byte[] value);
     
-    Long lpushx(byte[] key, byte[] arg);
+    Long lpushx(byte[] key, byte[]... arg);
     
-    Long rpushx(byte[] key, byte[] arg);
+    Long rpushx(byte[] key, byte[]... arg);
 
     List<byte[]> blpop(byte[] arg);
 

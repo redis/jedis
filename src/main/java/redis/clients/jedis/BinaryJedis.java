@@ -2979,7 +2979,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	client.sync();
     }
 
-    public Long lpushx(final byte[] key, final byte[] string) {
+    public Long lpushx(final byte[] key, final byte[]... string) {
 	client.lpushx(key, string);
 	return client.getIntegerReply();
     }
@@ -2999,7 +2999,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	return client.getIntegerReply();
     }
 
-    public Long rpushx(final byte[] key, final byte[] string) {
+    public Long rpushx(final byte[] key, final byte[]... string) {
 	client.rpushx(key, string);
 	return client.getIntegerReply();
     }

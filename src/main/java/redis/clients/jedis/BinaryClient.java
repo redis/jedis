@@ -677,16 +677,16 @@ public class BinaryClient extends Connection {
 	sendCommand(SYNC);
     }
 
-    public void lpushx(final byte[] key, final byte[] string) {
-	sendCommand(LPUSHX, key, string);
+    public void lpushx(final byte[] key, final byte[]... string) {
+	sendCommand(LPUSHX, joinParameters(key, string));
     }
 
     public void persist(final byte[] key) {
 	sendCommand(PERSIST, key);
     }
 
-    public void rpushx(final byte[] key, final byte[] string) {
-	sendCommand(RPUSHX, key, string);
+    public void rpushx(final byte[] key, final byte[]... string) {
+	sendCommand(RPUSHX, joinParameters(key, string));
     }
 
     public void echo(final byte[] string) {

@@ -76,9 +76,9 @@ public interface RedisPipeline {
 
     Response<String> lpop(String key);
 
-    Response<Long> lpush(String key, String string);
+    Response<Long> lpush(String key, String... string);
 
-    Response<Long> lpushx(String key, String string);
+    Response<Long> lpushx(String key, String... string);
 
     Response<List<String>> lrange(String key, long start, long end);
 
@@ -94,11 +94,11 @@ public interface RedisPipeline {
 
     Response<String> rpop(String key);
 
-    Response<Long> rpush(String key, String string);
+    Response<Long> rpush(String key, String... string);
 
-    Response<Long> rpushx(String key, String string);
+    Response<Long> rpushx(String key, String... string);
 
-    Response<Long> sadd(String key, String member);
+    Response<Long> sadd(String key, String... member);
 
     Response<Long> scard(String key);
 

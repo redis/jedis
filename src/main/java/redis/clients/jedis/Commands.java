@@ -251,11 +251,11 @@ public interface Commands {
 
     public void strlen(final String key);
 
-    public void lpushx(final String key, final String string);
+    public void lpushx(final String key, final String... string);
 
     public void persist(final String key);
 
-    public void rpushx(final String key, final String string);
+    public void rpushx(final String key, final String... string);
 
     public void echo(final String string);
 

@@ -201,7 +201,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     return j.strlen(key);
     }
 
-    public Long lpushx(byte[] key, byte[] string) {
+    public Long lpushx(byte[] key, byte[]... string) {
         Jedis j = getShard(key);
         return j.lpushx(key, string);
     }
@@ -211,7 +211,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     	return j.persist(key);
     }
 
-    public Long rpushx(byte[] key, byte[] string) {
+    public Long rpushx(byte[] key, byte[]... string) {
         Jedis j = getShard(key);
         return j.rpushx(key, string);
     }

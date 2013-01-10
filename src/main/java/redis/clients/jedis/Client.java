@@ -564,16 +564,16 @@ public class Client extends BinaryClient implements Commands {
 	strlen(SafeEncoder.encode(key));
     }
 
-    public void lpushx(final String key, final String string) {
-	lpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
+    public void lpushx(final String key, final String... string) {
+	lpushx(SafeEncoder.encode(key), getByteParams(string));
     }
 
     public void persist(final String key) {
 	persist(SafeEncoder.encode(key));
     }
 
-    public void rpushx(final String key, final String string) {
-	rpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
+    public void rpushx(final String key, final String... string) {
+	rpushx(SafeEncoder.encode(key), getByteParams(string));
     }
 
     public void echo(final String string) {

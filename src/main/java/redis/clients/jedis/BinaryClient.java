@@ -79,7 +79,7 @@ public class BinaryClient extends Connection {
     }
 
     public void ping() {
-	sendCommand(PING);
+	sendCommand(Command.PING);
     }
 
     public void set(final byte[] key, final byte[] value) {
@@ -855,5 +855,9 @@ public class BinaryClient extends Connection {
         }
 
         sendCommand(BITOP, bargs);
+    }
+
+    public void sentinel(final byte[]... args) {
+	sendCommand(SENTINEL, args);
     }
 }

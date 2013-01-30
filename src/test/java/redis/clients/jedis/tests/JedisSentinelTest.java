@@ -1,22 +1,40 @@
 package redis.clients.jedis.tests;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 
 public class JedisSentinelTest {
-
     private static final String MASTER_NAME = "mymaster";
 
-    /**
-     * Based on redis/master/slave/sentinel configs from
-     * https://github.com/noise/redis-sentinel-tests.
-     */
+    @Before
+    public void setup() throws InterruptedException {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.configSet("masterauth", "foobared");
+	j.slaveof("localhost", 6379);
+	// TODO: The sleep is to give time to the slave to synchronize with the
+	// master and also let know the sentinels about this new topology. We
+	// should find a better way to do this.
+	Thread.sleep(5000);
+    }
+
+    @After
+    public void clear() {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.slaveofNoOne();
+    }
+
     @Test
     public void sentinel() {
 	Jedis j = new Jedis("localhost", 26379);
@@ -45,5 +63,6 @@ public class JedisSentinelTest {
 	// DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
 	assertEquals(Long.valueOf(1), j.sentinelReset(masterName));
 	assertEquals(Long.valueOf(0), j.sentinelReset("woof" + masterName));
+
     }
 }

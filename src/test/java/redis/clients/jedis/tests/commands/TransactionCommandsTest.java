@@ -11,11 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
-import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.TransactionBlockList;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
@@ -106,6 +106,62 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     }
 
+    @Test
+    public void multiBlockList() {
+        TransactionBlock transactionBlockA = new TransactionBlock() {
+            @Override
+            public void execute() {
+                sadd("foo", "a");
+                sadd("foo", "b");
+            }
+        };
+
+        TransactionBlock transactionBlockB = new TransactionBlock() {
+            @Override
+            public void execute() {
+                scard("foo");
+            }
+        };
+
+        TransactionBlockList transactionBlockList = new TransactionBlockList();
+        transactionBlockList.add(transactionBlockA);
+        transactionBlockList.add(transactionBlockB);
+
+        List<Object> response = jedis.multi(transactionBlockList);
+        List<Object> expected = new ArrayList<Object>();
+        expected.add(1L);
+        expected.add(1L);
+        expected.add(2L);
+        assertEquals(expected, response);
+
+        // Binary
+        transactionBlockA = new TransactionBlock() {
+            @Override
+            public void execute() {
+                sadd(bfoo, ba);
+                sadd(bfoo, bb);
+            }
+        };
+
+        transactionBlockB = new TransactionBlock() {
+            @Override
+            public void execute() {
+                scard(bfoo);
+            }
+        };
+
+        transactionBlockList = new TransactionBlockList();
+        transactionBlockList.add(transactionBlockA);
+        transactionBlockList.add(transactionBlockB);
+
+        response = jedis.multi(transactionBlockList);
+        expected = new ArrayList<Object>();
+        expected.add(1L);
+        expected.add(1L);
+        expected.add(2L);
+        assertEquals(expected, response);
+    }
+    
     @Test
     public void watch() throws UnknownHostException, IOException {
         jedis.watch("mykey", "somekey");

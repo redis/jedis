@@ -55,20 +55,4 @@ public class FailSafeInvocationHandler implements InvocationHandler {
 		} catch (Exception e) {
 		}
 	}
-
-	public boolean validateProxy() {
-		if (cluster.getMaster() == null)
-			return false;
-
-		Jedis j = resources.get(cluster.getMaster());
-
-		try {
-			if (j.ping().equals("PONG"))
-				return true;
-		} catch (Exception ex) {
-			return false;
-		}
-		return false;
-	}
-
 }

@@ -6,21 +6,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import redis.clients.jedis.BasicCommands;
-import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisServerInfo;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class FailSafeJedisCluster {
 
 	private Collection<JedisServerInfo> members = new ArrayList<JedisServerInfo>();
-	private Map<JedisServerInfo, BasicCommands> monitors = new HashMap<JedisServerInfo, BasicCommands>();
+	private Map<JedisServerInfo, Jedis> monitors = new HashMap<JedisServerInfo, Jedis>();
 	private JedisServerInfo elected = null;
 
 	public FailSafeJedisCluster(JedisServerInfo... vinfs) {
 		for (JedisServerInfo info : vinfs) {
 			this.members.add(info);
-			BinaryJedis jedis = new BinaryJedis(info.getHost(), info.getPort());
+			Jedis jedis = new Jedis(info.getHost(), info.getPort());
 			if (info.getPassword() != null)
 				jedis.auth(info.getPassword());
 			this.monitors.put(info, jedis);
@@ -36,16 +35,12 @@ public class FailSafeJedisCluster {
 		return Collections.unmodifiableCollection(members);
 	}
 	
-	public BasicCommands getBasicCommands(JedisServerInfo info) {
-		return monitors.get(info);
-	}
-
 	public synchronized JedisServerInfo electNewMaster() {
-		if (this.elected == null || !eligible(this.elected)) {
+		if (this.elected == null || !isEligible(this.elected)) {
 			this.elected = null;
 
 			for (JedisServerInfo m : this.members) {
-				if (eligible(m)) {
+				if (isEligible(m)) {
 					this.elected = m;
 					return this.elected;
 				}
@@ -60,7 +55,7 @@ public class FailSafeJedisCluster {
 			throw new JedisException(newMaster.toString() + " is not member of the cluster");
 		
 		for (JedisServerInfo m : this.members) {
-			BasicCommands jedis = monitors.get(m);
+			Jedis jedis = monitors.get(m);
 			if (m == newMaster) {
 				jedis.slaveofNoOne();
 			} else {
@@ -71,9 +66,11 @@ public class FailSafeJedisCluster {
 		
 	}
 
-	private boolean eligible(JedisServerInfo info) {
-		BasicCommands jedis = monitors.get(info);
+	private boolean isEligible(JedisServerInfo serverInfo) {
+		Jedis jedis = monitors.get(serverInfo);
 		try {
+			jedis.connect();
+			
 			for (String line : jedis.info().split("\r\n")) {
 				String[] pair = line.split(":");
 				if (pair.length > 1 && pair[0].equals("role")
@@ -81,6 +78,8 @@ public class FailSafeJedisCluster {
 					return true;
 			}
 		} catch (JedisException e) {
+		} finally {
+			jedis.disconnect();
 		}
 		return false;
 	}

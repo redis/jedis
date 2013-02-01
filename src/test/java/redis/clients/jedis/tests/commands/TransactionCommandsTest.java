@@ -305,7 +305,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
       t.lrange("bar", 0, 3);
 
       List<Object> results = t.exec();
-
       assertEquals(Arrays.asList("1", "2", "3"), results.get(1));
     }
 

@@ -39,9 +39,9 @@ public interface MultiKeyCommandsPipeline {
 
     Response<Long> smove(String srckey, String dstkey, String member);
 
-    Response<List<String>> sort(String key, SortingParams sortingParameters, String dstkey);
+    Response<Long> sort(String key, SortingParams sortingParameters, String dstkey);
 
-    Response<List<String>> sort(String key, String dstkey);
+    Response<Long> sort(String key, String dstkey);
 
     Response<Set<String>> sunion(String... keys);
 

@@ -2768,15 +2768,17 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     private Object getEvalResult() {
 	Object result = client.getOne();
-
+	
 	if (result instanceof byte[])
 	    return SafeEncoder.encode((byte[]) result);
 
 	if (result instanceof List<?>) {
 	    List<?> list = (List<?>) result;
 	    List<String> listResult = new ArrayList<String>(list.size());
-	    for (Object bin : list)
-		listResult.add(SafeEncoder.encode((byte[]) bin));
+	    for (Object bin : list) {
+		listResult.add((bin == null ? null : SafeEncoder
+			.encode((byte[]) bin)));
+	    }
 
 	    return listResult;
 	}

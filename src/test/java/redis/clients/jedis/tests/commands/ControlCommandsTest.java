@@ -58,6 +58,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     public void info() {
         String info = jedis.info();
         assertNotNull(info);
+        info = jedis.info("server");
+        assertNotNull(info);
     }
 
     @Test

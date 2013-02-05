@@ -27,6 +27,8 @@ public interface BasicCommands {
     String shutdown();
 
     String info();
+    
+    String info(String section);
 
     String slaveof(String host, int port);
 

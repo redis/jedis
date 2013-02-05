@@ -648,6 +648,10 @@ public class BinaryClient extends Connection {
     public void info() {
 	sendCommand(INFO);
     }
+    
+    public void info(final String section) {
+	sendCommand(INFO, section);
+    }
 
     public void monitor() {
 	sendCommand(MONITOR);

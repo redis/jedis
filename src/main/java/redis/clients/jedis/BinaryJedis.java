@@ -2825,6 +2825,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	client.info();
 	return client.getBulkReply();
     }
+    
+    public String info(final String section) {
+	client.info(section);
+	return client.getBulkReply();
+    }
 
     /**
      * Dump all the received requests in real time.

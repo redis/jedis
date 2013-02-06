@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 public interface Hashing {
     public static final Hashing MURMUR_HASH = new MurmurHash();
-    public ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();
+    public static final ThreadLocal<MessageDigest> MD5_HOLDER = new ThreadLocal<MessageDigest>();
 
     public static final Hashing MD5 = new Hashing() {
         public long hash(String key) {
@@ -14,13 +14,13 @@ public interface Hashing {
 
         public long hash(byte[] key) {
             try {
-                if (md5Holder.get() == null) {
-                    md5Holder.set(MessageDigest.getInstance("MD5"));
+                if (MD5_HOLDER.get() == null) {
+                    MD5_HOLDER.set(MessageDigest.getInstance("MD5"));
                 }
             } catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException("++++ no md5 algorythm found");
             }
-            MessageDigest md5 = md5Holder.get();
+            MessageDigest md5 = MD5_HOLDER.get();
 
             md5.reset();
             md5.update(key);

@@ -30,6 +30,8 @@ public interface Commands {
 
     public void setbit(String key, long offset, boolean value);
 
+    public void setbit(String key, long offset, String value);
+
     public void getbit(String key, long offset);
 
     public void setrange(String key, long offset, String value);
@@ -253,11 +255,11 @@ public interface Commands {
 
     public void strlen(final String key);
 
-    public void lpushx(final String key, final String string);
+    public void lpushx(final String key, final String... string);
 
     public void persist(final String key);
 
-    public void rpushx(final String key, final String string);
+    public void rpushx(final String key, final String... string);
 
     public void echo(final String string);
 
@@ -289,4 +291,10 @@ public interface Commands {
     public void objectIdletime(String key);
 
     public void objectEncoding(String key);
+
+    public void bitcount(final String key);
+
+    public void bitcount(final String key, long start, long end);
+
+    public void bitop(BitOP op, final String destKey, String... srcKeys);
 }

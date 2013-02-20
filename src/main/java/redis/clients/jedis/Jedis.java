@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -13,7 +14,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
-public class Jedis extends BinaryJedis implements JedisCommands {
+public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands {
     public Jedis(final String host) {
 	super(host);
     }
@@ -32,12 +33,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     public Jedis(URI uri) {
 	super(uri);
-    }
-
-    public String ping() {
-	checkIsInMulti();
-	client.ping();
-	return client.getStatusCodeReply();
     }
 
     /**
@@ -73,16 +68,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
-     * Ask the server to silently close the connection.
-     */
-
-    public String quit() {
-	checkIsInMulti();
-	client.quit();
-	return client.getStatusCodeReply();
-    }
-
-    /**
      * Test if the specified key exists. The command returns "1" if the key
      * exists, otherwise "0" is returned. Note that even keys set with an empty
      * string as value will return "1".
@@ -114,6 +99,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
+    public Long del(String key) {
+        client.del(key);
+        return client.getIntegerReply();
+    }
+
     /**
      * Return the type of the value stored at key in form of a string. The type
      * can be one of "none", "string", "list", "set". "none" is returned if the
@@ -131,19 +121,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public String type(final String key) {
 	checkIsInMulti();
 	client.type(key);
-	return client.getStatusCodeReply();
-    }
-
-    /**
-     * Delete all the keys of the currently selected DB. This command never
-     * fails.
-     * 
-     * @return Status code reply
-     */
-
-    public String flushDB() {
-	checkIsInMulti();
-	client.flushDB();
 	return client.getStatusCodeReply();
     }
 
@@ -321,20 +298,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     }
 
     /**
-     * Select the DB with having the specified zero-based numeric index. For
-     * default every new client connection is automatically selected to DB 0.
-     * 
-     * @param index
-     * @return Status code reply
-     */
-
-    public String select(final int index) {
-	checkIsInMulti();
-	client.select(index);
-	return client.getStatusCodeReply();
-    }
-
-    /**
      * Move the specified key from the currently selected DB to the specified
      * destination DB. Note that this command returns 1 only if the key was
      * successfully moved, and 0 if the target key was already there or if the
@@ -351,19 +314,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	checkIsInMulti();
 	client.move(key, dbIndex);
 	return client.getIntegerReply();
-    }
-
-    /**
-     * Delete all the keys of all the existing databases, not just the currently
-     * selected one. This command never fails.
-     * 
-     * @return Status code reply
-     */
-
-    public String flushAll() {
-	checkIsInMulti();
-	client.flushAll();
-	return client.getStatusCodeReply();
     }
 
     /**
@@ -916,8 +866,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * <p>
      * Time complexity: O(1)
      * 
-     * @see Jedis#lpush(String, String)
-     * 
      * @param key
      * @param strings
      * @return Integer reply, specifically, the number of elements inside the
@@ -936,8 +884,6 @@ public class Jedis extends BinaryJedis implements JedisCommands {
      * is returned.
      * <p>
      * Time complexity: O(1)
-     * 
-     * @see Jedis#rpush(String, String)
      * 
      * @param key
      * @param strings
@@ -1868,6 +1814,42 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return multiBulkReply;
     }
 
+    public List<String> blpop(String... args) {
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> brpop(String... args) {
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> blpop(String arg) {
+        String[] args = new String[1];
+        args[0] = arg;
+        client.blpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
+    public List<String> brpop(String arg) {
+        String[] args = new String[1];
+        args[0] = arg;
+        client.brpop(args);
+        client.setTimeoutInfinite();
+        final List<String> multiBulkReply = client.getMultiBulkReply();
+        client.rollbackTimeout();
+        return multiBulkReply;
+    }
+
     /**
      * Sort a Set or a List accordingly to the specified parameters and store
      * the result at dstkey.
@@ -1998,49 +1980,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return multiBulkReply;
     }
 
-    /**
-     * Request for authentication in a password protected Redis server. A Redis
-     * server can be instructed to require a password before to allow clients to
-     * issue commands. This is done using the requirepass directive in the Redis
-     * configuration file. If the password given by the client is correct the
-     * server replies with an OK status code reply and starts accepting commands
-     * from the client. Otherwise an error is returned and the clients needs to
-     * try a new password. Note that for the high performance nature of Redis it
-     * is possible to try a lot of passwords in parallel in very short time, so
-     * make sure to generate a strong and very long password so that this attack
-     * is infeasible.
-     * 
-     * @param password
-     * @return Status code reply
-     */
 
-    public String auth(final String password) {
-	checkIsInMulti();
-	client.auth(password);
-	return client.getStatusCodeReply();
-    }
-
-    public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-	checkIsInMulti();
-	connect();
-	client.setTimeoutInfinite();
-	jedisPubSub.proceed(client, channels);
-	client.rollbackTimeout();
-    }
-
-    public Long publish(String channel, String message) {
-	checkIsInMulti();
-	client.publish(channel, message);
-	return client.getIntegerReply();
-    }
-
-    public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
-	checkIsInMulti();
-	connect();
-	client.setTimeoutInfinite();
-	jedisPubSub.proceedWithPatterns(client, patterns);
-	client.rollbackTimeout();
-    }
 
     public Long zcount(final String key, final double min, final double max) {
 	checkIsInMulti();
@@ -2647,7 +2587,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
-    public Long lpushx(final String key, final String string) {
+    public Long lpushx(final String key, final String... string) {
 	client.lpushx(key, string);
 	return client.getIntegerReply();
     }
@@ -2667,7 +2607,7 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return client.getIntegerReply();
     }
 
-    public Long rpushx(final String key, final String string) {
+    public Long rpushx(final String key, final String... string) {
 	client.rpushx(key, string);
 	return client.getIntegerReply();
     }
@@ -2711,6 +2651,11 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Boolean setbit(String key, long offset, boolean value) {
 	client.setbit(key, offset, value);
 	return client.getIntegerReply() == 1;
+    }
+
+    public Boolean setbit(String key, long offset, String value) {
+    client.setbit(key, offset, value);
+    return client.getIntegerReply() == 1;
     }
 
     /**
@@ -2822,6 +2767,29 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 	return getEvalResult();
     }
 
+    public void subscribe(final JedisPubSub jedisPubSub,
+        final String... channels) {
+    client.setTimeoutInfinite();
+    jedisPubSub.proceed(client, channels);
+    client.rollbackTimeout();
+    }
+
+    public Long publish(final String channel, final String message) {
+    checkIsInMulti();
+    connect();
+    client.publish(channel, message);
+    return client.getIntegerReply();
+    }
+
+    public void psubscribe(final JedisPubSub jedisPubSub,
+        final String... patterns) {
+    checkIsInMulti();
+    connect();
+    client.setTimeoutInfinite();
+    jedisPubSub.proceedWithPatterns(client, patterns);
+    client.rollbackTimeout();
+    }
+
     private String[] getParams(List<String> keys, List<String> args) {
 	int keyCount = keys.size();
 	int argCount = args.size();
@@ -2851,15 +2819,17 @@ public class Jedis extends BinaryJedis implements JedisCommands {
 
     private Object getEvalResult() {
 	Object result = client.getOne();
-
+	
 	if (result instanceof byte[])
 	    return SafeEncoder.encode((byte[]) result);
 
 	if (result instanceof List<?>) {
 	    List<?> list = (List<?>) result;
 	    List<String> listResult = new ArrayList<String>(list.size());
-	    for (Object bin : list)
-		listResult.add(SafeEncoder.encode((byte[]) bin));
+	    for (Object bin : list) {
+		listResult.add((bin == null ? null : SafeEncoder
+			.encode((byte[]) bin)));
+	    }
 
 	    return listResult;
 	}
@@ -2923,5 +2893,160 @@ public class Jedis extends BinaryJedis implements JedisCommands {
     public Long objectIdletime(String string) {
 	client.objectIdletime(string);
 	return client.getIntegerReply();
+    }
+
+    public Long bitcount(final String key) {
+        client.bitcount(key);
+        return client.getIntegerReply();
+    }
+
+    public Long bitcount(final String key, long start, long end) {
+        client.bitcount(key, start, end);
+        return client.getIntegerReply();
+    }
+
+    public Long bitop(BitOP op, final String destKey, String... srcKeys) {
+        client.bitop(op, destKey, srcKeys);
+        return client.getIntegerReply();
+    }
+
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381> sentinel masters
+     * 1)  1) "name"
+     *     2) "mymaster"
+     *     3) "ip"
+     *     4) "127.0.0.1"
+     *     5) "port"
+     *     6) "6379"
+     *     7) "runid"
+     *     8) "93d4d4e6e9c06d0eea36e27f31924ac26576081d"
+     *     9) "flags"
+     *    10) "master"
+     *    11) "pending-commands"
+     *    12) "0"
+     *    13) "last-ok-ping-reply"
+     *    14) "423"
+     *    15) "last-ping-reply"
+     *    16) "423"
+     *    17) "info-refresh"
+     *    18) "6107"
+     *    19) "num-slaves"
+     *    20) "1"
+     *    21) "num-other-sentinels"
+     *    22) "2"
+     *    23) "quorum"
+     *    24) "2"
+     * 
+     * </pre>
+     * 
+     * @return
+     */
+    public List<Map<String, String>> sentinelMasters() {
+	client.sentinel(Protocol.SENTINEL_MASTERS);
+	final List<Object> reply = client.getObjectMultiBulkReply();
+
+	final List<Map<String, String>> masters = new ArrayList<Map<String, String>>();
+	for (Object obj : reply) {
+	    masters.add(BuilderFactory.STRING_MAP.build((List) obj));
+	}
+	return masters;
+    }
+
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381> sentinel get-master-addr-by-name mymaster
+     * 1) "127.0.0.1"
+     * 2) "6379"
+     * </pre>
+     * 
+     * @param masterName
+     * @return two elements list of strings : host and port.
+     */
+    public List<String> sentinelGetMasterAddrByName(String masterName) {
+	client.sentinel(Protocol.SENTINEL_GET_MASTER_ADDR_BY_NAME, masterName);
+	final List<Object> reply = client.getObjectMultiBulkReply();
+	return BuilderFactory.STRING_LIST.build(reply);
+    }
+
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381> sentinel reset mymaster
+     * (integer) 1
+     * </pre>
+     * 
+     * @param pattern
+     * @return
+     */
+    public Long sentinelReset(String pattern) {
+	client.sentinel(Protocol.SENTINEL_RESET, pattern);
+	return client.getIntegerReply();
+    }
+
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381> sentinel slaves mymaster
+     * 1)  1) "name"
+     *     2) "127.0.0.1:6380"
+     *     3) "ip"
+     *     4) "127.0.0.1"
+     *     5) "port"
+     *     6) "6380"
+     *     7) "runid"
+     *     8) "d7f6c0ca7572df9d2f33713df0dbf8c72da7c039"
+     *     9) "flags"
+     *    10) "slave"
+     *    11) "pending-commands"
+     *    12) "0"
+     *    13) "last-ok-ping-reply"
+     *    14) "47"
+     *    15) "last-ping-reply"
+     *    16) "47"
+     *    17) "info-refresh"
+     *    18) "657"
+     *    19) "master-link-down-time"
+     *    20) "0"
+     *    21) "master-link-status"
+     *    22) "ok"
+     *    23) "master-host"
+     *    24) "localhost"
+     *    25) "master-port"
+     *    26) "6379"
+     *    27) "slave-priority"
+     *    28) "100"
+     * </pre>
+     * 
+     * @param masterName
+     * @return
+     */
+    public List<Map<String, String>> sentinelSlaves(String masterName) {
+	client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
+	final List<Object> reply = client.getObjectMultiBulkReply();
+
+	final List<Map<String, String>> slaves = new ArrayList<Map<String, String>>();
+	for (Object obj : reply) {
+	    slaves.add(BuilderFactory.STRING_MAP.build((List) obj));
+	}
+	return slaves;
+    }
+
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381> SENTINEL is-master-down-by-addr 127.0.0.1 1
+     * 1) (integer) 0
+     * 2) "?"
+     * redis 127.0.0.1:26381> SENTINEL is-master-down-by-addr 127.0.0.1 6379
+     * 1) (integer) 0
+     * 2) "aaef11fbb2712346a386078c7f9834e72ed51e96"
+     * </pre>
+     * 
+     * @return Long followed by the String (runid)
+     */
+    public List<? extends Object> sentinelIsMasterDownByAddr(String host,
+	    int port) {
+	client.sentinel(Protocol.SENTINEL_IS_MASTER_DOWN_BY_ADDR, host, port);
+	final List<Object> reply = client.getObjectMultiBulkReply();
+	return Arrays.asList(BuilderFactory.LONG.build(reply.get(0)),
+		BuilderFactory.STRING.build(reply.get(1)));
     }
 }

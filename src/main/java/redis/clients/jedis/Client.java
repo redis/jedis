@@ -572,16 +572,16 @@ public class Client extends BinaryClient implements Commands {
 	strlen(SafeEncoder.encode(key));
     }
 
-    public void lpushx(final String key, final String string) {
-	lpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
+    public void lpushx(final String key, final String... string) {
+	lpushx(SafeEncoder.encode(key), getByteParams(string));
     }
 
     public void persist(final String key) {
 	persist(SafeEncoder.encode(key));
     }
 
-    public void rpushx(final String key, final String string) {
-	rpushx(SafeEncoder.encode(key), SafeEncoder.encode(string));
+    public void rpushx(final String key, final String... string) {
+	rpushx(SafeEncoder.encode(key), getByteParams(string));
     }
 
     public void echo(final String string) {
@@ -600,7 +600,11 @@ public class Client extends BinaryClient implements Commands {
     }
 
     public void setbit(final String key, final long offset, final boolean value) {
-	setbit(SafeEncoder.encode(key), offset, toByteArray(value ? 1 : 0));
+	setbit(SafeEncoder.encode(key), offset, value);
+    }
+
+    public void setbit(final String key, final long offset, final String value) {
+    setbit(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
 
     public void getbit(String key, long offset) {
@@ -710,5 +714,30 @@ public class Client extends BinaryClient implements Commands {
 
     public void objectEncoding(String key) {
 	objectEncoding(SafeEncoder.encode(key));
+    }
+
+    public void bitcount(final String key) {
+        bitcount(SafeEncoder.encode(key));
+    }
+
+    public void bitcount(final String key, long start, long end) {
+        bitcount(SafeEncoder.encode(key), start, end);
+    }
+
+    public void bitop(BitOP op, final String destKey, String... srcKeys) {
+        bitop(op, SafeEncoder.encode(destKey), getByteParams(srcKeys));
+    }
+
+    public void sentinel(final String... args) {
+	final byte[][] arg = new byte[args.length][];
+	for (int i = 0; i < arg.length; i++) {
+	    arg[i] = SafeEncoder.encode(args[i]);
+	}
+	sentinel(arg);
+    }
+
+    public void sentinel(final String cmd, String arg1, int arg2) {
+	sentinel(SafeEncoder.encode(cmd), SafeEncoder.encode(arg1),
+		toByteArray(arg2));
     }
 }

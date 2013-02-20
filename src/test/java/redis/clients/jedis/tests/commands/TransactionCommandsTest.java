@@ -171,7 +171,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         t.set(bmykey, bval);
         resp = t.exec();
         assertEquals(1, resp.size());
-        assertArrayEquals("OK".getBytes(), (byte[]) resp.get(0));
+        assertEquals("OK", resp.get(0));
     }
 
     @Test(expected = JedisDataException.class)

@@ -17,6 +17,8 @@ public interface BinaryJedisCommands {
 
     Boolean exists(byte[] key);
 
+    Long persist(byte[] key);
+
     String type(byte[] key);
 
     Long expire(byte[] key, int seconds);
@@ -24,6 +26,16 @@ public interface BinaryJedisCommands {
     Long expireAt(byte[] key, long unixTime);
 
     Long ttl(byte[] key);
+
+    Boolean setbit(byte[] key, long offset, boolean value);
+
+    Boolean setbit(byte[] key, long offset, byte[] value);
+
+    Boolean getbit(byte[] key, long offset);
+
+    Long setrange(byte[] key, long offset, byte[] value);
+
+    byte[] getrange(byte[] key, long startOffset, long endOffset);
 
     byte[] getSet(byte[] key, byte[] value);
 
@@ -71,21 +83,21 @@ public interface BinaryJedisCommands {
 
     Map<byte[], byte[]> hgetAll(byte[] key);
 
-    Long rpush(byte[] key, byte[]... string);
+    Long rpush(byte[] key, byte[]... args);
 
-    Long lpush(byte[] key, byte[]... string);
+    Long lpush(byte[] key, byte[]... args);
 
     Long llen(byte[] key);
 
-    List<byte[]> lrange(byte[] key, int start, int end);
+    List<byte[]> lrange(byte[] key, long start, long end);
 
-    String ltrim(byte[] key, int start, int end);
+    String ltrim(byte[] key, long start, long end);
 
-    byte[] lindex(byte[] key, int index);
+    byte[] lindex(byte[] key, long index);
 
-    String lset(byte[] key, int index, byte[] value);
+    String lset(byte[] key, long index, byte[] value);
 
-    Long lrem(byte[] key, int count, byte[] value);
+    Long lrem(byte[] key, long count, byte[] value);
 
     byte[] lpop(byte[] key);
 
@@ -105,11 +117,13 @@ public interface BinaryJedisCommands {
 
     byte[] srandmember(byte[] key);
 
-    Long zadd(byte[] key, double score, byte[] member);
+    Long strlen(byte[] key);
 
+    Long zadd(byte[] key, double score, byte[] member);
+    
     Long zadd(byte[] key, Map<Double, byte[]> scoreMembers);
 
-    Set<byte[]> zrange(byte[] key, int start, int end);
+    Set<byte[]> zrange(byte[] key, long start, long end);
 
     Long zrem(byte[] key, byte[]... member);
 
@@ -119,11 +133,11 @@ public interface BinaryJedisCommands {
 
     Long zrevrank(byte[] key, byte[] member);
 
-    Set<byte[]> zrevrange(byte[] key, int start, int end);
+    Set<byte[]> zrevrange(byte[] key, long start, long end);
 
-    Set<Tuple> zrangeWithScores(byte[] key, int start, int end);
+    Set<Tuple> zrangeWithScores(byte[] key, long start, long end);
 
-    Set<Tuple> zrevrangeWithScores(byte[] key, int start, int end);
+    Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end);
 
     Long zcard(byte[] key);
 
@@ -139,54 +153,68 @@ public interface BinaryJedisCommands {
 
     Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
-    Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset,
-	    int count);
-
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
-
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max,
-	    int offset, int count);
-
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
-
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max,
-	    int offset, int count);
+    Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
 
     Set<byte[]> zrevrangeByScore(byte[] key, double max, double min);
 
-    Set<byte[]> zrevrangeByScore(byte[] key, double max, double min,
-	    int offset, int count);
+    Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset,
+	    int count);
 
     Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
 
-    Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min,
-	    int offset, int count);
+    Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset,
+            int count);
+
+    Set<byte[]> zrevrangeByScore(byte[] key, double max, double min,
+            int offset, int count);
+
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
 
-    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min,
-	    int offset, int count);
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max,
+            int offset, int count);
+    
+    Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min,
+            int offset, int count);
 
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
+    
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
-    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min,
-	    int offset, int count);
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max,
+            int offset, int count);
 
-    Long zremrangeByRank(byte[] key, int start, int end);
+    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min,
+            int offset, int count);
+    
+    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min,
+            int offset, int count);
+
+    Long zremrangeByRank(byte[] key, long start, long end);
 
     Long zremrangeByScore(byte[] key, double start, double end);
-
+    
     Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
 
-    Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value);
+    Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot,
+            byte[] value);
+    
+    Long lpushx(byte[] key, byte[]... arg);
+    
+    Long rpushx(byte[] key, byte[]... arg);
 
-    Long objectRefcount(byte[] key);
+    List<byte[]> blpop(byte[] arg);
 
-    Long objectIdletime(byte[] key);
+    List<byte[]> brpop(byte[] arg);
 
-    byte[] objectEncoding(byte[] key);
+    Long del(byte[] key);
 
-    Long lpushx(byte[] key, byte[] string);
+    byte[] echo(byte[] arg);
 
-    Long rpushx(byte[] key, byte[] string);
+    Long move(byte[] key, int dbIndex);
+
+    Long bitcount(final byte[] key);
+
+    Long bitcount(final byte[] key, long start, long end);
 }

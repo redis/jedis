@@ -47,6 +47,26 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
+    public void zadd_bulk() {
+
+        jedis.del("foo");
+        long status = jedis.zadd("foo",
+                new Tuple("a", 1d),
+                new Tuple("b", 2d),
+                new Tuple("c", 3d),
+                new Tuple("a", 4d));
+
+        assertEquals(3, status);
+
+        assertEquals(3, (long)jedis.zcount("foo", "-inf", "+inf"));
+
+        assertEquals(2d, (double)jedis.zscore("foo", "b"), 0);
+
+        jedis.del("foo");
+
+    }
+
+    @Test
     public void zrange() {
         jedis.zadd("foo", 1d, "a");
         jedis.zadd("foo", 10d, "b");

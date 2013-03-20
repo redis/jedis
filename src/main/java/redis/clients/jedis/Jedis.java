@@ -1358,9 +1358,29 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * @return Bulk reply
      */
     public String srandmember(final String key) {
-	checkIsInMulti();
-	client.srandmember(key);
-	return client.getBulkReply();
+    checkIsInMulti();
+    client.srandmember(key);
+    return client.getBulkReply();
+    }
+
+    /**
+     * Return random elements from a Set, without removing the elements.
+     * 
+     * <p>
+     * The SPOP command does a similar work but the returned element is popped
+     * (removed) from the Set.
+     * <p>
+     * Time complexity O(n)
+     * 
+     * @param key
+     * @param count
+     * @return Multi bulk reply
+     */
+    public HashSet<String> srandmember(final String key, final int count) {
+    checkIsInMulti();
+    client.srandmember(key, count);
+    final List<String> srandmembers = client.getMultiBulkReply();
+    return new HashSet<String>(srandmembers);
     }
 
     /**

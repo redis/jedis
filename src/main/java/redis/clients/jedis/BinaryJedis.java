@@ -1453,9 +1453,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
      * @return Bulk reply
      */
     public byte[] srandmember(final byte[] key) {
-	checkIsInMulti();
-	client.srandmember(key);
-	return client.getBinaryBulkReply();
+    checkIsInMulti();
+    client.srandmember(key);
+    return client.getBinaryBulkReply();
+    }
+    
+    public Set<byte[]> srandmember(final byte[] key, final int count) {
+    checkIsInMulti();
+    client.srandmember(key, count);
+    final List<byte[]> members = client.getBinaryMultiBulkReply();
+    return new HashSet<byte[]>(members);
     }
 
     /**

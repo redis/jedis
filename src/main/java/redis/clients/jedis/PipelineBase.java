@@ -589,6 +589,11 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
+    public Response<Set<byte[]>> srandmember(byte[] key, int count) {
+        getClient(key).srandmember(key, count);
+        return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+    }
+
     public Response<Long> srem(String key, String member) {
         getClient(key).srem(key, member);
         return getResponse(BuilderFactory.LONG);

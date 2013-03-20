@@ -369,7 +369,11 @@ public class BinaryClient extends Connection {
     }
 
     public void srandmember(final byte[] key) {
-	sendCommand(SRANDMEMBER, key);
+    sendCommand(SRANDMEMBER, key);
+    }
+
+    public void srandmember(final byte[] key, final int count) {
+    sendCommand(SRANDMEMBER, key, toByteArray(count));
     }
 
     public void zadd(final byte[] key, final double score, final byte[] member) {

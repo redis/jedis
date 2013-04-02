@@ -10,6 +10,7 @@ daemonize yes
 port 6380
 requirepass foobared
 pidfile /tmp/redis2.pid
+slaveof 127.0.0.1 6379
 endef
 
 

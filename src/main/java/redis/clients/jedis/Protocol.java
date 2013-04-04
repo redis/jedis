@@ -10,6 +10,7 @@ import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.JedisRedisBusyException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -32,6 +33,8 @@ public final class Protocol {
   public static final byte PLUS_BYTE = '+';
   public static final byte MINUS_BYTE = '-';
   public static final byte COLON_BYTE = ':';
+
+  public static final String ERR_REDIS_BUSY = "BUSY";
 
   public static final String SENTINEL_MASTERS = "masters";
   public static final String SENTINEL_GET_MASTER_ADDR_BY_NAME = "get-master-addr-by-name";
@@ -114,7 +117,9 @@ public final class Protocol {
           Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
       throw new JedisClusterException(message);
-    }
+    } else if (message.startsWith(ERR_REDIS_BUSY)) {
+	    throw new JedisRedisBusyException(message);
+	  }
     throw new JedisDataException(message);
   }
 

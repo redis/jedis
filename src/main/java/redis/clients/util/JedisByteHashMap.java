@@ -88,8 +88,9 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable,
         return internalMap.values();
     }
 
-    private static final class ByteArrayWrapper {
-        private final byte[] data;
+    private static final class ByteArrayWrapper implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private final byte[] data;
 
         public ByteArrayWrapper(byte[] data) {
             if (data == null) {

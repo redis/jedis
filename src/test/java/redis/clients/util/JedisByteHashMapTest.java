@@ -14,6 +14,13 @@ public class JedisByteHashMapTest {
 		JedisByteHashMap map = new JedisByteHashMap();
 		serializeAndDeserialize(map);
 	}
+	
+	@Test
+	public void canSerializeJedisByteHashMapWithOneEntry() throws Exception {
+		JedisByteHashMap map = new JedisByteHashMap();
+		map.put(new byte[]{1}, new byte[]{1});
+		serializeAndDeserialize(map);
+	}
 
 	private void serializeAndDeserialize(JedisByteHashMap map) throws IOException,
 			ClassNotFoundException {

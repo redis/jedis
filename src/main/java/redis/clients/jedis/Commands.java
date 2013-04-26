@@ -139,6 +139,8 @@ public interface Commands {
 
     public void srandmember(final String key);
 
+    public void srandmember(final String key, final long count);
+
     public void zadd(final String key, final double score, final String member);
 
     public void zadd(final String key, final Map<Double, String> scoreMembers);

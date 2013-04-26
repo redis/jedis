@@ -1364,6 +1364,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     /**
+     * Return an array of 'count' distinct random elements from a Set if count if positive, 
+     * or non-necesarily disctinct elements if count is negative; without removing the element. If the
+     * Set is empty or the key does not exist, a nil object is returned.
+     * <p>
+     * The SPOP command does a similar work but the returned element is popped
+     * (removed) from the Set.
+     * <p>
+     * Time complexity O(count)
+     * 
+     * @param key
+     * @param count
+     * @return Bulk reply
+     */
+    public HashSet<String> srandmember(final String key, final long count) {
+    checkIsInMulti();
+    client.srandmember(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    return new HashSet<String>(members);
+    }
+    /**
      * Add the specified member having the specifeid score to the sorted set
      * stored at key. If member is already a member of the sorted set the score
      * is updated, and the element reinserted in the right position to ensure

@@ -113,6 +113,8 @@ public interface BinaryJedisCommands {
 
     byte[] srandmember(byte[] key);
 
+    Set<byte[]> srandmember(byte[] key, long count);
+
     Long strlen(byte[] key);
 
     Long zadd(byte[] key, double score, byte[] member);

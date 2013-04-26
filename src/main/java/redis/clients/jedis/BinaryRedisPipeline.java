@@ -124,6 +124,8 @@ public interface BinaryRedisPipeline {
 
     Response<byte[]> srandmember(byte[] key);
 
+    Response<Set<byte[]>> srandmember(byte[] key, long count);
+
     Response<Long> srem(byte[] key, byte[] member);
 
     Response<Long> strlen(byte[] key);

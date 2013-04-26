@@ -125,6 +125,8 @@ public interface RedisPipeline {
 
     Response<String> srandmember(String key);
 
+    Response<Set<String>> srandmember(String key, long count);
+
     Response<Long> srem(String key, String member);
 
     Response<Long> strlen(String key);

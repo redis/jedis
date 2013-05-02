@@ -13,7 +13,7 @@
 	<version>2.2.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
-	<url>http://code.google.com/p/jedis/</url>
+  <url>https://github.com/xetorthio/jedis</url>
 
 	<mailingLists>
 		<mailingList>
@@ -27,7 +27,7 @@
 
 	<licenses>
 		<license>
-			<name>Jedis License</name>
+			<name>MIT</name>
 			<url>http://github.com/xetorthio/jedis/raw/master/LICENSE.txt</url>
 			<distribution>repo</distribution>
 		</license>

@@ -1,12 +1,14 @@
 package redis.clients.jedis;
 
-import java.util.Map;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
+import java.util.Map;
 
 public interface Commands {
 
     public void set(final String key, final String value);
+
+    public void set(final String key, final String value, final String nxxx, final String expx, final long time);
 
     public void get(final String key);
 

@@ -1,18 +1,23 @@
 package redis.clients.jedis.tests.commands;
 
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.exceptions.JedisDataException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.exceptions.JedisDataException;
-
 public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
     byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
+    byte[] bxx =  { 0x78, 0x78 };
+    byte[] bnx =  { 0x6E, 0x78 };
+    byte[] bex = { 0x65, 0x78 };
+    byte[] bpx = { 0x70, 0x78 };
+    long expireSeconds = 2;
+    long expireMillis = expireSeconds * 1000;
     byte[] binaryValue;
 
     @Before
@@ -36,6 +41,69 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
         assertNull(jedis.get(bbar));
     }
+
+    @Test
+    public void setNxExAndGet() {
+        String status = jedis.set(bfoo, binaryValue, bnx, bex, expireSeconds);
+        assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+        byte[] value = jedis.get(bfoo);
+        assertTrue(Arrays.equals(binaryValue, value));
+
+        assertNull(jedis.get(bbar));
+    }
+
+    @Test
+    public void setIfNotExistAndGet() {
+        String status= jedis.set(bfoo, binaryValue);
+        assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+        // nx should fail if value exists
+        String statusFail = jedis.set(bfoo, binaryValue, bnx, bex, expireSeconds);
+        assertNull(statusFail);
+
+        byte[] value = jedis.get(bfoo);
+        assertTrue(Arrays.equals(binaryValue, value));
+
+        assertNull(jedis.get(bbar));
+    }
+
+    @Test
+    public void setIfExistAndGet() {
+        String status= jedis.set(bfoo, binaryValue);
+        assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+        // nx should fail if value exists
+        String statusSuccess = jedis.set(bfoo, binaryValue, bxx, bex, expireSeconds);
+        assertTrue(Keyword.OK.name().equalsIgnoreCase(statusSuccess));
+
+        byte[] value = jedis.get(bfoo);
+        assertTrue(Arrays.equals(binaryValue, value));
+
+        assertNull(jedis.get(bbar));
+    }
+
+    @Test
+    public void setFailIfNotExistAndGet() {
+        // xx should fail if value does NOT exists
+        String statusFail = jedis.set(bfoo, binaryValue, bxx, bex, expireSeconds);
+        assertNull(statusFail);
+    }
+
+    @Test
+    public void setAndExpireMillis() {
+        String status = jedis.set(bfoo, binaryValue, bnx, bpx, expireMillis);
+        assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+        long ttl = jedis.ttl(bfoo);
+        assertTrue(ttl > 0 && ttl <= expireSeconds);
+    }
+
+
+    @Test
+    public void setAndExpire() {
+        String status = jedis.set(bfoo, binaryValue, bnx, bex, expireSeconds);
+        assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+        long ttl = jedis.ttl(bfoo);
+        assertTrue(ttl > 0 && ttl <= expireSeconds);
+    }
+
 
     @Test
     public void getSet() {

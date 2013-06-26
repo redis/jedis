@@ -685,15 +685,19 @@ public class Client extends BinaryClient implements Commands {
 	scriptLoad(SafeEncoder.encode(script));
     }
 
+    @Deprecated
     public void zadd(String key, Map<Double, String> scoreMembers) {
-	HashMap<Double, byte[]> binaryScoreMembers = new HashMap<Double, byte[]>();
 
-	for (Map.Entry<Double, String> entry : scoreMembers.entrySet()) {
-	    binaryScoreMembers.put(entry.getKey(),
-		    SafeEncoder.encode(entry.getValue()));
-	}
+        Tuple[] tuples = new Tuple[scoreMembers.size()];
+        int i =0;
+        for (Map.Entry<Double, String> me : scoreMembers.entrySet()) {
+            tuples[i++] = new Tuple(me.getValue(), me.getKey());
+        }
+	zaddBinary(SafeEncoder.encode(key), tuples);
+    }
 
-	zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
+    public void zadd(String key, Tuple... scoreMembers) {
+        zaddBinary(SafeEncoder.encode(key), scoreMembers);
     }
 
     public void objectRefcount(String key) {

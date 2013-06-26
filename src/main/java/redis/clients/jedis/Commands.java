@@ -141,7 +141,10 @@ public interface Commands {
 
     public void zadd(final String key, final double score, final String member);
 
+    @Deprecated
     public void zadd(final String key, final Map<Double, String> scoreMembers);
+
+    public void zadd(final String key, final Tuple... scoreMembers);
 
     public void zrange(final String key, final long start, final long end);
 

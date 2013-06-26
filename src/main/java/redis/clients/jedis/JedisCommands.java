@@ -116,6 +116,8 @@ public interface JedisCommands {
     
     Long zadd(String key, Map<Double, String> scoreMembers);
 
+    Long zadd(String key, Tuple... scoreMembers);
+
     Set<String> zrange(String key, long start, long end);
 
     Long zrem(String key, String... member);

@@ -41,6 +41,8 @@ public interface RedisPipeline {
 
     Response<Long> hdel(String key, String field);
 
+    Response<Long> hdel(String key, String...field);
+
     Response<Boolean> hexists(String key, String field);
 
     Response<String> hget(String key, String field);

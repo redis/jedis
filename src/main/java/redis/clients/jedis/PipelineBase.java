@@ -170,6 +170,11 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.LONG);
     }
 
+    public Response<Long> hdel(String key, String...field) {
+        getClient(key).hdel(key, field);
+        return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> hdel(byte[] key, byte[] field) {
         getClient(key).hdel(key, field);
         return getResponse(BuilderFactory.LONG);

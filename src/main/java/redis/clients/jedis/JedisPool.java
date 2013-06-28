@@ -103,6 +103,17 @@ public class JedisPool extends Pool<Jedis> {
             
             return jedis;
         }
+        
+        @Override
+        public void activateObject(Object obj) throws Exception {
+            if (!(obj instanceof Jedis)) {
+        	throw new IllegalArgumentException("activated object is not a Jedis instance");
+            }
+            final Jedis jedis = (Jedis)obj;
+            if (jedis.getDB() != database) {
+        	jedis.select(database);
+            }
+        }
 
         public void destroyObject(final Object obj) throws Exception {
             if (obj instanceof Jedis) {

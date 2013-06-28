@@ -150,4 +150,23 @@ public class JedisPoolTest extends Assert {
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
     }
+    
+    @Test
+    public void selectDatabaseOnActivation() {
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000, "foobared");
+        
+        Jedis jedis0 = pool.getResource();
+        assertEquals(0L, jedis0.getDB().longValue());
+        jedis0.select(1);
+        assertEquals(1L, jedis0.getDB().longValue());
+        pool.returnResource(jedis0);
+        
+        Jedis jedis1 = pool.getResource();
+        assertTrue("Jedis instance was not reused", jedis1 == jedis0);
+        assertEquals(0L, jedis1.getDB().longValue());
+        pool.returnResource(jedis1);
+        
+        pool.destroy();
+    }
 }

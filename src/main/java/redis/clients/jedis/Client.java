@@ -752,5 +752,32 @@ public class Client extends BinaryClient implements Commands {
     public void pttl(final String key) {
     	pttl(SafeEncoder.encode(key));
     }
+    
+    public void incrByFloat(final String key, final double increment) {
+    	incrByFloat(SafeEncoder.encode(key), increment);
+    }
+    
+    public void psetex(final String key, final int milliseconds, final String value) {
+    	psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
+    }
+    
+    public void set(final String key, final String value, final String nxxx) {
+    	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx));
+    }
+    
+    public void set(final String key, final String value, final String nxxx, final String expx, final long time) {
+    	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
+    }
+    
+    public void srandmember(final String key, final int count) {
+    	srandmember(SafeEncoder.encode(key), count);
+    }
 
+    public void clientKill(final String client) {
+    	clientKill(SafeEncoder.encode(client));
+    }
+    
+    public void clientSetname(final String name) {
+    	clientSetname(SafeEncoder.encode(name));
+    }
 }

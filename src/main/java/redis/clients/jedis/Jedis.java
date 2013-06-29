@@ -1362,6 +1362,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	client.srandmember(key);
 	return client.getBulkReply();
     }
+    
+    public List<String> srandmember(final String key, final int count) {
+	checkIsInMulti();
+	client.srandmember(key);
+	return client.getMultiBulkReply();
+    }
 
     /**
      * Add the specified member having the specifeid score to the sorted set
@@ -3030,5 +3036,42 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	checkIsInMulti();
     	client.pttl(key);
     	return client.getIntegerReply();
+    }
+    
+    public Double incrByFloat(final String key, final double increment) {
+    	checkIsInMulti();
+    	client.incrByFloat(key, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);    
+    }
+    
+    public String psetex(final String key, final int milliseconds, final String value) {
+    	checkIsInMulti();
+    	client.psetex(key, milliseconds, value);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String set(final String key, final String value, final String nxxx) {
+    	checkIsInMulti();
+    	client.set(key, value, nxxx);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String set(final String key, final String value, final String nxxx, final String expx, final long time) {
+    	checkIsInMulti();
+    	client.set(key, value, nxxx, expx, time);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String clientKill(final String client) {
+    	checkIsInMulti();
+    	this.client.clientKill(client);
+    	return this.client.getStatusCodeReply();
+    }
+    
+    public String clientSetname(final String name) {
+    	checkIsInMulti();
+    	client.clientSetname(name);
+    	return client.getBulkReply();
     }
 }

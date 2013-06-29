@@ -1457,6 +1457,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	client.srandmember(key);
 	return client.getBinaryBulkReply();
     }
+    
+    public List<byte[]> srandmember(final byte[] key, final int count) {
+    checkIsInMulti();
+    client.srandmember(key, count);
+    return client.getBinaryMultiBulkReply();
+    }
 
     /**
      * Add the specified member having the specifeid score to the sorted set
@@ -3268,4 +3274,60 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     	client.pttl(key);
     	return client.getIntegerReply();
     }
+    
+    public Double incrByFloat(final byte[] key, final double increment) {
+    	checkIsInMulti();
+    	client.incrByFloat(key, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);    
+    }
+    
+    public String psetex(final byte[] key, final int milliseconds, final byte[] value) {
+    	checkIsInMulti();
+    	client.psetex(key, milliseconds, value);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx) {
+        checkIsInMulti();
+        client.set(key, value, nxxx);
+        return client.getStatusCodeReply();
+    }
+    
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+        checkIsInMulti();
+        client.set(key, value, nxxx, expx, time);
+        return client.getStatusCodeReply();
+    }
+    
+    public String clientKill(final byte[] client) {
+    	checkIsInMulti();
+    	this.client.clientKill(client);
+    	return this.client.getStatusCodeReply();
+    }
+    
+    public String clientGetname() {
+    	checkIsInMulti();
+    	client.clientGetname();
+    	return client.getBulkReply();
+    }
+    
+    public String clientList() {
+    	checkIsInMulti();
+    	client.clientList();
+    	return client.getBulkReply();
+    }
+    
+    public String clientSetname(final byte[] name) {
+    	checkIsInMulti();
+    	client.clientSetname(name);
+    	return client.getBulkReply();
+    }
+    
+    public List<String> time() {
+    	checkIsInMulti();
+    	client.time();
+    	return client.getMultiBulkReply();
+    }
+
 }

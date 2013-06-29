@@ -877,11 +877,51 @@ public class BinaryClient extends Connection {
     	sendCommand(PEXPIRE, key, toByteArray(milliseconds));
     }
     
-    public void pexpireAt(final byte[] key, long millisecondsTimestamp) {
+    public void pexpireAt(final byte[] key, final long millisecondsTimestamp) {
     	sendCommand(PEXPIREAT, key, toByteArray(millisecondsTimestamp));	
     }
     
     public void pttl(final byte[] key) {
     	sendCommand(PTTL, key);
+    }
+    
+    public void incrByFloat(final byte[] key, final double increment) {
+    	sendCommand(INCRBYFLOAT, key, toByteArray(increment));
+    }
+    
+    public void psetex(final byte[] key, final int milliseconds, final byte[] value) {
+    	sendCommand(PSETEX, key, toByteArray(milliseconds), value);
+    }
+    
+    public void set(final byte[] key, final byte[] value, final byte[] nxxx) {
+        sendCommand(Command.SET, key, value, nxxx);
+    }
+    
+    public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+        sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
+    }
+    
+    public void srandmember(final byte[] key, final int count) {
+    	sendCommand(SRANDMEMBER, key, toByteArray(count));
+    }
+    
+    public void clientKill(final byte[] client) {
+    	sendCommand(CLIENT_KILL, client);
+    }
+    
+    public void clientGetname() {
+    	sendCommand(CLIENT_GETNAME);
+    }
+    
+    public void clientList() {
+    	sendCommand(CLIENT_LIST);
+    }
+    
+    public void clientSetname(final byte[] name) {
+    	sendCommand(CLIENT_SETNAME);
+    }
+    
+    public void time() {
+    	sendCommand(TIME);
     }
 }

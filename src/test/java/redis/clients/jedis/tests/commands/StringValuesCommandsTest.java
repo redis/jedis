@@ -190,4 +190,20 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         long value = jedis.incr("foo");
         assertEquals(Long.MIN_VALUE, value);
     }
+    
+    @Test
+    public void incrByFloat() {
+    	double value = jedis.incrByFloat("foo", 10.5);
+    	assertEquals(10.5, value, 0.0);
+    	value = jedis.incrByFloat("foo", 0.1);
+    	assertEquals(10.6, value, 0.0);
+    }
+    
+    @Test
+    public void psetex() {
+        String status = jedis.psetex("foo", 20000, "bar");
+        assertEquals("OK", status);
+        long ttl = jedis.ttl("foo");
+        assertTrue(ttl > 0 && ttl <= 20000);
+    }
 }

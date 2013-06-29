@@ -734,11 +734,23 @@ public class Client extends BinaryClient implements Commands {
     }
     
     public void dump(final String key) { 
-    dump(SafeEncoder.encode(key));
+    	dump(SafeEncoder.encode(key));
     }
     
     public void restore(final String key, final int ttl, final byte[] serializedValue) {
-    restore(SafeEncoder.encode(key), ttl, serializedValue);
+    	restore(SafeEncoder.encode(key), ttl, serializedValue);
+    }
+    
+    public void pexpire(final String key, final int milliseconds) {
+    	pexpire(SafeEncoder.encode(key), milliseconds);
+    }
+    
+    public void pexpireAt(final String key, final long millisecondsTimestamp) {
+    	pexpireAt(SafeEncoder.encode(key), millisecondsTimestamp);
+    }
+    
+    public void pttl(final String key) {
+    	pttl(SafeEncoder.encode(key));
     }
 
 }

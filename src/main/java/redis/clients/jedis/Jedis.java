@@ -3003,14 +3003,32 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
     
     public byte[] dump(final String key) {
-    checkIsInMulti();
-    client.dump(key);
-    return client.getBinaryBulkReply();
+	    checkIsInMulti();
+	    client.dump(key);
+	    return client.getBinaryBulkReply();
     }
     
     public String restore(final String key, final int ttl, final byte[] serializedValue) {
-    checkIsInMulti();
-    client.restore(key, ttl, serializedValue);
-    return client.getStatusCodeReply();
+    	checkIsInMulti();
+    	client.restore(key, ttl, serializedValue);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Long pexpire(final String key, final int milliseconds) {
+    	checkIsInMulti();
+    	client.pexpire(key, milliseconds);
+    	return client.getIntegerReply();
+    }
+    
+    public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+    	checkIsInMulti();
+    	client.pexpireAt(key, millisecondsTimestamp);
+    	return client.getIntegerReply();
+    }
+    
+    public Long pttl(final String key) {
+    	checkIsInMulti();
+    	client.pttl(key);
+    	return client.getIntegerReply();
     }
 }

@@ -103,14 +103,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         reply = jedis.del(bfoo1, bfoo2);
         assertEquals(0, reply);
     }
-    
-    @Test
-    public void dumpAndRestore() {
-    	jedis.set("foo1", "bar1");
-    	byte[] sv = jedis.dump("foo1");
-    	jedis.restore("foo2", 0, sv);
-    	assertTrue(jedis.exists("foo2"));
-    }
 
     @Test
     public void type() {
@@ -464,6 +456,51 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         // Binary
         byte[] bresult = jedis.echo(SafeEncoder.encode("hello world"));
         assertArrayEquals(SafeEncoder.encode("hello world"), bresult);
+    }
+    
+    @Test
+    public void dumpAndRestore() {
+    	jedis.set("foo1", "bar1");
+    	byte[] sv = jedis.dump("foo1");
+    	jedis.restore("foo2", 0, sv);
+    	assertTrue(jedis.exists("foo2"));
+    }
+    
+    @Test
+    public void pexpire() {
+    	 long status = jedis.pexpire("foo", 10000);
+         assertEquals(0, status);
+
+         jedis.set("foo", "bar");
+         status = jedis.pexpire("foo", 10000);
+         assertEquals(1, status);
+    }
+    
+    @Test
+    public void pexpireAt() {
+    	long unixTime = (System.currentTimeMillis()) + 10000;
+
+        long status = jedis.pexpireAt("foo", unixTime);
+        assertEquals(0, status);
+
+        jedis.set("foo", "bar");
+        unixTime = (System.currentTimeMillis()) + 10000;
+        status = jedis.pexpireAt("foo", unixTime);
+        assertEquals(1, status);
+    }
+    
+    @Test
+    public void pttl() {
+        long pttl = jedis.pttl("foo");
+        assertEquals(-1, pttl);
+
+        jedis.set("foo", "bar");
+        pttl = jedis.pttl("foo");
+        assertEquals(-1, pttl);
+
+        jedis.pexpire("foo", 20000);
+        pttl = jedis.pttl("foo");
+        assertTrue(pttl >= 0 && pttl <= 20000);
     }
 
 }

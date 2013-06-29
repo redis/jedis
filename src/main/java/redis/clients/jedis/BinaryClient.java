@@ -102,14 +102,6 @@ public class BinaryClient extends Connection {
     public void del(final byte[]... keys) {
 	sendCommand(DEL, keys);
     }
-    
-    public void dump(final byte[] key) {
-    sendCommand(DUMP, key);
-    }
-    
-    public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
-    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
-    }
 
     public void type(final byte[] key) {
 	sendCommand(TYPE, key);
@@ -870,6 +862,26 @@ public class BinaryClient extends Connection {
     }
 
     public void sentinel(final byte[]... args) {
-	sendCommand(SENTINEL, args);
+    	sendCommand(SENTINEL, args);
+    }
+    
+    public void dump(final byte[] key) {
+    	sendCommand(DUMP, key);
+    }
+    
+    public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+    	sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+    }
+    
+    public void pexpire(final byte[] key, final int milliseconds) {
+    	sendCommand(PEXPIRE, key, toByteArray(milliseconds));
+    }
+    
+    public void pexpireAt(final byte[] key, long millisecondsTimestamp) {
+    	sendCommand(PEXPIREAT, key, toByteArray(millisecondsTimestamp));	
+    }
+    
+    public void pttl(final byte[] key) {
+    	sendCommand(PTTL, key);
     }
 }

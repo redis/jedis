@@ -27,7 +27,11 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
     public void setUp() throws Exception {
         jedis = new Jedis(hnp.host, hnp.port, 500);
         jedis.connect();
+        try {
         jedis.auth("foobared");
+        } catch (Exception e) {
+			// ignore
+		}
         jedis.configSet("timeout", "300");
         jedis.flushAll();
     }

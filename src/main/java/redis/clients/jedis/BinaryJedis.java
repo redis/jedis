@@ -3238,4 +3238,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         client.bitop(op, destKey, srcKeys);
         return client.getIntegerReply();
     }
+    
+    public byte[] dump(final byte[] key) {
+    checkIsInMulti();
+    client.dump(key);
+    return client.getBinaryBulkReply();
+    }
+    
+    public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+    checkIsInMulti();
+    client.restore(key, ttl, serializedValue);
+    return client.getStatusCodeReply();
+    }
 }

@@ -103,6 +103,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         reply = jedis.del(bfoo1, bfoo2);
         assertEquals(0, reply);
     }
+    
+    @Test
+    public void dumpAndRestore() {
+    	jedis.set("foo1", "bar1");
+    	byte[] sv = jedis.dump("foo1");
+    	jedis.restore("foo2", 0, sv);
+    	assertTrue(jedis.exists("foo2"));
+    }
 
     @Test
     public void type() {

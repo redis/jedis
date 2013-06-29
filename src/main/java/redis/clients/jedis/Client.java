@@ -732,4 +732,13 @@ public class Client extends BinaryClient implements Commands {
 	sentinel(SafeEncoder.encode(cmd), SafeEncoder.encode(arg1),
 		toByteArray(arg2));
     }
+    
+    public void dump(final String key) { 
+    dump(SafeEncoder.encode(key));
+    }
+    
+    public void restore(final String key, final int ttl, final byte[] serializedValue) {
+    restore(SafeEncoder.encode(key), ttl, serializedValue);
+    }
+
 }

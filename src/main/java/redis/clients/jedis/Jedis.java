@@ -100,8 +100,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public Long del(String key) {
-        client.del(key);
-        return client.getIntegerReply();
+    client.del(key);
+    return client.getIntegerReply();
     }
 
     /**
@@ -3002,4 +3002,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 		BuilderFactory.STRING.build(reply.get(1)));
     }
     
+    public byte[] dump(final String key) {
+    checkIsInMulti();
+    client.dump(key);
+    return client.getBinaryBulkReply();
+    }
+    
+    public String restore(final String key, final int ttl, final byte[] serializedValue) {
+    checkIsInMulti();
+    client.restore(key, ttl, serializedValue);
+    return client.getStatusCodeReply();
+    }
 }

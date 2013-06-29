@@ -102,6 +102,14 @@ public class BinaryClient extends Connection {
     public void del(final byte[]... keys) {
 	sendCommand(DEL, keys);
     }
+    
+    public void dump(final byte[] key) {
+    sendCommand(DUMP, key);
+    }
+    
+    public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+    }
 
     public void type(final byte[] key) {
 	sendCommand(TYPE, key);

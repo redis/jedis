@@ -3294,7 +3294,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         return client.getStatusCodeReply();
     }
     
-    public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final int time) {
         checkIsInMulti();
         client.set(key, value, nxxx, expx, time);
         return client.getStatusCodeReply();
@@ -3328,6 +3328,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     	checkIsInMulti();
     	client.time();
     	return client.getMultiBulkReply();
+    }
+    
+    public String migrate(final byte[] host, final int port, final byte[] key, final int destinationDb, final int timeout) {
+    	checkIsInMulti();
+    	client.migrate(host, port, key, destinationDb, timeout);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Double hincrByFloat(final byte[] key, final byte[] field, double increment) {
+    	checkIsInMulti();
+    	client.hincrByFloat(key, field, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);
     }
 
 }

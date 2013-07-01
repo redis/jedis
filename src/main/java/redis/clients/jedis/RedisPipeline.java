@@ -39,7 +39,7 @@ public interface RedisPipeline {
 
     Response<String> getSet(String key, String value);
 
-    Response<Long> hdel(String key, String field);
+    Response<Long> hdel(String key, String... field);
 
     Response<Boolean> hexists(String key, String field);
 
@@ -67,7 +67,7 @@ public interface RedisPipeline {
 
     Response<Long> incrBy(String key, long integer);
 
-    Response<String> lindex(String key, int index);
+    Response<String> lindex(String key, long index);
 
     Response<Long> linsert(String key, BinaryClient.LIST_POSITION where,
                            String pivot, String value);
@@ -125,7 +125,7 @@ public interface RedisPipeline {
 
     Response<String> srandmember(String key);
 
-    Response<Long> srem(String key, String member);
+    Response<Long> srem(String key, String... member);
 
     Response<Long> strlen(String key);
 
@@ -143,7 +143,7 @@ public interface RedisPipeline {
 
     Response<Double> zincrby(String key, double score, String member);
 
-    Response<Set<String>> zrange(String key, int start, int end);
+    Response<Set<String>> zrange(String key, long start, long end);
 
     Response<Set<String>> zrangeByScore(String key, double min,
                                         double max);
@@ -175,20 +175,20 @@ public interface RedisPipeline {
     Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
                                                     double max, double min, int offset, int count);
 
-    Response<Set<Tuple>> zrangeWithScores(String key, int start, int end);
+    Response<Set<Tuple>> zrangeWithScores(String key, long start, long end);
 
     Response<Long> zrank(String key, String member);
 
-    Response<Long> zrem(String key, String member);
+    Response<Long> zrem(String key, String... member);
 
-    Response<Long> zremrangeByRank(String key, int start, int end);
+    Response<Long> zremrangeByRank(String key, long start, long end);
 
     Response<Long> zremrangeByScore(String key, double start, double end);
 
-    Response<Set<String>> zrevrange(String key, int start, int end);
+    Response<Set<String>> zrevrange(String key, long start, long end);
 
-    Response<Set<Tuple>> zrevrangeWithScores(String key, int start,
-                                             int end);
+    Response<Set<Tuple>> zrevrangeWithScores(String key, long start,
+                                             long end);
 
     Response<Long> zrevrank(String key, String member);
 

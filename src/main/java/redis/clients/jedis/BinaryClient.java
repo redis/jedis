@@ -475,6 +475,15 @@ public class BinaryClient extends Connection {
     public void blpop(final byte[][] args) {
 	sendCommand(BLPOP, args);
     }
+    
+    public void blpop(final int timeout, final byte[]... keys) {
+    	final List<byte[]> args = new ArrayList<byte[]>();
+    	for (final byte[] arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(Protocol.toByteArray(timeout));
+    	blpop(args.toArray(new byte[args.size()][]));
+    }
 
     public void sort(final byte[] key, final SortingParams sortingParameters,
 	    final byte[] dstkey) {
@@ -492,6 +501,15 @@ public class BinaryClient extends Connection {
 
     public void brpop(final byte[][] args) {
 	sendCommand(BRPOP, args);
+    }
+    
+    public void brpop(final int timeout, final byte[]... keys) {
+    	final List<byte[]> args = new ArrayList<byte[]>();
+    	for (final byte[] arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(Protocol.toByteArray(timeout));
+    	brpop(args.toArray(new byte[args.size()][]));
     }
 
     public void auth(final String password) {
@@ -897,7 +915,7 @@ public class BinaryClient extends Connection {
         sendCommand(Command.SET, key, value, nxxx);
     }
     
-    public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+    public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final int time) {
         sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
     }
     
@@ -923,5 +941,13 @@ public class BinaryClient extends Connection {
     
     public void time() {
     	sendCommand(TIME);
+    }
+    
+    public void migrate(final byte[] host, final int port, final byte[] key, final int destinationDb, final int timeout) {
+    	sendCommand(MIGRATE, host, toByteArray(port), key, toByteArray(destinationDb), toByteArray(timeout));
+    }
+    
+    public void hincrByFloat(final byte[] key, final byte[] field, double increment) {
+    	sendCommand(HINCRBYFLOAT, key, field, toByteArray(increment));
     }
 }

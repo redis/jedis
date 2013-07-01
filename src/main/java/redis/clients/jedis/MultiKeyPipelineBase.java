@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 abstract class MultiKeyPipelineBase extends PipelineBase implements
@@ -14,20 +15,50 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
         client.brpop(args);
         return getResponse(BuilderFactory.STRING_LIST);
     }
+    
+    public Response<List<String>> brpop(int timeout, String... keys) {
+        client.brpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
 
     public Response<List<String>> blpop(String... args) {
         client.blpop(args);
         return getResponse(BuilderFactory.STRING_LIST);
+    }
+    
+    public Response<List<String>> blpop(int timeout, String... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+    
+    public Response<Map<String, String>> blpopMap(int timeout, String... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_MAP);
     }
 
     public Response<List<byte[]>> brpop(byte[]... args) {
         client.brpop(args);
         return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
+    
+    public Response<List<String>> brpop(int timeout, byte[]... keys) {
+        client.brpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+    
+    public Response<Map<String, String>> brpopMap(int timeout, String... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_MAP);
+    }
 
     public Response<List<byte[]>> blpop(byte[]... args) {
         client.blpop(args);
         return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+    
+    public Response<List<String>> blpop(int timeout, byte[]... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
     }
 
     public Response<Long> del(String... keys) {

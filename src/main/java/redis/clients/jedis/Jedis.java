@@ -3057,7 +3057,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	return client.getStatusCodeReply();
     }
     
-    public String set(final String key, final String value, final String nxxx, final String expx, final long time) {
+    public String set(final String key, final String value, final String nxxx, final String expx, final int time) {
     	checkIsInMulti();
     	client.set(key, value, nxxx, expx, time);
     	return client.getStatusCodeReply();
@@ -3073,5 +3073,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	checkIsInMulti();
     	client.clientSetname(name);
     	return client.getBulkReply();
+    }
+    
+    public String migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
+    	checkIsInMulti();
+    	client.migrate(host, port, key, destinationDb, timeout);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Double hincrByFloat(final String key, final String field, double increment) {
+    	checkIsInMulti();
+    	client.hincrByFloat(key, field, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);
     }
 }

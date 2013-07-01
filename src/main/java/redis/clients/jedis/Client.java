@@ -2,7 +2,9 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -385,6 +387,15 @@ public class Client extends BinaryClient implements Commands {
 	}
 	blpop(bargs);
     }
+    
+    public void blpop(final int timeout, final String... keys) {
+    	List<String> args = new ArrayList<String>();
+    	for (String arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(String.valueOf(timeout));
+    	blpop(args.toArray(new String[args.size()]));
+    }
 
     public void sort(final String key, final SortingParams sortingParameters,
 	    final String dstkey) {
@@ -402,6 +413,15 @@ public class Client extends BinaryClient implements Commands {
 	    bargs[i] = SafeEncoder.encode(args[i]);
 	}
 	brpop(bargs);
+    }
+    
+    public void brpop(final int timeout, final String... keys) {
+    	List<String> args = new ArrayList<String>();
+    	for (String arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(String.valueOf(timeout));
+    	brpop(args.toArray(new String[args.size()]));
     }
 
     public void zcount(final String key, final double min, final double max) {
@@ -765,7 +785,7 @@ public class Client extends BinaryClient implements Commands {
     	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx));
     }
     
-    public void set(final String key, final String value, final String nxxx, final String expx, final long time) {
+    public void set(final String key, final String value, final String nxxx, final String expx, final int time) {
     	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
     }
     
@@ -779,5 +799,13 @@ public class Client extends BinaryClient implements Commands {
     
     public void clientSetname(final String name) {
     	clientSetname(SafeEncoder.encode(name));
+    }
+    
+    public void migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
+    	migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key), destinationDb, timeout);
+    }
+    
+    public void hincrByFloat(final String key, final String field, double increment) {
+    	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), increment);
     }
 }

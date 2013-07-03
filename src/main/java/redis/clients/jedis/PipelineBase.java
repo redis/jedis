@@ -673,6 +673,11 @@ abstract class PipelineBase extends Queable implements
         getClient(key).zcount(key, min, max);
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<Long> zcount(String key, String min, String max) {
+        getClient(key).zcount(key, min, max);
+        return getResponse(BuilderFactory.LONG);
+    }
 
     public Response<Long> zcount(byte[] key, double min, double max) {
         getClient(key).zcount(key, toByteArray(min), toByteArray(max));

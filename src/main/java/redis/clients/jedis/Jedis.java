@@ -1365,7 +1365,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     
     public List<String> srandmember(final String key, final int count) {
 	checkIsInMulti();
-	client.srandmember(key);
+	client.srandmember(key, count);
 	return client.getMultiBulkReply();
     }
 

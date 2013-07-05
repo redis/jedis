@@ -3072,7 +3072,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     public String clientSetname(final String name) {
     	checkIsInMulti();
     	client.clientSetname(name);
-    	return client.getBulkReply();
+    	return client.getStatusCodeReply();
     }
     
     public String migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {

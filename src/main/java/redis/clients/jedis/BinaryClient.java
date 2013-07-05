@@ -924,19 +924,19 @@ public class BinaryClient extends Connection {
     }
     
     public void clientKill(final byte[] client) {
-    	sendCommand(CLIENT_KILL, client);
+    	sendCommand(CLIENT, Keyword.KILL.raw, client);
     }
     
     public void clientGetname() {
-    	sendCommand(CLIENT_GETNAME);
+    	sendCommand(CLIENT, Keyword.GETNAME.raw);
     }
     
     public void clientList() {
-    	sendCommand(CLIENT_LIST);
+    	sendCommand(CLIENT, Keyword.LIST.raw);
     }
     
     public void clientSetname(final byte[] name) {
-    	sendCommand(CLIENT_SETNAME);
+    	sendCommand(CLIENT, Keyword.SETNAME.raw, name);
     }
     
     public void time() {

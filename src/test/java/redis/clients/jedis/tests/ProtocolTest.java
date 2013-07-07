@@ -101,4 +101,11 @@ public class ProtocolTest extends JedisTestBase {
                 .read(new RedisInputStream(is));
         assertNull(response);
     }
+    
+    @Test
+    public void utf8StringReply() {
+        InputStream is = new ByteArrayInputStream("日本語(Japanese)".getBytes());
+        assertEquals("日本語(Japanese)", new RedisInputStream(is).readLine());
+    }
+
 }

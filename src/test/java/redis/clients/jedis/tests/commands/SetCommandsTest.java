@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
@@ -436,6 +437,18 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         member = jedis.srandmember("bar");
         assertNull(member);
+        
+        // with count
+        
+        Set<String> members = jedis.srandmember("foo", 1);
+        assertEquals(members.size(), 1);
+        assertTrue(members.contains("a") || members.contains("b"));
+        
+        members = jedis.srandmember("foo", 3);
+        assertEquals(members.size(), 2);
+        assertTrue(members.contains("a") && members.contains("b"));
+
+        assertTrue(jedis.srandmember("bar", 1).isEmpty());
 
         // Binary
         jedis.sadd(bfoo, ba);
@@ -449,6 +462,20 @@ public class SetCommandsTest extends JedisCommandTestBase {
         bmember = jedis.srandmember(bbar);
         assertNull(bmember);
 
+        // with count
+        
+        Set<byte[]> bmembers = jedis.srandmember(bfoo, 1);
+        assertEquals(bmembers.size(), 1);
+        bmember = bmembers.iterator().next();
+        assertTrue(Arrays.equals(bmember, ba) || Arrays.equals(bmember, bb));
+        
+        bmembers = jedis.srandmember(bfoo, 3);
+        assertEquals(bmembers.size(), 2);
+        for(byte[] bmemberIt  : bmembers){
+            assertTrue(Arrays.equals(bmemberIt, ba) || Arrays.equals(bmemberIt, bb));
+        }
+        
+        assertTrue(jedis.srandmember(bbar, 1).isEmpty());
     }
 
 }

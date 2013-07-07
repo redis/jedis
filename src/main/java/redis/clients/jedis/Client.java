@@ -312,7 +312,11 @@ public class Client extends BinaryClient implements Commands {
     }
 
     public void srandmember(final String key) {
-	srandmember(SafeEncoder.encode(key));
+    srandmember(SafeEncoder.encode(key));
+    }
+
+    public void srandmember(final String key, final int count) {
+    srandmember(SafeEncoder.encode(key), count);
     }
 
     public void zadd(final String key, final double score, final String member) {

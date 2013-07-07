@@ -160,26 +160,26 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(String key,
+    public Response<Long> sort(String key,
                                        SortingParams sortingParameters, String dstkey) {
         client.sort(key, sortingParameters, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<byte[]>> sort(byte[] key,
+    public Response<Long> sort(byte[] key,
                                        SortingParams sortingParameters, byte[] dstkey) {
         client.sort(key, sortingParameters, dstkey);
-        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(String key, String dstkey) {
+    public Response<Long> sort(String key, String dstkey) {
         client.sort(key, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<byte[]>> sort(byte[] key, byte[] dstkey) {
+    public Response<Long> sort(byte[] key, byte[] dstkey) {
         client.sort(key, dstkey);
-        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
     public Response<Set<String>> sunion(String... keys) {

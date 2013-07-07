@@ -242,7 +242,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         string.get();
         t.exec();
     }
-    
+
     @Test
     public void transactionResponseWithError() {
     	Transaction t = jedis.multi();
@@ -259,7 +259,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         }
         assertEquals(r.get(), "bar");
     }
-    
+
     @Test
     public void execGetResponse() {
         Transaction t = jedis.multi();
@@ -277,7 +277,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         }
         assertEquals("bar", lr.get(2).get());
     }
-    
+
     @Test
     public void select() {
         jedis.select(1);
@@ -286,13 +286,26 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
         Transaction t = jedis.multi();
         t.select(0);
         t.set("bar", "foo");
-        
+
         Jedis jedis2 = createJedis();
         jedis2.select(1);
         jedis2.set("foo", "bar2");
-        
+
         List<Object> results = t.exec();
-        
+
         assertNull(results);
     }
+
+    @Test
+    public void sort(){
+      jedis.sadd("foo", "2", "1", "3");
+
+      Transaction t = jedis.multi();
+      t.sort("foo", "bar");
+      t.lrange("bar", 0, 3);
+
+      List<Object> results = t.exec();
+      assertEquals(Arrays.asList("1", "2", "3"), results.get(1));
+    }
+
 }

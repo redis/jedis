@@ -321,6 +321,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.srandmember(key);
     }
 
+    public Set<String> srandmember(String key, long count) {
+    Jedis j = getShard(key);
+    return j.srandmember(key, count);
+    }
+
     public Long zadd(String key, double score, String member) {
 	Jedis j = getShard(key);
 	return j.zadd(key, score, member);

@@ -451,4 +451,48 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     }
 
+    @Test
+    public void srandmembermulti() {
+        jedis.sadd("foo", "a");
+        jedis.sadd("foo", "b");
+        jedis.sadd("foo", "c");
+        jedis.sadd("foo", "d");
+
+        String[] members = jedis.srandmember("foo",3).toArray(new String[0]);
+
+        assertEquals(3, members.length);
+        assertFalse(members[0].equals(members[1]) || members[0].equals(members[2]) || members[1].equals(members[2]));
+        for (int i = 0; i < 3; ++i) {
+            assertTrue(
+                "a".equals(members[i]) || "b".equals(members[i]) ||
+                "c".equals(members[i]) || "d".equals(members[i]));    
+        }
+        assertEquals(4, jedis.smembers("foo").size());
+        assertEquals(4, jedis.srandmember("foo",100).size());
+
+        Set<String> membersSet = jedis.srandmember("bar", 4);
+        assertEquals(0, membersSet.size());
+
+        // Binary
+        jedis.sadd(bfoo, ba);
+        jedis.sadd(bfoo, bb);
+        jedis.sadd(bfoo, bc);
+        jedis.sadd(bfoo, bd);
+
+        Set<byte[]> bmembers = jedis.srandmember(bfoo,2);
+
+        assertEquals(2, bmembers.size());
+        for (byte[] element: bmembers) {
+            assertTrue(Arrays.equals(element, ba) || Arrays.equals(element, bb) ||
+                Arrays.equals(element, bc) || Arrays.equals(element, bd));
+        }
+        
+        assertEquals(4, jedis.smembers(bfoo).size());
+        assertEquals(4, jedis.srandmember(bfoo,100).size());
+
+        bmembers = jedis.srandmember(bbar, 10);
+        assertEquals(0, bmembers.size());
+
+    }
+
 }

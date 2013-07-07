@@ -26,8 +26,15 @@ public final class RedisOutputStream extends FilterOutputStream {
 
     private void flushBuffer() throws IOException {
         if (count > 0) {
-            out.write(buf, 0, count);
-            count = 0;
+              //this add try finally,because when out.write(buf, 0, count); throw error,the count=0 is not exec;
+           	  // it's cause java.lang.ClassCastException: java.util.ArrayList cannot be cast to java.lang.Long 
+           	  //at redis.clients.jedis.Connection.getIntegerReply(Connection.java:161) 
+           	  //at redis.clients.jedis.Jedis.del(Jedis.java:108) 
+           	  try{
+           		  out.write(buf, 0, count);
+           	  }finally{
+           		  count = 0;
+           	  }
         }
     }
 

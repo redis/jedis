@@ -240,6 +240,18 @@ public class PipeliningTest extends Assert {
         
         assertEquals(new Long(-1), r3.get().get(0));
         assertEquals(new Long(-3), r3.get().get(1));
-        
+
+    }
+
+    @Test
+    public void testDiscardInPipeline() {
+        Pipeline pipeline = jedis.pipelined();
+        pipeline.multi();
+        pipeline.set("foo", "bar");
+        Response<String> discard = pipeline.discard();
+        Response<String> get = pipeline.get("foo");
+        pipeline.sync();
+        discard.get();
+        get.get();
     }
 }

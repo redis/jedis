@@ -37,9 +37,10 @@ All of the following redis features are supported:
 - Persistence control commands
 - Remote server control commands
 - Connection pooling
-- Sharding (MD5, MurmureHash)
+- Sharding (MD5, MurmurHash)
 - Key-tags for sharding
 - Sharding with pipelining
+- Scripting with pipelining
 
 ## How do I use it?
 

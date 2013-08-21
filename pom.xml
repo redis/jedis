@@ -3,17 +3,17 @@
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
 		<artifactId>oss-parent</artifactId>
-		<version>5</version>
+		<version>7</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.2.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
-	<url>http://code.google.com/p/jedis/</url>
+  <url>https://github.com/xetorthio/jedis</url>
 
 	<mailingLists>
 		<mailingList>
@@ -27,7 +27,7 @@
 
 	<licenses>
 		<license>
-			<name>Jedis License</name>
+			<name>MIT</name>
 			<url>http://github.com/xetorthio/jedis/raw/master/LICENSE.txt</url>
 			<distribution>repo</distribution>
 		</license>
@@ -38,11 +38,11 @@
 		<url>http://github.com/xetorthio/jedis/issues</url>
 	</issueManagement>
 
-	<scm>
-		<url>http://github.com/xetorthio/jedis</url>
-		<connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
-		<developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
-	</scm>
+         <scm>
+            <connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
+            <url>scm:git:git@github.com:xetorthio/jedis.git</url>
+            <developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
+        </scm>
 
 	<properties>
 		<redis-hosts>localhost:6379,localhost:6380</redis-hosts>
@@ -102,6 +102,11 @@
 					<aggregate>true</aggregate>
 				</configuration>
 			</plugin>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-release-plugin</artifactId>
+                                <version>2.0-beta-9</version>
+                        </plugin>
 		</plugins>
 	</build>
 </project>

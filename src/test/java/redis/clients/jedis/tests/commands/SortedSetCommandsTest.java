@@ -373,6 +373,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
         assertEquals(2, result);
 
+        result = jedis.zcount("foo", "(0.01", "+inf");
+
+        assertEquals(3, result);
+        
         // Binary
         jedis.zadd(bfoo, 1d, ba);
         jedis.zadd(bfoo, 10d, bb);
@@ -383,6 +387,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
         assertEquals(2, bresult);
 
+        bresult = jedis.zcount(bfoo, SafeEncoder.encode("(0.01"), SafeEncoder.encode("+inf"));
+
+        assertEquals(3, bresult);
     }
 
     @Test
@@ -655,7 +662,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
         assertEquals(bexpected, brange);
     }
-
+    
     @Test
     public void zremrangeByRank() {
         jedis.zadd("foo", 1d, "a");

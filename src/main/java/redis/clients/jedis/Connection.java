@@ -9,6 +9,7 @@ import java.util.List;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
@@ -18,7 +19,6 @@ public class Connection {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
-    private Protocol protocol = new Protocol();
     private RedisOutputStream outputStream;
     private RedisInputStream inputStream;
     private int pipelinedCommands = 0;
@@ -38,6 +38,10 @@ public class Connection {
 
     public void setTimeoutInfinite() {
         try {
+            if(!isConnected()) {
+        	connect();
+            }
+            socket.setKeepAlive(true);
             socket.setSoTimeout(0);
         } catch (SocketException ex) {
             throw new JedisException(ex);
@@ -47,6 +51,7 @@ public class Connection {
     public void rollbackTimeout() {
         try {
             socket.setSoTimeout(timeout);
+            socket.setKeepAlive(false);
         } catch (SocketException ex) {
             throw new JedisException(ex);
         }
@@ -75,14 +80,14 @@ public class Connection {
 
     protected Connection sendCommand(final Command cmd, final byte[]... args) {
         connect();
-        protocol.sendCommand(outputStream, cmd, args);
+        Protocol.sendCommand(outputStream, cmd, args);
         pipelinedCommands++;
         return this;
     }
-
+    
     protected Connection sendCommand(final Command cmd) {
         connect();
-        protocol.sendCommand(outputStream, cmd, new byte[0][]);
+        Protocol.sendCommand(outputStream, cmd, new byte[0][]);
         pipelinedCommands++;
         return this;
     }
@@ -110,12 +115,20 @@ public class Connection {
     }
 
     public Connection() {
+    	
     }
 
     public void connect() {
         if (!isConnected()) {
             try {
                 socket = new Socket();
+                //->@wjw_add
+                socket.setReuseAddress(true);
+                socket.setKeepAlive(true);  //Will monitor the TCP connection is valid
+                socket.setTcpNoDelay(true);  //Socket buffer Whetherclosed, to ensure timely delivery of data
+                socket.setSoLinger(true,0);  //Control calls close () method, the underlying socket is closed immediately
+                //<-@wjw_add
+
                 socket.connect(new InetSocketAddress(host, port), timeout);
                 socket.setSoTimeout(timeout);
                 outputStream = new RedisOutputStream(socket.getOutputStream());
@@ -149,7 +162,7 @@ public class Connection {
     protected String getStatusCodeReply() {
         flush();
         pipelinedCommands--;
-        final byte[] resp = (byte[]) protocol.read(inputStream);
+        final byte[] resp = (byte[]) Protocol.read(inputStream);
         if (null == resp) {
             return null;
         } else {
@@ -169,13 +182,13 @@ public class Connection {
     public byte[] getBinaryBulkReply() {
         flush();
         pipelinedCommands--;
-        return (byte[]) protocol.read(inputStream);
+        return (byte[]) Protocol.read(inputStream);
     }
 
     public Long getIntegerReply() {
         flush();
         pipelinedCommands--;
-        return (Long) protocol.read(inputStream);
+        return (Long) Protocol.read(inputStream);
     }
 
     public List<String> getMultiBulkReply() {
@@ -186,14 +199,21 @@ public class Connection {
     public List<byte[]> getBinaryMultiBulkReply() {
         flush();
         pipelinedCommands--;
-        return (List<byte[]>) protocol.read(inputStream);
+        return (List<byte[]>) Protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> getObjectMultiBulkReply() {
         flush();
         pipelinedCommands--;
-        return (List<Object>) protocol.read(inputStream);
+        return (List<Object>) Protocol.read(inputStream);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Long> getIntegerMultiBulkReply() {
+        flush();
+        pipelinedCommands--;
+        return (List<Long>) Protocol.read(inputStream);
     }
 
     public List<Object> getAll() {
@@ -204,7 +224,11 @@ public class Connection {
         List<Object> all = new ArrayList<Object>();
         flush();
         while (pipelinedCommands > except) {
-            all.add(protocol.read(inputStream));
+        	try{
+                all.add(Protocol.read(inputStream));
+        	}catch(JedisDataException e){
+        		all.add(e);
+        	}
             pipelinedCommands--;
         }
         return all;
@@ -213,6 +237,6 @@ public class Connection {
     public Object getOne() {
         flush();
         pipelinedCommands--;
-        return protocol.read(inputStream);
+        return Protocol.read(inputStream);
     }
 }

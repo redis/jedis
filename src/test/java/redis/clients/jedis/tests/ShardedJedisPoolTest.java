@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,8 +154,8 @@ public class ShardedJedisPoolTest extends Assert {
         shards.set(1, new JedisShardInfo("nohost", 1234));
         pool = new ShardedJedisPool(redisConfig, shards);
         jedis = pool.getResource();
-        Long actual = new Long(0);
-        Long fails = new Long(0);
+        Long actual = Long.valueOf(0);
+        Long fails = Long.valueOf(0);
         for (int i = 0; i < 1000; i++) {
             try {
                 jedis.get("a-test-" + i);
@@ -166,5 +168,61 @@ public class ShardedJedisPoolTest extends Assert {
         pool.destroy();
         assertEquals(actual, c1);
         assertEquals(fails, c2);
+    }
+    
+    @Test
+    public void startWithUrlString() {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.set("foo", "bar");
+	
+	j = new Jedis("localhost", 6379);
+	j.auth("foobared");
+	j.set("foo", "bar");
+	
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(new JedisShardInfo("redis://:foobared@localhost:6380"));
+	shards.add(new JedisShardInfo("redis://:foobared@localhost:6379"));
+	
+	Config redisConfig = new Config();
+	ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+	
+	Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
+	
+	Jedis jedis = jedises[0];
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
+	
+	jedis = jedises[1];
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
+    }
+    
+    @Test
+    public void startWithUrl() throws URISyntaxException {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.set("foo", "bar");
+	
+	j = new Jedis("localhost", 6379);
+	j.auth("foobared");
+	j.set("foo", "bar");
+	
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
+	shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
+	
+	Config redisConfig = new Config();
+	ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+	
+	Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
+	
+	Jedis jedis = jedises[0];
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
+	
+	jedis = jedises[1];
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
     }
 }

@@ -1,10 +1,14 @@
 package redis.clients.jedis.tests;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.junit.Assert;
 import org.junit.Test;
 
+import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -94,5 +98,56 @@ public class JedisPoolTest extends Assert {
         jedis.set("foo", "bar");
         pool.returnResource(jedis);
         pool.destroy();
+    }
+
+    @Test
+    public void nonDefaultDatabase() {
+        JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000, "foobared");
+        Jedis jedis0 = pool0.getResource();
+        jedis0.set("foo", "bar");
+        assertEquals( "bar", jedis0.get("foo") );
+        pool0.returnResource(jedis0);
+        pool0.destroy();
+
+        JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000, "foobared", 1);
+        Jedis jedis1 = pool1.getResource();
+        assertNull( jedis1.get("foo") );
+        pool1.returnResource(jedis0);
+        pool1.destroy();
+    }
+    
+    @Test
+    public void returnBinary() {
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
+                hnp.port, 2000);
+        BinaryJedis jedis = pool.getResource();
+        pool.returnResource(jedis);
+        pool.destroy();
+    }
+    
+    @Test
+    public void startWithUrlString() {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.select(2);
+	j.set("foo", "bar");
+	JedisPool pool = new JedisPool("redis://:foobared@localhost:6380/2");
+	Jedis jedis = pool.getResource();
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
+    }
+    
+    @Test
+    public void startWithUrl() throws URISyntaxException {
+	Jedis j = new Jedis("localhost", 6380);
+	j.auth("foobared");
+	j.select(2);
+	j.set("foo", "bar");
+	JedisPool pool = new JedisPool(new URI("redis://:foobared@localhost:6380/2"));
+	Jedis jedis = pool.getResource();
+	assertEquals("PONG", jedis.ping());
+	assertEquals("bar", jedis.get("foo"));
     }
 }

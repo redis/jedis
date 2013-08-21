@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'eclipse'
 
 group = 'com.googlecode.jedis'
 archiveBaseName = 'jedis'
@@ -25,3 +26,8 @@ uploadArchives {
     }
 }
 */
+
+task createWrapper(type: Wrapper) {
+    gradleVersion = '1.0-milestone-6'
+}
+

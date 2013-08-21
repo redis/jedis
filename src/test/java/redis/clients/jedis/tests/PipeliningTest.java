@@ -243,69 +243,69 @@ public class PipeliningTest extends Assert {
         
     }
    
-    @Test
-    public void testEval(){
-    	String script = "return 'success!'";
-    	
-        Pipeline p = jedis.pipelined();
-        Response<String> result = p.eval(script);
-        p.sync();
-        
-        assertEquals("success!", result.get());
-    }
-    
-    @Test
-    public void testEvalKeyAndArg(){
-    	String key = "test";
-    	String arg = "3";
-    	String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
-    	
-        Pipeline p = jedis.pipelined();
-        p.set(key, "0");
-        Response<String> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
-        p.incr(key);
-        Response<String> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
-        Response<String> result2 = p.get(key);
-        p.sync();
-        
-        assertNull(result0.get());
-        assertNull(result1.get());
-        assertEquals("13", result2.get());
-    }
-    
-    @Test
-    public void testEvalsha(){
-    	String script = "return 'success!'";
-    	String sha1 = jedis.scriptLoad(script);
-    	
-    	assertTrue(jedis.scriptExists(sha1));
+	@Test
+	public void testEval() {
+		String script = "return 'success!'";
 
-        Pipeline p = jedis.pipelined();
-        Response<String> result = p.evalsha(sha1);
-        p.sync();
-        
-        assertEquals("success!", result.get());
-    }
-    
-    @Test
-    public void testEvalshaKeyAndArg(){
-    	String key = "test";
-    	String arg = "3";
-    	String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
-    	String sha1 = jedis.scriptLoad(script);
-    	
-    	assertTrue(jedis.scriptExists(sha1));
-    	
-        Pipeline p = jedis.pipelined();
-        p.set(key, "0");
-        Response<String> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
-        p.incr(key);
-        Response<String> result1 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
-        Response<String> result2 = p.get(key);
-        p.sync();
-        
-        assertNull(result0.get());
-        assertNull(result1.get());
-        assertEquals("13", result2.get());
-    }
+		Pipeline p = jedis.pipelined();
+		Response<String> result = p.eval(script);
+		p.sync();
+
+		assertEquals("success!", result.get());
+	}
+
+	@Test
+	public void testEvalKeyAndArg() {
+		String key = "test";
+		String arg = "3";
+		String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
+
+		Pipeline p = jedis.pipelined();
+		p.set(key, "0");
+		Response<String> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+		p.incr(key);
+		Response<String> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+		Response<String> result2 = p.get(key);
+		p.sync();
+
+		assertNull(result0.get());
+		assertNull(result1.get());
+		assertEquals("13", result2.get());
+	}
+
+	@Test
+	public void testEvalsha() {
+		String script = "return 'success!'";
+		String sha1 = jedis.scriptLoad(script);
+
+		assertTrue(jedis.scriptExists(sha1));
+
+		Pipeline p = jedis.pipelined();
+		Response<String> result = p.evalsha(sha1);
+		p.sync();
+
+		assertEquals("success!", result.get());
+	}
+
+	@Test
+	public void testEvalshaKeyAndArg() {
+		String key = "test";
+		String arg = "3";
+		String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
+		String sha1 = jedis.scriptLoad(script);
+
+		assertTrue(jedis.scriptExists(sha1));
+
+		Pipeline p = jedis.pipelined();
+		p.set(key, "0");
+		Response<String> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
+		p.incr(key);
+		Response<String> result1 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
+		Response<String> result2 = p.get(key);
+		p.sync();
+
+		assertNull(result0.get());
+		assertNull(result1.get());
+		assertEquals("13", result2.get());
+	}
 }

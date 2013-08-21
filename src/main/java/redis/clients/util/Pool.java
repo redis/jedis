@@ -9,7 +9,11 @@ import redis.clients.jedis.exceptions.JedisException;
 public abstract class Pool<T> {
     protected GenericObjectPool internalPool;
 
-    protected Pool() {
+    /**
+     * Using this constructor means you have to set
+     * the internalPool yourself.
+     */
+    public Pool() {
 	this.internalPool = null;
     }
     

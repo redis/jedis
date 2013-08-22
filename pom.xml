@@ -13,7 +13,7 @@
 	<version>2.2.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
-  <url>https://github.com/xetorthio/jedis</url>
+  <url>https://github.com/mardambey/jedis</url>
 
 	<mailingLists>
 		<mailingList>
@@ -28,20 +28,20 @@
 	<licenses>
 		<license>
 			<name>MIT</name>
-			<url>http://github.com/xetorthio/jedis/raw/master/LICENSE.txt</url>
+			<url>http://github.com/mardambey/jedis/raw/master/LICENSE.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<issueManagement>
 		<system>github</system>
-		<url>http://github.com/xetorthio/jedis/issues</url>
+		<url>http://github.com/mardambey/jedis/issues</url>
 	</issueManagement>
 
          <scm>
-            <connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
-            <url>scm:git:git@github.com:xetorthio/jedis.git</url>
-            <developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
+            <connection>scm:git:git@github.com:mardambey/jedis.git</connection>
+            <url>scm:git:git@github.com:mardambey/jedis.git</url>
+            <developerConnection>scm:git:git@github.com:mardambey/jedis.git</developerConnection>
         </scm>
 
 	<properties>

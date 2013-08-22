@@ -4,15 +4,7 @@ Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Red
 
 Jedis was conceived to be EASY to use.
 
-Jedis is fully compatible with redis 2.0.0.
-
-## I want to persist my objects in Redis. How can I do it?
-You should definitely check [JOhm](http://github.com/xetorthio/johm "JOhm")!
-And of course, you can always serialize it and store it.
-
-## Is there a Groovy client?
-
-Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :) 
+Jedis is fully compatible with redis 2.6.14.
 
 ## Community
 
@@ -81,7 +73,12 @@ To run the tests:
 
 - Use the latest redis master branch.
 
-- Run ```make test```. This will run 2 instances of redis. We use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
+- Run ```make test```. This will run 2 instances of redis. We use 2 redis
+	servers, one on default port (6379) and the other one on (6380). Both have
+	authentication enabled with default password (foobared). This way we can
+	test both sharding and auth command. For the Sentinel tests to we use a
+	default Sentinel configuration that is configured to properly authenticate
+	using the same password with a master called mymaster running on 6379.
 
 Thanks for helping!
 

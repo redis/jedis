@@ -1,18 +1,11 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
+
+import java.net.URI;
+import java.util.*;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands {
     public Jedis(final String host) {
@@ -49,6 +42,23 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	checkIsInMulti();
 	client.set(key, value);
 	return client.getStatusCodeReply();
+    }
+
+    /**
+     * Set the string value as value of the key. The string can't be longer than
+     * 1073741824 bytes (1 GB).
+     * @param key
+     * @param value
+     * @param nxxx NX|XX, NX -- Only set the key if it does not already exist.
+     *                    XX -- Only set the key if it already exist.
+     * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time expire time in the units of {@param #expx}
+     * @return Status code reply
+     */
+    public String set(final String key, final String value, final String nxxx, final String expx, final long time) {
+        checkIsInMulti();
+        client.set(key, value, nxxx, expx, time);
+        return client.getStatusCodeReply();
     }
 
     /**

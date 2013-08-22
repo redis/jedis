@@ -1,21 +1,15 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
+
+import java.net.URI;
+import java.util.*;
+
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands, AdvancedBinaryJedisCommands, BinaryScriptingCommands {
     protected Client client = null;
@@ -76,6 +70,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	checkIsInMulti();
 	client.set(key, value);
 	return client.getStatusCodeReply();
+    }
+
+    /**
+     * Set the string value as value of the key. The string can't be longer than
+     * 1073741824 bytes (1 GB).
+     * @param key
+     * @param value
+     * @param nxxx NX|XX, NX -- Only set the key if it does not already exist.
+     *                    XX -- Only set the key if it already exist.
+     * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time expire time in the units of {@param #expx}
+     * @return Status code reply
+     */
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+        checkIsInMulti();
+        client.set(key, value, nxxx, expx, time);
+        return client.getStatusCodeReply();
     }
 
     /**

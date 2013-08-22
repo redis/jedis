@@ -2755,7 +2755,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.rollbackTimeout();
     }
 
-    private String[] getParams(List<String> keys, List<String> args) {
+    protected static String[] getParams(List<String> keys, List<String> args) {
 	int keyCount = keys.size();
 	int argCount = args.size();
 

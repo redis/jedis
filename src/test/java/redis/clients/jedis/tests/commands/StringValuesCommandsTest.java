@@ -53,6 +53,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
         values = jedis.mget("foo", "bar");
 
         assertEquals(expected, values);
+
+        List<String> keys = new ArrayList<String>();
+        keys.add("foo");
+        keys.add("bar");
+        values = jedis.mget(keys);
+
+        assertEquals(expected, values);
     }
 
     @Test

@@ -14,14 +14,19 @@ public abstract class Pool<T> {
      * the internalPool yourself.
      */
     public Pool() {
-	this.internalPool = null;
+	    this.internalPool = null;
     }
     
     public Pool(final GenericObjectPool.Config poolConfig,
             PoolableObjectFactory factory) {
-        this.internalPool = new GenericObjectPool(factory, poolConfig);
+        initPool(poolConfig, factory);
     }
-
+    
+    public void initPool(final GenericObjectPool.Config poolConfig,
+            PoolableObjectFactory factory) {
+    	this.internalPool = new GenericObjectPool(factory, poolConfig);
+    }
+    
     @SuppressWarnings("unchecked")
     public T getResource() {
         try {

@@ -11,19 +11,24 @@ public abstract class Pool<T> {
 
     /**
      * Using this constructor means you have to set
-     * the internalPool yourself.
+     * and initialize the internalPool yourself.
      */
-    public Pool() {
-	    this.internalPool = null;
-    }
+    public Pool() {}
     
     public Pool(final GenericObjectPool.Config poolConfig,
             PoolableObjectFactory factory) {
         initPool(poolConfig, factory);
     }
     
-    public void initPool(final GenericObjectPool.Config poolConfig,
-            PoolableObjectFactory factory) {
+    public void initPool(final GenericObjectPool.Config poolConfig, PoolableObjectFactory factory) {
+    	
+    	if (this.internalPool != null) {
+    		try {
+    			destroy();
+    		} catch (Exception e) {    			
+    		}
+    	}
+    	
     	this.internalPool = new GenericObjectPool(factory, poolConfig);
     }
     

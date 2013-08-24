@@ -9,3 +9,5 @@ target/
 build/
 bin/
 tags
+
+*.backup

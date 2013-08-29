@@ -39,9 +39,9 @@ public interface MultiKeyBinaryRedisPipeline {
 
     Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member);
 
-    Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
+    Response<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
 
-    Response<List<byte[]>> sort(byte[] key, byte[] dstkey);
+    Response<Long> sort(byte[] key, byte[] dstkey);
 
     Response<Set<byte[]>> sunion(byte[]... keys);
 

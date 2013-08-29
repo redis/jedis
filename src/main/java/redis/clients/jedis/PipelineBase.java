@@ -165,12 +165,12 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> hdel(String key, String field) {
+    public Response<Long> hdel(String key, String... field) {
         getClient(key).hdel(key, field);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> hdel(byte[] key, byte[] field) {
+    public Response<Long> hdel(byte[] key, byte[]... field) {
         getClient(key).hdel(key, field);
         return getResponse(BuilderFactory.LONG);
     }
@@ -305,12 +305,12 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<String> lindex(String key, int index) {
+    public Response<String> lindex(String key, long index) {
         getClient(key).lindex(key, index);
         return getResponse(BuilderFactory.STRING);
     }
 
-    public Response<byte[]> lindex(byte[] key, int index) {
+    public Response<byte[]> lindex(byte[] key, long index) {
         getClient(key).lindex(key, index);
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
@@ -583,18 +583,28 @@ abstract class PipelineBase extends Queable implements
         getClient(key).srandmember(key);
         return getResponse(BuilderFactory.STRING);
     }
+    
+    public Response<List<String>> srandmember(String key, int count) {
+        getClient(key).srandmember(key, count);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
 
     public Response<byte[]> srandmember(byte[] key) {
         getClient(key).srandmember(key);
         return getResponse(BuilderFactory.BYTE_ARRAY);
     }
+    
+    public Response<List<byte[]>> srandmember(byte[] key, int count) {
+        getClient(key).srandmember(key, count);
+        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
 
-    public Response<Long> srem(String key, String member) {
+    public Response<Long> srem(String key, String... member) {
         getClient(key).srem(key, member);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> srem(byte[] key, byte[] member) {
+    public Response<Long> srem(byte[] key, byte[]... member) {
         getClient(key).srem(key, member);
         return getResponse(BuilderFactory.LONG);
     }
@@ -638,9 +648,14 @@ abstract class PipelineBase extends Queable implements
         getClient(key).type(key);
         return getResponse(BuilderFactory.STRING);
     }
+    
+	public Response<Long> zadd(String key, double score, String member) {
+		 getClient(key).zadd(key, score, member);
+		 return getResponse(BuilderFactory.LONG);
+	}
 
-    public Response<Long> zadd(String key, double score, String member) {
-        getClient(key).zadd(key, score, member);
+    public Response<Long> zadd(String key, Map<Double, String> scoreMembers) {
+        getClient(key).zadd(key, scoreMembers);
         return getResponse(BuilderFactory.LONG);
     }
 
@@ -663,6 +678,11 @@ abstract class PipelineBase extends Queable implements
         getClient(key).zcount(key, min, max);
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<Long> zcount(String key, String min, String max) {
+        getClient(key).zcount(key, min, max);
+        return getResponse(BuilderFactory.LONG);
+    }
 
     public Response<Long> zcount(byte[] key, double min, double max) {
         getClient(key).zcount(key, toByteArray(min), toByteArray(max));
@@ -679,12 +699,12 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.DOUBLE);
     }
 
-    public Response<Set<String>> zrange(String key, int start, int end) {
+    public Response<Set<String>> zrange(String key, long start, long end) {
         getClient(key).zrange(key, start, end);
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<byte[]>> zrange(byte[] key, int start, int end) {
+    public Response<Set<byte[]>> zrange(byte[] key, long start, long end) {
         getClient(key).zrange(key, start, end);
         return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
@@ -717,6 +737,11 @@ abstract class PipelineBase extends Queable implements
         getClient(key).zrangeByScore(key, min, max, offset, count);
         return getResponse(BuilderFactory.STRING_ZSET);
     }
+    
+	public Response<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
+		getClient(key).zrangeByScore(key, min, max, offset, count);
+		return getResponse(BuilderFactory.STRING_ZSET);
+	}
 
     public Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
                                                double max, int offset, int count) {
@@ -734,6 +759,12 @@ abstract class PipelineBase extends Queable implements
         getClient(key).zrangeByScoreWithScores(key, min, max);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
+    
+	public Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min,
+			                                            String max) {
+		getClient(key).zrangeByScoreWithScores(key, min, max);
+		return getResponse(BuilderFactory.TUPLE_ZSET);
+	}
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
                                                         double max) {
@@ -750,6 +781,12 @@ abstract class PipelineBase extends Queable implements
                                                         double max, int offset, int count) {
         getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
         return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+    
+    public Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min,
+                                                        String max, int offset, int count) {
+    	getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
+    	return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
     public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min,
@@ -793,6 +830,12 @@ abstract class PipelineBase extends Queable implements
         getClient(key).zrevrangeByScore(key, max, min, offset, count);
         return getResponse(BuilderFactory.STRING_ZSET);
     }
+    
+	public Response<Set<String>> zrevrangeByScore(String key, String max,
+                                                  String min, int offset, int count) {
+		getClient(key).zrevrangeByScore(key, max, min, offset, count);
+		return getResponse(BuilderFactory.STRING_ZSET);
+	}
 
     public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max,
                                                   double min, int offset, int count) {
@@ -810,6 +853,12 @@ abstract class PipelineBase extends Queable implements
                                                            double max, double min) {
         getClient(key).zrevrangeByScoreWithScores(key, max, min);
         return getResponse(BuilderFactory.TUPLE_ZSET);
+    }
+    
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
+                                                           String max, String min) {
+    	getClient(key).zrevrangeByScoreWithScores(key, max, min);
+    	return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
     public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
@@ -829,6 +878,12 @@ abstract class PipelineBase extends Queable implements
         getClient(key).zrevrangeByScoreWithScores(key, max, min, offset, count);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
+    
+    public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
+            											   String max, String min, int offset, int count) {
+    	getClient(key).zrevrangeByScoreWithScores(key, max, min, offset, count);
+	return getResponse(BuilderFactory.TUPLE_ZSET);
+	}
 
     public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
                                                            double max, double min, int offset, int count) {
@@ -842,12 +897,12 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
 
-    public Response<Set<Tuple>> zrangeWithScores(String key, int start, int end) {
+    public Response<Set<Tuple>> zrangeWithScores(String key, long start, long end) {
         getClient(key).zrangeWithScores(key, start, end);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
-    public Response<Set<Tuple>> zrangeWithScores(byte[] key, int start, int end) {
+    public Response<Set<Tuple>> zrangeWithScores(byte[] key, long start, long end) {
         getClient(key).zrangeWithScores(key, start, end);
         return getResponse(BuilderFactory.TUPLE_ZSET_BINARY);
     }
@@ -862,27 +917,32 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zrem(String key, String member) {
+    public Response<Long> zrem(String key, String... member) {
         getClient(key).zrem(key, member);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zrem(byte[] key, byte[] member) {
+    public Response<Long> zrem(byte[] key, byte[]... member) {
         getClient(key).zrem(key, member);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zremrangeByRank(String key, int start, int end) {
+    public Response<Long> zremrangeByRank(String key, long start, long end) {
         getClient(key).zremrangeByRank(key, start, end);
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> zremrangeByRank(byte[] key, int start, int end) {
+    public Response<Long> zremrangeByRank(byte[] key, long start, long end) {
         getClient(key).zremrangeByRank(key, start, end);
         return getResponse(BuilderFactory.LONG);
     }
 
     public Response<Long> zremrangeByScore(String key, double start, double end) {
+        getClient(key).zremrangeByScore(key, start, end);
+        return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> zremrangeByScore(String key, String start, String end) {
         getClient(key).zremrangeByScore(key, start, end);
         return getResponse(BuilderFactory.LONG);
     }
@@ -897,24 +957,24 @@ abstract class PipelineBase extends Queable implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Set<String>> zrevrange(String key, int start, int end) {
+    public Response<Set<String>> zrevrange(String key, long start, long end) {
         getClient(key).zrevrange(key, start, end);
         return getResponse(BuilderFactory.STRING_ZSET);
     }
 
-    public Response<Set<byte[]>> zrevrange(byte[] key, int start, int end) {
+    public Response<Set<byte[]>> zrevrange(byte[] key, long start, long end) {
         getClient(key).zrevrange(key, start, end);
         return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
-    public Response<Set<Tuple>> zrevrangeWithScores(String key, int start,
-                                                    int end) {
+    public Response<Set<Tuple>> zrevrangeWithScores(String key, long start,
+                                                    long end) {
         getClient(key).zrevrangeWithScores(key, start, end);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
 
-    public Response<Set<Tuple>> zrevrangeWithScores(byte[] key, int start,
-                                                    int end) {
+    public Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start,
+                                                    long end) {
         getClient(key).zrevrangeWithScores(key, start, end);
         return getResponse(BuilderFactory.TUPLE_ZSET);
     }
@@ -958,5 +1018,174 @@ abstract class PipelineBase extends Queable implements
         getClient(key).bitcount(key, start, end);
         return getResponse(BuilderFactory.LONG);
     }
+    
+    public Response<byte[]> dump(String key) {
+    	getClient(key).dump(key);
+    	return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+    
+    public Response<byte[]> dump(byte[] key) {
+    	getClient(key).dump(key);
+    	return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+    
+    public Response<String> migrate(String host, int port, String key, int destinationDb, int timeout) {
+    	getClient(key).migrate(host, port, key, destinationDb, timeout);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> migrate(byte[] host, int port, byte[] key, int destinationDb, int timeout) {
+    	getClient(key).migrate(host, port, key, destinationDb, timeout);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Long> objectRefcount(String key) {
+    	getClient(key).objectRefcount(key);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> objectRefcount(byte[] key) {
+    	getClient(key).objectRefcount(key);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<String> objectEncoding(String key) {
+    	getClient(key).objectEncoding(key);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<byte[]> objectEncoding(byte[] key) {
+    	getClient(key).objectEncoding(key);
+    	return getResponse(BuilderFactory.BYTE_ARRAY);
+    }
+    
+    public Response<Long> objectIdletime(String key) {
+    	getClient(key).objectIdletime(key);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> objectIdletime(byte[] key) {
+    	getClient(key).objectIdletime(key);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> pexpire(String key, int milliseconds) {
+    	getClient(key).pexpire(key, milliseconds);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> pexpire(byte[] key, int milliseconds) {
+    	getClient(key).pexpire(key, milliseconds);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> pexpireAt(String key, long millisecondsTimestamp) {
+    	getClient(key).pexpireAt(key, millisecondsTimestamp);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
+    	getClient(key).pexpireAt(key, millisecondsTimestamp);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> pttl(String key) {
+    	getClient(key).pttl(key);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> pttl(byte[] key) {
+    	getClient(key).pttl(key);
+    	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<String> restore(String key, int ttl, byte[] serializedValue) {
+    	getClient(key).restore(key, ttl, serializedValue);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> restore(byte[] key, int ttl, byte[] serializedValue) {
+    	getClient(key).restore(key, ttl, serializedValue);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Double> incrByFloat(String key, double increment) {
+    	getClient(key).incrByFloat(key, increment);
+    	return getResponse(BuilderFactory.DOUBLE);
+    }
+    
+    public Response<Double> incrByFloat(byte[] key, double increment) {
+    	getClient(key).incrByFloat(key, increment);
+    	return getResponse(BuilderFactory.DOUBLE);
+    }
+    
+    public Response<String> psetex(String key, int milliseconds, String value) {
+    	getClient(key).psetex(key, milliseconds, value);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> psetex(byte[] key, int milliseconds, byte[] value) {
+    	getClient(key).psetex(key, milliseconds, value);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> set(String key, String value, String nxxx) {
+    	getClient(key).set(key, value, nxxx);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> set(byte[] key, byte[] value, byte[] nxxx) {
+    	getClient(key).set(key, value, nxxx);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> set(String key, String value, String nxxx, String expx, int time) {
+    	getClient(key).set(key, value, nxxx, expx, time);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, int time) {
+    	getClient(key).set(key, value, nxxx, expx, time);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<Double> hincrByFloat(String key, String field, double increment) {
+    	getClient(key).hincrByFloat(key, field, increment);
+    	return getResponse(BuilderFactory.DOUBLE);
+    }
+    
+    public Response<Double> hincrByFloat(byte[] key, byte[] field, double increment) {
+    	getClient(key).hincrByFloat(key, field, increment);
+    	return getResponse(BuilderFactory.DOUBLE);
+    }
 
+    public Response<String> eval(String script) {
+    	return this.eval(script, 0, new String[0]);
+    }
+    
+    public Response<String> eval(String script, List<String> keys, List<String> args) {
+    	String[] argv = Jedis.getParams(keys, args);
+    	return this.eval(script, keys.size(), argv);
+    }
+    
+    public Response<String> eval(String script, int numKeys, String[] argv) {
+    	getClient(script).eval(script, numKeys, argv);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    public Response<String> evalsha(String script) {
+    	return this.evalsha(script, 0, new String[0]);
+    }
+    
+    public Response<String> evalsha(String sha1, List<String> keys, List<String> args) {
+    	String[] argv = Jedis.getParams(keys, args);
+    	return this.evalsha(sha1, keys.size(), argv);
+    }
+    
+    public Response<String> evalsha(String sha1, int numKeys, String[] argv) {
+    	getClient(sha1).evalsha(sha1, numKeys, argv);
+    	return getResponse(BuilderFactory.STRING);
+    }
+    
+    
 }

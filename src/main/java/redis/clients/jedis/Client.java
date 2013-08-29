@@ -1,12 +1,14 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
+import redis.clients.util.SafeEncoder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
@@ -19,6 +21,10 @@ public class Client extends BinaryClient implements Commands {
 
     public void set(final String key, final String value) {
 	set(SafeEncoder.encode(key), SafeEncoder.encode(value));
+    }
+
+    public void set(final String key, final String value, final String nxxx, final String expx, final long time) {
+        set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
     }
 
     public void get(final String key) {
@@ -385,6 +391,15 @@ public class Client extends BinaryClient implements Commands {
 	}
 	blpop(bargs);
     }
+    
+    public void blpop(final int timeout, final String... keys) {
+    	List<String> args = new ArrayList<String>();
+    	for (String arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(String.valueOf(timeout));
+    	blpop(args.toArray(new String[args.size()]));
+    }
 
     public void sort(final String key, final SortingParams sortingParameters,
 	    final String dstkey) {
@@ -402,6 +417,15 @@ public class Client extends BinaryClient implements Commands {
 	    bargs[i] = SafeEncoder.encode(args[i]);
 	}
 	brpop(bargs);
+    }
+    
+    public void brpop(final int timeout, final String... keys) {
+    	List<String> args = new ArrayList<String>();
+    	for (String arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(String.valueOf(timeout));
+    	brpop(args.toArray(new String[args.size()]));
     }
 
     public void zcount(final String key, final double min, final double max) {
@@ -731,5 +755,61 @@ public class Client extends BinaryClient implements Commands {
     public void sentinel(final String cmd, String arg1, int arg2) {
 	sentinel(SafeEncoder.encode(cmd), SafeEncoder.encode(arg1),
 		toByteArray(arg2));
+    }
+    
+    public void dump(final String key) { 
+    	dump(SafeEncoder.encode(key));
+    }
+    
+    public void restore(final String key, final int ttl, final byte[] serializedValue) {
+    	restore(SafeEncoder.encode(key), ttl, serializedValue);
+    }
+    
+    public void pexpire(final String key, final int milliseconds) {
+    	pexpire(SafeEncoder.encode(key), milliseconds);
+    }
+    
+    public void pexpireAt(final String key, final long millisecondsTimestamp) {
+    	pexpireAt(SafeEncoder.encode(key), millisecondsTimestamp);
+    }
+    
+    public void pttl(final String key) {
+    	pttl(SafeEncoder.encode(key));
+    }
+    
+    public void incrByFloat(final String key, final double increment) {
+    	incrByFloat(SafeEncoder.encode(key), increment);
+    }
+    
+    public void psetex(final String key, final int milliseconds, final String value) {
+    	psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
+    }
+    
+    public void set(final String key, final String value, final String nxxx) {
+    	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx));
+    }
+    
+    public void set(final String key, final String value, final String nxxx, final String expx, final int time) {
+    	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
+    }
+    
+    public void srandmember(final String key, final int count) {
+    	srandmember(SafeEncoder.encode(key), count);
+    }
+
+    public void clientKill(final String client) {
+    	clientKill(SafeEncoder.encode(client));
+    }
+    
+    public void clientSetname(final String name) {
+    	clientSetname(SafeEncoder.encode(name));
+    }
+    
+    public void migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
+    	migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key), destinationDb, timeout);
+    }
+    
+    public void hincrByFloat(final String key, final String field, double increment) {
+    	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), increment);
     }
 }

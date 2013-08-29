@@ -1,18 +1,17 @@
 package redis.clients.jedis.tests.commands;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ComparisonFailure;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
+import redis.clients.jedis.tests.JedisTestBase;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ComparisonFailure;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.JedisTestBase;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public abstract class JedisCommandTestBase extends JedisTestBase {
     protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);

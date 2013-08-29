@@ -99,6 +99,7 @@ public class Pipeline extends MultiKeyPipelineBase {
 
     public Response<String> discard() {
         client.discard();
+        currentMulti = null;
         return getResponse(BuilderFactory.STRING);
     }
 

@@ -49,6 +49,7 @@ public class JedisSentinelTest {
 	assertEquals("6379", masterHostAndPort.get(1));
 
 	List<Map<String, String>> slaves = j.sentinelSlaves(masterName);
+	assertTrue(slaves.size() > 0);
 	assertEquals("6379", slaves.get(0).get("master-port"));
 
 	List<? extends Object> isMasterDownByAddr = j

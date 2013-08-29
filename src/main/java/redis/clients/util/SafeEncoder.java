@@ -1,8 +1,6 @@
 package redis.clients.util;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;

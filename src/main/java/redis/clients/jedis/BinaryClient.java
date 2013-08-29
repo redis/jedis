@@ -1,26 +1,22 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Command.EXISTS;
+import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryClient extends Connection {
     public enum LIST_POSITION {
@@ -85,6 +81,11 @@ public class BinaryClient extends Connection {
     public void set(final byte[] key, final byte[] value) {
 	sendCommand(Command.SET, key, value);
     }
+
+    public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+        sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
+    }
+
 
     public void get(final byte[] key) {
 	sendCommand(Command.GET, key);
@@ -475,6 +476,15 @@ public class BinaryClient extends Connection {
     public void blpop(final byte[][] args) {
 	sendCommand(BLPOP, args);
     }
+    
+    public void blpop(final int timeout, final byte[]... keys) {
+    	final List<byte[]> args = new ArrayList<byte[]>();
+    	for (final byte[] arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(Protocol.toByteArray(timeout));
+    	blpop(args.toArray(new byte[args.size()][]));
+    }
 
     public void sort(final byte[] key, final SortingParams sortingParameters,
 	    final byte[] dstkey) {
@@ -492,6 +502,15 @@ public class BinaryClient extends Connection {
 
     public void brpop(final byte[][] args) {
 	sendCommand(BRPOP, args);
+    }
+    
+    public void brpop(final int timeout, final byte[]... keys) {
+    	final List<byte[]> args = new ArrayList<byte[]>();
+    	for (final byte[] arg : keys) {
+    	    args.add(arg);
+    	}
+    	args.add(Protocol.toByteArray(timeout));
+    	brpop(args.toArray(new byte[args.size()][]));
     }
 
     public void auth(final String password) {
@@ -524,11 +543,32 @@ public class BinaryClient extends Connection {
     }
 
     public void punsubscribe(final byte[]... patterns) {
-	sendCommand(PUNSUBSCRIBE, patterns);
+        sendCommand(PUNSUBSCRIBE, patterns);
     }
 
-    public void zcount(final byte[] key, final byte[] min, final byte[] max) {
-	sendCommand(ZCOUNT, key, min, max);
+    public void zcount(final byte[] key, final double min, final double max) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZCOUNT, key, byteArrayMin, byteArrayMax);
+    }
+
+    public void zcount(final byte[] key, final byte min[], final byte max[]) {
+        sendCommand(ZCOUNT, key, min, max);
+    }
+
+    public void zcount(final byte[] key, final String min, final String max) {
+        sendCommand(ZCOUNT, key, min.getBytes(), max.getBytes());
+    }
+
+    public void zrangeByScore(final byte[] key, final double min,
+            final double max) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZRANGEBYSCORE, key, byteArrayMin, byteArrayMax);
     }
 
     public void zrangeByScore(final byte[] key, final byte[] min,
@@ -536,11 +576,134 @@ public class BinaryClient extends Connection {
 	sendCommand(ZRANGEBYSCORE, key, min, max);
     }
 
+    public void zrangeByScore(final byte[] key, final String min,
+            final String max) {
+        sendCommand(ZRANGEBYSCORE, key, min.getBytes(), max.getBytes());
+    }
+
+    public void zrevrangeByScore(final byte[] key, final double max,
+            final double min) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZREVRANGEBYSCORE, key, byteArrayMax, byteArrayMin);
+    }
+
     public void zrevrangeByScore(final byte[] key, final byte[] max,
 	    final byte[] min) {
 	sendCommand(ZREVRANGEBYSCORE, key, max, min);
     }
 
+    public void zrevrangeByScore(final byte[] key, final String max,
+            final String min) {
+        sendCommand(ZREVRANGEBYSCORE, key, max.getBytes(), min.getBytes());
+    }
+
+    public void zrangeByScore(final byte[] key, final double min,
+            final double max, final int offset, int count) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZRANGEBYSCORE, key, byteArrayMin, byteArrayMax,
+                LIMIT.raw, toByteArray(offset), toByteArray(count));
+    }
+    
+    public void zrangeByScore(final byte[] key, final String min,
+            final String max, final int offset, int count) {
+
+        sendCommand(ZRANGEBYSCORE, key, min.getBytes(), max.getBytes(),
+                LIMIT.raw, toByteArray(offset), toByteArray(count));
+    }
+
+    public void zrevrangeByScore(final byte[] key, final double max,
+            final double min, final int offset, int count) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZREVRANGEBYSCORE, key, byteArrayMax, byteArrayMin,
+                LIMIT.raw, toByteArray(offset), toByteArray(count));
+    }  
+
+    public void zrevrangeByScore(final byte[] key, final String max,
+            final String min, final int offset, int count) {
+
+        sendCommand(ZREVRANGEBYSCORE, key, max.getBytes(), min.getBytes(),
+                LIMIT.raw, toByteArray(offset), toByteArray(count));
+    }
+
+    public void zrangeByScoreWithScores(final byte[] key, final double min,
+            final double max) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZRANGEBYSCORE, key, byteArrayMin, byteArrayMax,
+                WITHSCORES.raw);
+    }
+
+    public void zrangeByScoreWithScores(final byte[] key, final String min,
+            final String max) {
+
+        sendCommand(ZRANGEBYSCORE, key, min.getBytes(), max.getBytes(),
+                WITHSCORES.raw);
+    }
+
+    public void zrevrangeByScoreWithScores(final byte[] key, final double max,
+            final double min) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZREVRANGEBYSCORE, key, byteArrayMax, byteArrayMin,
+                WITHSCORES.raw);
+    }
+
+    public void zrevrangeByScoreWithScores(final byte[] key, final String max,
+            final String min) {
+        sendCommand(ZREVRANGEBYSCORE, key, max.getBytes(), min.getBytes(),
+                WITHSCORES.raw);
+    }
+
+    public void zrangeByScoreWithScores(final byte[] key, final double min,
+            final double max, final int offset, final int count) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZRANGEBYSCORE, key, byteArrayMin, byteArrayMax,
+                LIMIT.raw, toByteArray(offset), toByteArray(count),
+                WITHSCORES.raw);
+    }
+
+    public void zrangeByScoreWithScores(final byte[] key, final String min,
+            final String max, final int offset, final int count) {
+        sendCommand(ZRANGEBYSCORE, key, min.getBytes(), max.getBytes(),
+                LIMIT.raw, toByteArray(offset), toByteArray(count),
+                WITHSCORES.raw);
+    }
+
+    public void zrevrangeByScoreWithScores(final byte[] key, final double max,
+            final double min, final int offset, final int count) {
+
+        byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(min);
+        byte byteArrayMax[] = (max == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(max);
+
+        sendCommand(ZREVRANGEBYSCORE, key, byteArrayMax, byteArrayMin,
+                LIMIT.raw, toByteArray(offset), toByteArray(count),
+                WITHSCORES.raw);
+    }
+
+    public void zrevrangeByScoreWithScores(final byte[] key, final String max,
+            final String min, final int offset, final int count) {
+
+        sendCommand(ZREVRANGEBYSCORE, key, max.getBytes(), min.getBytes(),
+                LIMIT.raw, toByteArray(offset), toByteArray(count),
+                WITHSCORES.raw);
+    }
+    
     public void zrangeByScore(final byte[] key, final byte[] min,
 	    final byte[] max, final int offset, int count) {
 	sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.raw,
@@ -583,6 +746,11 @@ public class BinaryClient extends Connection {
     public void zremrangeByScore(final byte[] key, final byte[] start,
 	    final byte[] end) {
 	sendCommand(ZREMRANGEBYSCORE, key, start, end);
+    }   
+
+    public void zremrangeByScore(final byte[] key, final String start,
+            final String end) {
+        sendCommand(ZREMRANGEBYSCORE, key, start.getBytes(), end.getBytes());
     }
 
     public void zunionstore(final byte[] dstkey, final byte[]... sets) {
@@ -862,6 +1030,74 @@ public class BinaryClient extends Connection {
     }
 
     public void sentinel(final byte[]... args) {
-	sendCommand(SENTINEL, args);
+    	sendCommand(SENTINEL, args);
+    }
+    
+    public void dump(final byte[] key) {
+    	sendCommand(DUMP, key);
+    }
+    
+    public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+    	sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+    }
+    
+    public void pexpire(final byte[] key, final int milliseconds) {
+    	sendCommand(PEXPIRE, key, toByteArray(milliseconds));
+    }
+    
+    public void pexpireAt(final byte[] key, final long millisecondsTimestamp) {
+    	sendCommand(PEXPIREAT, key, toByteArray(millisecondsTimestamp));	
+    }
+    
+    public void pttl(final byte[] key) {
+    	sendCommand(PTTL, key);
+    }
+    
+    public void incrByFloat(final byte[] key, final double increment) {
+    	sendCommand(INCRBYFLOAT, key, toByteArray(increment));
+    }
+    
+    public void psetex(final byte[] key, final int milliseconds, final byte[] value) {
+    	sendCommand(PSETEX, key, toByteArray(milliseconds), value);
+    }
+    
+    public void set(final byte[] key, final byte[] value, final byte[] nxxx) {
+        sendCommand(Command.SET, key, value, nxxx);
+    }
+    
+    public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final int time) {
+        sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
+    }
+    
+    public void srandmember(final byte[] key, final int count) {
+    	sendCommand(SRANDMEMBER, key, toByteArray(count));
+    }
+    
+    public void clientKill(final byte[] client) {
+    	sendCommand(CLIENT, Keyword.KILL.raw, client);
+    }
+    
+    public void clientGetname() {
+    	sendCommand(CLIENT, Keyword.GETNAME.raw);
+    }
+    
+    public void clientList() {
+    	sendCommand(CLIENT, Keyword.LIST.raw);
+    }
+    
+    public void clientSetname(final byte[] name) {
+    	sendCommand(CLIENT, Keyword.SETNAME.raw, name);
+    }
+    
+    public void time() {
+    	sendCommand(TIME);
+    }
+    
+    public void migrate(final byte[] host, final int port, final byte[] key, final int destinationDb, final int timeout) {
+    	sendCommand(MIGRATE, host, toByteArray(port), key, toByteArray(destinationDb), toByteArray(timeout));
+    }
+    
+    public void hincrByFloat(final byte[] key, final byte[] field, double increment) {
+    	sendCommand(HINCRBYFLOAT, key, field, toByteArray(increment));
     }
 }

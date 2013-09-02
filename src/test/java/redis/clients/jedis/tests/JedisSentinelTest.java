@@ -25,7 +25,7 @@ public class JedisSentinelTest {
 	// TODO: The sleep is to give time to the slave to synchronize with the
 	// master and also let know the sentinels about this new topology. We
 	// should find a better way to do this.
-	Thread.sleep(5000);
+	Thread.sleep(10000);
     }
 
     @After

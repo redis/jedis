@@ -33,7 +33,7 @@ port 26379
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6379 1
 sentinel auth-pass mymaster foobared
-sentinel down-after-milliseconds mymaster 1000
+sentinel down-after-milliseconds mymaster 3000
 sentinel failover-timeout mymaster 900000
 sentinel can-failover mymaster yes
 sentinel parallel-syncs mymaster 1
@@ -72,6 +72,25 @@ export REDIS4_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
+
+start:
+	echo "$$REDIS1_CONF" | redis-server -
+	echo "$$REDIS2_CONF" | redis-server -
+	echo "$$REDIS3_CONF" | redis-server -
+	echo "$$REDIS4_CONF" | redis-server -
+	echo "$$REDIS_SENTINEL1" | redis-sentinel -
+	echo "$$REDIS_SENTINEL2" | redis-sentinel -
+	echo "$$REDIS_SENTINEL3" | redis-sentinel -
+
+stop:
+	kill `cat /tmp/redis1.pid`
+	kill `cat /tmp/redis2.pid`
+	# this get's segfaulted by the tests
+	kill `cat /tmp/redis3.pid` || true
+	kill `cat /tmp/redis4.pid`
+	kill `cat /tmp/sentinel1.pid`
+	kill `cat /tmp/sentinel2.pid`
+	kill `cat /tmp/sentinel3.pid`
 
 test:
 	echo "$$REDIS1_CONF" | redis-server -

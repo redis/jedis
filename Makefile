@@ -4,6 +4,8 @@ port 6379
 requirepass foobared
 pidfile /tmp/redis1.pid
 logfile /tmp/redis1.log
+save ""
+appendonly no
 endef
 
 define REDIS2_CONF
@@ -12,6 +14,8 @@ port 6380
 requirepass foobared
 pidfile /tmp/redis2.pid
 logfile /tmp/redis2.log
+save ""
+appendonly no
 endef
 
 define REDIS3_CONF
@@ -19,6 +23,8 @@ daemonize yes
 port 6381
 pidfile /tmp/redis3.pid
 logfile /tmp/redis3.log
+save ""
+appendonly no
 endef
 
 define REDIS4_CONF
@@ -26,6 +32,8 @@ daemonize yes
 port 6382
 pidfile /tmp/redis4.pid
 logfile /tmp/redis4.log
+save ""
+appendonly no
 endef
 
 define REDIS_SENTINEL1

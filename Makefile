@@ -112,4 +112,25 @@ test:
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
 
+release:
+	echo "$$REDIS1_CONF" | redis-server -
+	echo "$$REDIS2_CONF" | redis-server -
+	echo "$$REDIS3_CONF" | redis-server -
+	echo "$$REDIS4_CONF" | redis-server -
+	echo "$$REDIS_SENTINEL1" | redis-sentinel -
+	echo "$$REDIS_SENTINEL2" | redis-sentinel -
+	echo "$$REDIS_SENTINEL3" | redis-sentinel -
+
+	mvn clean deploy
+
+	kill `cat /tmp/redis1.pid`
+	kill `cat /tmp/redis2.pid`
+	# this get's segfaulted by the tests
+	kill `cat /tmp/redis3.pid` || true
+	kill `cat /tmp/redis4.pid`
+	kill `cat /tmp/sentinel1.pid`
+	kill `cat /tmp/sentinel2.pid`
+	kill `cat /tmp/sentinel3.pid`
+
+
 .PHONY: test

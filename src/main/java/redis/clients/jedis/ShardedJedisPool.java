@@ -33,7 +33,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
     /**
      * PoolableObjectFactory custom impl.
      */
-    private static class ShardedJedisFactory extends BasePoolableObjectFactory {
+    private static class ShardedJedisFactory extends BasePoolableObjectFactory<ShardedJedis> {
         private List<JedisShardInfo> shards;
         private Hashing algo;
         private Pattern keyTagPattern;
@@ -45,14 +45,12 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             this.keyTagPattern = keyTagPattern;
         }
 
-        public Object makeObject() throws Exception {
+        public ShardedJedis makeObject() throws Exception {
             ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
             return jedis;
         }
 
-        public void destroyObject(final Object obj) throws Exception {
-            if ((obj != null) && (obj instanceof ShardedJedis)) {
-                ShardedJedis shardedJedis = (ShardedJedis) obj;
+        public void destroyObject(final ShardedJedis shardedJedis) throws Exception {
                 for (Jedis jedis : shardedJedis.getAllShards()) {
                     try {
                    		try {
@@ -65,12 +63,10 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
                     }
                 }
-            }
         }
 
-        public boolean validateObject(final Object obj) {
+        public boolean validateObject(final ShardedJedis jedis) {
         	try {
-                ShardedJedis jedis = (ShardedJedis) obj;
                 for (Jedis shard : jedis.getAllShards()) {
                     if (!shard.ping().equals("PONG")) {
                         return false;

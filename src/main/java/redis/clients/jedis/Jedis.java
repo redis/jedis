@@ -3009,7 +3009,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * 
      * @return Long followed by the String (runid)
      */
-    @SuppressWarnings("unchecked")
 	public List<? extends Object> sentinelIsMasterDownByAddr(String host,
 	    int port) {
 	client.sentinel(Protocol.SENTINEL_IS_MASTER_DOWN_BY_ADDR, host, port);

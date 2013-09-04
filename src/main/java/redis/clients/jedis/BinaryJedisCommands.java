@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis

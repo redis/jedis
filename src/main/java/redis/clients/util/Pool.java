@@ -7,7 +7,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class Pool<T> {
-    protected GenericObjectPool internalPool;
+    protected GenericObjectPool<T> internalPool;
 
     /**
      * Using this constructor means you have to set
@@ -16,11 +16,11 @@ public abstract class Pool<T> {
     public Pool() {}
     
     public Pool(final GenericObjectPool.Config poolConfig,
-            PoolableObjectFactory factory) {
+            PoolableObjectFactory<T> factory) {
         initPool(poolConfig, factory);
     }
     
-    public void initPool(final GenericObjectPool.Config poolConfig, PoolableObjectFactory factory) {
+    public void initPool(final GenericObjectPool.Config poolConfig, PoolableObjectFactory<T> factory) {
     	
     	if (this.internalPool != null) {
     		try {
@@ -29,10 +29,9 @@ public abstract class Pool<T> {
     		}
     	}
     	
-    	this.internalPool = new GenericObjectPool(factory, poolConfig);
+    	this.internalPool = new GenericObjectPool<T>(factory, poolConfig);
     }
     
-    @SuppressWarnings("unchecked")
     public T getResource() {
         try {
             return (T) internalPool.borrowObject();
@@ -42,7 +41,7 @@ public abstract class Pool<T> {
         }
     }
         
-    public void returnResourceObject(final Object resource) {
+    public void returnResourceObject(final T resource) {
         try {
             internalPool.returnObject(resource);
         } catch (Exception e) {
@@ -59,7 +58,7 @@ public abstract class Pool<T> {
     	returnResourceObject(resource);
     }
 
-    protected void returnBrokenResourceObject(final Object resource) {
+    protected void returnBrokenResourceObject(final T resource) {
         try {
             internalPool.invalidateObject(resource);
         } catch (Exception e) {

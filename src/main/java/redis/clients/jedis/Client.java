@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
+import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
@@ -21,6 +21,10 @@ public class Client extends BinaryClient implements Commands {
 
     public void set(final String key, final String value) {
 	set(SafeEncoder.encode(key), SafeEncoder.encode(value));
+    }
+
+    public void set(final String key, final String value, final String nxxx, final String expx, final long time) {
+        set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
     }
 
     public void get(final String key) {

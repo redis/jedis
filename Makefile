@@ -120,7 +120,7 @@ test:
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
 
-release:
+deploy:
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -140,7 +140,7 @@ release:
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
 
-deploy:
+release:
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -149,7 +149,9 @@ deploy:
 	echo "$$REDIS_SENTINEL2" | redis-sentinel -
 	echo "$$REDIS_SENTINEL3" | redis-sentinel -
 
-	mvn clean deploy
+	mvn release:clean
+	mvn release:prepare
+	mvn release:perform
 
 	kill `cat /tmp/redis1.pid`
 	kill `cat /tmp/redis2.pid`

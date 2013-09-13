@@ -53,6 +53,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
     public JedisSentinelPool(String masterName, Set<String> sentinels, final Config poolConfig, int timeout, final String password,
                      final int database) {
     	this.poolConfig = poolConfig;
+    	this.timeout = timeout;
+    	this.password = password;
+    	this.database = database;
     	HostAndPort master = initSentinels(sentinels, masterName);
         initPool(master);    	        
     }

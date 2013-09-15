@@ -43,6 +43,7 @@ define REDIS_SENTINEL1
 port 26379
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6379 1
+sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel failover-timeout mymaster 900000
 sentinel can-failover mymaster yes

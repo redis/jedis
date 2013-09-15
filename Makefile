@@ -21,6 +21,7 @@ endef
 define REDIS3_CONF
 daemonize yes
 port 6381
+requirepass foobared
 pidfile /tmp/redis3.pid
 logfile /tmp/redis3.log
 save ""
@@ -30,6 +31,8 @@ endef
 define REDIS4_CONF
 daemonize yes
 port 6382
+requirepass foobared
+masterauth foobared
 pidfile /tmp/redis4.pid
 logfile /tmp/redis4.log
 save ""
@@ -39,7 +42,7 @@ endef
 define REDIS_SENTINEL1
 port 26379
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6379 1
+sentinel monitor mymaster 127.0.0.1 6381 2
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel failover-timeout mymaster 900000
@@ -53,6 +56,7 @@ define REDIS_SENTINEL2
 port 26380
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6381 2
+sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel can-failover mymaster yes
 sentinel parallel-syncs mymaster 1
@@ -65,6 +69,7 @@ define REDIS_SENTINEL3
 port 26381
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6381 2
+sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel can-failover mymaster yes
 sentinel parallel-syncs mymaster 1

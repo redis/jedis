@@ -8,7 +8,15 @@ public class BuilderFactory {
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
         public Double build(Object data) {
             String asString = STRING.build(data);
-            return asString == null ? null : Double.valueOf(asString);
+            if (asString == null) {
+                return null;
+            } else if (asString.equals("+inf") || asString.equals("inf")) {
+                return Double.POSITIVE_INFINITY;
+            } else if (asString.equals("-inf")) {
+                return Double.NEGATIVE_INFINITY;
+            } else {
+                return Double.valueOf(asString);
+            }
         }
 
         public String toString() {
@@ -211,8 +219,7 @@ public class BuilderFactory {
             final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
             Iterator<byte[]> iterator = l.iterator();
             while (iterator.hasNext()) {
-                result.add(new Tuple(SafeEncoder.encode(iterator.next()),
-                        Double.valueOf(SafeEncoder.encode(iterator.next()))));
+                result.add(new Tuple(SafeEncoder.encode(iterator.next()), DOUBLE.build(iterator.next())));
             }
             return result;
         }
@@ -233,8 +240,7 @@ public class BuilderFactory {
             final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
             Iterator<byte[]> iterator = l.iterator();
             while (iterator.hasNext()) {
-                result.add(new Tuple(iterator.next(), Double
-                        .valueOf(SafeEncoder.encode(iterator.next()))));
+                result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
             }
 
             return result;

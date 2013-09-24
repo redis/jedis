@@ -88,7 +88,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     	// wait for the sentinel to promote a master
     	// FIXME: we can query the sentinel and sleep
     	// right until the master is promoted
-    	Thread.sleep(35000);
+    	Thread.sleep(50000);
 
     	jedis = pool.getResource();
     	assertEquals("PONG", jedis.ping());

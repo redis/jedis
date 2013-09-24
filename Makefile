@@ -66,7 +66,7 @@ endef
 define REDIS_SENTINEL2
 port 26380
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel monitor mymaster 127.0.0.1 6381 2
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel can-failover mymaster yes
@@ -79,7 +79,7 @@ endef
 define REDIS_SENTINEL3
 port 26381
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel monitor mymaster 127.0.0.1 6381 2
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel can-failover mymaster yes

@@ -113,14 +113,39 @@ public class JedisSentinelPool extends Pool<Jedis> {
     public HostAndPort getCurrentHostMaster() {
 	return currentHostMaster;
     }
-
+    
     private void initPool(HostAndPort master) {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
 	    log.info("Created JedisPool to master at " + master);
 	    initPool(poolConfig, new JedisFactory(master.host, master.port,
 		    timeout, password, database));
+	    
+	    restartMasterListeners();
 	}
+    }
+    
+    private void restartMasterListeners() {
+    	Set<MasterListener> newMasterListeners = new HashSet<MasterListener>();
+	    for (MasterListener m : masterListeners) {
+	    	if (m.running.get())
+	    		newMasterListeners.add(m);
+	    	else {
+	    		if (m.isAlive()) {
+	    			try {
+	    				m.join();
+	    			} catch (InterruptedException e) {
+	    			}
+	    		}
+	    		
+	    		MasterListener newListener = m.cloneWithRerunnable();
+			    newMasterListeners.add(newListener);
+			    newListener.start();
+	    	}
+	    }
+	    
+	    masterListeners.clear();
+	    masterListeners = newMasterListeners;
     }
 
     private HostAndPort initSentinels(Set<String> sentinels,
@@ -308,5 +333,10 @@ public class JedisSentinelPool extends Pool<Jedis> {
 			+ e.getMessage());
 	    }
 	}
+	
+	public MasterListener cloneWithRerunnable() {
+    	return new MasterListener(masterName, host, port, subscribeRetryWaitTimeMillis);
     }
+    }
+    
 }

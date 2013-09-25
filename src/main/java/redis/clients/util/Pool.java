@@ -24,7 +24,7 @@ public abstract class Pool<T> {
     	
     	if (this.internalPool != null) {
     		try {
-    			destroy();
+    			closeInternalPool();
     		} catch (Exception e) {    			
     		}
     	}
@@ -58,7 +58,11 @@ public abstract class Pool<T> {
     public void returnResource(final T resource) {
     	returnResourceObject(resource);
     }
-
+    
+    public void destroy() {
+    	closeInternalPool();
+    }
+    
     protected void returnBrokenResourceObject(final Object resource) {
         try {
             internalPool.invalidateObject(resource);
@@ -68,8 +72,8 @@ public abstract class Pool<T> {
         }
     }
 
-    public void destroy() {
-        try {
+    protected void closeInternalPool() {
+    	try {
             internalPool.close();
         } catch (Exception e) {
             throw new JedisException("Could not destroy the pool", e);

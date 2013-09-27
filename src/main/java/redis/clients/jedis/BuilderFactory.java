@@ -1,22 +1,16 @@
 package redis.clients.jedis;
 
+import redis.clients.util.Parser;
 import redis.clients.util.SafeEncoder;
 
 import java.util.*;
 
 public class BuilderFactory {
+
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
         public Double build(Object data) {
             String asString = STRING.build(data);
-            if (asString == null) {
-                return null;
-            } else if (asString.equals("+inf") || asString.equals("inf")) {
-                return Double.POSITIVE_INFINITY;
-            } else if (asString.equals("-inf")) {
-                return Double.NEGATIVE_INFINITY;
-            } else {
-                return Double.valueOf(asString);
-            }
+            return asString == null ? null : Parser.parseRedisDouble(asString);
         }
 
         public String toString() {

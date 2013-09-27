@@ -16,6 +16,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] ba = { 0x0A };
     final byte[] bb = { 0x0B };
     final byte[] bc = { 0x0C };
+    final byte[] bd = { 0x0D };
+    final byte[] be = { 0x0E };
 
     @Test
     public void zadd() {
@@ -26,6 +28,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         assertEquals(1, status);
 
         status = jedis.zadd("foo", 0.1d, "c");
+        assertEquals(1, status);
+
+        status = jedis.zadd("foo", Double.NEGATIVE_INFINITY, "d");
         assertEquals(1, status);
 
         status = jedis.zadd("foo", 2d, "a");
@@ -39,6 +44,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         assertEquals(1, bstatus);
 
         bstatus = jedis.zadd(bfoo, 0.1d, bc);
+        assertEquals(1, bstatus);
+
+        bstatus = jedis.zadd(bfoo, Double.NEGATIVE_INFINITY, bd);
         assertEquals(1, bstatus);
 
         bstatus = jedis.zadd(bfoo, 2d, ba);
@@ -169,6 +177,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         assertEquals(3d, score, 0);
         assertEquals(expected, jedis.zrange("foo", 0, 100));
 
+
+        jedis.zadd("foo", Double.POSITIVE_INFINITY, "p");
+        score = jedis.zincrby("foo", 2d, "p");
+        assertEquals(Double.POSITIVE_INFINITY, score, 0);
+
         // Binary
         jedis.zadd(bfoo, 1d, ba);
         jedis.zadd(bfoo, 2d, bb);
@@ -181,6 +194,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
         assertEquals(3d, bscore, 0);
         assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+
+        jedis.zadd(bfoo, Double.NEGATIVE_INFINITY, bc);
+        bscore = jedis.zincrby(bfoo, 2d, bc);
+        assertEquals(Double.NEGATIVE_INFINITY, bscore, 0);
 
     }
 
@@ -239,16 +256,20 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd("foo", 1d, "a");
         jedis.zadd("foo", 10d, "b");
         jedis.zadd("foo", 0.1d, "c");
+        jedis.zadd("foo", Double.NEGATIVE_INFINITY, "n");
+        jedis.zadd("foo", Double.POSITIVE_INFINITY, "p");
         jedis.zadd("foo", 2d, "a");
 
         Set<Tuple> expected = new LinkedHashSet<Tuple>();
         expected.add(new Tuple("c", 0.1d));
         expected.add(new Tuple("a", 2d));
+        expected.add(new Tuple("n", Double.NEGATIVE_INFINITY));
 
-        Set<Tuple> range = jedis.zrangeWithScores("foo", 0, 1);
+        Set<Tuple> range = jedis.zrangeWithScores("foo", 0, 2);
         assertEquals(expected, range);
 
         expected.add(new Tuple("b", 10d));
+        expected.add(new Tuple("p", Double.POSITIVE_INFINITY));
         range = jedis.zrangeWithScores("foo", 0, 100);
         assertEquals(expected, range);
 
@@ -256,16 +277,20 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         jedis.zadd(bfoo, 1d, ba);
         jedis.zadd(bfoo, 10d, bb);
         jedis.zadd(bfoo, 0.1d, bc);
+        jedis.zadd(bfoo, Double.NEGATIVE_INFINITY, bd);
+        jedis.zadd(bfoo, Double.POSITIVE_INFINITY, be);
         jedis.zadd(bfoo, 2d, ba);
 
         Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
         bexpected.add(new Tuple(bc, 0.1d));
         bexpected.add(new Tuple(ba, 2d));
+        bexpected.add(new Tuple(bd, Double.NEGATIVE_INFINITY));
 
-        Set<Tuple> brange = jedis.zrangeWithScores(bfoo, 0, 1);
+        Set<Tuple> brange = jedis.zrangeWithScores(bfoo, 0, 2);
         assertEquals(bexpected, brange);
 
         bexpected.add(new Tuple(bb, 10d));
+        bexpected.add(new Tuple(be, Double.POSITIVE_INFINITY));
         brange = jedis.zrangeWithScores(bfoo, 0, 100);
         assertEquals(bexpected, brange);
 
@@ -305,7 +330,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         bexpected.add(new Tuple(bc, 0.1d));
         brange = jedis.zrevrangeWithScores(bfoo, 0, 100);
         assertEquals(bexpected, brange);
-
     }
 
     @Test

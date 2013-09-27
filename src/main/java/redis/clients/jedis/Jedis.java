@@ -2755,6 +2755,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.rollbackTimeout();
     }
 
+    public void psubscribe(final JedisPubSub jedisPubSub, int timeout,
+        final String... patterns) {
+    checkIsInMulti();
+    connect();
+    client.setPubSubTimeout(timeout);
+    jedisPubSub.proceedWithPatterns(client, patterns);
+    client.rollbackTimeout();
+    }    
     protected static String[] getParams(List<String> keys, List<String> args) {
 	int keyCount = keys.size();
 	int argCount = args.size();

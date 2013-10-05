@@ -3173,12 +3173,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         client.evalsha(sha1, 0);
         return client.getOne();
     }
+		
+		public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+			int size = (keys == null ? 0 : keys.size()) + (args == null ? 0 : args.size());
+			List<byte[]> keysArgs = new ArrayList<byte[]>(size);
 
-    public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-        client.setTimeoutInfinite();
-        client.evalsha(sha1, keys.size(), keys.toArray(new byte[0][]));
-        return client.getOne();
-    }
+			if (keys != null) keysArgs.addAll(keys);
+			if (args != null) keysArgs.addAll(args);
+
+			client.setTimeoutInfinite();
+			client.evalsha(sha1, keys != null ? keys.size() : 0, keysArgs.toArray(new byte[0][]));
+			return client.getOne();
+		}
 
     public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
         client.setTimeoutInfinite();

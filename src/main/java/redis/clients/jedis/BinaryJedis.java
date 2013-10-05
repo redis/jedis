@@ -3176,7 +3176,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
         client.setTimeoutInfinite();
-        client.evalsha(sha1, keys.size(), keys.toArray(new byte[0][]));
+        client.evalsha(sha1, keys.size(), args.toArray(new byte[0][]));
         return client.getOne();
     }
 

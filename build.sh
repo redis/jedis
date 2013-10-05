@@ -1,0 +1,1 @@
+mvn -B install -Dmaven.test.skip=true

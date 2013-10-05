@@ -27,7 +27,7 @@
 	<licenses>
 		<license>
 			<name>MIT</name>
-			<url>http://github.com/xetorthio/jedis/raw/master/LICENSE.txt</url>
+			<url>https://raw.github.com/mindwind/craft-atom/master/LICENSE.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>

@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Parser;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
@@ -1469,7 +1470,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	checkIsInMulti();
 	client.zincrby(key, score, member);
 	String newscore = client.getBulkReply();
-	return Double.valueOf(newscore);
+	return Parser.parseRedisDouble(newscore);
     }
 
     /**
@@ -2252,7 +2253,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	Set<Tuple> set = new LinkedHashSet<Tuple>();
 	Iterator<String> iterator = membersWithScores.iterator();
 	while (iterator.hasNext()) {
-	    set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));
+	    set.add(new Tuple(iterator.next(), Parser.parseRedisDouble(iterator.next())));
 	}
 	return set;
     }

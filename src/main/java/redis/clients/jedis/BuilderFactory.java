@@ -1,14 +1,16 @@
 package redis.clients.jedis;
 
+import redis.clients.util.Parser;
 import redis.clients.util.SafeEncoder;
 
 import java.util.*;
 
 public class BuilderFactory {
+
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
         public Double build(Object data) {
             String asString = STRING.build(data);
-            return asString == null ? null : Double.valueOf(asString);
+            return asString == null ? null : Parser.parseRedisDouble(asString);
         }
 
         public String toString() {
@@ -211,8 +213,7 @@ public class BuilderFactory {
             final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
             Iterator<byte[]> iterator = l.iterator();
             while (iterator.hasNext()) {
-                result.add(new Tuple(SafeEncoder.encode(iterator.next()),
-                        Double.valueOf(SafeEncoder.encode(iterator.next()))));
+                result.add(new Tuple(SafeEncoder.encode(iterator.next()), DOUBLE.build(iterator.next())));
             }
             return result;
         }
@@ -233,8 +234,7 @@ public class BuilderFactory {
             final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
             Iterator<byte[]> iterator = l.iterator();
             while (iterator.hasNext()) {
-                result.add(new Tuple(iterator.next(), Double
-                        .valueOf(SafeEncoder.encode(iterator.next()))));
+                result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
             }
 
             return result;

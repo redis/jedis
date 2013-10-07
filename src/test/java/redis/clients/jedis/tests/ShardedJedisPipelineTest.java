@@ -15,6 +15,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Response;
@@ -24,26 +25,26 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ShardedJedisPipelineTest {
-    private static HostAndPortUtil.HostAndPort redis1 = HostAndPortUtil
+    private static HostAndPort redis1 = HostAndPortUtil
             .getRedisServers().get(0);
-    private static HostAndPortUtil.HostAndPort redis2 = HostAndPortUtil
+    private static HostAndPort redis2 = HostAndPortUtil
             .getRedisServers().get(1);
 
     private ShardedJedis jedis;
 
     @Before
     public void setUp() throws Exception {
-        Jedis jedis = new Jedis(redis1.host, redis1.port);
+        Jedis jedis = new Jedis(redis1.getHost(), redis1.getPort());
         jedis.auth("foobared");
         jedis.flushAll();
         jedis.disconnect();
-        jedis = new Jedis(redis2.host, redis2.port);
+        jedis = new Jedis(redis2.getHost(), redis2.getPort());
         jedis.auth("foobared");
         jedis.flushAll();
         jedis.disconnect();
 
-        JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.host, redis1.port);
-        JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.host, redis2.port);
+        JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());
+        JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.getHost(), redis2.getPort());
         shardInfo1.setPassword("foobared");
         shardInfo2.setPassword("foobared");
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();

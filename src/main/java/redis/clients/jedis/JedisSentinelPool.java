@@ -81,25 +81,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	returnResourceObject(resource);
     }
 
-    private class HostAndPort {
-	String host;
-	int port;
-
-	@Override
-	public boolean equals(Object obj) {
-	    if (obj instanceof HostAndPort) {
-		HostAndPort hp = (HostAndPort) obj;
-		return port == hp.port && host.equals(hp.host);
-	    }
-	    return false;
-	}
-
-	@Override
-	public String toString() {
-	    return host + ":" + port;
-	}
-    }
-
     private volatile HostAndPort currentHostMaster;
 
     public void destroy() {
@@ -118,7 +99,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
 	    log.info("Created JedisPool to master at " + master);
-	    initPool(poolConfig, new JedisFactory(master.host, master.port,
+	    initPool(poolConfig, new JedisFactory(master.getHost(), master.getPort(),
 		    timeout, password, database));
 	}
     }
@@ -141,7 +122,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		log.fine("Connecting to Sentinel " + hap);
 
 		try {
-		    Jedis jedis = new Jedis(hap.host, hap.port);
+		    Jedis jedis = new Jedis(hap.getHost(), hap.getPort());
 
 		    if (master == null) {
 			master = toHostAndPort(jedis
@@ -172,7 +153,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	    final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
 		    .split(":")));
 	    MasterListener masterListener = new MasterListener(masterName,
-		    hap.host, hap.port);
+		    hap.getHost(), hap.getPort());
 	    masterListeners.add(masterListener);
 	    masterListener.start();
 	}
@@ -181,10 +162,10 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
 
     private HostAndPort toHostAndPort(List<String> getMasterAddrByNameResult) {
-	final HostAndPort hap = new HostAndPort();
-	hap.host = getMasterAddrByNameResult.get(0);
-	hap.port = Integer.parseInt(getMasterAddrByNameResult.get(1));
-	return hap;
+    	String host = getMasterAddrByNameResult.get(0);
+    	int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
+    	
+    	return new HostAndPort(host, port);
     }
 
     protected class JedisPubSubAdapter extends JedisPubSub {

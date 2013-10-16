@@ -528,4 +528,75 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         };
         pubsub.unsubscribe();
     }
+    
+    //@Test(expected = JedisConnectionException.class)
+    @Test
+    public void handleClientOutputBufferLimitForSubscribeTooSlow() throws InterruptedException {
+        final Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Jedis j = createJedis();
+                    
+                    Thread.sleep(1000);
+                    
+                    // we already set jedis1 config to client-output-buffer-limit pubsub 256k 128k 5
+                    // it means if subscriber delayed to receive over 256k or 128k continuously 5 sec, 
+                    // redis disconnects subscriber
+                    
+                    // we publish over 10M data for making situation for exceed client-output-buffer-limit
+                    String veryLargeString = makeLargeString(1024 * 10);
+                    
+                    // 10K * 1024 = 10M
+                    for (int i = 0 ; i < 1024 ; i++)
+                    	j.publish("foo", veryLargeString);	// 1k
+                    
+                    j.disconnect();
+                } catch (Exception ex) {
+                    fail(ex.getMessage());
+                }
+            }
+        });
+        t.start();
+        jedis.subscribe(new JedisPubSub() {
+            public void onMessage(String channel, String message) {
+            	try {
+            		// wait 0.5 secs to slow down subscribe and client-output-buffer exceed
+            		System.out.println("channel - " + channel + " / message - " + message);
+					Thread.sleep(500);
+				} catch (Exception e) {
+					try {
+						t.join();
+					} catch (InterruptedException e1) {
+					}
+					
+					fail(e.getMessage());
+				}
+            }
+
+            public void onSubscribe(String channel, int subscribedChannels) {
+            }
+
+            public void onUnsubscribe(String channel, int subscribedChannels) {
+            }
+
+            public void onPSubscribe(String pattern, int subscribedChannels) {
+            }
+
+            public void onPUnsubscribe(String pattern, int subscribedChannels) {
+            }
+
+            public void onPMessage(String pattern, String channel,
+                    String message) {
+            }
+        }, "foo");
+        t.join();
+    }
+    
+    private String makeLargeString(int size) {
+    	StringBuffer sb = new StringBuffer();
+        for (int i = 0 ; i < size ; i++)
+        	sb.append((char)('a' + i % 26));
+
+        return sb.toString();
+    }
 }

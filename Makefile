@@ -6,6 +6,7 @@ pidfile /tmp/redis1.pid
 logfile /tmp/redis1.log
 save ""
 appendonly no
+client-output-buffer-limit pubsub 256k 128k 5
 endef
 
 define REDIS2_CONF

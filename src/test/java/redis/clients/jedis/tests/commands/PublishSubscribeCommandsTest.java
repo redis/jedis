@@ -529,8 +529,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         pubsub.unsubscribe();
     }
     
-    //@Test(expected = JedisConnectionException.class)
-    @Test
+    @Test(expected = JedisConnectionException.class)
     public void handleClientOutputBufferLimitForSubscribeTooSlow() throws InterruptedException {
         final Thread t = new Thread(new Runnable() {
             public void run() {
@@ -561,7 +560,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
             public void onMessage(String channel, String message) {
             	try {
             		// wait 0.5 secs to slow down subscribe and client-output-buffer exceed
-            		System.out.println("channel - " + channel + " / message - " + message);
+            		//System.out.println("channel - " + channel + " / message - " + message);
 					Thread.sleep(500);
 				} catch (Exception e) {
 					try {

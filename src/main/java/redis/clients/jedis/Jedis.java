@@ -1,18 +1,11 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
+
+import java.net.URI;
+import java.util.*;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands {
     public Jedis(final String host) {
@@ -49,6 +42,23 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	checkIsInMulti();
 	client.set(key, value);
 	return client.getStatusCodeReply();
+    }
+
+    /**
+     * Set the string value as value of the key. The string can't be longer than
+     * 1073741824 bytes (1 GB).
+     * @param key
+     * @param value
+     * @param nxxx NX|XX, NX -- Only set the key if it does not already exist.
+     *                    XX -- Only set the key if it already exist.
+     * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time expire time in the units of {@param #expx}
+     * @return Status code reply
+     */
+    public String set(final String key, final String value, final String nxxx, final String expx, final long time) {
+        checkIsInMulti();
+        client.set(key, value, nxxx, expx, time);
+        return client.getStatusCodeReply();
     }
 
     /**
@@ -100,8 +110,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public Long del(String key) {
-        client.del(key);
-        return client.getIntegerReply();
+    client.del(key);
+    return client.getIntegerReply();
     }
 
     /**
@@ -1450,6 +1460,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	client.srandmember(key);
 	return client.getBulkReply();
     }
+    
+    public List<String> srandmember(final String key, final int count) {
+	checkIsInMulti();
+	client.srandmember(key, count);
+	return client.getMultiBulkReply();
+    }
 
     /**
      * Add the specified member having the specifeid score to the sorted set
@@ -2083,8 +2099,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * @see #zcount(String, double, double)
      * 
      * @param key
-     * @param min
-     * @param max
+     * @param min a double or Double.MIN_VALUE for "-inf"
+     * @param max a double or Double.MAX_VALUE for "+inf"
      * @return Multi bulk reply specifically a list of elements in the specified
      *         score range.
      */
@@ -2827,7 +2843,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.rollbackTimeout();
     }
 
-    private String[] getParams(List<String> keys, List<String> args) {
+    protected static String[] getParams(List<String> keys, List<String> args) {
 	int keyCount = keys.size();
 	int argCount = args.size();
 
@@ -2979,7 +2995,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * 
      * @return
      */
-    public List<Map<String, String>> sentinelMasters() {
+    @SuppressWarnings("rawtypes")
+	public List<Map<String, String>> sentinelMasters() {
 	client.sentinel(Protocol.SENTINEL_MASTERS);
 	final List<Object> reply = client.getObjectMultiBulkReply();
 
@@ -3056,7 +3073,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * @param masterName
      * @return
      */
-    public List<Map<String, String>> sentinelSlaves(String masterName) {
+    @SuppressWarnings("rawtypes")
+	public List<Map<String, String>> sentinelSlaves(String masterName) {
 	client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
 	final List<Object> reply = client.getObjectMultiBulkReply();
 
@@ -3079,11 +3097,92 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * 
      * @return Long followed by the String (runid)
      */
-    public List<? extends Object> sentinelIsMasterDownByAddr(String host,
+    @SuppressWarnings("unchecked")
+	public List<? extends Object> sentinelIsMasterDownByAddr(String host,
 	    int port) {
 	client.sentinel(Protocol.SENTINEL_IS_MASTER_DOWN_BY_ADDR, host, port);
 	final List<Object> reply = client.getObjectMultiBulkReply();
 	return Arrays.asList(BuilderFactory.LONG.build(reply.get(0)),
 		BuilderFactory.STRING.build(reply.get(1)));
+    }
+    
+    public byte[] dump(final String key) {
+	    checkIsInMulti();
+	    client.dump(key);
+	    return client.getBinaryBulkReply();
+    }
+    
+    public String restore(final String key, final int ttl, final byte[] serializedValue) {
+    	checkIsInMulti();
+    	client.restore(key, ttl, serializedValue);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Long pexpire(final String key, final int milliseconds) {
+    	checkIsInMulti();
+    	client.pexpire(key, milliseconds);
+    	return client.getIntegerReply();
+    }
+    
+    public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+    	checkIsInMulti();
+    	client.pexpireAt(key, millisecondsTimestamp);
+    	return client.getIntegerReply();
+    }
+    
+    public Long pttl(final String key) {
+    	checkIsInMulti();
+    	client.pttl(key);
+    	return client.getIntegerReply();
+    }
+    
+    public Double incrByFloat(final String key, final double increment) {
+    	checkIsInMulti();
+    	client.incrByFloat(key, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);    
+    }
+    
+    public String psetex(final String key, final int milliseconds, final String value) {
+    	checkIsInMulti();
+    	client.psetex(key, milliseconds, value);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String set(final String key, final String value, final String nxxx) {
+    	checkIsInMulti();
+    	client.set(key, value, nxxx);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String set(final String key, final String value, final String nxxx, final String expx, final int time) {
+    	checkIsInMulti();
+    	client.set(key, value, nxxx, expx, time);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String clientKill(final String client) {
+    	checkIsInMulti();
+    	this.client.clientKill(client);
+    	return this.client.getStatusCodeReply();
+    }
+    
+    public String clientSetname(final String name) {
+    	checkIsInMulti();
+    	client.clientSetname(name);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
+    	checkIsInMulti();
+    	client.migrate(host, port, key, destinationDb, timeout);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Double hincrByFloat(final String key, final String field, double increment) {
+    	checkIsInMulti();
+    	client.hincrByFloat(key, field, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);
     }
 }

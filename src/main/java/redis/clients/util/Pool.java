@@ -9,15 +9,29 @@ import redis.clients.jedis.exceptions.JedisException;
 public abstract class Pool<T> {
     protected GenericObjectPool internalPool;
 
-    protected Pool() {
-	this.internalPool = null;
-    }
+    /**
+     * Using this constructor means you have to set
+     * and initialize the internalPool yourself.
+     */
+    public Pool() {}
     
     public Pool(final GenericObjectPool.Config poolConfig,
             PoolableObjectFactory factory) {
-        this.internalPool = new GenericObjectPool(factory, poolConfig);
+        initPool(poolConfig, factory);
     }
-
+    
+    public void initPool(final GenericObjectPool.Config poolConfig, PoolableObjectFactory factory) {
+    	
+    	if (this.internalPool != null) {
+    		try {
+    			closeInternalPool();
+    		} catch (Exception e) {    			
+    		}
+    	}
+    	
+    	this.internalPool = new GenericObjectPool(factory, poolConfig);
+    }
+    
     @SuppressWarnings("unchecked")
     public T getResource() {
         try {
@@ -44,7 +58,11 @@ public abstract class Pool<T> {
     public void returnResource(final T resource) {
     	returnResourceObject(resource);
     }
-
+    
+    public void destroy() {
+    	closeInternalPool();
+    }
+    
     protected void returnBrokenResourceObject(final Object resource) {
         try {
             internalPool.invalidateObject(resource);
@@ -54,8 +72,8 @@ public abstract class Pool<T> {
         }
     }
 
-    public void destroy() {
-        try {
+    protected void closeInternalPool() {
+    	try {
             internalPool.close();
         } catch (Exception e) {
             throw new JedisException("Could not destroy the pool", e);

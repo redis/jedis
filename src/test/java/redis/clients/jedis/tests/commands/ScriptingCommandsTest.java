@@ -137,16 +137,26 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	}
     }
 
-    @Test
-    public void scriptEvalReturnNullValues() {
-	String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
-	jedis.eval(script, 2, "key1", "key2", "1", "1");
-    }
+	@Test
+	public void scriptEvalReturnNullValues() {
+		String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+		List<String> results = (List<String>) jedis.eval(script, 2, "key1", "key2", "1", "2");
+		assertEquals(results.get(0), "key1");
+		assertEquals(results.get(1), "key2");
+		assertEquals(results.get(2), "1");
+		assertEquals(results.get(3), "2");
+	}
 
-    @Test
-    public void scriptEvalShaReturnNullValues() {
-	String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
-	String sha = jedis.scriptLoad(script);
-	jedis.evalsha(sha, 2, "key1", "key2", "1", "1");
-    }
+	@Test
+	public void scriptEvalShaReturnNullValues() {
+		String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+		String sha = jedis.scriptLoad(script);
+		List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1", "key2", "1", "2");
+		assertEquals(results.get(0), "key1");
+		assertEquals(results.get(1), "key2");
+		assertEquals(results.get(2), "1");
+		assertEquals(results.get(3), "2");
+
+	}
 }
+

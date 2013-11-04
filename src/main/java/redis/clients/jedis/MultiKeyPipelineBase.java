@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 abstract class MultiKeyPipelineBase extends PipelineBase implements
@@ -14,20 +15,50 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
         client.brpop(args);
         return getResponse(BuilderFactory.STRING_LIST);
     }
+    
+    public Response<List<String>> brpop(int timeout, String... keys) {
+        client.brpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
 
     public Response<List<String>> blpop(String... args) {
         client.blpop(args);
         return getResponse(BuilderFactory.STRING_LIST);
+    }
+    
+    public Response<List<String>> blpop(int timeout, String... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+    
+    public Response<Map<String, String>> blpopMap(int timeout, String... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_MAP);
     }
 
     public Response<List<byte[]>> brpop(byte[]... args) {
         client.brpop(args);
         return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
     }
+    
+    public Response<List<String>> brpop(int timeout, byte[]... keys) {
+        client.brpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
+    }
+    
+    public Response<Map<String, String>> brpopMap(int timeout, String... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_MAP);
+    }
 
     public Response<List<byte[]>> blpop(byte[]... args) {
         client.blpop(args);
         return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    }
+    
+    public Response<List<String>> blpop(int timeout, byte[]... keys) {
+        client.blpop(timeout, keys);
+        return getResponse(BuilderFactory.STRING_LIST);
     }
 
     public Response<Long> del(String... keys) {
@@ -160,26 +191,26 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
         return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(String key,
+    public Response<Long> sort(String key,
                                        SortingParams sortingParameters, String dstkey) {
         client.sort(key, sortingParameters, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<byte[]>> sort(byte[] key,
+    public Response<Long> sort(byte[] key,
                                        SortingParams sortingParameters, byte[] dstkey) {
         client.sort(key, sortingParameters, dstkey);
-        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<String>> sort(String key, String dstkey) {
+    public Response<Long> sort(String key, String dstkey) {
         client.sort(key, dstkey);
-        return getResponse(BuilderFactory.STRING_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<List<byte[]>> sort(byte[] key, byte[] dstkey) {
+    public Response<Long> sort(byte[] key, byte[] dstkey) {
         client.sort(key, dstkey);
-        return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+        return getResponse(BuilderFactory.LONG);
     }
 
     public Response<Set<String>> sunion(String... keys) {

@@ -117,7 +117,7 @@ public class JedisPoolTest extends Assert {
         pool1.returnResource(jedis0);
         pool1.destroy();
     }
-    
+
     @Test
     public void returnBinary() {
         JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host,
@@ -126,7 +126,7 @@ public class JedisPoolTest extends Assert {
         pool.returnResource(jedis);
         pool.destroy();
     }
-    
+
     @Test
     public void startWithUrlString() {
 	Jedis j = new Jedis("localhost", 6380);
@@ -138,7 +138,7 @@ public class JedisPoolTest extends Assert {
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
     }
-    
+
     @Test
     public void startWithUrl() throws URISyntaxException {
 	Jedis j = new Jedis("localhost", 6380);
@@ -150,4 +150,38 @@ public class JedisPoolTest extends Assert {
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
     }
+
+	@Test
+	public void selectDatabaseOnActivation() {
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.host, hnp.port, 2000, "foobared");
+
+		Jedis jedis0 = pool.getResource();
+		assertEquals(0L, jedis0.getDB().longValue());
+		
+		jedis0.select(1);
+		assertEquals(1L, jedis0.getDB().longValue());
+
+		pool.returnResource(jedis0);
+
+		Jedis jedis1 = pool.getResource();
+		assertTrue("Jedis instance was not reused", jedis1	== jedis0);
+		assertEquals(0L, jedis1.getDB().longValue());
+
+		pool.returnResource(jedis1);
+		pool.destroy();
+	}
+
+    @Test
+    public void customClientName() {
+        JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.host,
+                        hnp.port, 2000, "foobared", 0, "my_shiny_client_name");
+
+        Jedis jedis = pool0.getResource();
+
+        assertEquals("my_shiny_client_name", jedis.clientGetname());
+
+        pool0.returnResource(jedis);
+        pool0.destroy();
+    }
 }
+

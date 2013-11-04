@@ -25,7 +25,7 @@ public class JedisSentinelTest {
 	// TODO: The sleep is to give time to the slave to synchronize with the
 	// master and also let know the sentinels about this new topology. We
 	// should find a better way to do this.
-	Thread.sleep(5000);
+	Thread.sleep(10000);
     }
 
     @After
@@ -49,6 +49,7 @@ public class JedisSentinelTest {
 	assertEquals("6379", masterHostAndPort.get(1));
 
 	List<Map<String, String>> slaves = j.sentinelSlaves(masterName);
+	assertTrue(slaves.size() > 0);
 	assertEquals("6379", slaves.get(0).get("master-port"));
 
 	List<? extends Object> isMasterDownByAddr = j

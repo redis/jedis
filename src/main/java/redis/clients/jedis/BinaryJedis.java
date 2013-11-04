@@ -1,21 +1,15 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
+
+import java.net.URI;
+import java.util.*;
+
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands, AdvancedBinaryJedisCommands, BinaryScriptingCommands {
     protected Client client = null;
@@ -76,6 +70,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	checkIsInMulti();
 	client.set(key, value);
 	return client.getStatusCodeReply();
+    }
+
+    /**
+     * Set the string value as value of the key. The string can't be longer than
+     * 1073741824 bytes (1 GB).
+     * @param key
+     * @param value
+     * @param nxxx NX|XX, NX -- Only set the key if it does not already exist.
+     *                    XX -- Only set the key if it already exist.
+     * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time expire time in the units of {@param #expx}
+     * @return Status code reply
+     */
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+        checkIsInMulti();
+        client.set(key, value, nxxx, expx, time);
+        return client.getStatusCodeReply();
     }
 
     /**
@@ -1456,6 +1467,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	checkIsInMulti();
 	client.srandmember(key);
 	return client.getBinaryBulkReply();
+    }
+    
+    public List<byte[]> srandmember(final byte[] key, final int count) {
+    checkIsInMulti();
+    client.srandmember(key, count);
+    return client.getBinaryMultiBulkReply();
     }
 
     /**
@@ -3156,12 +3173,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         client.evalsha(sha1, 0);
         return client.getOne();
     }
+		
+		public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
 
-    public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-        client.setTimeoutInfinite();
-        client.evalsha(sha1, keys.size(), keys.toArray(new byte[0][]));
-        return client.getOne();
-    }
+			int keyCount = keys == null ? 0 : keys.size();
+			int argCount = args == null ? 0 : args.size();
+
+			byte[][] params = new byte[keyCount + argCount][];
+
+			for (int i = 0; i < keyCount; i++)
+				params[i] = keys.get(i);
+
+			for (int i = 0; i < argCount; i++)
+				params[keyCount + i] = args.get(i);
+
+
+			return evalsha(sha1, keyCount, params);
+		}
 
     public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
         client.setTimeoutInfinite();
@@ -3238,4 +3266,103 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         client.bitop(op, destKey, srcKeys);
         return client.getIntegerReply();
     }
+    
+    public byte[] dump(final byte[] key) {
+    	checkIsInMulti();
+    	client.dump(key);
+    	return client.getBinaryBulkReply();
+    }
+    
+    public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+    	checkIsInMulti();
+    	client.restore(key, ttl, serializedValue);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Long pexpire(final byte[] key, final int milliseconds) {
+	    checkIsInMulti();
+	    client.pexpire(key, milliseconds);
+	    return client.getIntegerReply();
+    }
+    
+    public Long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
+    	checkIsInMulti();
+    	client.pexpireAt(key, millisecondsTimestamp);
+    	return client.getIntegerReply();
+    }
+    
+    public Long pttl(final byte[] key) {
+    	checkIsInMulti();
+    	client.pttl(key);
+    	return client.getIntegerReply();
+    }
+    
+    public Double incrByFloat(final byte[] key, final double increment) {
+    	checkIsInMulti();
+    	client.incrByFloat(key, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);    
+    }
+    
+    public String psetex(final byte[] key, final int milliseconds, final byte[] value) {
+    	checkIsInMulti();
+    	client.psetex(key, milliseconds, value);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx) {
+        checkIsInMulti();
+        client.set(key, value, nxxx);
+        return client.getStatusCodeReply();
+    }
+    
+    public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final int time) {
+        checkIsInMulti();
+        client.set(key, value, nxxx, expx, time);
+        return client.getStatusCodeReply();
+    }
+    
+    public String clientKill(final byte[] client) {
+    	checkIsInMulti();
+    	this.client.clientKill(client);
+    	return this.client.getStatusCodeReply();
+    }
+    
+    public String clientGetname() {
+    	checkIsInMulti();
+    	client.clientGetname();
+    	return client.getBulkReply();
+    }
+    
+    public String clientList() {
+    	checkIsInMulti();
+    	client.clientList();
+    	return client.getBulkReply();
+    }
+    
+    public String clientSetname(final byte[] name) {
+    	checkIsInMulti();
+    	client.clientSetname(name);
+    	return client.getBulkReply();
+    }
+    
+    public List<String> time() {
+    	checkIsInMulti();
+    	client.time();
+    	return client.getMultiBulkReply();
+    }
+    
+    public String migrate(final byte[] host, final int port, final byte[] key, final int destinationDb, final int timeout) {
+    	checkIsInMulti();
+    	client.migrate(host, port, key, destinationDb, timeout);
+    	return client.getStatusCodeReply();
+    }
+    
+    public Double hincrByFloat(final byte[] key, final byte[] field, double increment) {
+    	checkIsInMulti();
+    	client.hincrByFloat(key, field, increment);
+    	String relpy = client.getBulkReply();
+    	return (relpy != null ? new Double(relpy) : null);
+    }
+
 }

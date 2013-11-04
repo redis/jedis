@@ -36,7 +36,7 @@ public interface BinaryRedisPipeline {
 
     Response<Long> getrange(byte[] key, long startOffset, long endOffset);
 
-    Response<Long> hdel(byte[] key, byte[] field);
+    Response<Long> hdel(byte[] key, byte[]... field);
 
     Response<Boolean> hexists(byte[] key, byte[] field);
 
@@ -64,7 +64,7 @@ public interface BinaryRedisPipeline {
 
     Response<Long> incrBy(byte[] key, long integer);
 
-    Response<byte[]> lindex(byte[] key, int index);
+    Response<byte[]> lindex(byte[] key, long index);
 
     Response<Long> linsert(byte[] key, BinaryClient.LIST_POSITION where,
                            byte[] pivot, byte[] value);
@@ -124,7 +124,7 @@ public interface BinaryRedisPipeline {
 
     Response<byte[]> srandmember(byte[] key);
 
-    Response<Long> srem(byte[] key, byte[] member);
+    Response<Long> srem(byte[] key, byte[]... member);
 
     Response<Long> strlen(byte[] key);
 
@@ -142,7 +142,7 @@ public interface BinaryRedisPipeline {
 
     Response<Double> zincrby(byte[] key, double score, byte[] member);
 
-    Response<Set<byte[]>> zrange(byte[] key, int start, int end);
+    Response<Set<byte[]>> zrange(byte[] key, long start, long end);
 
     Response<Set<byte[]>> zrangeByScore(byte[] key, double min,
                                         double max);
@@ -192,22 +192,22 @@ public interface BinaryRedisPipeline {
     Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key,
                                                     byte[] max, byte[] min, int offset, int count);
 
-    Response<Set<Tuple>> zrangeWithScores(byte[] key, int start, int end);
+    Response<Set<Tuple>> zrangeWithScores(byte[] key, long start, long end);
 
     Response<Long> zrank(byte[] key, byte[] member);
 
-    Response<Long> zrem(byte[] key, byte[] member);
+    Response<Long> zrem(byte[] key, byte[]... member);
 
-    Response<Long> zremrangeByRank(byte[] key, int start, int end);
+    Response<Long> zremrangeByRank(byte[] key, long start, long end);
 
     Response<Long> zremrangeByScore(byte[] key, double start, double end);
 
     Response<Long> zremrangeByScore(byte[] key, byte[] start, byte[] end);
 
-    Response<Set<byte[]>> zrevrange(byte[] key, int start, int end);
+    Response<Set<byte[]>> zrevrange(byte[] key, long start, long end);
 
-    Response<Set<Tuple>> zrevrangeWithScores(byte[] key, int start,
-                                             int end);
+    Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start,
+                                             long end);
 
     Response<Long> zrevrank(byte[] key, byte[] member);
 

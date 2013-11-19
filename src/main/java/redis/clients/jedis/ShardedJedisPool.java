@@ -30,6 +30,11 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
     }
 
+    public ShardedJedisPool(final GenericObjectPool.Config poolConfig,
+            List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern,int dbIndex) {
+        super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern,dbIndex));
+    }
+    
     /**
      * PoolableObjectFactory custom impl.
      */
@@ -37,6 +42,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
         private List<JedisShardInfo> shards;
         private Hashing algo;
         private Pattern keyTagPattern;
+        private int dbIndex = 0;
 
         public ShardedJedisFactory(List<JedisShardInfo> shards, Hashing algo,
                 Pattern keyTagPattern) {
@@ -44,9 +50,17 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             this.algo = algo;
             this.keyTagPattern = keyTagPattern;
         }
+        
+        public ShardedJedisFactory(List<JedisShardInfo> shards, Hashing algo,
+                Pattern keyTagPattern,int dbIndex) {
+            this.shards = shards;
+            this.algo = algo;
+            this.keyTagPattern = keyTagPattern;
+            this.dbIndex=dbIndex;
+        }
 
         public Object makeObject() throws Exception {
-            ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
+            ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern, dbIndex);
             return jedis;
         }
 

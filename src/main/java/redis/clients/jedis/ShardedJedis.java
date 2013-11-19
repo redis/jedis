@@ -25,6 +25,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	    Pattern keyTagPattern) {
 	super(shards, algo, keyTagPattern);
     }
+    
+    public ShardedJedis(List<JedisShardInfo> shards, Hashing algo,
+    	    Pattern keyTagPattern,int dbIndex) {
+    	super(shards, algo, keyTagPattern,dbIndex);
+    }
 
     public String set(String key, String value) {
 	Jedis j = getShard(key);

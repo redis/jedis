@@ -30,6 +30,22 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	super(shards, algo, keyTagPattern);
     }
 
+    public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo,
+    	    Pattern keyTagPattern,int dbIndex) {
+    	super(shards, algo, keyTagPattern);
+    	this.dbIndex=dbIndex;
+        }
+    
+    private int dbIndex;
+
+    public int getDbIndex() {
+		return dbIndex;
+	}
+
+	public void setDbIndex(int dbIndex) {
+		this.dbIndex = dbIndex;
+	}
+	
     public void disconnect() {
     for (Jedis jedis : getAllShards()) {
         jedis.quit();
@@ -562,5 +578,23 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     public Long bitcount(byte[] key, long start, long end) {
         Jedis j = getShard(key);
         return j.bitcount(key, start, end);
+    }
+    
+    @Override
+    public Jedis getShard(byte[] key){
+    	Jedis j = super.getShard(key);
+    	if(j.getDB()!=this.dbIndex){
+    		j.select(this.dbIndex);
+    	}
+    	return j;
+    }
+    
+    @Override
+    public Jedis getShard(String key){
+    	Jedis j = super.getShard(key);
+    	if(j.getDB()!=this.dbIndex){
+    		j.select(this.dbIndex);
+    	}
+    	return j;
     }
 }

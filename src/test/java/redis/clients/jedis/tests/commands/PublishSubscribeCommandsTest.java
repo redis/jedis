@@ -475,7 +475,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test @Ignore
     public void subscribeWithoutConnecting() {
         try {
-            Jedis jedis = new Jedis(hnp.host, hnp.port);
+            Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort());
             jedis.subscribe(new JedisPubSub() {
                 public void onMessage(String channel, String message) {
                 }

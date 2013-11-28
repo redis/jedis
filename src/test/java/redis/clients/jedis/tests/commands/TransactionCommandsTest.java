@@ -32,7 +32,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        nj = new Jedis(hnp.host, hnp.port, 500);
+        nj = new Jedis(hnp.getHost(), hnp.getPort(), 500);
         nj.connect();
         nj.auth("foobared");
         nj.flushAll();

@@ -1,17 +1,18 @@
 package redis.clients.jedis.tests.commands;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ComparisonFailure;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
-import redis.clients.jedis.tests.JedisTestBase;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ComparisonFailure;
+
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.JedisTestBase;
 
 public abstract class JedisCommandTestBase extends JedisTestBase {
     protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -24,7 +25,7 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
 
     @Before
     public void setUp() throws Exception {
-        jedis = new Jedis(hnp.host, hnp.port, 500);
+        jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
         jedis.connect();
         jedis.auth("foobared");
         jedis.configSet("timeout", "300");
@@ -37,7 +38,7 @@ public abstract class JedisCommandTestBase extends JedisTestBase {
     }
 
     protected Jedis createJedis() {
-        Jedis j = new Jedis(hnp.host, hnp.port);
+        Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
         j.connect();
         j.auth("foobared");
         j.flushAll();

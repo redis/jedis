@@ -299,11 +299,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void ttl() {
-        // This is supposed to return -2 according to
-        // http://redis.io/commands/ttl
-        // and needs to be fixed in Redis.
         long ttl = jedis.ttl("foo");
-        assertEquals(-1, ttl);
+        assertEquals(-2, ttl);
 
         jedis.set("foo", "bar");
         ttl = jedis.ttl("foo");
@@ -313,13 +310,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         ttl = jedis.ttl("foo");
         assertTrue(ttl >= 0 && ttl <= 20);
 
-        // This is supposed to return -2 according to
-        // http://redis.io/commands/ttl
-        // and needs to be fixed in Redis.
-
         // Binary
         long bttl = jedis.ttl(bfoo);
-        assertEquals(-1, bttl);
+        assertEquals(-2, bttl);
 
         jedis.set(bfoo, bbar);
         bttl = jedis.ttl(bfoo);
@@ -499,7 +492,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     @Test
     public void pttl() {
         long pttl = jedis.pttl("foo");
-        assertEquals(-1, pttl);
+        assertEquals(-2, pttl);
 
         jedis.set("foo", "bar");
         pttl = jedis.pttl("foo");

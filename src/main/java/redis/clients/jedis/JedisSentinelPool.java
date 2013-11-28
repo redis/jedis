@@ -7,14 +7,14 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import org.apache.commons.pool.impl.GenericObjectPool.Config;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {
 
-    protected Config poolConfig;
+    protected GenericObjectPoolConfig poolConfig;
 
     protected int timeout = Protocol.DEFAULT_TIMEOUT;
 
@@ -27,57 +27,58 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected Logger log = Logger.getLogger(getClass().getName());
 
     public JedisSentinelPool(String masterName, Set<String> sentinels,
-	    final Config poolConfig) {
+	    final GenericObjectPoolConfig poolConfig) {
 	this(masterName, sentinels, poolConfig, Protocol.DEFAULT_TIMEOUT, null,
 		Protocol.DEFAULT_DATABASE);
     }
 
     public JedisSentinelPool(String masterName, Set<String> sentinels) {
-	this(masterName, sentinels, new Config(), Protocol.DEFAULT_TIMEOUT,
-		null, Protocol.DEFAULT_DATABASE);
+	this(masterName, sentinels, new GenericObjectPoolConfig(),
+		Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
     }
 
     public JedisSentinelPool(String masterName, Set<String> sentinels,
 	    String password) {
-	this(masterName, sentinels, new Config(), Protocol.DEFAULT_TIMEOUT,
-		password);
+	this(masterName, sentinels, new GenericObjectPoolConfig(),
+		Protocol.DEFAULT_TIMEOUT, password);
     }
 
     public JedisSentinelPool(String masterName, Set<String> sentinels,
-	    final Config poolConfig, int timeout, final String password) {
+	    final GenericObjectPoolConfig poolConfig, int timeout,
+	    final String password) {
 	this(masterName, sentinels, poolConfig, timeout, password,
 		Protocol.DEFAULT_DATABASE);
     }
 
     public JedisSentinelPool(String masterName, Set<String> sentinels,
-	    final Config poolConfig, final int timeout) {
+	    final GenericObjectPoolConfig poolConfig, final int timeout) {
 	this(masterName, sentinels, poolConfig, timeout, null,
 		Protocol.DEFAULT_DATABASE);
     }
 
     public JedisSentinelPool(String masterName, Set<String> sentinels,
-	    final Config poolConfig, final String password) {
+	    final GenericObjectPoolConfig poolConfig, final String password) {
 	this(masterName, sentinels, poolConfig, Protocol.DEFAULT_TIMEOUT,
 		password);
     }
 
     public JedisSentinelPool(String masterName, Set<String> sentinels,
-	    final Config poolConfig, int timeout, final String password,
-	    final int database) {
+	    final GenericObjectPoolConfig poolConfig, int timeout,
+	    final String password, final int database) {
 	this.poolConfig = poolConfig;
 	this.timeout = timeout;
 	this.password = password;
 	this.database = database;
-	
+
 	HostAndPort master = initSentinels(sentinels, masterName);
 	initPool(master);
     }
 
-    public void returnBrokenResource(final BinaryJedis resource) {
+    public void returnBrokenResource(final Jedis resource) {
 	returnBrokenResourceObject(resource);
     }
 
-    public void returnResource(final BinaryJedis resource) {
+    public void returnResource(final Jedis resource) {
 	returnResourceObject(resource);
     }
 

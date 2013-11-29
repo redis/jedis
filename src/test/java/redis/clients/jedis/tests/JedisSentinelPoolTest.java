@@ -1,6 +1,8 @@
 package redis.clients.jedis.tests;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -8,11 +10,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.DebugParams;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
+import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
+    private static final String MASTER_NAME = "mymaster";
 
     protected static HostAndPort master = HostAndPortUtil.getRedisServers()
 	    .get(2);
@@ -28,8 +32,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     protected static Jedis masterJedis;
     protected static Jedis slaveJedis1;
     protected static Jedis slaveJedis2;
-
-    protected static int slaveCount = 0;
+    protected static Jedis sentinelJedis1;
+    protected static Jedis sentinelJedis2;
 
     protected Set<String> sentinels = new HashSet<String>();
 
@@ -37,32 +41,36 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     public void setUp() throws Exception {
 
 	// set up master and slaves
-	masterJedis = new Jedis(master.host, master.port);
+	masterJedis = new Jedis(master.getHost(), master.getPort());
 	masterJedis.auth("foobared");
 	masterJedis.slaveofNoOne();
 
-	slaveJedis1 = new Jedis(slave1.host, slave1.port);
+	slaveJedis1 = new Jedis(slave1.getHost(), slave1.getPort());
 	slaveJedis1.auth("foobared");
-	slaveJedis1.slaveof(master.host, master.port);
-	slaveCount++;
+	slaveJedis1.slaveof(master.getHost(), master.getPort());
 
-	slaveJedis2 = new Jedis(slave2.host, slave2.port);
+	slaveJedis2 = new Jedis(slave2.getHost(), slave2.getPort());
 	slaveJedis2.auth("foobared");
-	slaveJedis2.slaveof(master.host, master.port);
-	slaveCount++;
+	slaveJedis2.slaveof(master.getHost(), master.getPort());
 
 	sentinels.add(sentinel1.toString());
 	sentinels.add(sentinel2.toString());
 
-	// FIXME: The following allows the master/slave relationship to
-	// be established, and let sentinels know about this relationship.
-	// We can do this more elegantly.
-	Thread.sleep(10000);
+	List<HostAndPort> slaves = new ArrayList<HostAndPort>();
+	slaves.add(slave1);
+	slaves.add(slave2);
+
+	JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(
+		sentinel1, MASTER_NAME, master, slaves);
+	JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(
+		sentinel2, MASTER_NAME, master, slaves);
+
+	// No need to wait for sentinels to recognize each other
     }
 
     @Test
     public void ensureSafeTwiceFailover() throws InterruptedException {
-	JedisSentinelPool pool = new JedisSentinelPool("mymaster", sentinels,
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
 		new GenericObjectPoolConfig(), 1000, "foobared", 2);
 
 	// perform failover
@@ -77,6 +85,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
     private void doSegFaultMaster(JedisSentinelPool pool)
 	    throws InterruptedException {
+	HostAndPort oldMaster = pool.getCurrentHostMaster();
+
 	// jedis connection should be master
 	Jedis jedis = pool.getResource();
 	assertEquals("PONG", jedis.ping());
@@ -86,14 +96,40 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	} catch (Exception e) {
 	}
 
-	// wait for the sentinel to promote a master
-	// FIXME: we can query the sentinel and sleep
-	// right until the master is promoted
-	Thread.sleep(35000);
+	waitForFailover(pool, oldMaster);
 
 	jedis = pool.getResource();
 	assertEquals("PONG", jedis.ping());
 	assertEquals("foobared", jedis.configGet("requirepass").get(1));
 	assertEquals(2, jedis.getDB().intValue());
     }
+
+    private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
+	    throws InterruptedException {
+	HostAndPort newMaster = JedisSentinelTestUtil.waitForNewPromotedMaster(
+		sentinel1, MASTER_NAME, oldMaster);
+	JedisSentinelTestUtil.waitForNewPromotedMaster(sentinel2, MASTER_NAME,
+		oldMaster);
+	JedisSentinelTestUtil.waitForSentinelsRecognizeEachOthers();
+	waitForJedisSentinelPoolRecognizeNewMaster(pool, newMaster);
+    }
+
+    private void waitForJedisSentinelPoolRecognizeNewMaster(
+	    JedisSentinelPool pool, HostAndPort newMaster)
+	    throws InterruptedException {
+
+	while (true) {
+	    String host = pool.getCurrentHostMaster().getHost();
+	    int port = pool.getCurrentHostMaster().getPort();
+
+	    if (host.equals(newMaster.getHost()) && port == newMaster.getPort())
+		break;
+
+	    System.out
+		    .println("JedisSentinelPool's master is not yet changed, sleep...");
+
+	    Thread.sleep(1000);
+	}
+    }
+
 }

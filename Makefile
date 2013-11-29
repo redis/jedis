@@ -101,9 +101,9 @@ start:
 	echo "$$REDIS3_CONF" | redis-server -
 	echo "$$REDIS4_CONF" | redis-server -
 	echo "$$REDIS5_CONF" | redis-server -
-	echo "$$REDIS_SENTINEL1" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL2" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL3" | redis-server - --sentinel
+	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
+	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
+	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
 
 stop:
 	kill `cat /tmp/redis1.pid`

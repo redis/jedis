@@ -10,12 +10,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class ShardedJedisPoolTest extends Assert {
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()
@@ -28,8 +28,8 @@ public class ShardedJedisPoolTest extends Assert {
     @Before
     public void startUp() {
 	shards = new ArrayList<JedisShardInfo>();
-	shards.add(new JedisShardInfo(redis1.host, redis1.port));
-	shards.add(new JedisShardInfo(redis2.host, redis2.port));
+	shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
+	shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
 	shards.get(0).setPassword("foobared");
 	shards.get(1).setPassword("foobared");
 	Jedis j = new Jedis(shards.get(0));
@@ -40,6 +40,7 @@ public class ShardedJedisPoolTest extends Assert {
 	j.connect();
 	j.flushAll();
 	j.disconnect();
+
     }
 
     @Test
@@ -97,7 +98,7 @@ public class ShardedJedisPoolTest extends Assert {
 	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 	config.setMaxTotal(1);
 	config.setBlockWhenExhausted(false);
-	
+
 	ShardedJedisPool pool = new ShardedJedisPool(config, shards);
 
 	ShardedJedis jedis = pool.getResource();

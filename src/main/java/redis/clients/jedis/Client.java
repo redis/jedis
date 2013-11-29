@@ -752,11 +752,6 @@ public class Client extends BinaryClient implements Commands {
 	sentinel(arg);
     }
 
-    public void sentinel(final String cmd, String arg1, int arg2) {
-	sentinel(SafeEncoder.encode(cmd), SafeEncoder.encode(arg1),
-		toByteArray(arg2));
-    }
-    
     public void dump(final String key) { 
     	dump(SafeEncoder.encode(key));
     }

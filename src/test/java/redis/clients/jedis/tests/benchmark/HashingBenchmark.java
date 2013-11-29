@@ -7,11 +7,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class HashingBenchmark {
     private static HostAndPort hnp1 = HostAndPortUtil.getRedisServers().get(0);
@@ -21,10 +21,10 @@ public class HashingBenchmark {
     public static void main(String[] args) throws UnknownHostException,
             IOException {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-        JedisShardInfo shard = new JedisShardInfo(hnp1.host, hnp1.port);
+        JedisShardInfo shard = new JedisShardInfo(hnp1.getHost(), hnp1.getPort());
         shard.setPassword("foobared");
         shards.add(shard);
-        shard = new JedisShardInfo(hnp2.host, hnp2.port);
+        shard = new JedisShardInfo(hnp2.getHost(), hnp2.getPort());
         shard.setPassword("foobared");
         shards.add(shard);
         ShardedJedis jedis = new ShardedJedis(shards);

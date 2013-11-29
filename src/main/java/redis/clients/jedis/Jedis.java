@@ -2997,27 +2997,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return slaves;
     }
 
-    /**
-     * <pre>
-     * redis 127.0.0.1:26381> SENTINEL is-master-down-by-addr 127.0.0.1 1
-     * 1) (integer) 0
-     * 2) "?"
-     * redis 127.0.0.1:26381> SENTINEL is-master-down-by-addr 127.0.0.1 6379
-     * 1) (integer) 0
-     * 2) "aaef11fbb2712346a386078c7f9834e72ed51e96"
-     * </pre>
-     * 
-     * @return Long followed by the String (runid)
-     */
-    @SuppressWarnings("unchecked")
-	public List<? extends Object> sentinelIsMasterDownByAddr(String host,
-	    int port) {
-	client.sentinel(Protocol.SENTINEL_IS_MASTER_DOWN_BY_ADDR, host, port);
-	final List<Object> reply = client.getObjectMultiBulkReply();
-	return Arrays.asList(BuilderFactory.LONG.build(reply.get(0)),
-		BuilderFactory.STRING.build(reply.get(1)));
-    }
-    
     public byte[] dump(final String key) {
 	    checkIsInMulti();
 	    client.dump(key);

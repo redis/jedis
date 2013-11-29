@@ -29,7 +29,6 @@ public final class Protocol {
     public static final String SENTINEL_GET_MASTER_ADDR_BY_NAME = "get-master-addr-by-name";
     public static final String SENTINEL_RESET = "reset";
     public static final String SENTINEL_SLAVES = "slaves";
-    public static final String SENTINEL_IS_MASTER_DOWN_BY_ADDR = "is-master-down-by-addr";
 
     private Protocol() {
 	// this prevent the class from instantiation

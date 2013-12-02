@@ -831,4 +831,41 @@ public class Client extends BinaryClient implements Commands {
 	arg[0] = SafeEncoder.encode(subcommand);
 	cluster(arg);
     }
+    
+    public void clusterNodes() {
+	cluster(Protocol.CLUSTER_NODES);
+    }
+    
+    public void clusterMeet(final String ip, final int port) {
+	cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
+    }
+    
+    public void clusterAddSlots(final int ...slots) {
+	cluster(Protocol.CLUSTER_ADDSLOTS, slots);
+    }
+    
+    public void clusterDelSlots(final int ...slots) {
+	cluster(Protocol.CLUSTER_DELSLOTS, slots);
+    }
+    
+    public void clusterInfo() {
+	cluster(Protocol.CLUSTER_INFO);
+    }
+    
+    public void clusterGetKeysInSlot(final int slot, final int count) {
+    	final int[] args = new int[]{ slot, count };
+    	cluster(Protocol.CLUSTER_GETKEYSINSLOT, args);
+    }
+    
+    public void clusterSetSlotNode(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_NODE, nodeId);
+    }
+    
+    public void clusterSetSlotMigrating(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_MIGRATING, nodeId);
+    }
+    
+    public void clusterSetSlotImporting(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    }
 }

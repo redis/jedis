@@ -7,7 +7,8 @@ import java.util.Set;
 abstract class MultiKeyPipelineBase extends PipelineBase implements
         BasicRedisPipeline,
         MultiKeyBinaryRedisPipeline,
-        MultiKeyCommandsPipeline {
+        MultiKeyCommandsPipeline,
+        ClusterPipeline {
 
     protected Client client = null;
 
@@ -397,5 +398,50 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
     public Response<Long> bitop(BitOP op, String destKey, String... srcKeys) {
         client.bitop(op, destKey, srcKeys);
         return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<String> clusterNodes() {
+	client.clusterNodes();
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> clusterMeet(final String ip, final int port) {
+	client.clusterMeet(ip, port);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> clusterAddSlots(final int... slots) {
+	client.clusterAddSlots(slots);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> clusterDelSlots(final int... slots) {
+	client.clusterDelSlots(slots);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> clusterInfo() {
+	client.clusterInfo();
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<List<String>> clusterGetKeysInSlot(final int slot, final int count) {
+	client.clusterGetKeysInSlot(slot, count);
+	return getResponse(BuilderFactory.STRING_LIST);
+    }
+
+    public Response<String> clusterSetSlotNode(final int slot, final String nodeId) {
+	client.clusterSetSlotNode(slot, nodeId);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> clusterSetSlotMigrating(final int slot, final String nodeId) {
+	client.clusterSetSlotMigrating(slot, nodeId);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    public Response<String> clusterSetSlotImporting(final int slot, final String nodeId) {
+	client.clusterSetSlotImporting(slot, nodeId);
+	return getResponse(BuilderFactory.STRING);
     }
 }

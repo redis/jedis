@@ -7,7 +7,7 @@ import redis.clients.util.Slowlog;
 import java.net.URI;
 import java.util.*;
 
-public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands {
+public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands, ClusterCommands {
     public Jedis(final String host) {
 	super(host);
     }
@@ -3079,56 +3079,55 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     public String clusterNodes() {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_NODES);
+    	client.clusterNodes();
     	return client.getBulkReply();
     }
     
     public String clusterMeet(final String ip, final int port) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
+    	client.clusterMeet(ip, port);
     	return client.getStatusCodeReply();
     }
     
     public String clusterAddSlots(final int ...slots) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_ADDSLOTS, slots);
+    	client.clusterAddSlots(slots);
     	return client.getStatusCodeReply();
     }
     
     public String clusterDelSlots(final int ...slots) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_DELSLOTS, slots);
+    	client.clusterDelSlots(slots);
     	return client.getStatusCodeReply();
     }
     
     public String clusterInfo() {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_INFO);
+    	client.clusterInfo();
     	return client.getStatusCodeReply();
     }
     
     public List<String> clusterGetKeysInSlot(final int slot, final int count) {
     	checkIsInMulti();
-    	final int[] args = new int[]{ slot, count };
-    	client.cluster(Protocol.CLUSTER_GETKEYSINSLOT, args);
+    	client.clusterGetKeysInSlot(slot, count);
     	return client.getMultiBulkReply();
     }
     
     public String clusterSetSlotNode(final int slot, final String nodeId) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_NODE, nodeId);
+    	client.clusterSetSlotNode(slot, nodeId);
     	return client.getStatusCodeReply();
     }
     
     public String clusterSetSlotMigrating(final int slot, final String nodeId) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_MIGRATING, nodeId);
+    	client.clusterSetSlotMigrating(slot, nodeId);
     	return client.getStatusCodeReply();
     }
     
     public String clusterSetSlotImporting(final int slot, final String nodeId) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    	client.clusterSetSlotImporting(slot, nodeId);
     	return client.getStatusCodeReply();
     }
 }

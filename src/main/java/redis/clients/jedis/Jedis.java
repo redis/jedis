@@ -3100,4 +3100,35 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	client.cluster(Protocol.CLUSTER_DELSLOTS, slots);
     	return client.getStatusCodeReply();
     }
+    
+    public String clusterInfo() {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_INFO);
+    	return client.getStatusCodeReply();
+    }
+    
+    public List<String> clusterGetKeysInSlot(final int slot, final int count) {
+    	checkIsInMulti();
+    	final int[] args = new int[]{ slot, count };
+    	client.cluster(Protocol.CLUSTER_GETKEYSINSLOT, args);
+    	return client.getMultiBulkReply();
+    }
+    
+    public String clusterSetSlotNode(final int slot, final String nodeId) {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_NODE, nodeId);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String clusterSetSlotMigrating(final int slot, final String nodeId) {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_MIGRATING, nodeId);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String clusterSetSlotImporting(final int slot, final String nodeId) {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    	return client.getStatusCodeReply();
+    }
 }

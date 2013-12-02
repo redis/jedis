@@ -34,6 +34,12 @@ public final class Protocol {
     public static final String CLUSTER_MEET = "meet";
     public static final String CLUSTER_ADDSLOTS = "addslots";
     public static final String CLUSTER_DELSLOTS = "delslots";
+    public static final String CLUSTER_INFO = "info";
+    public static final String CLUSTER_GETKEYSINSLOT = "getkeysinslot";
+    public static final String CLUSTER_SETSLOT = "setslot";
+    public static final String CLUSTER_SETSLOT_NODE = "node";
+    public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
+    public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
     
     private Protocol() {
 	// this prevent the class from instantiation

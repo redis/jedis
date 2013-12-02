@@ -1100,4 +1100,9 @@ public class BinaryClient extends Connection {
     public void hincrByFloat(final byte[] key, final byte[] field, double increment) {
     	sendCommand(HINCRBYFLOAT, key, field, toByteArray(increment));
     }
+    
+    public void cluster(final byte[]... args) {
+    	sendCommand(CLUSTER, args);
+    }
+
 }

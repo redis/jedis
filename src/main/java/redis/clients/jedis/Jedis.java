@@ -3076,4 +3076,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	String relpy = client.getBulkReply();
     	return (relpy != null ? new Double(relpy) : null);
     }
+
+    public String clusterNodes() {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_NODES);
+    	return client.getBulkReply();
+    }
 }

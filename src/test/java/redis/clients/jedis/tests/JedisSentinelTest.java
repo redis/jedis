@@ -17,8 +17,8 @@ public class JedisSentinelTest extends JedisTestBase {
 
     protected static HostAndPort master = HostAndPortUtil.getRedisServers()
 	    .get(0);
-    protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(
-	    1);
+    protected static HostAndPort slave = HostAndPortUtil.getRedisServers()
+    	.get(5);
     protected static HostAndPort sentinel = HostAndPortUtil
 	    .getSentinelServers().get(0);
 
@@ -44,14 +44,14 @@ public class JedisSentinelTest extends JedisTestBase {
 
     @After
     public void clear() throws InterruptedException {
-	Jedis j = new Jedis("localhost", 6380);
-	j.auth("foobared");
-	j.slaveofNoOne();
+		// New Sentinel (after 2.8.1)
+		// when slave promoted to master (slave of no one), New Sentinel force to restore it (demote)
+		// so, promote(slaveof) slave to master has no effect, not same to old Sentinel's behavior
     }
 
     @Test
     public void sentinel() {
-	Jedis j = new Jedis("localhost", 26379);
+	Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
 	List<Map<String, String>> masters = j.sentinelMasters();
 	final String masterName = masters.get(0).get("name");
 
@@ -59,12 +59,13 @@ public class JedisSentinelTest extends JedisTestBase {
 
 	List<String> masterHostAndPort = j
 		.sentinelGetMasterAddrByName(masterName);
-	assertEquals("127.0.0.1", masterHostAndPort.get(0));
-	assertEquals("6379", masterHostAndPort.get(1));
+	HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0), 
+			Integer.parseInt(masterHostAndPort.get(1)));
+	assertEquals(master, masterFromSentinel);
 
 	List<Map<String, String>> slaves = j.sentinelSlaves(masterName);
 	assertTrue(slaves.size() > 0);
-	assertEquals("6379", slaves.get(0).get("master-port"));
+	assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
 	// DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
 	assertEquals(Long.valueOf(1), j.sentinelReset(masterName));

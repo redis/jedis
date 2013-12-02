@@ -12,7 +12,7 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:4.11'
-    compile 'commons-pool:commons-pool:1.6'
+    compile 'org.apache.commons:commons-pool2:2.0'
 }
 
 

@@ -13,10 +13,11 @@ public class ClusterCommandsTest extends JedisTestBase {
     private Jedis node1;
     private Jedis node2;
 
+    private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
+    private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
+
     @Before
     public void setUp() throws Exception {
-	HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
-	HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
 
 	node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
 	node1.connect();
@@ -36,6 +37,12 @@ public class ClusterCommandsTest extends JedisTestBase {
     @Test
     public void clusterNodes() {
 	String nodes = node1.clusterNodes();
-	assertEquals(1, nodes.split("\n").length);
+	assertTrue(nodes.split("\n").length > 0);
+    }
+
+    @Test
+    public void clusterMeet() {
+	String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+	assertEquals("OK", status);
     }
 }

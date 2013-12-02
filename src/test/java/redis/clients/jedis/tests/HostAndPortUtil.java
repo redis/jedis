@@ -26,15 +26,18 @@ public class HostAndPortUtil {
         
         HostAndPort defaulthnp5 = new HostAndPort("localhost", Protocol.DEFAULT_PORT + 4);
         redisHostAndPortList.add(defaulthnp5);
+       
+        HostAndPort defaulthnp6 = new HostAndPort("localhost", Protocol.DEFAULT_PORT + 5);
+        redisHostAndPortList.add(defaulthnp6);
         
-        HostAndPort defaulthnp6 = new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT);
-        sentinelHostAndPortList.add(defaulthnp6);
-        
-        HostAndPort defaulthnp7 = new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1);
+        HostAndPort defaulthnp7 = new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT);
         sentinelHostAndPortList.add(defaulthnp7);
         
-        HostAndPort defaulthnp8 = new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2);
+        HostAndPort defaulthnp8 = new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1);
         sentinelHostAndPortList.add(defaulthnp8);
+        
+        HostAndPort defaulthnp9 = new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2);
+        sentinelHostAndPortList.add(defaulthnp9);
 
         String envRedisHosts = System.getProperty("redis-hosts");
         String envSentinelHosts = System.getProperty("sentinel-hosts");

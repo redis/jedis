@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 public class HostAndPort {
+	public static final String LOCALHOST_STR = "localhost";
+	
 	private String host;
 	private int port;
 	
@@ -22,11 +24,10 @@ public class HostAndPort {
 	    if (obj instanceof HostAndPort) {
 			HostAndPort hp = (HostAndPort) obj;
 			
-			// localhost and 127.0.0.1 is same
+			String thisHost = convertHost(host);
+			String hpHost = convertHost(hp.host);
 			return port == hp.port && 
-				(host.equals(hp.host) || 
-						(host.equals("localhost") && hp.host.equals("127.0.0.1")) || 
-						(host.equals("127.0.0.1") && hp.host.equals("localhost")) );
+					thisHost.equals(hpHost); 
 	    }
 	    
 	    return false;
@@ -35,5 +36,14 @@ public class HostAndPort {
 	@Override
 	public String toString() {
 	    return host + ":" + port;
+	}
+	
+	private String convertHost(String host) {
+		if (host.equals("127.0.0.1"))
+			return LOCALHOST_STR;
+		else if (host.equals("::1"))
+			return LOCALHOST_STR;
+		
+		return host;
 	}
 }

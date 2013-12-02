@@ -13,61 +13,82 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 public class JedisSentinelTest extends JedisTestBase {
-    private static final String MASTER_NAME = "mymaster";
+	private static final String MASTER_NAME = "mymaster";
 
-    protected static HostAndPort master = HostAndPortUtil.getRedisServers()
-	    .get(0);
-    protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(
-	    1);
-    protected static HostAndPort sentinel = HostAndPortUtil
-	    .getSentinelServers().get(0);
+	protected static HostAndPort master = HostAndPortUtil.getRedisServers()
+			.get(0);
+	protected static HostAndPort slave = HostAndPortUtil.getRedisServers()
+			.get(5);
+	protected static HostAndPort sentinel = HostAndPortUtil
+			.getSentinelServers().get(0);
 
-    protected static Jedis masterJedis;
-    protected static Jedis slaveJedis;
-    protected static Jedis sentinelJedis;
+	protected static Jedis masterJedis;
+	protected static Jedis slaveJedis;
+	protected static Jedis sentinelJedis;
 
-    @Before
-    public void setup() throws InterruptedException {
-	masterJedis = new Jedis(master.getHost(), master.getPort());
+	@Before
+	public void setup() throws InterruptedException {
+		masterJedis = new Jedis(master.getHost(), master.getPort());
 
-	slaveJedis = new Jedis(slave.getHost(), slave.getPort());
-	slaveJedis.auth("foobared");
-	slaveJedis.configSet("masterauth", "foobared");
-	slaveJedis.slaveof(master.getHost(), master.getPort());
+		slaveJedis = new Jedis(slave.getHost(), slave.getPort());
+		slaveJedis.auth("foobared");
+		slaveJedis.configSet("masterauth", "foobared");
+		slaveJedis.slaveof(master.getHost(), master.getPort());
 
-	List<HostAndPort> slaves = new ArrayList<HostAndPort>();
-	slaves.add(slave);
+		List<HostAndPort> slaves = new ArrayList<HostAndPort>();
+		slaves.add(slave);
 
-	JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(
-		sentinel, MASTER_NAME, master, slaves);
-    }
+		JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(sentinel,
+				MASTER_NAME, master, slaves);
+		
+		// No need to wait for sentinels to recognize each other
+	}
 
-    @After
-    public void clear() throws InterruptedException {
-	Jedis j = new Jedis("localhost", 6380);
-	j.auth("foobared");
-	j.slaveofNoOne();
-    }
+	@After
+	public void clear() throws InterruptedException {
+		// FIXME: New Sentinel (after 2.8.1)
+		// when slave promoted to master (slave of no one), New Sentinel force to restore it (demote)
+		// so, running clear() has no effect, not same to old Sentinel's behavior
+		
+		// Jedis j = new Jedis(slave.getHost(), slave.getPort());
+		// j.auth("foobared");
+		// j.slaveofNoOne();
+		// JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(sentinel,
+		// 		MASTER_NAME, master, new ArrayList<HostAndPort>());
+	}
 
-    @Test
-    public void sentinel() {
-	Jedis j = new Jedis("localhost", 26379);
-	List<Map<String, String>> masters = j.sentinelMasters();
-	final String masterName = masters.get(0).get("name");
+	@Test
+	public void sentinel() {
+		Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+		List<Map<String, String>> masters = j.sentinelMasters();
+		final String masterName = masters.get(0).get("name");
 
-	assertEquals(MASTER_NAME, masterName);
+		assertEquals(MASTER_NAME, masterName);
 
-	List<String> masterHostAndPort = j
-		.sentinelGetMasterAddrByName(masterName);
-	assertEquals("127.0.0.1", masterHostAndPort.get(0));
-	assertEquals("6379", masterHostAndPort.get(1));
+		List<String> masterHostAndPort = j
+				.sentinelGetMasterAddrByName(masterName);
+		HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0), 
+				Integer.parseInt(masterHostAndPort.get(1)));
+		assertEquals(master, masterFromSentinel);
 
-	List<Map<String, String>> slaves = j.sentinelSlaves(masterName);
-	assertTrue(slaves.size() > 0);
-	assertEquals("6379", slaves.get(0).get("master-port"));
+		List<Map<String, String>> slaves = j.sentinelSlaves(masterName);
+		assertTrue(slaves.size() > 0);
+		assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
-	// DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
-	assertEquals(Long.valueOf(1), j.sentinelReset(masterName));
-	assertEquals(Long.valueOf(0), j.sentinelReset("woof" + masterName));
+		// FIXME: "sentinel is-master-down-by-addr" parameters added at Redis 2.8 (new sentinel) 
+		// (<ip> <port> => <ip> <port> <current-epoch> <runid>)
+		// and we cannot find the way to getting current-epoch from sentinel
+		// so tests commented 
+		// List<? extends Object> isMasterDownByAddr = j
+		// 		.sentinelIsMasterDownByAddr(master.getHost(), master.getPort());
+		// assertEquals(Long.valueOf(0), (Long) isMasterDownByAddr.get(0));
+		// assertFalse("?".equals(isMasterDownByAddr.get(1)));
+		// isMasterDownByAddr = j.sentinelIsMasterDownByAddr(master.getHost(), 1);
+		// assertEquals(Long.valueOf(0), (Long) isMasterDownByAddr.get(0));
+		// assertTrue("?".equals(isMasterDownByAddr.get(1)));
+
+		// DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
+		assertEquals(Long.valueOf(1), j.sentinelReset(masterName));
+		assertEquals(Long.valueOf(0), j.sentinelReset("woof" + masterName));
     }
 }

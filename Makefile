@@ -50,10 +50,21 @@ save ""
 appendonly no
 endef
 
+define REDIS6_CONF
+daemonize yes
+port 6384
+requirepass foobared
+masterauth foobared
+pidfile /tmp/redis6.pid
+logfile /tmp/redis6.log
+save ""
+appendonly no
+endef
+
 define REDIS_SENTINEL1
 port 26379
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6379 1
+sentinel monitor mymaster localhost 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel failover-timeout mymaster 900000
@@ -65,7 +76,7 @@ endef
 define REDIS_SENTINEL2
 port 26380
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6381 2
+sentinel monitor mymaster localhost 6381 2
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel parallel-syncs mymaster 1
@@ -77,7 +88,7 @@ endef
 define REDIS_SENTINEL3
 port 26381
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6381 2
+sentinel monitor mymaster localhost 6381 2
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 3000
 sentinel parallel-syncs mymaster 1
@@ -86,11 +97,18 @@ pidfile /tmp/sentinel3.pid
 logfile /tmp/sentinel3.log
 endef
 
+ifdef OPT_CAN_FAILOVER
+REDIS_SENTINEL1 += \nsentinel can-failover mymaster $(OPT_CAN_FAILOVER)
+REDIS_SENTINEL2 += \nsentinel can-failover mymaster $(OPT_CAN_FAILOVER)
+REDIS_SENTINEL3 += \nsentinel can-failover mymaster $(OPT_CAN_FAILOVER)
+endif
+
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF
 export REDIS4_CONF
 export REDIS5_CONF
+export REDIS6_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
@@ -101,6 +119,7 @@ start:
 	echo "$$REDIS3_CONF" | redis-server -
 	echo "$$REDIS4_CONF" | redis-server -
 	echo "$$REDIS5_CONF" | redis-server -
+	echo "$$REDIS6_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
 	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
@@ -112,76 +131,30 @@ stop:
 	kill `cat /tmp/redis3.pid` || true
 	kill `cat /tmp/redis4.pid` || true
 	kill `cat /tmp/redis5.pid` || true
+	kill `cat /tmp/redis6.pid` || true
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
+	
+	rm -f /tmp/sentinel1.conf || true
+	rm -f /tmp/sentinel2.conf || true
+	rm -f /tmp/sentinel3.conf || true
 
 test:
-	echo "$$REDIS1_CONF" | redis-server -
-	echo "$$REDIS2_CONF" | redis-server -
-	echo "$$REDIS3_CONF" | redis-server -
-	echo "$$REDIS4_CONF" | redis-server -
-	echo "$$REDIS5_CONF" | redis-server -
-	echo "$$REDIS_SENTINEL1" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL2" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL3" | redis-server - --sentinel
-
+	make start
 	mvn clean compile test
-
-	kill `cat /tmp/redis1.pid`
-	kill `cat /tmp/redis2.pid`
-	# this get's segfaulted by the tests
-	kill `cat /tmp/redis3.pid` || true
-	kill `cat /tmp/redis4.pid` || true
-	kill `cat /tmp/redis5.pid` || true
-	kill `cat /tmp/sentinel1.pid`
-	kill `cat /tmp/sentinel2.pid`
-	kill `cat /tmp/sentinel3.pid`
+	make stop
 
 deploy:
-	echo "$$REDIS1_CONF" | redis-server -
-	echo "$$REDIS2_CONF" | redis-server -
-	echo "$$REDIS3_CONF" | redis-server -
-	echo "$$REDIS4_CONF" | redis-server -
-	echo "$$REDIS5_CONF" | redis-server -
-	echo "$$REDIS_SENTINEL1" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL2" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL3" | redis-server - --sentinel
-
+	make start
 	mvn clean deploy
-
-	kill `cat /tmp/redis1.pid`
-	kill `cat /tmp/redis2.pid`
-	# this get's segfaulted by the tests
-	kill `cat /tmp/redis3.pid` || true
-	kill `cat /tmp/redis4.pid` || true
-	kill `cat /tmp/redis5.pid` || true
-	kill `cat /tmp/sentinel1.pid`
-	kill `cat /tmp/sentinel2.pid`
-	kill `cat /tmp/sentinel3.pid`
+	make stop
 
 release:
-	echo "$$REDIS1_CONF" | redis-server -
-	echo "$$REDIS2_CONF" | redis-server -
-	echo "$$REDIS3_CONF" | redis-server -
-	echo "$$REDIS4_CONF" | redis-server -
-	echo "$$REDIS5_CONF" | redis-server -
-	echo "$$REDIS_SENTINEL1" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL2" | redis-server - --sentinel
-	echo "$$REDIS_SENTINEL3" | redis-server - --sentinel
-
+	make start
 	mvn release:clean
 	mvn release:prepare
 	mvn release:perform
-
-	kill `cat /tmp/redis1.pid`
-	kill `cat /tmp/redis2.pid`
-	# this get's segfaulted by the tests
-	kill `cat /tmp/redis3.pid` || true
-	kill `cat /tmp/redis4.pid` || true
-	kill `cat /tmp/redis5.pid` || true 
-	kill `cat /tmp/sentinel1.pid`
-	kill `cat /tmp/sentinel2.pid`
-	kill `cat /tmp/sentinel3.pid`
+	make stop
 
 .PHONY: test

@@ -299,8 +299,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void ttl() {
+    	// compatibility issues
+    	// ttl returns -2 for non-existence key with Redis 2.8, 
+    	// but returns -1 with Redis 2.6
+        // http://redis.io/commands/ttl
         long ttl = jedis.ttl("foo");
-        assertEquals(-2, ttl);
+        assertTrue(ttl == -1 || ttl == -2);
 
         jedis.set("foo", "bar");
         ttl = jedis.ttl("foo");
@@ -311,8 +315,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
         assertTrue(ttl >= 0 && ttl <= 20);
 
         // Binary
+    	// compatibility issues
+    	// ttl returns -2 for non-existence key with Redis 2.8, 
+    	// but returns -1 with Redis 2.6
+        // http://redis.io/commands/ttl
         long bttl = jedis.ttl(bfoo);
-        assertEquals(-2, bttl);
+        assertTrue(bttl == -1 || bttl == -2);
 
         jedis.set(bfoo, bbar);
         bttl = jedis.ttl(bfoo);
@@ -491,8 +499,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     
     @Test
     public void pttl() {
+    	// FIXME: compatibility issues
+    	// ttl returns -2 for non-existence key with Redis 2.8, 
+    	// but returns -1 with Redis 2.6
+        // http://redis.io/commands/ttl
         long pttl = jedis.pttl("foo");
-        assertEquals(-2, pttl);
+        assertTrue(pttl == -1 || pttl == -2);
 
         jedis.set("foo", "bar");
         pttl = jedis.pttl("foo");

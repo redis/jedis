@@ -45,4 +45,17 @@ public class ClusterCommandsTest extends JedisTestBase {
 	String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
 	assertEquals("OK", status);
     }
+    
+    @Test
+    public void clusterAddSlots() {
+	String status = node1.clusterAddSlots(1, 2, 3, 4, 5);
+	assertEquals("OK", status);
+    }
+    
+    @Test
+    public void clusterDelSlots() {
+	node1.clusterAddSlots(900);
+	String status = node1.clusterDelSlots(900);
+	assertEquals("OK", status);
+    }
 }

@@ -3085,7 +3085,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     
     public String clusterMeet(final String ip, final int port) {
     	checkIsInMulti();
-    	client.cluster(Protocol.CLUSTER_MEET, ip, port);
+    	client.cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
+    	return client.getStatusCodeReply();
+    }
+    
+    public String clusterAddSlots(final int ...slots) {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_ADDSLOTS, slots);
+    	return client.getStatusCodeReply();
+    }
+    
+    public String clusterDelSlots(final int ...slots) {
+    	checkIsInMulti();
+    	client.cluster(Protocol.CLUSTER_DELSLOTS, slots);
     	return client.getStatusCodeReply();
     }
 }

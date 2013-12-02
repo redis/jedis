@@ -32,6 +32,8 @@ public final class Protocol {
 
     public static final String CLUSTER_NODES = "nodes";
     public static final String CLUSTER_MEET = "meet";
+    public static final String CLUSTER_ADDSLOTS = "addslots";
+    public static final String CLUSTER_DELSLOTS = "delslots";
     
     private Protocol() {
 	// this prevent the class from instantiation

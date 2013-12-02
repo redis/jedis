@@ -808,11 +808,27 @@ public class Client extends BinaryClient implements Commands {
     	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), increment);
     }
 
-    public void cluster(final Object... args) {
-	final byte[][] arg = new byte[args.length][];
-	for (int i = 0; i < arg.length; i++) {
-	    arg[i] = SafeEncoder.encode(args[i].toString());
+    public void cluster(final String subcommand, final int... args) {
+	final byte[][] arg = new byte[args.length+1][];
+	for (int i = 1; i < arg.length; i++) {
+	    arg[i] = toByteArray(args[i-1]);
 	}
+	arg[0] = SafeEncoder.encode(subcommand);
+	cluster(arg);
+    }
+
+    public void cluster(final String subcommand, final String... args) {
+	final byte[][] arg = new byte[args.length+1][];
+	for (int i = 1; i < arg.length; i++) {
+	    arg[i] = SafeEncoder.encode(args[i-1]);
+	}
+	arg[0] = SafeEncoder.encode(subcommand);
+	cluster(arg);
+    }
+    
+    public void cluster(final String subcommand) {
+	final byte[][] arg = new byte[1][];
+	arg[0] = SafeEncoder.encode(subcommand);
 	cluster(arg);
     }
 }

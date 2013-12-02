@@ -97,6 +97,12 @@ pidfile /tmp/sentinel3.pid
 logfile /tmp/sentinel3.log
 endef
 
+ifdef OPT_CAN_FAILOVER
+REDIS_SENTINEL1 += \nsentinel can-failover mymaster $(OPT_CAN_FAILOVER)
+REDIS_SENTINEL2 += \nsentinel can-failover mymaster $(OPT_CAN_FAILOVER)
+REDIS_SENTINEL3 += \nsentinel can-failover mymaster $(OPT_CAN_FAILOVER)
+endif
+
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF

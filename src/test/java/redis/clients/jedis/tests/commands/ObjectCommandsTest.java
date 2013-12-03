@@ -36,14 +36,11 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
     public void objectIdletime() throws InterruptedException {
 	jedis.lpush(key, "hello world");
 
-	// Wait a little bit more than 10 seconds so the idle time is 10
-	// seconds.
-	Thread.sleep(10001);
 	Long time = jedis.objectIdletime(key);
-	assertEquals(new Long(10), time);
+	assertEquals(new Long(0), time);
 
 	// Binary
 	time = jedis.objectIdletime(binaryKey);
-	assertEquals(new Long(10), time);
+	assertEquals(new Long(0), time);
     }
 }

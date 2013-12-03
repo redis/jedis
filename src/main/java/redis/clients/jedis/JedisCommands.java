@@ -211,4 +211,10 @@ public interface
     Long bitcount(final String key);
 
     Long bitcount(final String key, long start, long end);
+    
+    ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor);
+    
+    ScanResult<String> sscan(final String key, int cursor);
+    
+    ScanResult<Tuple> zscan(final String key, int cursor);
 }

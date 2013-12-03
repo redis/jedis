@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.util.SafeEncoder;
@@ -884,5 +886,47 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
         assertEquals(-1, t1.compareTo(t2));
         assertEquals(1, t2.compareTo(t1));
         assertEquals(0, t2.compareTo(t2));
+    }
+    
+
+    @Test
+    public void zscan() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 2, "b");
+	
+	ScanResult<Tuple> result = jedis.zscan("foo", 0);
+
+	assertEquals(0, result.getCursor());
+	assertFalse(result.getResult().isEmpty());
+    }
+
+    @Test
+    public void zscanMatch() {
+	ScanParams params = new ScanParams();
+	params.match("a*");
+
+	jedis.zadd("foo", 2, "b");
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 11, "aa");
+	ScanResult<Tuple> result = jedis.zscan("foo", 0, params);
+
+	assertEquals(0, result.getCursor());
+	assertFalse(result.getResult().isEmpty());
+    }
+
+    @Test
+    public void zscanCount() {
+	ScanParams params = new ScanParams();
+	params.count(2);
+
+	jedis.zadd("foo", 1, "a1");
+	jedis.zadd("foo", 2, "a2");
+	jedis.zadd("foo", 3, "a3");
+	jedis.zadd("foo", 4, "a4");
+	jedis.zadd("foo", 5, "a5");
+
+	ScanResult<Tuple> result = jedis.zscan("foo", 0, params);
+
+	assertFalse(result.getResult().isEmpty());
     }
 }

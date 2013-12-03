@@ -434,6 +434,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
         }).start();
 
         result = jedis.blpop(1, "foo");
+        System.out.println("sddssddssd");
+
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("foo", result.get(0));
@@ -594,7 +596,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
         (new Thread(new Runnable() {
             public void run() {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(100);
                     Jedis j = createJedis();
                     j.lpush("foo", "a");
                 } catch (InterruptedException e) {

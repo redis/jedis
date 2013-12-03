@@ -100,7 +100,10 @@ public final class Protocol {
 	int offset = 0;
 	try {
 	    while (offset < len) {
-		offset += is.read(read, offset, (len - offset));
+	    	int size = is.read(read, offset, (len - offset));
+	    	if (size == -1)
+	    		throw new JedisConnectionException("It seems like server has closed the connection.");
+	    	offset += size;
 	    }
 	    // read 2 more bytes for the command delimiter
 	    is.readByte();

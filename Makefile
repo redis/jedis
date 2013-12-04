@@ -60,6 +60,7 @@ pidfile /tmp/redis6.pid
 logfile /tmp/redis6.log
 save ""
 appendonly no
+slaveof localhost 6379
 endef
 
 define REDIS_SENTINEL1

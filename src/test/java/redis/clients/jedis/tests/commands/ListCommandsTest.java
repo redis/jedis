@@ -423,7 +423,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
         jedis.lpush("foo", "bar");
         result = jedis.blpop(1, "foo");
-        System.out.println("lalalala");
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -433,7 +432,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
         // Binary
         jedis.lpush(bfoo, bbar);
         List<byte[]> bresult = jedis.blpop(1, bfoo);
-        System.out.println("lalalala");
 
         assertNotNull(bresult);
         assertEquals(2, bresult.size());

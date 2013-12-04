@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,15 +9,14 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 public class JedisSentinelTest extends JedisTestBase {
     private static final String MASTER_NAME = "mymaster";
 
     protected static HostAndPort master = HostAndPortUtil.getRedisServers()
 	    .get(0);
-    protected static HostAndPort slave = HostAndPortUtil.getRedisServers()
-    	.get(5);
+    protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(
+	    5);
     protected static HostAndPort sentinel = HostAndPortUtil
 	    .getSentinelServers().get(0);
 
@@ -28,25 +26,16 @@ public class JedisSentinelTest extends JedisTestBase {
 
     @Before
     public void setup() throws InterruptedException {
-	masterJedis = new Jedis(master.getHost(), master.getPort());
 
-	slaveJedis = new Jedis(slave.getHost(), slave.getPort());
-	slaveJedis.auth("foobared");
-	slaveJedis.configSet("masterauth", "foobared");
-	slaveJedis.slaveof(master.getHost(), master.getPort());
-
-	List<HostAndPort> slaves = new ArrayList<HostAndPort>();
-	slaves.add(slave);
-
-	JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(
-		sentinel, MASTER_NAME, master, slaves);
     }
 
     @After
     public void clear() throws InterruptedException {
-		// New Sentinel (after 2.8.1)
-		// when slave promoted to master (slave of no one), New Sentinel force to restore it (demote)
-		// so, promote(slaveof) slave to master has no effect, not same to old Sentinel's behavior
+	// New Sentinel (after 2.8.1)
+	// when slave promoted to master (slave of no one), New Sentinel force
+	// to restore it (demote)
+	// so, promote(slaveof) slave to master has no effect, not same to old
+	// Sentinel's behavior
     }
 
     @Test
@@ -59,13 +48,15 @@ public class JedisSentinelTest extends JedisTestBase {
 
 	List<String> masterHostAndPort = j
 		.sentinelGetMasterAddrByName(masterName);
-	HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0), 
-			Integer.parseInt(masterHostAndPort.get(1)));
+	HostAndPort masterFromSentinel = new HostAndPort(
+		masterHostAndPort.get(0), Integer.parseInt(masterHostAndPort
+			.get(1)));
 	assertEquals(master, masterFromSentinel);
 
 	List<Map<String, String>> slaves = j.sentinelSlaves(masterName);
 	assertTrue(slaves.size() > 0);
-	assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
+	assertEquals(master.getPort(),
+		Integer.parseInt(slaves.get(0).get("master-port")));
 
 	// DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
 	assertEquals(Long.valueOf(1), j.sentinelReset(masterName));

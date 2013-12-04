@@ -2,7 +2,9 @@ package redis.clients.jedis.tests;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,8 +12,11 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
+import redis.clients.jedis.Tuple;
 import redis.clients.util.Hashing;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Sharded;
@@ -37,7 +42,22 @@ public class ShardedJedisTest extends Assert {
         }
         return ret;
     }
-
+    
+    @After
+    public void tearDown() {
+    	try {
+	    	Jedis jedis = new Jedis(redis1.getHost(), redis1.getPort());
+	    	jedis.flushDB();
+	    	jedis.disconnect();
+	    	
+	    	jedis = new Jedis(redis2.getHost(), redis2.getPort());
+	    	jedis.flushDB();
+	    	jedis.disconnect();
+    	} catch (Exception e) {
+    		// pass
+    	}
+    }
+    
     @Test
     public void checkSharding() {
         List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
@@ -300,4 +320,104 @@ public class ShardedJedisTest extends Assert {
             assertEquals(jedisShardInfo.getName(), jedisShardInfo2.getName());
         }
     }
+    
+    @Test
+    public void testZScanWithParams() {
+    	List<JedisShardInfo> shards = setupBasicShard();
+    	
+        ShardedJedis jedis = null;
+        try {
+        	jedis = new ShardedJedis(shards);
+        	
+	        // since shard algorithm is based on key, the key must exists only one shard
+	        String key = "test_zscan";
+	        
+	        jedis.zadd(key, 1.0, "a");
+	        jedis.zadd(key, 1.5, "ab");
+	        jedis.zadd(key, 2.0, "c");
+	        
+	        ScanParams params = new ScanParams();
+	        params.match("a*");
+	        ScanResult<Tuple> result = jedis.zscan(key, 0, params);
+	        List<Tuple> keyValues = result.getResult();
+	        assertTrue(keyValues.size() > 0);
+	        for (Tuple keyValue : keyValues)
+	        	assertNotEquals(keyValue.getElement(), "c");
+        } finally {
+        	if (null != jedis)
+        		jedis.disconnect();
+        }
+    }
+    
+    @Test
+    public void testSScanWithParams() {
+    	List<JedisShardInfo> shards = setupBasicShard();
+    	
+    	ShardedJedis jedis = null;
+    	try {
+    		jedis = new ShardedJedis(shards);
+        	
+	        // since shard algorithm is based on key, the key must exists only one shard
+	        String key = "test_sscan";
+	        
+	        jedis.sadd(key, "a");
+	        jedis.sadd(key, "ab");
+	        jedis.sadd(key, "c");
+	        
+	        ScanParams params = new ScanParams();
+	        params.match("a*");
+	        ScanResult<String> result = jedis.sscan(key, 0, params);
+	        List<String> values = result.getResult();
+	        assertTrue(values.size() > 0);
+	        for (String value : values)
+	        	assertNotEquals(value, "c");
+    	} finally {
+    		if (null != jedis)
+        		jedis.disconnect();
+    	}
+    }
+    
+    @Test
+    public void testHScanWithParams() {
+    	List<JedisShardInfo> shards = setupBasicShard();
+    	
+    	ShardedJedis jedis = null;
+    	try {
+    		jedis = new ShardedJedis(shards);
+        	
+	        // since shard algorithm is based on key, the key must exists only one shard
+	        String key = "test_hscan";
+	        
+	        jedis.hset(key, "a", "b");
+	        jedis.hset(key, "ab", "bc");
+	        jedis.hset(key, "c", "d");
+	        
+	        ScanParams params = new ScanParams();
+	        params.match("a*");
+	        ScanResult<Entry<String,String>> result = jedis.hscan(key, 0, params);
+	        List<Entry<String,String>> entries = result.getResult();
+	        assertTrue(entries.size() > 0);
+	        for (Entry<String, String> entry : entries) {
+	        	assertNotEquals(entry.getKey(), "c");
+	        }
+    	} finally {
+    		if (null != jedis)
+        		jedis.disconnect();
+    	}
+    }
+    
+    private List<JedisShardInfo> setupBasicShard() {
+    	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    	
+    	JedisShardInfo shard1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());
+    	shard1.setPassword("foobared");
+        JedisShardInfo shard2 = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+        shard2.setPassword("foobared");
+        
+        shards.add(shard1);
+        shards.add(shard2);
+        
+        return shards;
+    }
+    
 }

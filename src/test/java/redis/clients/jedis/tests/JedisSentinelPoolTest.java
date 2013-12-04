@@ -1,9 +1,8 @@
 package redis.clients.jedis.tests;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
@@ -12,8 +11,8 @@ import org.junit.Test;
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
     private static final String MASTER_NAME = "mymaster";
@@ -29,43 +28,16 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     protected static HostAndPort sentinel2 = HostAndPortUtil
 	    .getSentinelServers().get(2);
 
-    protected static Jedis masterJedis;
-    protected static Jedis slaveJedis1;
-    protected static Jedis slaveJedis2;
     protected static Jedis sentinelJedis1;
-    protected static Jedis sentinelJedis2;
 
     protected Set<String> sentinels = new HashSet<String>();
 
     @Before
     public void setUp() throws Exception {
-
-	// set up master and slaves
-	masterJedis = new Jedis(master.getHost(), master.getPort());
-	masterJedis.auth("foobared");
-	masterJedis.slaveofNoOne();
-
-	slaveJedis1 = new Jedis(slave1.getHost(), slave1.getPort());
-	slaveJedis1.auth("foobared");
-	slaveJedis1.slaveof(master.getHost(), master.getPort());
-
-	slaveJedis2 = new Jedis(slave2.getHost(), slave2.getPort());
-	slaveJedis2.auth("foobared");
-	slaveJedis2.slaveof(master.getHost(), master.getPort());
-
 	sentinels.add(sentinel1.toString());
 	sentinels.add(sentinel2.toString());
 
-	List<HostAndPort> slaves = new ArrayList<HostAndPort>();
-	slaves.add(slave1);
-	slaves.add(slave2);
-
-	JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(
-		sentinel1, MASTER_NAME, master, slaves);
-	JedisSentinelTestUtil.waitForSentinelRecognizeRedisReplication(
-		sentinel2, MASTER_NAME, master, slaves);
-
-	// No need to wait for sentinels to recognize each other
+	sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
     }
 
     @Test
@@ -106,17 +78,62 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
     private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
 	    throws InterruptedException {
-	HostAndPort newMaster = JedisSentinelTestUtil.waitForNewPromotedMaster(
-		sentinel1, MASTER_NAME, oldMaster);
-	JedisSentinelTestUtil.waitForNewPromotedMaster(sentinel2, MASTER_NAME,
-		oldMaster);
-	JedisSentinelTestUtil.waitForSentinelsRecognizeEachOthers();
-	waitForJedisSentinelPoolRecognizeNewMaster(pool, newMaster);
+	waitForJedisSentinelPoolRecognizeNewMaster(pool);
     }
 
     private void waitForJedisSentinelPoolRecognizeNewMaster(
-	    JedisSentinelPool pool, HostAndPort newMaster)
-	    throws InterruptedException {
+	    JedisSentinelPool pool) throws InterruptedException {
+
+	final AtomicReference<String> newmaster = new AtomicReference<String>(
+		"");
+
+	sentinelJedis1.psubscribe(new JedisPubSub() {
+
+	    @Override
+	    public void onMessage(String channel, String message) {
+		// TODO Auto-generated method stub
+
+	    }
+
+	    @Override
+	    public void onPMessage(String pattern, String channel,
+		    String message) {
+		if (channel.equals("+switch-master")) {
+		    newmaster.set(message);
+		    punsubscribe();
+		}
+		// TODO Auto-generated method stub
+
+	    }
+
+	    @Override
+	    public void onSubscribe(String channel, int subscribedChannels) {
+		// TODO Auto-generated method stub
+
+	    }
+
+	    @Override
+	    public void onUnsubscribe(String channel, int subscribedChannels) {
+		// TODO Auto-generated method stub
+
+	    }
+
+	    @Override
+	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
+		// TODO Auto-generated method stub
+
+	    }
+
+	    @Override
+	    public void onPSubscribe(String pattern, int subscribedChannels) {
+		// TODO Auto-generated method stub
+
+	    }
+	}, "*");
+
+	String[] chunks = newmaster.get().split(" ");
+	HostAndPort newMaster = new HostAndPort(chunks[3],
+		Integer.parseInt(chunks[4]));
 
 	while (true) {
 	    String host = pool.getCurrentHostMaster().getHost();
@@ -128,7 +145,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    System.out
 		    .println("JedisSentinelPool's master is not yet changed, sleep...");
 
-	    Thread.sleep(1000);
+	    Thread.sleep(100);
 	}
     }
 

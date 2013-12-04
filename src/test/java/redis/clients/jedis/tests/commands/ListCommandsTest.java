@@ -421,41 +421,18 @@ public class ListCommandsTest extends JedisCommandTestBase {
         List<String> result = jedis.blpop(1, "foo");
         assertNull(result);
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Jedis j = createJedis();
-                    j.lpush("foo", "bar");
-                    j.disconnect();
-                } catch (Exception ex) {
-                    fail(ex.getMessage());
-                }
-            }
-        }).start();
-
+        jedis.lpush("foo", "bar");
         result = jedis.blpop(1, "foo");
+
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("foo", result.get(0));
         assertEquals("bar", result.get(1));
 
         // Binary
+        jedis.lpush(bfoo, bbar);
         List<byte[]> bresult = jedis.blpop(1, bfoo);
-        assertNull(bresult);
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Jedis j = createJedis();
-                    j.lpush(bfoo, bbar);
-                    j.disconnect();
-                } catch (Exception ex) {
-                    fail(ex.getMessage());
-                }
-            }
-        }).start();
-
-        bresult = jedis.blpop(1, bfoo);
         assertNotNull(bresult);
         assertEquals(2, bresult.size());
         assertArrayEquals(bfoo, bresult.get(0));
@@ -468,18 +445,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
         List<String> result = jedis.brpop(1, "foo");
         assertNull(result);
 
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Jedis j = createJedis();
-                    j.lpush("foo", "bar");
-                    j.disconnect();
-                } catch (Exception ex) {
-                    fail(ex.getMessage());
-                }
-            }
-        }).start();
 
+        jedis.lpush("foo", "bar");
         result = jedis.brpop(1, "foo");
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -487,22 +454,9 @@ public class ListCommandsTest extends JedisCommandTestBase {
         assertEquals("bar", result.get(1));
 
         // Binary
+ 
+        jedis.lpush(bfoo, bbar);
         List<byte[]> bresult = jedis.brpop(1, bfoo);
-        assertNull(bresult);
-
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    Jedis j = createJedis();
-                    j.lpush(bfoo, bbar);
-                    j.disconnect();
-                } catch (Exception ex) {
-                    fail(ex.getMessage());
-                }
-            }
-        }).start();
-
-        bresult = jedis.brpop(1, bfoo);
         assertNotNull(bresult);
         assertEquals(2, bresult.size());
         assertArrayEquals(bfoo, bresult.get(0));
@@ -594,7 +548,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
         (new Thread(new Runnable() {
             public void run() {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(100);
                     Jedis j = createJedis();
                     j.lpush("foo", "a");
                 } catch (InterruptedException e) {

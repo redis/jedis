@@ -45,18 +45,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void lastsave() throws InterruptedException {
-	long before = jedis.lastsave();
-	String st = "";
-	while (!st.equals("OK")) {
-	    try {
-		Thread.sleep(1000);
-		st = jedis.save();
-	    } catch (JedisDataException e) {
-
-	    }
-	}
-	long after = jedis.lastsave();
-	assertTrue((after - before) > 0);
+	long saved = jedis.lastsave();
+	assertTrue(saved > 0);
     }
 
     @Test
@@ -73,14 +63,9 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 	    public void run() {
 		Jedis j = new Jedis("localhost");
 		j.auth("foobared");
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 5; i++) {
 		    j.incr("foobared");
 		}
-		try {
-		    Thread.sleep(2500);
-		} catch (InterruptedException e) {
-		}
-		j.incr("foobared");
 		j.disconnect();
 	    }
 	}).start();

@@ -38,6 +38,7 @@ pidfile /tmp/redis4.pid
 logfile /tmp/redis4.log
 save ""
 appendonly no
+slaveof localhost 6381
 endef
 
 define REDIS5_CONF
@@ -49,6 +50,7 @@ pidfile /tmp/redis5.pid
 logfile /tmp/redis5.log
 save ""
 appendonly no
+slaveof localhost 6381
 endef
 
 define REDIS6_CONF

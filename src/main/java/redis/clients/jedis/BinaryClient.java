@@ -1131,4 +1131,8 @@ public class BinaryClient extends Connection {
  	args.addAll(params.getParams());
  	sendCommand(ZSCAN, args.toArray(new byte[args.size()][]));
     }
+    
+    public void waitReplicas(int replicas, long timeout) {
+	sendCommand(WAIT, toByteArray(replicas), toByteArray(timeout));
+    }
 }

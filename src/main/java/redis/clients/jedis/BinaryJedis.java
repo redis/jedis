@@ -3366,4 +3366,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     	return (relpy != null ? new Double(relpy) : null);
     }
 
+    /**
+     * Syncrhonous replication of Redis as described here:
+     * http://antirez.com/news/66
+     * 
+     * Since Java Object class has implemented "wait" method, we cannot use it,
+     * so I had to change the name of the method. Sorry :S
+     */
+    public Long waitReplicas(int replicas, long timeout) {
+    	checkIsInMulti();
+    	client.waitReplicas(replicas, timeout);
+    	return client.getIntegerReply();
+    }
+
 }

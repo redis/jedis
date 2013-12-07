@@ -181,7 +181,7 @@ stop:
 
 test:
 	make start
-	mvn clean compile test
+	mvn -Dtest=${TEST} clean compile test
 	make stop
 
 deploy:

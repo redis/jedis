@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests;
 
+import java.util.HashSet;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -9,6 +11,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 
 public class JedisClusterTest extends Assert {
     private Jedis node1;
@@ -42,7 +45,7 @@ public class JedisClusterTest extends Assert {
 
 	// add all slots to node1
 	Pipeline pipelined = node1.pipelined();
-	for (int i = 0; i < JedisCluster.HASH_SLOTS; i++) {
+	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
 	    pipelined.clusterAddSlots(i);
 	}
 	pipelined.sync();
@@ -52,15 +55,17 @@ public class JedisClusterTest extends Assert {
     public void tearDown() {
 	// clear all slots of node1
 	Pipeline pipelined = node1.pipelined();
-	for (int i = 0; i < JedisCluster.HASH_SLOTS; i++) {
+	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
 	    pipelined.clusterDelSlots(i);
 	}
 	pipelined.sync();
     }
 
-    @Test
-    public void moved() {
-	//TODO: needs to implement
+    @Test(expected=JedisMovedDataException.class)
+    public void throwMovedExceptionTest() {
+    	JedisCluster jc = new JedisCluster(new HashSet<HostAndPort>(HostAndPortUtil.getClusterServers()));
+    	jc.set("foo", "bar");
+    	jc.get("foo");
     }
 
     @Test

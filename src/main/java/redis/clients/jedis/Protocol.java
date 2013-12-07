@@ -6,13 +6,15 @@ import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
 public final class Protocol {
 
-    public static final int DEFAULT_PORT = 6379;
+    private static final String MOVED_RESPONSE = "MOVED";
+	public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SENTINEL_PORT = 26379;
     public static final int DEFAULT_TIMEOUT = 2000;
     public static final int DEFAULT_DATABASE = 0;
@@ -72,8 +74,12 @@ public final class Protocol {
     }
 
     private static void processError(final RedisInputStream is) {
-	String message = is.readLine();
-	throw new JedisDataException(message);
+		String message = is.readLine();
+		//TODO: Read only first 5 bytes?
+		if (message.contains(MOVED_RESPONSE)) {
+			throw new JedisMovedDataException(message);
+		}
+		throw new JedisDataException(message);
     }
 
     private static Object process(final RedisInputStream is) {

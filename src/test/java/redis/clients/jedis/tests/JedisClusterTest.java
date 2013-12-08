@@ -12,6 +12,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.tests.utils.RedisSlot;
 
 public class JedisClusterTest extends Assert {
     private Jedis node1;
@@ -68,8 +69,22 @@ public class JedisClusterTest extends Assert {
     	jc.get("foo");
     }
 
-    @Test
-    public void ask() {
-	//TODO: needs to implement
+//    @Test
+//    public void ask() {
+//    	JedisCluster jc = new JedisCluster(new HashSet<HostAndPort>(HostAndPortUtil.getClusterServers()));
+//    	jc.set("foo", "bar");
+//    	int keySlot = RedisSlot.getSlot("foo");
+//    	String node2Id = getNodeId(node2.clusterNodes());
+//    	node1.clusterSetSlotMigrating(keySlot, node2Id);
+//    	node1.get("foo");
+//    }
+    
+    private String getNodeId(String infoOutput) {
+    	for (String infoLine : infoOutput.split("\n")) {
+			if (infoLine.contains("myself")) {
+				return infoLine.split(" ")[0];
+			}
+		}
+    	return "";
     }
 }

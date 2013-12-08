@@ -33,6 +33,7 @@ All of the following redis features are supported:
 - Key-tags for sharding
 - Sharding with pipelining
 - Scripting with pipelining
+- Sentinel
 
 ## How do I use it?
 
@@ -73,12 +74,16 @@ To run the tests:
 
 - Use the latest redis master branch.
 
-- Run ```make test```. This will run 2 instances of redis. We use 2 redis
-	servers, one on default port (6379) and the other one on (6380). Both have
-	authentication enabled with default password (foobared). This way we can
-	test both sharding and auth command. For the Sentinel tests to we use a
-	default Sentinel configuration that is configured to properly authenticate
-	using the same password with a master called mymaster running on 6379.
+- Run ```make test```. This will run 6 instances of redis server, 3 instances of redis sentinel. 
+  - Redis servers port start at default (6379) to 6384 incrementally.
+    - All have authentication enabled with default password (foobared).
+  - Sentinel servers port also start at default (26379) to 26381 incrementally.
+    - Sentinels are configured to properly authenticate using the same password with a master called mymaster.
+  - For Normal Tests : Redis server (6379).
+  - For Sharding Tests : Redis Server (6379 ~ 6381).
+  - For Sentinel Tests
+    - Command Tests : Sentinel (26379) and Redis Server (6379, 6384).
+    - Failover Tests : Sentinel (26380, 26381) and Redis Server (Master 6381, Slave 6382 ~ 6383).
 
 Thanks for helping!
 

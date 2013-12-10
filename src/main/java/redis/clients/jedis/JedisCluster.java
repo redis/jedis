@@ -1,32 +1,25 @@
 package redis.clients.jedis;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.Pool;
 
 public class JedisCluster implements JedisCommands, BasicCommands {
 	
 	public static final short HASHSLOTS = 16384;
 	private static final int DEFAULT_TIMEOUT = 1;
 	
-	private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
+	
+	private JedisClusterConnectionHandler connectionHandler;
 
 	public JedisCluster(Set<HostAndPort> nodes, int timeout) {
-		initializeSlotsCache(nodes);
-	}
-	
-	private void initializeSlotsCache(Set<HostAndPort> nodes) {
-		for (HostAndPort hostAndPort : nodes) {
-			JedisPool jp = new JedisPool(hostAndPort.getHost(), hostAndPort.getPort());
-			this.nodes.put(hostAndPort.getHost()+hostAndPort.getPort(), jp);
-		}
+		connectionHandler = new JedisClusterConnectionHandler(nodes);
 		
 	}
+	
+	
 
 	public JedisCluster(Set<HostAndPort> nodes) {
 		this(nodes, DEFAULT_TIMEOUT);
@@ -34,68 +27,133 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	
 
 	@Override
-	public String set(String key, String value) {
-		return getRandomConnection().set(key, value);
+	public String set(final String key, final String value) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getRandomConnection().set(key, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String get(String key) {
-		return getRandomConnection().get(key);
+	public String get(final String key) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getRandomConnection().get(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Boolean exists(String key) {
-		return getRandomConnection().exists(key);
+	public Boolean exists(final String key) {
+		return new JedisClusterCommand<Boolean>(connectionHandler) {
+			@Override
+			public Boolean execute() {
+				return connectionHandler.getRandomConnection().exists(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long persist(String key) {
-		return getRandomConnection().persist(key);
+	public Long persist(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getRandomConnection().persist(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public String type(String key) {
-		return getRandomConnection().type(key);
+	public String type(final String key) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getRandomConnection().type(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long expire(String key, int seconds) {
-		return getRandomConnection().expire(key, seconds);
+	public Long expire(final String key, final int seconds) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getRandomConnection().expire(key, seconds);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long expireAt(String key, long unixTime) {
-		return getRandomConnection().expireAt(key, unixTime);
+	public Long expireAt(final String key, final long unixTime) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getRandomConnection().expireAt(key, unixTime);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long ttl(String key) {
-		return getRandomConnection().ttl(key);
+	public Long ttl(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getRandomConnection().ttl(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Boolean setbit(String key, long offset, boolean value) {
-		return getRandomConnection().setbit(key, offset, value);
+	public Boolean setbit(final String key, final long offset, final boolean value) {
+		return new JedisClusterCommand<Boolean>(connectionHandler) {
+			@Override
+			public Boolean execute() {
+				return connectionHandler.getRandomConnection().setbit(key, offset, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Boolean setbit(String key, long offset, String value) {
-		return getRandomConnection().setbit(key, offset, value);
+	public Boolean setbit(final String key, final long offset, final String value) {
+		return new JedisClusterCommand<Boolean>(connectionHandler) {
+			@Override
+			public Boolean execute() {
+				return connectionHandler.getRandomConnection().setbit(key, offset, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Boolean getbit(String key, long offset) {
-		return getRandomConnection().getbit(key, offset);
+	public Boolean getbit(final String key, final long offset) {
+		return new JedisClusterCommand<Boolean>(connectionHandler) {
+			@Override
+			public Boolean execute() {
+				return connectionHandler.getRandomConnection().getbit(key, offset);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long setrange(String key, long offset, String value) {
-		return getRandomConnection().setrange(key, offset, value);
+	public Long setrange(final String key, final long offset, final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getRandomConnection().setrange(key, offset, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String getrange(String key, long startOffset, long endOffset) {
-		return getRandomConnection().getrange(key, startOffset, endOffset);
+	public String getrange(final String key, final long startOffset, final long endOffset) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getRandomConnection().getrange(key, startOffset, endOffset);
+			}
+		}.run();
 	}
 
 	@Override
@@ -728,11 +786,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	}
 	
 	
-	@SuppressWarnings("unchecked")
-	private Jedis getRandomConnection() {
-		Object[] nodeArray =  nodes.values().toArray();
-		return ((Pool<Jedis>) nodeArray[new Random().nextInt(nodeArray.length)]).getResource();
-	}
+	
 
 	
 

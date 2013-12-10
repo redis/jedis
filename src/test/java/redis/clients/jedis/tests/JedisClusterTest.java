@@ -52,7 +52,9 @@ public class JedisClusterTest extends Assert {
 		
 		boolean clusterOk = false;
 		while (!clusterOk) {
-			if (node1.clusterInfo().split("\n")[0].contains("ok")) {
+			if (node1.clusterInfo().split("\n")[0].contains("ok") &&
+				node2.clusterInfo().split("\n")[0].contains("ok") &&
+				node3.clusterInfo().split("\n")[0].contains("ok") ) {
 				clusterOk = true;
 			}
 			Thread.sleep(100);

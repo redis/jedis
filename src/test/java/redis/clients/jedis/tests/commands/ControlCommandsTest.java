@@ -61,12 +61,18 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     public void monitor() {
 	new Thread(new Runnable() {
 	    public void run() {
-		Jedis j = new Jedis("localhost");
-		j.auth("foobared");
-		for (int i = 0; i < 5; i++) {
-		    j.incr("foobared");
-		}
-		j.disconnect();
+	    	// sleep 0.1 sec so monitor runs before incr
+	    	try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+			
+	    	Jedis j = new Jedis("localhost");
+			j.auth("foobared");
+			for (int i = 0; i < 5; i++) {
+			    j.incr("foobared");
+			}
+			j.disconnect();
 	    }
 	}).start();
 

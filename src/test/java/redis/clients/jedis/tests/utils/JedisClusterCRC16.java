@@ -1,10 +1,10 @@
 package redis.clients.jedis.tests.utils;
 
-public class RedisSlot {
+public class JedisClusterCRC16 {
 	public final static int polynomial = 0x1021;	// Represents x^16+x^12+x^5+1
 	static int crc;
 	
-	public RedisSlot(){
+	public JedisClusterCRC16(){
 		crc = 0x0000;
 	}
 	

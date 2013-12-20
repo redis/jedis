@@ -18,8 +18,6 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		connectionHandler = new JedisRandomConnectionHandler(nodes);
 		
 	}
-	
-	
 
 	public JedisCluster(Set<HostAndPort> nodes) {
 		this(nodes, DEFAULT_TIMEOUT);
@@ -157,637 +155,1041 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	}
 
 	@Override
-	public String getSet(String key, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public String getSet(final String key, final String value) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().getSet(key, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long setnx(String key, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long setnx(final String key, final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().setnx(key, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String setex(String key, int seconds, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public String setex(final String key, final int seconds, final String value) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().setex(key, seconds, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long decrBy(String key, long integer) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long decrBy(final String key, final long integer) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().decrBy(key, integer);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long decr(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long decr(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().decr(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long incrBy(String key, long integer) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long incrBy(final String key, final long integer) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().incrBy(key, integer);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long incr(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long incr(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().incr(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long append(String key, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long append(final String key, final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().append(key, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String substr(String key, int start, int end) {
-		// TODO Auto-generated method stub
-		return null;
+	public String substr(final String key, final int start, final int end) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().substr(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long hset(String key, String field, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long hset(final String key, final String field, final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().hset(key, field, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String hget(String key, String field) {
-		// TODO Auto-generated method stub
-		return null;
+	public String hget(final String key, final String field) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().hget(key, field);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long hsetnx(String key, String field, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long hsetnx(final String key, final String field, final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().hsetnx(key, field, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String hmset(String key, Map<String, String> hash) {
-		// TODO Auto-generated method stub
-		return null;
+	public String hmset(final String key, final Map<String, String> hash) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().hmset(key, hash);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> hmget(String key, String... fields) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> hmget(final String key, final String... fields) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().hmget(key, fields);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long hincrBy(String key, String field, long value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long hincrBy(final String key, final String field, final long value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().hincrBy(key, field, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Boolean hexists(String key, String field) {
-		// TODO Auto-generated method stub
-		return null;
+	public Boolean hexists(final String key, final String field) {
+		return new JedisClusterCommand<Boolean>(connectionHandler) {
+			@Override
+			public Boolean execute() {
+				return connectionHandler.getConnection().hexists(key, field);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long hdel(String key, String... field) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long hdel(final String key, final String... field) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().hdel(key, field);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long hlen(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long hlen(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().hdel(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> hkeys(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> hkeys(final String key) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().hkeys(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> hvals(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> hvals(final String key) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().hvals(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Map<String, String> hgetAll(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Map<String, String> hgetAll(final String key) {
+		return new JedisClusterCommand<Map<String, String>>(connectionHandler) {
+			@Override
+			public Map<String, String> execute() {
+				return connectionHandler.getConnection().hgetAll(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long rpush(String key, String... string) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long rpush(final String key, final String... string) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().rpush(key, string);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long lpush(String key, String... string) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long lpush(final String key, final String... string) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().lpush(key, string);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long llen(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long llen(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().llen(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> lrange(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> lrange(final String key, final long start, final long end) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().lrange(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public String ltrim(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public String ltrim(final String key, final long start, final long end) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().ltrim(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public String lindex(String key, long index) {
-		// TODO Auto-generated method stub
-		return null;
+	public String lindex(final String key, final long index) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().lindex(key, index);
+			}
+		}.run();
 	}
 
 	@Override
-	public String lset(String key, long index, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public String lset(final String key, final long index, final String value) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().lset(key, index, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long lrem(String key, long count, String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long lrem(final String key, final long count, final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().lrem(key, count, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public String lpop(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public String lpop(final String key) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().lpop(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public String rpop(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public String rpop(final String key) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().rpop(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long sadd(String key, String... member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long sadd(final String key, final String... member) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().sadd(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> smembers(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> smembers(final String key) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().smembers(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long srem(String key, String... member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long srem(final String key, final String... member) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().srem(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public String spop(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public String spop(final String key) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().spop(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long scard(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long scard(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().scard(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Boolean sismember(String key, String member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Boolean sismember(final String key, final String member) {
+		return new JedisClusterCommand<Boolean>(connectionHandler) {
+			@Override
+			public Boolean execute() {
+				return connectionHandler.getConnection().sismember(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public String srandmember(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public String srandmember(final String key) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().srandmember(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long strlen(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long strlen(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().strlen(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zadd(String key, double score, String member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zadd(final String key, final double score, final String member) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zadd(key, score, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zadd(String key, Map<Double, String> scoreMembers) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zadd(final String key, final Map<Double, String> scoreMembers) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zadd(key, scoreMembers);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrange(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrange(final String key, final long start, final long end) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrange(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zrem(String key, String... member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zrem(final String key, final String... member) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zrem(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public Double zincrby(String key, double score, String member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Double zincrby(final String key, final double score, final String member) {
+		return new JedisClusterCommand<Double>(connectionHandler) {
+			@Override
+			public Double execute() {
+				return connectionHandler.getConnection().zincrby(key, score, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zrank(String key, String member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zrank(final String key, final String member) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zrank(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zrevrank(String key, String member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zrevrank(final String key, final String member) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zrevrank(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrevrange(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrevrange(final String key, final long start, final long end) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrevrange(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrangeWithScores(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrangeWithScores(final String key, final long start, final long end) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrangeWithScores(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrevrangeWithScores(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long end) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrevrangeWithScores(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zcard(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zcard(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zcard(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Double zscore(String key, String member) {
-		// TODO Auto-generated method stub
-		return null;
+	public Double zscore(final String key, final String member) {
+		return new JedisClusterCommand<Double>(connectionHandler) {
+			@Override
+			public Double execute() {
+				return connectionHandler.getConnection().zscore(key, member);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> sort(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> sort(final String key) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().sort(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> sort(String key, SortingParams sortingParameters) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> sort(final String key, final SortingParams sortingParameters) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().sort(key, sortingParameters);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zcount(String key, double min, double max) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zcount(final String key, final double min, final double max) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zcount(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zcount(String key, String min, String max) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zcount(final String key, final String min, final String max) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zcount(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrangeByScore(String key, double min, double max) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrangeByScore(final String key, final double min, final double max) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrangeByScore(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrangeByScore(String key, String min, String max) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrangeByScore(final String key, final String min, final String max) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrangeByScore(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrevrangeByScore(String key, double max, double min) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrevrangeByScore(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrangeByScore(String key, double min, double max,
-			int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrangeByScore(final String key, final double min, final double max,
+			final int offset, final int count) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrangeByScore(key, min, max, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrevrangeByScore(String key, String max, String min) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrevrangeByScore(final String key, final String max, final String min) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrevrangeByScore(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrangeByScore(String key, String min, String max,
-			int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrangeByScore(final String key, final String min, final String max,
+			final int offset, final int count) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrangeByScore(key, min, max, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrevrangeByScore(String key, double max, double min,
-			int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrevrangeByScore(final String key, final double max, final double min,
+			final int offset, final int count) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrevrangeByScore(key, min, max, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrevrangeByScoreWithScores(String key, double max,
-			double min) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, double min,
-			double max, int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max, final int offset, final int count) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<String> zrevrangeByScore(String key, String max, String min,
-			int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<String> zrevrangeByScore(final String key, final String max, final String min,
+			final int offset, final int count) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+			@Override
+			public Set<String> execute() {
+				return connectionHandler.getConnection().zrevrangeByScore(key, min, max, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrevrangeByScoreWithScores(String key, String max,
-			String min) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
+			final String min) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, min, max);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, String min,
-			String max, int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrangeByScoreWithScores(final String key, final String min,
+			final String max, final int offset, final int count) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrevrangeByScoreWithScores(String key, double max,
-			double min, int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
+			final double min, final int offset, final int count) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, max, min, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Set<Tuple> zrevrangeByScoreWithScores(String key, String max,
-			String min, int offset, int count) {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
+			final String min, final int offset, final int count) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+			@Override
+			public Set<Tuple> execute() {
+				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, max, min, offset, count);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zremrangeByRank(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zremrangeByRank(final String key, final long start, final long end) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zremrangeByRank(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zremrangeByScore(String key, double start, double end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zremrangeByScore(final String key, final double start, final double end) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zremrangeByScore(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long zremrangeByScore(String key, String start, String end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long zremrangeByScore(final String key, final String start, final String end) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().zremrangeByScore(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long linsert(String key, LIST_POSITION where, String pivot,
-			String value) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long linsert(final String key, final LIST_POSITION where, final String pivot,
+			final String value) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().linsert(key, where, pivot, value);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long lpushx(String key, String... string) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long lpushx(final String key, final String... string) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().lpushx(key, string);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long rpushx(String key, String... string) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long rpushx(final String key, final String... string) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().rpushx(key, string);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> blpop(String arg) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> blpop(final String arg) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().blpop(arg);
+			}
+		}.run();
 	}
 
 	@Override
-	public List<String> brpop(String arg) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<String> brpop(final String arg) {
+		return new JedisClusterCommand<List<String>>(connectionHandler) {
+			@Override
+			public List<String> execute() {
+				return connectionHandler.getConnection().brpop(arg);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long del(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long del(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().del(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public String echo(String string) {
-		// TODO Auto-generated method stub
-		return null;
+	public String echo(final String string) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().echo(string);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long move(String key, int dbIndex) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long move(final String key, final int dbIndex) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().move(key, dbIndex);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long bitcount(String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long bitcount(final String key) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().bitcount(key);
+			}
+		}.run();
 	}
 
 	@Override
-	public Long bitcount(String key, long start, long end) {
-		// TODO Auto-generated method stub
-		return null;
+	public Long bitcount(final String key, final long start, final long end) {
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().bitcount(key, start, end);
+			}
+		}.run();
 	}
 
 	@Override
 	public String ping() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().ping();
+			}
+		}.run();
 	}
 
 	@Override
 	public String quit() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().quit();
+			}
+		}.run();
 	}
 
 	@Override
 	public String flushDB() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().flushDB();
+			}
+		}.run();
 	}
 
 	@Override
 	public Long dbSize() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().dbSize();
+			}
+		}.run();
 	}
 
 	@Override
-	public String select(int index) {
-		// TODO Auto-generated method stub
-		return null;
+	public String select(final int index) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().select(index);
+			}
+		}.run();
 	}
 
 	@Override
 	public String flushAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().flushAll();
+			}
+		}.run();
 	}
 
 	@Override
-	public String auth(String password) {
-		// TODO Auto-generated method stub
-		return null;
+	public String auth(final String password) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().auth(password);
+			}
+		}.run();
 	}
 
 	@Override
 	public String save() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().save();
+			}
+		}.run();
 	}
 
 	@Override
 	public String bgsave() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().bgsave();
+			}
+		}.run();
 	}
 
 	@Override
 	public String bgrewriteaof() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().bgrewriteaof();
+			}
+		}.run();
 	}
 
 	@Override
 	public Long lastsave() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().lastsave();
+			}
+		}.run();
 	}
 
 	@Override
 	public String shutdown() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().shutdown();
+			}
+		}.run();
 	}
 
 	@Override
 	public String info() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().info();
+			}
+		}.run();
 	}
 
 	@Override
-	public String info(String section) {
-		// TODO Auto-generated method stub
-		return null;
+	public String info(final String section) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().info(section);
+			}
+		}.run();
 	}
 
 	@Override
-	public String slaveof(String host, int port) {
-		// TODO Auto-generated method stub
-		return null;
+	public String slaveof(final String host, final int port) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().slaveof(host, port);
+			}
+		}.run();
 	}
 
 	@Override
 	public String slaveofNoOne() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().slaveofNoOne();
+			}
+		}.run();
 	}
 
 	@Override
 	public Long getDB() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<Long>(connectionHandler) {
+			@Override
+			public Long execute() {
+				return connectionHandler.getConnection().getDB();
+			}
+		}.run();
 	}
 
 	@Override
-	public String debug(DebugParams params) {
-		// TODO Auto-generated method stub
-		return null;
+	public String debug(final DebugParams params) {
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().debug(params);
+			}
+		}.run();
 	}
 
 	@Override
 	public String configResetStat() {
-		// TODO Auto-generated method stub
-		return null;
+		return new JedisClusterCommand<String>(connectionHandler) {
+			@Override
+			public String execute() {
+				return connectionHandler.getConnection().configResetStat();
+			}
+		}.run();
 	}
-	
-	
-	
-
-	
-
 }

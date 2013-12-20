@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 
 public abstract class JedisClusterCommand<T> {
@@ -15,8 +16,10 @@ public abstract class JedisClusterCommand<T> {
 	public T run() {
 		try {
 			return execute();
-		} catch (JedisMovedDataException e) {
-			//TODO: Retry here
+		} catch (JedisMovedDataException jme) {
+			//TODO: Do Retry here
+		} catch (JedisAskDataException jae) {
+			//TODO: Do ASK here
 		}
 		return null;
 	}

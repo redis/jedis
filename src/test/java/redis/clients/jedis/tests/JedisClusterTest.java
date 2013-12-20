@@ -11,7 +11,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.tests.utils.RedisSlot;
+import redis.clients.jedis.tests.utils.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
     private Jedis node1;
@@ -78,8 +78,8 @@ public class JedisClusterTest extends Assert {
     }
 
     @Test(expected=JedisAskDataException.class)
-    public void ask() {
-    	int keySlot = RedisSlot.getSlot("test");
+    public void throwAskExceptionTest() {
+    	int keySlot = JedisClusterCRC16.getSlot("test");
     	String node2Id = getNodeId(node2.clusterNodes());
     	node1.clusterSetSlotMigrating(keySlot, node2Id);
     	node1.get("test");

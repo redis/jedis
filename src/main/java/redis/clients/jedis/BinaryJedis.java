@@ -1709,6 +1709,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     public void disconnect() {
 	client.disconnect();
     }
+    
+    public void resetState() {
+	client.resetState();
+	client.getAll();
+    }
 
     public String watch(final byte[]... keys) {
 	client.watch(keys);

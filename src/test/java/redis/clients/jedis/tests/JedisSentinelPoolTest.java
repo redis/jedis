@@ -11,8 +11,10 @@ import org.junit.Test;
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.Transaction;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
     private static final String MASTER_NAME = "mymaster";
@@ -149,4 +151,24 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	}
     }
 
+    @Test
+    public void returnResourceShouldResetState() {
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    	config.setMaxTotal(1);
+    	config.setBlockWhenExhausted(false);
+    	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+    			config, 1000, "foobared", 2);
+    	
+    	Jedis jedis = pool.getResource();
+    	jedis.set("hello", "jedis");
+    	Transaction t = jedis.multi();
+    	t.set("hello", "world");
+    	pool.returnResource(jedis);
+    	
+    	Jedis jedis2 = pool.getResource();
+    	assertTrue(jedis == jedis2);
+    	assertEquals("jedis", jedis2.get("hello"));
+    	pool.returnResource(jedis2);
+    	pool.destroy();
+    }
 }

@@ -77,14 +77,13 @@ public class JedisClusterTest extends Assert {
     	node2.get("foo");
     }
 
-//    @Test(expected=JedisAskDataException.class)
-//    public void ask() {
-//    	node1.set("foo", "bar");
-//    	int keySlot = RedisSlot.getSlot("foo");
-//    	String node2Id = getNodeId(node2.clusterNodes());
-//    	node1.clusterSetSlotMigrating(keySlot, node2Id);
-//    	node1.get("foo");
-//    }
+    @Test(expected=JedisAskDataException.class)
+    public void ask() {
+    	int keySlot = RedisSlot.getSlot("test");
+    	String node2Id = getNodeId(node2.clusterNodes());
+    	node1.clusterSetSlotMigrating(keySlot, node2Id);
+    	node1.get("test");
+    }
     
     private String getNodeId(String infoOutput) {
     	for (String infoLine : infoOutput.split("\n")) {

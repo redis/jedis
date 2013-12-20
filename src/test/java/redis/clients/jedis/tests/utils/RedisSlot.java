@@ -22,4 +22,8 @@ public class RedisSlot {
         return crc &= 0xffff % 16384;
     }	
 	
+	public static void main(String[] args) {
+		System.out.println(getSlot("test"));
+	}
+	
 }

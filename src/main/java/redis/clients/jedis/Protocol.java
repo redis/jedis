@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
@@ -13,6 +14,7 @@ import redis.clients.util.SafeEncoder;
 
 public final class Protocol {
 
+    private static final String ASK_RESPONSE = "ASK";
     private static final String MOVED_RESPONSE = "MOVED";
 	public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SENTINEL_PORT = 26379;
@@ -75,9 +77,12 @@ public final class Protocol {
 
     private static void processError(final RedisInputStream is) {
 		String message = is.readLine();
-		//TODO: Read only first 5 bytes?
+		//TODO: I'm not sure if this is the best way to do this. 
+		//Maybe Read only first 5 bytes instead?
 		if (message.contains(MOVED_RESPONSE)) {
 			throw new JedisMovedDataException(message);
+		} else if (message.contains(ASK_RESPONSE)) {
+			throw new JedisAskDataException(message);
 		}
 		throw new JedisDataException(message);
     }

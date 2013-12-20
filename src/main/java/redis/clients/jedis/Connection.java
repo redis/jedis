@@ -25,6 +25,9 @@ public class Connection implements Closeable {
     private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
 
+    // caching DNS lookups
+    private InetSocketAddress endpoint;
+    
     public Socket getSocket() {
 	return socket;
     }
@@ -105,6 +108,7 @@ public class Connection implements Closeable {
 
     public void setHost(final String host) {
 	this.host = host;
+        this.endpoint = null;
     }
 
     public int getPort() {
@@ -113,6 +117,7 @@ public class Connection implements Closeable {
 
     public void setPort(final int port) {
 	this.port = port;
+        this.endpoint = null;
     }
 
     public Connection() {
@@ -133,8 +138,11 @@ public class Connection implements Closeable {
 					     // the underlying socket is closed
 					     // immediately
 		// <-@wjw_add
+        if (endpoint == null) {
+            endpoint = new InetSocketAddress(host, port);
+        }
 
-		socket.connect(new InetSocketAddress(host, port), timeout);
+		socket.connect(endpoint, timeout);
 		socket.setSoTimeout(timeout);
 		outputStream = new RedisOutputStream(socket.getOutputStream());
 		inputStream = new RedisInputStream(socket.getInputStream());

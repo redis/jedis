@@ -174,7 +174,7 @@ public final class Protocol {
     private static List<Object> processMultiBulkReply(final RedisInputStream is) {
 	int num = Integer.parseInt(is.readLine());
 	if (num == -1) {
-	    return null;
+	    return new ArrayList<Object>();
 	}
 	List<Object> ret = new ArrayList<Object>(num);
 	for (int i = 0; i < num; i++) {

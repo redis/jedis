@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import java.net.URI;
 
 import redis.clients.util.ShardInfo;
-import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
     public String toString() {
@@ -25,7 +24,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     }
 
     public JedisShardInfo(String host) {
-	super(Sharded.DEFAULT_WEIGHT);
+	super(DEFAULT_WEIGHT);
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
 	    this.host = uri.getHost();
@@ -50,23 +49,27 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     }
 
     public JedisShardInfo(String host, int port, int timeout) {
-	this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+	this(host, port, timeout, DEFAULT_WEIGHT);
     }
 
     public JedisShardInfo(String host, int port, int timeout, String name) {
-	this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
-	this.name = name;
+	this(host, port, timeout, DEFAULT_WEIGHT, name);
     }
 
     public JedisShardInfo(String host, int port, int timeout, int weight) {
-	super(weight);
-	this.host = host;
-	this.port = port;
-	this.timeout = timeout;
+        this(host, port, timeout, weight, null);
+    }
+
+    public JedisShardInfo(String host, int port, int timeout, int weight, String name) {
+    super(weight);
+    this.host = host;
+    this.port = port;
+    this.timeout = timeout;
+    this.name = name;
     }
 
     public JedisShardInfo(URI uri) {
-	super(Sharded.DEFAULT_WEIGHT);
+	super(DEFAULT_WEIGHT);
 	this.host = uri.getHost();
 	this.port = uri.getPort();
 	this.password = uri.getUserInfo().split(":", 2)[1];

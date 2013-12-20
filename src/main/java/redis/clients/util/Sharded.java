@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 public class Sharded<R, S extends ShardInfo<R>> {
 
-    public static final int DEFAULT_WEIGHT = 1;
     private TreeMap<Long, S> nodes;
     private final Hashing algo;
     private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
@@ -51,31 +50,23 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     private void initialize(List<S> shards) {
-	nodes = new TreeMap<Long, S>();
-
-	for (int i = 0; i != shards.size(); ++i) {
-	    final S shardInfo = shards.get(i);
-	    if (shardInfo.getName() == null)
-		for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
-		    nodes.put(this.algo.hash("SHARD-" + i + "-NODE-" + n),
-			    shardInfo);
-		}
-	    else
-		for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
-		    nodes.put(
-			    this.algo.hash(shardInfo.getName() + "*"
-				    + shardInfo.getWeight() + n), shardInfo);
-		}
-	    resources.put(shardInfo, shardInfo.createResource());
-	}
+        nodes = this.algo.createContinuum(shards);
+        
+        for (S shardInfo : shards) {
+            resources.put(shardInfo, shardInfo.createResource());
+        }
     }
-
+    
     public R getShard(byte[] key) {
-	return resources.get(getShardInfo(key));
+        return getShard(getShardInfo(key));
     }
 
     public R getShard(String key) {
-	return resources.get(getShardInfo(key));
+        return getShard(getShardInfo(key));
+    }
+
+    protected R getShard(S shardInfo) {
+        return resources.get(shardInfo);
     }
 
     public S getShardInfo(byte[] key) {

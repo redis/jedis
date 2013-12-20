@@ -29,7 +29,7 @@ import java.nio.ByteOrder;
  * Andrzej Bialecki (ab at getopt org).
  * </p>
  */
-public class MurmurHash implements Hashing {
+public class MurmurHash extends Hashing {
     /**
      * Hashes bytes in an array.
      * 

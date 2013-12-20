@@ -1,38 +1,35 @@
 package redis.clients.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.TreeMap;
 
-public interface Hashing {
+public abstract class Hashing {
     public static final Hashing MURMUR_HASH = new MurmurHash();
-    public ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();
+    public static final Hashing MD5 = new MD5Hash();
+    public static final Hashing KETAMA = new KetamaHash();
 
-    public static final Hashing MD5 = new Hashing() {
-	public long hash(String key) {
-	    return hash(SafeEncoder.encode(key));
-	}
+    public abstract long hash(String key);
 
-	public long hash(byte[] key) {
-	    try {
-		if (md5Holder.get() == null) {
-		    md5Holder.set(MessageDigest.getInstance("MD5"));
-		}
-	    } catch (NoSuchAlgorithmException e) {
-		throw new IllegalStateException("++++ no md5 algorythm found");
-	    }
-	    MessageDigest md5 = md5Holder.get();
+    public abstract long hash(byte[] key);
+    
+    protected String createContinuumId(final ShardInfo<?> shardInfo, int shardPosition, int repetition) {
+        if (shardInfo.getName() == null) {
+          return "SHARD-" + shardPosition + "-NODE-" + repetition ;
+        }
+        return shardInfo.getName() + "*" + shardInfo.getWeight() + repetition;
+    }
 
-	    md5.reset();
-	    md5.update(key);
-	    byte[] bKey = md5.digest();
-	    long res = ((long) (bKey[3] & 0xFF) << 24)
-		    | ((long) (bKey[2] & 0xFF) << 16)
-		    | ((long) (bKey[1] & 0xFF) << 8) | (long) (bKey[0] & 0xFF);
-	    return res;
-	}
-    };
+    protected <S extends ShardInfo<?>> TreeMap<Long, S> createContinuum(List<S> shards) {
+        TreeMap<Long, S> nodes = new TreeMap<Long, S>();
+        
+        for (int shardPosition = 0; shardPosition != shards.size(); ++shardPosition) {
+            final S shardInfo = shards.get(shardPosition);
+            for (int repetition = 0; repetition < 160 * shardInfo.getWeight(); repetition++) {
+                String continuumid = createContinuumId(shardInfo, shardPosition, repetition);
+                nodes.put(this.hash(continuumid), shardInfo);
+            }
+        }
+        return nodes;
+    }    
 
-    public long hash(String key);
-
-    public long hash(byte[] key);
 }

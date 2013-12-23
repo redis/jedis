@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Sharded<R, S extends ShardInfo<R>> {
+public class Sharded<R, S extends ShardInfo<R>> implements Sharding<R, S> {
 
     public static final int DEFAULT_WEIGHT = 1;
     private TreeMap<Long, S> nodes;

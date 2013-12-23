@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Queue;
 
 public class ShardedJedisPipeline extends PipelineBase {
-    private BinaryShardedJedis jedis;
+    private BinaryShardedJedisBase jedis;
     private List<FutureResult> results = new ArrayList<FutureResult>();
     private Queue<Client> clients = new LinkedList<Client>();
 
@@ -22,7 +22,7 @@ public class ShardedJedisPipeline extends PipelineBase {
         }
     }
 
-    public void setShardedJedis(BinaryShardedJedis jedis) {
+    public void setShardedJedis(BinaryShardedJedisBase jedis) {
         this.jedis = jedis;
     }
 

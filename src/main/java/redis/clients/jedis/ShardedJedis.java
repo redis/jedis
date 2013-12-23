@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
+import redis.clients.util.Sharding;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
+
+    public ShardedJedis(Sharding<Jedis, JedisShardInfo> shards) {
+	super(shards);
+    }
+    
     public ShardedJedis(List<JedisShardInfo> shards) {
 	super(shards);
     }

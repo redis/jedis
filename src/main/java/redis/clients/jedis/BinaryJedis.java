@@ -3140,12 +3140,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
 	int keyCount = keys.size();
+	int argCount = args.size();
 	byte[][] params = new byte[keyCount + args.size()][];
 
 	for (int i = 0; i < keyCount; i++)
 	    params[i] = keys.get(i);
 
-	for (int i = 0; i < keys.size(); i++)
+	for (int i = 0; i < argCount; i++)
 	    params[keyCount + i] = args.get(i);
 
 	return params;

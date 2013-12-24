@@ -1,8 +1,14 @@
 package redis.clients.util;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 public interface Sharding<R, S extends ShardInfo<R>> {
+    
+    public static final Pattern DEFAULT_KEY_TAG_PATTERN = Pattern
+            .compile("\\{(.+?)\\}");
+
+    public String getKeyTag(String key);
 
     public R getShard(byte[] key);
     

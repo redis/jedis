@@ -25,8 +25,6 @@ public class Sharded<R, S extends ShardInfo<R>> implements Sharding<R, S> {
      */
     private Pattern tagPattern = null;
     // the tag is anything between {}
-    public static final Pattern DEFAULT_KEY_TAG_PATTERN = Pattern
-            .compile("\\{(.+?)\\}");
 
     public Sharded(List<S> shards) {
         this(shards, Hashing.MURMUR_HASH); // MD5 is really not good as we works

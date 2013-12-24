@@ -27,12 +27,24 @@ public abstract class BinaryShardedJedisBase implements BinaryJedisCommands {
 	return new Jedis(shard);
     }
 
+    public String getKeyTag(String key) {
+    return sharded.getKeyTag(key);
+    }
+
     public Jedis getShard(byte[] key) {
     return sharded.getShard(key);
     }
     
     public Jedis getShard(String key) {
     return sharded.getShard(key);
+    }
+    
+    public JedisShardInfo getShardInfo(byte[] key) {
+    return sharded.getShardInfo(key);
+    }
+    
+    public JedisShardInfo getShardInfo(String key) {
+    return sharded.getShardInfo(key);
     }
 
     public Collection<Jedis> getAllShards() {

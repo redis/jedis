@@ -96,4 +96,21 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     public Jedis createResource() {
 	return new Jedis(this);
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        JedisShardInfo shardInfo = (JedisShardInfo)obj;
+        return timeout == shardInfo.timeout
+            && port == shardInfo.port
+            && ((host == null && shardInfo.host == null) || shardInfo.host.equals(host))
+            && ((password == null && shardInfo.password == null) || password.equals(shardInfo.password))
+            && ((name == null && shardInfo.name == null) || name.equals(shardInfo.name))
+            && ((ShardInfo<Jedis>)obj).equals(this);
+    }
 }

@@ -14,6 +14,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.util.Hashing;
 import redis.clients.util.SafeEncoder;
+import redis.clients.util.Sharding;
 import redis.clients.util.Sharded;
 
 public class ShardedJedisTest extends Assert {
@@ -110,7 +111,7 @@ public class ShardedJedisTest extends Assert {
         shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
         shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
         ShardedJedis jedis = new ShardedJedis(shards,
-                ShardedJedis.DEFAULT_KEY_TAG_PATTERN);
+                Sharding.DEFAULT_KEY_TAG_PATTERN);
 
         assertEquals(jedis.getKeyTag("foo"), "foo");
         assertEquals(jedis.getKeyTag("foo{bar}"), "bar");

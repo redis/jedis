@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,12 +46,24 @@ public class JedisClusterTest extends Assert {
 		node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
 		node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
 	
-		// add all slots to node1
-		Pipeline pipelined = node1.pipelined();
+		// split available slots across the three nodes
+		int slotsPerNode = JedisCluster.HASHSLOTS / 3;
+		Pipeline pipeline1 = node1.pipelined();
+		Pipeline pipeline2 = node2.pipelined();
+		Pipeline pipeline3 = node3.pipelined();
 		for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
-		    pipelined.clusterAddSlots(i);
+			if (i < slotsPerNode) {
+				pipeline1.clusterAddSlots(i);
+			} else if (i > slotsPerNode * 2) {
+				pipeline3.clusterAddSlots(i);
+			} else {
+				pipeline2.clusterAddSlots(i);
+			}
 		}
-		pipelined.sync();
+		pipeline1.sync();
+		pipeline2.sync();
+		pipeline3.sync();
+		
 		
 		boolean clusterOk = false;
 		while (!clusterOk) {
@@ -72,18 +87,27 @@ public class JedisClusterTest extends Assert {
     }
 
     @Test(expected=JedisMovedDataException.class)
-    public void throwMovedExceptionTest() {
+    public void testThrowMovedException() {
     	node1.set("foo", "bar");
     	node2.get("foo");
     }
 
     @Test(expected=JedisAskDataException.class)
-    public void throwAskExceptionTest() {
+    public void testThrowAskException() {
     	int keySlot = JedisClusterCRC16.getSlot("test");
-    	String node2Id = getNodeId(node2.clusterNodes());
-    	node1.clusterSetSlotMigrating(keySlot, node2Id);
-    	node1.get("test");
+    	String node3Id = getNodeId(node3.clusterNodes());
+    	node2.clusterSetSlotMigrating(keySlot, node3Id);
+    	node2.get("test");
     }
+    
+    @Test
+    public void testDiscoverNodesAutomatically() {
+    	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    	JedisCluster jc = new JedisCluster(jedisClusterNode);
+    	assertEquals(jc.getClusterNodes().size(), 3);
+    }
+    
     
     private String getNodeId(String infoOutput) {
     	for (String infoLine : infoOutput.split("\n")) {

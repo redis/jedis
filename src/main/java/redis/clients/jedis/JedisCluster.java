@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.HashSet;
+import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1191,5 +1193,9 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 				return connectionHandler.getConnection().configResetStat();
 			}
 		}.run();
+	}
+
+	public Map<String, JedisPool> getClusterNodes() {
+		return connectionHandler.getNodes();
 	}
 }

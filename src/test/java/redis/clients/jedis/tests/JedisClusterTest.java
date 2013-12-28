@@ -89,7 +89,6 @@ public class JedisClusterTest extends Assert {
     @Test(expected=JedisMovedDataException.class)
     public void testThrowMovedException() {
     	node1.set("foo", "bar");
-    	node2.get("foo");
     }
 
     @Test(expected=JedisAskDataException.class)
@@ -108,6 +107,17 @@ public class JedisClusterTest extends Assert {
     	assertEquals(jc.getClusterNodes().size(), 3);
     }
     
+    @Test
+    public void testCalculateConnectionPerSlot() {
+    	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    	JedisCluster jc = new JedisCluster(jedisClusterNode);
+    	jc.set("foo", "bar");
+    	jc.set("test", "test");
+    	assertEquals("bar",node3.get("foo"));
+    	assertEquals("test",node2.get("test"));
+    	
+    }
     
     private String getNodeId(String infoOutput) {
     	for (String infoLine : infoOutput.split("\n")) {

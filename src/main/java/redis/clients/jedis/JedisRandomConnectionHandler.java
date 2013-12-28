@@ -14,7 +14,7 @@ public class JedisRandomConnectionHandler extends JedisClusterConnectionHandler 
 
 	
 	@SuppressWarnings("unchecked")
-	public Jedis getConnection() {
+	public Jedis getConnection(String key) {
 		Object[] nodeArray =  nodes.values().toArray();
 		return ((Pool<Jedis>) nodeArray[new Random().nextInt(nodeArray.length)]).getResource();
 	}

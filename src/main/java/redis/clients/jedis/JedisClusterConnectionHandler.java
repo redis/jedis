@@ -8,8 +8,9 @@ import java.util.Set;
 public abstract class JedisClusterConnectionHandler {
 	
 	protected Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
+	protected Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 	
-	abstract Jedis getConnection();
+	abstract Jedis getConnection(String key);
 	
 	public JedisClusterConnectionHandler(Set<HostAndPort> nodes) {
 		initializeSlotsCache(nodes);
@@ -23,20 +24,39 @@ public abstract class JedisClusterConnectionHandler {
 		for (HostAndPort hostAndPort : nodes) {
 			JedisPool jp = new JedisPool(hostAndPort.getHost(),	hostAndPort.getPort());
 			this.nodes.put(hostAndPort.getHost() + hostAndPort.getPort(), jp);
-			this.nodes.putAll(discoverClusterNodes(jp));
+			discoverClusterNodesAndSlots(jp);
 		}
 
 	}
 
-	private Map<? extends String, ? extends JedisPool> discoverClusterNodes(JedisPool jp) {
-		Map<String, JedisPool> discoveredNodes = new HashMap<String, JedisPool>();
+	private void discoverClusterNodesAndSlots(JedisPool jp) {
 		String localNodes = jp.getResource().clusterNodes();
 		for (String nodeInfo : localNodes.split("\n")) {
 			HostAndPort node = getHostAndPortFromNodeLine(nodeInfo);
 			JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
-			discoveredNodes.put(node.getHost() + node.getPort(), nodePool);
+			this.nodes.put(node.getHost() + node.getPort(), nodePool);
+			populateNodeSlots(nodeInfo, nodePool);
 		}
-		return discoveredNodes;
+	}
+
+	private void populateNodeSlots(String nodeInfo, JedisPool nodePool) {
+		String[] nodeInfoArray = nodeInfo.split(" ");
+		if (nodeInfoArray.length > 7) {
+			for (int i = 8; i < nodeInfoArray.length; i++) {
+				processSlot(nodeInfoArray[i], nodePool);
+			}
+		}
+	}
+
+	private void processSlot(String slot, JedisPool nodePool) {
+		if (slot.contains("-")) {
+			String[] slotRange = slot.split("-");
+			for (int i = Integer.valueOf(slotRange[0]); i <= Integer.valueOf(slotRange[1]); i++) {
+				slots.put(i, nodePool);
+			}
+		} else {
+			slots.put(Integer.valueOf(slot), nodePool);
+		}
 	}
 
 	private HostAndPort getHostAndPortFromNodeLine(String nodeInfo) {

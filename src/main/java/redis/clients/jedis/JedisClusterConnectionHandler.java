@@ -64,4 +64,9 @@ public abstract class JedisClusterConnectionHandler {
 		String[] arrayHostAndPort = stringHostAndPort.split(":");
 		return new HostAndPort(arrayHostAndPort[0], Integer.valueOf(arrayHostAndPort[1]));
 	}
+
+	public void assignSlotToNode(int slot, HostAndPort targetNode) {
+		JedisPool targetPool = nodes.get(targetNode.getHost() + targetNode.getPort());
+		slots.put(slot, targetPool);
+	}
 }

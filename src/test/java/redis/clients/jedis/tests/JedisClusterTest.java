@@ -65,30 +65,35 @@ public class JedisClusterTest extends Assert {
 		pipeline3.sync();
 		
 		
-		boolean clusterOk = false;
-		while (!clusterOk) {
-			if (node1.clusterInfo().split("\n")[0].contains("ok") &&
-				node2.clusterInfo().split("\n")[0].contains("ok") &&
-				node3.clusterInfo().split("\n")[0].contains("ok") ) {
-				clusterOk = true;
-			}
-			Thread.sleep(100);
-		}
+		waitForClusterReady();
     }
 
-    @After
+
+	@After
     public void tearDown() {
-		// clear all slots of node1
-		Pipeline pipelined = node1.pipelined();
-		for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
-		    pipelined.clusterDelSlots(i);
+		// clear all slots
+    	int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
+    	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
+			slotsToDelete[i] = i;
 		}
-		pipelined.sync();
+		node1.clusterDelSlots(slotsToDelete);
+		node2.clusterDelSlots(slotsToDelete);
+		node3.clusterDelSlots(slotsToDelete);
     }
 
     @Test(expected=JedisMovedDataException.class)
     public void testThrowMovedException() {
     	node1.set("foo", "bar");
+    }
+    
+    @Test
+    public void testMovedExceptionParameters() {
+    	try {
+    		node1.set("foo", "bar");
+    	} catch (JedisMovedDataException jme) {
+    		assertEquals(12182, jme.getSlot());
+    		assertEquals(new HostAndPort("127.0.0.1", 7381), jme.getTargetNode());
+    	}
     }
 
     @Test(expected=JedisAskDataException.class)
@@ -116,7 +121,31 @@ public class JedisClusterTest extends Assert {
     	jc.set("test", "test");
     	assertEquals("bar",node3.get("foo"));
     	assertEquals("test",node2.get("test"));
-    	
+    }
+    
+    @Test
+    public void testRecalculateSlotsWhenMoved() throws InterruptedException {
+    	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    	JedisCluster jc = new JedisCluster(jedisClusterNode);
+    	node2.clusterDelSlots(JedisClusterCRC16.getSlot("51"));
+    	//TODO: We shouldn't need to issue DELSLOTS in node3, but due to redis-cluster bug we need to.
+    	node3.clusterDelSlots(JedisClusterCRC16.getSlot("51"));
+    	node3.clusterAddSlots(JedisClusterCRC16.getSlot("51"));
+    	waitForClusterReady();
+    	jc.set("51", "foo");
+    	assertEquals("foo", jc.get("51"));
+    }
+    
+    @Test
+    public void testAskResponse() throws InterruptedException {
+    	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    	JedisCluster jc = new JedisCluster(jedisClusterNode);
+    	node3.clusterSetSlotImporting(JedisClusterCRC16.getSlot("51"), getNodeId(node2.clusterNodes()));
+    	node2.clusterSetSlotMigrating(JedisClusterCRC16.getSlot("51"), getNodeId(node3.clusterNodes()));
+    	jc.set("51", "foo");
+    	assertEquals("foo", jc.get("51"));
     }
     
     private String getNodeId(String infoOutput) {
@@ -127,4 +156,17 @@ public class JedisClusterTest extends Assert {
 		}
     	return "";
     }
+    
+    private void waitForClusterReady() throws InterruptedException {
+		boolean clusterOk = false;
+		while (!clusterOk) {
+			if (node1.clusterInfo().split("\n")[0].contains("ok") &&
+				node2.clusterInfo().split("\n")[0].contains("ok") &&
+				node3.clusterInfo().split("\n")[0].contains("ok") ) {
+				clusterOk = true;
+			}
+			Thread.sleep(100);
+		}
+	}
+    
 }

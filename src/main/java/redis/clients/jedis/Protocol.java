@@ -80,7 +80,9 @@ public final class Protocol {
 		//TODO: I'm not sure if this is the best way to do this. 
 		//Maybe Read only first 5 bytes instead?
 		if (message.contains(MOVED_RESPONSE)) {
-			throw new JedisMovedDataException(message);
+			String[] movedInfo = message.split(" ");
+			String[] targetHostAndPort = movedInfo[2].split(":");
+			throw new JedisMovedDataException(message, new HostAndPort(targetHostAndPort[0], Integer.valueOf(targetHostAndPort[1])), Integer.valueOf(movedInfo[1]));
 		} else if (message.contains(ASK_RESPONSE)) {
 			throw new JedisAskDataException(message);
 		}

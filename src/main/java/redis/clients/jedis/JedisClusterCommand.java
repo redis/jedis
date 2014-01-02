@@ -6,6 +6,7 @@ import redis.clients.jedis.exceptions.JedisMovedDataException;
 public abstract class JedisClusterCommand<T> {
 	
 	private JedisClusterConnectionHandler connectionHandler;
+	private boolean asking = false;
 	
 	public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler) {
 		this.connectionHandler = connectionHandler;
@@ -17,10 +18,10 @@ public abstract class JedisClusterCommand<T> {
 		try {
 			return execute();
 		} catch (JedisMovedDataException jme) {
-			//TODO: Do Retry here
+			this.connectionHandler.assignSlotToNode(jme.getSlot(), jme.getTargetNode());
+			return execute();
 		} catch (JedisAskDataException jae) {
-			//TODO: Do ASK here
+			throw jae;
 		}
-		return null;
 	}
 }

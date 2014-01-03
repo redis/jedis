@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 
@@ -10,7 +11,8 @@ public abstract class JedisClusterConnectionHandler {
 	protected Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
 	protected Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 	
-	abstract Jedis getConnection(String key);
+	abstract Jedis getConnection();
+	abstract Jedis getConnectionFromSlot(int slot);
 	
 	public JedisClusterConnectionHandler(Set<HostAndPort> nodes) {
 		initializeSlotsCache(nodes);
@@ -69,4 +71,12 @@ public abstract class JedisClusterConnectionHandler {
 		JedisPool targetPool = nodes.get(targetNode.getHost() + targetNode.getPort());
 		slots.put(slot, targetPool);
 	}
+	
+	
+	protected JedisPool getRandomConnection() {
+		Object[] nodeArray =  nodes.values().toArray();
+		return (JedisPool) (nodeArray[new Random().nextInt(nodeArray.length)]);
+	}
+	
+	
 }

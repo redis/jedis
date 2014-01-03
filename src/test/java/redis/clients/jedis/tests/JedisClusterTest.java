@@ -13,6 +13,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.tests.utils.JedisClusterCRC16;
 
@@ -39,7 +40,7 @@ public class JedisClusterTest extends Assert {
 		node3.connect();
 		node3.flushAll();
 	
-		// ---- configure cluster
+		// ---- configure cluster	 
 	
 		// add nodes to cluster
 		node1.clusterMeet("127.0.0.1", nodeInfo1.getPort());
@@ -146,6 +147,14 @@ public class JedisClusterTest extends Assert {
     	node2.clusterSetSlotMigrating(JedisClusterCRC16.getSlot("51"), getNodeId(node3.clusterNodes()));
     	jc.set("51", "foo");
     	assertEquals("foo", jc.get("51"));
+    }
+    
+    @Test(expected=JedisClusterException.class)
+    public void testThrowExceptionWithoutKey() {
+    	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    	JedisCluster jc = new JedisCluster(jedisClusterNode);
+    	jc.ping();
     }
     
     private String getNodeId(String infoOutput) {

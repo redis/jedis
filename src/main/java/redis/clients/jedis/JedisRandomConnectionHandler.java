@@ -1,9 +1,6 @@
 package redis.clients.jedis;
 
-import java.util.Random;
 import java.util.Set;
-
-import redis.clients.util.Pool;
 
 public class JedisRandomConnectionHandler extends JedisClusterConnectionHandler {
 
@@ -12,11 +9,12 @@ public class JedisRandomConnectionHandler extends JedisClusterConnectionHandler 
 		super(nodes);
 	}
 
-	
-	@SuppressWarnings("unchecked")
-	public Jedis getConnection(String key) {
-		Object[] nodeArray =  nodes.values().toArray();
-		return ((Pool<Jedis>) nodeArray[new Random().nextInt(nodeArray.length)]).getResource();
+	public Jedis getConnection() {
+		return getRandomConnection().getResource();
 	}
 
+	@Override
+	Jedis getConnectionFromSlot(int slot) {
+		return getRandomConnection().getResource();
+	}
 }

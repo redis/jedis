@@ -3130,4 +3130,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	client.clusterSetSlotImporting(slot, nodeId);
     	return client.getStatusCodeReply();
     }
+
+	public String asking() {
+		checkIsInMulti();
+    	client.asking();
+    	return client.getStatusCodeReply();
+	}
 }

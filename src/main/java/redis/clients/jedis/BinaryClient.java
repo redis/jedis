@@ -1104,5 +1104,8 @@ public class BinaryClient extends Connection {
     public void cluster(final byte[]... args) {
     	sendCommand(CLUSTER, args);
     }
+    public void asking() {
+    	sendCommand(Command.ASKING);
+    }
 
 }

@@ -41,8 +41,6 @@ public class ClusterCommandsTest extends JedisTestBase {
     public static void removeSlots() throws InterruptedException {
     	//This is to wait for gossip to replicate data.
     	waitForEqualClusterSize(); 
-    	System.out.println(node1.clusterInfo());
-		System.out.println(node2.clusterInfo());
 		String[] nodes = node1.clusterNodes().split("\n");
 		String node1Id = nodes[0].split(" ")[0];
 		node1.clusterDelSlots(1,2,3,4,5,500);
@@ -50,8 +48,6 @@ public class ClusterCommandsTest extends JedisTestBase {
 		node1.clusterDelSlots(5000, 10000);
 		node1.clusterDelSlots(6000);
 		node2.clusterDelSlots(6000,1,2,3,4,5,500,5000);
-		System.out.println(node1.clusterNodes());
-		System.out.println(node2.clusterNodes());
     }
 
     private static void waitForEqualClusterSize() throws InterruptedException {

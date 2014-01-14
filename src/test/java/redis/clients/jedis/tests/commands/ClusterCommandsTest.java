@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,8 +13,8 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 
 public class ClusterCommandsTest extends JedisTestBase {
-    private Jedis node1;
-    private Jedis node2;
+    private static Jedis node1;
+    private static Jedis node2;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -35,8 +36,41 @@ public class ClusterCommandsTest extends JedisTestBase {
 	node1.disconnect();
 	node2.disconnect();
     }
+    
+    @AfterClass
+    public static void removeSlots() throws InterruptedException {
+    	//This is to wait for gossip to replicate data.
+    	waitForEqualClusterSize(); 
+    	System.out.println(node1.clusterInfo());
+		System.out.println(node2.clusterInfo());
+		String[] nodes = node1.clusterNodes().split("\n");
+		String node1Id = nodes[0].split(" ")[0];
+		node1.clusterDelSlots(1,2,3,4,5,500);
+		node1.clusterSetSlotNode(5000, node1Id);
+		node1.clusterDelSlots(5000, 10000);
+		node1.clusterDelSlots(6000);
+		node2.clusterDelSlots(6000,1,2,3,4,5,500,5000);
+		System.out.println(node1.clusterNodes());
+		System.out.println(node2.clusterNodes());
+    }
 
-    @Test
+    private static void waitForEqualClusterSize() throws InterruptedException {
+    	boolean notEqualSize = true;
+		while (notEqualSize) {
+			notEqualSize = getClusterAttribute(node1.clusterInfo(), "cluster_known_nodes") == getClusterAttribute(node2.clusterInfo(), "cluster_size") ? false : true;
+		}
+	}
+
+	private static int getClusterAttribute(String clusterInfo, String attributeName) {
+		for (String infoElement: clusterInfo.split("\n")) {
+			if (infoElement.contains(attributeName)) {
+				return Integer.valueOf(infoElement.split(":")[1].trim());
+			}
+		}
+		return 0;
+	}
+
+	@Test
     public void clusterNodes() {
 	String nodes = node1.clusterNodes();
 	assertTrue(nodes.split("\n").length > 0);

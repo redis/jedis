@@ -1,4 +1,4 @@
-package redis.clients.jedis.tests.utils;
+package redis.clients.util;
 
 public class JedisClusterCRC16 {
 	public final static int polynomial = 0x1021;	// Represents x^16+x^12+x^5+1

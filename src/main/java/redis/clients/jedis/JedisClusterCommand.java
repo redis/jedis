@@ -3,7 +3,7 @@ package redis.clients.jedis;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.tests.utils.JedisClusterCRC16;
+import redis.clients.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
 	

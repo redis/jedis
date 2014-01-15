@@ -129,10 +129,11 @@ public class JedisClusterTest extends Assert {
     	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     	JedisCluster jc = new JedisCluster(jedisClusterNode);
-    	node2.clusterDelSlots(JedisClusterCRC16.getSlot("51"));
+    	int slot51 = JedisClusterCRC16.getSlot("51");
+		node2.clusterDelSlots(slot51);
     	//TODO: We shouldn't need to issue DELSLOTS in node3, but due to redis-cluster bug we need to.
-    	node3.clusterDelSlots(JedisClusterCRC16.getSlot("51"));
-    	node3.clusterAddSlots(JedisClusterCRC16.getSlot("51"));
+    	node3.clusterDelSlots(slot51);
+    	node3.clusterAddSlots(slot51);
     	waitForClusterReady();
     	jc.set("51", "foo");
     	assertEquals("foo", jc.get("51"));
@@ -143,8 +144,9 @@ public class JedisClusterTest extends Assert {
     	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     	JedisCluster jc = new JedisCluster(jedisClusterNode);
-    	node3.clusterSetSlotImporting(JedisClusterCRC16.getSlot("51"), getNodeId(node2.clusterNodes()));
-    	node2.clusterSetSlotMigrating(JedisClusterCRC16.getSlot("51"), getNodeId(node3.clusterNodes()));
+    	int slot51 = JedisClusterCRC16.getSlot("51");
+		node3.clusterSetSlotImporting(slot51, getNodeId(node2.clusterNodes()));
+    	node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
     	jc.set("51", "foo");
     	assertEquals("foo", jc.get("51"));
     }

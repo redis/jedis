@@ -33,6 +33,7 @@ All of the following redis features are supported:
 - Key-tags for sharding
 - Sharding with pipelining
 - Scripting with pipelining
+- Redis Cluster
 
 ## How do I use it?
 
@@ -64,6 +65,19 @@ For more usage examples check the tests.
 Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
 And you are done!
+
+## Jedis Cluster
+
+Redis cluster [specification](http://redis.io/topics/cluster-spec) (still under development) is implemented
+
+```java
+Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+//Jedis Cluster will attempt to discover cluster nodes automatically
+jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+JedisCluster jc = new JedisCluster(jedisClusterNode);
+jc.set("foo", "bar");
+String value = jc.get("foo");
+```
 
 ## I want to contribute!
 

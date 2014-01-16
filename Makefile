@@ -65,6 +65,7 @@ appendonly no
 slaveof localhost 6379
 endef
 
+# SENTINELS
 define REDIS_SENTINEL1
 port 26379
 daemonize yes
@@ -101,6 +102,40 @@ pidfile /tmp/sentinel3.pid
 logfile /tmp/sentinel3.log
 endef
 
+# CLUSTER REDIS NODES
+define REDIS_CLUSTER_NODE1_CONF
+daemonize yes
+port 7379
+pidfile /tmp/redis_cluster_node1.pid
+logfile /tmp/redis_cluster_node1.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node1.conf
+endef
+
+define REDIS_CLUSTER_NODE2_CONF
+daemonize yes
+port 7380
+pidfile /tmp/redis_cluster_node2.pid
+logfile /tmp/redis_cluster_node2.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node2.conf
+endef
+
+define REDIS_CLUSTER_NODE3_CONF
+daemonize yes
+port 7381
+pidfile /tmp/redis_cluster_node3.pid
+logfile /tmp/redis_cluster_node3.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node3.conf
+endef
+
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF
@@ -110,8 +145,11 @@ export REDIS6_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
+export REDIS_CLUSTER_NODE1_CONF
+export REDIS_CLUSTER_NODE2_CONF
+export REDIS_CLUSTER_NODE3_CONF
 
-start:
+start: cleanup
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -123,6 +161,12 @@ start:
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
+	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
+
+cleanup:
+	rm -vf /tmp/redis_cluster_node*.conf
 
 stop:
 	kill `cat /tmp/redis1.pid`
@@ -135,10 +179,16 @@ stop:
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
+	kill `cat /tmp/redis_cluster_node1.pid` || true
+	kill `cat /tmp/redis_cluster_node2.pid` || true
+	kill `cat /tmp/redis_cluster_node3.pid` || true
+	rm -f /tmp/redis_cluster_node1.conf
+	rm -f /tmp/redis_cluster_node2.conf
+	rm -f /tmp/redis_cluster_node3.conf
 
 test:
 	make start
-	mvn clean compile test
+	mvn -Dtest=${TEST} clean compile test
 	make stop
 
 deploy:

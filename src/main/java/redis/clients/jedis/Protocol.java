@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
 public final class Protocol {
 
-    public static final int DEFAULT_PORT = 6379;
+    private static final String ASK_RESPONSE = "ASK";
+    private static final String MOVED_RESPONSE = "MOVED";
+	public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SENTINEL_PORT = 26379;
     public static final int DEFAULT_TIMEOUT = 2000;
     public static final int DEFAULT_DATABASE = 0;
@@ -30,6 +34,17 @@ public final class Protocol {
     public static final String SENTINEL_RESET = "reset";
     public static final String SENTINEL_SLAVES = "slaves";
 
+    public static final String CLUSTER_NODES = "nodes";
+    public static final String CLUSTER_MEET = "meet";
+    public static final String CLUSTER_ADDSLOTS = "addslots";
+    public static final String CLUSTER_DELSLOTS = "delslots";
+    public static final String CLUSTER_INFO = "info";
+    public static final String CLUSTER_GETKEYSINSLOT = "getkeysinslot";
+    public static final String CLUSTER_SETSLOT = "setslot";
+    public static final String CLUSTER_SETSLOT_NODE = "node";
+    public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
+    public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
+    
     private Protocol() {
 	// this prevent the class from instantiation
     }
@@ -61,8 +76,28 @@ public final class Protocol {
     }
 
     private static void processError(final RedisInputStream is) {
-	String message = is.readLine();
-	throw new JedisDataException(message);
+		String message = is.readLine();
+		//TODO: I'm not sure if this is the best way to do this. 
+		//Maybe Read only first 5 bytes instead?
+		//
+		if (message.contains(MOVED_RESPONSE)) {
+			String[] movedInfo = parseTargetHostAndSlot(message);
+			throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1], Integer.valueOf(movedInfo[2])), Integer.valueOf(movedInfo[0]));
+		} else if (message.contains(ASK_RESPONSE)) {
+			String[] askInfo = parseTargetHostAndSlot(message);
+			throw new JedisAskDataException(message, new HostAndPort(askInfo[1], Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
+		}
+		throw new JedisDataException(message);
+    }
+    
+    private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
+    	String[] response = new String[3];
+    	String[] messageInfo = clusterRedirectResponse.split(" ");
+    	String[] targetHostAndPort = messageInfo[2].split(":");
+    	response[0] = messageInfo[1];
+    	response[1] = targetHostAndPort[0];
+    	response[2] = targetHostAndPort[1];  	
+    	return response;
     }
 
     private static Object process(final RedisInputStream is) {
@@ -157,8 +192,7 @@ public final class Protocol {
     }
 
     public static enum Command {
-	PING, SET, GET, QUIT, EXISTS, DEL, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME, RENAMENX, RENAMEX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET, SETNX, SETEX, MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, RPOPLPUSH, SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SISMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE, SDIFF, SDIFFSTORE, SRANDMEMBER, ZADD, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZCARD, ZSCORE, MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, BLPOP, BRPOP, AUTH, SUBSCRIBE, PUBLISH, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, ZCOUNT, ZRANGEBYSCORE, ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE, SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, SHUTDOWN, INFO, MONITOR, SLAVEOF, CONFIG, STRLEN, SYNC, LPUSHX, PERSIST, RPUSHX, ECHO, LINSERT, DEBUG, BRPOPLPUSH, SETBIT, GETBIT, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG, OBJECT, BITCOUNT, BITOP, SENTINEL, 
-	DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT, PSETEX, CLIENT, TIME, MIGRATE, HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT;
+	PING, SET, GET, QUIT, EXISTS, DEL, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME, RENAMENX, RENAMEX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET, SETNX, SETEX, MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, RPOPLPUSH, SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SISMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE, SDIFF, SDIFFSTORE, SRANDMEMBER, ZADD, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZCARD, ZSCORE, MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, BLPOP, BRPOP, AUTH, SUBSCRIBE, PUBLISH, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, ZCOUNT, ZRANGEBYSCORE, ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNIONSTORE, ZINTERSTORE, SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, SHUTDOWN, INFO, MONITOR, SLAVEOF, CONFIG, STRLEN, SYNC, LPUSHX, PERSIST, RPUSHX, ECHO, LINSERT, DEBUG, BRPOPLPUSH, SETBIT, GETBIT, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG, OBJECT, BITCOUNT, BITOP, SENTINEL, DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT, PSETEX, CLIENT, TIME, MIGRATE, HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING;
 
 	public final byte[] raw;
 

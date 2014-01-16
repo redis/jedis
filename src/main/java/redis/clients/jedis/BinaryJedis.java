@@ -1697,7 +1697,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     protected void checkIsInMulti() {
 	if (client.isInMulti()) {
-	    throw new JedisDataException(
+			throw new JedisDataException(
 		    "Cannot use Jedis when in Multi. Please use JedisTransaction instead.");
 	}
     }

@@ -1135,4 +1135,11 @@ public class BinaryClient extends Connection {
     public void waitReplicas(int replicas, long timeout) {
 	sendCommand(WAIT, toByteArray(replicas), toByteArray(timeout));
     }
+
+    public void cluster(final byte[]... args) {
+    	sendCommand(CLUSTER, args);
+    }
+    public void asking() {
+    	sendCommand(Command.ASKING);
+    }
 }

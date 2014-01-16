@@ -96,6 +96,7 @@ public class JedisClusterTest extends Assert {
     		assertEquals(12182, jme.getSlot());
     		assertEquals(new HostAndPort("127.0.0.1", 7381), jme.getTargetNode());
     	}
+    	fail();
     }
 
     @Test(expected=JedisAskDataException.class)

@@ -14,6 +14,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
+import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.util.JedisClusterCRC16;
 
@@ -131,9 +132,9 @@ public class JedisClusterTest extends Assert {
     	JedisCluster jc = new JedisCluster(jedisClusterNode);
     	int slot51 = JedisClusterCRC16.getSlot("51");
 		node2.clusterDelSlots(slot51);
-    	//TODO: We shouldn't need to issue DELSLOTS in node3, but due to redis-cluster bug we need to.
     	node3.clusterDelSlots(slot51);
     	node3.clusterAddSlots(slot51);
+    	
     	waitForClusterReady();
     	jc.set("51", "foo");
     	assertEquals("foo", jc.get("51"));
@@ -157,6 +158,17 @@ public class JedisClusterTest extends Assert {
     	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     	JedisCluster jc = new JedisCluster(jedisClusterNode);
     	jc.ping();
+    }
+    
+    @Test(expected=JedisClusterMaxRedirectionsException.class)
+    public void testRedisClusterMaxRedirections() {
+    	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    	JedisCluster jc = new JedisCluster(jedisClusterNode);
+    	int slot51 = JedisClusterCRC16.getSlot("51");
+    	//This will cause an infinite redirection loop
+		node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
+    	jc.set("51", "foo");
     }
     
     private String getNodeId(String infoOutput) {

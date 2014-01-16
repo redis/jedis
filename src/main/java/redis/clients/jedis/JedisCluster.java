@@ -10,23 +10,31 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	
 	public static final short HASHSLOTS = 16384;
 	private static final int DEFAULT_TIMEOUT = 1;
+	private static final int DEFAULT_MAX_REDIRECTIONS = 5;
+	
+	private int timeout;
+	private int maxRedirections;
 	
 	
 	private JedisClusterConnectionHandler connectionHandler;
 
 	public JedisCluster(Set<HostAndPort> nodes, int timeout) {
-		connectionHandler = new JedisSlotBasedConnectionHandler(nodes);
-		
+		this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS);
 	}
 
 	public JedisCluster(Set<HostAndPort> nodes) {
 		this(nodes, DEFAULT_TIMEOUT);
 	}
-	
+
+	public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections) {
+		this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode);
+		this.timeout = timeout;
+		this.maxRedirections = maxRedirections;
+	}
 
 	@Override
 	public String set(final String key, final String value) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().set(key, value);
@@ -36,7 +44,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String get(final String key) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().get(key);
@@ -46,7 +54,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Boolean exists(final String key) {
-		return new JedisClusterCommand<Boolean>(connectionHandler) {
+		return new JedisClusterCommand<Boolean>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Boolean execute() {
 				return connectionHandler.getConnection().exists(key);
@@ -56,7 +64,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long persist(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().persist(key);
@@ -66,7 +74,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String type(final String key) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().type(key);
@@ -76,7 +84,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long expire(final String key, final int seconds) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().expire(key, seconds);
@@ -86,7 +94,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long expireAt(final String key, final long unixTime) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().expireAt(key, unixTime);
@@ -96,7 +104,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long ttl(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().ttl(key);
@@ -106,7 +114,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Boolean setbit(final String key, final long offset, final boolean value) {
-		return new JedisClusterCommand<Boolean>(connectionHandler) {
+		return new JedisClusterCommand<Boolean>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Boolean execute() {
 				return connectionHandler.getConnection().setbit(key, offset, value);
@@ -116,7 +124,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Boolean setbit(final String key, final long offset, final String value) {
-		return new JedisClusterCommand<Boolean>(connectionHandler) {
+		return new JedisClusterCommand<Boolean>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Boolean execute() {
 				return connectionHandler.getConnection().setbit(key, offset, value);
@@ -126,7 +134,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Boolean getbit(final String key, final long offset) {
-		return new JedisClusterCommand<Boolean>(connectionHandler) {
+		return new JedisClusterCommand<Boolean>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Boolean execute() {
 				return connectionHandler.getConnection().getbit(key, offset);
@@ -136,7 +144,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long setrange(final String key, final long offset, final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().setrange(key, offset, value);
@@ -146,7 +154,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String getrange(final String key, final long startOffset, final long endOffset) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().getrange(key, startOffset, endOffset);
@@ -156,7 +164,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String getSet(final String key, final String value) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().getSet(key, value);
@@ -166,7 +174,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long setnx(final String key, final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().setnx(key, value);
@@ -176,7 +184,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String setex(final String key, final int seconds, final String value) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().setex(key, seconds, value);
@@ -186,7 +194,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long decrBy(final String key, final long integer) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().decrBy(key, integer);
@@ -196,7 +204,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long decr(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().decr(key);
@@ -206,7 +214,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long incrBy(final String key, final long integer) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().incrBy(key, integer);
@@ -216,7 +224,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long incr(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().incr(key);
@@ -226,7 +234,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long append(final String key, final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().append(key, value);
@@ -236,7 +244,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String substr(final String key, final int start, final int end) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().substr(key, start, end);
@@ -246,7 +254,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long hset(final String key, final String field, final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().hset(key, field, value);
@@ -256,7 +264,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String hget(final String key, final String field) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().hget(key, field);
@@ -266,7 +274,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long hsetnx(final String key, final String field, final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().hsetnx(key, field, value);
@@ -276,7 +284,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String hmset(final String key, final Map<String, String> hash) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().hmset(key, hash);
@@ -286,7 +294,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> hmget(final String key, final String... fields) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().hmget(key, fields);
@@ -296,7 +304,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long hincrBy(final String key, final String field, final long value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().hincrBy(key, field, value);
@@ -306,7 +314,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Boolean hexists(final String key, final String field) {
-		return new JedisClusterCommand<Boolean>(connectionHandler) {
+		return new JedisClusterCommand<Boolean>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Boolean execute() {
 				return connectionHandler.getConnection().hexists(key, field);
@@ -316,7 +324,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long hdel(final String key, final String... field) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().hdel(key, field);
@@ -326,7 +334,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long hlen(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().hdel(key);
@@ -336,7 +344,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> hkeys(final String key) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().hkeys(key);
@@ -346,7 +354,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> hvals(final String key) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().hvals(key);
@@ -356,7 +364,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Map<String, String> hgetAll(final String key) {
-		return new JedisClusterCommand<Map<String, String>>(connectionHandler) {
+		return new JedisClusterCommand<Map<String, String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Map<String, String> execute() {
 				return connectionHandler.getConnection().hgetAll(key);
@@ -366,7 +374,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long rpush(final String key, final String... string) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().rpush(key, string);
@@ -376,7 +384,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long lpush(final String key, final String... string) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().lpush(key, string);
@@ -386,7 +394,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long llen(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().llen(key);
@@ -396,7 +404,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> lrange(final String key, final long start, final long end) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().lrange(key, start, end);
@@ -406,7 +414,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String ltrim(final String key, final long start, final long end) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().ltrim(key, start, end);
@@ -416,7 +424,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String lindex(final String key, final long index) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().lindex(key, index);
@@ -426,7 +434,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String lset(final String key, final long index, final String value) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().lset(key, index, value);
@@ -436,7 +444,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long lrem(final String key, final long count, final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().lrem(key, count, value);
@@ -446,7 +454,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String lpop(final String key) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().lpop(key);
@@ -456,7 +464,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String rpop(final String key) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().rpop(key);
@@ -466,7 +474,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long sadd(final String key, final String... member) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().sadd(key, member);
@@ -476,7 +484,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> smembers(final String key) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().smembers(key);
@@ -486,7 +494,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long srem(final String key, final String... member) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().srem(key, member);
@@ -496,7 +504,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String spop(final String key) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().spop(key);
@@ -506,7 +514,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long scard(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().scard(key);
@@ -516,7 +524,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Boolean sismember(final String key, final String member) {
-		return new JedisClusterCommand<Boolean>(connectionHandler) {
+		return new JedisClusterCommand<Boolean>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Boolean execute() {
 				return connectionHandler.getConnection().sismember(key, member);
@@ -526,7 +534,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String srandmember(final String key) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().srandmember(key);
@@ -536,7 +544,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long strlen(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().strlen(key);
@@ -546,7 +554,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zadd(final String key, final double score, final String member) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zadd(key, score, member);
@@ -556,7 +564,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zadd(final String key, final Map<Double, String> scoreMembers) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zadd(key, scoreMembers);
@@ -566,7 +574,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> zrange(final String key, final long start, final long end) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrange(key, start, end);
@@ -576,7 +584,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zrem(final String key, final String... member) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zrem(key, member);
@@ -586,7 +594,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Double zincrby(final String key, final double score, final String member) {
-		return new JedisClusterCommand<Double>(connectionHandler) {
+		return new JedisClusterCommand<Double>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Double execute() {
 				return connectionHandler.getConnection().zincrby(key, score, member);
@@ -596,7 +604,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zrank(final String key, final String member) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zrank(key, member);
@@ -606,7 +614,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zrevrank(final String key, final String member) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zrevrank(key, member);
@@ -616,7 +624,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> zrevrange(final String key, final long start, final long end) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrevrange(key, start, end);
@@ -626,7 +634,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<Tuple> zrangeWithScores(final String key, final long start, final long end) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrangeWithScores(key, start, end);
@@ -636,7 +644,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long end) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrevrangeWithScores(key, start, end);
@@ -646,7 +654,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zcard(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zcard(key);
@@ -656,7 +664,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Double zscore(final String key, final String member) {
-		return new JedisClusterCommand<Double>(connectionHandler) {
+		return new JedisClusterCommand<Double>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Double execute() {
 				return connectionHandler.getConnection().zscore(key, member);
@@ -666,7 +674,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> sort(final String key) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().sort(key);
@@ -676,7 +684,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> sort(final String key, final SortingParams sortingParameters) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().sort(key, sortingParameters);
@@ -686,7 +694,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zcount(final String key, final double min, final double max) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zcount(key, min, max);
@@ -696,7 +704,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zcount(final String key, final String min, final String max) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zcount(key, min, max);
@@ -706,7 +714,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> zrangeByScore(final String key, final double min, final double max) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrangeByScore(key, min, max);
@@ -716,7 +724,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> zrangeByScore(final String key, final String min, final String max) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrangeByScore(key, min, max);
@@ -726,7 +734,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrevrangeByScore(key, min, max);
@@ -737,7 +745,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<String> zrangeByScore(final String key, final double min, final double max,
 			final int offset, final int count) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrangeByScore(key, min, max, offset, count);
@@ -747,7 +755,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<String> zrevrangeByScore(final String key, final String max, final String min) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrevrangeByScore(key, min, max);
@@ -758,7 +766,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<String> zrangeByScore(final String key, final String min, final String max,
 			final int offset, final int count) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrangeByScore(key, min, max, offset, count);
@@ -769,7 +777,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<String> zrevrangeByScore(final String key, final double max, final double min,
 			final int offset, final int count) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrevrangeByScore(key, min, max, offset, count);
@@ -779,7 +787,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max);
@@ -789,7 +797,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, min, max);
@@ -799,7 +807,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max, final int offset, final int count) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max, offset, count);
@@ -810,7 +818,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<String> zrevrangeByScore(final String key, final String max, final String min,
 			final int offset, final int count) {
-		return new JedisClusterCommand<Set<String>>(connectionHandler) {
+		return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<String> execute() {
 				return connectionHandler.getConnection().zrevrangeByScore(key, min, max, offset, count);
@@ -820,7 +828,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max);
@@ -831,7 +839,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
 			final String min) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, min, max);
@@ -842,7 +850,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<Tuple> zrangeByScoreWithScores(final String key, final String min,
 			final String max, final int offset, final int count) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrangeByScoreWithScores(key, min, max, offset, count);
@@ -853,7 +861,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
 			final double min, final int offset, final int count) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, max, min, offset, count);
@@ -864,7 +872,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
 			final String min, final int offset, final int count) {
-		return new JedisClusterCommand<Set<Tuple>>(connectionHandler) {
+		return new JedisClusterCommand<Set<Tuple>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Set<Tuple> execute() {
 				return connectionHandler.getConnection().zrevrangeByScoreWithScores(key, max, min, offset, count);
@@ -874,7 +882,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zremrangeByRank(final String key, final long start, final long end) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zremrangeByRank(key, start, end);
@@ -884,7 +892,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zremrangeByScore(final String key, final double start, final double end) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zremrangeByScore(key, start, end);
@@ -894,7 +902,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long zremrangeByScore(final String key, final String start, final String end) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().zremrangeByScore(key, start, end);
@@ -905,7 +913,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	@Override
 	public Long linsert(final String key, final LIST_POSITION where, final String pivot,
 			final String value) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().linsert(key, where, pivot, value);
@@ -915,7 +923,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long lpushx(final String key, final String... string) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().lpushx(key, string);
@@ -925,7 +933,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long rpushx(final String key, final String... string) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().rpushx(key, string);
@@ -935,7 +943,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> blpop(final String arg) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().blpop(arg);
@@ -945,7 +953,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public List<String> brpop(final String arg) {
-		return new JedisClusterCommand<List<String>>(connectionHandler) {
+		return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public List<String> execute() {
 				return connectionHandler.getConnection().brpop(arg);
@@ -955,7 +963,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long del(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().del(key);
@@ -965,7 +973,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String echo(final String string) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().echo(string);
@@ -975,7 +983,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long move(final String key, final int dbIndex) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().move(key, dbIndex);
@@ -985,7 +993,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long bitcount(final String key) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().bitcount(key);
@@ -995,7 +1003,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long bitcount(final String key, final long start, final long end) {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().bitcount(key, start, end);
@@ -1005,7 +1013,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String ping() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().ping();
@@ -1015,7 +1023,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String quit() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().quit();
@@ -1025,7 +1033,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String flushDB() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().flushDB();
@@ -1035,7 +1043,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long dbSize() {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().dbSize();
@@ -1045,7 +1053,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String select(final int index) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().select(index);
@@ -1055,7 +1063,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String flushAll() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().flushAll();
@@ -1065,7 +1073,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String auth(final String password) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().auth(password);
@@ -1075,7 +1083,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String save() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().save();
@@ -1085,7 +1093,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String bgsave() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().bgsave();
@@ -1095,7 +1103,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String bgrewriteaof() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().bgrewriteaof();
@@ -1105,7 +1113,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long lastsave() {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().lastsave();
@@ -1115,7 +1123,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String shutdown() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().shutdown();
@@ -1125,7 +1133,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String info() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().info();
@@ -1135,7 +1143,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String info(final String section) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().info(section);
@@ -1145,7 +1153,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String slaveof(final String host, final int port) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().slaveof(host, port);
@@ -1155,7 +1163,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String slaveofNoOne() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().slaveofNoOne();
@@ -1165,7 +1173,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public Long getDB() {
-		return new JedisClusterCommand<Long>(connectionHandler) {
+		return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public Long execute() {
 				return connectionHandler.getConnection().getDB();
@@ -1175,7 +1183,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String debug(final DebugParams params) {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().debug(params);
@@ -1185,7 +1193,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
 	@Override
 	public String configResetStat() {
-		return new JedisClusterCommand<String>(connectionHandler) {
+		return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
 			@Override
 			public String execute() {
 				return connectionHandler.getConnection().configResetStat();
@@ -1197,3 +1205,4 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		return connectionHandler.getNodes();
 	}
 }
+

@@ -69,6 +69,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	}
 
 	waitForFailover(pool, oldMaster);
+	Thread.sleep(100);
 
 	jedis = pool.getResource();
 	assertEquals("PONG", jedis.ping());

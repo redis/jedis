@@ -188,6 +188,7 @@ stop:
 
 test:
 	make start
+	sleep 2
 	mvn -Dtest=${TEST} clean compile test
 	make stop
 

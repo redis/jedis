@@ -202,11 +202,19 @@ public class Connection {
         return (List<byte[]>) Protocol.read(inputStream);
     }
 
+    public void resetPipelinedCount() {
+        pipelinedCommands = 0;
+    }
+
     @SuppressWarnings("unchecked")
+    public List<Object> getRawObjectMultiBulkReply() {
+        return (List<Object>) Protocol.read(inputStream);
+    }
+
     public List<Object> getObjectMultiBulkReply() {
         flush();
         pipelinedCommands--;
-        return (List<Object>) Protocol.read(inputStream);
+        return getRawObjectMultiBulkReply();
     }
     
     @SuppressWarnings("unchecked")

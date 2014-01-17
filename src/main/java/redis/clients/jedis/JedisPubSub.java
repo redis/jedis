@@ -16,7 +16,7 @@ import redis.clients.util.SafeEncoder;
 
 public abstract class JedisPubSub {
     private int subscribedChannels = 0;
-    private Client client;
+    private volatile Client client;
 
     public abstract void onMessage(String channel, String message);
 
@@ -41,26 +41,46 @@ public abstract class JedisPubSub {
     }
 
     public void unsubscribe(String... channels) {
+        if (client == null) {
+            throw new JedisConnectionException(
+                    "JedisPubSub is not subscribed to a Jedis instance.");
+        }
         client.unsubscribe(channels);
         client.flush();
     }
 
     public void subscribe(String... channels) {
+        if (client == null) {
+            throw new JedisConnectionException(
+                    "JedisPubSub is not subscribed to a Jedis instance.");
+        }
         client.subscribe(channels);
         client.flush();
     }
 
     public void psubscribe(String... patterns) {
+        if (client == null) {
+            throw new JedisConnectionException(
+                    "JedisPubSub is not subscribed to a Jedis instance.");
+        }
         client.psubscribe(patterns);
         client.flush();
     }
 
     public void punsubscribe() {
+        if (client == null) {
+            throw new JedisConnectionException(
+                    "JedisPubSub is not subscribed to a Jedis instance.");
+        }
         client.punsubscribe();
         client.flush();
     }
 
     public void punsubscribe(String... patterns) {
+        if (client == null) {
+            throw new JedisConnectionException(
+                    "JedisPubSub is not subscribed to a Jedis instance.");
+        }
         client.punsubscribe(patterns);
         client.flush();
     }
@@ -85,7 +105,7 @@ public abstract class JedisPubSub {
 
     private void process(Client client) {
         do {
-            List<Object> reply = client.getObjectMultiBulkReply();
+            List<Object> reply = client.getRawObjectMultiBulkReply();
             final Object firstObj = reply.get(0);
             if (!(firstObj instanceof byte[])) {
                 throw new JedisException("Unknown message type: " + firstObj);
@@ -138,6 +158,14 @@ public abstract class JedisPubSub {
                 throw new JedisException("Unknown message type: " + firstObj);
             }
         } while (isSubscribed());
+
+        /* Invalidate instance since this thread is no longer listening */
+        this.client = null;
+
+        /* Reset pipeline count because subscribe() calls would have
+         * increased it but nothing decremented it.
+         */
+        client.resetPipelinedCount();
     }
 
     public int getSubscribedChannels() {

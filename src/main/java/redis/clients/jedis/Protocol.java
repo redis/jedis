@@ -79,11 +79,10 @@ public final class Protocol {
 		String message = is.readLine();
 		//TODO: I'm not sure if this is the best way to do this. 
 		//Maybe Read only first 5 bytes instead?
-		//
-		if (message.contains(MOVED_RESPONSE)) {
+		if (message.startsWith(MOVED_RESPONSE)) {
 			String[] movedInfo = parseTargetHostAndSlot(message);
 			throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1], Integer.valueOf(movedInfo[2])), Integer.valueOf(movedInfo[0]));
-		} else if (message.contains(ASK_RESPONSE)) {
+		} else if (message.startsWith(ASK_RESPONSE)) {
 			String[] askInfo = parseTargetHostAndSlot(message);
 			throw new JedisAskDataException(message, new HostAndPort(askInfo[1], Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
 		}

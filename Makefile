@@ -145,7 +145,7 @@ export REDIS_CLUSTER_NODE1_CONF
 export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
 
-start:
+start: cleanup
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -160,6 +160,9 @@ start:
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
+
+cleanup:
+	rm -vf /tmp/redis_cluster_node*.conf
 
 stop:
 	kill `cat /tmp/redis1.pid`
@@ -181,7 +184,7 @@ stop:
 
 test:
 	make start
-	mvn clean compile test
+	mvn -Dtest=${TEST} clean compile test
 	make stop
 
 deploy:

@@ -21,7 +21,6 @@ public class Connection {
     private Socket socket;
     private RedisOutputStream outputStream;
     private RedisInputStream inputStream;
-    private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
 
     public Socket getSocket() {
@@ -81,14 +80,12 @@ public class Connection {
     protected Connection sendCommand(final Command cmd, final byte[]... args) {
         connect();
         Protocol.sendCommand(outputStream, cmd, args);
-        pipelinedCommands++;
         return this;
     }
     
     protected Connection sendCommand(final Command cmd) {
         connect();
         Protocol.sendCommand(outputStream, cmd, new byte[0][]);
-        pipelinedCommands++;
         return this;
     }
 
@@ -161,7 +158,6 @@ public class Connection {
 
     protected String getStatusCodeReply() {
         flush();
-        pipelinedCommands--;
         final byte[] resp = (byte[]) Protocol.read(inputStream);
         if (null == resp) {
             return null;
@@ -181,13 +177,11 @@ public class Connection {
 
     public byte[] getBinaryBulkReply() {
         flush();
-        pipelinedCommands--;
         return (byte[]) Protocol.read(inputStream);
     }
 
     public Long getIntegerReply() {
         flush();
-        pipelinedCommands--;
         return (Long) Protocol.read(inputStream);
     }
 
@@ -198,45 +192,23 @@ public class Connection {
     @SuppressWarnings("unchecked")
     public List<byte[]> getBinaryMultiBulkReply() {
         flush();
-        pipelinedCommands--;
         return (List<byte[]>) Protocol.read(inputStream);
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> getObjectMultiBulkReply() {
         flush();
-        pipelinedCommands--;
         return (List<Object>) Protocol.read(inputStream);
     }
     
     @SuppressWarnings("unchecked")
     public List<Long> getIntegerMultiBulkReply() {
         flush();
-        pipelinedCommands--;
         return (List<Long>) Protocol.read(inputStream);
-    }
-
-    public List<Object> getAll() {
-        return getAll(0);
-    }
-
-    public List<Object> getAll(int except) {
-        List<Object> all = new ArrayList<Object>();
-        flush();
-        while (pipelinedCommands > except) {
-        	try{
-                all.add(Protocol.read(inputStream));
-        	}catch(JedisDataException e){
-        		all.add(e);
-        	}
-            pipelinedCommands--;
-        }
-        return all;
     }
 
     public Object getOne() {
         flush();
-        pipelinedCommands--;
         return Protocol.read(inputStream);
     }
 }

@@ -30,9 +30,26 @@ public class Transaction extends MultiKeyPipelineBase {
         return client;
     }
 
+    public Object getOneWithJedisDataException() {
+    	try {
+    		return client.getOne();
+    	} catch (JedisDataException e) {
+    		return e;
+    	}
+    }
+    
+    private void consumeResponse(int count) {
+    	for (int i = 0 ; i < count ; i++)
+    		getOneWithJedisDataException();
+    }
+    
     public List<Object> exec() {
+    	// Discard multi
+    	consumeResponse(1);
+    	// Discard QUEUED or ERROR
+    	consumeResponse(getPipelinedResponseLength());
+    	
         client.exec();
-        client.getAll(1); // Discard all but the last reply
 
         List<Object> unformatted = client.getObjectMultiBulkReply();
         if (unformatted == null) {
@@ -50,8 +67,12 @@ public class Transaction extends MultiKeyPipelineBase {
     }
 
     public List<Response<?>> execGetResponse() {
+    	// Discard multi
+    	consumeResponse(1);
+    	// Discard QUEUED or ERROR
+    	consumeResponse(getPipelinedResponseLength());
+    	
         client.exec();
-        client.getAll(1); // Discard all but the last reply
 
         List<Object> unformatted = client.getObjectMultiBulkReply();
         if (unformatted == null) {
@@ -65,8 +86,8 @@ public class Transaction extends MultiKeyPipelineBase {
     }
 
     public String discard() {
+    	consumeResponse(getPipelinedResponseLength());
         client.discard();
-        client.getAll(1); // Discard all but the last reply
         inTransaction = false;
         clean();
         return client.getStatusCodeReply();

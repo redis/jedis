@@ -62,17 +62,24 @@ public class Pipeline extends MultiKeyPipelineBase {
     protected Client getClient(String key) {
         return client;
     }
-
+    
+    public Object getOneWithJedisDataException() {
+    	try {
+    		return client.getOne();
+    	} catch (JedisDataException e) {
+    		return e;
+    	}
+    }
+    
     /**
      * Syncronize pipeline by reading all responses. This operation close the
      * pipeline. In order to get return values from pipelined commands, capture
      * the different Response<?> of the commands you execute.
      */
     public void sync() {
-        List<Object> unformatted = client.getAll();
-        for (Object o : unformatted) {
-            generateResponse(o);
-        }
+    	while (hasPipelinedResponse()) {
+    		generateResponse(getOneWithJedisDataException());
+    	}
     }
 
     /**
@@ -84,12 +91,11 @@ public class Pipeline extends MultiKeyPipelineBase {
      * @return A list of all the responses in the order you executed them.
      */
     public List<Object> syncAndReturnAll() {
-        List<Object> unformatted = client.getAll();
         List<Object> formatted = new ArrayList<Object>();
         
-        for (Object o : unformatted) {
-            try {
-            	formatted.add(generateResponse(o).get());
+        while (hasPipelinedResponse()) {
+        	try {
+            	formatted.add(generateResponse(getOneWithJedisDataException()).get());
             } catch (JedisDataException e) {
                 formatted.add(e);
             }

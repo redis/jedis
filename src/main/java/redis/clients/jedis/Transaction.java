@@ -44,8 +44,6 @@ public class Transaction extends MultiKeyPipelineBase {
     }
     
     public List<Object> exec() {
-    	// Discard multi
-    	consumeResponse(1);
     	// Discard QUEUED or ERROR
     	consumeResponse(getPipelinedResponseLength());
     	
@@ -67,8 +65,6 @@ public class Transaction extends MultiKeyPipelineBase {
     }
 
     public List<Response<?>> execGetResponse() {
-    	// Discard multi
-    	consumeResponse(1);
     	// Discard QUEUED or ERROR
     	consumeResponse(getPipelinedResponseLength());
     	

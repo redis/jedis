@@ -1679,6 +1679,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     public Transaction multi() {
 	client.multi();
+	client.getOne();	// expected OK
 	return new Transaction(client);
     }
 
@@ -1687,6 +1688,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 	jedisTransaction.setClient(client);
 	try {
 	    client.multi();
+	    client.getOne();	// expected OK
 	    jedisTransaction.execute();
 	    results = jedisTransaction.exec();
 	} catch (Exception ex) {

@@ -211,4 +211,17 @@ public class Connection {
         flush();
         return Protocol.read(inputStream);
     }
+    
+    public List<Object> getMany(int count) {
+    	flush();
+    	List<Object> responses = new ArrayList<Object>();
+    	for (int i = 0 ; i < count ; i++) {
+    		try {
+    			responses.add(Protocol.read(inputStream));
+    		} catch (JedisDataException e) {
+    			responses.add(e);
+    		}
+    	}
+    	return responses;
+    }
 }

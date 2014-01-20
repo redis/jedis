@@ -76,4 +76,8 @@ public class Transaction extends MultiKeyPipelineBase {
         return client.getStatusCodeReply();
     }
 
+	public void setClient(Client client) {
+		this.client = client;
+	}
+
 }

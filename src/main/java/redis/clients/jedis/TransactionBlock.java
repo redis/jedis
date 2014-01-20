@@ -19,8 +19,4 @@ public abstract class TransactionBlock extends Transaction {
     public void setClient(Client client) {
 	    super.setClient(client);
     }
-    
-    public String discard() {
-    	return super.discard();
-    }
 }

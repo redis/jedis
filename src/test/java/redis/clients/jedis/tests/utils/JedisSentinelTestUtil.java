@@ -46,8 +46,11 @@ public class JedisSentinelTestUtil {
 
 	    List<String> sentinelMasterInfos = sentinelJedis
 		    .sentinelGetMasterAddrByName(masterName);
-	    if (sentinelMasterInfos == null)
-		continue;
+	    if (sentinelMasterInfos == null) {
+	    	System.out
+		    .println("Cannot retrieve Sentinel's master address info, sleep...");
+	    	continue;
+	    }
 
 	    newMaster = new HostAndPort(sentinelMasterInfos.get(0),
 		    Integer.parseInt(sentinelMasterInfos.get(1)));

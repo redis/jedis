@@ -33,6 +33,10 @@ public final class Protocol {
     public static final String SENTINEL_GET_MASTER_ADDR_BY_NAME = "get-master-addr-by-name";
     public static final String SENTINEL_RESET = "reset";
     public static final String SENTINEL_SLAVES = "slaves";
+    public static final String SENTINEL_FAILOVER = "failover";
+    public static final String SENTINEL_MONITOR = "monitor";
+    public static final String SENTINEL_REMOVE = "remove";
+    public static final String SENTINEL_SET = "set";
 
     public static final String CLUSTER_NODES = "nodes";
     public static final String CLUSTER_MEET = "meet";

@@ -132,11 +132,17 @@ public class JedisSentinelTest extends JedisTestBase {
 		Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
 		
 		Map<String, String> parameterMap = new HashMap<String, String>();
-		parameterMap.put("down-after-milliseconds", String.valueOf(3000));
-		parameterMap.put("parallel-syncs", String.valueOf(1));
+		parameterMap.put("down-after-milliseconds", String.valueOf(1234));
+		parameterMap.put("parallel-syncs", String.valueOf(3));
 		j.sentinelSet(MASTER_NAME, parameterMap);
 		
-		// cannot test "sentinel set" because there is no command "sentinel get"
+		List<Map<String,String>> masters = j.sentinelMasters();
+		for (Map<String, String> master : masters) {
+			if (master.get("name").equals(MASTER_NAME)) {
+				assertEquals(1234, Integer.parseInt(master.get("down-after-milliseconds")));
+				assertEquals(3, Integer.parseInt(master.get("parallel-syncs")));
+			}
+		}
 	}
 	
 	private void ensureMonitored(HostAndPort sentinel, String masterName, String ip, int port, int quorum) {

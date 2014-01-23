@@ -71,8 +71,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     /**
-     * Get the value of the specified key. If the key does not exist the special
-     * value 'nil' is returned. If the value stored at key is not a string an
+     * Get the value of the specified key. If the key does not exist null
+     * is returned. If the value stored at key is not a string an
      * error is returned because GET can only handle string values.
      * <p>
      * Time complexity: O(1)

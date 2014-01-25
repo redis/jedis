@@ -720,6 +720,17 @@ public class Client extends BinaryClient implements Commands {
 
 	zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
     }
+    
+    public void zaddFixed(String key, Map<String, Double> scoreMembers) {
+		HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
+
+		for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
+			binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()),
+					entry.getValue());
+		}
+		zaddBinaryFixed(SafeEncoder.encode(key), binaryScoreMembers);
+	}
+
 
     public void objectRefcount(String key) {
 	objectRefcount(SafeEncoder.encode(key));

@@ -1420,6 +1420,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	client.zadd(key, scoreMembers);
 	return client.getIntegerReply();
     }
+    
+    public Long zaddFixed(final String key, final Map<String, Double> scoreMembers) {
+    checkIsInMulti();
+    client.zaddFixed(key, scoreMembers);
+    return client.getIntegerReply();
+    }
 
     public Set<String> zrange(final String key, final long start, final long end) {
 	checkIsInMulti();

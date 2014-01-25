@@ -393,6 +393,26 @@ public class BinaryClient extends Connection {
 
 	sendCommand(ZADD, argsArray);
     }
+    
+    
+    public void zaddBinaryFixed(final byte[] key, Map< byte[],Double> scoreMembers) {
+		ArrayList<byte[]> args = new ArrayList<byte[]>(
+				scoreMembers.size() * 2 + 1);
+
+		args.add(key);
+
+		for (Map.Entry<byte[],Double > entry : scoreMembers.entrySet()) {
+			args.add(toByteArray(entry.getValue()));
+			args.add(entry.getKey());
+			
+		}
+
+		byte[][] argsArray = new byte[args.size()][];
+		args.toArray(argsArray);
+
+		sendCommand(ZADD, argsArray);
+	}   
+    
 
     public void zrange(final byte[] key, final long start, final long end) {
 	sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));

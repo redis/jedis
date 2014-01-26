@@ -654,7 +654,7 @@ abstract class PipelineBase extends Queable implements
 		 return getResponse(BuilderFactory.LONG);
 	}
 
-    public Response<Long> zadd(String key, Map<Double, String> scoreMembers) {
+    public Response<Long> zadd(String key, Map<String, Double> scoreMembers) {
         getClient(key).zadd(key, scoreMembers);
         return getResponse(BuilderFactory.LONG);
     }

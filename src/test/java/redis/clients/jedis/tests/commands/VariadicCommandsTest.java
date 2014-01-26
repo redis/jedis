@@ -117,30 +117,30 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
 	
 	@Test
     public void zadd() {
-	 	Map<Double, String> scoreMembers = new HashMap<Double, String>();
-	 	scoreMembers.put(1d, "bar");
-	 	scoreMembers.put(10d, "foo");
+	 	Map<String, Double> scoreMembers = new HashMap<String, Double>();
+	 	scoreMembers.put("bar", 1d);
+	 	scoreMembers.put("foo", 10d);
 	 	
         long status = jedis.zadd("foo", scoreMembers);
         assertEquals(2, status);
 
         scoreMembers.clear();
-	 	scoreMembers.put(0.1d, "car");
-	 	scoreMembers.put(2d, "bar");
+	 	scoreMembers.put("car", 0.1d);
+	 	scoreMembers.put("bar", 2d);
 	 		        
         status = jedis.zadd("foo", scoreMembers);
         assertEquals(1, status);
 
-        Map<Double, byte[]> bscoreMembers = new HashMap<Double, byte[]>();
-	 	bscoreMembers.put(1d, bbar);
-	 	bscoreMembers.put(10d, bfoo);
+        Map<byte[], Double> bscoreMembers = new HashMap<byte[], Double>();
+	 	bscoreMembers.put(bbar, 1d);
+	 	bscoreMembers.put(bfoo, 10d);
 	 	
         status = jedis.zadd(bfoo, bscoreMembers);
         assertEquals(2, status);
 
         bscoreMembers.clear();
-	 	bscoreMembers.put(0.1d, bcar);
-	 	bscoreMembers.put(2d, bbar);
+	 	bscoreMembers.put(bcar, 0.1d);
+	 	bscoreMembers.put(bbar, 2d);
 	 		        
         status = jedis.zadd(bfoo, bscoreMembers);
         assertEquals(1, status);

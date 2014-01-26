@@ -376,23 +376,22 @@ public class BinaryClient extends Connection {
     public void zadd(final byte[] key, final double score, final byte[] member) {
 	sendCommand(ZADD, key, toByteArray(score), member);
     }
+    
+    public void zaddBinary(final byte[] key, final Map< byte[], Double> scoreMembers) {
+    	
+		ArrayList<byte[]> args = new ArrayList<byte[]>(scoreMembers.size() * 2 + 1);
+		args.add(key);
 
-    public void zaddBinary(final byte[] key, Map<Double, byte[]> scoreMembers) {
-	ArrayList<byte[]> args = new ArrayList<byte[]>(
-		scoreMembers.size() * 2 + 1);
+		for (Map.Entry<byte[],Double > entry : scoreMembers.entrySet()) {
+			args.add(toByteArray(entry.getValue()));
+			args.add(entry.getKey());
+		}
 
-	args.add(key);
+		byte[][] argsArray = new byte[args.size()][];
+		args.toArray(argsArray);
 
-	for (Map.Entry<Double, byte[]> entry : scoreMembers.entrySet()) {
-	    args.add(toByteArray(entry.getKey()));
-	    args.add(entry.getValue());
-	}
-
-	byte[][] argsArray = new byte[args.size()][];
-	args.toArray(argsArray);
-
-	sendCommand(ZADD, argsArray);
-    }
+		sendCommand(ZADD, argsArray);
+	}    
 
     public void zrange(final byte[] key, final long start, final long end) {
 	sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));

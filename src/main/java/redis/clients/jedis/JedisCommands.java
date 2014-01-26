@@ -115,7 +115,7 @@ public interface
 
     Long zadd(String key, double score, String member);
     
-    Long zadd(String key, Map<Double, String> scoreMembers);
+    Long zadd(String key, Map<String, Double > scoreMembers); 
 
     Set<String> zrange(String key, long start, long end);
 

@@ -143,8 +143,8 @@ public interface Commands {
     public void srandmember(final String key);
 
     public void zadd(final String key, final double score, final String member);
-
-    public void zadd(final String key, final Map<Double, String> scoreMembers);
+        
+    public void zadd(final String key, final Map<String, Double > scoreMembers); 
 
     public void zrange(final String key, final long start, final long end);
 

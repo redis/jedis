@@ -13,6 +13,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
     private static final String MASTER_NAME = "mymaster";
@@ -57,26 +58,53 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
     private void doSegFaultMaster(JedisSentinelPool pool)
 	    throws InterruptedException {
-	HostAndPort oldMaster = pool.getCurrentHostMaster();
+    HostAndPort oldMaster = pool.getCurrentHostMaster();
 
-	// jedis connection should be master
-	Jedis jedis = pool.getResource();
-	assertEquals("PONG", jedis.ping());
+    // 1. test master
+    checkMasterAlive(pool);
 
-	try {
-	    jedis.debug(DebugParams.SEGFAULT());
-	} catch (Exception e) {
-	}
+    // 2. kill master
+    killMaster(pool);
+    
+    // 3. wait for failover
+    waitForFailover(pool, oldMaster);
 
-	waitForFailover(pool, oldMaster);
-	Thread.sleep(100);
-
-	jedis = pool.getResource();
-	assertEquals("PONG", jedis.ping());
-	assertEquals("foobared", jedis.configGet("requirepass").get(1));
-	assertEquals(2, jedis.getDB().intValue());
+    // 4. test new master
+    checkMasterAlive(pool);
     }
 
+    private void checkMasterAlive(JedisSentinelPool pool) {
+	Jedis jedis = null;
+	try {
+        jedis = pool.getResource();
+        assertEquals("PONG", jedis.ping());
+        assertEquals("foobared", jedis.configGet("requirepass").get(1));
+        assertEquals(2, jedis.getDB().intValue());
+    } catch (JedisConnectionException e) {
+        if (null != jedis)
+            pool.returnBrokenResource(jedis);
+
+        jedis = null;
+        throw e;
+    } finally {
+        if (null != jedis)
+            pool.returnResource(jedis);
+    }
+    }
+    
+    private void killMaster(JedisSentinelPool pool) {
+	Jedis jedis = pool.getResource();
+    try {
+        jedis.debug(DebugParams.SEGFAULT());
+    } catch (JedisConnectionException e) {
+         // it's OK because "debug segfault" makes Redis Server killed and Jedis throws JedisConnectionException
+    } finally {
+         // Redis Server already closed
+         if (null != jedis)
+              pool.returnBrokenResource(jedis);
+    }
+    }
+    
     private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
 	    throws InterruptedException {
 	waitForJedisSentinelPoolRecognizeNewMaster(pool);
@@ -131,7 +159,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
 	    }
 	}, "*");
-
+	
 	String[] chunks = newmaster.get().split(" ");
 	HostAndPort newMaster = new HostAndPort(chunks[3],
 		Integer.parseInt(chunks[4]));

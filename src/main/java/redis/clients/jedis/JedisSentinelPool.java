@@ -79,6 +79,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
 
     public void returnResource(final Jedis resource) {
+    resource.resetState();
 	returnResourceObject(resource);
     }
 

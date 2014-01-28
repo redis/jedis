@@ -11,6 +11,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class JedisPoolTest extends Assert {
@@ -175,5 +176,26 @@ public class JedisPoolTest extends Assert {
 
 	pool0.returnResource(jedis);
 	pool0.destroy();
+    }
+    
+    @Test
+    public void returnResourceShouldResetState() {
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    	config.setMaxTotal(1);
+    	config.setBlockWhenExhausted(false);
+    	JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 
+    			2000, "foobared");
+    	
+    	Jedis jedis = pool.getResource();
+    	jedis.set("hello", "jedis");
+    	Transaction t = jedis.multi();
+    	t.set("hello", "world");
+    	pool.returnResource(jedis);
+    	
+    	Jedis jedis2 = pool.getResource();
+    	assertTrue(jedis == jedis2);
+    	assertEquals("jedis", jedis2.get("hello"));
+    	pool.returnResource(jedis2);
+    	pool.destroy();
     }
 }

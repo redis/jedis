@@ -29,13 +29,19 @@ public class BinaryClient extends Connection {
     }
 
     private boolean isInMulti;
-
+    
     private String password;
 
     private long db;
 
+	private boolean isInWatch;
+
     public boolean isInMulti() {
 	return isInMulti;
+    }
+
+    public boolean isInWatch() {
+    return isInWatch;
     }
 
     public BinaryClient(final String host) {
@@ -446,19 +452,23 @@ public class BinaryClient extends Connection {
     public void discard() {
 	sendCommand(DISCARD);
 	isInMulti = false;
+	isInWatch = false;
     }
 
     public void exec() {
 	sendCommand(EXEC);
 	isInMulti = false;
+	isInWatch = false;
     }
 
     public void watch(final byte[]... keys) {
 	sendCommand(WATCH, keys);
+	isInWatch = true;
     }
 
     public void unwatch() {
 	sendCommand(UNWATCH);
+	isInWatch = false;
     }
 
     public void sort(final byte[] key) {
@@ -910,6 +920,14 @@ public class BinaryClient extends Connection {
     public void disconnect() {
 	db = 0;
 	super.disconnect();
+    }
+    
+    public void resetState() {
+    	if (isInMulti())
+    		discard();
+    	
+    	if (isInWatch())
+    		unwatch();
     }
 
     private void sendEvalCommand(Command command, byte[] script,

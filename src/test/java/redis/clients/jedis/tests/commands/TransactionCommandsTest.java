@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -104,6 +106,50 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	assertEquals(expected, response);
 
     }
+    
+    @Test
+    public void multiBlockWithErrorRedisDiscardsTransaction() throws Exception {
+    	// Transaction with error - Redis discards transaction automatically (Syntax Error, etc.)
+		TransactionBlock tb = new TransactionBlock() {
+			
+			@Override
+			public void execute() throws JedisException {
+				del("hello");
+				hmset("hello", new HashMap<String, String>());
+			}
+		};
+		
+		try {
+			jedis.multi(tb);
+		} catch (JedisDataException e) {
+			assertTrue(e.getMessage().contains("EXECABORT"));
+		} catch (Exception e) {
+			throw e;
+		}
+    }
+    
+    @Test
+    public void multiBlockWithErrorRedisForceToExecuteAllCommands() throws Exception {
+    	// Transaction with error - Redis doesn't roll back (Type Error, Deletion of non-exist key, etc.)
+		jedis.del("hello2");
+		TransactionBlock tb2 = new TransactionBlock() {
+
+			@Override
+			public void execute() throws JedisException {
+				del("hello2");
+				set("hello2", "hello");
+				sadd("hello2", "hello2");
+			}
+		};
+		
+		List<Object> responses = jedis.multi(tb2);
+		assertEquals("OK", responses.get(1));
+		assertEquals(JedisDataException.class, responses.get(2).getClass());
+		
+		Exception exc = (JedisDataException) responses.get(2);
+		assertTrue(exc.getMessage().contains("WRONGTYPE"));
+    }
+    
 
     @Test
     public void watch() throws UnknownHostException, IOException {
@@ -294,4 +340,5 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
 	assertNull(results);
     }
+    
 }

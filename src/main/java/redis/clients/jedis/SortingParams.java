@@ -36,7 +36,7 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams by(final String pattern) {
-        return by(SafeEncoder.encode(pattern));
+	return by(SafeEncoder.encode(pattern));
     }
 
     /**
@@ -53,9 +53,9 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams by(final byte[] pattern) {
-        params.add(BY.raw);
-        params.add(pattern);
-        return this;
+	params.add(BY.raw);
+	params.add(pattern);
+	return this;
     }
 
     /**
@@ -67,13 +67,13 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams nosort() {
-        params.add(BY.raw);
-        params.add(NOSORT.raw);
-        return this;
+	params.add(BY.raw);
+	params.add(NOSORT.raw);
+	return this;
     }
 
     public Collection<byte[]> getParams() {
-        return Collections.unmodifiableCollection(params);
+	return Collections.unmodifiableCollection(params);
     }
 
     /**
@@ -82,8 +82,8 @@ public class SortingParams {
      * @return the sortingParams Object
      */
     public SortingParams desc() {
-        params.add(DESC.raw);
-        return this;
+	params.add(DESC.raw);
+	return this;
     }
 
     /**
@@ -92,8 +92,8 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams asc() {
-        params.add(ASC.raw);
-        return this;
+	params.add(ASC.raw);
+	return this;
     }
 
     /**
@@ -105,10 +105,10 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams limit(final int start, final int count) {
-        params.add(LIMIT.raw);
-        params.add(Protocol.toByteArray(start));
-        params.add(Protocol.toByteArray(count));
-        return this;
+	params.add(LIMIT.raw);
+	params.add(Protocol.toByteArray(start));
+	params.add(Protocol.toByteArray(count));
+	return this;
     }
 
     /**
@@ -118,8 +118,8 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams alpha() {
-        params.add(ALPHA.raw);
-        return this;
+	params.add(ALPHA.raw);
+	return this;
     }
 
     /**
@@ -138,11 +138,11 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams get(String... patterns) {
-        for (final String pattern : patterns) {
-            params.add(GET.raw);
-            params.add(SafeEncoder.encode(pattern));
-        }
-        return this;
+	for (final String pattern : patterns) {
+	    params.add(GET.raw);
+	    params.add(SafeEncoder.encode(pattern));
+	}
+	return this;
     }
 
     /**
@@ -161,10 +161,10 @@ public class SortingParams {
      * @return the SortingParams Object
      */
     public SortingParams get(byte[]... patterns) {
-        for (final byte[] pattern : patterns) {
-            params.add(GET.raw);
-            params.add(pattern);
-        }
-        return this;
+	for (final byte[] pattern : patterns) {
+	    params.add(GET.raw);
+	    params.add(pattern);
+	}
+	return this;
     }
 }

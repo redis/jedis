@@ -32,10 +32,7 @@ public interface RedisPipeline {
 
     Response<Boolean> getbit(String key, long offset);
 
-
-
-    Response<String> getrange(String key, long startOffset,
-                              long endOffset);
+    Response<String> getrange(String key, long startOffset, long endOffset);
 
     Response<String> getSet(String key, String value);
 
@@ -70,7 +67,7 @@ public interface RedisPipeline {
     Response<String> lindex(String key, long index);
 
     Response<Long> linsert(String key, BinaryClient.LIST_POSITION where,
-                           String pivot, String value);
+	    String pivot, String value);
 
     Response<Long> llen(String key);
 
@@ -118,8 +115,7 @@ public interface RedisPipeline {
 
     Response<List<String>> sort(String key);
 
-    Response<List<String>> sort(String key,
-                                SortingParams sortingParameters);
+    Response<List<String>> sort(String key, SortingParams sortingParameters);
 
     Response<String> spop(String key);
 
@@ -145,35 +141,31 @@ public interface RedisPipeline {
 
     Response<Set<String>> zrange(String key, long start, long end);
 
-    Response<Set<String>> zrangeByScore(String key, double min,
-                                        double max);
+    Response<Set<String>> zrangeByScore(String key, double min, double max);
 
-    Response<Set<String>> zrangeByScore(String key, String min,
-                                        String max);
+    Response<Set<String>> zrangeByScore(String key, String min, String max);
 
-    Response<Set<String>> zrangeByScore(String key, double min,
-                                        double max, int offset, int count);
+    Response<Set<String>> zrangeByScore(String key, double min, double max,
+	    int offset, int count);
 
     Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min,
-                                                 double max);
+	    double max);
 
     Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min,
-                                                 double max, int offset, int count);
+	    double max, int offset, int count);
 
-    Response<Set<String>> zrevrangeByScore(String key, double max,
-                                           double min);
+    Response<Set<String>> zrevrangeByScore(String key, double max, double min);
 
-    Response<Set<String>> zrevrangeByScore(String key, String max,
-                                           String min);
+    Response<Set<String>> zrevrangeByScore(String key, String max, String min);
 
-    Response<Set<String>> zrevrangeByScore(String key, double max,
-                                           double min, int offset, int count);
+    Response<Set<String>> zrevrangeByScore(String key, double max, double min,
+	    int offset, int count);
 
-    Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
-                                                    double max, double min);
+    Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max,
+	    double min);
 
-    Response<Set<Tuple>> zrevrangeByScoreWithScores(String key,
-                                                    double max, double min, int offset, int count);
+    Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max,
+	    double min, int offset, int count);
 
     Response<Set<Tuple>> zrangeWithScores(String key, long start, long end);
 
@@ -187,8 +179,7 @@ public interface RedisPipeline {
 
     Response<Set<String>> zrevrange(String key, long start, long end);
 
-    Response<Set<Tuple>> zrevrangeWithScores(String key, long start,
-                                             long end);
+    Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long end);
 
     Response<Long> zrevrank(String key, String member);
 

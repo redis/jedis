@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 
 public interface AdvancedBinaryJedisCommands {

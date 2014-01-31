@@ -33,31 +33,33 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	assertEquals("second", response.get(3));
 	assertEquals("third", response.get(4));
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void evalMultiBulkWithBinaryJedis() {
-    	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
-    	List<byte[]> keys = new ArrayList<byte[]>();
-    	keys.add("key1".getBytes());
-    	keys.add("key2".getBytes());
+	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
+	List<byte[]> keys = new ArrayList<byte[]>();
+	keys.add("key1".getBytes());
+	keys.add("key2".getBytes());
 
-    	List<byte[]> args = new ArrayList<byte[]>();
-    	args.add("first".getBytes());
-    	args.add("second".getBytes());
-    	args.add("third".getBytes());
+	List<byte[]> args = new ArrayList<byte[]>();
+	args.add("first".getBytes());
+	args.add("second".getBytes());
+	args.add("third".getBytes());
 
-    	BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(), 500);
-    	binaryJedis.connect();
-    	binaryJedis.auth("foobared");
-        
-    	List<byte[]> responses = (List<byte[]>) binaryJedis.eval(script.getBytes(), keys, args);
-    	assertEquals(5, responses.size());
-    	assertEquals("key1", new String(responses.get(0)));
-    	assertEquals("key2", new String(responses.get(1)));
-    	assertEquals("first", new String(responses.get(2)));
-    	assertEquals("second", new String(responses.get(3)));
-    	assertEquals("third", new String(responses.get(4)));
+	BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(),
+		500);
+	binaryJedis.connect();
+	binaryJedis.auth("foobared");
+
+	List<byte[]> responses = (List<byte[]>) binaryJedis.eval(
+		script.getBytes(), keys, args);
+	assertEquals(5, responses.size());
+	assertEquals("key1", new String(responses.get(0)));
+	assertEquals("key2", new String(responses.get(1)));
+	assertEquals("first", new String(responses.get(2)));
+	assertEquals("second", new String(responses.get(3)));
+	assertEquals("third", new String(responses.get(4)));
     }
 
     @Test
@@ -166,26 +168,27 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	}
     }
 
-	@Test
-	public void scriptEvalReturnNullValues() {
-		String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
-		List<String> results = (List<String>) jedis.eval(script, 2, "key1", "key2", "1", "2");
-		assertEquals(results.get(0), "key1");
-		assertEquals(results.get(1), "key2");
-		assertEquals(results.get(2), "1");
-		assertEquals(results.get(3), "2");
-	}
+    @Test
+    public void scriptEvalReturnNullValues() {
+	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+	List<String> results = (List<String>) jedis.eval(script, 2, "key1",
+		"key2", "1", "2");
+	assertEquals(results.get(0), "key1");
+	assertEquals(results.get(1), "key2");
+	assertEquals(results.get(2), "1");
+	assertEquals(results.get(3), "2");
+    }
 
-	@Test
-	public void scriptEvalShaReturnNullValues() {
-		String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
-		String sha = jedis.scriptLoad(script);
-		List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1", "key2", "1", "2");
-		assertEquals(results.get(0), "key1");
-		assertEquals(results.get(1), "key2");
-		assertEquals(results.get(2), "1");
-		assertEquals(results.get(3), "2");
+    @Test
+    public void scriptEvalShaReturnNullValues() {
+	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+	String sha = jedis.scriptLoad(script);
+	List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1",
+		"key2", "1", "2");
+	assertEquals(results.get(0), "key1");
+	assertEquals(results.get(1), "key2");
+	assertEquals(results.get(2), "1");
+	assertEquals(results.get(3), "2");
 
-	}
+    }
 }
-

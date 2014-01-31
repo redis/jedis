@@ -309,7 +309,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	jedis.hset("foo", "b", "b");
 	jedis.hset("foo", "a", "a");
 	jedis.hset("foo", "aa", "aa");
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0, params);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0,
+		params);
 
 	assertEquals(0, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
@@ -324,7 +325,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	    jedis.hset("foo", "a" + i, "a" + i);
 	}
 
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0, params);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0,
+		params);
 
 	assertFalse(result.getResult().isEmpty());
     }

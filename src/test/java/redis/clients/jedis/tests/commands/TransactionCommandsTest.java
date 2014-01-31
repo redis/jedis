@@ -11,13 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.TransactionBlock;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -296,48 +295,48 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
 	assertNull(results);
     }
-    
+
     @Test
     public void testResetStateWhenInMulti() {
-    	jedis.auth("foobared");
-    	
-    	Transaction t = jedis.multi();
-    	t.set("foooo", "barrr");
-    	
-    	jedis.resetState();
-    	assertEquals(null, jedis.get("foooo"));
+	jedis.auth("foobared");
+
+	Transaction t = jedis.multi();
+	t.set("foooo", "barrr");
+
+	jedis.resetState();
+	assertEquals(null, jedis.get("foooo"));
     }
-    
+
     @Test
     public void testResetStateWhenInMultiWithinPipeline() {
-    	jedis.auth("foobared");
-    	
-    	Pipeline p = jedis.pipelined();
-    	p.multi();
-    	p.set("foooo", "barrr");
+	jedis.auth("foobared");
 
-    	jedis.resetState();
-    	assertEquals(null, jedis.get("foooo"));
+	Pipeline p = jedis.pipelined();
+	p.multi();
+	p.set("foooo", "barrr");
+
+	jedis.resetState();
+	assertEquals(null, jedis.get("foooo"));
     }
 
     @Test
     public void testResetStateWhenInWatch() {
-    	jedis.watch("mykey", "somekey");
-    	
-    	// state reset : unwatch
-    	jedis.resetState();
-    	
-    	Transaction t = jedis.multi();
+	jedis.watch("mykey", "somekey");
 
-    	nj.connect();
-    	nj.auth("foobared");
-    	nj.set("mykey", "bar");
-    	nj.disconnect();
+	// state reset : unwatch
+	jedis.resetState();
 
-    	t.set("mykey", "foo");
-    	List<Object> resp = t.exec();
-    	assertNotNull(resp);
-    	assertEquals(1, resp.size());
-    	assertEquals("foo", jedis.get("mykey"));
+	Transaction t = jedis.multi();
+
+	nj.connect();
+	nj.auth("foobared");
+	nj.set("mykey", "bar");
+	nj.disconnect();
+
+	t.set("mykey", "foo");
+	List<Object> resp = t.exec();
+	assertNotNull(resp);
+	assertEquals(1, resp.size());
+	assertEquals("foo", jedis.get("mykey"));
     }
 }

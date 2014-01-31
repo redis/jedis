@@ -16,7 +16,7 @@ public final class Protocol {
 
     private static final String ASK_RESPONSE = "ASK";
     private static final String MOVED_RESPONSE = "MOVED";
-	public static final int DEFAULT_PORT = 6379;
+    public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SENTINEL_PORT = 26379;
     public static final int DEFAULT_TIMEOUT = 2000;
     public static final int DEFAULT_DATABASE = 0;
@@ -44,7 +44,7 @@ public final class Protocol {
     public static final String CLUSTER_SETSLOT_NODE = "node";
     public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
     public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
-    
+
     private Protocol() {
 	// this prevent the class from instantiation
     }
@@ -76,27 +76,32 @@ public final class Protocol {
     }
 
     private static void processError(final RedisInputStream is) {
-		String message = is.readLine();
-		//TODO: I'm not sure if this is the best way to do this. 
-		//Maybe Read only first 5 bytes instead?
-		if (message.startsWith(MOVED_RESPONSE)) {
-			String[] movedInfo = parseTargetHostAndSlot(message);
-			throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1], Integer.valueOf(movedInfo[2])), Integer.valueOf(movedInfo[0]));
-		} else if (message.startsWith(ASK_RESPONSE)) {
-			String[] askInfo = parseTargetHostAndSlot(message);
-			throw new JedisAskDataException(message, new HostAndPort(askInfo[1], Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
-		}
-		throw new JedisDataException(message);
+	String message = is.readLine();
+	// TODO: I'm not sure if this is the best way to do this.
+	// Maybe Read only first 5 bytes instead?
+	if (message.startsWith(MOVED_RESPONSE)) {
+	    String[] movedInfo = parseTargetHostAndSlot(message);
+	    throw new JedisMovedDataException(message, new HostAndPort(
+		    movedInfo[1], Integer.valueOf(movedInfo[2])),
+		    Integer.valueOf(movedInfo[0]));
+	} else if (message.startsWith(ASK_RESPONSE)) {
+	    String[] askInfo = parseTargetHostAndSlot(message);
+	    throw new JedisAskDataException(message, new HostAndPort(
+		    askInfo[1], Integer.valueOf(askInfo[2])),
+		    Integer.valueOf(askInfo[0]));
+	}
+	throw new JedisDataException(message);
     }
-    
-    private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
-    	String[] response = new String[3];
-    	String[] messageInfo = clusterRedirectResponse.split(" ");
-    	String[] targetHostAndPort = messageInfo[2].split(":");
-    	response[0] = messageInfo[1];
-    	response[1] = targetHostAndPort[0];
-    	response[2] = targetHostAndPort[1];  	
-    	return response;
+
+    private static String[] parseTargetHostAndSlot(
+	    String clusterRedirectResponse) {
+	String[] response = new String[3];
+	String[] messageInfo = clusterRedirectResponse.split(" ");
+	String[] targetHostAndPort = messageInfo[2].split(":");
+	response[0] = messageInfo[1];
+	response[1] = targetHostAndPort[0];
+	response[2] = targetHostAndPort[1];
+	return response;
     }
 
     private static Object process(final RedisInputStream is) {
@@ -134,10 +139,11 @@ public final class Protocol {
 	int offset = 0;
 	try {
 	    while (offset < len) {
-	    	int size = is.read(read, offset, (len - offset));
-	    	if (size == -1)
-	    		throw new JedisConnectionException("It seems like server has closed the connection.");
-	    	offset += size;
+		int size = is.read(read, offset, (len - offset));
+		if (size == -1)
+		    throw new JedisConnectionException(
+			    "It seems like server has closed the connection.");
+		offset += size;
 	    }
 	    // read 2 more bytes for the command delimiter
 	    is.readByte();
@@ -175,7 +181,7 @@ public final class Protocol {
     }
 
     public static final byte[] toByteArray(final boolean value) {
-    return toByteArray(value ? 1 : 0);
+	return toByteArray(value ? 1 : 0);
     }
 
     public static final byte[] toByteArray(final int value) {
@@ -201,8 +207,7 @@ public final class Protocol {
     }
 
     public static enum Keyword {
-	AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE, PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES, RESETSTAT, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME, AND, OR, XOR, NOT,
-	GETNAME, SETNAME,LIST, MATCH, COUNT;
+	AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE, PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES, RESETSTAT, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME, AND, OR, XOR, NOT, GETNAME, SETNAME, LIST, MATCH, COUNT;
 	public final byte[] raw;
 
 	Keyword() {

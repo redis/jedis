@@ -19,59 +19,59 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void checkConnections() {
-        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), 
-        		hnp.getPort(), 2000);
-        Jedis jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.set("foo", "bar");
-        assertEquals("bar", jedis.get("foo"));
-        pool.returnResource(jedis);
-        pool.destroy();
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort(), 2000);
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
+	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test
     public void checkConnectionWithDefaultPort() {
-        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), 
-        		hnp.getPort());
-        Jedis jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.set("foo", "bar");
-        assertEquals("bar", jedis.get("foo"));
-        pool.returnResource(jedis);
-        pool.destroy();
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort());
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
+	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test
     public void checkJedisIsReusedWhenReturned() {
 
-    	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), 
-        		hnp.getPort());
-        Jedis jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.set("foo", "0");
-        pool.returnResource(jedis);
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort());
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "0");
+	pool.returnResource(jedis);
 
-        jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.incr("foo");
-        pool.returnResource(jedis);
-        pool.destroy();
+	jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.incr("foo");
+	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test
     public void checkPoolRepairedWhenJedisIsBroken() {
-    	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), 
-        		hnp.getPort());
-        Jedis jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.quit();
-        pool.returnBrokenResource(jedis);
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort());
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.quit();
+	pool.returnBrokenResource(jedis);
 
-        jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.incr("foo");
-        pool.returnResource(jedis);
-        pool.destroy();
+	jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.incr("foo");
+	pool.returnResource(jedis);
+	pool.destroy();
     }
 
     @Test(expected = JedisConnectionException.class)
@@ -93,8 +93,8 @@ public class JedisPoolTest extends Assert {
     public void securePool() {
 	JedisPoolConfig config = new JedisPoolConfig();
 	config.setTestOnBorrow(true);
-	JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000,
-		"foobared");
+	JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(),
+		2000, "foobared");
 	Jedis jedis = pool.getResource();
 	jedis.set("foo", "bar");
 	pool.returnResource(jedis);
@@ -177,25 +177,25 @@ public class JedisPoolTest extends Assert {
 	pool0.returnResource(jedis);
 	pool0.destroy();
     }
-    
+
     @Test
     public void returnResourceShouldResetState() {
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    	config.setMaxTotal(1);
-    	config.setBlockWhenExhausted(false);
-    	JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 
-    			2000, "foobared");
-    	
-    	Jedis jedis = pool.getResource();
-    	jedis.set("hello", "jedis");
-    	Transaction t = jedis.multi();
-    	t.set("hello", "world");
-    	pool.returnResource(jedis);
-    	
-    	Jedis jedis2 = pool.getResource();
-    	assertTrue(jedis == jedis2);
-    	assertEquals("jedis", jedis2.get("hello"));
-    	pool.returnResource(jedis2);
-    	pool.destroy();
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+	JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(),
+		2000, "foobared");
+
+	Jedis jedis = pool.getResource();
+	jedis.set("hello", "jedis");
+	Transaction t = jedis.multi();
+	t.set("hello", "world");
+	pool.returnResource(jedis);
+
+	Jedis jedis2 = pool.getResource();
+	assertTrue(jedis == jedis2);
+	assertEquals("jedis", jedis2.get("hello"));
+	pool.returnResource(jedis2);
+	pool.destroy();
     }
 }

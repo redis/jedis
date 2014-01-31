@@ -39,4 +39,6 @@ public interface BasicCommands {
     String debug(DebugParams params);
 
     String configResetStat();
+    
+    Long waitReplicas(int replicas, long timeout);
 }

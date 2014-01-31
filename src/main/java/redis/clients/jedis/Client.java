@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static redis.clients.jedis.Protocol.toByteArray;
+import static redis.clients.jedis.Protocol.Command.HSCAN;
 
 public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
@@ -740,17 +741,19 @@ public class Client extends BinaryClient implements Commands {
     public void scriptLoad(String script) {
 	scriptLoad(SafeEncoder.encode(script));
     }
+    
+    public void zadd(String key, Map<String, Double> scoreMembers) {
+    	
+		HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
 
-    public void zadd(String key, Map<Double, String> scoreMembers) {
-	HashMap<Double, byte[]> binaryScoreMembers = new HashMap<Double, byte[]>();
-
-	for (Map.Entry<Double, String> entry : scoreMembers.entrySet()) {
-	    binaryScoreMembers.put(entry.getKey(),
-		    SafeEncoder.encode(entry.getValue()));
+		for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
+			
+			binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
+		}
+		
+		zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
 	}
 
-	zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
-    }
 
     public void objectRefcount(String key) {
 	objectRefcount(SafeEncoder.encode(key));
@@ -784,11 +787,6 @@ public class Client extends BinaryClient implements Commands {
 	sentinel(arg);
     }
 
-    public void sentinel(final String cmd, String arg1, int arg2) {
-	sentinel(SafeEncoder.encode(cmd), SafeEncoder.encode(arg1),
-		toByteArray(arg2));
-    }
-    
     public void dump(final String key) { 
     	dump(SafeEncoder.encode(key));
     }
@@ -843,5 +841,78 @@ public class Client extends BinaryClient implements Commands {
     
     public void hincrByFloat(final String key, final String field, double increment) {
     	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), increment);
+    }
+    
+    public void hscan(final String key, int cursor, final ScanParams params) {
+ 	hscan(SafeEncoder.encode(key), cursor, params);
+    }
+    
+    public void sscan(final String key, int cursor, final ScanParams params) {
+ 	sscan(SafeEncoder.encode(key), cursor, params);
+    }
+    
+    public void zscan(final String key, int cursor, final ScanParams params) {
+ 	zscan(SafeEncoder.encode(key), cursor, params);
+    }
+
+    public void cluster(final String subcommand, final int... args) {
+	final byte[][] arg = new byte[args.length+1][];
+	for (int i = 1; i < arg.length; i++) {
+	    arg[i] = toByteArray(args[i-1]);
+	}
+	arg[0] = SafeEncoder.encode(subcommand);
+	cluster(arg);
+    }
+
+    public void cluster(final String subcommand, final String... args) {
+	final byte[][] arg = new byte[args.length+1][];
+	for (int i = 1; i < arg.length; i++) {
+	    arg[i] = SafeEncoder.encode(args[i-1]);
+	}
+	arg[0] = SafeEncoder.encode(subcommand);
+	cluster(arg);
+    }
+    
+    public void cluster(final String subcommand) {
+	final byte[][] arg = new byte[1][];
+	arg[0] = SafeEncoder.encode(subcommand);
+	cluster(arg);
+    }
+    
+    public void clusterNodes() {
+	cluster(Protocol.CLUSTER_NODES);
+    }
+    
+    public void clusterMeet(final String ip, final int port) {
+	cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
+    }
+    
+    public void clusterAddSlots(final int ...slots) {
+	cluster(Protocol.CLUSTER_ADDSLOTS, slots);
+    }
+    
+    public void clusterDelSlots(final int ...slots) {
+	cluster(Protocol.CLUSTER_DELSLOTS, slots);
+    }
+    
+    public void clusterInfo() {
+	cluster(Protocol.CLUSTER_INFO);
+    }
+    
+    public void clusterGetKeysInSlot(final int slot, final int count) {
+    	final int[] args = new int[]{ slot, count };
+    	cluster(Protocol.CLUSTER_GETKEYSINSLOT, args);
+    }
+    
+    public void clusterSetSlotNode(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_NODE, nodeId);
+    }
+    
+    public void clusterSetSlotMigrating(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_MIGRATING, nodeId);
+    }
+    
+    public void clusterSetSlotImporting(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
     }
 }

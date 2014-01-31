@@ -2,9 +2,13 @@ package redis.clients.jedis.tests.commands;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
 public class SetCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -448,7 +452,40 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
         bmember = jedis.srandmember(bbar);
         assertNull(bmember);
-
     }
 
+
+    @Test
+    public void sscan() {
+	jedis.sadd("foo", "a", "b");
+	
+	ScanResult<String> result = jedis.sscan("foo", 0);
+
+	assertEquals(0, result.getCursor());
+	assertFalse(result.getResult().isEmpty());
+    }
+
+    @Test
+    public void sscanMatch() {
+	ScanParams params = new ScanParams();
+	params.match("a*");
+
+	jedis.sadd("foo", "b", "a", "aa");
+	ScanResult<String> result = jedis.sscan("foo", 0, params);
+
+	assertEquals(0, result.getCursor());
+	assertFalse(result.getResult().isEmpty());
+    }
+
+    @Test
+    public void sscanCount() {
+	ScanParams params = new ScanParams();
+	params.count(2);
+
+	jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
+
+	ScanResult<String> result = jedis.sscan("foo", 0, params);
+
+	assertFalse(result.getResult().isEmpty());
+    }
 }

@@ -1,14 +1,15 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 import java.util.Map;
+
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public interface Commands {
 
     public void set(final String key, final String value);
 
-    public void set(final String key, final String value, final String nxxx, final String expx, final long time);
+    public void set(final String key, final String value, final String nxxx,
+	    final String expx, final long time);
 
     public void get(final String key);
 
@@ -142,8 +143,8 @@ public interface Commands {
     public void srandmember(final String key);
 
     public void zadd(final String key, final double score, final String member);
-
-    public void zadd(final String key, final Map<Double, String> scoreMembers);
+        
+    public void zadd(final String key, final Map<String, Double > scoreMembers); 
 
     public void zrange(final String key, final long start, final long end);
 
@@ -295,4 +296,14 @@ public interface Commands {
     public void bitcount(final String key, long start, long end);
 
     public void bitop(BitOP op, final String destKey, String... srcKeys);
+
+    public void scan(int cursor, final ScanParams params);
+
+    public void hscan(final String key, int cursor, final ScanParams params);
+
+    public void sscan(final String key, int cursor, final ScanParams params);
+
+    public void zscan(final String key, int cursor, final ScanParams params);
+
+    public void waitReplicas(int replicas, long timeout);
 }

@@ -52,9 +52,7 @@ public class JedisTest extends JedisCommandTestBase {
 	jedis = new Jedis("localhost", 6379, 15000);
 	jedis.auth("foobared");
 	jedis.configSet("timeout", "1");
-	// we need to sleep a long time since redis check for idle connections
-	// every 10 seconds or so
-	Thread.sleep(20000);
+	Thread.sleep(2000);
 	jedis.hmget("foobar", "foo");
     }
 

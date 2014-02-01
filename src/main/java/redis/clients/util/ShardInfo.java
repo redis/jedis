@@ -7,14 +7,14 @@ public abstract class ShardInfo<T> {
     }
 
     public ShardInfo(int weight) {
-        this.weight = weight;
+	this.weight = weight;
     }
 
     public int getWeight() {
-        return this.weight;
+	return this.weight;
     }
 
     protected abstract T createResource();
-    
+
     public abstract String getName();
 }

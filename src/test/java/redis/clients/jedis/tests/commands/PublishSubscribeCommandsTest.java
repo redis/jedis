@@ -30,7 +30,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	});
 	t.start();
     }
-    
+
     @Test
     public void subscribe() throws InterruptedException {
 	jedis.subscribe(new JedisPubSub() {
@@ -43,8 +43,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    public void onSubscribe(String channel, int subscribedChannels) {
 		assertEquals("foo", channel);
 		assertEquals(1, subscribedChannels);
-		
-		//now that I'm subscribed... publish
+
+		// now that I'm subscribed... publish
 		publishOne("foo", "exit");
 	    }
 
@@ -259,7 +259,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
-		publishOne(pattern.replace("*",  "123"), "exit");
+		publishOne(pattern.replace("*", "123"), "exit");
 	    }
 
 	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
@@ -383,7 +383,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
 		assertEquals(1, subscribedChannels);
-		publishOne(SafeEncoder.encode(pattern).replace("*", "bar"), "exit");
+		publishOne(SafeEncoder.encode(pattern).replace("*", "bar"),
+			"exit");
 	    }
 
 	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
@@ -416,7 +417,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-		publishOne(SafeEncoder.encode(pattern).replace("*", "123"), "exit");
+		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
+			"exit");
 	    }
 
 	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
@@ -439,8 +441,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
 	    public void onSubscribe(byte[] channel, int subscribedChannels) {
 		publishOne(SafeEncoder.encode(channel), "exit");
-		
-		if(!SafeEncoder.encode(channel).equals("bar")) {
+
+		if (!SafeEncoder.encode(channel).equals("bar")) {
 		    this.subscribe(SafeEncoder.encode("bar"));
 		    this.psubscribe(SafeEncoder.encode("bar.*"));
 		}
@@ -450,7 +452,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-		publishOne(SafeEncoder.encode(pattern).replace("*", "123"), "exit");
+		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
+			"exit");
 	    }
 
 	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {

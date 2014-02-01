@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-
 /**
  * Pipelined responses for all of the low level, non key related commands
  */

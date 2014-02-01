@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import redis.clients.util.SafeEncoder;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class BuilderFactory {

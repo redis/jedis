@@ -3245,10 +3245,10 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getIntegerReply();
     }
 
-    public Map<String, Long> pubSubNumSub(String... channels) {
+    public Map<String, String> pubSubNumSub(String... channels) {
 	checkIsInMulti();
   	client.pubSubNumSub(channels);
-  	return BuilderFactory.STRING_LONG_MAP
+  	return BuilderFactory.STRING_MAP
   		.build(client.getBinaryMultiBulkReply());
     }
 }

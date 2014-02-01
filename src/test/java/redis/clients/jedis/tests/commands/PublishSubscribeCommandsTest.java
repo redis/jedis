@@ -145,9 +145,9 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     
     @Test
     public void pubSubNumSub(){
-	final Map<String, Long> expectedNumSub = new HashMap<String, Long>();
-	expectedNumSub.put("testchannel2", 1l);
-	expectedNumSub.put("testchannel1", 1l);
+	final Map<String, String> expectedNumSub = new HashMap<String, String>();
+	expectedNumSub.put("testchannel2", "1");
+	expectedNumSub.put("testchannel1", "1");
 	jedis.subscribe(new JedisPubSub() {
 	    private int count=0;
 	    @Override
@@ -159,7 +159,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		count++;
 		if (count == 2) {
 		    Jedis otherJedis = createJedis();
-		    Map<String, Long> numSub = otherJedis.pubSubNumSub("testchannel1", "testchannel2");
+		    Map<String, String> numSub = otherJedis.pubSubNumSub("testchannel1", "testchannel2");
 		    assertEquals(expectedNumSub, numSub);
 		    unsubscribe();
 		}

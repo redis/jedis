@@ -104,25 +104,6 @@ public class BuilderFactory {
 
     };
     
-    public static final Builder<Map<String, Long>> STRING_LONG_MAP = new Builder<Map<String, Long>>() {
-        @SuppressWarnings("unchecked")
-        public Map<String, Long> build(Object data) {
-            final List<byte[]> flatHash = (List<byte[]>) data;
-            final Map<String, Long> hash = new HashMap<String, Long>();
-            final Iterator<byte[]> iterator = flatHash.iterator();
-            while (iterator.hasNext()) {
-                hash.put(SafeEncoder.encode(iterator.next()), Long.valueOf(SafeEncoder.encode(iterator.next())));
-            }
-
-            return hash;
-        }
-
-        public String toString() {
-            return "Map<String, Long>";
-        }
-
-    };
-    
     public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
 	@SuppressWarnings("unchecked")
 	public Set<String> build(Object data) {

@@ -13,8 +13,6 @@ import java.util.Set;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
-import java.net.URI;
-import java.util.*;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands {
     public Jedis(final String host) {
@@ -3209,9 +3207,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     	return client.getStatusCodeReply();
     }
 
-	public String asking() {
-		checkIsInMulti();
+    public String asking() {
+	checkIsInMulti();
     	client.asking();
     	return client.getStatusCodeReply();
-	}
+    }
+
+    public List<String> pubSubChannels(String pattern) {
+	checkIsInMulti();
+	client.pubSubChannels(pattern);
+	return client.getMultiBulkReply();
+    }
+
+    public Long pubSubNumPat() {
+	checkIsInMulti();
+	client.pubSubNumPat();
+	return client.getIntegerReply();
+    }
+
+    public Map<String, Long> pubSubNumSub(String... channels) {
+	checkIsInMulti();
+  	client.pubSubNumSub(channels);
+  	return BuilderFactory.STRING_LONG_MAP
+  		.build(client.getBinaryMultiBulkReply());
+    }
 }

@@ -1699,13 +1699,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public List<Object> multi(final TransactionBlock jedisTransaction) {
 	List<Object> results = null;
 	jedisTransaction.setClient(client);
-	try {
-	    client.multi();
-	    jedisTransaction.execute();
-	    results = jedisTransaction.exec();
-	} catch (Exception ex) {
-	    jedisTransaction.discard();
-	}
+    client.multi();
+    jedisTransaction.execute();
+    results = jedisTransaction.exec();
 	return results;
     }
 

@@ -560,7 +560,10 @@ public class BinaryClient extends Connection {
     public void punsubscribe(final byte[]... patterns) {
 	sendCommand(PUNSUBSCRIBE, patterns);
     }
-
+    
+    public void pubsub(final byte[]... args) {
+    	sendCommand(PUBSUB, args);
+    }
     public void zcount(final byte[] key, final double min, final double max) {
 
 	byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf"

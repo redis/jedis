@@ -3233,21 +3233,21 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getStatusCodeReply();
     }
 
-    public List<String> pubSubChannels(String pattern) {
+    public List<String> pubsubChannels(String pattern) {
 	checkIsInMulti();
-	client.pubSubChannels(pattern);
+	client.pubsubChannels(pattern);
 	return client.getMultiBulkReply();
     }
 
-    public Long pubSubNumPat() {
+    public Long pubsubNumPat() {
 	checkIsInMulti();
-	client.pubSubNumPat();
+	client.pubsubNumPat();
 	return client.getIntegerReply();
     }
 
-    public Map<String, String> pubSubNumSub(String... channels) {
+    public Map<String, String> pubsubNumSub(String... channels) {
 	checkIsInMulti();
-  	client.pubSubNumSub(channels);
+  	client.pubsubNumSub(channels);
   	return BuilderFactory.STRING_MAP
   		.build(client.getBinaryMultiBulkReply());
     }

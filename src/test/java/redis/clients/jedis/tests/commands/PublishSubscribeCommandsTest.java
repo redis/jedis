@@ -82,7 +82,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 			//All channels are subscribed
 			if (count == 3) {
 			    	Jedis otherJedis = createJedis();
-			    	List<String> activeChannels = otherJedis.pubSubChannels("test*");
+			    	List<String> activeChannels = otherJedis.pubsubChannels("test*");
 			    	assertTrue(expectedActiveChannels.containsAll(activeChannels));
 			    	unsubscribe();
 			}
@@ -127,7 +127,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		count++;
 		if (count == 3) {
 		    Jedis otherJedis = createJedis();
-		    Long numPatterns = otherJedis.pubSubNumPat();
+		    Long numPatterns = otherJedis.pubsubNumPat();
 		    assertEquals(new Long(2l), numPatterns);
 		    punsubscribe();
 		}
@@ -159,7 +159,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		count++;
 		if (count == 2) {
 		    Jedis otherJedis = createJedis();
-		    Map<String, String> numSub = otherJedis.pubSubNumSub("testchannel1", "testchannel2");
+		    Map<String, String> numSub = otherJedis.pubsubNumSub("testchannel1", "testchannel2");
 		    assertEquals(expectedNumSub, numSub);
 		    unsubscribe();
 		}

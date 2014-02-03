@@ -673,16 +673,16 @@ public class Client extends BinaryClient implements Commands {
 	subscribe(cs);
     }
     
-    public void pubSubChannels(String pattern) {
-	pubSub(Protocol.PUBSUB_CHANNELS, pattern);
+    public void pubsubChannels(String pattern) {
+	pubsub(Protocol.PUBSUB_CHANNELS, pattern);
     }
     
-    public void pubSubNumPat() {
-	pubSub(Protocol.PUBSUB_NUM_PAT);
+    public void pubsubNumPat() {
+	pubsub(Protocol.PUBSUB_NUM_PAT);
     }
 
-    public void pubSubNumSub(String... channels) {
-	pubSub(Protocol.PUBSUB_NUMSUB, channels);
+    public void pubsubNumSub(String... channels) {
+	pubsub(Protocol.PUBSUB_NUMSUB, channels);
     }
 
     public void configSet(String parameter, String value) {
@@ -854,13 +854,13 @@ public class Client extends BinaryClient implements Commands {
 	cluster(arg);
     }
     
-    public void pubSub(final String subcommand, final String... args) {
+    public void pubsub(final String subcommand, final String... args) {
     	final byte[][] arg = new byte[args.length+1][];
     	for (int i = 1; i < arg.length; i++) {
     	    arg[i] = SafeEncoder.encode(args[i-1]);
     	}
     	arg[0] = SafeEncoder.encode(subcommand);
-    	pubSub(arg);
+    	pubsub(arg);
     }
 
     public void cluster(final String subcommand, final String... args) {

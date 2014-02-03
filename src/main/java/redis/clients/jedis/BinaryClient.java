@@ -561,7 +561,7 @@ public class BinaryClient extends Connection {
 	sendCommand(PUNSUBSCRIBE, patterns);
     }
     
-    public void pubSub(final byte[]... args) {
+    public void pubsub(final byte[]... args) {
     	sendCommand(PUBSUB, args);
     }
     public void zcount(final byte[] key, final double min, final double max) {

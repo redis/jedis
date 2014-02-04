@@ -79,6 +79,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
 
     public void returnResource(final Jedis resource) {
+	resource.resetState();
 	returnResourceObject(resource);
     }
 
@@ -100,8 +101,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
 	    log.info("Created JedisPool to master at " + master);
-	    initPool(poolConfig, new JedisFactory(master.getHost(), master.getPort(),
-		    timeout, password, database));
+	    initPool(poolConfig,
+		    new JedisFactory(master.getHost(), master.getPort(),
+			    timeout, password, database));
 	}
     }
 
@@ -163,10 +165,10 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
 
     private HostAndPort toHostAndPort(List<String> getMasterAddrByNameResult) {
-    	String host = getMasterAddrByNameResult.get(0);
-    	int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
-    	
-    	return new HostAndPort(host, port);
+	String host = getMasterAddrByNameResult.get(0);
+	int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
+
+	return new HostAndPort(host, port);
     }
 
     protected class JedisPubSubAdapter extends JedisPubSub {

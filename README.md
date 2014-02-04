@@ -73,7 +73,7 @@ Redis cluster [specification](http://redis.io/topics/cluster-spec) (still under 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 //Jedis Cluster will attempt to discover cluster nodes automatically
-jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
 JedisCluster jc = new JedisCluster(jedisClusterNode);
 jc.set("foo", "bar");
 String value = jc.get("foo");

@@ -18,7 +18,7 @@ public class JedisPool extends Pool<Jedis> {
 	this(new GenericObjectPoolConfig(), host, port,
 		Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null);
     }
-    
+
     public JedisPool(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
@@ -84,6 +84,7 @@ public class JedisPool extends Pool<Jedis> {
     }
 
     public void returnResource(final Jedis resource) {
+	resource.resetState();
 	returnResourceObject(resource);
     }
 }

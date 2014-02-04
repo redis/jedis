@@ -1,9 +1,8 @@
 package redis.clients.jedis;
 
-import redis.clients.util.Slowlog;
-
 import java.util.List;
 
+import redis.clients.util.Slowlog;
 
 public interface AdvancedJedisCommands {
     List<String> configGet(String pattern);

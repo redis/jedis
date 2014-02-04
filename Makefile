@@ -208,8 +208,8 @@ start: cleanup
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
 
 cleanup:
-	rm -vf /tmp/redis_cluster_node*.conf
-	rm -vf /tmp/sentinel*.conf
+	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
+	- rm dump.rdb appendonly.aof - 2>/dev/null
 
 stop:
 	kill `cat /tmp/redis1.pid`

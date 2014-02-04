@@ -134,6 +134,7 @@ public class JedisSentinelTest extends JedisTestBase {
 		Map<String, String> parameterMap = new HashMap<String, String>();
 		parameterMap.put("down-after-milliseconds", String.valueOf(1234));
 		parameterMap.put("parallel-syncs", String.valueOf(3));
+		parameterMap.put("quorum", String.valueOf(2));
 		j.sentinelSet(MASTER_NAME, parameterMap);
 		
 		List<Map<String,String>> masters = j.sentinelMasters();
@@ -141,8 +142,12 @@ public class JedisSentinelTest extends JedisTestBase {
 			if (master.get("name").equals(MASTER_NAME)) {
 				assertEquals(1234, Integer.parseInt(master.get("down-after-milliseconds")));
 				assertEquals(3, Integer.parseInt(master.get("parallel-syncs")));
+				assertEquals(2, Integer.parseInt(master.get("quorum")));
 			}
 		}
+		
+		parameterMap.put("quorum", String.valueOf(1));
+		j.sentinelSet(MASTER_NAME, parameterMap);
 	}
 	
 	private void ensureMonitored(HostAndPort sentinel, String masterName, String ip, int port, int quorum) {

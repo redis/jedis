@@ -3,6 +3,8 @@ package redis.clients.jedis.tests.commands;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.CombinableMatcher;
 import org.junit.Test;
+
+import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
@@ -18,7 +20,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     @SuppressWarnings("unchecked")
     @Test
     public void evalMultiBulk() {
-	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
 	List<String> keys = new ArrayList<String>();
 	keys.add("key1");
 	keys.add("key2");
@@ -26,14 +28,44 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	List<String> args = new ArrayList<String>();
 	args.add("first");
 	args.add("second");
+	args.add("third");
 
 	List<String> response = (List<String>) jedis.eval(script, keys, args);
 
-	assertEquals(4, response.size());
+	assertEquals(5, response.size());
 	assertEquals("key1", response.get(0));
 	assertEquals("key2", response.get(1));
 	assertEquals("first", response.get(2));
 	assertEquals("second", response.get(3));
+	assertEquals("third", response.get(4));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void evalMultiBulkWithBinaryJedis() {
+	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
+	List<byte[]> keys = new ArrayList<byte[]>();
+	keys.add("key1".getBytes());
+	keys.add("key2".getBytes());
+
+	List<byte[]> args = new ArrayList<byte[]>();
+	args.add("first".getBytes());
+	args.add("second".getBytes());
+	args.add("third".getBytes());
+
+	BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(),
+		500);
+	binaryJedis.connect();
+	binaryJedis.auth("foobared");
+
+	List<byte[]> responses = (List<byte[]>) binaryJedis.eval(
+		script.getBytes(), keys, args);
+	assertEquals(5, responses.size());
+	assertEquals("key1", new String(responses.get(0)));
+	assertEquals("key2", new String(responses.get(1)));
+	assertEquals("first", new String(responses.get(2)));
+	assertEquals("second", new String(responses.get(3)));
+	assertEquals("third", new String(responses.get(4)));
     }
 
     @Test
@@ -176,4 +208,3 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	return both(CoreMatchers.<List<T>>instanceOf(List.class)).and(hasItem(equalTo(expected)));
     }
 }
-

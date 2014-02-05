@@ -11,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.8.1'
-    compile 'commons-pool:commons-pool:1.5.5'
+    testCompile 'junit:junit:4.11'
+    compile 'org.apache.commons:commons-pool2:2.0'
 }
 
 
@@ -28,6 +28,6 @@ uploadArchives {
 */
 
 task createWrapper(type: Wrapper) {
-    gradleVersion = '1.0-milestone-6'
+    gradleVersion = '1.8'
 }
 

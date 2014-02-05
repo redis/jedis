@@ -45,18 +45,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void lastsave() throws InterruptedException {
-	long before = jedis.lastsave();
-	String st = "";
-	while (!st.equals("OK")) {
-	    try {
-		Thread.sleep(1000);
-		st = jedis.save();
-	    } catch (JedisDataException e) {
-
-	    }
-	}
-	long after = jedis.lastsave();
-	assertTrue((after - before) > 0);
+	long saved = jedis.lastsave();
+	assertTrue(saved > 0);
     }
 
     @Test
@@ -71,16 +61,16 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     public void monitor() {
 	new Thread(new Runnable() {
 	    public void run() {
-		Jedis j = new Jedis("localhost");
-		j.auth("foobared");
-		for (int i = 0; i < 4; i++) {
-		    j.incr("foobared");
-		}
 		try {
-		    Thread.sleep(2500);
+		    // sleep 100ms to make sure that monitor thread runs first
+		    Thread.sleep(100);
 		} catch (InterruptedException e) {
 		}
-		j.incr("foobared");
+		Jedis j = new Jedis("localhost");
+		j.auth("foobared");
+		for (int i = 0; i < 5; i++) {
+		    j.incr("foobared");
+		}
 		j.disconnect();
 	    }
 	}).start();
@@ -126,5 +116,11 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 	assertNotNull(resp);
 	resp = jedis.debug(DebugParams.RELOAD());
 	assertNotNull(resp);
+    }
+
+    @Test
+    public void waitReplicas() {
+	Long replicas = jedis.waitReplicas(1, 100);
+	assertEquals(1, replicas.longValue());
     }
 }

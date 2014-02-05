@@ -1,16 +1,16 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 import java.util.Set;
 
 /**
- * Multikey related commands (these are split out because they are non-shardable)
+ * Multikey related commands (these are split out because they are
+ * non-shardable)
  */
 public interface MultiKeyBinaryRedisPipeline {
 
     Response<Long> del(byte[]... keys);
-    
+
     Response<List<byte[]>> blpop(byte[]... args);
 
     Response<List<byte[]>> brpop(byte[]... args);
@@ -39,7 +39,8 @@ public interface MultiKeyBinaryRedisPipeline {
 
     Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member);
 
-    Response<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
+    Response<Long> sort(byte[] key, SortingParams sortingParameters,
+	    byte[] dstkey);
 
     Response<Long> sort(byte[] key, byte[] dstkey);
 

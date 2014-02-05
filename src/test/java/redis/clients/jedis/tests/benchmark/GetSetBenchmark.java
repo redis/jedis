@@ -4,17 +4,17 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.HostAndPortUtil.HostAndPort;
 
 public class GetSetBenchmark {
-	private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
+    private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
     private static final int TOTAL_OPERATIONS = 100000;
 
     public static void main(String[] args) throws UnknownHostException,
 	    IOException {
-	Jedis jedis = new Jedis(hnp.host, hnp.port);
+	Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort());
 	jedis.connect();
 	jedis.auth("foobared");
 	jedis.flushAll();

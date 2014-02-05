@@ -27,7 +27,7 @@ public interface BasicCommands {
     String shutdown();
 
     String info();
-    
+
     String info(String section);
 
     String slaveof(String host, int port);
@@ -39,4 +39,6 @@ public interface BasicCommands {
     String debug(DebugParams params);
 
     String configResetStat();
+
+    Long waitReplicas(int replicas, long timeout);
 }

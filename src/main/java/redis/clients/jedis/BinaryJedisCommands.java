@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 /**
  * Common interface for sharded and non-sharded BinaryJedis
  */
@@ -116,8 +114,8 @@ public interface BinaryJedisCommands {
     Long strlen(byte[] key);
 
     Long zadd(byte[] key, double score, byte[] member);
-    
-    Long zadd(byte[] key, Map<Double, byte[]> scoreMembers);
+
+    Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
     Set<byte[]> zrange(byte[] key, long start, long end);
 
@@ -159,45 +157,45 @@ public interface BinaryJedisCommands {
     Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
 
     Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset,
-            int count);
+	    int count);
 
     Set<byte[]> zrevrangeByScore(byte[] key, double max, double min,
-            int offset, int count);
+	    int offset, int count);
 
     Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
 
     Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max,
-            int offset, int count);
-    
+	    int offset, int count);
+
     Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min,
-            int offset, int count);
+	    int offset, int count);
 
     Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
-    
+
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
     Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max,
-            int offset, int count);
+	    int offset, int count);
 
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min,
-            int offset, int count);
-    
+	    int offset, int count);
+
     Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min,
-            int offset, int count);
+	    int offset, int count);
 
     Long zremrangeByRank(byte[] key, long start, long end);
 
     Long zremrangeByScore(byte[] key, double start, double end);
-    
+
     Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
 
     Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot,
-            byte[] value);
-    
+	    byte[] value);
+
     Long lpushx(byte[] key, byte[]... arg);
-    
+
     Long rpushx(byte[] key, byte[]... arg);
 
     List<byte[]> blpop(byte[] arg);

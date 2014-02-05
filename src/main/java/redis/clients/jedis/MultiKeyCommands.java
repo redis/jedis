@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 import java.util.Set;
 
@@ -70,4 +69,6 @@ public interface MultiKeyCommands {
     String randomKey();
 
     Long bitop(BitOP op, final String destKey, String... srcKeys);
+
+    ScanResult<String> scan(int cursor);
 }

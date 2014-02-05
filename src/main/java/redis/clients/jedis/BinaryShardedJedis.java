@@ -1,15 +1,14 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.Hashing;
-import redis.clients.util.Sharded;
-
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Hashing;
+import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	implements BinaryJedisCommands {
@@ -31,10 +30,10 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public void disconnect() {
-    for (Jedis jedis : getAllShards()) {
-        jedis.quit();
-        jedis.disconnect();
-    }
+	for (Jedis jedis : getAllShards()) {
+	    jedis.quit();
+	    jedis.disconnect();
+	}
     }
 
     protected Jedis create(JedisShardInfo shard) {
@@ -102,10 +101,10 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public Long del(byte[] key) {
-        Jedis j = getShard(key);
-        return j.del(key);
+	Jedis j = getShard(key);
+	return j.del(key);
     }
-    
+
     public Long incrBy(byte[] key, long integer) {
 	Jedis j = getShard(key);
 	return j.incrBy(key, integer);
@@ -197,23 +196,23 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public Long strlen(final byte[] key) {
-    Jedis j = getShard(key);
-    return j.strlen(key);
+	Jedis j = getShard(key);
+	return j.strlen(key);
     }
 
     public Long lpushx(byte[] key, byte[]... string) {
-        Jedis j = getShard(key);
-        return j.lpushx(key, string);
+	Jedis j = getShard(key);
+	return j.lpushx(key, string);
     }
 
     public Long persist(final byte[] key) {
-        Jedis j = getShard(key);
-    	return j.persist(key);
+	Jedis j = getShard(key);
+	return j.persist(key);
     }
 
     public Long rpushx(byte[] key, byte[]... string) {
-        Jedis j = getShard(key);
-        return j.rpushx(key, string);
+	Jedis j = getShard(key);
+	return j.rpushx(key, string);
     }
 
     public Long llen(byte[] key) {
@@ -296,7 +295,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.zadd(key, score, member);
     }
 
-    public Long zadd(byte[] key, Map<Double, byte[]> scoreMembers) {
+    public Long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
 	Jedis j = getShard(key);
 	return j.zadd(key, scoreMembers);
     }
@@ -365,7 +364,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.zcount(key, min, max);
     }
-    
+
     public Long zcount(byte[] key, byte[] min, byte[] max) {
 	Jedis j = getShard(key);
 	return j.zcount(key, min, max);
@@ -394,8 +393,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
-        Jedis j = getShard(key);
-        return j.zrangeByScore(key, min, max);
+	Jedis j = getShard(key);
+	return j.zrangeByScore(key, min, max);
     }
 
     public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
@@ -404,14 +403,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min,
-    		byte[] max, int offset, int count) {
+	    byte[] max, int offset, int count) {
 	Jedis j = getShard(key);
 	return j.zrangeByScoreWithScores(key, min, max, offset, count);
     }
 
-    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
-        Jedis j = getShard(key);
-        return j.zrangeByScore(key, min, max, offset, count);
+    public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max,
+	    int offset, int count) {
+	Jedis j = getShard(key);
+	return j.zrangeByScore(key, min, max, offset, count);
     }
 
     public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
@@ -436,7 +436,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
     }
-    
+
     public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
 	Jedis j = getShard(key);
 	return j.zrevrangeByScore(key, max, min);
@@ -449,13 +449,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max,
-    		byte[] min) {
+	    byte[] min) {
 	Jedis j = getShard(key);
 	return j.zrevrangeByScoreWithScores(key, max, min);
     }
 
     public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max,
-    		byte[] min, int offset, int count) {
+	    byte[] min, int offset, int count) {
 	Jedis j = getShard(key);
 	return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
     }
@@ -510,57 +510,57 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     public Boolean setbit(byte[] key, long offset, boolean value) {
-    Jedis j = getShard(key);
-    return j.setbit(key, offset, value);
+	Jedis j = getShard(key);
+	return j.setbit(key, offset, value);
     }
 
     public Boolean setbit(byte[] key, long offset, byte[] value) {
-    Jedis j = getShard(key);
-    return j.setbit(key, offset, value);
+	Jedis j = getShard(key);
+	return j.setbit(key, offset, value);
     }
 
     public Boolean getbit(byte[] key, long offset) {
-    Jedis j = getShard(key);
-    return j.getbit(key, offset);
+	Jedis j = getShard(key);
+	return j.getbit(key, offset);
     }
 
     public Long setrange(byte[] key, long offset, byte[] value) {
-    Jedis j = getShard(key);
-    return j.setrange(key, offset, value);
+	Jedis j = getShard(key);
+	return j.setrange(key, offset, value);
     }
 
     public byte[] getrange(byte[] key, long startOffset, long endOffset) {
-    Jedis j = getShard(key);
-    return j.getrange(key, startOffset, endOffset);
+	Jedis j = getShard(key);
+	return j.getrange(key, startOffset, endOffset);
     }
 
     public Long move(byte[] key, int dbIndex) {
-        Jedis j = getShard(key);
-        return j.move(key, dbIndex);
+	Jedis j = getShard(key);
+	return j.move(key, dbIndex);
     }
 
     public byte[] echo(byte[] arg) {
-        Jedis j = getShard(arg);
-        return j.echo(arg);
+	Jedis j = getShard(arg);
+	return j.echo(arg);
     }
 
     public List<byte[]> brpop(byte[] arg) {
-        Jedis j = getShard(arg);
-        return j.brpop(arg);
+	Jedis j = getShard(arg);
+	return j.brpop(arg);
     }
 
     public List<byte[]> blpop(byte[] arg) {
-        Jedis j = getShard(arg);
-        return j.blpop(arg);
+	Jedis j = getShard(arg);
+	return j.blpop(arg);
     }
 
     public Long bitcount(byte[] key) {
-        Jedis j = getShard(key);
-        return j.bitcount(key);
+	Jedis j = getShard(key);
+	return j.bitcount(key);
     }
 
     public Long bitcount(byte[] key, long start, long end) {
-        Jedis j = getShard(key);
-        return j.bitcount(key, start, end);
+	Jedis j = getShard(key);
+	return j.bitcount(key, start, end);
     }
 }

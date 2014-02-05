@@ -1,8 +1,5 @@
 package redis.clients.jedis;
 
-
-import java.util.List;
-
 /**
  * Pipelined responses for all of the low level, non key related commands
  */

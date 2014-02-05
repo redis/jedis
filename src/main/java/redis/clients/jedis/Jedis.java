@@ -2658,6 +2658,11 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.getrange(key, startOffset, endOffset);
 	return client.getBulkReply();
     }
+    
+    public byte[] getrange(byte[] key, long startOffset, long endOffset) {
+	client.getrange(key, startOffset, endOffset);
+	return client.getBinaryBulkReply();
+    }
 
     /**
      * Retrieve the configuration of a running Redis server. Not all the

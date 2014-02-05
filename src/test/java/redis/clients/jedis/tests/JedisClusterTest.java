@@ -44,7 +44,6 @@ public class JedisClusterTest extends Assert {
 	// ---- configure cluster
 
 	// add nodes to cluster
-	node1.clusterMeet("127.0.0.1", nodeInfo1.getPort());
 	node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
 	node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
 

@@ -27,15 +27,17 @@ public abstract class JedisClusterConnectionHandler {
 	    JedisPool jp = new JedisPool(hostAndPort.getHost(),
 		    hostAndPort.getPort());
 	    this.nodes.put(hostAndPort.getHost() + hostAndPort.getPort(), jp);
-	    discoverClusterNodesAndSlots(jp);
+	    Jedis jedis = jp.getResource();
+	    discoverClusterNodesAndSlots(jedis);
+	    jp.returnResource(jedis);
 	}
 
     }
 
-    private void discoverClusterNodesAndSlots(JedisPool jp) {
-	String localNodes = jp.getResource().clusterNodes();
+    private void discoverClusterNodesAndSlots(Jedis jedis) {
+	String localNodes = jedis.clusterNodes();
 	for (String nodeInfo : localNodes.split("\n")) {
-	    HostAndPort node = getHostAndPortFromNodeLine(nodeInfo);
+	    HostAndPort node = getHostAndPortFromNodeLine(nodeInfo, jedis);
 	    JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
 	    this.nodes.put(node.getHost() + node.getPort(), nodePool);
 	    populateNodeSlots(nodeInfo, nodePool);
@@ -63,8 +65,12 @@ public abstract class JedisClusterConnectionHandler {
 	}
     }
 
-    private HostAndPort getHostAndPortFromNodeLine(String nodeInfo) {
+    private HostAndPort getHostAndPortFromNodeLine(String nodeInfo, Jedis currentConnection) {
 	String stringHostAndPort = nodeInfo.split(" ", 3)[1];
+	if (":0".equals(stringHostAndPort)) {
+	    return new HostAndPort(currentConnection.getClient().getHost(),
+		    currentConnection.getClient().getPort());
+	}
 	String[] arrayHostAndPort = stringHostAndPort.split(":");
 	return new HostAndPort(arrayHostAndPort[0],
 		Integer.valueOf(arrayHostAndPort[1]));

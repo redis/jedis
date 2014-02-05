@@ -28,10 +28,12 @@ public abstract class JedisClusterConnectionHandler {
 		    hostAndPort.getPort());
 	    this.nodes.put(hostAndPort.getHost() + hostAndPort.getPort(), jp);
 	    Jedis jedis = jp.getResource();
-	    discoverClusterNodesAndSlots(jedis);
-	    jp.returnResource(jedis);
+	    try {
+		discoverClusterNodesAndSlots(jedis);
+	    } finally {
+		jp.returnResource(jedis);
+	    }
 	}
-
     }
 
     private void discoverClusterNodesAndSlots(Jedis jedis) {

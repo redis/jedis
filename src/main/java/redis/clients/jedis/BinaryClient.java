@@ -948,6 +948,12 @@ public class BinaryClient extends Connection {
 	super.disconnect();
     }
 
+    @Override
+    public void close() {
+	db = 0;
+	super.close();
+    }
+
     public void resetState() {
 	if (isInMulti())
 	    discard();

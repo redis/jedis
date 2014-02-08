@@ -3104,7 +3104,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	checkIsInMulti();
 	client.scan(cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
+	long newcursor = Long.parseLong(new String((byte[]) result.get(0)));
 	List<String> results = new ArrayList<String>();
 	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	for (byte[] bs : rawResults) {

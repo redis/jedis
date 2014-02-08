@@ -512,7 +512,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 	ScanResult<String> result = jedis.scan(0);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(0l, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 

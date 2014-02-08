@@ -1,9 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.CombinableMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Test;
-
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
@@ -11,9 +10,7 @@ import redis.clients.util.SafeEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 
 public class ScriptingCommandsTest extends JedisCommandTestBase {
 
@@ -204,7 +201,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 	assertEquals("2", results.get(3));
     }
 
-    private <T> CombinableMatcher<List<T>> listWithItem(T expected) {
-	return both(CoreMatchers.<List<T>>instanceOf(List.class)).and(hasItem(equalTo(expected)));
+    private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
+	return CoreMatchers.<T>hasItem(equalTo(expected));
     }
 }

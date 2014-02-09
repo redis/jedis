@@ -562,14 +562,4 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	
     }
 
-    @Test
-    public void scanWithOverUnsignedLongCursor() {
-	try {
-	    String overUnsignedLongMax = "18446744073709551616";
-	    jedis.scan(overUnsignedLongMax, new ScanParams());
-	    fail("In Redis documentation, unsigned long should be supported, not over unsigned long");
-	} catch (JedisDataException e) {
-	    // pass
-	}
-    }
 }

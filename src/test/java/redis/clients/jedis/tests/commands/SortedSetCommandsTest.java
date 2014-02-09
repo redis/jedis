@@ -897,7 +897,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START);
 
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -911,7 +911,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("foo", 11, "aa");
 	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START, params);
 
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 

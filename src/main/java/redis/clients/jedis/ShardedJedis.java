@@ -523,39 +523,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.bitcount(key, start, end);
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Entry<String, String>> hscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.hscan(key, cursor);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> sscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.sscan(key, cursor);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Tuple> zscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.zscan(key, cursor);
-    }
-    
     public ScanResult<Entry<String, String>> hscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.hscan(key, cursor);

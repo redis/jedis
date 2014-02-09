@@ -547,19 +547,4 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	assertFalse(result.getResult().isEmpty());
     }
     
-    @Test
-    public void scanSupportUnsignedLongCursor() {
-	try {
-	    String unsignedLongMax = "18446744073709551615";
-	    jedis.scan(unsignedLongMax, new ScanParams());
-	    // if specific cursor value is provided, result is unpredictable, so we shouldn't check result
-	} catch (JedisDataException e) {
-	    // Redis seems to have bug about scan cursor
-	    fail("Redis returns error while request with unsigned long max, is it bug?");
-	} catch (Exception e) {
-	    fail("Jedis scan can not support unsigned long");
-	}
-	
-    }
-
 }

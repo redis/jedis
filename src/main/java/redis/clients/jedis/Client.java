@@ -835,22 +835,18 @@ public class Client extends BinaryClient implements Commands {
     }
     
     public void scan(final String cursor, final ScanParams params) {
-	// TODO some type check for cursor (unsigned long)
 	scan(SafeEncoder.encode(cursor), params);
     }
 
     public void hscan(final String key, final String cursor, final ScanParams params) {
-	// TODO some type check for cursor (unsigned long)
 	hscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
     public void sscan(final String key, final String cursor, final ScanParams params) {
-	// TODO some type check for cursor (unsigned long)
 	sscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
     public void zscan(final String key, final String cursor, final ScanParams params) {
-	// TODO some type check for cursor (unsigned long)
 	zscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 

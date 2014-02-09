@@ -211,9 +211,9 @@ public interface JedisCommands {
 
     Long bitcount(final String key, long start, long end);
 
-    ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor);
+    ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
 
-    ScanResult<String> sscan(final String key, int cursor);
+    ScanResult<String> sscan(final String key, final String cursor);
 
-    ScanResult<Tuple> zscan(final String key, int cursor);
+    ScanResult<Tuple> zscan(final String key, final String cursor);
 }

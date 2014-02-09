@@ -523,17 +523,17 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.bitcount(key, start, end);
     }
 
-    public ScanResult<Entry<String, String>> hscan(String key, int cursor) {
+    public ScanResult<Entry<String, String>> hscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.hscan(key, cursor);
     }
 
-    public ScanResult<String> sscan(String key, int cursor) {
+    public ScanResult<String> sscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.sscan(key, cursor);
     }
 
-    public ScanResult<Tuple> zscan(String key, int cursor) {
+    public ScanResult<Tuple> zscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.zscan(key, cursor);
     }

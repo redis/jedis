@@ -11,6 +11,8 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
     final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
@@ -510,9 +512,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("b", "b");
 	jedis.set("a", "a");
 
-	ScanResult<String> result = jedis.scan(0);
+	ScanResult<String> result = jedis.scan(SCAN_POINTER_START);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -524,9 +526,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("b", "b");
 	jedis.set("a", "a");
 	jedis.set("aa", "aa");
-	ScanResult<String> result = jedis.scan(0, params);
+	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -539,8 +541,35 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	    jedis.set("a" + i, "a" + i);
 	}
 
-	ScanResult<String> result = jedis.scan(0, params);
-
+	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
+	
+	assertNotEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
+    }
+    
+    @Test
+    public void scanSupportUnsignedLongCursor() {
+	try {
+	    String unsignedLongMax = "18446744073709551615";
+	    jedis.scan(unsignedLongMax, new ScanParams());
+	    // if specific cursor value is provided, result is unpredictable, so we shouldn't check result
+	} catch (JedisDataException e) {
+	    // Redis seems to have bug about scan cursor
+	    fail("Redis returns error while request with unsigned long max, is it bug?");
+	} catch (Exception e) {
+	    fail("Jedis scan can not support unsigned long");
+	}
+	
+    }
+
+    @Test
+    public void scanWithOverUnsignedLongCursor() {
+	try {
+	    String overUnsignedLongMax = "18446744073709551616";
+	    jedis.scan(overUnsignedLongMax, new ScanParams());
+	    fail("In Redis documentation, unsigned long should be supported, not over unsigned long");
+	} catch (JedisDataException e) {
+	    // pass
+	}
     }
 }

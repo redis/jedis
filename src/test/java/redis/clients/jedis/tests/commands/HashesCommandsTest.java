@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 public class HashesCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -295,9 +296,10 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	jedis.hset("foo", "b", "b");
 	jedis.hset("foo", "a", "a");
 
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 
+		SCAN_POINTER_START);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -309,10 +311,10 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	jedis.hset("foo", "b", "b");
 	jedis.hset("foo", "a", "a");
 	jedis.hset("foo", "aa", "aa");
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0,
-		params);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 
+		SCAN_POINTER_START, params);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -325,8 +327,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	    jedis.hset("foo", "a" + i, "a" + i);
 	}
 
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0,
-		params);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 
+		SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
     }

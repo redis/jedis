@@ -3096,15 +3096,15 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return (relpy != null ? new Double(relpy) : null);
     }
 
-    public ScanResult<String> scan(int cursor) {
+    public ScanResult<String> scan(final String cursor) {
 	return scan(cursor, new ScanParams());
     }
 
-    public ScanResult<String> scan(int cursor, final ScanParams params) {
+    public ScanResult<String> scan(final String cursor, final ScanParams params) {
 	checkIsInMulti();
 	client.scan(cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
+	String newcursor = new String((byte[]) result.get(0));
 	List<String> results = new ArrayList<String>();
 	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	for (byte[] bs : rawResults) {
@@ -3114,16 +3114,16 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     public ScanResult<Map.Entry<String, String>> hscan(final String key,
-	    int cursor) {
+	    final String cursor) {
 	return hscan(key, cursor, new ScanParams());
     }
 
     public ScanResult<Map.Entry<String, String>> hscan(final String key,
-	    int cursor, final ScanParams params) {
+	    final String cursor, final ScanParams params) {
 	checkIsInMulti();
 	client.hscan(key, cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
+	String newcursor = new String((byte[]) result.get(0));
 	List<Map.Entry<String, String>> results = new ArrayList<Map.Entry<String, String>>();
 	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	Iterator<byte[]> iterator = rawResults.iterator();
@@ -3135,16 +3135,16 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return new ScanResult<Map.Entry<String, String>>(newcursor, results);
     }
 
-    public ScanResult<String> sscan(final String key, int cursor) {
+    public ScanResult<String> sscan(final String key, final String cursor) {
 	return sscan(key, cursor, new ScanParams());
     }
 
-    public ScanResult<String> sscan(final String key, int cursor,
+    public ScanResult<String> sscan(final String key, final String cursor,
 	    final ScanParams params) {
 	checkIsInMulti();
 	client.sscan(key, cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
+	String newcursor = new String((byte[]) result.get(0));
 	List<String> results = new ArrayList<String>();
 	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	for (byte[] bs : rawResults) {
@@ -3153,16 +3153,16 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return new ScanResult<String>(newcursor, results);
     }
 
-    public ScanResult<Tuple> zscan(final String key, int cursor) {
+    public ScanResult<Tuple> zscan(final String key, final String cursor) {
 	return zscan(key, cursor, new ScanParams());
     }
 
-    public ScanResult<Tuple> zscan(final String key, int cursor,
+    public ScanResult<Tuple> zscan(final String key, final String cursor,
 	    final ScanParams params) {
 	checkIsInMulti();
 	client.zscan(key, cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
+	String newcursor = new String((byte[]) result.get(0));
 	List<Tuple> results = new ArrayList<Tuple>();
 	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	Iterator<byte[]> iterator = rawResults.iterator();

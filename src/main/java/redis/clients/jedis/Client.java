@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
+import static redis.clients.jedis.Protocol.Command.SCAN;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -832,17 +833,25 @@ public class Client extends BinaryClient implements Commands {
 	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field),
 		increment);
     }
-
-    public void hscan(final String key, int cursor, final ScanParams params) {
-	hscan(SafeEncoder.encode(key), cursor, params);
+    
+    public void scan(final String cursor, final ScanParams params) {
+	// TODO some type check for cursor (unsigned long)
+	scan(SafeEncoder.encode(cursor), params);
     }
 
-    public void sscan(final String key, int cursor, final ScanParams params) {
-	sscan(SafeEncoder.encode(key), cursor, params);
+    public void hscan(final String key, final String cursor, final ScanParams params) {
+	// TODO some type check for cursor (unsigned long)
+	hscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
-    public void zscan(final String key, int cursor, final ScanParams params) {
-	zscan(SafeEncoder.encode(key), cursor, params);
+    public void sscan(final String key, final String cursor, final ScanParams params) {
+	// TODO some type check for cursor (unsigned long)
+	sscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
+    }
+
+    public void zscan(final String key, final String cursor, final ScanParams params) {
+	// TODO some type check for cursor (unsigned long)
+	zscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
     public void cluster(final String subcommand, final int... args) {

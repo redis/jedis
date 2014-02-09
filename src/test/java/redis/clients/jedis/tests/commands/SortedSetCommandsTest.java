@@ -10,6 +10,7 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -894,9 +895,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("foo", 1, "a");
 	jedis.zadd("foo", 2, "b");
 
-	ScanResult<Tuple> result = jedis.zscan("foo", 0);
+	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -908,9 +909,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("foo", 2, "b");
 	jedis.zadd("foo", 1, "a");
 	jedis.zadd("foo", 11, "aa");
-	ScanResult<Tuple> result = jedis.zscan("foo", 0, params);
+	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START, params);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -925,7 +926,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("foo", 4, "a4");
 	jedis.zadd("foo", 5, "a5");
 
-	ScanResult<Tuple> result = jedis.zscan("foo", 0, params);
+	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
     }

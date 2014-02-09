@@ -3,15 +3,15 @@ package redis.clients.jedis;
 import java.util.List;
 
 public class ScanResult<T> {
-    private int cursor;
+    private String cursor;
     private List<T> results;
 
-    public ScanResult(int cursor, List<T> results) {
+    public ScanResult(String cursor, List<T> results) {
 	this.cursor = cursor;
 	this.results = results;
     }
 
-    public int getCursor() {
+    public String getCursor() {
 	return cursor;
     }
 

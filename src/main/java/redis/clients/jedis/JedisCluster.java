@@ -1398,7 +1398,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
     @Override
     public ScanResult<Entry<String, String>> hscan(final String key,
-	    final int cursor) {
+	    final String cursor) {
 	return new JedisClusterCommand<ScanResult<Entry<String, String>>>(
 		connectionHandler, timeout, maxRedirections) {
 	    @Override
@@ -1409,7 +1409,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
     }
 
     @Override
-    public ScanResult<String> sscan(final String key, final int cursor) {
+    public ScanResult<String> sscan(final String key, final String cursor) {
 	return new JedisClusterCommand<ScanResult<String>>(connectionHandler,
 		timeout, maxRedirections) {
 	    @Override
@@ -1420,7 +1420,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
     }
 
     @Override
-    public ScanResult<Tuple> zscan(final String key, final int cursor) {
+    public ScanResult<Tuple> zscan(final String key, final String cursor) {
 	return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler,
 		timeout, maxRedirections) {
 	    @Override

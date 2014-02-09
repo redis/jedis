@@ -1150,33 +1150,33 @@ public class BinaryClient extends Connection {
 	sendCommand(HINCRBYFLOAT, key, field, toByteArray(increment));
     }
 
-    public void scan(int cursor, final ScanParams params) {
+    public void scan(final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(SCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void hscan(final byte[] key, int cursor, final ScanParams params) {
+    public void hscan(final byte[] key, final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(HSCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void sscan(final byte[] key, int cursor, final ScanParams params) {
+    public void sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(SSCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void zscan(final byte[] key, int cursor, final ScanParams params) {
+    public void zscan(final byte[] key, final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(ZSCAN, args.toArray(new byte[args.size()][]));
     }

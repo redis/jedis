@@ -12,6 +12,8 @@ import redis.clients.util.SafeEncoder;
 
 public class ScanParams {
     private List<byte[]> params = new ArrayList<byte[]>();
+    public final static String SCAN_POINTER_START = String.valueOf(0);
+    public final static String SCAN_POINTER_MAX = "18446744073709551615"; // UNSIGNED LONG MAX VALUE
 
     public void match(final String pattern) {
 	params.add(MATCH.raw);

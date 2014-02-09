@@ -297,13 +297,13 @@ public interface Commands {
 
     public void bitop(BitOP op, final String destKey, String... srcKeys);
 
-    public void scan(int cursor, final ScanParams params);
+    public void scan(final String cursor, final ScanParams params);
 
-    public void hscan(final String key, int cursor, final ScanParams params);
+    public void hscan(final String key, final String cursor, final ScanParams params);
 
-    public void sscan(final String key, int cursor, final ScanParams params);
+    public void sscan(final String key, final String cursor, final ScanParams params);
 
-    public void zscan(final String key, int cursor, final ScanParams params);
+    public void zscan(final String key, final String cursor, final ScanParams params);
 
     public void waitReplicas(int replicas, long timeout);
 }

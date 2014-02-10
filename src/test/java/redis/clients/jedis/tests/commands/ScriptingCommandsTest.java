@@ -1,13 +1,16 @@
 package redis.clients.jedis.tests.commands;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.junit.Test;
-
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 
 public class ScriptingCommandsTest extends JedisCommandTestBase {
 
@@ -86,6 +89,15 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 		.eval(script, keys, new ArrayList<String>());
 
 	assertEquals(new Long(2), response);
+    }
+
+    @Test
+    public void evalNestedLists() {
+	String script = "return { {KEYS[1]} , {2} }";
+	List<?> results = (List<?>) jedis.eval(script, 1, "key1");
+
+	assertThat((List<String>) results.get(0), listWithItem("key1"));
+	assertThat((List<Long>) results.get(1), listWithItem(2L));
     }
 
     @Test
@@ -171,24 +183,25 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     @Test
     public void scriptEvalReturnNullValues() {
 	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
-	List<String> results = (List<String>) jedis.eval(script, 2, "key1",
-		"key2", "1", "2");
-	assertEquals(results.get(0), "key1");
-	assertEquals(results.get(1), "key2");
-	assertEquals(results.get(2), "1");
-	assertEquals(results.get(3), "2");
+	List<String> results = (List<String>) jedis.eval(script, 2, "key1", "key2", "1", "2");
+	assertEquals("key1", results.get(0));
+	assertEquals("key2", results.get(1));
+	assertEquals("1", results.get(2));
+	assertEquals("2", results.get(3));
     }
 
     @Test
     public void scriptEvalShaReturnNullValues() {
 	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
 	String sha = jedis.scriptLoad(script);
-	List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1",
-		"key2", "1", "2");
-	assertEquals(results.get(0), "key1");
-	assertEquals(results.get(1), "key2");
-	assertEquals(results.get(2), "1");
-	assertEquals(results.get(3), "2");
+	List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1", "key2", "1", "2");
+	assertEquals("key1", results.get(0));
+	assertEquals("key2", results.get(1));
+	assertEquals("1", results.get(2));
+	assertEquals("2", results.get(3));
+    }
 
+    private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
+	return CoreMatchers.<T>hasItem(equalTo(expected));
     }
 }

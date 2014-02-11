@@ -482,6 +482,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     }
 
     @Deprecated
+    /**
+     * This method is deprecated due to its error prone with multi
+     * and will be removed on next major release
+     * You can use pipelined() instead
+     * @see https://github.com/xetorthio/jedis/pull/498
+     */
     public List<Object> pipelined(ShardedJedisPipeline shardedJedisPipeline) {
 	shardedJedisPipeline.setShardedJedis(this);
 	shardedJedisPipeline.execute();

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 
@@ -49,6 +50,11 @@ public class ClusterCommandsTest extends JedisTestBase {
 	node2.clusterDelSlots(6000, 1, 2, 3, 4, 5, 500, 5000);
 	node1.clusterAddSlots(6000);
 	node1.clusterDelSlots(6000);
+	try {
+	    node2.clusterDelSlots(10000);
+	} catch (JedisDataException jde) {
+	    // Do nothing, slot may or may not be assigned depending on gossip
+	}
     }
 
     private static void waitForEqualClusterSize() throws InterruptedException {

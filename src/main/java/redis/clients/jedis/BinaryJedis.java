@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 
+import java.io.Closeable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,7 +20,7 @@ import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	MultiKeyBinaryCommands, AdvancedBinaryJedisCommands,
-	BinaryScriptingCommands {
+	BinaryScriptingCommands, Closeable {
     protected Client client = null;
 
     public BinaryJedis(final String host) {
@@ -1740,6 +1741,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public String unwatch() {
 	client.unwatch();
 	return client.getStatusCodeReply();
+    }
+
+    @Override
+	public void close() {
+	client.close();
     }
 
     /**

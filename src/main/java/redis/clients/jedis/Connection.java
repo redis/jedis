@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -15,7 +16,7 @@ import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
-public class Connection {
+public class Connection implements Closeable {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
@@ -142,6 +143,11 @@ public class Connection {
 	    }
 	}
     }
+
+    @Override
+    public void close() {
+	disconnect();
+   }
 
     public void disconnect() {
 	if (isConnected()) {

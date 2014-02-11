@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 
@@ -47,13 +46,9 @@ public class ClusterCommandsTest extends JedisTestBase {
 	node1.clusterDelSlots(1, 2, 3, 4, 5, 500);
 	node1.clusterSetSlotNode(5000, node1Id);
 	node1.clusterDelSlots(5000, 10000);
-	node1.clusterDelSlots(6000);
 	node2.clusterDelSlots(6000, 1, 2, 3, 4, 5, 500, 5000);
-	try {
-	    node2.clusterDelSlots(10000);
-	} catch (JedisDataException jde) {
-	    // Do nothing, slot may or may not be assigned depending on gossip
-	}
+	node1.clusterAddSlots(6000);
+	node1.clusterDelSlots(6000);
     }
 
     private static void waitForEqualClusterSize() throws InterruptedException {
@@ -73,6 +68,15 @@ public class ClusterCommandsTest extends JedisTestBase {
 	    }
 	}
 	return 0;
+    }
+    
+    @Test
+    public void clusterSetSlotImporting() {
+	node2.clusterAddSlots(6000);
+	String[] nodes = node1.clusterNodes().split("\n");
+	String nodeId = nodes[0].split(" ")[0];
+	String status = node1.clusterSetSlotImporting(6000, nodeId);
+	assertEquals("OK", status);
     }
 
     @Test
@@ -130,12 +134,4 @@ public class ClusterCommandsTest extends JedisTestBase {
 	assertEquals("OK", status);
     }
 
-    @Test
-    public void clusterSetSlotImporting() {
-	node2.clusterAddSlots(6000);
-	String[] nodes = node1.clusterNodes().split("\n");
-	String nodeId = nodes[0].split(" ")[0];
-	String status = node1.clusterSetSlotImporting(6000, nodeId);
-	assertEquals("OK", status);
-    }
 }

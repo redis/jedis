@@ -10,6 +10,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -510,9 +511,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("b", "b");
 	jedis.set("a", "a");
 
-	ScanResult<String> result = jedis.scan(0);
+	ScanResult<String> result = jedis.scan(SCAN_POINTER_START);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -524,9 +525,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set("b", "b");
 	jedis.set("a", "a");
 	jedis.set("aa", "aa");
-	ScanResult<String> result = jedis.scan(0, params);
+	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -539,7 +540,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	    jedis.set("a" + i, "a" + i);
 	}
 
-	ScanResult<String> result = jedis.scan(0, params);
+	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
     }

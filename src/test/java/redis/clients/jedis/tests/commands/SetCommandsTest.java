@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 public class SetCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -457,9 +458,9 @@ public class SetCommandsTest extends JedisCommandTestBase {
     public void sscan() {
 	jedis.sadd("foo", "a", "b");
 
-	ScanResult<String> result = jedis.sscan("foo", 0);
+	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -469,9 +470,9 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	params.match("a*");
 
 	jedis.sadd("foo", "b", "a", "aa");
-	ScanResult<String> result = jedis.sscan("foo", 0, params);
+	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
     }
 
@@ -482,7 +483,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
 	jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
 
-	ScanResult<String> result = jedis.sscan("foo", 0, params);
+	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
     }

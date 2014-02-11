@@ -833,16 +833,50 @@ public class Client extends BinaryClient implements Commands {
 		increment);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public void hscan(final String key, int cursor, final ScanParams params) {
 	hscan(SafeEncoder.encode(key), cursor, params);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public void sscan(final String key, int cursor, final ScanParams params) {
 	sscan(SafeEncoder.encode(key), cursor, params);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public void zscan(final String key, int cursor, final ScanParams params) {
 	zscan(SafeEncoder.encode(key), cursor, params);
+    }
+    
+    public void scan(final String cursor, final ScanParams params) {
+	scan(SafeEncoder.encode(cursor), params);
+    }
+    
+    public void hscan(final String key, final String cursor, final ScanParams params) {
+	hscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
+    }
+    
+    public void sscan(final String key, final String cursor, final ScanParams params) {
+	sscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
+    }
+    
+    public void zscan(final String key, final String cursor, final ScanParams params) {
+	zscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
     public void cluster(final String subcommand, final int... args) {

@@ -12,6 +12,7 @@ import redis.clients.util.SafeEncoder;
 
 public class ScanParams {
     private List<byte[]> params = new ArrayList<byte[]>();
+    public final static String SCAN_POINTER_START = String.valueOf(0);
 
     public void match(final String pattern) {
 	params.add(MATCH.raw);

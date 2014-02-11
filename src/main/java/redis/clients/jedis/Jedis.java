@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
@@ -3012,6 +3013,40 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return slaves;
     }
 
+    public String sentinelFailover(String masterName) {
+	client.sentinel(Protocol.SENTINEL_FAILOVER, masterName);
+	return client.getStatusCodeReply();
+    }
+
+    public String sentinelMonitor(String masterName, String ip, int port,
+	    int quorum) {
+	client.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip,
+		String.valueOf(port), String.valueOf(quorum));
+	return client.getStatusCodeReply();
+    }
+
+    public String sentinelRemove(String masterName) {
+	client.sentinel(Protocol.SENTINEL_REMOVE, masterName);
+	return client.getStatusCodeReply();
+    }
+
+    public String sentinelSet(String masterName,
+	    Map<String, String> parameterMap) {
+	int index = 0;
+	int paramsLength = parameterMap.size() * 2 + 2;
+	String[] params = new String[paramsLength];
+
+	params[index++] = Protocol.SENTINEL_SET;
+	params[index++] = masterName;
+	for (Entry<String, String> entry : parameterMap.entrySet()) {
+	    params[index++] = entry.getKey();
+	    params[index++] = entry.getValue();
+	}
+
+	client.sentinel(params);
+	return client.getStatusCodeReply();
+    }
+
     public byte[] dump(final String key) {
 	checkIsInMulti();
 	client.dump(key);
@@ -3373,8 +3408,8 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     public Map<String, String> pubsubNumSub(String... channels) {
 	checkIsInMulti();
-  	client.pubsubNumSub(channels);
-  	return BuilderFactory.STRING_MAP
-  		.build(client.getBinaryMultiBulkReply());
+	client.pubsubNumSub(channels);
+	return BuilderFactory.STRING_MAP
+		.build(client.getBinaryMultiBulkReply());
     }
 }

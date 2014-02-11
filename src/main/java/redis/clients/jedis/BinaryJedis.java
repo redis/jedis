@@ -1696,6 +1696,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return new Transaction(client);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to its error prone
+     * and will be removed on next major release
+     * You can use multi() instead
+     * @see https://github.com/xetorthio/jedis/pull/498
+     */
     public List<Object> multi(final TransactionBlock jedisTransaction) {
 	List<Object> results = null;
 	jedisTransaction.setClient(client);
@@ -2119,14 +2126,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getStatusCodeReply();
     }
 
+    @Deprecated
     /**
-     * Starts a pipeline, which is a very efficient way to send lots of command
-     * and read all the responses when you finish sending them. Try to avoid
-     * this version and use pipelined() when possible as it will give better
-     * performance.
-     * 
-     * @param jedisPipeline
-     * @return The results of the command in the same order you've run them.
+     * This method is deprecated due to its error prone with multi
+     * and will be removed on next major release
+     * You can use pipelined() instead
+     * @see https://github.com/xetorthio/jedis/pull/498
      */
     public List<Object> pipelined(final PipelineBlock jedisPipeline) {
 	jedisPipeline.setClient(client);

@@ -15,7 +15,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.PipelineBlock;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -35,21 +34,10 @@ public class PipeliningTest extends Assert {
 
     @Test
     public void pipeline() throws UnsupportedEncodingException {
-	List<Object> results = jedis.pipelined(new PipelineBlock() {
-	    public void execute() {
-		set("foo", "bar");
-		get("foo");
-	    }
-	});
-
-	assertEquals(2, results.size());
-	assertEquals("OK", results.get(0));
-	assertEquals("bar", results.get(1));
-
 	Pipeline p = jedis.pipelined();
 	p.set("foo", "bar");
 	p.get("foo");
-	results = p.syncAndReturnAll();
+	List<Object> results = p.syncAndReturnAll();
 
 	assertEquals(2, results.size());
 	assertEquals("OK", results.get(0));

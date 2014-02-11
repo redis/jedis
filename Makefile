@@ -180,9 +180,9 @@ stop:
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
-	#kill `cat /tmp/redis_cluster_node1.pid` || true
-	#kill `cat /tmp/redis_cluster_node2.pid` || true
-	#kill `cat /tmp/redis_cluster_node3.pid` || true
+	kill `cat /tmp/redis_cluster_node1.pid` || true
+	kill `cat /tmp/redis_cluster_node2.pid` || true
+	kill `cat /tmp/redis_cluster_node3.pid` || true
 	rm -f /tmp/redis_cluster_node1.conf
 	rm -f /tmp/redis_cluster_node2.conf
 	rm -f /tmp/redis_cluster_node3.conf

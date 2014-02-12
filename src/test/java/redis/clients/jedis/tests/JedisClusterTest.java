@@ -170,6 +170,14 @@ public class JedisClusterTest extends Assert {
 	node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
 	jc.set("51", "foo");
     }
+    
+    @Test
+    public void testRedisHashtag() {
+	assertEquals(JedisClusterCRC16.getSlot("{bar"), JedisClusterCRC16.getSlot("foo{{bar}}zap"));
+	assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"), JedisClusterCRC16.getSlot("{user1000}.followers"));
+	assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), JedisClusterCRC16.getSlot("bar"));
+	assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
+    }
 
     private String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
@@ -191,5 +199,5 @@ public class JedisClusterTest extends Assert {
 	    Thread.sleep(50);
 	}
     }
-
+    
 }

@@ -177,8 +177,6 @@ public class JedisClusterTest extends Assert {
 	assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"), JedisClusterCRC16.getSlot("{user1000}.followers"));
 	assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), JedisClusterCRC16.getSlot("bar"));
 	assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
-	
-	
     }
 
     private String getNodeId(String infoOutput) {

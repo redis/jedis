@@ -96,8 +96,8 @@ port 26379
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6379 1
 sentinel auth-pass mymaster foobared
-sentinel down-after-milliseconds mymaster 3000
-sentinel failover-timeout mymaster 900000
+sentinel down-after-milliseconds mymaster 2000
+sentinel failover-timeout mymaster 180000
 sentinel parallel-syncs mymaster 1
 pidfile /tmp/sentinel1.pid
 logfile /tmp/sentinel1.log
@@ -108,9 +108,9 @@ port 26380
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6381 2
 sentinel auth-pass mymaster foobared
-sentinel down-after-milliseconds mymaster 3000
+sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
-sentinel failover-timeout mymaster 900000
+sentinel failover-timeout mymaster 180000
 pidfile /tmp/sentinel2.pid
 logfile /tmp/sentinel2.log
 endef
@@ -120,9 +120,9 @@ port 26381
 daemonize yes
 sentinel monitor mymaster 127.0.0.1 6381 2
 sentinel auth-pass mymaster foobared
-sentinel down-after-milliseconds mymaster 3000
+sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
-sentinel failover-timeout mymaster 900000
+sentinel failover-timeout mymaster 180000
 pidfile /tmp/sentinel3.pid
 logfile /tmp/sentinel3.log
 endef
@@ -132,8 +132,8 @@ port 26382
 daemonize yes
 sentinel monitor mymasterfailover 127.0.0.1 6385 1
 sentinel auth-pass mymasterfailover foobared
-sentinel down-after-milliseconds mymasterfailover 3000
-sentinel failover-timeout mymasterfailover 900000
+sentinel down-after-milliseconds mymasterfailover 2000
+sentinel failover-timeout mymasterfailover 180000
 sentinel parallel-syncs mymasterfailover 1
 pidfile /tmp/sentinel4.pid
 logfile /tmp/sentinel4.log

@@ -1,3 +1,5 @@
+PATH := ./redis-git/src:${PATH}
+
 define REDIS1_CONF
 daemonize yes
 port 6379
@@ -253,5 +255,9 @@ release:
 	mvn release:prepare
 	mvn release:perform
 	make stop
+
+travis-install:
+	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git redis-git || true
+	make -C redis-git -j4
 
 .PHONY: test

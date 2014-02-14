@@ -11,7 +11,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
@@ -26,7 +25,7 @@ public class JedisClusterTest extends Assert {
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-
+    
     @Before
     public void setUp() throws InterruptedException {
 	node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
@@ -49,22 +48,23 @@ public class JedisClusterTest extends Assert {
 
 	// split available slots across the three nodes
 	int slotsPerNode = JedisCluster.HASHSLOTS / 3;
-	Pipeline pipeline1 = node1.pipelined();
-	Pipeline pipeline2 = node2.pipelined();
-	Pipeline pipeline3 = node3.pipelined();
-	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
+	int[] node1Slots = new int[slotsPerNode];
+	int[] node2Slots = new int[slotsPerNode+1];
+	int[] node3Slots = new int[slotsPerNode];
+	for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0 ; i < JedisCluster.HASHSLOTS; i++) {
 	    if (i < slotsPerNode) {
-		pipeline1.clusterAddSlots(i);
+		node1Slots[slot1++] = i;
 	    } else if (i > slotsPerNode * 2) {
-		pipeline3.clusterAddSlots(i);
+		node3Slots[slot3++] = i;
 	    } else {
-		pipeline2.clusterAddSlots(i);
+		node2Slots[slot2++] = i;
 	    }
 	}
-	pipeline1.sync();
-	pipeline2.sync();
-	pipeline3.sync();
-
+	
+	node1.clusterAddSlots(node1Slots);
+	node2.clusterAddSlots(node2Slots);
+	node3.clusterAddSlots(node3Slots);
+	
 	waitForClusterReady();
     }
 

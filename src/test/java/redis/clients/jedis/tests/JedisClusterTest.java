@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +20,8 @@ import redis.clients.util.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
     private Jedis node1;
-    private Jedis node2;
-    private Jedis node3;
+    private static Jedis node2;
+    private static Jedis node3;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -66,6 +67,16 @@ public class JedisClusterTest extends Assert {
 	node3.clusterAddSlots(node3Slots);
 	
 	waitForClusterReady();
+    }
+    
+    @AfterClass
+    public static void cleanUp() {
+	int slotTest = JedisClusterCRC16.getSlot("test");
+	int slot51 = JedisClusterCRC16.getSlot("51");
+	String node3Id = getNodeId(node3.clusterNodes());
+	node2.clusterSetSlotNode(slotTest, node3Id);
+	node2.clusterSetSlotNode(slot51, node3Id);
+	node2.clusterDelSlots(slotTest, slot51);
     }
 
     @After
@@ -179,7 +190,7 @@ public class JedisClusterTest extends Assert {
 	assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
     }
 
-    private String getNodeId(String infoOutput) {
+    private static String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
 	    if (infoLine.contains("myself")) {
 		return infoLine.split(" ")[0];

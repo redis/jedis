@@ -143,6 +143,7 @@ endef
 define REDIS_CLUSTER_NODE1_CONF
 daemonize yes
 port 7379
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node1.pid
 logfile /tmp/redis_cluster_node1.log
 save ""
@@ -154,6 +155,7 @@ endef
 define REDIS_CLUSTER_NODE2_CONF
 daemonize yes
 port 7380
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node2.pid
 logfile /tmp/redis_cluster_node2.log
 save ""
@@ -165,6 +167,7 @@ endef
 define REDIS_CLUSTER_NODE3_CONF
 daemonize yes
 port 7381
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node3.pid
 logfile /tmp/redis_cluster_node3.log
 save ""

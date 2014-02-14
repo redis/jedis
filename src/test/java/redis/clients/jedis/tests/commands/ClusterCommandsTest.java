@@ -40,29 +40,24 @@ public class ClusterCommandsTest extends JedisTestBase {
 
     @AfterClass
     public static void removeSlots() throws InterruptedException {
-	// This is to wait for gossip to replicate data.
-	waitForEqualClusterSize();
 	String[] nodes = node1.clusterNodes().split("\n");
 	String node1Id = nodes[0].split(" ")[0];
 	node1.clusterDelSlots(1, 2, 3, 4, 5, 500);
 	node1.clusterSetSlotNode(5000, node1Id);
 	node1.clusterDelSlots(5000, 10000);
-	node2.clusterDelSlots(6000, 1, 2, 3, 4, 5, 500, 5000);
 	node1.clusterAddSlots(6000);
 	node1.clusterDelSlots(6000);
-	try {
-	    node2.clusterDelSlots(10000);
-	} catch (JedisDataException jde) {
-	    // Do nothing, slot may or may not be assigned depending on gossip
-	}
+	waitForGossip();
+	node2.clusterDelSlots(6000);
+	node1.clusterDelSlots(6000);
     }
 
-    private static void waitForEqualClusterSize() throws InterruptedException {
-	boolean notEqualSize = true;
-	while (notEqualSize) {
-	    notEqualSize = getClusterAttribute(node1.clusterInfo(),
-		    "cluster_known_nodes") == getClusterAttribute(
-		    node2.clusterInfo(), "cluster_size") ? false : true;
+    private static void waitForGossip() {
+	boolean notReady = true;
+	while (notReady) {
+	    if (node1.clusterNodes().contains("6000")) {
+		notReady = false;
+	    }
 	}
     }
 

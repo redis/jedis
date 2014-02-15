@@ -14,6 +14,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
@@ -86,8 +87,6 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
 	    @Override
 	    public void onMessage(String channel, String message) {
-		// TODO Auto-generated method stub
-
 	    }
 
 	    @Override
@@ -96,33 +95,27 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 		if (channel.equals("+switch-master")) {
 		    newmaster.set(message);
 		    punsubscribe();
+		} else if (channel.startsWith("-failover-abort")) {
+		    punsubscribe();
+		    fail("Unfortunately sentinel cannot failover... reason(channel) : " + 
+			    channel + " / message : " + message);
 		}
-		// TODO Auto-generated method stub
-
 	    }
 
 	    @Override
 	    public void onSubscribe(String channel, int subscribedChannels) {
-		// TODO Auto-generated method stub
-
 	    }
 
 	    @Override
 	    public void onUnsubscribe(String channel, int subscribedChannels) {
-		// TODO Auto-generated method stub
-
 	    }
 
 	    @Override
 	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-		// TODO Auto-generated method stub
-
 	    }
 
 	    @Override
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
-		// TODO Auto-generated method stub
-
 	    }
 	}, "*");
 

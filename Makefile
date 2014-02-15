@@ -86,7 +86,7 @@ daemonize yes
 sentinel monitor mymaster 127.0.0.1 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
-sentinel failover-timeout mymaster 60000
+sentinel failover-timeout mymaster 120000
 sentinel parallel-syncs mymaster 1
 pidfile /tmp/sentinel1.pid
 logfile /tmp/sentinel1.log
@@ -99,7 +99,7 @@ sentinel monitor mymaster 127.0.0.1 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
-sentinel failover-timeout mymaster 60000
+sentinel failover-timeout mymaster 120000
 pidfile /tmp/sentinel2.pid
 logfile /tmp/sentinel2.log
 endef
@@ -110,7 +110,7 @@ daemonize yes
 sentinel monitor mymasterfailover 127.0.0.1 6385 1
 sentinel auth-pass mymasterfailover foobared
 sentinel down-after-milliseconds mymasterfailover 2000
-sentinel failover-timeout mymasterfailover 60000
+sentinel failover-timeout mymasterfailover 120000
 sentinel parallel-syncs mymasterfailover 1
 pidfile /tmp/sentinel4.pid
 logfile /tmp/sentinel4.log

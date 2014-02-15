@@ -22,15 +22,15 @@ public class JedisSentinelTest extends JedisTestBase {
 
     protected static HostAndPort master = HostAndPortUtil.getRedisServers()
 	    .get(0);
-    protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(
-	    5);
+    protected static HostAndPort slave = HostAndPortUtil.getRedisServers()
+	    .get(4);
     protected static HostAndPort sentinel = HostAndPortUtil
 	    .getSentinelServers().get(0);
 
     protected static HostAndPort sentinelForFailover = HostAndPortUtil
-	    .getSentinelServers().get(3);
+	    .getSentinelServers().get(2);
     protected static HostAndPort masterForFailover = HostAndPortUtil
-	    .getRedisServers().get(6);
+	    .getRedisServers().get(5);
 
     @Before
     public void setup() throws InterruptedException {
@@ -87,11 +87,10 @@ public class JedisSentinelTest extends JedisTestBase {
 		sentinelForFailover.getPort());
 
 	try {
-	    HostAndPort currentMaster = new HostAndPort(
-		    masterForFailover.getHost(), masterForFailover.getPort());
-
 	    List<String> masterHostAndPort = j
 		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
+	    HostAndPort currentMaster = new HostAndPort(masterHostAndPort.get(0), 
+		    Integer.parseInt(masterHostAndPort.get(1)));
 	    String result = j.sentinelFailover(FAILOVER_MASTER_NAME);
 	    assertEquals("OK", result);
 

@@ -21,8 +21,6 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    .get(2);
     protected static HostAndPort slave1 = HostAndPortUtil.getRedisServers()
 	    .get(3);
-    protected static HostAndPort slave2 = HostAndPortUtil.getRedisServers()
-	    .get(4);
     protected static HostAndPort sentinel1 = HostAndPortUtil
 	    .getSentinelServers().get(1);
 

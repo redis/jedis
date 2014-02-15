@@ -14,6 +14,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
     private static final String MASTER_NAME = "mymaster";
@@ -26,8 +27,6 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    .get(4);
     protected static HostAndPort sentinel1 = HostAndPortUtil
 	    .getSentinelServers().get(1);
-    protected static HostAndPort sentinel2 = HostAndPortUtil
-	    .getSentinelServers().get(2);
 
     protected static Jedis sentinelJedis1;
 
@@ -36,7 +35,6 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     @Before
     public void setUp() throws Exception {
 	sentinels.add(sentinel1.toString());
-	sentinels.add(sentinel2.toString());
 
 	sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
     }
@@ -46,30 +44,25 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
 		new GenericObjectPoolConfig(), 1000, "foobared", 2);
 
-	// perform failover
-	doSegFaultMaster(pool);
-
-	// perform failover once again
-	doSegFaultMaster(pool);
-
+	forceFailover(pool);
+	forceFailover(pool);
+	
 	// you can test failover as much as possible
-	// but you need to prepare additional slave per failover
     }
 
-    private void doSegFaultMaster(JedisSentinelPool pool)
-	    throws InterruptedException {
+    private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
 	HostAndPort oldMaster = pool.getCurrentHostMaster();
 
 	// jedis connection should be master
 	Jedis jedis = pool.getResource();
 	assertEquals("PONG", jedis.ping());
 
-	try {
-	    jedis.debug(DebugParams.SEGFAULT());
-	} catch (Exception e) {
-	}
+	// It can throw JedisDataException while there's no slave to promote
+	// There's nothing we can do, so we just pass Exception to make test fail fast
+	sentinelJedis1.sentinelFailover(MASTER_NAME);
 
 	waitForFailover(pool, oldMaster);
+	// JedisSentinelPool recognize master but may not changed internal pool yet
 	Thread.sleep(100);
 
 	jedis = pool.getResource();

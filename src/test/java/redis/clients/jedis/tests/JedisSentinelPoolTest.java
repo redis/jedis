@@ -47,6 +47,40 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
 	// you can test failover as much as possible
     }
+    
+    @Test
+    public void returnResourceShouldResetState() {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+		config, 1000, "foobared", 2);
+
+	Jedis jedis = pool.getResource();
+	Jedis jedis2 = null;
+	
+	try {
+	    jedis.set("hello", "jedis");
+	    Transaction t = jedis.multi();
+	    t.set("hello", "world");
+	    pool.returnResource(jedis);
+	    
+	    jedis2 = pool.getResource();
+
+	    assertTrue(jedis == jedis2);
+	    assertEquals("jedis", jedis2.get("hello"));
+	} catch (JedisConnectionException e) {
+	    if (jedis2 != null) {
+		pool.returnBrokenResource(jedis2);
+		jedis2 = null;
+	    }
+	} finally {
+	    if (jedis2 != null)
+		pool.returnResource(jedis2);
+	    
+	    pool.destroy();
+	}
+    }
 
     private void forceFailover(JedisSentinelPool pool)
 	    throws InterruptedException {
@@ -98,38 +132,4 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	}
     }
     
-    @Test
-    public void returnResourceShouldResetState() {
-	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-	config.setMaxTotal(1);
-	config.setBlockWhenExhausted(false);
-	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-		config, 1000, "foobared", 2);
-
-	Jedis jedis = pool.getResource();
-	Jedis jedis2 = null;
-	
-	try {
-	    jedis.set("hello", "jedis");
-	    Transaction t = jedis.multi();
-	    t.set("hello", "world");
-	    pool.returnResource(jedis);
-	    
-	    jedis2 = pool.getResource();
-
-	    assertTrue(jedis == jedis2);
-	    assertEquals("jedis", jedis2.get("hello"));
-	} catch (JedisConnectionException e) {
-	    if (jedis2 != null) {
-		pool.returnBrokenResource(jedis2);
-		jedis2 = null;
-	    }
-	} finally {
-	    if (jedis2 != null)
-		pool.returnResource(jedis2);
-	    
-	    pool.destroy();
-	}
-    }
-
 }

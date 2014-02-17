@@ -25,6 +25,7 @@ define REDIS3_CONF
 daemonize yes
 port 6381
 requirepass foobared
+masterauth foobared
 pidfile /tmp/redis3.pid
 logfile /tmp/redis3.log
 save ""
@@ -52,7 +53,7 @@ pidfile /tmp/redis5.pid
 logfile /tmp/redis5.log
 save ""
 appendonly no
-slaveof localhost 6381
+slaveof localhost 6379
 endef
 
 define REDIS6_CONF
@@ -64,7 +65,6 @@ pidfile /tmp/redis6.pid
 logfile /tmp/redis6.log
 save ""
 appendonly no
-slaveof localhost 6379
 endef
 
 define REDIS7_CONF
@@ -76,18 +76,7 @@ pidfile /tmp/redis7.pid
 logfile /tmp/redis7.log
 save ""
 appendonly no
-endef
-
-define REDIS8_CONF
-daemonize yes
-port 6386
-requirepass foobared
-masterauth foobared
-pidfile /tmp/redis8.pid
-logfile /tmp/redis8.log
-save ""
-appendonly no
-slaveof localhost 6385
+slaveof localhost 6384
 endef
 
 # SENTINELS
@@ -97,7 +86,7 @@ daemonize yes
 sentinel monitor mymaster 127.0.0.1 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
-sentinel failover-timeout mymaster 180000
+sentinel failover-timeout mymaster 120000
 sentinel parallel-syncs mymaster 1
 pidfile /tmp/sentinel1.pid
 logfile /tmp/sentinel1.log
@@ -106,11 +95,11 @@ endef
 define REDIS_SENTINEL2
 port 26380
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6381 2
+sentinel monitor mymaster 127.0.0.1 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
-sentinel failover-timeout mymaster 180000
+sentinel failover-timeout mymaster 120000
 pidfile /tmp/sentinel2.pid
 logfile /tmp/sentinel2.log
 endef
@@ -118,25 +107,13 @@ endef
 define REDIS_SENTINEL3
 port 26381
 daemonize yes
-sentinel monitor mymaster 127.0.0.1 6381 2
-sentinel auth-pass mymaster foobared
-sentinel down-after-milliseconds mymaster 2000
-sentinel parallel-syncs mymaster 1
-sentinel failover-timeout mymaster 180000
-pidfile /tmp/sentinel3.pid
-logfile /tmp/sentinel3.log
-endef
-
-define REDIS_SENTINEL4
-port 26382
-daemonize yes
-sentinel monitor mymasterfailover 127.0.0.1 6385 1
+sentinel monitor mymasterfailover 127.0.0.1 6384 1
 sentinel auth-pass mymasterfailover foobared
 sentinel down-after-milliseconds mymasterfailover 2000
-sentinel failover-timeout mymasterfailover 180000
+sentinel failover-timeout mymasterfailover 120000
 sentinel parallel-syncs mymasterfailover 1
-pidfile /tmp/sentinel4.pid
-logfile /tmp/sentinel4.log
+pidfile /tmp/sentinel3.pid
+logfile /tmp/sentinel3.log
 endef
 
 # CLUSTER REDIS NODES
@@ -183,11 +160,9 @@ export REDIS4_CONF
 export REDIS5_CONF
 export REDIS6_CONF
 export REDIS7_CONF
-export REDIS8_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
-export REDIS_SENTINEL4
 export REDIS_CLUSTER_NODE1_CONF
 export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
@@ -200,14 +175,11 @@ start: cleanup
 	echo "$$REDIS5_CONF" | redis-server -
 	echo "$$REDIS6_CONF" | redis-server -
 	echo "$$REDIS7_CONF" | redis-server -
-	echo "$$REDIS8_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
-	@sleep 0.5
-	echo "$$REDIS_SENTINEL4" > /tmp/sentinel4.conf && redis-server /tmp/sentinel4.conf --sentinel
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
@@ -219,24 +191,20 @@ cleanup:
 stop:
 	kill `cat /tmp/redis1.pid`
 	kill `cat /tmp/redis2.pid`
-	# this get's segfaulted by the tests
-	kill `cat /tmp/redis3.pid` || true
-	kill `cat /tmp/redis4.pid` || true
-	kill `cat /tmp/redis5.pid` || true
-	kill `cat /tmp/redis6.pid` || true
+	kill `cat /tmp/redis3.pid`
+	kill `cat /tmp/redis4.pid`
+	kill `cat /tmp/redis5.pid`
+	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
-	kill `cat /tmp/redis8.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
-	kill `cat /tmp/sentinel4.pid`
 	kill `cat /tmp/redis_cluster_node1.pid` || true
 	kill `cat /tmp/redis_cluster_node2.pid` || true
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
-	rm -f /tmp/sentinel4.conf
 	rm -f /tmp/redis_cluster_node1.conf
 	rm -f /tmp/redis_cluster_node2.conf
 	rm -f /tmp/redis_cluster_node3.conf

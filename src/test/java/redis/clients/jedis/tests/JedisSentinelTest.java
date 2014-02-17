@@ -22,15 +22,15 @@ public class JedisSentinelTest extends JedisTestBase {
 
     protected static HostAndPort master = HostAndPortUtil.getRedisServers()
 	    .get(0);
-    protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(
-	    5);
+    protected static HostAndPort slave = HostAndPortUtil.getRedisServers()
+	    .get(4);
     protected static HostAndPort sentinel = HostAndPortUtil
 	    .getSentinelServers().get(0);
 
     protected static HostAndPort sentinelForFailover = HostAndPortUtil
-	    .getSentinelServers().get(3);
+	    .getSentinelServers().get(2);
     protected static HostAndPort masterForFailover = HostAndPortUtil
-	    .getRedisServers().get(6);
+	    .getRedisServers().get(5);
 
     @Before
     public void setup() throws InterruptedException {
@@ -50,30 +50,35 @@ public class JedisSentinelTest extends JedisTestBase {
     @Test
     public void sentinel() {
 	Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
-	List<Map<String, String>> masters = j.sentinelMasters();
 
-	boolean inMasters = false;
-	for (Map<String, String> master : masters)
-	    if (MASTER_NAME.equals(master.get("name")))
-		inMasters = true;
+	try {
+	    List<Map<String, String>> masters = j.sentinelMasters();
 
-	assertTrue(inMasters);
+	    boolean inMasters = false;
+	    for (Map<String, String> master : masters)
+		if (MASTER_NAME.equals(master.get("name")))
+		    inMasters = true;
 
-	List<String> masterHostAndPort = j
-		.sentinelGetMasterAddrByName(MASTER_NAME);
-	HostAndPort masterFromSentinel = new HostAndPort(
-		masterHostAndPort.get(0), Integer.parseInt(masterHostAndPort
-			.get(1)));
-	assertEquals(master, masterFromSentinel);
+	    assertTrue(inMasters);
 
-	List<Map<String, String>> slaves = j.sentinelSlaves(MASTER_NAME);
-	assertTrue(slaves.size() > 0);
-	assertEquals(master.getPort(),
-		Integer.parseInt(slaves.get(0).get("master-port")));
+	    List<String> masterHostAndPort = j
+		    .sentinelGetMasterAddrByName(MASTER_NAME);
+	    HostAndPort masterFromSentinel = new HostAndPort(
+		    masterHostAndPort.get(0),
+		    Integer.parseInt(masterHostAndPort.get(1)));
+	    assertEquals(master, masterFromSentinel);
 
-	// DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
-	assertEquals(Long.valueOf(1), j.sentinelReset(MASTER_NAME));
-	assertEquals(Long.valueOf(0), j.sentinelReset("woof" + MASTER_NAME));
+	    List<Map<String, String>> slaves = j.sentinelSlaves(MASTER_NAME);
+	    assertTrue(slaves.size() > 0);
+	    assertEquals(master.getPort(),
+		    Integer.parseInt(slaves.get(0).get("master-port")));
+
+	    // DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
+	    assertEquals(Long.valueOf(1), j.sentinelReset(MASTER_NAME));
+	    assertEquals(Long.valueOf(0), j.sentinelReset("woof" + MASTER_NAME));
+	} finally {
+	    j.close();
+	}
     }
 
     @Test
@@ -81,40 +86,48 @@ public class JedisSentinelTest extends JedisTestBase {
 	Jedis j = new Jedis(sentinelForFailover.getHost(),
 		sentinelForFailover.getPort());
 
-	HostAndPort currentMaster = new HostAndPort(
-		masterForFailover.getHost(), masterForFailover.getPort());
+	try {
+	    List<String> masterHostAndPort = j
+		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
+	    HostAndPort currentMaster = new HostAndPort(masterHostAndPort.get(0), 
+		    Integer.parseInt(masterHostAndPort.get(1)));
+	    String result = j.sentinelFailover(FAILOVER_MASTER_NAME);
+	    assertEquals("OK", result);
 
-	List<String> masterHostAndPort = j
-		.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
-	String result = j.sentinelFailover(FAILOVER_MASTER_NAME);
-	assertEquals("OK", result);
+	    JedisSentinelTestUtil.waitForNewPromotedMaster(j);
 
-	JedisSentinelTestUtil.waitForNewPromotedMaster(sentinelForFailover,
-		FAILOVER_MASTER_NAME, currentMaster);
+	    masterHostAndPort = j
+		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
+	    HostAndPort newMaster = new HostAndPort(masterHostAndPort.get(0),
+		    Integer.parseInt(masterHostAndPort.get(1)));
 
-	masterHostAndPort = j.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
-	HostAndPort newMaster = new HostAndPort(masterHostAndPort.get(0),
-		Integer.parseInt(masterHostAndPort.get(1)));
+	    assertNotEquals(newMaster, currentMaster);
+	} finally {
+	    j.close();
+	}
 
-	assertNotEquals(newMaster, currentMaster);
     }
 
     @Test
     public void sentinelMonitor() {
 	Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
 
-	// monitor new master
-	String result = j.sentinelMonitor(MONITOR_MASTER_NAME, MASTER_IP,
-		master.getPort(), 1);
-	assertEquals("OK", result);
-
-	// already monitored
 	try {
-	    j.sentinelMonitor(MONITOR_MASTER_NAME, MASTER_IP, master.getPort(),
-		    1);
-	    fail();
-	} catch (JedisDataException e) {
-	    // pass
+	    // monitor new master
+	    String result = j.sentinelMonitor(MONITOR_MASTER_NAME, MASTER_IP,
+		    master.getPort(), 1);
+	    assertEquals("OK", result);
+
+	    // already monitored
+	    try {
+		j.sentinelMonitor(MONITOR_MASTER_NAME, MASTER_IP,
+			master.getPort(), 1);
+		fail();
+	    } catch (JedisDataException e) {
+		// pass
+	    }
+	} finally {
+	    j.close();
 	}
     }
 
@@ -122,19 +135,23 @@ public class JedisSentinelTest extends JedisTestBase {
     public void sentinelRemove() {
 	Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
 
-	ensureMonitored(sentinel, REMOVE_MASTER_NAME, MASTER_IP,
-		master.getPort(), 1);
-
-	String result = j.sentinelRemove(REMOVE_MASTER_NAME);
-	assertEquals("OK", result);
-
-	// not exist
 	try {
-	    result = j.sentinelRemove(REMOVE_MASTER_NAME);
-	    assertNotEquals("OK", result);
-	    fail();
-	} catch (JedisDataException e) {
-	    // pass
+	    ensureMonitored(sentinel, REMOVE_MASTER_NAME, MASTER_IP,
+		    master.getPort(), 1);
+
+	    String result = j.sentinelRemove(REMOVE_MASTER_NAME);
+	    assertEquals("OK", result);
+
+	    // not exist
+	    try {
+		result = j.sentinelRemove(REMOVE_MASTER_NAME);
+		assertNotEquals("OK", result);
+		fail();
+	    } catch (JedisDataException e) {
+		// pass
+	    }
+	} finally {
+	    j.close();
 	}
     }
 
@@ -142,24 +159,29 @@ public class JedisSentinelTest extends JedisTestBase {
     public void sentinelSet() {
 	Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
 
-	Map<String, String> parameterMap = new HashMap<String, String>();
-	parameterMap.put("down-after-milliseconds", String.valueOf(1234));
-	parameterMap.put("parallel-syncs", String.valueOf(3));
-	parameterMap.put("quorum", String.valueOf(2));
-	j.sentinelSet(MASTER_NAME, parameterMap);
+	try {
+	    Map<String, String> parameterMap = new HashMap<String, String>();
+	    parameterMap.put("down-after-milliseconds", String.valueOf(1234));
+	    parameterMap.put("parallel-syncs", String.valueOf(3));
+	    parameterMap.put("quorum", String.valueOf(2));
+	    j.sentinelSet(MASTER_NAME, parameterMap);
 
-	List<Map<String, String>> masters = j.sentinelMasters();
-	for (Map<String, String> master : masters) {
-	    if (master.get("name").equals(MASTER_NAME)) {
-		assertEquals(1234,
-			Integer.parseInt(master.get("down-after-milliseconds")));
-		assertEquals(3, Integer.parseInt(master.get("parallel-syncs")));
-		assertEquals(2, Integer.parseInt(master.get("quorum")));
+	    List<Map<String, String>> masters = j.sentinelMasters();
+	    for (Map<String, String> master : masters) {
+		if (master.get("name").equals(MASTER_NAME)) {
+		    assertEquals(1234, Integer.parseInt(master
+			    .get("down-after-milliseconds")));
+		    assertEquals(3,
+			    Integer.parseInt(master.get("parallel-syncs")));
+		    assertEquals(2, Integer.parseInt(master.get("quorum")));
+		}
 	    }
-	}
 
-	parameterMap.put("quorum", String.valueOf(1));
-	j.sentinelSet(MASTER_NAME, parameterMap);
+	    parameterMap.put("quorum", String.valueOf(1));
+	    j.sentinelSet(MASTER_NAME, parameterMap);
+	} finally {
+	    j.close();
+	}
     }
 
     private void ensureMonitored(HostAndPort sentinel, String masterName,
@@ -168,6 +190,8 @@ public class JedisSentinelTest extends JedisTestBase {
 	try {
 	    j.sentinelMonitor(masterName, ip, port, quorum);
 	} catch (JedisDataException e) {
+	} finally {
+	    j.close();
 	}
     }
 
@@ -176,6 +200,9 @@ public class JedisSentinelTest extends JedisTestBase {
 	try {
 	    j.sentinelRemove(masterName);
 	} catch (JedisDataException e) {
+	} finally {
+	    j.close();
 	}
     }
+    
 }

@@ -155,7 +155,7 @@ public class ShardedJedisPoolTest extends Assert {
 	// items on one shard
 	// alter shard 1 and recreate pool
 	pool.destroy();
-	shards.set(1, new JedisShardInfo("nohost", 1234));
+	shards.set(1, new JedisShardInfo("localhost", 1234));
 	pool = new ShardedJedisPool(redisConfig, shards);
 	jedis = pool.getResource();
 	Long actual = Long.valueOf(0);

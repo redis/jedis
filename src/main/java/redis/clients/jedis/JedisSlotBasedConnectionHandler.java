@@ -40,7 +40,7 @@ public class JedisSlotBasedConnectionHandler extends
 	    connectionPool = getRandomConnection();
 	}
 	currentConnection = connectionPool.getResource();
-	return connectionPool.getResource();
+	return currentConnection;
     }
 
 }

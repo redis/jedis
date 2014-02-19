@@ -230,6 +230,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		j = new Jedis(host, port);
 
 		try {
+		    initPool(toHostAndPort(j.sentinelGetMasterAddrByName(masterName)));
 		    j.subscribe(new JedisPubSubAdapter() {
 			@Override
 			public void onMessage(String channel, String message) {

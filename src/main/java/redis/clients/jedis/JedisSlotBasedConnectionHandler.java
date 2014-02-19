@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import java.util.Set;
 
 public class JedisSlotBasedConnectionHandler extends
@@ -7,8 +9,9 @@ public class JedisSlotBasedConnectionHandler extends
 
     private Jedis currentConnection;
 
-    public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes) {
-	super(nodes);
+    public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+        final GenericObjectPoolConfig poolConfig) {
+	super(nodes, poolConfig);
     }
 
     public Jedis getConnection() {

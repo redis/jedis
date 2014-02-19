@@ -3,6 +3,8 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import java.util.Set;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -10,8 +12,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class JedisSlotBasedConnectionHandler extends
 	JedisClusterConnectionHandler {
 
-    public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes) {
-	super(nodes);
+    public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+        final GenericObjectPoolConfig poolConfig) {
+	super(nodes, poolConfig);
     }
 
     public Jedis getConnection() {

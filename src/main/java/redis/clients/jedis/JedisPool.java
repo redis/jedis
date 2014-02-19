@@ -8,6 +8,10 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.util.Pool;
 
 public class JedisPool extends Pool<Jedis> {
+    
+    private final String hostName;
+    private final int port;
+    private final int timeout;
 
     public JedisPool(final GenericObjectPoolConfig poolConfig, final String host) {
 	this(poolConfig, host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
@@ -22,29 +26,34 @@ public class JedisPool extends Pool<Jedis> {
     public JedisPool(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
-	    String h = uri.getHost();
-	    int port = uri.getPort();
+	    this.hostName = uri.getHost();
+	    this.port = uri.getPort();
+            this.timeout = Protocol.DEFAULT_TIMEOUT;
 	    String password = uri.getUserInfo().split(":", 2)[1];
 	    int database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
 	    this.internalPool = new GenericObjectPool<Jedis>(
-		    new JedisFactory(h, port, Protocol.DEFAULT_TIMEOUT,
+		    new JedisFactory(this.hostName, this.port, this.timeout,
 			    password, database, null),
 		    new GenericObjectPoolConfig());
 	} else {
+            this.hostName = host;
+	    this.port = Protocol.DEFAULT_PORT;
+            this.timeout = Protocol.DEFAULT_TIMEOUT;
 	    this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(
-		    host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
+		    this.hostName, this.port, this.timeout,
 		    null, Protocol.DEFAULT_DATABASE, null),
 		    new GenericObjectPoolConfig());
 	}
     }
 
     public JedisPool(final URI uri) {
-	String h = uri.getHost();
-	int port = uri.getPort();
+	this.hostName = uri.getHost();
+	this.port = uri.getPort();
+        this.timeout = Protocol.DEFAULT_TIMEOUT;
 	String password = uri.getUserInfo().split(":", 2)[1];
 	int database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
-	this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h,
-		port, Protocol.DEFAULT_TIMEOUT, password, database, null),
+	this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(
+                this.hostName, this.port, this.timeout, password, database, null),
 		new GenericObjectPoolConfig());
     }
 
@@ -77,6 +86,9 @@ public class JedisPool extends Pool<Jedis> {
 	    final int database, final String clientName) {
 	super(poolConfig, new JedisFactory(host, port, timeout, password,
 		database, clientName));
+        this.hostName = host;
+        this.port = port;
+        this.timeout = timeout;
     }
 
     public void returnBrokenResource(final Jedis resource) {
@@ -86,5 +98,26 @@ public class JedisPool extends Pool<Jedis> {
     public void returnResource(final Jedis resource) {
 	resource.resetState();
 	returnResourceObject(resource);
+    }
+
+    /**
+     * @return the hostName
+     */
+    public String getHostName() {
+        return hostName;
+    }
+
+    /**
+     * @return the port
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * @return the timeout
+     */
+    public int getTimeout() {
+        return timeout;
     }
 }

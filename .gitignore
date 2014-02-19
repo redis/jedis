@@ -9,3 +9,6 @@ target/
 build/
 bin/
 tags
+.idea
+*.aof
+*.rdb

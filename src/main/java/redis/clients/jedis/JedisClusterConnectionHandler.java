@@ -11,6 +11,13 @@ public abstract class JedisClusterConnectionHandler {
     protected Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
     abstract Jedis getConnection();
+    
+    protected void returnConnection(Jedis connection) {
+	nodes.get(
+		connection.getClient().getHost()
+			+ connection.getClient().getPort()).returnResource(
+		connection);
+    }
 
     abstract Jedis getConnectionFromSlot(int slot);
 

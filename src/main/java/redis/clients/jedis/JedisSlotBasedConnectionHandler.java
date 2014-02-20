@@ -16,7 +16,6 @@ public class JedisSlotBasedConnectionHandler extends
     @Override
     public void assignSlotToNode(int slot, HostAndPort targetNode) {
 	super.assignSlotToNode(slot, targetNode);
-	getConnectionFromSlot(slot);
     }
 
     @Override
@@ -25,7 +24,7 @@ public class JedisSlotBasedConnectionHandler extends
 	if (connectionPool == null) {
 	    connectionPool = getRandomConnection();
 	}
-	return  connectionPool.getResource();
+	return connectionPool.getResource();
     }
 
 }

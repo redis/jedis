@@ -23,9 +23,10 @@ public abstract class JedisClusterCommand<T> {
 	this.redirections = maxRedirections;
     }
 
-    public abstract T execute();
+    public abstract T execute(Jedis connection);
 
     public T run(String key) {
+	Jedis connection = null;
 	try {
 
 	    if (key == null) {
@@ -35,16 +36,20 @@ public abstract class JedisClusterCommand<T> {
 		throw new JedisClusterMaxRedirectionsException(
 			"Too many Cluster redirections?");
 	    }
-	    connectionHandler.getConnectionFromSlot(JedisClusterCRC16
+	    connection = connectionHandler.getConnectionFromSlot(JedisClusterCRC16
 		    .getSlot(key));
 	    if (asking) {
 		// TODO: Pipeline asking with the original command to make it
 		// faster....
-		connectionHandler.getConnection().asking();
+		connection.asking();
 	    }
-	    return execute();
+	    return execute(connection);
 	} catch (JedisRedirectionException jre) {
 	    return handleRedirection(jre, key);
+	} finally {
+	    if (connection != null) {
+		connectionHandler.returnConnection(connection);
+	    }
 	}
     }
 

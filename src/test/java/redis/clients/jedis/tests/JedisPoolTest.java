@@ -27,6 +27,21 @@ public class JedisPoolTest extends Assert {
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
 	pool.destroy();
+	assertTrue(pool.isClosed());
+    }
+
+    @Test
+    public void checkCloseableConnections() throws Exception {
+	Closer closer = new Closer();
+	JedisPool pool = closer.register(new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		     hnp.getPort(), 2000));
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
+	pool.returnResource(jedis);
+	closer.close();
+	assertTrue(pool.isClosed());
     }
 
     @Test
@@ -39,6 +54,7 @@ public class JedisPoolTest extends Assert {
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
 	pool.destroy();
+	assertTrue(pool.isClosed());
     }
 
     @Test
@@ -56,6 +72,7 @@ public class JedisPoolTest extends Assert {
 	jedis.incr("foo");
 	pool.returnResource(jedis);
 	pool.destroy();
+	assertTrue(pool.isClosed());
     }
 
     @Test
@@ -72,6 +89,7 @@ public class JedisPoolTest extends Assert {
 	jedis.incr("foo");
 	pool.returnResource(jedis);
 	pool.destroy();
+	assertTrue(pool.isClosed());
     }
 
     @Test(expected = JedisConnectionException.class)
@@ -99,6 +117,7 @@ public class JedisPoolTest extends Assert {
 	jedis.set("foo", "bar");
 	pool.returnResource(jedis);
 	pool.destroy();
+	assertTrue(pool.isClosed());
     }
 
     @Test
@@ -110,6 +129,7 @@ public class JedisPoolTest extends Assert {
 	assertEquals("bar", jedis0.get("foo"));
 	pool0.returnResource(jedis0);
 	pool0.destroy();
+	assertTrue(pool0.isClosed());
 
 	JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
 		hnp.getPort(), 2000, "foobared", 1);
@@ -117,6 +137,7 @@ public class JedisPoolTest extends Assert {
 	assertNull(jedis1.get("foo"));
 	pool1.returnResource(jedis1);
 	pool1.destroy();
+	assertTrue(pool1.isClosed());
     }
 
     @Test
@@ -163,6 +184,7 @@ public class JedisPoolTest extends Assert {
 
 	pool.returnResource(jedis1);
 	pool.destroy();
+	assertTrue(pool.isClosed());
     }
 
     @Test
@@ -176,6 +198,7 @@ public class JedisPoolTest extends Assert {
 
 	pool0.returnResource(jedis);
 	pool0.destroy();
+	assertTrue(pool0.isClosed());
     }
 
     @Test
@@ -204,6 +227,7 @@ public class JedisPoolTest extends Assert {
 	}
 
 	pool.destroy();
+	assertTrue(pool.isClosed());
     }
 
     @Test

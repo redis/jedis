@@ -187,15 +187,45 @@ public class JedisPoolTest extends Assert {
 		2000, "foobared");
 
 	Jedis jedis = pool.getResource();
-	jedis.set("hello", "jedis");
-	Transaction t = jedis.multi();
-	t.set("hello", "world");
-	pool.returnResource(jedis);
+	try {
+	    jedis.set("hello", "jedis");
+	    Transaction t = jedis.multi();
+	    t.set("hello", "world");
+	} finally {
+	    jedis.close();
+	}
 
 	Jedis jedis2 = pool.getResource();
-	assertTrue(jedis == jedis2);
-	assertEquals("jedis", jedis2.get("hello"));
-	pool.returnResource(jedis2);
+	try {
+	    assertTrue(jedis == jedis2);
+	    assertEquals("jedis", jedis2.get("hello"));
+	} finally {
+	    jedis2.close();
+	}
+
 	pool.destroy();
+    }
+
+    @Test
+    public void checkResourceIsCloseable() {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+	JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(),
+		2000, "foobared");
+
+	Jedis jedis = pool.getResource();
+	try {
+	    jedis.set("hello", "jedis");
+	} finally {
+	    jedis.close();
+	}
+
+	Jedis jedis2 = pool.getResource();
+	try {
+	    assertEquals(jedis, jedis2);
+	} finally {
+	    jedis2.close();
+	}
     }
 }

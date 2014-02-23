@@ -12,12 +12,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands,
 	MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands,
 	BasicCommands, ClusterCommands {
+
+    protected Pool<Jedis> dataSource = null;
+
     public Jedis(final String host) {
 	super(host);
     }
@@ -3256,11 +3260,11 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	}
 	return new ScanResult<Tuple>(newcursor, results);
     }
-    
+
     public ScanResult<String> scan(final String cursor) {
 	return scan(cursor, new ScanParams());
     }
-    
+
     public ScanResult<String> scan(final String cursor, final ScanParams params) {
 	checkIsInMulti();
 	client.scan(cursor, params);
@@ -3273,12 +3277,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	}
 	return new ScanResult<String>(newcursor, results);
     }
-    
+
     public ScanResult<Map.Entry<String, String>> hscan(final String key,
 	    final String cursor) {
 	return hscan(key, cursor, new ScanParams());
     }
-    
+
     public ScanResult<Map.Entry<String, String>> hscan(final String key,
 	    final String cursor, final ScanParams params) {
 	checkIsInMulti();
@@ -3291,15 +3295,15 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	while (iterator.hasNext()) {
 	    results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder
 		    .encode(iterator.next()), SafeEncoder.encode(iterator
-			    .next())));
+		    .next())));
 	}
 	return new ScanResult<Map.Entry<String, String>>(newcursor, results);
     }
-    
+
     public ScanResult<String> sscan(final String key, final String cursor) {
 	return sscan(key, cursor, new ScanParams());
     }
-    
+
     public ScanResult<String> sscan(final String key, final String cursor,
 	    final ScanParams params) {
 	checkIsInMulti();
@@ -3313,11 +3317,11 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	}
 	return new ScanResult<String>(newcursor, results);
     }
-    
+
     public ScanResult<Tuple> zscan(final String key, final String cursor) {
 	return zscan(key, cursor, new ScanParams());
     }
-    
+
     public ScanResult<Tuple> zscan(final String key, final String cursor,
 	    final ScanParams params) {
 	checkIsInMulti();
@@ -3411,5 +3415,22 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.pubsubNumSub(channels);
 	return BuilderFactory.STRING_MAP
 		.build(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public void close() {
+	if (dataSource != null) {
+	    if (client.isBroken()) {
+		this.dataSource.returnBrokenResource(this);
+	    } else {
+		this.dataSource.returnResource(this);
+	    }
+	} else {
+	    client.close();
+	}
+    }
+
+    public void setDataSource(Pool<Jedis> jedisPool) {
+	this.dataSource = jedisPool;
     }
 }

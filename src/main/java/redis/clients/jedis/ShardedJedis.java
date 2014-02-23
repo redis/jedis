@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,8 +9,13 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
+import redis.clients.util.Pool;
 
-public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
+public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
+	Closeable {
+
+    protected Pool<ShardedJedis> dataSource = null;
+
     public ShardedJedis(List<JedisShardInfo> shards) {
 	super(shards);
     }
@@ -555,19 +561,53 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.zscan(key, cursor);
     }
-    
-    public ScanResult<Entry<String, String>> hscan(String key, final String cursor) {
+
+    public ScanResult<Entry<String, String>> hscan(String key,
+	    final String cursor) {
 	Jedis j = getShard(key);
 	return j.hscan(key, cursor);
     }
-    
+
     public ScanResult<String> sscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.sscan(key, cursor);
     }
-    
+
     public ScanResult<Tuple> zscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.zscan(key, cursor);
+    }
+
+    @Override
+    public void close() {
+	if (dataSource != null) {
+	    boolean broken = false;
+
+	    for (Jedis jedis : getAllShards()) {
+		if (jedis.getClient().isBroken()) {
+		    broken = true;
+		}
+	    }
+
+	    if (broken) {
+		dataSource.returnBrokenResource(this);
+	    } else {
+		this.resetState();
+		dataSource.returnResource(this);
+	    }
+
+	} else {
+	    disconnect();
+	}
+    }
+
+    public void setDataSource(Pool<ShardedJedis> shardedJedisPool) {
+	this.dataSource = shardedJedisPool;
+    }
+
+    public void resetState() {
+	for (Jedis jedis : getAllShards()) {
+	    jedis.resetState();
+	}
     }
 }

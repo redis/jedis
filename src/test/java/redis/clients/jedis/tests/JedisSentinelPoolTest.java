@@ -79,6 +79,29 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    pool.destroy();
 	}
     }
+    
+    @Test
+    public void checkResourceIsCloseable() {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+		config, 1000, "foobared", 2);
+
+	Jedis jedis = pool.getResource();
+	try {
+	    jedis.set("hello", "jedis");
+	} finally {
+	    jedis.close();
+	}
+
+	Jedis jedis2 = pool.getResource();
+	try {
+	    assertEquals(jedis, jedis2);
+	} finally {
+	    jedis2.close();
+	}
+    }
 
     private void forceFailover(JedisSentinelPool pool)
 	    throws InterruptedException {

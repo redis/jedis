@@ -302,4 +302,25 @@ public class ShardedJedisTest extends Assert {
 	    assertEquals(jedisShardInfo.getName(), jedisShardInfo2.getName());
 	}
     }
+
+    @Test
+    public void checkCloseable() {
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
+	shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
+	shards.get(0).setPassword("foobared");
+	shards.get(1).setPassword("foobared");
+
+	ShardedJedis jedisShard = new ShardedJedis(shards);
+	try {
+	    jedisShard.set("shard_closeable", "true");
+	} finally {
+	    jedisShard.close();
+	}
+
+	for (Jedis jedis : jedisShard.getAllShards()) {
+	    assertTrue(!jedis.isConnected());
+	}
+    }
+
 }

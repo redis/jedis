@@ -1707,9 +1707,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public List<Object> multi(final TransactionBlock jedisTransaction) {
 	List<Object> results = null;
 	jedisTransaction.setClient(client);
-    client.multi();
-    jedisTransaction.execute();
-    results = jedisTransaction.exec();
+	client.multi();
+	jedisTransaction.execute();
+	results = jedisTransaction.exec();
 	return results;
     }
 
@@ -1729,8 +1729,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     public void resetState() {
-	client.resetState();
-	client.getAll();
+	if (client.isConnected()) {
+	    client.resetState();
+	    client.getAll();
+	}
     }
 
     public String watch(final byte[]... keys) {
@@ -1744,7 +1746,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     @Override
-	public void close() {
+    public void close() {
 	client.close();
     }
 

@@ -79,6 +79,13 @@ public class JedisPool extends Pool<Jedis> {
 		database, clientName));
     }
 
+    @Override
+    public Jedis getResource() {
+	Jedis jedis = super.getResource();
+	jedis.setDataSource(this);
+	return jedis;
+    }
+
     public void returnBrokenResource(final Jedis resource) {
 	returnBrokenResourceObject(resource);
     }

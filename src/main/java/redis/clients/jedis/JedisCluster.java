@@ -1129,7 +1129,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    public Long execute(Jedis connection) {
 		return connection.del(key);
 	    }
-	}.run(null);
+	}.run(key);
     }
 
     @Override

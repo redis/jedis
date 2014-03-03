@@ -35,11 +35,19 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
     /**
      * PoolableObjectFactory custom impl.
      */
-    private static class ShardedJedisFactory implements
+    public static class ShardedJedisFactory implements
 	    PooledObjectFactory<ShardedJedis> {
 	private List<JedisShardInfo> shards;
 	private Hashing algo;
 	private Pattern keyTagPattern;
+
+	public List<JedisShardInfo> getShards() {
+		return shards;
+	}
+
+	public void setShards(List<JedisShardInfo> shards) {
+		this.shards = shards;
+	}
 
 	public ShardedJedisFactory(List<JedisShardInfo> shards, Hashing algo,
 		Pattern keyTagPattern) {

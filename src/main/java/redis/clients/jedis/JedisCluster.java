@@ -27,7 +27,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 
     public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout,
 	    int maxRedirections) {
-	this.connectionHandler = new JedisSlotBasedConnectionHandler(
+	this.connectionHandler = new JedisSlotBasedConnectionGuaranteedConnectionHandler(
 		jedisClusterNode);
 	this.timeout = timeout;
 	this.maxRedirections = maxRedirections;

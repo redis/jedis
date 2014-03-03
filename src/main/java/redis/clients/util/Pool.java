@@ -54,11 +54,15 @@ public abstract class Pool<T> {
     }
 
     public void returnBrokenResource(final T resource) {
-	returnBrokenResourceObject(resource);
+	if (resource != null) {
+	    returnBrokenResourceObject(resource);
+	}
     }
 
     public void returnResource(final T resource) {
-	returnResourceObject(resource);
+	if (resource != null) {
+	    returnResourceObject(resource);
+	}
     }
 
     public void destroy() {

@@ -4,6 +4,7 @@ import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -3417,4 +3418,71 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getIntegerReply();
     }
 
+    public ScanResult<byte[]> scan(final byte[] cursor) {
+	return scan(cursor, new ScanParams());
+    }
+    
+    public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
+	checkIsInMulti();
+	client.scan(cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	byte[] newcursor = (byte[]) result.get(0);
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	return new ScanResult<byte[]>(newcursor, rawResults);
+    }
+    
+    public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key,
+	    final byte[] cursor) {
+	return hscan(key, cursor, new ScanParams());
+    }
+    
+    public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key,
+	    final byte[] cursor, final ScanParams params) {
+	checkIsInMulti();
+	client.hscan(key, cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	byte[] newcursor = (byte[]) result.get(0);
+	List<Map.Entry<byte[], byte[]>> results = new ArrayList<Map.Entry<byte[], byte[]>>();
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	Iterator<byte[]> iterator = rawResults.iterator();
+	while (iterator.hasNext()) {
+	    results.add(new AbstractMap.SimpleEntry<byte[], byte[]>(iterator.next(), 
+		    iterator.next()));
+	}
+	return new ScanResult<Map.Entry<byte[], byte[]>>(newcursor, results);
+    }
+    
+    public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor) {
+	return sscan(key, cursor, new ScanParams());
+    }
+    
+    public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor,
+	    final ScanParams params) {
+	checkIsInMulti();
+	client.sscan(key, cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	byte[] newcursor = (byte[]) result.get(0);
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	return new ScanResult<byte[]>(newcursor, rawResults);
+    }
+    
+    public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor) {
+	return zscan(key, cursor, new ScanParams());
+    }
+    
+    public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor,
+	    final ScanParams params) {
+	checkIsInMulti();
+	client.zscan(key, cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	byte[] newcursor = (byte[]) result.get(0);
+	List<Tuple> results = new ArrayList<Tuple>();
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	Iterator<byte[]> iterator = rawResults.iterator();
+	while (iterator.hasNext()) {
+	    results.add(new Tuple(iterator.next(), Double
+		    .valueOf(SafeEncoder.encode(iterator.next()))));
+	}
+	return new ScanResult<Tuple>(newcursor, results);
+    }
 }

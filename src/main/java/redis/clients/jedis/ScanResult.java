@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import java.util.List;
 
+import redis.clients.util.SafeEncoder;
+
 public class ScanResult<T> {
     private String cursor;
     private List<T> results;
@@ -17,6 +19,11 @@ public class ScanResult<T> {
 	this.results = results;
     }
 
+    public ScanResult(byte[] cursor, List<T> results) {
+	this.cursor = SafeEncoder.encode(cursor);
+	this.results = results;
+    }
+    
     public ScanResult(String cursor, List<T> results) {
 	this.cursor = cursor;
 	this.results = results;
@@ -38,6 +45,10 @@ public class ScanResult<T> {
      */
     public String getStringCursor() {
 	return cursor;
+    }
+    
+    public byte[] getBinaryCursor() {
+	return SafeEncoder.encode(cursor);
     }
     
     public List<T> getResult() {

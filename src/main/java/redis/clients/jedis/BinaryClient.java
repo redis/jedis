@@ -1091,7 +1091,7 @@ public class BinaryClient extends Connection {
 	sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
     }
 
-    public void pexpire(final byte[] key, final int milliseconds) {
+    public void pexpire(final byte[] key, final long milliseconds) {
 	sendCommand(PEXPIRE, key, toByteArray(milliseconds));
     }
 

@@ -3314,7 +3314,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getStatusCodeReply();
     }
 
-    public Long pexpire(final byte[] key, final int milliseconds) {
+    public Long pexpire(final byte[] key, final long milliseconds) {
 	checkIsInMulti();
 	client.pexpire(key, milliseconds);
 	return client.getIntegerReply();

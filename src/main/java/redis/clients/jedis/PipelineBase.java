@@ -1080,12 +1080,12 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> pexpire(String key, int milliseconds) {
+    public Response<Long> pexpire(String key, long milliseconds) {
 	getClient(key).pexpire(key, milliseconds);
 	return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> pexpire(byte[] key, int milliseconds) {
+    public Response<Long> pexpire(byte[] key, long milliseconds) {
 	getClient(key).pexpire(key, milliseconds);
 	return getResponse(BuilderFactory.LONG);
     }

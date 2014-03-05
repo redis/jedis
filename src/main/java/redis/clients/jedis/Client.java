@@ -777,11 +777,6 @@ public class Client extends BinaryClient implements Commands {
 	restore(SafeEncoder.encode(key), ttl, serializedValue);
     }
 
-    @Deprecated
-    public void pexpire(final String key, final int milliseconds) {
-	pexpire(key, (long) milliseconds);
-    }
-
     public void pexpire(final String key, final long milliseconds) {
 	pexpire(SafeEncoder.encode(key), milliseconds);
     }

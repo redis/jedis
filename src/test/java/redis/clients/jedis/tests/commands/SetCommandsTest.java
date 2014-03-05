@@ -474,7 +474,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	
 	ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY);
 
-	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getBinaryCursor());
+	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
     }
 
@@ -496,7 +496,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	jedis.sadd(bfoo, bbar1, bbar2, bbar3);
 	ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
-	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getBinaryCursor());
+	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
     }
 

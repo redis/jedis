@@ -45,7 +45,7 @@ public class ScanResult<T> {
 	return SafeEncoder.encode(cursor);
     }
     
-    public byte[] getBinaryCursor() {
+    public byte[] getCursorAsBytes() {
 	return cursor;
     }
     

@@ -3,6 +3,8 @@ package redis.clients.jedis.tests.commands;
 import org.junit.Test;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.Protocol;
 
 public class BitCommandsTest extends JedisCommandTestBase {
     @Test
@@ -18,6 +20,77 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
 	bbit = jedis.getbit("bfoo".getBytes(), 0);
 	assertTrue(bbit);
+    }
+    
+    @Test
+    public void bitpos() {
+	String foo = "foo";
+	
+	jedis.set(foo, String.valueOf(0));
+
+	jedis.setbit(foo, 3, true);
+	jedis.setbit(foo, 7, true);
+	jedis.setbit(foo, 13, true);
+	jedis.setbit(foo, 39, true);
+	
+	/*
+	 * byte:    0          1          2           3          4
+	 * bit:  00010001 / 00000100 / 00000000 / 00000000 / 00000001 
+	 */
+	
+	long offset = jedis.bitpos(foo, true);
+	assertEquals(2, offset);
+	offset = jedis.bitpos(foo, false);
+	assertEquals(0, offset);
+	
+	offset = jedis.bitpos(foo, true, new BitPosParams(1));
+	assertEquals(13, offset);
+	offset = jedis.bitpos(foo, false, new BitPosParams(1));
+	assertEquals(8, offset);
+	
+	offset = jedis.bitpos(foo, true, new BitPosParams(2, 3));
+	assertEquals(-1, offset);
+	offset = jedis.bitpos(foo, false, new BitPosParams(2, 3));
+	assertEquals(16, offset);
+	
+	offset = jedis.bitpos(foo, true, new BitPosParams(3, 4));
+	assertEquals(39, offset);
+    }
+    
+    @Test
+    public void bitposBinary() {
+	// binary
+	byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+	
+	jedis.set(bfoo, Protocol.toByteArray(0));
+
+	jedis.setbit(bfoo, 3, true);
+	jedis.setbit(bfoo, 7, true);
+	jedis.setbit(bfoo, 13, true);
+	jedis.setbit(bfoo, 39, true);
+	
+	/*
+	 * byte:    0          1          2           3          4
+	 * bit:  00010001 / 00000100 / 00000000 / 00000000 / 00000001 
+	 */
+	
+	long offset = jedis.bitpos(bfoo, true);
+	assertEquals(2, offset);
+	offset = jedis.bitpos(bfoo, false);
+	assertEquals(0, offset);
+	
+	offset = jedis.bitpos(bfoo, true, new BitPosParams(1));
+	assertEquals(13, offset);
+	offset = jedis.bitpos(bfoo, false, new BitPosParams(1));
+	assertEquals(8, offset);
+	
+	offset = jedis.bitpos(bfoo, true, new BitPosParams(2, 3));
+	assertEquals(-1, offset);
+	offset = jedis.bitpos(bfoo, false, new BitPosParams(2, 3));
+	assertEquals(16, offset);
+	
+	offset = jedis.bitpos(bfoo, true, new BitPosParams(3, 4));
+	assertEquals(39, offset);
     }
 
     @Test

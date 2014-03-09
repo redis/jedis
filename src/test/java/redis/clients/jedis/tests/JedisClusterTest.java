@@ -209,6 +209,10 @@ public class JedisClusterTest extends Assert {
 	assertNodeIsKnown(node2, node4Id, 1000);
 	assertNodeIsKnown(node1, node4Id, 1000);
 	
+	assertEquals(4, node1.clusterNodes().split("\n").length);
+	assertEquals(4, node2.clusterNodes().split("\n").length);
+	assertEquals(4, node3.clusterNodes().split("\n").length);
+	
 	// do cluster forget
         node1.clusterForget(node4Id);
         node2.clusterForget(node4Id);
@@ -217,6 +221,10 @@ public class JedisClusterTest extends Assert {
         assertNodeIsUnknown(node1, node4Id, 1000);
         assertNodeIsUnknown(node2, node4Id, 1000);
         assertNodeIsUnknown(node3, node4Id, 1000);
+        
+        assertEquals(3, node1.clusterNodes().split("\n").length);
+        assertEquals(3, node2.clusterNodes().split("\n").length);
+        assertEquals(3, node3.clusterNodes().split("\n").length);
     }
     
     @Test

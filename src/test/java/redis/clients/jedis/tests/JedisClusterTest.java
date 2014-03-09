@@ -26,17 +26,11 @@ public class JedisClusterTest extends Assert {
     private Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
-    private static Jedis node4;
-    private static Jedis node5;
-    private static Jedis node6;
     private static Jedis node7;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-    private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
-    private HostAndPort nodeInfo5 = HostAndPortUtil.getClusterServers().get(4);
-    private HostAndPort nodeInfo6 = HostAndPortUtil.getClusterServers().get(5);
     private HostAndPort nodeInfo7 = HostAndPortUtil.getClusterServers().get(6);
     
     @Before

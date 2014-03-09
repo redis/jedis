@@ -259,6 +259,9 @@ stop:
 	kill `cat /tmp/redis_cluster_node2.pid` || true
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	kill `cat /tmp/redis_cluster_node4.pid` || true
+	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_cluster_node6.pid` || true
+	kill `cat /tmp/redis_cluster_node7.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf

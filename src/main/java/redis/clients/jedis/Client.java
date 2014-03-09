@@ -951,4 +951,8 @@ public class Client extends BinaryClient implements Commands {
 	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
 		Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
     }
+
+    public void clusterForget(final String nodeId) {
+	cluster(Protocol.CLUSTER_FORGET, nodeId);
+    }
 }

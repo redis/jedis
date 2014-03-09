@@ -20,4 +20,6 @@ public interface ClusterCommands {
     String clusterSetSlotMigrating(final int slot, final String nodeId);
 
     String clusterSetSlotImporting(final int slot, final String nodeId);
+    
+    String clusterForget(final String nodeId);
 }

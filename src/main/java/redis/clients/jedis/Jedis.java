@@ -3387,6 +3387,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterSetSlotImporting(slot, nodeId);
 	return client.getStatusCodeReply();
     }
+    
+    public String clusterForget(final String nodeId) {
+	checkIsInMulti();
+	client.clusterForget(nodeId);
+	return client.getStatusCodeReply();
+    }
 
     public String asking() {
 	checkIsInMulti();
@@ -3412,4 +3418,5 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return BuilderFactory.STRING_MAP
 		.build(client.getBinaryMultiBulkReply());
     }
+
 }

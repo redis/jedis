@@ -15,6 +15,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.util.JedisClusterCRC16;
 
@@ -22,10 +23,12 @@ public class JedisClusterTest extends Assert {
     private Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
+    private static Jedis node4;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
+    private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
     
     @Before
     public void setUp() throws InterruptedException {
@@ -40,6 +43,10 @@ public class JedisClusterTest extends Assert {
 	node3 = new Jedis(nodeInfo3.getHost(), nodeInfo3.getPort());
 	node3.connect();
 	node3.flushAll();
+	
+	node4 = new Jedis(nodeInfo4.getHost(), nodeInfo4.getPort());
+	node4.connect();
+	node4.flushAll();
 
 	// ---- configure cluster
 
@@ -86,9 +93,12 @@ public class JedisClusterTest extends Assert {
 	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
 	    slotsToDelete[i] = i;
 	}
+	
 	node1.clusterDelSlots(slotsToDelete);
 	node2.clusterDelSlots(slotsToDelete);
 	node3.clusterDelSlots(slotsToDelete);
+	
+	// TODO: use cluster flushslots
     }
 
     @Test(expected = JedisMovedDataException.class)
@@ -190,6 +200,27 @@ public class JedisClusterTest extends Assert {
 	assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
     }
 
+    @Test
+    public void testClusterForgetNode() throws InterruptedException {
+	// at first, join node4 to cluster
+	node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+	
+	String node4Id = getNodeId(node4.clusterNodes());
+	
+	assertNodeIsKnown(node3, node4Id, 1000);
+	assertNodeIsKnown(node2, node4Id, 1000);
+	assertNodeIsKnown(node1, node4Id, 1000);
+	
+	// do cluster forget
+        node1.clusterForget(node4Id);
+        node2.clusterForget(node4Id);
+        node3.clusterForget(node4Id);
+        
+        assertNodeIsUnknown(node1, node4Id, 1000);
+        assertNodeIsUnknown(node2, node4Id, 1000);
+        assertNodeIsUnknown(node3, node4Id, 1000);
+    }
+    
     private static String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
 	    if (infoLine.contains("myself")) {
@@ -209,6 +240,41 @@ public class JedisClusterTest extends Assert {
 	    }
 	    Thread.sleep(50);
 	}
+    }
+    
+    private void assertNodeIsKnown(Jedis node, String targetNodeId, int timeoutMs) {
+	assertNodeRecognizedStatus(node, targetNodeId, true, timeoutMs);
+    }
+
+    private void assertNodeIsUnknown(Jedis node, String targetNodeId, int timeoutMs) {
+	assertNodeRecognizedStatus(node, targetNodeId, false, timeoutMs);
+    }
+    
+    private void assertNodeRecognizedStatus(Jedis node, String targetNodeId, boolean shouldRecognized, int timeoutMs) {
+	int sleepInterval = 100;
+	for (int sleepTime = 0 ; sleepTime <= timeoutMs ; sleepTime += sleepInterval) {
+	    boolean known = isKnownNode(node, targetNodeId);
+	    if (shouldRecognized == known)
+		return;
+	    
+	    try {
+		Thread.sleep(sleepInterval);
+	    } catch (InterruptedException e) {
+	    }
+	}
+	
+	throw new JedisException("Node recognize check error");
+
+    }
+    
+    private static boolean isKnownNode(Jedis node, String nodeId) {
+	String infoOutput = node.clusterNodes();
+	for (String infoLine : infoOutput.split("\n")) {
+	    if (infoLine.contains(nodeId)) {
+		return true;
+	    }
+	}
+	return false;
     }
     
 }

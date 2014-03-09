@@ -3417,6 +3417,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterCountKeysInSlot(slot);
 	return client.getIntegerReply();
     }
+    
+    public String clusterSaveConfig() {
+	checkIsInMulti();
+	client.clusterSaveConfig();
+	return client.getStatusCodeReply();
+    }
 
     public String asking() {
 	checkIsInMulti();

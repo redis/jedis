@@ -973,4 +973,8 @@ public class Client extends BinaryClient implements Commands {
 	cluster(Protocol.CLUSTER_COUNTKEYINSLOT, String.valueOf(slot));
     }
 
+    public void clusterSaveConfig() {
+	cluster(Protocol.CLUSTER_SAVECONFIG);
+    }
+
 }

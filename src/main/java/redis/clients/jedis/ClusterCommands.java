@@ -30,4 +30,6 @@ public interface ClusterCommands {
     Long clusterKeySlot(final String key);
     
     Long clusterCountKeysInSlot(final int slot);
+    
+    String clusterSaveConfig();
 }

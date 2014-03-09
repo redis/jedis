@@ -22,4 +22,6 @@ public interface ClusterCommands {
     String clusterSetSlotImporting(final int slot, final String nodeId);
     
     String clusterForget(final String nodeId);
+    
+    String clusterFlushSlots();
 }

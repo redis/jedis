@@ -955,4 +955,8 @@ public class Client extends BinaryClient implements Commands {
     public void clusterForget(final String nodeId) {
 	cluster(Protocol.CLUSTER_FORGET, nodeId);
     }
+
+    public void clusterFlushSlots() {
+	cluster(Protocol.CLUSTER_FLUSHSLOT);
+    }
 }

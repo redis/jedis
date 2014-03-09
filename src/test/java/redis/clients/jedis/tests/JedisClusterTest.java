@@ -87,7 +87,7 @@ public class JedisClusterTest extends Assert {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
 	// clear all slots
 	int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
 	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
@@ -97,8 +97,6 @@ public class JedisClusterTest extends Assert {
 	node1.clusterDelSlots(slotsToDelete);
 	node2.clusterDelSlots(slotsToDelete);
 	node3.clusterDelSlots(slotsToDelete);
-	
-	// TODO: use cluster flushslots
     }
 
     @Test(expected = JedisMovedDataException.class)
@@ -221,6 +219,26 @@ public class JedisClusterTest extends Assert {
         assertNodeIsUnknown(node3, node4Id, 1000);
     }
     
+    @Test
+    public void testClusterFlushSlots() {
+	String slotRange = getNodeServingSlotRange(node1.clusterNodes()); 
+	assertNotNull(slotRange);
+	
+	try {
+	    node1.clusterFlushSlots();
+	    assertNull(getNodeServingSlotRange(node1.clusterNodes()));
+	} finally {
+	    // rollback
+	    String[] rangeInfo = slotRange.split("-");
+	    int lower = Integer.parseInt(rangeInfo[0]);
+	    int upper = Integer.parseInt(rangeInfo[1]);
+	    
+	    for ( ; lower <= upper ; lower++) {
+		node1.clusterAddSlots(lower);
+	    }
+	}
+    }
+    
     private static String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
 	    if (infoLine.contains("myself")) {
@@ -228,6 +246,20 @@ public class JedisClusterTest extends Assert {
 	    }
 	}
 	return "";
+    }
+    
+    private static String getNodeServingSlotRange(String infoOutput) {
+	// f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0 1394372400827 0 connected 5461-10922
+	for (String infoLine : infoOutput.split("\n")) {
+	    if (infoLine.contains("myself")) {
+		try {
+		    return infoLine.split(" ")[8];
+		} catch (ArrayIndexOutOfBoundsException e) {
+		    return null;
+		}
+	    }
+	}
+	return null;
     }
 
     private void waitForClusterReady() throws InterruptedException {

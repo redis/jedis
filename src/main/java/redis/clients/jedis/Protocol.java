@@ -51,6 +51,7 @@ public final class Protocol {
     public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
     public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
     public static final String CLUSTER_FORGET = "forget";
+    public static final String CLUSTER_FLUSHSLOT = "flushslots";
     public static final String PUBSUB_CHANNELS= "channels";
     public static final String PUBSUB_NUMSUB = "numsub";
     public static final String PUBSUB_NUM_PAT = "numpat";

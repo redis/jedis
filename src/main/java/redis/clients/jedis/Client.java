@@ -952,6 +952,11 @@ public class Client extends BinaryClient implements Commands {
 		Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
     }
 
+    public void clusterSetSlotStable(final int slot) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
+		Protocol.CLUSTER_SETSLOT_STABLE);
+    }
+    
     public void clusterForget(final String nodeId) {
 	cluster(Protocol.CLUSTER_FORGET, nodeId);
     }
@@ -967,4 +972,5 @@ public class Client extends BinaryClient implements Commands {
     public void clusterCountKeysInSlot(final int slot) {
 	cluster(Protocol.CLUSTER_COUNTKEYINSLOT, String.valueOf(slot));
     }
+
 }

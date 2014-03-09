@@ -269,6 +269,28 @@ public class JedisClusterTest extends Assert {
 	assertEquals(5, node1.clusterCountKeysInSlot(slot).intValue());
     }
     
+    @Test
+    public void testStableSlotWhenMigratingNodeOrImportingNodeIsNotSpecified() throws InterruptedException {
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	int slot51 = JedisClusterCRC16.getSlot("51");
+	
+	// node2 is responsible of taking care of slot51 (7186)
+	
+	node3.clusterSetSlotImporting(slot51, getNodeId(node2.clusterNodes()));
+	jc.set("51", "foo");
+	assertEquals("foo", jc.get("51"));
+	node3.clusterSetSlotStable(slot51);
+	assertEquals("foo", jc.get("51"));
+	
+	node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
+	jc.set("51", "foo");
+	assertEquals("foo", jc.get("51"));
+	node2.clusterSetSlotStable(slot51);
+	assertEquals("foo", jc.get("51"));
+    }
+    
     private static String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
 	    if (infoLine.contains("myself")) {

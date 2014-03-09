@@ -50,6 +50,7 @@ public final class Protocol {
     public static final String CLUSTER_SETSLOT_NODE = "node";
     public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
     public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
+    public static final String CLUSTER_SETSLOT_STABLE = "stable";
     public static final String CLUSTER_FORGET = "forget";
     public static final String CLUSTER_FLUSHSLOT = "flushslots";
     public static final String CLUSTER_KEYSLOT = "keyslot";

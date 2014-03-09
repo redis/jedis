@@ -3388,6 +3388,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getStatusCodeReply();
     }
     
+    public String clusterSetSlotStable(final int slot) {
+	checkIsInMulti();
+	client.clusterSetSlotStable(slot);
+	return client.getStatusCodeReply();
+    }
+    
     public String clusterForget(final String nodeId) {
 	checkIsInMulti();
 	client.clusterForget(nodeId);

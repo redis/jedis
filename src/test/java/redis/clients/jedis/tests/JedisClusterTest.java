@@ -25,12 +25,12 @@ public class JedisClusterTest extends Assert {
     private Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
-    private static Jedis node4;
+    private static Jedis node7;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-    private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
+    private HostAndPort nodeInfo7 = HostAndPortUtil.getClusterServers().get(6);
     
     @Before
     public void setUp() throws InterruptedException {
@@ -46,9 +46,9 @@ public class JedisClusterTest extends Assert {
 	node3.connect();
 	node3.flushAll();
 	
-	node4 = new Jedis(nodeInfo4.getHost(), nodeInfo4.getPort());
-	node4.connect();
-	node4.flushAll();
+	node7 = new Jedis(nodeInfo7.getHost(), nodeInfo7.getPort());
+	node7.connect();
+	node7.flushAll();
 
 	// ---- configure cluster
 
@@ -214,9 +214,9 @@ public class JedisClusterTest extends Assert {
     @Test
     public void testClusterForgetNode() throws InterruptedException {
 	// at first, join node4 to cluster
-	node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+	node1.clusterMeet("127.0.0.1", nodeInfo7.getPort());
 	
-	String node4Id = getNodeId(node4.clusterNodes());
+	String node4Id = getNodeId(node7.clusterNodes());
 	
 	assertNodeIsKnown(node3, node4Id, 1000);
 	assertNodeIsKnown(node2, node4Id, 1000);

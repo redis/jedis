@@ -3399,6 +3399,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterFlushSlots();
 	return client.getStatusCodeReply();
     }
+    
+    public Long clusterKeySlot(final String key) {
+	checkIsInMulti();
+	client.clusterKeySlot(key);
+	return client.getIntegerReply();
+    }
 
     public String asking() {
 	checkIsInMulti();

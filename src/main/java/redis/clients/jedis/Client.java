@@ -959,4 +959,8 @@ public class Client extends BinaryClient implements Commands {
     public void clusterFlushSlots() {
 	cluster(Protocol.CLUSTER_FLUSHSLOT);
     }
+
+    public void clusterKeySlot(final String key) {
+	cluster(Protocol.CLUSTER_KEYSLOT, key);
+    }
 }

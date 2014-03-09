@@ -24,4 +24,6 @@ public interface ClusterCommands {
     String clusterForget(final String nodeId);
     
     String clusterFlushSlots();
+    
+    Long clusterKeySlot(final String key);
 }

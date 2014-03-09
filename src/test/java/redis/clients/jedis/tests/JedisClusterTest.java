@@ -241,10 +241,18 @@ public class JedisClusterTest extends Assert {
 	    int lower = Integer.parseInt(rangeInfo[0]);
 	    int upper = Integer.parseInt(rangeInfo[1]);
 	    
+	    // FIXME: make it faster
 	    for ( ; lower <= upper ; lower++) {
 		node1.clusterAddSlots(lower);
 	    }
 	}
+    }
+    
+    @Test
+    public void testClusterKeySlot() {
+	// It assumes JedisClusterCRC16 is correctly implemented
+	assertEquals(node1.clusterKeySlot("foo{bar}zap}").intValue(), JedisClusterCRC16.getSlot("foo{bar}zap"));
+	assertEquals(node1.clusterKeySlot("{user1000}.following").intValue(), JedisClusterCRC16.getSlot("{user1000}.following"));
     }
     
     private static String getNodeId(String infoOutput) {

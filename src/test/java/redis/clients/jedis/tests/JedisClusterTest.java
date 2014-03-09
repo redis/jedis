@@ -255,6 +255,20 @@ public class JedisClusterTest extends Assert {
 	assertEquals(node1.clusterKeySlot("{user1000}.following").intValue(), JedisClusterCRC16.getSlot("{user1000}.following"));
     }
     
+    @Test
+    public void testClusterCountKeysInSlot() {
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	
+	for (int index = 0 ; index < 5 ; index++) {
+	    jc.set("foo{bar}" + index, "hello");
+	}
+	
+	int slot = JedisClusterCRC16.getSlot("foo{bar}");
+	assertEquals(5, node1.clusterCountKeysInSlot(slot).intValue());
+    }
+    
     private static String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
 	    if (infoLine.contains("myself")) {

@@ -53,6 +53,7 @@ public final class Protocol {
     public static final String CLUSTER_FORGET = "forget";
     public static final String CLUSTER_FLUSHSLOT = "flushslots";
     public static final String CLUSTER_KEYSLOT = "keyslot";
+    public static final String CLUSTER_COUNTKEYINSLOT = "countkeysinslot";
     public static final String PUBSUB_CHANNELS= "channels";
     public static final String PUBSUB_NUMSUB = "numsub";
     public static final String PUBSUB_NUM_PAT = "numpat";

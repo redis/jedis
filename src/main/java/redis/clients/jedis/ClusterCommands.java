@@ -32,4 +32,8 @@ public interface ClusterCommands {
     Long clusterCountKeysInSlot(final int slot);
     
     String clusterSaveConfig();
+    
+    String clusterReplicate(final String nodeId);
+    
+    List<String> clusterSlaves(final String nodeId);
 }

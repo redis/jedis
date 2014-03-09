@@ -3423,6 +3423,18 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterSaveConfig();
 	return client.getStatusCodeReply();
     }
+    
+    public String clusterReplicate(final String nodeId) {
+	checkIsInMulti();
+	client.clusterReplicate(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public List<String> clusterSlaves(final String nodeId) {
+	checkIsInMulti();
+	client.clusterSlaves(nodeId);
+	return client.getMultiBulkReply();
+    }
 
     public String asking() {
 	checkIsInMulti();

@@ -19,17 +19,24 @@ import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
     private Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
+    private static Jedis node4;
+    private static Jedis node5;
+    private static Jedis node6;
     private static Jedis node7;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
+    private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
+    private HostAndPort nodeInfo5 = HostAndPortUtil.getClusterServers().get(4);
+    private HostAndPort nodeInfo6 = HostAndPortUtil.getClusterServers().get(5);
     private HostAndPort nodeInfo7 = HostAndPortUtil.getClusterServers().get(6);
     
     @Before
@@ -75,14 +82,14 @@ public class JedisClusterTest extends Assert {
 	node2.clusterAddSlots(node2Slots);
 	node3.clusterAddSlots(node3Slots);
 	
-	waitForClusterReady();
+	JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
     }
     
     @AfterClass
     public static void cleanUp() {
 	int slotTest = JedisClusterCRC16.getSlot("test");
 	int slot51 = JedisClusterCRC16.getSlot("51");
-	String node3Id = getNodeId(node3.clusterNodes());
+	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
 	node2.clusterSetSlotNode(slotTest, node3Id);
 	node2.clusterSetSlotNode(slot51, node3Id);
 	node2.clusterDelSlots(slotTest, slot51);
@@ -133,7 +140,7 @@ public class JedisClusterTest extends Assert {
     @Test(expected = JedisAskDataException.class)
     public void testThrowAskException() {
 	int keySlot = JedisClusterCRC16.getSlot("test");
-	String node3Id = getNodeId(node3.clusterNodes());
+	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
 	node2.clusterSetSlotMigrating(keySlot, node3Id);
 	node2.get("test");
     }
@@ -143,7 +150,7 @@ public class JedisClusterTest extends Assert {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 	JedisCluster jc = new JedisCluster(jedisClusterNode);
-	assertEquals(jc.getClusterNodes().size(), 3);
+	assertEquals(3, jc.getClusterNodes().size());
     }
 
     @Test
@@ -167,7 +174,7 @@ public class JedisClusterTest extends Assert {
 	node3.clusterDelSlots(slot51);
 	node3.clusterAddSlots(slot51);
 
-	waitForClusterReady();
+	JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
 	jc.set("51", "foo");
 	assertEquals("foo", jc.get("51"));
     }
@@ -178,8 +185,8 @@ public class JedisClusterTest extends Assert {
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 	JedisCluster jc = new JedisCluster(jedisClusterNode);
 	int slot51 = JedisClusterCRC16.getSlot("51");
-	node3.clusterSetSlotImporting(slot51, getNodeId(node2.clusterNodes()));
-	node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
+	node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
+	node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
 	jc.set("51", "foo");
 	assertEquals("foo", jc.get("51"));
     }
@@ -199,7 +206,7 @@ public class JedisClusterTest extends Assert {
 	JedisCluster jc = new JedisCluster(jedisClusterNode);
 	int slot51 = JedisClusterCRC16.getSlot("51");
 	// This will cause an infinite redirection loop
-	node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
+	node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
 	jc.set("51", "foo");
     }
     
@@ -216,24 +223,28 @@ public class JedisClusterTest extends Assert {
 	// at first, join node4 to cluster
 	node1.clusterMeet("127.0.0.1", nodeInfo7.getPort());
 	
-	String node4Id = getNodeId(node7.clusterNodes());
+	String node7Id = JedisClusterTestUtil.getNodeId(node7.clusterNodes());
 	
-	assertNodeIsKnown(node3, node4Id, 1000);
-	assertNodeIsKnown(node2, node4Id, 1000);
-	assertNodeIsKnown(node1, node4Id, 1000);
+	assertNodeIsKnown(node3, node7Id, 1000);
+	assertNodeIsKnown(node2, node7Id, 1000);
+	assertNodeIsKnown(node1, node7Id, 1000);
+	
+	assertNodeHandshakeEnded(node3, 1000);
+	assertNodeHandshakeEnded(node2, 1000);
+	assertNodeHandshakeEnded(node1, 1000);
 	
 	assertEquals(4, node1.clusterNodes().split("\n").length);
 	assertEquals(4, node2.clusterNodes().split("\n").length);
 	assertEquals(4, node3.clusterNodes().split("\n").length);
 	
 	// do cluster forget
-        node1.clusterForget(node4Id);
-        node2.clusterForget(node4Id);
-        node3.clusterForget(node4Id);
+        node1.clusterForget(node7Id);
+        node2.clusterForget(node7Id);
+        node3.clusterForget(node7Id);
         
-        assertNodeIsUnknown(node1, node4Id, 1000);
-        assertNodeIsUnknown(node2, node4Id, 1000);
-        assertNodeIsUnknown(node3, node4Id, 1000);
+        assertNodeIsUnknown(node1, node7Id, 1000);
+        assertNodeIsUnknown(node2, node7Id, 1000);
+        assertNodeIsUnknown(node3, node7Id, 1000);
         
         assertEquals(3, node1.clusterNodes().split("\n").length);
         assertEquals(3, node2.clusterNodes().split("\n").length);
@@ -292,24 +303,15 @@ public class JedisClusterTest extends Assert {
 	jc.set("51", "foo");
 	// node2 is responsible of taking care of slot51 (7186)
 	
-	node3.clusterSetSlotImporting(slot51, getNodeId(node2.clusterNodes()));
+	node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
 	assertEquals("foo", jc.get("51"));
 	node3.clusterSetSlotStable(slot51);
 	assertEquals("foo", jc.get("51"));
 	
-	node2.clusterSetSlotMigrating(slot51, getNodeId(node3.clusterNodes()));
+	node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
 	//assertEquals("foo", jc.get("51")); // it leads Max Redirections
 	node2.clusterSetSlotStable(slot51);
 	assertEquals("foo", jc.get("51"));
-    }
-    
-    private static String getNodeId(String infoOutput) {
-	for (String infoLine : infoOutput.split("\n")) {
-	    if (infoLine.contains("myself")) {
-		return infoLine.split(" ")[0];
-	    }
-	}
-	return "";
     }
     
     private static String getNodeServingSlotRange(String infoOutput) {
@@ -366,16 +368,20 @@ public class JedisClusterTest extends Assert {
 	return null;
     }
     
-    private void waitForClusterReady() throws InterruptedException {
-	boolean clusterOk = false;
-	while (!clusterOk) {
-	    if (node1.clusterInfo().split("\n")[0].contains("ok")
-		    && node2.clusterInfo().split("\n")[0].contains("ok")
-		    && node3.clusterInfo().split("\n")[0].contains("ok")) {
-		clusterOk = true;
+    private void assertNodeHandshakeEnded(Jedis node, int timeoutMs) {
+	int sleepInterval = 100;
+	for (int sleepTime = 0 ; sleepTime <= timeoutMs ; sleepTime += sleepInterval) {
+	    boolean isHandshaking = isAnyNodeHandshaking(node);
+	    if (!isHandshaking)
+		return;
+	    
+	    try {
+		Thread.sleep(sleepInterval);
+	    } catch (InterruptedException e) {
 	    }
-	    Thread.sleep(50);
 	}
+	
+	throw new JedisException("Node handshaking is not ended");
     }
     
     private void assertNodeIsKnown(Jedis node, String targetNodeId, int timeoutMs) {
@@ -412,4 +418,14 @@ public class JedisClusterTest extends Assert {
 	return false;
     }
     
+    private boolean isAnyNodeHandshaking(Jedis node) {
+	String infoOutput = node.clusterNodes();
+	for (String infoLine : infoOutput.split("\n")) {
+	    if (infoLine.contains("handshake")) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
 }

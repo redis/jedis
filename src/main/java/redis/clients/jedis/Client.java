@@ -977,4 +977,12 @@ public class Client extends BinaryClient implements Commands {
 	cluster(Protocol.CLUSTER_SAVECONFIG);
     }
 
+    public void clusterReplicate(final String nodeId) {
+	cluster(Protocol.CLUSTER_REPLICATE, nodeId);
+    }
+
+    public void clusterSlaves(final String nodeId) {
+	cluster(Protocol.CLUSTER_SLAVES, nodeId);
+    }
+
 }

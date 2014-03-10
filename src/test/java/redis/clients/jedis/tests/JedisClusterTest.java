@@ -23,7 +23,7 @@ import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
-    private Jedis node1;
+    private static Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
     private static Jedis node7;
@@ -83,10 +83,21 @@ public class JedisClusterTest extends Assert {
     public static void cleanUp() {
 	int slotTest = JedisClusterCRC16.getSlot("test");
 	int slot51 = JedisClusterCRC16.getSlot("51");
+	
+	String node1Id = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
+	String node2Id = JedisClusterTestUtil.getNodeId(node2.clusterNodes());
 	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
 	node2.clusterSetSlotNode(slotTest, node3Id);
 	node2.clusterSetSlotNode(slot51, node3Id);
 	node2.clusterDelSlots(slotTest, slot51);
+	
+	// forget about all nodes
+	node1.clusterForget(node2Id);
+	node1.clusterForget(node3Id);
+	node2.clusterForget(node1Id);
+	node2.clusterForget(node3Id);
+	node3.clusterForget(node1Id);
+	node3.clusterForget(node2Id);
     }
 
     @After

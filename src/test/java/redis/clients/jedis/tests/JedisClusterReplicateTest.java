@@ -108,6 +108,7 @@ public class JedisClusterReplicateTest {
 	replMap.put(node3, node6);
 
 	waitForReplicateReady(replMap, 2000);
+	JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, node4, node5, node6);
     }
 
     private void waitForReplicateReady(Map<Jedis, Jedis> replMap, int timeoutMs) {

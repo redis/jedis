@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests.utils;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisClusterTestUtil {
     public static void waitForClusterReady(Jedis...nodes) throws InterruptedException {
@@ -30,5 +31,40 @@ public class JedisClusterTestUtil {
 	}
 	return "";
     }
+    
+    public static void assertNodeIsKnown(Jedis node, String targetNodeId, int timeoutMs) {
+	assertNodeRecognizedStatus(node, targetNodeId, true, timeoutMs);
+    }
+
+    public static void assertNodeIsUnknown(Jedis node, String targetNodeId, int timeoutMs) {
+	assertNodeRecognizedStatus(node, targetNodeId, false, timeoutMs);
+    }
+    
+    private static void assertNodeRecognizedStatus(Jedis node, String targetNodeId, boolean shouldRecognized, int timeoutMs) {
+	int sleepInterval = 100;
+	for (int sleepTime = 0 ; sleepTime <= timeoutMs ; sleepTime += sleepInterval) {
+	    boolean known = isKnownNode(node, targetNodeId);
+	    if (shouldRecognized == known)
+		return;
+	    
+	    try {
+		Thread.sleep(sleepInterval);
+	    } catch (InterruptedException e) {
+	    }
+	}
+	
+	throw new JedisException("Node recognize check error");
+    }
+    
+    private static boolean isKnownNode(Jedis node, String nodeId) {
+	String infoOutput = node.clusterNodes();
+	for (String infoLine : infoOutput.split("\n")) {
+	    if (infoLine.contains(nodeId)) {
+		return true;
+	    }
+	}
+	return false;
+    }
+    
     
 }

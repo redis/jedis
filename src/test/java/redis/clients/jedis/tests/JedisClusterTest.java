@@ -231,9 +231,9 @@ public class JedisClusterTest extends Assert {
 	
 	String node7Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
 	
-	assertNodeIsKnown(node3, node7Id, 1000);
-	assertNodeIsKnown(node2, node7Id, 1000);
-	assertNodeIsKnown(node1, node7Id, 1000);
+	JedisClusterTestUtil.assertNodeIsKnown(node3, node7Id, 1000);
+	JedisClusterTestUtil.assertNodeIsKnown(node2, node7Id, 1000);
+	JedisClusterTestUtil.assertNodeIsKnown(node1, node7Id, 1000);
 	
 	assertNodeHandshakeEnded(node3, 1000);
 	assertNodeHandshakeEnded(node2, 1000);
@@ -248,9 +248,9 @@ public class JedisClusterTest extends Assert {
         node2.clusterForget(node7Id);
         node3.clusterForget(node7Id);
         
-        assertNodeIsUnknown(node1, node7Id, 1000);
-        assertNodeIsUnknown(node2, node7Id, 1000);
-        assertNodeIsUnknown(node3, node7Id, 1000);
+        JedisClusterTestUtil.assertNodeIsUnknown(node1, node7Id, 1000);
+        JedisClusterTestUtil.assertNodeIsUnknown(node2, node7Id, 1000);
+        JedisClusterTestUtil.assertNodeIsUnknown(node3, node7Id, 1000);
         
         assertEquals(3, node1.clusterNodes().split("\n").length);
         assertEquals(3, node2.clusterNodes().split("\n").length);
@@ -389,40 +389,6 @@ public class JedisClusterTest extends Assert {
 	}
 	
 	throw new JedisException("Node handshaking is not ended");
-    }
-    
-    private void assertNodeIsKnown(Jedis node, String targetNodeId, int timeoutMs) {
-	assertNodeRecognizedStatus(node, targetNodeId, true, timeoutMs);
-    }
-
-    private void assertNodeIsUnknown(Jedis node, String targetNodeId, int timeoutMs) {
-	assertNodeRecognizedStatus(node, targetNodeId, false, timeoutMs);
-    }
-    
-    private void assertNodeRecognizedStatus(Jedis node, String targetNodeId, boolean shouldRecognized, int timeoutMs) {
-	int sleepInterval = 100;
-	for (int sleepTime = 0 ; sleepTime <= timeoutMs ; sleepTime += sleepInterval) {
-	    boolean known = isKnownNode(node, targetNodeId);
-	    if (shouldRecognized == known)
-		return;
-	    
-	    try {
-		Thread.sleep(sleepInterval);
-	    } catch (InterruptedException e) {
-	    }
-	}
-	
-	throw new JedisException("Node recognize check error");
-    }
-    
-    private static boolean isKnownNode(Jedis node, String nodeId) {
-	String infoOutput = node.clusterNodes();
-	for (String infoLine : infoOutput.split("\n")) {
-	    if (infoLine.contains(nodeId)) {
-		return true;
-	    }
-	}
-	return false;
     }
     
     private boolean isAnyNodeHandshaking(Jedis node) {

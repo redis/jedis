@@ -44,6 +44,9 @@ public class JedisClusterReplicateTest {
 
 	// add nodes to cluster
 	node5.clusterMeet("127.0.0.1", nodeInfo6.getPort());
+	
+	JedisClusterTestUtil.assertNodeIsKnown(node5, JedisClusterTestUtil.getNodeId(node6.clusterNodes()), 1000);
+	JedisClusterTestUtil.assertNodeIsKnown(node6, JedisClusterTestUtil.getNodeId(node5.clusterNodes()), 1000);
 
 	// split available slots across the three nodes
 	int[] node5Slots = new int[JedisCluster.HASHSLOTS];

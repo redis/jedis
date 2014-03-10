@@ -118,6 +118,7 @@ public class JedisClusterTest extends Assert {
     }
 
     private void clearAnyInconsistentMigration(Jedis node) {
+	// FIXME: it's too slow... apply pipeline if possible
 	List<Integer> slots = getInconsistentSlots(node.clusterNodes());
 	for (Integer slot : slots) {
 	    node.clusterSetSlotStable(slot);

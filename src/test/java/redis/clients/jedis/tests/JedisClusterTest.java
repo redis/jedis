@@ -26,12 +26,12 @@ public class JedisClusterTest extends Assert {
     private static Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
-    private static Jedis node7;
+    private static Jedis node4;
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-    private HostAndPort nodeInfo7 = HostAndPortUtil.getClusterServers().get(6);
+    private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
     
     @Before
     public void setUp() throws InterruptedException {
@@ -47,9 +47,9 @@ public class JedisClusterTest extends Assert {
 	node3.connect();
 	node3.flushAll();
 	
-	node7 = new Jedis(nodeInfo7.getHost(), nodeInfo7.getPort());
-	node7.connect();
-	node7.flushAll();
+	node4 = new Jedis(nodeInfo4.getHost(), nodeInfo4.getPort());
+	node4.connect();
+	node4.flushAll();
 
 	// ---- configure cluster
 
@@ -227,9 +227,9 @@ public class JedisClusterTest extends Assert {
     @Test
     public void testClusterForgetNode() throws InterruptedException {
 	// at first, join node4 to cluster
-	node1.clusterMeet("127.0.0.1", nodeInfo7.getPort());
+	node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
 	
-	String node7Id = JedisClusterTestUtil.getNodeId(node7.clusterNodes());
+	String node7Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
 	
 	assertNodeIsKnown(node3, node7Id, 1000);
 	assertNodeIsKnown(node2, node7Id, 1000);
@@ -271,10 +271,11 @@ public class JedisClusterTest extends Assert {
 	    int lower = Integer.parseInt(rangeInfo[0]);
 	    int upper = Integer.parseInt(rangeInfo[1]);
 	    
-	    // FIXME: make it faster
-	    for ( ; lower <= upper ; lower++) {
-		node1.clusterAddSlots(lower);
+	    int[] node1Slots = new int[upper - lower + 1];
+	    for (int i = 0 ; lower <= upper ; ) {
+		node1Slots[i++] = lower++;
 	    }
+	    node1.clusterAddSlots(node1Slots);
 	}
     }
     

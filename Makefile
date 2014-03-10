@@ -120,7 +120,7 @@ endef
 define REDIS_CLUSTER_NODE1_CONF
 daemonize yes
 port 7379
-cluster-node-timeout 1000
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node1.pid
 logfile /tmp/redis_cluster_node1.log
 save ""
@@ -132,7 +132,7 @@ endef
 define REDIS_CLUSTER_NODE2_CONF
 daemonize yes
 port 7380
-cluster-node-timeout 1000
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node2.pid
 logfile /tmp/redis_cluster_node2.log
 save ""
@@ -144,7 +144,7 @@ endef
 define REDIS_CLUSTER_NODE3_CONF
 daemonize yes
 port 7381
-cluster-node-timeout 1000
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node3.pid
 logfile /tmp/redis_cluster_node3.log
 save ""
@@ -156,7 +156,7 @@ endef
 define REDIS_CLUSTER_NODE4_CONF
 daemonize yes
 port 7382
-cluster-node-timeout 1000
+cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node4.pid
 logfile /tmp/redis_cluster_node4.log
 save ""
@@ -168,7 +168,7 @@ endef
 define REDIS_CLUSTER_NODE5_CONF
 daemonize yes
 port 7383
-cluster-node-timeout 1000
+cluster-node-timeout 5000
 pidfile /tmp/redis_cluster_node5.pid
 logfile /tmp/redis_cluster_node5.log
 save ""
@@ -180,25 +180,13 @@ endef
 define REDIS_CLUSTER_NODE6_CONF
 daemonize yes
 port 7384
-cluster-node-timeout 1000
+cluster-node-timeout 5000
 pidfile /tmp/redis_cluster_node6.pid
 logfile /tmp/redis_cluster_node6.log
 save ""
 appendonly no
 cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node6.conf
-endef
-
-define REDIS_CLUSTER_NODE7_CONF
-daemonize yes
-port 7385
-cluster-node-timeout 1000
-pidfile /tmp/redis_cluster_node7.pid
-logfile /tmp/redis_cluster_node7.log
-save ""
-appendonly no
-cluster-enabled yes
-cluster-config-file /tmp/redis_cluster_node7.conf
 endef
 
 export REDIS1_CONF
@@ -217,7 +205,6 @@ export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
 export REDIS_CLUSTER_NODE6_CONF
-export REDIS_CLUSTER_NODE7_CONF
 
 start: cleanup
 	echo "$$REDIS1_CONF" | redis-server -
@@ -238,7 +225,6 @@ start: cleanup
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE6_CONF" | redis-server -
-	echo "$$REDIS_CLUSTER_NODE7_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -261,7 +247,6 @@ stop:
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
 	kill `cat /tmp/redis_cluster_node6.pid` || true
-	kill `cat /tmp/redis_cluster_node7.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
@@ -271,7 +256,6 @@ stop:
 	rm -f /tmp/redis_cluster_node4.conf
 	rm -f /tmp/redis_cluster_node5.conf
 	rm -f /tmp/redis_cluster_node6.conf
-	rm -f /tmp/redis_cluster_node7.conf
 
 test:
 	make start

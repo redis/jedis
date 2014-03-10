@@ -36,4 +36,6 @@ public interface ClusterCommands {
     String clusterReplicate(final String nodeId);
     
     List<String> clusterSlaves(final String nodeId);
+    
+    String clusterFailover();
 }

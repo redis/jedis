@@ -985,4 +985,8 @@ public class Client extends BinaryClient implements Commands {
 	cluster(Protocol.CLUSTER_SLAVES, nodeId);
     }
 
+    public void clusterFailover() {
+	cluster(Protocol.CLUSTER_FAILOVER);
+    }
+
 }

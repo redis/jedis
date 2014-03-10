@@ -4,16 +4,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
 
@@ -96,8 +102,41 @@ public class JedisClusterReplicateTest {
 	node6.clusterReplicate(JedisClusterTestUtil.getNodeId(node3
 		.clusterNodes()));
 
-	JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, node4,
-		node5, node6);
+	Map<Jedis, Jedis> replMap = new HashMap<Jedis, Jedis>();
+	replMap.put(node1, node4);
+	replMap.put(node2, node5);
+	replMap.put(node3, node6);
+
+	waitForReplicateReady(replMap, 2000);
+    }
+
+    private void waitForReplicateReady(Map<Jedis, Jedis> replMap, int timeoutMs) {
+	int interval = 100;
+
+	for (int timeout = 0; timeout <= timeoutMs; timeout += interval) {
+	    for (Entry<Jedis, Jedis> entry : replMap.entrySet()) {
+		Jedis master = entry.getKey();
+		Jedis slave = entry.getValue();
+
+		String masterNodeId = JedisClusterTestUtil.getNodeId(master
+			.clusterNodes());
+		String slaveNodeId = JedisClusterTestUtil.getNodeId(slave
+			.clusterNodes());
+
+		List<String> slaves = master.clusterSlaves(masterNodeId);
+
+		if (slaves.size() > 0 && slaves.get(0).contains(slaveNodeId)) {
+		    return;
+		}
+	    }
+
+	    try {
+		Thread.sleep(interval);
+	    } catch (InterruptedException e) {
+	    }
+	}
+
+	throw new JedisException("there seems to replication error");
     }
 
     @After
@@ -111,20 +150,21 @@ public class JedisClusterReplicateTest {
 	node1.clusterDelSlots(slotsToDelete);
 	node2.clusterDelSlots(slotsToDelete);
 	node3.clusterDelSlots(slotsToDelete);
-	
+
 	List<Jedis> masters = new ArrayList<Jedis>();
 	masters.add(node1);
 	masters.add(node2);
 	masters.add(node3);
-	
+
 	List<Jedis> slaves = new ArrayList<Jedis>();
 	slaves.add(node4);
 	slaves.add(node5);
 	slaves.add(node6);
-	
+
 	for (Jedis master : masters) {
 	    for (Jedis slave : slaves) {
-		master.clusterForget(JedisClusterTestUtil.getNodeId(slave.clusterNodes()));
+		master.clusterForget(JedisClusterTestUtil.getNodeId(slave
+			.clusterNodes()));
 	    }
 	}
     }
@@ -138,16 +178,47 @@ public class JedisClusterReplicateTest {
 	assertTrue(slaveInfos.get(0).contains(
 		JedisClusterTestUtil.getNodeId(node4.clusterNodes())));
 
-	slaveInfos = node2.clusterSlaves(JedisClusterTestUtil
-		.getNodeId(node2.clusterNodes()));
+	slaveInfos = node2.clusterSlaves(JedisClusterTestUtil.getNodeId(node2
+		.clusterNodes()));
 	assertEquals(1, slaveInfos.size());
 	assertTrue(slaveInfos.get(0).contains(
 		JedisClusterTestUtil.getNodeId(node5.clusterNodes())));
 
-	slaveInfos = node3.clusterSlaves(JedisClusterTestUtil
-		.getNodeId(node3.clusterNodes()));
+	slaveInfos = node3.clusterSlaves(JedisClusterTestUtil.getNodeId(node3
+		.clusterNodes()));
 	assertEquals(1, slaveInfos.size());
 	assertTrue(slaveInfos.get(0).contains(
 		JedisClusterTestUtil.getNodeId(node6.clusterNodes())));
+    }
+
+    @Test
+    @Ignore
+    // FIXME: There is some error from cluster manual failover
+    // by Redis unstable, commit 0f2597092fdcd17547282bd434e46d3dc8412e23
+    public void testClusterFailover() {
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	
+	jc.set("51", "foo");
+	// node2 is responsible of taking care of slot for key "51" (7186)
+	
+	node5.clusterFailover();
+
+	// wait for failover
+	Map<Jedis, Jedis> replMap = new HashMap<Jedis, Jedis>();
+	replMap.put(node4, node1);
+	waitForReplicateReady(replMap, 2000);
+
+	try {
+	    List<String> slaveInfos = node5.clusterSlaves(JedisClusterTestUtil
+		    .getNodeId(node5.clusterNodes()));
+	    assertEquals(1, slaveInfos.size());
+	    assertTrue(slaveInfos.get(0).contains(
+		    JedisClusterTestUtil.getNodeId(node2.clusterNodes())));
+	} finally {
+	    // rollback
+	    node2.clusterFailover();
+	}
     }
 }

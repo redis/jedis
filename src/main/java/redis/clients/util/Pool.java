@@ -45,6 +45,9 @@ public abstract class Pool<T> {
     }
 
     public void returnResourceObject(final T resource) {
+	if (resource == null) {
+	    return;
+	}
 	try {
 	    internalPool.returnObject(resource);
 	} catch (Exception e) {

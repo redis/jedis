@@ -198,4 +198,14 @@ public class JedisPoolTest extends Assert {
 	pool.returnResource(jedis2);
 	pool.destroy();
     }
+    
+    @Test
+    public void returnNullObjectShouldNotFail() {
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort(), 2000, "foobared", 0, "my_shiny_client_name");
+
+	pool.returnBrokenResource(null);
+	pool.returnResource(null);
+	pool.returnResourceObject(null);
+    }
 }

@@ -80,11 +80,15 @@ public class JedisPool extends Pool<Jedis> {
     }
 
     public void returnBrokenResource(final Jedis resource) {
-	returnBrokenResourceObject(resource);
+	if (resource != null) {
+	    returnBrokenResourceObject(resource);
+	}
     }
 
     public void returnResource(final Jedis resource) {
-	resource.resetState();
-	returnResourceObject(resource);
+	if (resource != null) {
+	    resource.resetState();
+	    returnResourceObject(resource);
+	}
     }
 }

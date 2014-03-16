@@ -34,6 +34,22 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
 	sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
     }
+    
+    @Test
+    public void checkCloseableConnections() throws Exception {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+
+	Closer closer = new Closer();
+	JedisSentinelPool pool = closer.register(new JedisSentinelPool(
+		MASTER_NAME, sentinels, config, 1000, "foobared", 2));
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
+	pool.returnResource(jedis);
+	closer.close();
+	assertTrue(pool.isClosed());
+    }
 
     @Test
     public void ensureSafeTwiceFailover() throws InterruptedException {

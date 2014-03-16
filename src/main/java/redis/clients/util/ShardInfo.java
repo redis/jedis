@@ -9,7 +9,8 @@ public abstract class ShardInfo<T> {
     public ShardInfo(int weight) {
 	this.weight = weight;
     }
-
+    
+11111111111
     public int getWeight() {
 	return this.weight;
     }

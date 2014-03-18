@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
@@ -16,6 +17,7 @@ public final class Protocol {
 
     private static final String ASK_RESPONSE = "ASK";
     private static final String MOVED_RESPONSE = "MOVED";
+    private static final String CLUSTERDOWN_RESPONSE = "CLUSTERDOWN";
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SENTINEL_PORT = 26379;
     public static final int DEFAULT_TIMEOUT = 2000;
@@ -96,6 +98,8 @@ public final class Protocol {
 	    throw new JedisAskDataException(message, new HostAndPort(
 		    askInfo[1], Integer.valueOf(askInfo[2])),
 		    Integer.valueOf(askInfo[0]));
+	} else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
+	    throw new JedisClusterException(message);
 	}
 	throw new JedisDataException(message);
     }

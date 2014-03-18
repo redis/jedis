@@ -5,12 +5,24 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
+
 public abstract class JedisClusterConnectionHandler {
 
     protected Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
     protected Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
     abstract Jedis getConnection();
+
+    protected void returnConnection(Jedis connection) {
+	nodes.get(getNodeKey(connection.getClient()))
+		.returnResource(connection);
+    }
+
+    public void returnBrokenConnection(Jedis connection) {
+	nodes.get(getNodeKey(connection.getClient())).returnBrokenResource(
+		connection);
+    }
 
     abstract Jedis getConnectionFromSlot(int slot);
 
@@ -22,28 +34,56 @@ public abstract class JedisClusterConnectionHandler {
 	return nodes;
     }
 
-    private void initializeSlotsCache(Set<HostAndPort> nodes) {
-	for (HostAndPort hostAndPort : nodes) {
+    private void initializeSlotsCache(Set<HostAndPort> startNodes) {
+	for (HostAndPort hostAndPort : startNodes) {
 	    JedisPool jp = new JedisPool(hostAndPort.getHost(),
 		    hostAndPort.getPort());
-	    this.nodes.put(hostAndPort.getHost() + hostAndPort.getPort(), jp);
-	    Jedis jedis = jp.getResource();
+
+	    this.nodes.clear();
+	    this.slots.clear();
+
+	    Jedis jedis = null;
 	    try {
+		jedis = jp.getResource();
 		discoverClusterNodesAndSlots(jedis);
+		break;
+	    } catch (JedisConnectionException e) {
+		if (jedis != null) {
+		    jp.returnBrokenResource(jedis);
+		    jedis = null;
+		}
+
+		// try next nodes
 	    } finally {
-		jp.returnResource(jedis);
+		if (jedis != null) {
+		    jp.returnResource(jedis);
+		}
 	    }
 	}
-    }
 
+	for (HostAndPort node : startNodes) {
+	    setNodeIfNotExist(node);
+	}
+    }
+    
     private void discoverClusterNodesAndSlots(Jedis jedis) {
 	String localNodes = jedis.clusterNodes();
 	for (String nodeInfo : localNodes.split("\n")) {
 	    HostAndPort node = getHostAndPortFromNodeLine(nodeInfo, jedis);
-	    JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
-	    this.nodes.put(node.getHost() + node.getPort(), nodePool);
+	    setNodeIfNotExist(node);
+	    
+	    JedisPool nodePool = nodes.get(getNodeKey(node));
 	    populateNodeSlots(nodeInfo, nodePool);
 	}
+    }
+    
+    private void setNodeIfNotExist(HostAndPort node) {
+	String nodeKey = getNodeKey(node);
+	if (nodes.containsKey(nodeKey))
+	    return;
+	
+	JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
+	nodes.put(nodeKey, nodePool);
     }
 
     private void populateNodeSlots(String nodeInfo, JedisPool nodePool) {
@@ -67,7 +107,8 @@ public abstract class JedisClusterConnectionHandler {
 	}
     }
 
-    private HostAndPort getHostAndPortFromNodeLine(String nodeInfo, Jedis currentConnection) {
+    private HostAndPort getHostAndPortFromNodeLine(String nodeInfo,
+	    Jedis currentConnection) {
 	String stringHostAndPort = nodeInfo.split(" ", 3)[1];
 	if (":0".equals(stringHostAndPort)) {
 	    return new HostAndPort(currentConnection.getClient().getHost(),
@@ -79,9 +120,16 @@ public abstract class JedisClusterConnectionHandler {
     }
 
     public void assignSlotToNode(int slot, HostAndPort targetNode) {
-	JedisPool targetPool = nodes.get(targetNode.getHost()
-		+ targetNode.getPort());
-	slots.put(slot, targetPool);
+	JedisPool targetPool = nodes.get(getNodeKey(targetNode));
+
+	if (targetPool != null) {
+	    slots.put(slot, targetPool);
+	} else {
+	    setNodeIfNotExist(targetNode);
+	    
+	    targetPool = nodes.get(getNodeKey(targetNode));
+	    slots.put(slot, targetPool);
+	}
     }
 
     protected JedisPool getRandomConnection() {
@@ -89,4 +137,11 @@ public abstract class JedisClusterConnectionHandler {
 	return (JedisPool) (nodeArray[new Random().nextInt(nodeArray.length)]);
     }
 
+    protected String getNodeKey(HostAndPort hnp) {
+	return hnp.getHost() + ":" + hnp.getPort();
+    }
+
+    protected String getNodeKey(Client client) {
+	return client.getHost() + ":" + client.getPort();
+    }
 }

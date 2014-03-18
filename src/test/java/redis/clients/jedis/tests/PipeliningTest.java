@@ -252,6 +252,27 @@ public class PipeliningTest extends Assert {
     }
 
     @Test
+    public void multiWithSync() {
+	jedis.set("foo", "314");
+	jedis.set("bar", "foo");
+	jedis.set("hello", "world");
+	Pipeline p = jedis.pipelined();
+	Response<String> r1 = p.get("bar");
+	p.multi();
+	Response<String> r2 = p.get("foo");
+	p.exec();
+	Response<String> r3 = p.get("hello");
+	p.sync();
+	
+	// before multi
+	assertEquals("foo", r1.get());
+	// It should be readable whether exec's response was built or not
+	assertEquals("314", r2.get());
+	// after multi
+	assertEquals("world", r3.get());
+    }
+
+    @Test
     public void testDiscardInPipeline() {
 	Pipeline pipeline = jedis.pipelined();
 	pipeline.multi();

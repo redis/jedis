@@ -31,6 +31,12 @@ public class Pipeline extends MultiKeyPipelineBase {
 	    return values;
 	}
 
+	public void setResponseDependency(Response<?> dependency) {
+	    for (Response<?> response : responses) {
+		response.setDependency(dependency);
+	    }
+	}
+
 	public void addResponse(Response<?> response) {
 	    responses.add(response);
 	}
@@ -106,6 +112,7 @@ public class Pipeline extends MultiKeyPipelineBase {
     public Response<List<Object>> exec() {
 	client.exec();
 	Response<List<Object>> response = super.getResponse(currentMulti);
+	currentMulti.setResponseDependency(response);
 	currentMulti = null;
 	return response;
     }

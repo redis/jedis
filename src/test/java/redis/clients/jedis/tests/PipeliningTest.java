@@ -52,6 +52,9 @@ public class PipeliningTest extends Assert {
 	jedis.hset("hash", "foo", "bar");
 	jedis.zadd("zset", 1, "foo");
 	jedis.sadd("set", "foo");
+    jedis.setrange("setrange", 0, "0123456789");
+    byte[] bytesForSetRange = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    jedis.setrange("setrangebytes".getBytes(), 0, bytesForSetRange);
 
 	Pipeline p = jedis.pipelined();
 	Response<String> string = p.get("string");
@@ -69,6 +72,8 @@ public class PipeliningTest extends Assert {
 	Response<Set<String>> smembers = p.smembers("set");
 	Response<Set<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0,
 		-1);
+    Response<String> getrange = p.getrange("setrange", 1, 3);
+    Response<byte[]> getrangeBytes = p.getrange("setrangebytes".getBytes(), 6, 8);
 	p.sync();
 
 	assertEquals("foo", string.get());
@@ -83,6 +88,9 @@ public class PipeliningTest extends Assert {
 	assertNotNull(hgetAll.get().get("foo"));
 	assertEquals(1, smembers.get().size());
 	assertEquals(1, zrangeWithScores.get().size());
+    assertEquals("123", getrange.get());
+    byte[] expectedGetRangeBytes = {6, 7, 8};
+    assertArrayEquals(expectedGetRangeBytes, getrangeBytes.get());
     }
 
     @Test

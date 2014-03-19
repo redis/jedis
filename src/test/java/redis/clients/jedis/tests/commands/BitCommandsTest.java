@@ -21,11 +21,11 @@ public class BitCommandsTest extends JedisCommandTestBase {
 	bbit = jedis.getbit("bfoo".getBytes(), 0);
 	assertTrue(bbit);
     }
-    
+
     @Test
     public void bitpos() {
 	String foo = "foo";
-	
+
 	jedis.set(foo, String.valueOf(0));
 
 	jedis.setbit(foo, 3, true);
@@ -35,62 +35,96 @@ public class BitCommandsTest extends JedisCommandTestBase {
 	
 	/*
 	 * byte:    0          1          2           3          4
-	 * bit:  00010001 / 00000100 / 00000000 / 00000000 / 00000001 
+	 * bit:  00010001 / 00000100 / 00000000 / 00000000 / 00000001
 	 */
-	
 	long offset = jedis.bitpos(foo, true);
 	assertEquals(2, offset);
 	offset = jedis.bitpos(foo, false);
 	assertEquals(0, offset);
-	
+
 	offset = jedis.bitpos(foo, true, new BitPosParams(1));
 	assertEquals(13, offset);
 	offset = jedis.bitpos(foo, false, new BitPosParams(1));
 	assertEquals(8, offset);
-	
+
 	offset = jedis.bitpos(foo, true, new BitPosParams(2, 3));
 	assertEquals(-1, offset);
 	offset = jedis.bitpos(foo, false, new BitPosParams(2, 3));
 	assertEquals(16, offset);
-	
+
 	offset = jedis.bitpos(foo, true, new BitPosParams(3, 4));
 	assertEquals(39, offset);
     }
-    
+
     @Test
     public void bitposBinary() {
 	// binary
 	byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
-	
+
 	jedis.set(bfoo, Protocol.toByteArray(0));
 
 	jedis.setbit(bfoo, 3, true);
 	jedis.setbit(bfoo, 7, true);
 	jedis.setbit(bfoo, 13, true);
 	jedis.setbit(bfoo, 39, true);
-	
+
 	/*
 	 * byte:    0          1          2           3          4
-	 * bit:  00010001 / 00000100 / 00000000 / 00000000 / 00000001 
+	 * bit:  00010001 / 00000100 / 00000000 / 00000000 / 00000001
 	 */
-	
 	long offset = jedis.bitpos(bfoo, true);
 	assertEquals(2, offset);
 	offset = jedis.bitpos(bfoo, false);
 	assertEquals(0, offset);
-	
+
 	offset = jedis.bitpos(bfoo, true, new BitPosParams(1));
 	assertEquals(13, offset);
 	offset = jedis.bitpos(bfoo, false, new BitPosParams(1));
 	assertEquals(8, offset);
-	
+
 	offset = jedis.bitpos(bfoo, true, new BitPosParams(2, 3));
 	assertEquals(-1, offset);
 	offset = jedis.bitpos(bfoo, false, new BitPosParams(2, 3));
 	assertEquals(16, offset);
-	
+
 	offset = jedis.bitpos(bfoo, true, new BitPosParams(3, 4));
 	assertEquals(39, offset);
+    }
+
+    @Test
+    public void bitposWithNoMatchingBitExist() {
+	String foo = "foo";
+
+	jedis.set(foo, String.valueOf(0));
+	for (int idx = 0; idx < 8; idx++) {
+	    jedis.setbit(foo, idx, true);
+	}
+
+	/*
+	 * byte: 0
+	 * bit: 11111111
+	 */
+	long offset = jedis.bitpos(foo, false);
+	// offset should be last index + 1
+	assertEquals(8, offset);
+    }
+
+    @Test
+    public void bitposWithNoMatchingBitExistWithinRange() {
+	String foo = "foo";
+
+	jedis.set(foo, String.valueOf(0));
+	for (int idx = 0; idx < 8 * 5; idx++) {
+	    jedis.setbit(foo, idx, true);
+	}
+
+	/*
+	 * byte:    0          1         2          3          4
+	 * bit: 11111111 / 11111111 / 11111111 / 11111111 / 11111111
+	 */
+	long offset = jedis.bitpos(foo, false, new BitPosParams(2, 3));
+	// offset should be -1
+	assertEquals(-1, offset);
     }
 
     @Test

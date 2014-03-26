@@ -3,6 +3,7 @@ package redis.clients.jedis.tests;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -12,10 +13,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.util.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
@@ -197,6 +195,17 @@ public class JedisClusterTest extends Assert {
 	    }
 	}
 	return "";
+    }
+
+    @Test(expected = JedisConnectionException.class)
+    public void testIfPoolConfigAppliesToClusterPools() {
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+        config.setMaxTotal(0);
+        config.setMaxWaitMillis(2000);
+        Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+        jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+        JedisCluster jc = new JedisCluster(jedisClusterNode, config);
+        jc.set("52", "poolTestValue");
     }
 
     private void waitForClusterReady() throws InterruptedException {

@@ -486,7 +486,7 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
     }
     
     public Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-	byte[][] argv = BinaryJedis.getParams(keys, args);
+	byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
 	return this.eval(script, keys.size(), argv);
     }
     
@@ -500,7 +500,7 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
     }
     
     public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-	byte[][] argv = BinaryJedis.getParams(keys, args);
+	byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
 	return this.evalsha(sha1, keys.size(), argv);
     }
     

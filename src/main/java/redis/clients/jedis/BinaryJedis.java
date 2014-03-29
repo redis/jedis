@@ -3166,11 +3166,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      */
     public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
 	client.setTimeoutInfinite();
-	client.eval(script, toByteArray(keys.size()), getParams(keys, args));
+	client.eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
 	return client.getOne();
     }
 
-    protected static byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+    protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
 	int keyCount = keys.size();
 	int argCount = args.size();
 	byte[][] params = new byte[keyCount + args.size()][];

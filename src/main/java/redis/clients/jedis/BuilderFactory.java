@@ -22,6 +22,7 @@ public class BuilderFactory {
 	    return "double";
 	}
     };
+    
     public static final Builder<Boolean> BOOLEAN = new Builder<Boolean>() {
 	public Boolean build(Object data) {
 	    return ((Long) data) == 1;
@@ -31,6 +32,7 @@ public class BuilderFactory {
 	    return "boolean";
 	}
     };
+    
     public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
 	public byte[] build(Object data) {
 	    return ((byte[]) data); // deleted == 1
@@ -51,6 +53,7 @@ public class BuilderFactory {
 	}
 
     };
+    
     public static final Builder<String> STRING = new Builder<String>() {
 	public String build(Object data) {
 	    return data == null ? null : SafeEncoder.encode((byte[]) data);
@@ -61,6 +64,7 @@ public class BuilderFactory {
 	}
 
     };
+    
     public static final Builder<List<String>> STRING_LIST = new Builder<List<String>>() {
 	@SuppressWarnings("unchecked")
 	public List<String> build(Object data) {
@@ -84,6 +88,7 @@ public class BuilderFactory {
 	}
 
     };
+    
     public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
 	@SuppressWarnings("unchecked")
 	public Map<String, String> build(Object data) {
@@ -103,7 +108,7 @@ public class BuilderFactory {
 	}
 
     };
-    
+
     public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
 	@SuppressWarnings("unchecked")
 	public Set<String> build(Object data) {
@@ -166,6 +171,7 @@ public class BuilderFactory {
 	    return "ZSet<byte[]>";
 	}
     };
+    
     public static final Builder<Map<byte[], byte[]>> BYTE_ARRAY_MAP = new Builder<Map<byte[], byte[]>>() {
 	@SuppressWarnings("unchecked")
 	public Map<byte[], byte[]> build(Object data) {
@@ -252,6 +258,63 @@ public class BuilderFactory {
 	public String toString() {
 	    return "ZSet<Tuple>";
 	}
+    };
+
+    public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
+
+	@Override
+	public Object build(Object data) {
+	    return evalResult(data);
+	}
+	
+	public String toString() {
+	    return "Eval<Object>";
+	}
+
+	private Object evalResult(Object result) {
+	    if (result instanceof byte[])
+		return SafeEncoder.encode((byte[]) result);
+
+	    if (result instanceof List<?>) {
+		List<?> list = (List<?>) result;
+		List<Object> listResult = new ArrayList<Object>(list.size());
+		for (Object bin : list) {
+		    listResult.add(evalResult(bin));
+		}
+
+		return listResult;
+	    }
+
+	    return result;
+	}
+
+    };
+    
+    public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {
+	
+	@Override
+	public Object build(Object data) {
+	    return evalResult(data);
+	}
+	
+	public String toString() {
+	    return "Eval<Object>";
+	}
+	
+	private Object evalResult(Object result) {
+	    if (result instanceof List<?>) {
+		List<?> list = (List<?>) result;
+		List<Object> listResult = new ArrayList<Object>(list.size());
+		for (Object bin : list) {
+		    listResult.add(evalResult(bin));
+		}
+		
+		return listResult;
+	    }
+	    
+	    return result;
+	}
+	
     };
 
 }

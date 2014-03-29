@@ -3170,7 +3170,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getOne();
     }
 
-    private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+    protected static byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
 	int keyCount = keys.size();
 	int argCount = args.size();
 	byte[][] params = new byte[keyCount + args.size()][];
@@ -3236,6 +3236,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getStatusCodeReply();
     }
 
+    public Long scriptExists(byte[] sha1) {
+	byte[][] a = new byte[1][];
+	a[0] = sha1;
+	return scriptExists(a).get(0);
+    }
+    
     public List<Long> scriptExists(byte[]... sha1) {
 	client.scriptExists(sha1);
 	return client.getIntegerMultiBulkReply();

@@ -10,6 +10,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 class JedisFactory implements PooledObjectFactory<Jedis> {
     private final String host;
     private final int port;
+    private final boolean ssl;
     private final int timeout;
     private final String password;
     private final int database;
@@ -17,14 +18,20 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     public JedisFactory(final String host, final int port, final int timeout,
 	    final String password, final int database) {
-	this(host, port, timeout, password, database, null);
+	this(host, port, timeout, password, database, null, false);
     }
 
     public JedisFactory(final String host, final int port, final int timeout,
 	    final String password, final int database, final String clientName) {
+	this(host, port, timeout, password, database, clientName, false);
+    }
+
+    public JedisFactory(final String host, final int port, final int timeout,
+	    final String password, final int database, final String clientName, boolean ssl) {
 	super();
 	this.host = host;
 	this.port = port;
+	this.ssl = ssl;
 	this.timeout = timeout;
 	this.password = password;
 	this.database = database;
@@ -60,7 +67,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     @Override
     public PooledObject<Jedis> makeObject() throws Exception {
-	final Jedis jedis = new Jedis(this.host, this.port, this.timeout);
+	final Jedis jedis = new Jedis(this.host, this.port, this.timeout, this.ssl);
 
 	jedis.connect();
 	if (null != this.password) {

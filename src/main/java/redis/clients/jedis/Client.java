@@ -19,6 +19,10 @@ public class Client extends BinaryClient implements Commands {
 	super(host, port);
     }
 
+    public Client(final String host, final int port, final boolean ssl) {
+	super(host, port, ssl);
+    }
+    
     public void set(final String key, final String value) {
 	set(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }

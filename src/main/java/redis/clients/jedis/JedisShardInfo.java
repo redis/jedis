@@ -10,6 +10,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 	return host + ":" + port + "*" + getWeight();
     }
 
+    private boolean ssl;
     private int timeout;
     private String host;
     private int port;
@@ -24,12 +25,17 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 	return port;
     }
 
+    public boolean getSsl() {
+	return ssl;
+    }
+
     public JedisShardInfo(String host) {
 	super(Sharded.DEFAULT_WEIGHT);
 	URI uri = URI.create(host);
-	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
+	if (uri.getScheme() != null && (uri.getScheme().equals("redis") || uri.getScheme().equals("rediss"))) {
 	    this.host = uri.getHost();
 	    this.port = uri.getPort();
+	    this.ssl = uri.getScheme().equals("rediss");
 	    this.password = uri.getUserInfo().split(":", 2)[1];
 	} else {
 	    this.host = host;
@@ -43,6 +49,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
     public JedisShardInfo(String host, int port) {
 	this(host, port, 2000);
+    }
+
+    public JedisShardInfo(String host, int port, boolean ssl) {
+	this(host, port, 2000, Sharded.DEFAULT_WEIGHT, ssl);
     }
 
     public JedisShardInfo(String host, int port, String name) {
@@ -59,7 +69,12 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     }
 
     public JedisShardInfo(String host, int port, int timeout, int weight) {
+	this(host, port, timeout, weight, false);
+    }
+
+    public JedisShardInfo(String host, int port, int timeout, int weight, boolean ssl) {
 	super(weight);
+	this.ssl = ssl;
 	this.host = host;
 	this.port = port;
 	this.timeout = timeout;
@@ -67,6 +82,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
     public JedisShardInfo(URI uri) {
 	super(Sharded.DEFAULT_WEIGHT);
+	this.ssl = uri.getScheme()!=null && uri.getScheme().equals("rediss"); 
 	this.host = uri.getHost();
 	this.port = uri.getPort();
 	this.password = uri.getUserInfo().split(":", 2)[1];

@@ -27,10 +27,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
 	    client = new Client(uri.getHost(), uri.getPort());
-	    client.auth(uri.getUserInfo().split(":", 2)[1]);
-	    client.getStatusCodeReply();
-	    client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	    client.getStatusCodeReply();
+	    if(uri.getUserInfo()!=null)
+	    {
+	    	client.auth(uri.getUserInfo().split(":", 2)[1]);
+	    	client.getStatusCodeReply();
+	    }
+	    if(uri.getPath().length()>0)
+	    {
+	    	client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
+	    	client.getStatusCodeReply();
+	    }
 	} else {
 	    client = new Client(host);
 	}
@@ -53,10 +59,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public BinaryJedis(URI uri) {
 	client = new Client(uri.getHost(), uri.getPort());
-	client.auth(uri.getUserInfo().split(":", 2)[1]);
-	client.getStatusCodeReply();
-	client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	client.getStatusCodeReply();
+	if(uri.getUserInfo()!=null)
+	{
+		client.auth(uri.getUserInfo().split(":", 2)[1]);
+		client.getStatusCodeReply();
+	}
+	if(uri.getPath().length()>0)
+	{
+		client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
+		client.getStatusCodeReply();
+	}
     }
 
     public String ping() {

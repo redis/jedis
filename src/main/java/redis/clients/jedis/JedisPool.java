@@ -24,8 +24,12 @@ public class JedisPool extends Pool<Jedis> {
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
 	    String h = uri.getHost();
 	    int port = uri.getPort();
-	    String password = uri.getUserInfo().split(":", 2)[1];
-	    int database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
+	    String password = "";
+	    if(uri.getUserInfo()!=null)
+		    password = uri.getUserInfo().split(":", 2)[1];
+	    int database = 0;
+	    if(uri.getPath()!=null)
+		    database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
 	    this.internalPool = new GenericObjectPool<Jedis>(
 		    new JedisFactory(h, port, Protocol.DEFAULT_TIMEOUT,
 			    password, database, null),
@@ -41,8 +45,12 @@ public class JedisPool extends Pool<Jedis> {
     public JedisPool(final URI uri) {
 	String h = uri.getHost();
 	int port = uri.getPort();
-	String password = uri.getUserInfo().split(":", 2)[1];
-	int database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
+	String password = "";
+	if(uri.getUserInfo()!=null)
+		password = uri.getUserInfo().split(":", 2)[1];
+	int database = 0;
+	if(uri.getPath()!=null)
+		database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
 	this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h,
 		port, Protocol.DEFAULT_TIMEOUT, password, database, null),
 		new GenericObjectPoolConfig());

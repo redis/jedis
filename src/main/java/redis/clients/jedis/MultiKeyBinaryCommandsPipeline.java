@@ -7,7 +7,7 @@ import java.util.Set;
  * Multikey related commands (these are split out because they are
  * non-shardable)
  */
-public interface MultiKeyBinaryRedisPipeline {
+public interface MultiKeyBinaryCommandsPipeline {
 
     Response<Long> del(byte[]... keys);
 

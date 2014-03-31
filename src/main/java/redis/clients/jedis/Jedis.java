@@ -1433,6 +1433,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	final List<String> members = client.getMultiBulkReply();
 	return new LinkedHashSet<String>(members);
     }
+    
+    public Set<String> zrangeReverse(final String key, final long start, final long end) {
+	checkIsInMulti();
+	client.zrange(key, start, end);
+	return client.getMultiBulkReplyReverse();
+    }
 
     /**
      * Remove the specified member from the sorted set value stored at key. If

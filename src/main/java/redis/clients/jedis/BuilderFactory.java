@@ -121,12 +121,12 @@ public class BuilderFactory {
 	    }
 	    return result;
 	}
-
 	public String toString() {
 	    return "Set<String>";
 	}
 
     };
+
 
     public static final Builder<List<byte[]>> BYTE_ARRAY_LIST = new Builder<List<byte[]>>() {
 	@SuppressWarnings("unchecked")
@@ -205,6 +205,32 @@ public class BuilderFactory {
 
 	public String toString() {
 	    return "ZSet<String>";
+	}
+
+    };
+    
+    public static final Builder<Set<String>> STRING_REVERSE_ZSET = new Builder<Set<String>>() {
+	@SuppressWarnings("unchecked")
+	public Set<String> build(Object data) {
+	    if (null == data) {
+		return null;
+	    }
+	    List<byte[]> l = (List<byte[]>) data;
+	    byte[] barray = null;
+	    final Set<String> result = new LinkedHashSet<String>(l.size());
+	    for(int i = l.size()-1; i >= 0; --i){
+	    	barray = l.get(i);
+			if (barray == null) {
+			    result.add(null);
+			} else {
+			    result.add(SafeEncoder.encode(barray));
+			}
+	    }
+	    return result;
+	}
+
+	public String toString() {
+	    return "Set<String>";
 	}
 
     };

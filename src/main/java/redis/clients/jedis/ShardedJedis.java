@@ -336,7 +336,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.zrange(key, start, end);
     }
-
+    
+	@Override
+	public Set<String> zrangeReverse(String key, long start, long end) {
+		Jedis j = getShard(key);
+		return j.zrangeReverse(key, start, end);
+	}
+	
     public Long zrem(String key, String... members) {
 	Jedis j = getShard(key);
 	return j.zrem(key, members);
@@ -570,4 +576,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.zscan(key, cursor);
     }
+
+
 }

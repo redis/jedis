@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -203,6 +204,10 @@ public class Connection implements Closeable {
 
     public List<String> getMultiBulkReply() {
 	return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReply());
+    }
+    
+    public Set<String> getMultiBulkReplyReverse() {
+	return BuilderFactory.STRING_REVERSE_ZSET.build(getBinaryMultiBulkReply());
     }
 
     @SuppressWarnings("unchecked")

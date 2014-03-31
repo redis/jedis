@@ -657,6 +657,18 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    }
 	}.run(key);
     }
+    
+    @Override
+    public Set<String> zrangeReverse(final String key, final long start, final long end) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection
+			.zrangeReverse(key, start, end);
+	    }
+	}.run(key);
+    }
 
     @Override
     public Long zrem(final String key, final String... member) {

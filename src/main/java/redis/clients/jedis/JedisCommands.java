@@ -10,6 +10,14 @@ import java.util.Set;
 public interface JedisCommands {
     String set(String key, String value);
 
+    String set(final String key, final String value, final String nxxx,
+            final String expx, final long time);
+
+    String set(final String key, final String value, final String nxxx);
+
+    String set(final String key, final String value, final String nxxx,
+            final String expx, final int time);
+
     String get(String key);
 
     Boolean exists(String key);

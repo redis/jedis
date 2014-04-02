@@ -7,6 +7,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
+import redis.clients.jedis.exceptions.JedisClusterDifferentConnectionsException;
 import redis.clients.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
@@ -31,6 +32,33 @@ public abstract class JedisClusterCommand<T> {
 	}
 
 	return runWithRetries(key, this.redirections, false, false);
+    }
+    
+    public T run(String... keys) {
+        if (keys == null) {
+            throw new JedisClusterException(
+                "No way to dispatch this command to Redis Cluster.");
+        }
+    
+        // For multiple keys, only execute if they all share the same connection slot.
+        if (keys.length > 1) {
+            Jedis firstConnection = connectionHandler
+                .getConnectionFromSlot(JedisClusterCRC16.getSlot(keys[0]));
+            Jedis nextConnection = null;
+            for (int i = 1; i < keys.length; i++) {
+                nextConnection = connectionHandler
+                    .getConnectionFromSlot(JedisClusterCRC16.getSlot(keys[i]));
+                if (firstConnection != nextConnection) {
+                    throw new JedisClusterDifferentConnectionsException(
+                        "Keys do not share the same connection slot.");
+                }
+            }
+        }
+
+        if (keys.length == 0) {
+            return runWithRetries("", this.redirections, false, false);
+        }
+        return runWithRetries(keys[0], this.redirections, false, false);
     }
 
     private T runWithRetries(String key, int redirections,

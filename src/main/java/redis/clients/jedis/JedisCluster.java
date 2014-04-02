@@ -7,7 +7,9 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-public class JedisCluster implements JedisCommands, BasicCommands {
+public class JedisCluster implements JedisCommands, BasicCommands, 
+        JedisClusterScriptingCommands {
+    
     public static final short HASHSLOTS = 16384;
     private static final int DEFAULT_TIMEOUT = 1;
     private static final int DEFAULT_MAX_REDIRECTIONS = 5;
@@ -1481,4 +1483,153 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    }
 	}.run(null);
     }
+    
+    @Override
+    public Object eval(final String script, final int keyCount, final String... params) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.eval(script, keyCount, params);
+        }
+    }.runScript(params);
+    }
+    
+    @Override
+    public Object eval(final String script, final List<String> keys, final List<String> args) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.eval(script, keys, args);
+        }
+    }.runScript(keys.toArray(new String[keys.size()]));
+    }
+    
+    /**
+     * This method will not execute the script because no key is provided.
+     */
+    @Override
+    public Object eval(final String script) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.eval(script);
+        }
+    }.runScript(null);
+    }
+    
+    @Override
+    public Object evalsha(final String sha1, final int keyCount, final String... params) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.evalsha(sha1, keyCount, params);
+        }
+    }.runScript(params);
+    }
+    
+    @Override
+    public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.evalsha(sha1, keys, args);
+        }
+    }.runScript(keys.toArray(new String[keys.size()]));
+    }
+    
+    /**
+     * This method will not execute the script because no key is provided.
+     */
+    @Override
+    public Object evalsha(final String sha1) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.evalsha(sha1);
+        }
+    }.runScript(null);
+    }
+    
+    /**
+     * This method will not execute the script because no key is provided.
+     */
+    @Override
+    public Boolean scriptExists(final String sha1) {
+    return new JedisClusterCommand<Boolean>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Boolean execute(Jedis connection) {
+        return connection.scriptExists(sha1);
+        }
+    }.runScript(null);
+    }
+    
+    @Override
+    public Boolean scriptExists(final String sha1, final String key) {
+    return new JedisClusterCommand<Boolean>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Boolean execute(Jedis connection) {
+        return connection.scriptExists(sha1);
+        }
+    }.runScript(key);
+    }
+    
+    /**
+     * This method will not execute the script because no key is provided.
+     */
+    @Override
+    public List<Boolean> scriptExists(final String... sha1) {
+    return new JedisClusterCommand<List<Boolean>>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public List<Boolean> execute(Jedis connection) {
+        return connection.scriptExists(sha1);
+        }
+    }.runScript(null);
+    }
+    
+    @Override
+    public List<Boolean> scriptExists(final String key, final String... sha1) {
+    return new JedisClusterCommand<List<Boolean>>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public List<Boolean> execute(Jedis connection) {
+        return connection.scriptExists(sha1);
+        }
+    }.runScript(key);
+    }
+    
+    /**
+     * This method will not execute the script because no key is provided.
+     */
+    @Override
+    public String scriptLoad(final String script) {
+    return new JedisClusterCommand<String>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public String execute(Jedis connection) {
+        return connection.scriptLoad(script);
+        }
+    }.runScript(null);
+    }
+    
+    @Override
+    public String scriptLoad(final String script, final String key) {
+    return new JedisClusterCommand<String>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public String execute(Jedis connection) {
+        return connection.scriptLoad(script);
+        }
+    }.runScript(key);
+    }
 }
+
+    

@@ -32,6 +32,29 @@ public abstract class JedisClusterCommand<T> {
 
 	return runWithRetries(key, this.redirections, false, false);
     }
+    
+    public T runScript(String... keys) {
+        if (keys == null || keys.length == 0) {
+            throw new JedisClusterException(
+                "No way to dispatch this command to Redis Cluster.");
+        }
+    
+        // For multiple keys, only execute if they all share the 
+        // same connection slot.
+        if (keys.length > 1) {
+            int slot = JedisClusterCRC16.getSlot(keys[0]);
+            for (int i = 1; i < keys.length; i++) {
+                int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
+                if (slot != nextSlot) {
+                    throw new JedisClusterException(
+                        "No way to dispatch this command to Redis Cluster" + 
+                        "because keys have different slots.");
+                }
+            }
+        }
+        
+        return runWithRetries(keys[0], this.redirections, false, false);
+    }
 
     private T runWithRetries(String key, int redirections,
 	    boolean tryRandomNode, boolean asking) {

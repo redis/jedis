@@ -10,16 +10,16 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.exceptions.JedisClusterDifferentConnectionsException;
 import redis.clients.jedis.tests.JedisTestBase;
+import redis.clients.jedis.exceptions.JedisClusterException;
 
 public class ClusterScriptingCommandsTest extends JedisTestBase{
     private final Set<HostAndPort> jedisClusterNodes = createClusterNodesSet();
     private final JedisCluster jedisCluster = new JedisCluster(jedisClusterNodes);
 
     @SuppressWarnings("unchecked")
-    @Test(expected = JedisClusterDifferentConnectionsException.class)
-    public void testDifferentConnectionsException() {
+    @Test(expected = JedisClusterException.class)
+    public void testJedisClusterException() {
         String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
         List<String> keys = new ArrayList<String>();
         keys.add("key1");
@@ -44,15 +44,15 @@ public class ClusterScriptingCommandsTest extends JedisTestBase{
     @SuppressWarnings("unchecked")
     @Test
     public void testScriptLoadAndScriptExists() { 
-        String sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')");
-        assertTrue(jedisCluster.scriptExists(sha1));
+        String sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')", "key1");
+        assertTrue(jedisCluster.scriptExists(sha1, "key1"));
     }
     
     @SuppressWarnings("unchecked")
     @Test
     public void testEvalsha() {
-        String sha1 = jedisCluster.scriptLoad("return 10");
-        Object o = jedisCluster.evalsha(sha1);
+        String sha1 = jedisCluster.scriptLoad("return 10", "key1");
+        Object o = jedisCluster.evalsha(sha1, 1, "key1");
         assertEquals("10", o.toString());
     }
     

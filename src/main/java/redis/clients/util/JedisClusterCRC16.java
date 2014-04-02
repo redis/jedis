@@ -14,6 +14,10 @@ public class JedisClusterCRC16 {
 	}
 	return getCRC16(key) % 16384;
     }
+    
+    public static int getSlot(byte[] key) {
+        return getCRC16(key) % 16384;
+    }
 
     private static int getCRC16(String key) {
 	int crc = 0x0000;
@@ -30,5 +34,22 @@ public class JedisClusterCRC16 {
 	}
 
 	return crc &= 0xffff ;
+    }
+    
+    private static int getCRC16(byte[] key) {
+        int crc = 0x0000;
+        for (byte b : key) {
+            for (int i = 0; i < 8; i++) {
+                boolean bit = ((b >> (7 - i) & 1) == 1);
+                boolean c15 = ((crc >> 15 & 1) == 1);
+                crc <<= 1;
+                // If coefficient of bit and remainder polynomial = 1 xor crc
+                // with polynomial
+                if (c15 ^ bit)
+                    crc ^= polynomial;
+                }
+        }
+        
+        return crc &= 0xffff;
     }
 }

@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands {
+public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
+        JedisClusterBinaryScriptingCommands {
     
     public static final short HASHSLOTS = 16384;
     protected static final int DEFAULT_TIMEOUT = 1;
@@ -1326,5 +1327,171 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands {
     public Long waitReplicas(int replicas, long timeout) {
     // TODO Auto-generated method stub
     return null;
+    }
+    
+    @Override
+    public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.eval(script, keyCount, params);
+                }
+            }.runBinaryScript(params);
+    }
+
+    @Override
+    public Object eval(final byte[] script, final int keyCount, final byte[]... params) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.eval(script, keyCount, params);
+                }
+            }.runBinaryScript(params);
+    }
+
+    @Override
+    public Object eval(final byte[] script, final List<byte[]> keys, final List<byte[]> args) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.eval(script, keys, args);
+                }
+            }.runBinaryScript(keys.toArray(new byte[keys.size()][]));
+    }
+
+    @Override
+    public Object eval(final byte[] script) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.eval(script);
+                }
+            }.runBinaryScript(null);
+    }
+
+    @Override
+    public Object evalsha(final byte[] script) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.evalsha(script);
+                }
+            }.runBinaryScript(null);
+    }
+
+    @Override
+    public Object evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.evalsha(sha1, keys, args);
+                }
+            }.runBinaryScript(keys.toArray(new byte[keys.size()][]));
+    }
+
+    @Override
+    public Object evalsha(final byte[] sha1, final int keyCount, final byte[]... params) {
+        return new JedisClusterCommand<Object>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public Object execute(Jedis connection) {
+                return connection.evalsha(sha1, keyCount, params);
+                }
+            }.runBinaryScript(params);
+    }
+
+    @Override
+    // TODO: should be Boolean, add singular version
+    public List<Long> scriptExists(final byte[]... sha1) {
+        return new JedisClusterCommand<List>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public List execute(Jedis connection) {
+                return connection.scriptExists(sha1);
+                }
+            }.runBinaryScript(null);
+    }
+
+    @Override
+    public byte[] scriptLoad(final byte[] script) {
+        return new JedisClusterCommand<byte[]>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public byte[] execute(Jedis connection) {
+                return connection.scriptLoad(script);
+                }
+            }.runBinaryScript(null);
+    }
+
+    @Override
+    public String scriptFlush() {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public String execute(Jedis connection) {
+                return connection.scriptFlush();
+                }
+            }.runBinaryScript(null);
+    }
+
+    @Override
+    public String scriptKill() {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public String execute(Jedis connection) {
+                return connection.scriptKill();
+                }
+            }.runBinaryScript(null);
+    }
+    
+    @Override
+    public List<Long> scriptExists(final byte[] key, final byte[][] sha1) {
+        return new JedisClusterCommand<List<Long>>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public List<Long> execute(Jedis connection) {
+                return connection.scriptExists(sha1);
+                }
+            }.runBinaryScript(key);
+    }
+    
+    @Override
+    public byte[] scriptLoad(final byte[] script, final byte[] key) {
+        return new JedisClusterCommand<byte[]>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public byte[] execute(Jedis connection) {
+                return connection.scriptLoad(script);
+                }
+            }.runBinaryScript(key);
+    }
+    
+    @Override
+    public String scriptFlush(final byte[] key) {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public String execute(Jedis connection) {
+                return connection.scriptFlush();
+                }
+            }.runBinaryScript(key);
+    }
+    
+    @Override
+    public String scriptKill(byte[] key) {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+                @Override
+                public String execute(Jedis connection) {
+                return connection.scriptKill();
+                }
+            }.runBinaryScript(key);
     }
 }

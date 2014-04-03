@@ -2,8 +2,10 @@ package redis.clients.jedis.tests.commands;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.After;
@@ -17,10 +19,9 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.JedisClusterCRC16;
 
-public class ClusterScriptingCommandsTest extends JedisTestBase{
+public class ClusterBinaryJedisCommandsTest extends JedisTestBase{
     private Jedis node1;
     private static Jedis node2;
     private static Jedis node3;
@@ -98,97 +99,69 @@ public class ClusterScriptingCommandsTest extends JedisTestBase{
     node2.clusterDelSlots(slotsToDelete);
     node3.clusterDelSlots(slotsToDelete);
     }
-
-
+    
     @SuppressWarnings("unchecked")
-    @Test(expected = JedisClusterException.class)
-    public void testJedisClusterException() {
-        String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
-        List<String> keys = new ArrayList<String>();
-        keys.add("key1");
-        keys.add("key2");
-        List<String> args = new ArrayList<String>();
-        args.add("first");
-        args.add("second");
-        args.add("third");
-        jedisCluster.eval(script, keys, args);
+    @Test
+    public void testBinaryGetAndSet() {
+        byte[] byteKey = "foo".getBytes();
+        byte[] byteValue = "2".getBytes();
+        jedisCluster.set(byteKey, byteValue);
+        assertEquals(new String(jedisCluster.get(byteKey)), "2");
     }
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testEval2() {
-        String script = "return redis.call('set',KEYS[1],'bar')";
-        int numKeys = 1;
-        String[] args = {"foo"};
-        jedisCluster.eval(script, numKeys, args);
-        assertEquals(jedisCluster.get("foo"), "bar");
+    public void testIncr() {
+        byte[] byteKey = "foo".getBytes();
+        byte[] byteValue = "2".getBytes();
+        jedisCluster.set(byteKey, byteValue);
+        jedisCluster.incr(byteKey);
+        assertEquals(new String(jedisCluster.get(byteKey)), "3");
     }
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testScriptLoadAndScriptExists() { 
-        String sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')", "key1");
-        assertTrue(jedisCluster.scriptExists(sha1, "key1"));
+    public void testSadd() {
+        byte[] byteKey = "languages".getBytes();
+        byte[] firstLanguage = "java".getBytes();
+        byte[] secondLanguage = "python".getBytes();
+        byte[][] listLanguages = {firstLanguage, secondLanguage};
+        jedisCluster.sadd(byteKey, listLanguages);
+        Set<byte[]> setLanguages = jedisCluster.smembers(byteKey);
+        List<String> languages = new ArrayList<String>();
+        for (byte[] language : setLanguages) {
+            languages.add(new String(language));
+        }
+        assertTrue(languages.contains("java"));
+        assertTrue(languages.contains("python"));
     }
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testEvalsha() {
-        String sha1 = jedisCluster.scriptLoad("return 10", "key1");
-        Object o = jedisCluster.evalsha(sha1, 1, "key1");
-        assertEquals("10", o.toString());
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test(expected = JedisClusterException.class)
-    public void testJedisClusterException2() {
-        byte[] script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}".getBytes();
-        List<byte[]> keys = new ArrayList<byte[]>();
-        keys.add("key1".getBytes());
-        keys.add("key2".getBytes());
-        List<byte[]> args = new ArrayList<byte[]>();
-        args.add("first".getBytes());
-        args.add("second".getBytes());
-        args.add("third".getBytes());
-        jedisCluster.eval(script, keys, args);
+    public void testHmset() {
+        byte[] byteKey = "language".getBytes();
+        byte[] language = "java".getBytes();
+        HashMap<byte[], byte[]> map = new HashMap();
+        map.put(byteKey, language);
+        jedisCluster.hmset(byteKey, map);
+        List<byte[]> listResults = jedisCluster.hmget(byteKey, byteKey);
+        for (byte[] result : listResults) {
+            String resultString = new String(result);
+            assertEquals(resultString, "java");
+        }
     }
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testBinaryEval() {
-        byte[] script = "return redis.call('set',KEYS[1],'bar')".getBytes();
-        byte[] numKeys = "1".getBytes();
-        byte[][] args = {"foo".getBytes()};
-        jedisCluster.eval(script, numKeys, args);
-        assertEquals(jedisCluster.get("foo"), "bar");
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testBinaryScriptFlush() { 
-        byte[] byteKey = "key1".getBytes();
-        byte[][] byteArray = {byteKey};
-        byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
-        assertEquals("OK", jedisCluster.scriptFlush(byteKey));
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test(expected = JedisDataException.class)
-    public void testBinaryScriptKill() { 
-        byte[] byteKey = "key1".getBytes();
-        jedisCluster.scriptKill(byteKey);
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testBinaryScriptExists() { 
-        byte[] byteKey = "key1".getBytes();
-        byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
-        byte[][] arraySha1 = {sha1};
-        Long result = 1L;
-        List<Long> listResult = new ArrayList();
-        listResult.add(result);
-        assertEquals(listResult, jedisCluster.scriptExists(byteKey, arraySha1));
+    public void testRpush() {
+        byte[] value1 = "value1".getBytes();
+        byte[] value2 = "value2".getBytes();
+        byte[] key = "key1".getBytes();
+        jedisCluster.del(key);
+        jedisCluster.rpush(key, value1);
+        jedisCluster.rpush(key, value2);
+        long num = 2L;
+        assertEquals(2, (long)jedisCluster.llen(key));
     }
     
     private static String getNodeId(String infoOutput) {

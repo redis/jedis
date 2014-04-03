@@ -80,6 +80,32 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	}
     }
 
+    @Test
+    public void returnResourceWithNullResource() {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+		config, 1000, "foobared", 2);
+
+	Jedis nullJedis = null;
+	pool.returnResource(nullJedis);
+	pool.destroy();
+    }
+
+    @Test
+    public void returnBrokenResourceWithNullResource() {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+		config, 1000, "foobared", 2);
+
+	Jedis nullJedis = null;
+	pool.returnBrokenResource(nullJedis);
+	pool.destroy();
+    }
+
     private void forceFailover(JedisSentinelPool pool)
 	    throws InterruptedException {
 	HostAndPort oldMaster = pool.getCurrentHostMaster();

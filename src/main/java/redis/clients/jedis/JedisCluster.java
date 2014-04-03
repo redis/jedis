@@ -7,32 +7,21 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-public class JedisCluster implements JedisCommands, BasicCommands, 
+public class JedisCluster extends BinaryJedisCluster implements JedisCommands, 
         JedisClusterScriptingCommands {
-    
-    public static final short HASHSLOTS = 16384;
-    private static final int DEFAULT_TIMEOUT = 1;
-    private static final int DEFAULT_MAX_REDIRECTIONS = 5;
 
-    private int timeout;
-    private int maxRedirections;
-
-    private JedisClusterConnectionHandler connectionHandler;
 
     public JedisCluster(Set<HostAndPort> nodes, int timeout) {
-	this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS);
+	super(nodes, timeout, DEFAULT_MAX_REDIRECTIONS);
     }
 
     public JedisCluster(Set<HostAndPort> nodes) {
-	this(nodes, DEFAULT_TIMEOUT);
+	super(nodes, DEFAULT_TIMEOUT);
     }
 
     public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout,
 	    int maxRedirections) {
-	this.connectionHandler = new JedisSlotBasedConnectionHandler(
-		jedisClusterNode);
-	this.timeout = timeout;
-	this.maxRedirections = maxRedirections;
+	super(jedisClusterNode, timeout, maxRedirections);
     }
 
     @Override
@@ -1177,225 +1166,6 @@ public class JedisCluster implements JedisCommands, BasicCommands,
 			end);
 	    }
 	}.run(key);
-    }
-
-    @Override
-    public String ping() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.ping();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String quit() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.quit();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String flushDB() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.flushDB();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public Long dbSize() {
-	return new JedisClusterCommand<Long>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public Long execute(Jedis connection) {
-		return connection.dbSize();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String select(final int index) {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.select(index);
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String flushAll() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.flushAll();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String auth(final String password) {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.auth(password);
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String save() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.save();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String bgsave() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.bgsave();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String bgrewriteaof() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.bgrewriteaof();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public Long lastsave() {
-	return new JedisClusterCommand<Long>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public Long execute(Jedis connection) {
-		return connection.lastsave();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String shutdown() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.shutdown();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String info() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.info();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String info(final String section) {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.info(section);
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String slaveof(final String host, final int port) {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.slaveof(host, port);
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String slaveofNoOne() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.slaveofNoOne();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public Long getDB() {
-	return new JedisClusterCommand<Long>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public Long execute(Jedis connection) {
-		return connection.getDB();
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String debug(final DebugParams params) {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.debug(params);
-	    }
-	}.run(null);
-    }
-
-    @Override
-    public String configResetStat() {
-	return new JedisClusterCommand<String>(connectionHandler, timeout,
-		maxRedirections) {
-	    @Override
-	    public String execute(Jedis connection) {
-		return connection.configResetStat();
-	    }
-	}.run(null);
-    }
-
-    public Map<String, JedisPool> getClusterNodes() {
-	return connectionHandler.getNodes();
-    }
-
-    @Override
-    public Long waitReplicas(int replicas, long timeout) {
-	// TODO Auto-generated method stub
-	return null;
     }
 
     @Deprecated

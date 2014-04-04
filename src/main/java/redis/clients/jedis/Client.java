@@ -951,4 +951,16 @@ public class Client extends BinaryClient implements Commands {
 	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
 		Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
     }
+
+    public void pfadd(String key, final String... elements) {
+	pfadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(elements));
+    }
+
+    public void pfcount(final String key) {
+	pfcount(SafeEncoder.encode(key));
+    }
+
+    public void pfmerge(final String destkey, final String... sourcekeys) {
+	pfmerge(SafeEncoder.encode(destkey), SafeEncoder.encodeMany(sourcekeys));
+    }
 }

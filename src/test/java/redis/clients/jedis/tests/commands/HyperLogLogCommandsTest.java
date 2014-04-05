@@ -6,7 +6,6 @@ import redis.clients.util.SafeEncoder;
 
 public class HyperLogLogCommandsTest extends JedisCommandTestBase {
 
-
     @Test
     public void pfadd() {
 	long status = jedis.pfadd("foo", "a");

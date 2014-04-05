@@ -320,7 +320,7 @@ public class BinaryClient extends Connection {
     public void sadd(final byte[] key, final byte[]... members) {
 	sendCommand(SADD, joinParameters(key, members));
     }
-    
+
     public void smembers(final byte[] key) {
 	sendCommand(SMEMBERS, key);
     }
@@ -1252,16 +1252,5 @@ public class BinaryClient extends Connection {
 
     public void asking() {
 	sendCommand(Command.ASKING);
-    }
-    
-    public void pfadd(final byte[] key, final byte[]... elements) {
-   	sendCommand(PFADD, joinParameters(key, elements));
-    }
-    
-    public void pfcount(final byte[] key) {
-   	sendCommand(PFCOUNT, key);
-    }
-    public void pfmerge(final byte[] deskey, final byte[]... sourcekeys) {
-   	sendCommand(PFMERGE, joinParameters(deskey, sourcekeys));
     }
 }

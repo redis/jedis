@@ -3412,22 +3412,4 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return BuilderFactory.STRING_MAP
 		.build(client.getBinaryMultiBulkReply());
     }
-
-    public Long pfadd(final String key, String... elements) {
-	checkIsInMulti();
-	client.pfadd(key, elements);
-	return client.getIntegerReply();
-    }
-
-    public long pfcount(final String key) {
-	checkIsInMulti();
-	client.pfcount(key);
-	return client.getIntegerReply();
-    }
-
-    public String pfmerge(final String destkey, final String... sourcekeys) {
-	checkIsInMulti();
-	client.pfmerge(destkey, sourcekeys);
-	return client.getStatusCodeReply();
-    }
 }

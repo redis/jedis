@@ -1261,7 +1261,7 @@ public class BinaryClient extends Connection {
     public void pfcount(final byte[] key) {
    	sendCommand(PFCOUNT, key);
     }
-    public void pfmerge(final byte[] deskey, final byte[]... sourcekeys) {
-   	sendCommand(PFMERGE, joinParameters(deskey, sourcekeys));
+    public void pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
+   	sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
     }
 }

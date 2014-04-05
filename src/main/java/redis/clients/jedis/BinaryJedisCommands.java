@@ -211,4 +211,8 @@ public interface BinaryJedisCommands {
     Long bitcount(final byte[] key);
 
     Long bitcount(final byte[] key, long start, long end);
+    
+    Long pfadd(final byte[] key, final byte[]... elements);
+    
+    long pfcount(final byte[] key);
 }

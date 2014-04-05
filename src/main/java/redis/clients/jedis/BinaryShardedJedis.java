@@ -569,4 +569,17 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.bitcount(key, start, end);
     }
+    
+    @Override
+    public Long pfadd(final byte[] key, final byte[]... elements) {
+	Jedis j = getShard(key);
+	return j.pfadd(key, elements);
+    }
+
+    @Override
+    public long pfcount(final byte[] key) {
+	Jedis j = getShard(key);
+	return j.pfcount(key);
+    }
+
 }

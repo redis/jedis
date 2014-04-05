@@ -3417,4 +3417,25 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getIntegerReply();
     }
 
+    @Override
+    public Long pfadd(final byte[] key, final byte[]... elements) {
+	checkIsInMulti();
+	client.pfadd(key, elements);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public long pfcount(final byte[] key) {
+	checkIsInMulti();
+	client.pfcount(key);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public String pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
+	checkIsInMulti();
+	client.pfmerge(destkey, sourcekeys);
+	return client.getStatusCodeReply();
+    }
+
 }

@@ -570,4 +570,16 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.zscan(key, cursor);
     }
+
+    @Override
+    public Long pfadd(String key, String... elements) {
+	Jedis j = getShard(key);
+	return j.pfadd(key, elements);
+    }
+
+    @Override
+    public long pfcount(String key) {
+	Jedis j = getShard(key);
+	return j.pfcount(key);
+    }
 }

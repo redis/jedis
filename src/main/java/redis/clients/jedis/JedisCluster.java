@@ -1481,4 +1481,27 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    }
 	}.run(null);
     }
+
+    @Override
+    public Long pfadd(final String key, final String... elements) {
+	return new JedisClusterCommand<Long>(connectionHandler, 
+		timeout, maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.pfadd(key, elements);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public long pfcount(final String key) {
+	return new JedisClusterCommand<Long>(connectionHandler, 
+		timeout, maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.pfcount(key);
+	    }
+	}.run(key);
+    }
+
 }

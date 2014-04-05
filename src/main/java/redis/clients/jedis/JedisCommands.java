@@ -240,4 +240,8 @@ public interface JedisCommands {
     ScanResult<String> sscan(final String key, final String cursor);
     
     ScanResult<Tuple> zscan(final String key, final String cursor);
+    
+    Long pfadd(final String key, final String... elements);
+    
+    long pfcount(final String key);
 }

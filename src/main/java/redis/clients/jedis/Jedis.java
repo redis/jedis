@@ -3413,7 +3413,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 		.build(client.getBinaryMultiBulkReply());
     }
 
-    public Long pfadd(final String key, String... elements) {
+    public Long pfadd(final String key, final String... elements) {
 	checkIsInMulti();
 	client.pfadd(key, elements);
 	return client.getIntegerReply();

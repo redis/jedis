@@ -320,7 +320,7 @@ public class BinaryClient extends Connection {
     public void sadd(final byte[] key, final byte[]... members) {
 	sendCommand(SADD, joinParameters(key, members));
     }
-    
+
     public void smembers(final byte[] key) {
 	sendCommand(SMEMBERS, key);
     }

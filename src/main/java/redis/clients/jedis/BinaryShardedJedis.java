@@ -45,6 +45,40 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.set(key, value);
     }
 
+    /**
+     * Set the string value as value of the key. The string can't be longer than
+     * 1073741824 bytes (1 GB).
+     * 
+     * @param key
+     * @param value
+     * @param nxxx
+     *            NX|XX, NX -- Only set the key if it does not already exist. XX
+     *            -- Only set the key if it already exist.
+     * @param expx
+     *            EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time
+     *            expire time in the units of {@param #expx}
+     * @return Status code reply
+     */
+    public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx,
+            long time) {
+        Jedis j = getShard(key);
+        return j.set(key, value, nxxx, expx, time);
+    }
+
+    @Override
+    public String set(byte[] key, byte[] value, byte[] nxxx) {
+        Jedis j = getShard(key);
+        return j.set(key, value, nxxx);
+    }
+    
+    @Override
+    public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx,
+            int time) {
+        Jedis j = getShard(key);
+        return j.set(key, value, nxxx, expx, time);
+    }
+    
     public byte[] get(byte[] key) {
 	Jedis j = getShard(key);
 	return j.get(key);

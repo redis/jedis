@@ -11,6 +11,14 @@ import java.util.Set;
 public interface BinaryJedisCommands {
     String set(byte[] key, byte[] value);
 
+    String set(final byte[] key, final byte[] value, final byte[] nxxx,
+            final byte[] expx, final long time);
+    
+    String set(final byte[] key, final byte[] value, final byte[] nxxx);
+    
+    String set(final byte[] key, final byte[] value, final byte[] nxxx,
+            final byte[] expx, final int time);
+
     byte[] get(byte[] key);
 
     Boolean exists(byte[] key);

@@ -44,6 +44,38 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	}.run(key);
     }
 
+    public String set(final String key, final String value, final String nxxx,
+            final String expx, final long time) {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public String execute(Jedis connection) {
+                return connection.set(key, value, nxxx, expx, time);
+            }
+        }.run(key);
+    }
+
+    public String set(final String key, final String value, final String nxxx,
+            final String expx, final int time) {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public String execute(Jedis connection) {
+                return connection.set(key, value, nxxx, expx, time);
+            }
+        }.run(key);
+    }
+
+    public String set(final String key, final String value, final String nxxx) {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public String execute(Jedis connection) {
+                return connection.set(key, value, nxxx);
+            }
+        }.run(key);
+    }
+
     @Override
     public String get(final String key) {
 	return new JedisClusterCommand<String>(connectionHandler, timeout,

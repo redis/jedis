@@ -1492,7 +1492,18 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.eval(script, keyCount, params);
         }
-    }.runScript(params);
+    }.runScript(keyCount, params);
+    }
+    
+    @Override
+    public Object eval(final String script, final String key) {
+    return new JedisClusterCommand<Object>(connectionHandler,
+        timeout, maxRedirections) {
+        @Override
+        public Object execute(Jedis connection) {
+        return connection.eval(script);
+        }
+    }.runScript(1, key);
     }
     
     @Override
@@ -1503,21 +1514,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.eval(script, keys, args);
         }
-    }.runScript(keys.toArray(new String[keys.size()]));
-    }
-    
-    /**
-     * This method will not execute the script because no key is provided.
-     */
-    @Override
-    public Object eval(final String script) {
-    return new JedisClusterCommand<Object>(connectionHandler,
-        timeout, maxRedirections) {
-        @Override
-        public Object execute(Jedis connection) {
-        return connection.eval(script);
-        }
-    }.runScript(null);
+    }.runScript(keys.size(), keys.toArray(new String[keys.size()]));
     }
     
     @Override
@@ -1528,7 +1525,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.evalsha(sha1, keyCount, params);
         }
-    }.runScript(params);
+    }.runScript(keyCount, params);
     }
     
     @Override
@@ -1539,35 +1536,18 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.evalsha(sha1, keys, args);
         }
-    }.runScript(keys.toArray(new String[keys.size()]));
+    }.runScript(keys.size(), keys.toArray(new String[keys.size()]));
     }
     
-    /**
-     * This method will not execute the script because no key is provided.
-     */
     @Override
-    public Object evalsha(final String sha1) {
+    public Object evalsha(final String script, final String key) {
     return new JedisClusterCommand<Object>(connectionHandler,
         timeout, maxRedirections) {
         @Override
         public Object execute(Jedis connection) {
-        return connection.evalsha(sha1);
+        return connection.evalsha(script);
         }
-    }.runScript(null);
-    }
-    
-    /**
-     * This method will not execute the script because no key is provided.
-     */
-    @Override
-    public Boolean scriptExists(final String sha1) {
-    return new JedisClusterCommand<Boolean>(connectionHandler,
-        timeout, maxRedirections) {
-        @Override
-        public Boolean execute(Jedis connection) {
-        return connection.scriptExists(sha1);
-        }
-    }.runScript(null);
+    }.runScript(1, key);
     }
     
     @Override
@@ -1578,21 +1558,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Boolean execute(Jedis connection) {
         return connection.scriptExists(sha1);
         }
-    }.runScript(key);
-    }
-    
-    /**
-     * This method will not execute the script because no key is provided.
-     */
-    @Override
-    public List<Boolean> scriptExists(final String... sha1) {
-    return new JedisClusterCommand<List<Boolean>>(connectionHandler,
-        timeout, maxRedirections) {
-        @Override
-        public List<Boolean> execute(Jedis connection) {
-        return connection.scriptExists(sha1);
-        }
-    }.runScript(null);
+    }.runScript(1,key);
     }
     
     @Override
@@ -1603,21 +1569,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public List<Boolean> execute(Jedis connection) {
         return connection.scriptExists(sha1);
         }
-    }.runScript(key);
-    }
-    
-    /**
-     * This method will not execute the script because no key is provided.
-     */
-    @Override
-    public String scriptLoad(final String script) {
-    return new JedisClusterCommand<String>(connectionHandler,
-        timeout, maxRedirections) {
-        @Override
-        public String execute(Jedis connection) {
-        return connection.scriptLoad(script);
-        }
-    }.runScript(null);
+    }.runScript(1, key);
     }
     
     @Override
@@ -1628,7 +1580,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public String execute(Jedis connection) {
         return connection.scriptLoad(script);
         }
-    }.runScript(key);
+    }.runScript(1, key);
     }
 }
 

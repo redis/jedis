@@ -33,7 +33,7 @@ public abstract class JedisClusterCommand<T> {
 	return runWithRetries(key, this.redirections, false, false);
     }
     
-    public T runScript(int keyCount, String... keys) {
+    public T run(int keyCount, String... keys) {
         if (keys == null || keys.length == 0) {
             throw new JedisClusterException(
                 "No way to dispatch this command to Redis Cluster.");

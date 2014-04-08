@@ -1492,7 +1492,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.eval(script, keyCount, params);
         }
-    }.runScript(keyCount, params);
+    }.run(keyCount, params);
     }
     
     @Override
@@ -1503,7 +1503,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.eval(script);
         }
-    }.runScript(1, key);
+    }.run(1, key);
     }
     
     @Override
@@ -1514,7 +1514,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.eval(script, keys, args);
         }
-    }.runScript(keys.size(), keys.toArray(new String[keys.size()]));
+    }.run(keys.size(), keys.toArray(new String[keys.size()]));
     }
     
     @Override
@@ -1525,7 +1525,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.evalsha(sha1, keyCount, params);
         }
-    }.runScript(keyCount, params);
+    }.run(keyCount, params);
     }
     
     @Override
@@ -1536,7 +1536,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.evalsha(sha1, keys, args);
         }
-    }.runScript(keys.size(), keys.toArray(new String[keys.size()]));
+    }.run(keys.size(), keys.toArray(new String[keys.size()]));
     }
     
     @Override
@@ -1547,7 +1547,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Object execute(Jedis connection) {
         return connection.evalsha(script);
         }
-    }.runScript(1, key);
+    }.run(1, key);
     }
     
     @Override
@@ -1558,7 +1558,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public Boolean execute(Jedis connection) {
         return connection.scriptExists(sha1);
         }
-    }.runScript(1,key);
+    }.run(1,key);
     }
     
     @Override
@@ -1569,7 +1569,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public List<Boolean> execute(Jedis connection) {
         return connection.scriptExists(sha1);
         }
-    }.runScript(1, key);
+    }.run(1, key);
     }
     
     @Override
@@ -1580,7 +1580,7 @@ public class JedisCluster implements JedisCommands, BasicCommands,
         public String execute(Jedis connection) {
         return connection.scriptLoad(script);
         }
-    }.runScript(1, key);
+    }.run(1, key);
     }
 }
 

@@ -33,15 +33,6 @@ public abstract class JedisClusterCommand<T> {
 	return runWithRetries(key, this.redirections, false, false);
     }
     
-    public T runBinary(byte[] key) {
-        if (key == null) {
-            throw new JedisClusterException(
-                "No way to dispatch this command to Redis Cluster.");
-        }
-
-        return runWithRetries(key, this.redirections, false, false);
-    }
-    
     public T run(int keyCount, String... keys) {
         if (keys == null || keys.length == 0) {
             throw new JedisClusterException(
@@ -65,7 +56,16 @@ public abstract class JedisClusterCommand<T> {
         return runWithRetries(keys[0], this.redirections, false, false);
     }
     
-    public T runBinaryScript(byte[]... keys) {
+    public T runBinary(byte[] key) {
+        if (key == null) {
+            throw new JedisClusterException(
+                "No way to dispatch this command to Redis Cluster.");
+        }
+
+        return runWithRetries(key, this.redirections, false, false);
+    }
+    
+    public T runBinary(int keyCount, byte[]... keys) {
         if (keys == null || keys.length == 0) {
             throw new JedisClusterException(
                 "No way to dispatch this command to Redis Cluster.");
@@ -75,11 +75,11 @@ public abstract class JedisClusterCommand<T> {
         // same connection slot.
         if (keys.length > 1) {
             int slot = JedisClusterCRC16.getSlot(keys[0]);
-            for (int i = 1; i < keys.length; i++) {
+            for (int i = 1; i < keyCount; i++) {
                 int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
                 if (slot != nextSlot) {
                     throw new JedisClusterException(
-                        "No way to dispatch this command to Redis Cluster" + 
+                        "No way to dispatch this command to Redis Cluster " +
                         "because keys have different slots.");
                 }
             }

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -1337,7 +1338,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public Object execute(Jedis connection) {
                 return connection.eval(script, keyCount, params);
                 }
-            }.runBinaryScript(params);
+            }.runBinary(ByteBuffer.wrap(keyCount).getInt());
     }
 
     @Override
@@ -1348,7 +1349,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public Object execute(Jedis connection) {
                 return connection.eval(script, keyCount, params);
                 }
-            }.runBinaryScript(params);
+            }.runBinary(keyCount, params);
     }
 
     @Override
@@ -1359,29 +1360,29 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public Object execute(Jedis connection) {
                 return connection.eval(script, keys, args);
                 }
-            }.runBinaryScript(keys.toArray(new byte[keys.size()][]));
+            }.runBinary(keys.size(), keys.toArray(new byte[keys.size()][]));
     }
 
     @Override
-    public Object eval(final byte[] script) {
+    public Object eval(final byte[] script, byte[] key) {
         return new JedisClusterCommand<Object>(connectionHandler, timeout,
                 maxRedirections) {
                 @Override
                 public Object execute(Jedis connection) {
                 return connection.eval(script);
                 }
-            }.runBinaryScript(null);
+            }.runBinary(key);
     }
 
     @Override
-    public Object evalsha(final byte[] script) {
+    public Object evalsha(final byte[] script, byte[] key) {
         return new JedisClusterCommand<Object>(connectionHandler, timeout,
                 maxRedirections) {
                 @Override
                 public Object execute(Jedis connection) {
                 return connection.evalsha(script);
                 }
-            }.runBinaryScript(null);
+            }.runBinary(key);
     }
 
     @Override
@@ -1392,7 +1393,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public Object execute(Jedis connection) {
                 return connection.evalsha(sha1, keys, args);
                 }
-            }.runBinaryScript(keys.toArray(new byte[keys.size()][]));
+            }.runBinary(keys.size(), keys.toArray(new byte[keys.size()][]));
     }
 
     @Override
@@ -1403,52 +1404,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public Object execute(Jedis connection) {
                 return connection.evalsha(sha1, keyCount, params);
                 }
-            }.runBinaryScript(params);
-    }
-
-    @Override
-    // TODO: should be Boolean, add singular version
-    public List<Long> scriptExists(final byte[]... sha1) {
-        return new JedisClusterCommand<List>(connectionHandler, timeout,
-                maxRedirections) {
-                @Override
-                public List execute(Jedis connection) {
-                return connection.scriptExists(sha1);
-                }
-            }.runBinaryScript(null);
-    }
-
-    @Override
-    public byte[] scriptLoad(final byte[] script) {
-        return new JedisClusterCommand<byte[]>(connectionHandler, timeout,
-                maxRedirections) {
-                @Override
-                public byte[] execute(Jedis connection) {
-                return connection.scriptLoad(script);
-                }
-            }.runBinaryScript(null);
-    }
-
-    @Override
-    public String scriptFlush() {
-        return new JedisClusterCommand<String>(connectionHandler, timeout,
-                maxRedirections) {
-                @Override
-                public String execute(Jedis connection) {
-                return connection.scriptFlush();
-                }
-            }.runBinaryScript(null);
-    }
-
-    @Override
-    public String scriptKill() {
-        return new JedisClusterCommand<String>(connectionHandler, timeout,
-                maxRedirections) {
-                @Override
-                public String execute(Jedis connection) {
-                return connection.scriptKill();
-                }
-            }.runBinaryScript(null);
+            }.runBinary(keyCount, params);
     }
     
     @Override
@@ -1459,7 +1415,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public List<Long> execute(Jedis connection) {
                 return connection.scriptExists(sha1);
                 }
-            }.runBinaryScript(key);
+            }.runBinary(key);
     }
     
     @Override
@@ -1470,7 +1426,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public byte[] execute(Jedis connection) {
                 return connection.scriptLoad(script);
                 }
-            }.runBinaryScript(key);
+            }.runBinary(key);
     }
     
     @Override
@@ -1481,7 +1437,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public String execute(Jedis connection) {
                 return connection.scriptFlush();
                 }
-            }.runBinaryScript(key);
+            }.runBinary(key);
     }
     
     @Override
@@ -1492,6 +1448,6 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public String execute(Jedis connection) {
                 return connection.scriptKill();
                 }
-            }.runBinaryScript(key);
+            }.runBinary(key);
     }
 }

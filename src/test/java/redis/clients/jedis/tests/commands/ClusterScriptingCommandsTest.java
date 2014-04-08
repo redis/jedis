@@ -157,9 +157,8 @@ public class ClusterScriptingCommandsTest extends JedisTestBase{
     @Test
     public void testBinaryEval() {
         byte[] script = "return redis.call('set',KEYS[1],'bar')".getBytes();
-        byte[] numKeys = "1".getBytes();
-        byte[][] args = {"foo".getBytes()};
-        jedisCluster.eval(script, numKeys, args);
+        byte[] args = "foo".getBytes();
+        jedisCluster.eval(script, 1, args);
         assertEquals(jedisCluster.get("foo"), "bar");
     }
     
@@ -167,7 +166,6 @@ public class ClusterScriptingCommandsTest extends JedisTestBase{
     @Test
     public void testBinaryScriptFlush() { 
         byte[] byteKey = "key1".getBytes();
-        byte[][] byteArray = {byteKey};
         byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
         assertEquals("OK", jedisCluster.scriptFlush(byteKey));
     }

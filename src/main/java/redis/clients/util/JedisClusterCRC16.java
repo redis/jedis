@@ -16,7 +16,23 @@ public class JedisClusterCRC16 {
     }
     
     public static int getSlot(byte[] key) {
-        return getSlot(new String(key));
+        int s = -1;
+        int e = -1;
+        boolean sFound = false;
+        for (int i = 0; i < key.length; i++) {
+            if (key[i] == '{' && !sFound) {
+                s = i;
+                sFound = true;
+            }
+            if (key[i] == '}' && sFound) {
+                e = i;
+                break;
+            }
+        }
+        if (s > -1 && e > -1 && e != s + 1) {
+            return getCRC16(key, s, e) % 16384;
+        }
+        return getCRC16(key, 0, key.length) % 16384;
     }
 
     private static int getCRC16(String key) {
@@ -34,5 +50,22 @@ public class JedisClusterCRC16 {
 	}
 
 	return crc &= 0xffff ;
+    }
+    
+    private static int getCRC16(byte[] key, int s, int e) {
+        int crc = 0x0000;
+        for (int i = s; i < e; i++){
+            for (int j = 0; j < 8; j++) {
+                boolean bit = ((key[i] >> (7 - j) & 1) == 1);
+                boolean c15 = ((crc >> 15 & 1) == 1);
+                crc <<= 1;
+                // If coefficient of bit and remainder polynomial = 1 xor crc
+                // with polynomial
+                if (c15 ^ bit)
+                    crc ^= polynomial;
+                }
+        }
+     
+        return crc &= 0xffff ;
     }
 }

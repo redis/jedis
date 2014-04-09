@@ -22,6 +22,7 @@ Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://gro
 
 ## So what can I do with Jedis?
 All of the following redis features are supported:
+2014/04/09
 
 - Sorting
 - Connection handling

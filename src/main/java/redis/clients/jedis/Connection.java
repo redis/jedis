@@ -37,6 +37,18 @@ public class Connection implements Closeable {
 	this.timeout = timeout;
     }
 
+    public void setPubSubTimeout(int timeout) {
+        try {
+            if(!isConnected()) {
+                connect();
+            }
+            socket.setKeepAlive(true);
+            socket.setSoTimeout(timeout);
+        } catch (SocketException ex) {
+            throw new JedisException(ex);
+        }
+    }
+
     public void setTimeoutInfinite() {
 	try {
 	    if (!isConnected()) {

@@ -1338,7 +1338,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands, BasicCommands,
                 public Object execute(Jedis connection) {
                 return connection.eval(script, keyCount, params);
                 }
-            }.runBinary(ByteBuffer.wrap(keyCount).getInt());
+            }.runBinary(ByteBuffer.wrap(keyCount).getInt(), params);
     }
 
     @Override

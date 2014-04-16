@@ -164,6 +164,14 @@ public class ClusterBinaryJedisCommandsTest extends JedisTestBase{
         assertEquals(2, (long)jedisCluster.llen(key));
     }
     
+    @Test
+    public void testGetSlot() {
+    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar"));
+    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()), JedisClusterCRC16.getSlot("{user1000}.followers".getBytes()));
+    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()), JedisClusterCRC16.getSlot("bar".getBytes()));
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()), JedisClusterCRC16.getSlot("bar".getBytes()));
+    }
+    
     private static String getNodeId(String infoOutput) {
         for (String infoLine : infoOutput.split("\n")) {
             if (infoLine.contains("myself")) {

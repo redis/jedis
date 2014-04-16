@@ -30,7 +30,7 @@ public class JedisClusterCRC16 {
             }
         }
         if (s > -1 && e > -1 && e != s + 1) {
-            return getCRC16(key, s, e) % 16384;
+            return getCRC16(key, s+1, e) % 16384;
         }
         return getCRC16(key, 0, key.length) % 16384;
     }

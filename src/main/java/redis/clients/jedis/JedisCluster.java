@@ -1273,7 +1273,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         public Object execute(Jedis connection) {
         return connection.eval(script);
         }
-    }.run(1, key);
+    }.run(key);
     }
     
     @Override
@@ -1317,7 +1317,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         public Object execute(Jedis connection) {
         return connection.evalsha(script);
         }
-    }.run(1, key);
+    }.run(key);
     }
     
     @Override
@@ -1328,7 +1328,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         public Boolean execute(Jedis connection) {
         return connection.scriptExists(sha1);
         }
-    }.run(1,key);
+    }.run(key);
     }
     
     @Override
@@ -1339,7 +1339,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         public List<Boolean> execute(Jedis connection) {
         return connection.scriptExists(sha1);
         }
-    }.run(1, key);
+    }.run(key);
     }
     
     @Override
@@ -1350,7 +1350,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         public String execute(Jedis connection) {
         return connection.scriptLoad(script);
         }
-    }.run(1, key);
+    }.run(key);
     }
 }
 

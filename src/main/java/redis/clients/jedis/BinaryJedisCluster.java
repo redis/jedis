@@ -1113,6 +1113,10 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
          }.runBinary(key);
     }
     
+    public Map<String, JedisPool> getClusterNodes() {
+        return connectionHandler.getNodes();
+    }
+    
     @Override
     public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
         return new JedisClusterCommand<Object>(connectionHandler, timeout,

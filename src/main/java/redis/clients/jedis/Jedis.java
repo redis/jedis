@@ -2659,6 +2659,15 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.getrange(key, startOffset, endOffset);
 	return client.getBulkReply();
     }
+    
+    public Long bitpos(final String key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+	client.bitpos(key, value, params);
+	return client.getIntegerReply();
+    }
 
     /**
      * Retrieve the configuration of a running Redis server. Not all the

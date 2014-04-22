@@ -16,6 +16,7 @@ import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.Protocol.Command;
@@ -827,6 +828,25 @@ public class BinaryClient extends Connection {
 	args.addAll(params.getParams());
 	sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
     }
+    
+    public void zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	sendCommand(ZLEXCOUNT, key, min, max);
+    }
+
+    public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	sendCommand(ZRANGEBYLEX, key, min, max);
+    }
+
+    public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    final int offset, final int count) {
+	sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.raw, 
+		toByteArray(offset), toByteArray(count));
+    }
+
+    public void zremrangeByLex(byte[] key, byte[] min, byte[] max) {
+	sendCommand(ZREMRANGEBYLEX, key, min, max);
+    }
+
 
     public void save() {
 	sendCommand(SAVE);

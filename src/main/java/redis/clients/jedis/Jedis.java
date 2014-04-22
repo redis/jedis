@@ -2561,6 +2561,35 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.zinterstore(dstkey, params, sets);
 	return client.getIntegerReply();
     }
+    
+    @Override
+    public Long zlexcount(final String key, final String min, final String max) {
+	checkIsInMulti();
+	client.zlexcount(key, min, max);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max, offset, count);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    @Override
+    public Long zremrangeByLex(final String key, final String min, final String max) {
+	checkIsInMulti();
+	client.zremrangeByLex(key, min, max);
+	return client.getIntegerReply();
+    }
 
     public Long strlen(final String key) {
 	client.strlen(key);
@@ -3412,4 +3441,5 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return BuilderFactory.STRING_MAP
 		.build(client.getBinaryMultiBulkReply());
     }
+
 }

@@ -2732,6 +2732,35 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getIntegerReply();
     }
 
+    @Override
+    public Long zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	checkIsInMulti();
+	client.zlexcount(key, min, max);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max);
+	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    final int offset, final int count) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max, offset, count);
+	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	checkIsInMulti();
+	client.zremrangeByLex(key, min, max);
+	return client.getIntegerReply();
+    }
+
     /**
      * Synchronously save the DB on disk.
      * <p>

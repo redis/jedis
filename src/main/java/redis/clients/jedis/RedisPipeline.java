@@ -184,6 +184,15 @@ public interface RedisPipeline {
     Response<Long> zrevrank(String key, String member);
 
     Response<Double> zscore(String key, String member);
+    
+    Response<Long> zlexcount(final String key, final String min, final String max);
+    
+    Response<Set<String>> zrangeByLex(final String key, final String max, final String min);
+
+    Response<Set<String>> zrangeByLex(final String key, final String max, final String min,
+	    final int offset, final int count);
+    
+    Response<Long> zremrangeByLex(final String key, final String start, final String end);
 
     Response<Long> bitcount(String key);
 

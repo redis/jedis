@@ -474,6 +474,31 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.zremrangeByScore(key, start, end);
     }
+    
+    @Override
+    public Long zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	Jedis j = getShard(key);
+	return j.zlexcount(key, min, max);
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	Jedis j = getShard(key);
+	return j.zrangeByLex(key, min, max);
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    final int offset, final int count) {
+	Jedis j = getShard(key);
+	return j.zrangeByLex(key, min, max, offset, count);
+    }
+
+    @Override
+    public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	Jedis j = getShard(key);
+	return j.zremrangeByLex(key, min, max);
+    }
 
     public Long linsert(byte[] key, LIST_POSITION where, byte[] pivot,
 	    byte[] value) {
@@ -569,4 +594,5 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.bitcount(key, start, end);
     }
+
 }

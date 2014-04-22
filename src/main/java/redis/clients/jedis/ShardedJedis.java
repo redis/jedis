@@ -506,6 +506,27 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.zremrangeByScore(key, start, end);
     }
+    
+    @Override
+    public Long zlexcount(final String key, final String min, final String max) {
+	return getShard(key).zlexcount(key, min, max);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+	return getShard(key).zrangeByLex(key, min, max);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count) {
+	return getShard(key).zrangeByLex(key, min, max, offset, count);
+    }
+
+    @Override
+    public Long zremrangeByLex(final String key, final String min, final String max) {
+	return getShard(key).zremrangeByLex(key, min, max);
+    }
 
     public Long linsert(String key, LIST_POSITION where, String pivot,
 	    String value) {
@@ -570,4 +591,5 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.zscan(key, cursor);
     }
+    
 }

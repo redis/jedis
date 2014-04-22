@@ -585,6 +585,24 @@ public class Client extends BinaryClient implements Commands {
 	}
 	zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }
+    
+    public void zlexcount(final String key, final String min, final String max) {
+	zlexcount(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+    }
+    
+    public void zrangeByLex(final String key, final String min, final String max) {
+	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+    }
+    
+    public void zrangeByLex(final String key, final String min, final String max, 
+	    final int offset, final int count) {
+	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max), 
+		offset, count);
+    }
+    
+    public void zremrangeByLex(final String key, final String min, final String max) {
+	zremrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+    }
 
     public void strlen(final String key) {
 	strlen(SafeEncoder.encode(key));

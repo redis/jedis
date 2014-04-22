@@ -3,6 +3,8 @@ package redis.clients.jedis.tests.commands;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.swing.text.html.MinimalHTMLWriter;
+
 import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
@@ -19,6 +21,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] ba = { 0x0A };
     final byte[] bb = { 0x0B };
     final byte[] bc = { 0x0C };
+    final byte[] bInclusiveB = { 0x5B, 0x0B }; 
+    final byte[] bExclusiveC = { 0x28, 0x0C }; 
+    final byte[] bLexMinusInf = { 0x2D };
+    final byte[] bLexPlusInf = { 0x2B };
 
     @Test
     public void zadd() {
@@ -48,7 +54,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	assertEquals(0, bstatus);
 
     }
-
+    
     @Test
     public void zrange() {
 	jedis.zadd("foo", 1d, "a");
@@ -84,6 +90,48 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	brange = jedis.zrange(bfoo, 0, 100);
 	assertEquals(bexpected, brange);
 
+    }
+    
+    @Test
+    public void zrangeByLex() {
+	jedis.zadd("foo", 1, "aa");
+	jedis.zadd("foo", 1, "c");
+	jedis.zadd("foo", 1, "bb");
+	jedis.zadd("foo", 1, "d");
+	
+	Set<String> expected = new LinkedHashSet<String>();
+	expected.add("bb");
+	expected.add("c");
+	
+	// exclusive aa ~ inclusive c
+	assertEquals(expected, jedis.zrangeByLex("foo", "(aa", "[c"));
+	
+	expected.clear();
+	expected.add("bb");
+	expected.add("c");
+	
+	// with LIMIT
+	assertEquals(expected, jedis.zrangeByLex("foo", "-", "+", 1, 2));	
+    }
+    
+    @Test
+    public void zrangeByLexBinary() {
+	// binary
+	jedis.zadd(bfoo, 1, ba);
+	jedis.zadd(bfoo, 1, bc);
+	jedis.zadd(bfoo, 1, bb);
+
+	Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
+	bExpected.add(bb);
+
+	assertEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
+
+	bExpected.clear();
+	bExpected.add(ba);
+	bExpected.add(bb);
+
+	// with LIMIT 
+	assertEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
     }
 
     @Test
@@ -394,6 +442,40 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 		SafeEncoder.encode("+inf"));
 
 	assertEquals(3, bresult);
+    }
+    
+    @Test
+    public void zlexcount() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 1, "b");
+	jedis.zadd("foo", 1, "c");
+	jedis.zadd("foo", 1, "aa");
+
+	long result = jedis.zlexcount("foo", "[aa", "(c");
+	assertEquals(2, result);
+
+	result = jedis.zlexcount("foo", "-", "+");
+	assertEquals(4, result);
+	
+	result = jedis.zlexcount("foo", "-", "(c");
+	assertEquals(3, result);
+	
+	result = jedis.zlexcount("foo", "[aa", "+");
+	assertEquals(3, result);
+    }
+    
+    @Test
+    public void zlexcountBinary() {
+	// Binary
+	jedis.zadd(bfoo, 1, ba);
+	jedis.zadd(bfoo, 1, bc);
+	jedis.zadd(bfoo, 1, bb);
+
+	long result = jedis.zlexcount(bfoo, bInclusiveB, bExclusiveC);
+	assertEquals(1, result);
+
+	result = jedis.zlexcount(bfoo, bLexMinusInf, bLexPlusInf);
+	assertEquals(3, result);
     }
 
     @Test
@@ -732,6 +814,41 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	bexpected.add(bb);
 
 	assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    }
+    
+    @Test
+    public void zremrangeByLex() {
+	jedis.zadd("foo", 1, "a");
+	jedis.zadd("foo", 1, "b");
+	jedis.zadd("foo", 1, "c");
+	jedis.zadd("foo", 1, "aa");
+
+	long result = jedis.zremrangeByLex("foo", "[aa", "(c");
+
+	assertEquals(2, result);
+
+	Set<String> expected = new LinkedHashSet<String>();
+	expected.add("a");
+	expected.add("c");
+
+	assertEquals(expected, jedis.zrangeByLex("foo", "-", "+"));
+    }
+    
+    @Test
+    public void zremrangeByLexBinary() {
+	jedis.zadd(bfoo, 1, ba);
+	jedis.zadd(bfoo, 1, bc);
+	jedis.zadd(bfoo, 1, bb);
+	
+	long bresult = jedis.zremrangeByLex(bfoo, bInclusiveB, bExclusiveC);
+	
+	assertEquals(1, bresult);
+	
+	Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+	bexpected.add(ba);
+	bexpected.add(bc);
+	
+	assertEquals(bexpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
     }
 
     @Test

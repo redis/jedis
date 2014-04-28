@@ -44,6 +44,31 @@ public class HyperLogLogCommandsTest extends JedisCommandTestBase {
     }
     
     @Test
+    public void pfcounts() {
+	long status = jedis.pfadd("hll_1", "foo", "bar", "zap");
+	assertEquals(1, status);
+    status = jedis.pfadd("hll_2", "foo", "bar", "zap");
+    assertEquals(1, status);
+
+	status = jedis.pfadd("hll_3", "foo", "bar", "baz");
+    assertEquals(1, status);
+    status = jedis.pfcount("hll_1");
+    assertEquals(3, status);
+    status = jedis.pfcount("hll_2");
+    assertEquals(3, status);
+    status = jedis.pfcount("hll_3");
+    assertEquals(3, status);
+
+    status = jedis.pfcount("hll_1", "hll_2");
+    assertEquals(3, status);
+
+    status = jedis.pfcount("hll_1", "hll_2", "hll_3");
+    assertEquals(4, status);
+
+
+    }
+
+    @Test
     public void pfcountBinary() {
 	byte[] bHll = SafeEncoder.encode("hll");
 	byte[] bFoo = SafeEncoder.encode("foo");

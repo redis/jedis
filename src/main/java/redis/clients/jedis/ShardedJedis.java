@@ -1,13 +1,13 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Hashing;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public ShardedJedis(List<JedisShardInfo> shards) {
@@ -581,5 +581,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
     public long pfcount(String key) {
 	Jedis j = getShard(key);
 	return j.pfcount(key);
+    }
+
+    @Override
+    public long pfcount(String... keys) {
+        //The command will be sent to the first shard.
+        Jedis j = getShard(keys[0]);
+        return j.pfcount(keys);
     }
 }

@@ -244,4 +244,6 @@ public interface JedisCommands {
     Long pfadd(final String key, final String... elements);
     
     long pfcount(final String key);
+
+    long pfcount(final String...keys);
 }

@@ -582,11 +582,4 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	Jedis j = getShard(key);
 	return j.pfcount(key);
     }
-
-    @Override
-    public long pfcount(String... keys) {
-        //The command will be sent to the first shard.
-        Jedis j = getShard(keys[0]);
-        return j.pfcount(keys);
-    }
 }

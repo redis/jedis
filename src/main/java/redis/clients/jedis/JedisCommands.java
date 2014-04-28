@@ -245,5 +245,4 @@ public interface JedisCommands {
     
     long pfcount(final String key);
 
-    long pfcount(final String...keys);
 }

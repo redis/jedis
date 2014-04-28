@@ -1503,16 +1503,4 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    }
 	}.run(key);
     }
-
-    @Override
-    public long pfcount(final String... keys) {
-        return new JedisClusterCommand<Long>(connectionHandler,
-                timeout, maxRedirections) {
-            @Override
-            public Long execute(Jedis connection) {
-                return connection.pfcount(keys);
-            }
-        }.run(keys[0]);
-    }
-
 }

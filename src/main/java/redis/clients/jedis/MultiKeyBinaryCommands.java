@@ -71,4 +71,6 @@ public interface MultiKeyBinaryCommands {
     Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
     
     String pfmerge(final byte[] destkey, final byte[]... sourcekeys);
+
+    Long pfcount(byte[]... keys);
 }

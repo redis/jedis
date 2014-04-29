@@ -458,4 +458,10 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 	client.pfmerge(destkey, sourcekeys);
 	return getResponse(BuilderFactory.STRING);
     }
+
+    @Override
+    public Response<Long> pfcount(String...keys) {
+	client.pfcount(keys);
+	return getResponse(BuilderFactory.LONG);
+    }
 }

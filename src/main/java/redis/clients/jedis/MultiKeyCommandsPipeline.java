@@ -66,4 +66,6 @@ public interface MultiKeyCommandsPipeline {
     Response<Long> bitop(BitOP op, final String destKey, String... srcKeys);
     
     Response<String> pfmerge(final String destkey, final String... sourcekeys);
+
+    Response<Long> pfcount(final String...keys);
 }

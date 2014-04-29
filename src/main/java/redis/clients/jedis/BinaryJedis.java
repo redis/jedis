@@ -3438,4 +3438,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return client.getStatusCodeReply();
     }
 
+    @Override
+    public Long pfcount(byte[]... keys) {
+        checkIsInMulti();
+        client.pfcount(keys);
+        return client.getIntegerReply();
+    }
+
 }

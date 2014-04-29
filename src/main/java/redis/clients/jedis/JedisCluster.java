@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public class JedisCluster implements JedisCommands, BasicCommands {
     public static final short HASHSLOTS = 16384;
@@ -1503,5 +1503,4 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    }
 	}.run(key);
     }
-
 }

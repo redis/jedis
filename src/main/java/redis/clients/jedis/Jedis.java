@@ -30,10 +30,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	super(host, port, timeout);
     }
 
-    public Jedis(JedisShardInfo shardInfo) {
-	super(shardInfo);
-    }
-
     public Jedis(URI uri) {
 	super(uri);
     }

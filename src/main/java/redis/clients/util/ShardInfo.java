@@ -1,5 +1,6 @@
 package redis.clients.util;
 
+@Deprecated
 public abstract class ShardInfo<T> {
     private int weight;
 

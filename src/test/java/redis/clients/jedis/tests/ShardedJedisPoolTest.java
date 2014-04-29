@@ -17,6 +17,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+@Deprecated
 public class ShardedJedisPoolTest extends Assert {
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()
 	    .get(0);

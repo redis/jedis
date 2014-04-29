@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
@@ -16,6 +17,7 @@ import redis.clients.util.Hashing;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Sharded;
 
+@Deprecated
 public class ShardedJedisTest extends Assert {
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()
 	    .get(0);

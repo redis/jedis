@@ -3,6 +3,7 @@ package redis.clients.util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+@Deprecated
 public interface Hashing {
     public static final Hashing MURMUR_HASH = new MurmurHash();
     public ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();

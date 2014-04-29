@@ -5,6 +5,7 @@ import java.net.URI;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
+@Deprecated
 public class JedisShardInfo extends ShardInfo<Jedis> {
     public String toString() {
 	return host + ":" + port + "*" + getWeight();

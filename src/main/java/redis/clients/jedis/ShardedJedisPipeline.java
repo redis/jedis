@@ -5,11 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+@Deprecated
 public class ShardedJedisPipeline extends PipelineBase {
     private BinaryShardedJedis jedis;
     private List<FutureResult> results = new ArrayList<FutureResult>();
     private Queue<Client> clients = new LinkedList<Client>();
 
+    @Deprecated
     private static class FutureResult {
 	private Client client;
 

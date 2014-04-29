@@ -24,6 +24,7 @@ import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+@Deprecated
 public class ShardedJedisPipelineTest {
 
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()

@@ -10,6 +10,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
+@Deprecated
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	implements BinaryJedisCommands {
     public BinaryShardedJedis(List<JedisShardInfo> shards) {

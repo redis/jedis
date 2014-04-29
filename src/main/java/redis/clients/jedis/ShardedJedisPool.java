@@ -11,6 +11,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.util.Hashing;
 import redis.clients.util.Pool;
 
+@Deprecated
 public class ShardedJedisPool extends Pool<ShardedJedis> {
     public ShardedJedisPool(final GenericObjectPoolConfig poolConfig,
 	    List<JedisShardInfo> shards) {
@@ -35,6 +36,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
     /**
      * PoolableObjectFactory custom impl.
      */
+    @Deprecated
     private static class ShardedJedisFactory implements
 	    PooledObjectFactory<ShardedJedis> {
 	private List<JedisShardInfo> shards;

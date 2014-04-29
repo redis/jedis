@@ -45,12 +45,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	client.setTimeout(timeout);
     }
 
-    public BinaryJedis(final JedisShardInfo shardInfo) {
-	client = new Client(shardInfo.getHost(), shardInfo.getPort());
-	client.setTimeout(shardInfo.getTimeout());
-	client.setPassword(shardInfo.getPassword());
-    }
-
     public BinaryJedis(URI uri) {
 	client = new Client(uri.getHost(), uri.getPort());
 	client.auth(uri.getUserInfo().split(":", 2)[1]);

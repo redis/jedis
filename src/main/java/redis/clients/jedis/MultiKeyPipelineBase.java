@@ -464,4 +464,10 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 	client.pfcount(keys);
 	return getResponse(BuilderFactory.LONG);
     }
+
+    @Override
+    public Response<Long> pfcount(final byte[] ... keys) {
+	client.pfcount(keys);
+	return getResponse(BuilderFactory.LONG);
+    }
 }

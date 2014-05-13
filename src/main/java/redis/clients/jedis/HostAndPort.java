@@ -27,12 +27,21 @@ public class HostAndPort {
 	    String thisHost = convertHost(host);
 	    String hpHost = convertHost(hp.host);
 	    return port == hp.port && thisHost.equals(hpHost);
-
+	
 	}
-
-	return false;
+	
+    return false;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((host == null) ? 0 : convertHost(host).hashCode());
+        result = prime * result + port;
+        return result;
+    }
+	
     @Override
     public String toString() {
 	return host + ":" + port;

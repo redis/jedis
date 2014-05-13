@@ -1,6 +1,8 @@
 package redis.clients.util;
 
 public abstract class ShardInfo<T> {
+    public static final int DEFAULT_WEIGHT = 1;
+
     private int weight;
 
     public ShardInfo() {

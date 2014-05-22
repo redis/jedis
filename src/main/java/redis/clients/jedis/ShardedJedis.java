@@ -32,11 +32,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands {
 	return j.set(key, value);
     }
 
+    @Override
     public String set(String key, String value, String nxxx,
                String expx, long time) {
         Jedis j = getShard(key);
         return j.set(key, value, nxxx, expx, time);
     }
+
     public String get(String key) {
 	Jedis j = getShard(key);
 	return j.get(key);

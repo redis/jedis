@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
@@ -33,6 +34,29 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 		sentinels.add(sentinel1.toString());
 
 		sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
+	}
+
+	@Test
+	public void errorMasterNameNotThrowException() throws InterruptedException {
+		final String wrongMasterName = "wrongMasterName";
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					TimeUnit.SECONDS.sleep(3);
+					sentinelJedis1.sentinelMonitor(wrongMasterName,
+							"127.0.0.1", master.getPort(), 2);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
+
+		JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName,
+				sentinels);
+		pool.destroy();
+		sentinelJedis1.sentinelRemove(wrongMasterName);
 	}
 
 	@Test

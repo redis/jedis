@@ -130,8 +130,15 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		    jedis = new Jedis(hap.getHost(), hap.getPort());
 
 		    if (master == null) {
-			master = toHostAndPort(jedis
-				.sentinelGetMasterAddrByName(masterName));
+			List<String> masterAddr = jedis
+				.sentinelGetMasterAddrByName(masterName);
+			if (masterAddr == null || masterAddr.size() != 2) {
+			    log.warning("Can not get master addr, master name: "
+				    + masterName + ". Sentinel: " + hap + ".");
+			    continue;
+			}
+
+			master = toHostAndPort(masterAddr);
 			log.fine("Found Redis master at " + master);
 			break outer;
 		    }
@@ -140,7 +147,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 			    + ". Trying next one.");
 		} finally {
 		    if (jedis != null) {
-	        jedis.close();
+			jedis.close();
 		    }
 		}
 	    }

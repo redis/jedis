@@ -9,9 +9,7 @@ import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
+import redis.clients.util.*;
 
 public final class Protocol {
 
@@ -50,7 +48,7 @@ public final class Protocol {
     public static final String CLUSTER_SETSLOT_NODE = "node";
     public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
     public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
-    public static final String PUBSUB_CHANNELS= "channels";
+    public static final String PUBSUB_CHANNELS = "channels";
     public static final String PUBSUB_NUMSUB = "numsub";
     public static final String PUBSUB_NUM_PAT = "numpat";
 
@@ -58,34 +56,34 @@ public final class Protocol {
 	// this prevent the class from instantiation
     }
 
-    public static void sendCommand(final RedisOutputStream os,
+    public static void sendCommand(final SocketChannelWriter scw,
 	    final Command command, final byte[]... args) {
-	sendCommand(os, command.raw, args);
+	sendCommand(scw, command.raw, args);
     }
 
-    private static void sendCommand(final RedisOutputStream os,
+    private static void sendCommand(final SocketChannelWriter scw,
 	    final byte[] command, final byte[]... args) {
 	try {
-	    os.write(ASTERISK_BYTE);
-	    os.writeIntCrLf(args.length + 1);
-	    os.write(DOLLAR_BYTE);
-	    os.writeIntCrLf(command.length);
-	    os.write(command);
-	    os.writeCrLf();
+	    scw.write(ASTERISK_BYTE);
+	    scw.writeIntCrLf(args.length + 1);
+	    scw.write(DOLLAR_BYTE);
+	    scw.writeIntCrLf(command.length);
+	    scw.write(command);
+	    scw.writeCrLf();
 
 	    for (final byte[] arg : args) {
-		os.write(DOLLAR_BYTE);
-		os.writeIntCrLf(arg.length);
-		os.write(arg);
-		os.writeCrLf();
+		scw.write(DOLLAR_BYTE);
+		scw.writeIntCrLf(arg.length);
+		scw.write(arg);
+		scw.writeCrLf();
 	    }
 	} catch (IOException e) {
 	    throw new JedisConnectionException(e);
 	}
     }
 
-    private static void processError(final RedisInputStream is) {
-	String message = is.readLine();
+    private static void processError(final SocketChannelReader scr) {
+	String message = scr.readLine();
 	// TODO: I'm not sure if this is the best way to do this.
 	// Maybe Read only first 5 bytes instead?
 	if (message.startsWith(MOVED_RESPONSE)) {
@@ -115,19 +113,19 @@ public final class Protocol {
 	return response;
     }
 
-    private static Object process(final RedisInputStream is) {
+    private static Object process(final SocketChannelReader scr) {
 	try {
-	    byte b = is.readByte();
+	    byte b = scr.readByte();
 	    if (b == MINUS_BYTE) {
-		processError(is);
+		processError(scr);
 	    } else if (b == ASTERISK_BYTE) {
-		return processMultiBulkReply(is);
+		return processMultiBulkReply(scr);
 	    } else if (b == COLON_BYTE) {
-		return processInteger(is);
+		return processInteger(scr);
 	    } else if (b == DOLLAR_BYTE) {
-		return processBulkReply(is);
+		return processBulkReply(scr);
 	    } else if (b == PLUS_BYTE) {
-		return processStatusCodeReply(is);
+		return processStatusCodeReply(scr);
 	    } else {
 		throw new JedisConnectionException("Unknown reply: " + (char) b);
 	    }
@@ -137,12 +135,12 @@ public final class Protocol {
 	return null;
     }
 
-    private static byte[] processStatusCodeReply(final RedisInputStream is) {
-	return SafeEncoder.encode(is.readLine());
+    private static byte[] processStatusCodeReply(final SocketChannelReader scr) {
+	return SafeEncoder.encode(scr.readLine());
     }
 
-    private static byte[] processBulkReply(final RedisInputStream is) {
-	int len = Integer.parseInt(is.readLine());
+    private static byte[] processBulkReply(final SocketChannelReader scr) {
+	int len = Integer.parseInt(scr.readLine());
 	if (len == -1) {
 	    return null;
 	}
@@ -150,15 +148,15 @@ public final class Protocol {
 	int offset = 0;
 	try {
 	    while (offset < len) {
-		int size = is.read(read, offset, (len - offset));
+		int size = scr.read(read, offset, (len - offset));
 		if (size == -1)
 		    throw new JedisConnectionException(
 			    "It seems like server has closed the connection.");
 		offset += size;
 	    }
 	    // read 2 more bytes for the command delimiter
-	    is.readByte();
-	    is.readByte();
+	    scr.readByte();
+	    scr.readByte();
 	} catch (IOException e) {
 	    throw new JedisConnectionException(e);
 	}
@@ -166,20 +164,21 @@ public final class Protocol {
 	return read;
     }
 
-    private static Long processInteger(final RedisInputStream is) {
-	String num = is.readLine();
+    private static Long processInteger(final SocketChannelReader scr) {
+	String num = scr.readLine();
 	return Long.valueOf(num);
     }
 
-    private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-	int num = Integer.parseInt(is.readLine());
+    private static List<Object> processMultiBulkReply(
+	    final SocketChannelReader scr) {
+	int num = Integer.parseInt(scr.readLine());
 	if (num == -1) {
 	    return null;
 	}
 	List<Object> ret = new ArrayList<Object>(num);
 	for (int i = 0; i < num; i++) {
 	    try {
-		ret.add(process(is));
+		ret.add(process(scr));
 	    } catch (JedisDataException e) {
 		ret.add(e);
 	    }
@@ -187,23 +186,23 @@ public final class Protocol {
 	return ret;
     }
 
-    public static Object read(final RedisInputStream is) {
-	return process(is);
+    public static Object read(final SocketChannelReader scr) {
+	return process(scr);
     }
 
-    public static final byte[] toByteArray(final boolean value) {
-    return toByteArray(value ? 1 : 0);
+    public static byte[] toByteArray(final boolean value) {
+	return toByteArray(value ? 1 : 0);
     }
 
-    public static final byte[] toByteArray(final int value) {
+    public static byte[] toByteArray(final int value) {
 	return SafeEncoder.encode(String.valueOf(value));
     }
 
-    public static final byte[] toByteArray(final long value) {
+    public static byte[] toByteArray(final long value) {
 	return SafeEncoder.encode(String.valueOf(value));
     }
 
-    public static final byte[] toByteArray(final double value) {
+    public static byte[] toByteArray(final double value) {
 	return SafeEncoder.encode(String.valueOf(value));
     }
 

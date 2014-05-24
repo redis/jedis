@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,18 +13,21 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
+import redis.clients.util.*;
 
 public class Connection implements Closeable {
     private String host;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
-    private RedisOutputStream outputStream;
-    private RedisInputStream inputStream;
+    private SocketChannelReader channelReader;
+    private SocketChannelWriter channelWriter;
     private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
+    private SocketChannel socketChannel;
+
+    public SocketChannel getSocketChannel() {
+	return socketChannel;
+    }
 
     public Socket getSocket() {
 	return socket;
@@ -65,7 +69,7 @@ public class Connection implements Closeable {
 
     protected void flush() {
 	try {
-	    outputStream.flush();
+	    channelWriter.flush();
 	} catch (IOException e) {
 	    throw new JedisConnectionException(e);
 	}
@@ -81,14 +85,14 @@ public class Connection implements Closeable {
 
     protected Connection sendCommand(final Command cmd, final byte[]... args) {
 	connect();
-	Protocol.sendCommand(outputStream, cmd, args);
+	Protocol.sendCommand(channelWriter, cmd, args);
 	pipelinedCommands++;
 	return this;
     }
 
     protected Connection sendCommand(final Command cmd) {
 	connect();
-	Protocol.sendCommand(outputStream, cmd, new byte[0][]);
+	Protocol.sendCommand(channelWriter, cmd, new byte[0][]);
 	pipelinedCommands++;
 	return this;
     }
@@ -122,7 +126,8 @@ public class Connection implements Closeable {
     public void connect() {
 	if (!isConnected()) {
 	    try {
-		socket = new Socket();
+		socketChannel = SocketChannel.open();
+		socket = socketChannel.socket();
 		// ->@wjw_add
 		socket.setReuseAddress(true);
 		socket.setKeepAlive(true); // Will monitor the TCP connection is
@@ -136,8 +141,9 @@ public class Connection implements Closeable {
 
 		socket.connect(new InetSocketAddress(host, port), timeout);
 		socket.setSoTimeout(timeout);
-		outputStream = new RedisOutputStream(socket.getOutputStream());
-		inputStream = new RedisInputStream(socket.getInputStream());
+		socketChannel.configureBlocking(true);
+		channelReader = new SocketChannelReader(socket.getChannel());
+		channelWriter = new SocketChannelWriter(socket.getChannel());
 	    } catch (IOException ex) {
 		throw new JedisConnectionException(ex);
 	    }
@@ -147,13 +153,14 @@ public class Connection implements Closeable {
     @Override
     public void close() {
 	disconnect();
-   }
+    }
 
     public void disconnect() {
 	if (isConnected()) {
 	    try {
-		inputStream.close();
-		outputStream.close();
+		if (socketChannel.isConnected()) {
+		    socketChannel.close();
+		}
 		if (!socket.isClosed()) {
 		    socket.close();
 		}
@@ -165,14 +172,14 @@ public class Connection implements Closeable {
 
     public boolean isConnected() {
 	return socket != null && socket.isBound() && !socket.isClosed()
-		&& socket.isConnected() && !socket.isInputShutdown()
-		&& !socket.isOutputShutdown();
+		&& socket.isConnected() && socketChannel.isConnected()
+		&& !socket.isInputShutdown() && !socket.isOutputShutdown();
     }
 
     protected String getStatusCodeReply() {
 	flush();
 	pipelinedCommands--;
-	final byte[] resp = (byte[]) Protocol.read(inputStream);
+	final byte[] resp = (byte[]) Protocol.read(channelReader);
 	if (null == resp) {
 	    return null;
 	} else {
@@ -192,13 +199,13 @@ public class Connection implements Closeable {
     public byte[] getBinaryBulkReply() {
 	flush();
 	pipelinedCommands--;
-	return (byte[]) Protocol.read(inputStream);
+	return (byte[]) Protocol.read(channelReader);
     }
 
     public Long getIntegerReply() {
 	flush();
 	pipelinedCommands--;
-	return (Long) Protocol.read(inputStream);
+	return (Long) Protocol.read(channelReader);
     }
 
     public List<String> getMultiBulkReply() {
@@ -209,29 +216,29 @@ public class Connection implements Closeable {
     public List<byte[]> getBinaryMultiBulkReply() {
 	flush();
 	pipelinedCommands--;
-	return (List<byte[]>) Protocol.read(inputStream);
+	return (List<byte[]>) Protocol.read(channelReader);
     }
 
     public void resetPipelinedCount() {
-        pipelinedCommands = 0;
+	pipelinedCommands = 0;
     }
 
     @SuppressWarnings("unchecked")
     public List<Object> getRawObjectMultiBulkReply() {
-        return (List<Object>) Protocol.read(inputStream);
+	return (List<Object>) Protocol.read(channelReader);
     }
 
     public List<Object> getObjectMultiBulkReply() {
-        flush();
-        pipelinedCommands--;
-        return getRawObjectMultiBulkReply();
+	flush();
+	pipelinedCommands--;
+	return getRawObjectMultiBulkReply();
     }
 
     @SuppressWarnings("unchecked")
     public List<Long> getIntegerMultiBulkReply() {
 	flush();
 	pipelinedCommands--;
-	return (List<Long>) Protocol.read(inputStream);
+	return (List<Long>) Protocol.read(channelReader);
     }
 
     public List<Object> getAll() {
@@ -243,7 +250,7 @@ public class Connection implements Closeable {
 	flush();
 	while (pipelinedCommands > except) {
 	    try {
-		all.add(Protocol.read(inputStream));
+		all.add(Protocol.read(channelReader));
 	    } catch (JedisDataException e) {
 		all.add(e);
 	    }
@@ -255,6 +262,6 @@ public class Connection implements Closeable {
     public Object getOne() {
 	flush();
 	pipelinedCommands--;
-	return Protocol.read(inputStream);
+	return Protocol.read(channelReader);
     }
 }

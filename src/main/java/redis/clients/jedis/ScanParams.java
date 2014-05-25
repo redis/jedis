@@ -14,14 +14,16 @@ public class ScanParams {
     private List<byte[]> params = new ArrayList<byte[]>();
     public final static String SCAN_POINTER_START = String.valueOf(0);
 
-    public void match(final String pattern) {
+    public ScanParams match(final String pattern) {
 	params.add(MATCH.raw);
 	params.add(SafeEncoder.encode(pattern));
+	return this;
     }
 
-    public void count(final int count) {
+    public ScanParams count(final int count) {
 	params.add(COUNT.raw);
 	params.add(Protocol.toByteArray(count));
+	return this;
     }
 
     public Collection<byte[]> getParams() {

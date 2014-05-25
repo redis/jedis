@@ -628,6 +628,10 @@ public class Client extends BinaryClient implements Commands {
     public void getbit(String key, long offset) {
 	getbit(SafeEncoder.encode(key), offset);
     }
+    
+    public void bitpos(final String key, final boolean value, final BitPosParams params) {
+	bitpos(SafeEncoder.encode(key), value, params);
+    }
 
     public void setrange(String key, long offset, String value) {
 	setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));

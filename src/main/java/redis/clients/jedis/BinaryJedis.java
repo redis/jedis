@@ -3125,6 +3125,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	client.getbit(key, offset);
 	return client.getIntegerReply() == 1;
     }
+    
+    public Long bitpos(final byte[] key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Long bitpos(final byte[] key, final boolean value, final BitPosParams params) {
+	client.bitpos(key, value, params);
+	return client.getIntegerReply();
+    }
 
     public Long setrange(byte[] key, long offset, byte[] value) {
 	client.setrange(key, offset, value);

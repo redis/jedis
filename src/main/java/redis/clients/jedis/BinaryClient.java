@@ -925,7 +925,15 @@ public class BinaryClient extends Connection {
     public void getbit(byte[] key, long offset) {
 	sendCommand(GETBIT, key, toByteArray(offset));
     }
-
+    
+    public void bitpos(final byte[] key, final boolean value, final BitPosParams params) {
+	final List<byte[]> args = new ArrayList<byte[]>();
+	args.add(key);
+	args.add(toByteArray(value));
+	args.addAll(params.getParams());
+	sendCommand(BITPOS, args.toArray(new byte[args.size()][]));
+    }
+    
     public void setrange(byte[] key, long offset, byte[] value) {
 	sendCommand(SETRANGE, key, toByteArray(offset), value);
     }

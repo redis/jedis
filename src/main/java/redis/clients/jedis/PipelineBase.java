@@ -142,7 +142,25 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	getClient(key).getbit(key, offset);
 	return getResponse(BuilderFactory.BOOLEAN);
     }
-
+    
+    public Response<Long> bitpos(final String key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Response<Long> bitpos(final String key, final boolean value, final BitPosParams params) {
+	getClient(key).bitpos(key, value, params);
+	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> bitpos(final byte[] key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Response<Long> bitpos(final byte[] key, final boolean value, final BitPosParams params) {
+	getClient(key).bitpos(key, value, params);
+	return getResponse(BuilderFactory.LONG);
+    }
+    
     public Response<String> getrange(String key, long startOffset,
 	    long endOffset) {
 	getClient(key).getrange(key, startOffset, endOffset);

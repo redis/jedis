@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
+import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
@@ -950,5 +950,21 @@ public class Client extends BinaryClient implements Commands {
     public void clusterSetSlotImporting(final int slot, final String nodeId) {
 	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
 		Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    }
+
+    public void pfadd(String key, final String... elements) {
+	pfadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(elements));
+    }
+
+    public void pfcount(final String key) {
+	pfcount(SafeEncoder.encode(key));
+    }
+
+    public void pfcount(final String...keys) {
+	pfcount(SafeEncoder.encodeMany(keys));
+    }
+
+    public void pfmerge(final String destkey, final String... sourcekeys) {
+	pfmerge(SafeEncoder.encode(destkey), SafeEncoder.encodeMany(sourcekeys));
     }
 }

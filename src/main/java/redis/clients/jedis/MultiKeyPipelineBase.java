@@ -446,4 +446,28 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 	client.clusterSetSlotImporting(slot, nodeId);
 	return getResponse(BuilderFactory.STRING);
     }
+    
+    @Override
+    public Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {
+	client.pfmerge(destkey, sourcekeys);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    @Override
+    public Response<String> pfmerge(String destkey, String... sourcekeys) {
+	client.pfmerge(destkey, sourcekeys);
+	return getResponse(BuilderFactory.STRING);
+    }
+
+    @Override
+    public Response<Long> pfcount(String...keys) {
+	client.pfcount(keys);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Long> pfcount(final byte[] ... keys) {
+	client.pfcount(keys);
+	return getResponse(BuilderFactory.LONG);
+    }
 }

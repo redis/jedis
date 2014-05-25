@@ -1,19 +1,12 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
+
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class Jedis extends BinaryJedis implements JedisCommands,
 	MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands,
@@ -3411,5 +3404,30 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.pubsubNumSub(channels);
 	return BuilderFactory.STRING_MAP
 		.build(client.getBinaryMultiBulkReply());
+    }
+
+    public Long pfadd(final String key, final String... elements) {
+	checkIsInMulti();
+	client.pfadd(key, elements);
+	return client.getIntegerReply();
+    }
+
+    public long pfcount(final String key) {
+	checkIsInMulti();
+	client.pfcount(key);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public long pfcount(String... keys) {
+        checkIsInMulti();
+        client.pfcount(keys);
+        return client.getIntegerReply();
+    }
+
+    public String pfmerge(final String destkey, final String... sourcekeys) {
+	checkIsInMulti();
+	client.pfmerge(destkey, sourcekeys);
+	return client.getStatusCodeReply();
     }
 }

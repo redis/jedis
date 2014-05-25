@@ -210,4 +210,8 @@ public interface BinaryRedisPipeline {
     Response<Long> bitcount(byte[] key);
 
     Response<Long> bitcount(byte[] key, long start, long end);
+    
+    Response<Long> pfadd(final byte[] key, final byte[]... elements);
+    
+    Response<Long> pfcount(final byte[] key);
 }

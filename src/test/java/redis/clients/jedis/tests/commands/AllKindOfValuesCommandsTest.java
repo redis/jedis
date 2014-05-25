@@ -475,9 +475,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	long status = jedis.pexpire("foo", 10000);
 	assertEquals(0, status);
 
-	jedis.set("foo", "bar");
-	status = jedis.pexpire("foo", 10000);
+	jedis.set("foo1", "bar1");
+	status = jedis.pexpire("foo1", 10000);
 	assertEquals(1, status);
+
+	jedis.set("foo2", "bar2");
+	status = jedis.pexpire("foo2", 200000000000L);
+	assertEquals(1, status);
+
+	long pttl = jedis.pttl("foo2");
+	assertTrue(pttl > 100000000000L);
     }
 
     @Test

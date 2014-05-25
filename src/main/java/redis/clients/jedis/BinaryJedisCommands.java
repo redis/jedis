@@ -47,6 +47,8 @@ public interface BinaryJedisCommands {
 
     Long incrBy(byte[] key, long integer);
 
+    Double incrByFloat(byte[] key, double value);
+
     Long incr(byte[] key);
 
     Long append(byte[] key, byte[] value);
@@ -64,6 +66,8 @@ public interface BinaryJedisCommands {
     List<byte[]> hmget(byte[] key, byte[]... fields);
 
     Long hincrBy(byte[] key, byte[] field, long value);
+
+    Double hincrByFloat(byte[] key, byte[] field, double value);
 
     Boolean hexists(byte[] key, byte[] field);
 

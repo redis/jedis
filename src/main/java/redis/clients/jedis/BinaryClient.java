@@ -199,6 +199,10 @@ public class BinaryClient extends Connection {
 	sendCommand(INCRBY, key, toByteArray(integer));
     }
 
+    public void incrByFloat(final byte[] key, final double value) {
+        sendCommand(INCRBYFLOAT, key, toByteArray(value));
+    }
+
     public void incr(final byte[] key) {
 	sendCommand(INCR, key);
     }
@@ -1110,10 +1114,6 @@ public class BinaryClient extends Connection {
 
     public void pttl(final byte[] key) {
 	sendCommand(PTTL, key);
-    }
-
-    public void incrByFloat(final byte[] key, final double increment) {
-	sendCommand(INCRBYFLOAT, key, toByteArray(increment));
     }
 
     public void psetex(final byte[] key, final int milliseconds,

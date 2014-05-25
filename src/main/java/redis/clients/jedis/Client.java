@@ -173,6 +173,10 @@ public class Client extends BinaryClient implements Commands {
 	hincrBy(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
     }
 
+    public void hincrByFloat(final String key, final String field, final double value) {
+        hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
+    }
+
     public void hexists(final String key, final String field) {
 	hexists(SafeEncoder.encode(key), SafeEncoder.encode(field));
     }
@@ -834,12 +838,6 @@ public class Client extends BinaryClient implements Commands {
 	    final int destinationDb, final int timeout) {
 	migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key),
 		destinationDb, timeout);
-    }
-
-    public void hincrByFloat(final String key, final String field,
-	    double increment) {
-	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field),
-		increment);
     }
 
     @Deprecated

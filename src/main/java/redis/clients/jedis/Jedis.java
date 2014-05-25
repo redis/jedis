@@ -3062,7 +3062,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getStatusCodeReply();
     }
 
+    @Deprecated
     public Long pexpire(final String key, final int milliseconds) {
+	return pexpire(key, (long) milliseconds);
+    }
+
+    public Long pexpire(final String key, final long milliseconds) {
 	checkIsInMulti();
 	client.pexpire(key, milliseconds);
 	return client.getIntegerReply();

@@ -3136,6 +3136,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getIntegerReply();
     }
 
+
     public String psetex(final String key, final int milliseconds,
 	    final String value) {
 	checkIsInMulti();
@@ -3428,6 +3429,60 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public String clusterSetSlotImporting(final int slot, final String nodeId) {
 	checkIsInMulti();
 	client.clusterSetSlotImporting(slot, nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterSetSlotStable(final int slot) {
+	checkIsInMulti();
+	client.clusterSetSlotStable(slot);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterForget(final String nodeId) {
+	checkIsInMulti();
+	client.clusterForget(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterFlushSlots() {
+	checkIsInMulti();
+	client.clusterFlushSlots();
+	return client.getStatusCodeReply();
+    }
+    
+    public Long clusterKeySlot(final String key) {
+	checkIsInMulti();
+	client.clusterKeySlot(key);
+	return client.getIntegerReply();
+    }
+    
+    public Long clusterCountKeysInSlot(final int slot) {
+	checkIsInMulti();
+	client.clusterCountKeysInSlot(slot);
+	return client.getIntegerReply();
+    }
+    
+    public String clusterSaveConfig() {
+	checkIsInMulti();
+	client.clusterSaveConfig();
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterReplicate(final String nodeId) {
+	checkIsInMulti();
+	client.clusterReplicate(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public List<String> clusterSlaves(final String nodeId) {
+	checkIsInMulti();
+	client.clusterSlaves(nodeId);
+	return client.getMultiBulkReply();
+    }
+    
+    public String clusterFailover() {
+	checkIsInMulti();
+	client.clusterFailover();
 	return client.getStatusCodeReply();
     }
 

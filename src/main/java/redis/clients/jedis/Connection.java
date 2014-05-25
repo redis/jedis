@@ -8,6 +8,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -17,6 +20,7 @@ import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
+    private boolean ssl;
     private String host;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
@@ -99,6 +103,13 @@ public class Connection implements Closeable {
 	this.port = port;
     }
 
+    public Connection(final String host, final int port, boolean ssl) {
+	super();
+	this.host = host;
+	this.port = port;
+	this.ssl = ssl;
+    }
+
     public String getHost() {
 	return host;
     }
@@ -109,6 +120,14 @@ public class Connection implements Closeable {
 
     public int getPort() {
 	return port;
+    }
+
+    public void setSsl(final boolean ssl) {
+	this.ssl = ssl;
+    }
+
+    public boolean getSsl() {
+	return ssl;
     }
 
     public void setPort(final int port) {
@@ -136,6 +155,13 @@ public class Connection implements Closeable {
 
 		socket.connect(new InetSocketAddress(host, port), timeout);
 		socket.setSoTimeout(timeout);
+
+		if(ssl)
+		{
+			SSLSocketFactory sslsocketfactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+			socket = (SSLSocket) sslsocketfactory.createSocket(socket, host, port, true);
+		}
+		
 		outputStream = new RedisOutputStream(socket.getOutputStream());
 		inputStream = new RedisInputStream(socket.getInputStream());
 	    } catch (IOException ex) {

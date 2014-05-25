@@ -52,6 +52,10 @@ public class BinaryClient extends Connection {
 	super(host, port);
     }
 
+    public BinaryClient(final String host, final int port, boolean ssl) {
+	super(host, port, ssl);
+    }
+
     private byte[][] joinParameters(byte[] first, byte[][] rest) {
 	byte[][] result = new byte[rest.length + 1][];
 	result[0] = first;

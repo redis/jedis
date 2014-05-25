@@ -19,10 +19,18 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	super(host, port);
     }
 
+    public Jedis(final String host, final int port, boolean ssl) {
+	super(host, port, ssl);
+    }
+
     public Jedis(final String host, final int port, final int timeout) {
 	super(host, port, timeout);
     }
 
+    public Jedis(final String host, final int port, final int timeout, boolean ssl) {
+	super(host, port, timeout, ssl);
+    }
+    
     public Jedis(JedisShardInfo shardInfo) {
 	super(shardInfo);
     }

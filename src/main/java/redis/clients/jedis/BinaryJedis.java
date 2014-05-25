@@ -26,12 +26,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
-	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
-	    client = new Client(uri.getHost(), uri.getPort());
-	    client.auth(uri.getUserInfo().split(":", 2)[1]);
-	    client.getStatusCodeReply();
-	    client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	    client.getStatusCodeReply();
+	if (uri.getScheme() != null && (uri.getScheme().equals("redis") || uri.getScheme().equals("rediss"))) {
+	    client = new Client(uri.getHost(), uri.getPort(), uri.getScheme().equals("rediss"));
+	    if(uri.getUserInfo()!=null)
+	    {
+	    	client.auth(uri.getUserInfo().split(":", 2)[1]);
+	    	client.getStatusCodeReply();
+	    }
+	    if(uri.getPath().length()>0)
+	    {
+	    	client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
+	    	client.getStatusCodeReply();
+	    }
 	} else {
 	    client = new Client(host);
 	}
@@ -41,8 +47,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	client = new Client(host, port);
     }
 
+    public BinaryJedis(final String host, final int port, boolean ssl) {
+	client = new Client(host, port, ssl);
+    }
+
     public BinaryJedis(final String host, final int port, final int timeout) {
 	client = new Client(host, port);
+	client.setTimeout(timeout);
+    }
+
+    public BinaryJedis(final String host, final int port, final int timeout, boolean ssl) {
+	client = new Client(host, port, ssl);
 	client.setTimeout(timeout);
     }
 
@@ -50,14 +65,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	client = new Client(shardInfo.getHost(), shardInfo.getPort());
 	client.setTimeout(shardInfo.getTimeout());
 	client.setPassword(shardInfo.getPassword());
+	client.setSsl(shardInfo.getSsl());
     }
 
     public BinaryJedis(URI uri) {
-	client = new Client(uri.getHost(), uri.getPort());
-	client.auth(uri.getUserInfo().split(":", 2)[1]);
-	client.getStatusCodeReply();
-	client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	client.getStatusCodeReply();
+	client = new Client(uri.getHost(), uri.getPort(), uri.getScheme()!=null && uri.getScheme().equals("rediss"));
+	if(uri.getUserInfo()!=null)
+	{
+		client.auth(uri.getUserInfo().split(":", 2)[1]);
+		client.getStatusCodeReply();
+	}
+	if(uri.getPath().length()>0)
+	{
+		client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
+		client.getStatusCodeReply();
+	}
     }
 
     public String ping() {

@@ -10,6 +10,9 @@ import java.util.Set;
 public interface JedisCommands {
     String set(String key, String value);
 
+    String set(String key, String value, String nxxx,
+                    String expx, long time);
+
     String get(String key);
 
     Boolean exists(String key);

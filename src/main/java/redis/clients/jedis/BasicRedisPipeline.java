@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.List;
+
 /**
  * Pipelined responses for all of the low level, non key related commands
  */
@@ -24,6 +26,8 @@ public interface BasicRedisPipeline {
     Response<String> flushAll();
 
     Response<String> info();
+    
+    Response<List<String>> time();
 
     Response<Long> dbSize();
 

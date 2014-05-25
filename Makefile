@@ -263,6 +263,11 @@ test:
 	mvn -Dtest=${TEST} clean compile test
 	make stop
 
+package:
+	make start
+	mvn clean package
+	make stop
+
 deploy:
 	make start
 	mvn clean deploy

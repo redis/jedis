@@ -40,7 +40,7 @@ All of the following redis features are supported:
 ## How do I use it?
 
 You can download the latest build at: 
-    http://github.com/xetorthio/jedis/downloads
+    http://github.com/xetorthio/jedis/releases
 
 Or use it as a maven dependency:
 
@@ -48,7 +48,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>2.2.1</version>
+    <version>2.4.2</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>

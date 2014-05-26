@@ -169,15 +169,17 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	return jedis;
     }
 
-    @Override
     public void returnBrokenResource(final Jedis resource) {
-	returnBrokenResourceObject(resource);
+	if (resource != null) {
+	    returnBrokenResourceObject(resource);
+	}
     }
 
-    @Override
     public void returnResource(final Jedis resource) {
-	resource.resetState();
-	returnResourceObject(resource);
+	if (resource != null) {
+	    resource.resetState();
+	    returnResourceObject(resource);
+	}
     }
 
     protected class JedisPubSubAdapter extends JedisPubSub {

@@ -31,6 +31,12 @@ public class Pipeline extends MultiKeyPipelineBase {
 	    return values;
 	}
 
+	public void setResponseDependency(Response<?> dependency) {
+	    for (Response<?> response : responses) {
+		response.setDependency(dependency);
+	    }
+	}
+
 	public void addResponse(Response<?> response) {
 	    responses.add(response);
 	}
@@ -98,24 +104,34 @@ public class Pipeline extends MultiKeyPipelineBase {
     }
 
     public Response<String> discard() {
+	if (currentMulti == null)
+	    throw new JedisDataException("DISCARD without MULTI");
+
 	client.discard();
 	currentMulti = null;
 	return getResponse(BuilderFactory.STRING);
     }
 
     public Response<List<Object>> exec() {
+	if (currentMulti == null)
+	    throw new JedisDataException("EXEC without MULTI");
+
 	client.exec();
 	Response<List<Object>> response = super.getResponse(currentMulti);
+	currentMulti.setResponseDependency(response);
 	currentMulti = null;
 	return response;
     }
 
     public Response<String> multi() {
+	if (currentMulti != null)
+	    throw new JedisDataException("MULTI calls can not be nested");
+
 	client.multi();
 	Response<String> response = getResponse(BuilderFactory.STRING); // Expecting
 									// OK
 	currentMulti = new MultiResponseBuilder();
 	return response;
     }
-
+    
 }

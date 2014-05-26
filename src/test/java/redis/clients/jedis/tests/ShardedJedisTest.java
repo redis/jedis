@@ -17,6 +17,11 @@ import redis.clients.util.Hashing;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Sharded;
 
+/**
+ * Decided to deprecate ShardedJedis because it's somewhat duplicate to Redis Cluster.
+ * Will be removed at Jedis 3.0.0
+ * @see https://groups.google.com/d/msg/jedis_redis/avphfQld81Y/X_uouHp_lCIJ
+ */
 @Deprecated
 public class ShardedJedisTest extends Assert {
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()

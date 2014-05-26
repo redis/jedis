@@ -29,6 +29,12 @@ import java.nio.ByteOrder;
  * Andrzej Bialecki (ab at getopt org).
  * </p>
  */
+/**
+ * Decided to deprecate ShardedJedis because it's somewhat duplicate to Redis Cluster.
+ * Will be removed at Jedis 3.0.0
+ * @see https://groups.google.com/d/msg/jedis_redis/avphfQld81Y/X_uouHp_lCIJ
+ */
+@Deprecated
 public class MurmurHash implements Hashing {
     /**
      * Hashes bytes in an array.

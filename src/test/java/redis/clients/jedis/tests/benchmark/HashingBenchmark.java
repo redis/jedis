@@ -13,6 +13,12 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
+/**
+ * Decided to deprecate ShardedJedis because it's somewhat duplicate to Redis Cluster.
+ * Will be removed at Jedis 3.0.0
+ * @see https://groups.google.com/d/msg/jedis_redis/avphfQld81Y/X_uouHp_lCIJ
+ */
+@Deprecated
 public class HashingBenchmark {
     private static HostAndPort hnp1 = HostAndPortUtil.getRedisServers().get(0);
     private static HostAndPort hnp2 = HostAndPortUtil.getRedisServers().get(1);

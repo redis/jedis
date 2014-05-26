@@ -11,6 +11,11 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.util.Hashing;
 import redis.clients.util.Pool;
 
+/**
+ * Decided to deprecate ShardedJedis because it's somewhat duplicate to Redis Cluster.
+ * Will be removed at Jedis 3.0.0
+ * @see https://groups.google.com/d/msg/jedis_redis/avphfQld81Y/X_uouHp_lCIJ
+ */
 @Deprecated
 public class ShardedJedisPool extends Pool<ShardedJedis> {
     public ShardedJedisPool(final GenericObjectPoolConfig poolConfig,

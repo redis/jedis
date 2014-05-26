@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public class JedisCluster implements JedisCommands, BasicCommands {
     public static final short HASHSLOTS = 16384;
@@ -42,6 +42,18 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		return connection.set(key, value);
 	    }
 	}.run(key);
+    }
+
+    @Override
+    public String set(final String key, final String value, final String nxxx,
+                      final String expx, final long time) {
+        return new JedisClusterCommand<String>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public String execute(Jedis connection) {
+                return connection.set(key, value, nxxx, expx, time);
+            }
+        }.run(key);
     }
 
     @Override
@@ -1480,5 +1492,27 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		return connection.zscan(key, cursor);
 	    }
 	}.run(null);
+    }
+
+    @Override
+    public Long pfadd(final String key, final String... elements) {
+	return new JedisClusterCommand<Long>(connectionHandler, 
+		timeout, maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.pfadd(key, elements);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public long pfcount(final String key) {
+	return new JedisClusterCommand<Long>(connectionHandler, 
+		timeout, maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.pfcount(key);
+	    }
+	}.run(key);
     }
 }

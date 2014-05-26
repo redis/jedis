@@ -272,6 +272,26 @@ public class PipeliningTest extends Assert {
 	assertEquals("world", r3.get());
     }
 
+    @Test(expected = JedisDataException.class)
+    public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMulti() {
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.exec();
+    }
+
+    @Test(expected = JedisDataException.class)
+    public void pipelineDiscardShoudThrowJedisDataExceptionWhenNotInMulti() {
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.discard();
+    }
+
+    @Test(expected = JedisDataException.class)
+    public void pipelineMultiShoudThrowJedisDataExceptionWhenAlreadyInMulti() {
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.multi();
+	pipeline.set("foo", "3");
+	pipeline.multi();
+    }
+
     @Test
     public void testDiscardInPipeline() {
 	Pipeline pipeline = jedis.pipelined();

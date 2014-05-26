@@ -1,19 +1,12 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
+
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class Jedis extends BinaryJedis implements JedisCommands,
 	MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands,
@@ -548,6 +541,31 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     /**
+     * INCRBYFLOAT
+     * <p>
+     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are
+     * not "double" types. Simply the string stored at the key is parsed as a
+     * base double precision floating point value, incremented, and then
+     * converted back as a string.  There is no DECRYBYFLOAT but providing a
+     * negative value will work as expected.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Double reply, this commands will reply with the new value of key
+     *         after the increment.
+     */
+    public Double incrByFloat(final String key, final double value) {
+        checkIsInMulti();
+        client.incrByFloat(key, value);
+        String dval = client.getBulkReply();
+        return (dval != null ? new Double(dval) : null);
+    }
+
+    /**
      * Increment the number stored at key by one. If the key does not exist or
      * contains a value of a wrong type, set the key to the value of "0" before
      * to perform the increment operation.
@@ -737,6 +755,32 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	checkIsInMulti();
 	client.hincrBy(key, field, value);
 	return client.getIntegerReply();
+    }
+
+    /**
+     * Increment the number stored at field in the hash at key by a double
+     * precision floating point value. If key does not exist,
+     * a new key holding a hash is created. If field does not
+     * exist or holds a string, the value is set to 0 before applying the
+     * operation. Since the value argument is signed you can use this command to
+     * perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBYFLOAT is limited to
+     * double precision floating point values.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Double precision floating point reply The new value at field after the increment
+     *         operation.
+     */
+    public Double hincrByFloat(final String key, final String field, final double value) {
+        checkIsInMulti();
+        client.hincrByFloat(key, field, value);
+        final String dval = client.getBulkReply();
+        return (dval != null ? new Double(dval) : null);
     }
 
     /**
@@ -2659,6 +2703,15 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.getrange(key, startOffset, endOffset);
 	return client.getBulkReply();
     }
+    
+    public Long bitpos(final String key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+	client.bitpos(key, value, params);
+	return client.getIntegerReply();
+    }
 
     /**
      * Retrieve the configuration of a running Redis server. Not all the
@@ -3060,7 +3113,12 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getStatusCodeReply();
     }
 
+    @Deprecated
     public Long pexpire(final String key, final int milliseconds) {
+	return pexpire(key, (long) milliseconds);
+    }
+
+    public Long pexpire(final String key, final long milliseconds) {
 	checkIsInMulti();
 	client.pexpire(key, milliseconds);
 	return client.getIntegerReply();
@@ -3078,12 +3136,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getIntegerReply();
     }
 
-    public Double incrByFloat(final String key, final double increment) {
-	checkIsInMulti();
-	client.incrByFloat(key, increment);
-	String relpy = client.getBulkReply();
-	return (relpy != null ? new Double(relpy) : null);
-    }
 
     public String psetex(final String key, final int milliseconds,
 	    final String value) {
@@ -3122,14 +3174,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	checkIsInMulti();
 	client.migrate(host, port, key, destinationDb, timeout);
 	return client.getStatusCodeReply();
-    }
-
-    public Double hincrByFloat(final String key, final String field,
-	    double increment) {
-	checkIsInMulti();
-	client.hincrByFloat(key, field, increment);
-	String relpy = client.getBulkReply();
-	return (relpy != null ? new Double(relpy) : null);
     }
 
     @Deprecated
@@ -3387,6 +3431,60 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterSetSlotImporting(slot, nodeId);
 	return client.getStatusCodeReply();
     }
+    
+    public String clusterSetSlotStable(final int slot) {
+	checkIsInMulti();
+	client.clusterSetSlotStable(slot);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterForget(final String nodeId) {
+	checkIsInMulti();
+	client.clusterForget(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterFlushSlots() {
+	checkIsInMulti();
+	client.clusterFlushSlots();
+	return client.getStatusCodeReply();
+    }
+    
+    public Long clusterKeySlot(final String key) {
+	checkIsInMulti();
+	client.clusterKeySlot(key);
+	return client.getIntegerReply();
+    }
+    
+    public Long clusterCountKeysInSlot(final int slot) {
+	checkIsInMulti();
+	client.clusterCountKeysInSlot(slot);
+	return client.getIntegerReply();
+    }
+    
+    public String clusterSaveConfig() {
+	checkIsInMulti();
+	client.clusterSaveConfig();
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterReplicate(final String nodeId) {
+	checkIsInMulti();
+	client.clusterReplicate(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public List<String> clusterSlaves(final String nodeId) {
+	checkIsInMulti();
+	client.clusterSlaves(nodeId);
+	return client.getMultiBulkReply();
+    }
+    
+    public String clusterFailover() {
+	checkIsInMulti();
+	client.clusterFailover();
+	return client.getStatusCodeReply();
+    }
 
     public String asking() {
 	checkIsInMulti();
@@ -3411,5 +3509,30 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.pubsubNumSub(channels);
 	return BuilderFactory.STRING_MAP
 		.build(client.getBinaryMultiBulkReply());
+    }
+
+    public Long pfadd(final String key, final String... elements) {
+	checkIsInMulti();
+	client.pfadd(key, elements);
+	return client.getIntegerReply();
+    }
+
+    public long pfcount(final String key) {
+	checkIsInMulti();
+	client.pfcount(key);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public long pfcount(String... keys) {
+        checkIsInMulti();
+        client.pfcount(keys);
+        return client.getIntegerReply();
+    }
+
+    public String pfmerge(final String destkey, final String... sourcekeys) {
+	checkIsInMulti();
+	client.pfmerge(destkey, sourcekeys);
+	return client.getStatusCodeReply();
     }
 }

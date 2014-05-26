@@ -116,6 +116,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.incrBy(key, integer);
     }
 
+    public Double incrByFloat(byte[] key, double integer) {
+        Jedis j = getShard(key);
+        return j.incrByFloat(key, integer);
+    }
+
     public Long incr(byte[] key) {
 	Jedis j = getShard(key);
 	return j.incr(key);
@@ -159,6 +164,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
     public Long hincrBy(byte[] key, byte[] field, long value) {
 	Jedis j = getShard(key);
 	return j.hincrBy(key, field, value);
+    }
+
+    public Double hincrByFloat(byte[] key, byte[] field, double value) {
+        Jedis j = getShard(key);
+        return j.hincrByFloat(key, field, value);
     }
 
     public Boolean hexists(byte[] key, byte[] field) {
@@ -575,4 +585,17 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.bitcount(key, start, end);
     }
+    
+    @Override
+    public Long pfadd(final byte[] key, final byte[]... elements) {
+	Jedis j = getShard(key);
+	return j.pfadd(key, elements);
+    }
+
+    @Override
+    public long pfcount(final byte[] key) {
+	Jedis j = getShard(key);
+	return j.pfcount(key);
+    }
+
 }

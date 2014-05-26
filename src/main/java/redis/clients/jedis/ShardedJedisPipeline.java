@@ -5,11 +5,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * Decided to deprecate ShardedJedis because it's somewhat duplicate to Redis Cluster.
+ * Will be removed at Jedis 3.0.0
+ * @see https://groups.google.com/d/msg/jedis_redis/avphfQld81Y/X_uouHp_lCIJ
+ */
+@Deprecated
 public class ShardedJedisPipeline extends PipelineBase {
     private BinaryShardedJedis jedis;
     private List<FutureResult> results = new ArrayList<FutureResult>();
     private Queue<Client> clients = new LinkedList<Client>();
 
+    @Deprecated
     private static class FutureResult {
 	private Client client;
 

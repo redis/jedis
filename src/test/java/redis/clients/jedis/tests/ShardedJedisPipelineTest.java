@@ -24,6 +24,12 @@ import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+/**
+ * Decided to deprecate ShardedJedis because it's somewhat duplicate to Redis Cluster.
+ * Will be removed at Jedis 3.0.0
+ * @see https://groups.google.com/d/msg/jedis_redis/avphfQld81Y/X_uouHp_lCIJ
+ */
+@Deprecated
 public class ShardedJedisPipelineTest {
 
     private static HostAndPort redis1 = HostAndPortUtil.getRedisServers()

@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>2.5.1</version>
+	<version>2.5.2-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
   <url>https://github.com/xetorthio/jedis</url>
@@ -41,7 +41,7 @@
     <connection>scm:git:git@github.com:xetorthio/jedis.git</connection>
     <url>scm:git:git@github.com:xetorthio/jedis.git</url>
     <developerConnection>scm:git:git@github.com:xetorthio/jedis.git</developerConnection>
-    <tag>jedis-2.5.1</tag>
+    <tag>jedis-2.2.0</tag>
   </scm>
 
 	<properties>

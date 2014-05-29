@@ -11,6 +11,7 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.util.SafeEncoder;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -19,6 +20,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] ba = { 0x0A };
     final byte[] bb = { 0x0B };
     final byte[] bc = { 0x0C };
+    
+    final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+    final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+    final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
+    final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
 
     @Test
     public void zadd() {
@@ -899,6 +905,15 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
+	
+	// binary
+	jedis.zadd(bfoo, 1, ba);
+	jedis.zadd(bfoo, 1, bb);
+	
+	ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY);
+
+	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+	assertFalse(bResult.getResult().isEmpty());
     }
 
     @Test
@@ -913,6 +928,19 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
+	
+	// binary
+	params = new ScanParams();
+	params.match(bbarstar);
+
+	jedis.zadd(bfoo, 2, bbar1);
+	jedis.zadd(bfoo, 1, bbar2);
+	jedis.zadd(bfoo, 11, bbar3);
+	ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY, params);
+
+	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+	assertFalse(bResult.getResult().isEmpty());
+	
     }
 
     @Test
@@ -929,5 +957,17 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
+	
+	// binary
+	params = new ScanParams();
+	params.count(2);
+	
+	jedis.zadd(bfoo, 2, bbar1);
+	jedis.zadd(bfoo, 1, bbar2);
+	jedis.zadd(bfoo, 11, bbar3);
+	
+	ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY, params);
+
+	assertFalse(bResult.getResult().isEmpty());
     }
 }

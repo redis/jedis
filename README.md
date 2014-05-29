@@ -40,7 +40,7 @@ All of the following redis features are supported:
 ## How do I use it?
 
 You can download the latest build at: 
-    http://github.com/xetorthio/jedis/downloads
+    http://github.com/xetorthio/jedis/releases
 
 Or use it as a maven dependency:
 
@@ -76,7 +76,7 @@ Redis cluster [specification](http://redis.io/topics/cluster-spec) (still under 
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 //Jedis Cluster will attempt to discover cluster nodes automatically
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
-JedisCluster jc = new JedisCluster(jedisClusterNode);
+JedisCluster jc = new JedisCluster(jedisClusterNodes);
 jc.set("foo", "bar");
 String value = jc.get("foo");
 ```

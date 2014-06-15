@@ -165,6 +165,12 @@ public class JedisPoolTest extends Assert {
     }
 
     @Test
+    public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
+	new JedisPool("redis://localhost:6380");
+	new JedisPool(new URI("redis://localhost:6380"));
+    }
+
+    @Test
     public void selectDatabaseOnActivation() {
 	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
 		hnp.getPort(), 2000, "foobared");

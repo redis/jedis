@@ -35,6 +35,10 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	super(uri);
     }
 
+    public Jedis(final URI uri, final int timeout) {
+	super(uri, timeout);
+    }
+
     /**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).
@@ -547,26 +551,27 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     /**
      * INCRBYFLOAT
      * <p>
-     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * INCRBYFLOAT commands are limited to double precision floating point
+     * values.
      * <p>
      * Note: this is actually a string operation, that is, in Redis there are
      * not "double" types. Simply the string stored at the key is parsed as a
      * base double precision floating point value, incremented, and then
-     * converted back as a string.  There is no DECRYBYFLOAT but providing a
+     * converted back as a string. There is no DECRYBYFLOAT but providing a
      * negative value will work as expected.
      * <p>
      * Time complexity: O(1)
-     *
+     * 
      * @param key
      * @param value
      * @return Double reply, this commands will reply with the new value of key
      *         after the increment.
      */
     public Double incrByFloat(final String key, final double value) {
-        checkIsInMulti();
-        client.incrByFloat(key, value);
-        String dval = client.getBulkReply();
-        return (dval != null ? new Double(dval) : null);
+	checkIsInMulti();
+	client.incrByFloat(key, value);
+	String dval = client.getBulkReply();
+	return (dval != null ? new Double(dval) : null);
     }
 
     /**
@@ -763,28 +768,29 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     /**
      * Increment the number stored at field in the hash at key by a double
-     * precision floating point value. If key does not exist,
-     * a new key holding a hash is created. If field does not
-     * exist or holds a string, the value is set to 0 before applying the
-     * operation. Since the value argument is signed you can use this command to
-     * perform both increments and decrements.
+     * precision floating point value. If key does not exist, a new key holding
+     * a hash is created. If field does not exist or holds a string, the value
+     * is set to 0 before applying the operation. Since the value argument is
+     * signed you can use this command to perform both increments and
+     * decrements.
      * <p>
-     * The range of values supported by HINCRBYFLOAT is limited to
-     * double precision floating point values.
+     * The range of values supported by HINCRBYFLOAT is limited to double
+     * precision floating point values.
      * <p>
      * <b>Time complexity:</b> O(1)
-     *
+     * 
      * @param key
      * @param field
      * @param value
-     * @return Double precision floating point reply The new value at field after the increment
-     *         operation.
+     * @return Double precision floating point reply The new value at field
+     *         after the increment operation.
      */
-    public Double hincrByFloat(final String key, final String field, final double value) {
-        checkIsInMulti();
-        client.hincrByFloat(key, field, value);
-        final String dval = client.getBulkReply();
-        return (dval != null ? new Double(dval) : null);
+    public Double hincrByFloat(final String key, final String field,
+	    final double value) {
+	checkIsInMulti();
+	client.hincrByFloat(key, field, value);
+	final String dval = client.getBulkReply();
+	return (dval != null ? new Double(dval) : null);
     }
 
     /**
@@ -2736,12 +2742,13 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.getrange(key, startOffset, endOffset);
 	return client.getBulkReply();
     }
-    
+
     public Long bitpos(final String key, final boolean value) {
 	return bitpos(key, value, new BitPosParams());
     }
-    
-    public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+
+    public Long bitpos(final String key, final boolean value,
+	    final BitPosParams params) {
 	client.bitpos(key, value, params);
 	return client.getIntegerReply();
     }
@@ -3169,7 +3176,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getIntegerReply();
     }
 
-
     public String psetex(final String key, final int milliseconds,
 	    final String value) {
 	checkIsInMulti();
@@ -3464,55 +3470,55 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterSetSlotImporting(slot, nodeId);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterSetSlotStable(final int slot) {
 	checkIsInMulti();
 	client.clusterSetSlotStable(slot);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterForget(final String nodeId) {
 	checkIsInMulti();
 	client.clusterForget(nodeId);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterFlushSlots() {
 	checkIsInMulti();
 	client.clusterFlushSlots();
 	return client.getStatusCodeReply();
     }
-    
+
     public Long clusterKeySlot(final String key) {
 	checkIsInMulti();
 	client.clusterKeySlot(key);
 	return client.getIntegerReply();
     }
-    
+
     public Long clusterCountKeysInSlot(final int slot) {
 	checkIsInMulti();
 	client.clusterCountKeysInSlot(slot);
 	return client.getIntegerReply();
     }
-    
+
     public String clusterSaveConfig() {
 	checkIsInMulti();
 	client.clusterSaveConfig();
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterReplicate(final String nodeId) {
 	checkIsInMulti();
 	client.clusterReplicate(nodeId);
 	return client.getStatusCodeReply();
     }
-    
+
     public List<String> clusterSlaves(final String nodeId) {
 	checkIsInMulti();
 	client.clusterSlaves(nodeId);
 	return client.getMultiBulkReply();
     }
-    
+
     public String clusterFailover() {
 	checkIsInMulti();
 	client.clusterFailover();
@@ -3565,7 +3571,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     public void setDataSource(Pool<Jedis> jedisPool) {
-        this.dataSource = jedisPool;
+	this.dataSource = jedisPool;
     }
 
     public Long pfadd(final String key, final String... elements) {
@@ -3582,7 +3588,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     @Override
     public long pfcount(String... keys) {
-        checkIsInMulti();
+	checkIsInMulti();
 	client.pfcount(keys);
 	return client.getIntegerReply();
     }

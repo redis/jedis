@@ -5,6 +5,7 @@ import java.net.URI;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.util.JedisURIHelper;
 import redis.clients.util.Pool;
 
 public class JedisPool extends Pool<Jedis> {
@@ -24,8 +25,12 @@ public class JedisPool extends Pool<Jedis> {
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
 	    String h = uri.getHost();
 	    int port = uri.getPort();
-	    String password = uri.getUserInfo().split(":", 2)[1];
-	    int database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
+	    String password = JedisURIHelper.getPassword(uri);
+	    int database = 0;
+	    Integer dbIndex = JedisURIHelper.getDBIndex(uri);
+	    if (dbIndex != null) {
+		database = dbIndex.intValue();
+	    }
 	    this.internalPool = new GenericObjectPool<Jedis>(
 		    new JedisFactory(h, port, Protocol.DEFAULT_TIMEOUT,
 			    password, database, null),
@@ -39,13 +44,11 @@ public class JedisPool extends Pool<Jedis> {
     }
 
     public JedisPool(final URI uri) {
-	String h = uri.getHost();
-	int port = uri.getPort();
-	String password = uri.getUserInfo().split(":", 2)[1];
-	int database = Integer.parseInt(uri.getPath().split("/", 2)[1]);
-	this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h,
-		port, Protocol.DEFAULT_TIMEOUT, password, database, null),
-		new GenericObjectPoolConfig());
+	this(new GenericObjectPoolConfig(), uri, Protocol.DEFAULT_TIMEOUT);
+    }
+
+    public JedisPool(final URI uri, final int timeout) {
+	this(new GenericObjectPoolConfig(), uri, timeout);
     }
 
     public JedisPool(final GenericObjectPoolConfig poolConfig,
@@ -77,6 +80,18 @@ public class JedisPool extends Pool<Jedis> {
 	    final int database, final String clientName) {
 	super(poolConfig, new JedisFactory(host, port, timeout, password,
 		database, clientName));
+    }
+
+    public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri) {
+	this(poolConfig, uri, Protocol.DEFAULT_TIMEOUT);
+    }
+
+    public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri,
+	    final int timeout) {
+	super(poolConfig, new JedisFactory(uri.getHost(), uri.getPort(),
+		timeout, JedisURIHelper.getPassword(uri),
+		JedisURIHelper.getDBIndex(uri) != null ? JedisURIHelper
+			.getDBIndex(uri) : 0, null));
     }
 
     @Override

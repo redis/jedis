@@ -3,8 +3,6 @@ package redis.clients.jedis.tests.commands;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.swing.text.html.MinimalHTMLWriter;
-
 import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;

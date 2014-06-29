@@ -1037,6 +1037,10 @@ public class BinaryClient extends Connection {
 	sendCommand(SLOWLOG, LEN.raw);
     }
 
+    public void role() {
+        sendCommand(ROLE);
+    }
+
     public void objectRefcount(byte[] key) {
 	sendCommand(OBJECT, REFCOUNT.raw, key);
     }

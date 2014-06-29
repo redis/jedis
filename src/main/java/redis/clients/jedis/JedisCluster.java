@@ -1408,6 +1408,17 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	return null;
     }
 
+    @Override
+    public List<Object> role() {
+        return new JedisClusterCommand<List<Object>>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public List<Object> execute(Jedis connection) {
+                return connection.role();
+            }
+        }.run(null);
+    }
+
     @Deprecated
     /**
      * This method is deprecated due to bug (scan cursor should be unsigned long)

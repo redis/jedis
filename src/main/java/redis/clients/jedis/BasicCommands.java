@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.List;
+
 public interface BasicCommands {
 
     String ping();
@@ -41,4 +43,6 @@ public interface BasicCommands {
     String configResetStat();
 
     Long waitReplicas(int replicas, long timeout);
+
+    List<Object> role();
 }

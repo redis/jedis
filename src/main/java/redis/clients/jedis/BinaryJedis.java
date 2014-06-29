@@ -3479,6 +3479,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     @Override
+    public List<Object> role() {
+        checkIsInMulti();
+        client.role();
+        return client.getObjectMultiBulkReply();
+    }
+
+    @Override
     public Long pfadd(final byte[] key, final byte[]... elements) {
 	checkIsInMulti();
 	client.pfadd(key, elements);

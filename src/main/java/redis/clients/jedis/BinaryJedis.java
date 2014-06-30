@@ -3480,9 +3480,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     @Override
     public List<Object> role() {
-        checkIsInMulti();
-        client.role();
-        return client.getObjectMultiBulkReply();
+	checkIsInMulti();
+	client.role();
+	return client.getObjectMultiBulkReply();
     }
 
     @Override

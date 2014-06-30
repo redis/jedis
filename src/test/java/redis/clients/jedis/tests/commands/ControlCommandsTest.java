@@ -129,56 +129,59 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void roleWithMasterAndSlave() {
-        // master including slave
-        List<Object> role = jedis.role();
+	// master including slave
+	List<Object> role = jedis.role();
 
-        assertNotNull(role);
-        assertTrue(role.size() >= 3);
+	assertNotNull(role);
+	assertTrue(role.size() >= 3);
 
-        assertEquals("master", SafeEncoder.encode((byte[]) role.get(0)));
-        assertTrue(role.get(1) instanceof Long);
+	assertEquals("master", SafeEncoder.encode((byte[]) role.get(0)));
+	assertTrue(role.get(1) instanceof Long);
 
-        List<Object> slaves = (List<Object>) role.get(2);
-        List<Object> slave = (List<Object>) slaves.get(0);
-        assertEquals(3, slave.size());
+	List<Object> slaves = (List<Object>) role.get(2);
+	List<Object> slave = (List<Object>) slaves.get(0);
+	assertEquals(3, slave.size());
 
-        // get slave
-        String slaveNodeHost = SafeEncoder.encode((byte[]) slave.get(0));
-        int slaveNodePort = Integer.parseInt(SafeEncoder.encode((byte[]) slave.get(1)));
+	// get slave
+	String slaveNodeHost = SafeEncoder.encode((byte[]) slave.get(0));
+	int slaveNodePort = Integer.parseInt(SafeEncoder.encode((byte[]) slave
+		.get(1)));
 
-        // slave
-        Jedis slaveJedis = new Jedis(slaveNodeHost, slaveNodePort);
-        slaveJedis.auth("foobared");
-        List<Object> slaveRole = slaveJedis.role();
+	// slave
+	Jedis slaveJedis = new Jedis(slaveNodeHost, slaveNodePort);
+	slaveJedis.auth("foobared");
+	List<Object> slaveRole = slaveJedis.role();
 
-        assertNotNull(slaveRole);
-        assertTrue(slaveRole.size() == 5);
+	assertNotNull(slaveRole);
+	assertTrue(slaveRole.size() == 5);
 
-        assertEquals("slave", SafeEncoder.encode((byte[]) slaveRole.get(0)));
+	assertEquals("slave", SafeEncoder.encode((byte[]) slaveRole.get(0)));
 
-        // 2nd & 3rd argument must point to master node
-        HostAndPort masterHnP = new HostAndPort(
-                SafeEncoder.encode((byte[]) slaveRole.get(1)),
-                ((Long) slaveRole.get(2)).intValue()
-        );
-        HostAndPort jedisHnP = new HostAndPort(jedis.getClient().getHost(),
-                jedis.getClient().getPort());
-        assertEquals(masterHnP, jedisHnP);
+	// 2nd & 3rd argument must point to master node
+	HostAndPort masterHnP = new HostAndPort(
+		SafeEncoder.encode((byte[]) slaveRole.get(1)),
+		((Long) slaveRole.get(2)).intValue());
+	HostAndPort jedisHnP = new HostAndPort(jedis.getClient().getHost(),
+		jedis.getClient().getPort());
+	assertEquals(masterHnP, jedisHnP);
     }
 
     @Test
     public void roleWithSentinelNode() {
-        HostAndPort sentinelHnP = HostAndPortUtil.getSentinelServers().get(0);
+	HostAndPort sentinelHnP = HostAndPortUtil.getSentinelServers().get(0);
 
-        Jedis sentinelJedis = new Jedis(sentinelHnP.getHost(), sentinelHnP.getPort());
-        List<Object> role = sentinelJedis.role();
+	Jedis sentinelJedis = new Jedis(sentinelHnP.getHost(),
+		sentinelHnP.getPort());
+	List<Object> role = sentinelJedis.role();
 
-        assertNotNull(role);
-        assertTrue(role.size() > 1);
+	assertNotNull(role);
+	assertTrue(role.size() > 1);
 
-        assertEquals("sentinel", SafeEncoder.encode((byte[]) role.get(0)));
+	assertEquals("sentinel", SafeEncoder.encode((byte[]) role.get(0)));
 
-        List<Object> master = (List<Object>) role.get(1);
-        assertEquals("mymaster", SafeEncoder.encode((byte[]) master.get(0)));
+	List<Object> master = (List<Object>) role.get(1);
+	assertEquals("mymaster", SafeEncoder.encode((byte[]) master.get(0)));
+	
+	sentinelJedis.close();
     }
 }

@@ -59,7 +59,7 @@ public final class Protocol {
     public static final String CLUSTER_REPLICATE = "replicate";
     public static final String CLUSTER_SLAVES = "slaves";
     public static final String CLUSTER_FAILOVER = "failover";
-    public static final String PUBSUB_CHANNELS= "channels";
+    public static final String PUBSUB_CHANNELS = "channels";
     public static final String PUBSUB_NUMSUB = "numsub";
     public static final String PUBSUB_NUM_PAT = "numpat";
 
@@ -201,7 +201,7 @@ public final class Protocol {
     }
 
     public static final byte[] toByteArray(final boolean value) {
-    return toByteArray(value ? 1 : 0);
+	return toByteArray(value ? 1 : 0);
     }
 
     public static final byte[] toByteArray(final int value) {

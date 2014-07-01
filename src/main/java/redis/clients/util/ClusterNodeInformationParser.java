@@ -3,7 +3,6 @@ package redis.clients.util;
 import redis.clients.jedis.HostAndPort;
 
 public class ClusterNodeInformationParser {
-    private static final String HOST_MYSELF_IDENTIFIER = ":0";
     private static final String SLOT_IMPORT_IDENTIFIER = "-<-";
     private static final String SLOT_IN_TRANSITION_IDENTIFIER = "[";
     public static final int SLOT_INFORMATIONS_START_INDEX = 8;
@@ -36,13 +35,13 @@ public class ClusterNodeInformationParser {
     public HostAndPort getHostAndPortFromNodeLine(String[] nodeInfoPartArray,
 	    HostAndPort current) {
 	String stringHostAndPort = nodeInfoPartArray[HOST_AND_PORT_INDEX];
-	if (HOST_MYSELF_IDENTIFIER.equals(stringHostAndPort)) {
-	    return current;
-	}
 
 	String[] arrayHostAndPort = stringHostAndPort.split(":");
-	return new HostAndPort(arrayHostAndPort[0],
-		Integer.valueOf(arrayHostAndPort[1]));
+	return new HostAndPort(
+		arrayHostAndPort[0].isEmpty() ? current.getHost()
+			: arrayHostAndPort[0],
+		arrayHostAndPort[1].isEmpty() ? current.getPort() : Integer
+			.valueOf(arrayHostAndPort[1]));
     }
 
     private void fillSlotInformation(String[] slotInfoPartArray,

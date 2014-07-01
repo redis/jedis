@@ -38,4 +38,6 @@ public interface ClusterCommands {
     List<String> clusterSlaves(final String nodeId);
     
     String clusterFailover();
+    
+    List<Object> clusterSlots();
 }

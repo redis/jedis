@@ -3489,6 +3489,13 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterFailover();
 	return client.getStatusCodeReply();
     }
+    
+    @Override
+    public List<Object> clusterSlots() {
+	checkIsInMulti();
+	client.clusterSlots();
+	return client.getObjectMultiBulkReply();
+    }
 
     public String asking() {
 	checkIsInMulti();

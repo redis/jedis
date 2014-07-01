@@ -113,6 +113,8 @@ public interface JedisCommands {
 
     String srandmember(String key);
 
+    List<String> srandmember(String key, int count);
+
     Long strlen(String key);
 
     Long zadd(String key, double score, String member);

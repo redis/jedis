@@ -300,6 +300,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	return j.srandmember(key);
     }
 
+    @Override
+    public List srandmember(byte[] key, int count) {
+    Jedis j = getShard(key);
+    return j.srandmember(key, count);
+    }
+
     public Long zadd(byte[] key, double score, byte[] member) {
 	Jedis j = getShard(key);
 	return j.zadd(key, score, member);

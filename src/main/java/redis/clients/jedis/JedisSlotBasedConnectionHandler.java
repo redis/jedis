@@ -47,13 +47,8 @@ public class JedisSlotBasedConnectionHandler extends
     }
 
     @Override
-    public void assignSlotToNode(int slot, HostAndPort targetNode) {
-	super.assignSlotToNode(slot, targetNode);
-    }
-
-    @Override
     public Jedis getConnectionFromSlot(int slot) {
-	JedisPool connectionPool = slots.get(slot);
+	JedisPool connectionPool = cache.getSlotPool(slot);
 	if (connectionPool != null) {
 	    // It can't guaranteed to get valid connection because of node assignment
 	    return connectionPool.getResource();
@@ -64,7 +59,7 @@ public class JedisSlotBasedConnectionHandler extends
     
     private List<JedisPool> getShuffledNodesPool() {
 	List<JedisPool> pools = new ArrayList<JedisPool>();
-	pools.addAll(nodes.values());
+	pools.addAll(cache.getNodes().values());
 	Collections.shuffle(pools);
 	return pools;
     }

@@ -14,13 +14,13 @@ public abstract class JedisClusterConnectionHandler {
     abstract Jedis getConnection();
 
     public void returnConnection(Jedis connection) {
-        cache.getNode(getNodeKey(connection.getClient()))
-                .returnResource(connection);
+	cache.getNode(getNodeKey(connection.getClient())).returnResource(
+		connection);
     }
 
     public void returnBrokenConnection(Jedis connection) {
-        cache.getNode(getNodeKey(connection.getClient()))
-                .returnBrokenResource(connection);
+	cache.getNode(getNodeKey(connection.getClient())).returnBrokenResource(
+		connection);
     }
 
     abstract Jedis getConnectionFromSlot(int slot);
@@ -34,7 +34,7 @@ public abstract class JedisClusterConnectionHandler {
     }
 
     public void assignSlotToNode(int slot, HostAndPort targetNode) {
-        cache.assignSlotToNode(slot, targetNode);
+	cache.assignSlotToNode(slot, targetNode);
     }
 
     private void initializeSlotsCache(Set<HostAndPort> startNodes) {
@@ -45,14 +45,14 @@ public abstract class JedisClusterConnectionHandler {
 	    Jedis jedis = null;
 	    try {
 		jedis = jp.getResource();
-        cache.discoverClusterNodesAndSlots(jedis);
+		cache.discoverClusterNodesAndSlots(jedis);
 		break;
 	    } catch (JedisConnectionException e) {
 		// try next nodes
 	    } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
+		if (jedis != null) {
+		    jedis.close();
+		}
 	    }
 	}
 
@@ -62,18 +62,18 @@ public abstract class JedisClusterConnectionHandler {
     }
 
     public void renewSlotCache() {
-        for (JedisPool jp : cache.getNodes().values()) {
-            Jedis jedis = null;
-            try {
-                jedis = jp.getResource();
-                cache.discoverClusterSlots(jedis);
-                break;
-            } finally {
-                if (jedis != null) {
-                    jedis.close();
-                }
-            }
-        }
+	for (JedisPool jp : cache.getNodes().values()) {
+	    Jedis jedis = null;
+	    try {
+		jedis = jp.getResource();
+		cache.discoverClusterSlots(jedis);
+		break;
+	    } finally {
+		if (jedis != null) {
+		    jedis.close();
+		}
+	    }
+	}
     }
 
     protected JedisPool getRandomConnection() {

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class JedisClusterInfoCache {
     public static final ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
@@ -15,101 +17,145 @@ public class JedisClusterInfoCache {
     private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
     private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
-    public synchronized void discoverClusterNodesAndSlots(Jedis jedis) {
-        this.nodes.clear();
-        this.slots.clear();
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private final Lock r = rwl.readLock();
+    private final Lock w = rwl.writeLock();
 
-        String localNodes = jedis.clusterNodes();
-        for (String nodeInfo : localNodes.split("\n")) {
-            ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(
-                    nodeInfo, new HostAndPort(jedis.getClient().getHost(),
-                            jedis.getClient().getPort()));
+    public void discoverClusterNodesAndSlots(Jedis jedis) {
+        w.lock();
 
-            HostAndPort targetNode = clusterNodeInfo.getNode();
-            setNodeIfNotExist(targetNode);
-            assignSlotsToNode(clusterNodeInfo.getAvailableSlots(), targetNode);
+        try {
+            this.nodes.clear();
+            this.slots.clear();
+
+            String localNodes = jedis.clusterNodes();
+            for (String nodeInfo : localNodes.split("\n")) {
+                ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(
+                        nodeInfo, new HostAndPort(jedis.getClient().getHost(),
+                                jedis.getClient().getPort()));
+
+                HostAndPort targetNode = clusterNodeInfo.getNode();
+                setNodeIfNotExist(targetNode);
+                assignSlotsToNode(clusterNodeInfo.getAvailableSlots(), targetNode);
+            }
+        } finally {
+            w.unlock();
         }
     }
 
-    public synchronized void discoverClusterSlots(Jedis jedis) {
-        this.slots.clear();
+    public void discoverClusterSlots(Jedis jedis) {
+        w.lock();
 
-        List<Object> slots = jedis.clusterSlots();
+        try {
+            this.slots.clear();
 
-        for (Object slotInfoObj : slots) {
-            List<Object> slotInfo = (List<Object>) slotInfoObj;
+            List<Object> slots = jedis.clusterSlots();
 
-            if (slotInfo.size() <= 2) {
-                continue;
+            for (Object slotInfoObj : slots) {
+                List<Object> slotInfo = (List<Object>) slotInfoObj;
+
+                if (slotInfo.size() <= 2) {
+                    continue;
+                }
+
+                List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+
+                // hostInfos
+                List<Object> hostInfos = (List<Object>) slotInfo.get(2);
+                if (hostInfos.size() <= 0) {
+                    continue;
+                }
+
+                // at this time, we just use master, discard slave information
+                HostAndPort targetNode = generateHostAndPort(hostInfos);
+
+                setNodeIfNotExist(targetNode);
+                assignSlotsToNode(slotNums, targetNode);
             }
-
-            // assigned slots
-            List<Integer> slotNums = new ArrayList<Integer>();
-            for (int slot = ((Long) slotInfo.get(0)).intValue() ;
-                 slot <= ((Long) slotInfo.get(1)).intValue() ;
-                 slot++) {
-                slotNums.add(slot);
-            }
-
-            // hostInfos
-            List<Object> hostInfos = (List<Object>) slotInfo.get(2);
-            if (hostInfos.size() <= 0) {
-                continue;
-            }
-
-            // at this time, we just use master, discard slave information
-            HostAndPort targetNode = new HostAndPort(
-                    SafeEncoder.encode((byte[]) hostInfos.get(0)),
-                    ((Long) hostInfos.get(1)).intValue());
-
-            setNodeIfNotExist(targetNode);
-            assignSlotsToNode(slotNums, targetNode);
+        } finally {
+            w.unlock();
         }
     }
 
-    public synchronized void setNodeIfNotExist(HostAndPort node) {
-        String nodeKey = getNodeKey(node);
-        if (nodes.containsKey(nodeKey))
-            return;
-
-        JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
-        nodes.put(nodeKey, nodePool);
+    private HostAndPort generateHostAndPort(List<Object> hostInfos) {
+        return new HostAndPort(
+                SafeEncoder.encode((byte[]) hostInfos.get(0)),
+                ((Long) hostInfos.get(1)).intValue());
     }
 
-    public synchronized void assignSlotToNode(int slot, HostAndPort targetNode) {
-        JedisPool targetPool = nodes.get(getNodeKey(targetNode));
+    public void setNodeIfNotExist(HostAndPort node) {
+        w.lock();
+        try {
+            String nodeKey = getNodeKey(node);
+            if (nodes.containsKey(nodeKey))
+                return;
 
-        if (targetPool == null) {
-            setNodeIfNotExist(targetNode);
-            targetPool = nodes.get(getNodeKey(targetNode));
+            JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
+            nodes.put(nodeKey, nodePool);
+        } finally {
+            w.unlock();
         }
-        slots.put(slot, targetPool);
+    }
+
+    public void assignSlotToNode(int slot, HostAndPort targetNode) {
+        w.lock();
+        try {
+            JedisPool targetPool = nodes.get(getNodeKey(targetNode));
+
+            if (targetPool == null) {
+                setNodeIfNotExist(targetNode);
+                targetPool = nodes.get(getNodeKey(targetNode));
+            }
+            slots.put(slot, targetPool);
+        } finally {
+            w.unlock();
+        }
     }
 
     public synchronized void assignSlotsToNode(List<Integer> targetSlots,
                                   HostAndPort targetNode) {
-        JedisPool targetPool = nodes.get(getNodeKey(targetNode));
+        w.lock();
+        try {
+            JedisPool targetPool = nodes.get(getNodeKey(targetNode));
 
-        if (targetPool == null) {
-            setNodeIfNotExist(targetNode);
-            targetPool = nodes.get(getNodeKey(targetNode));
-        }
+            if (targetPool == null) {
+                setNodeIfNotExist(targetNode);
+                targetPool = nodes.get(getNodeKey(targetNode));
+            }
 
-        for (Integer slot : targetSlots) {
-            slots.put(slot, targetPool);
+            for (Integer slot : targetSlots) {
+                slots.put(slot, targetPool);
+            }
+        } finally {
+            w.unlock();
         }
     }
 
     public synchronized JedisPool getNode(String nodeKey) {
-        return nodes.get(nodeKey);
+        r.lock();
+        try {
+            return nodes.get(nodeKey);
+        } finally {
+            r.unlock();
+        }
     }
 
     public synchronized JedisPool getSlotPool(int slot) {
-        return slots.get(slot);
+        r.lock();
+        try {
+            return slots.get(slot);
+        } finally {
+            r.unlock();
+        }
     }
 
     public synchronized Map<String, JedisPool> getNodes() {
-        return new HashMap<String, JedisPool>(nodes);
+        r.lock();
+        try {
+            return new HashMap<String, JedisPool>(nodes);
+        } finally {
+            r.unlock();
+        }
     }
 
     public static String getNodeKey(HostAndPort hnp) {
@@ -122,6 +168,16 @@ public class JedisClusterInfoCache {
 
     public static String getNodeKey(Jedis jedis) {
         return getNodeKey(jedis.getClient());
+    }
+
+    private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {
+        List<Integer> slotNums = new ArrayList<Integer>();
+        for (int slot = ((Long) slotInfo.get(0)).intValue();
+             slot <= ((Long) slotInfo.get(1)).intValue();
+             slot++) {
+            slotNums.add(slot);
+        }
+        return slotNums;
     }
 
 }

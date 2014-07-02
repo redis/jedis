@@ -72,13 +72,15 @@ public abstract class JedisClusterCommand<T> {
 	} catch (JedisRedirectionException jre) {
 	    if (jre instanceof JedisAskDataException) {
 		asking = true;
-	    } else if (jre instanceof JedisMovedDataException) {
-		// TODO : In antirez's redis-rb-cluster implementation, 
-		// it rebuilds cluster's slot and node cache
-	    }
-
-	    this.connectionHandler.assignSlotToNode(jre.getSlot(),
-		    jre.getTargetNode());
+            this.connectionHandler.assignSlotToNode(jre.getSlot(),
+                    jre.getTargetNode());
+        } else if (jre instanceof JedisMovedDataException) {
+            // it rebuilds cluster's slot cache
+            // recommended by Redis cluster specification
+            this.connectionHandler.renewSlotCache();
+        } else {
+            throw new JedisClusterException(jre);
+        }
 
 	    releaseConnection(connection, false);
 	    connection = null;

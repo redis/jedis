@@ -163,14 +163,6 @@ public class JedisClusterTest extends Assert {
 	assertEquals("foo", jc.get("51"));
     }
 
-    @Test(expected = JedisClusterException.class)
-    public void testThrowExceptionWithoutKey() {
-	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
-	jc.ping();
-    }
-
     @Test(expected = JedisClusterMaxRedirectionsException.class)
     public void testRedisClusterMaxRedirections() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();

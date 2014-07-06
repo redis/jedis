@@ -1,12 +1,11 @@
 package redis.clients.jedis;
 
-import java.nio.ByteBuffer;
+import redis.clients.util.SafeEncoder;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import redis.clients.util.SafeEncoder;
 
 public class BinaryJedisCluster implements BinaryJedisCommands,
         JedisClusterBinaryScriptingCommands {
@@ -246,6 +245,15 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
     }
 
     @Override
+    public Double incrByFloat(final byte[] key, final double value) {
+        return new JedisClusterCommand<Double>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public Double execute(Jedis connection) { return connection.incrByFloat(key, value); }
+        }.runBinary(key);
+    }
+
+    @Override
     public Long incr(final byte[] key) {
         return new JedisClusterCommand<Long>(connectionHandler, timeout,
                 maxRedirections) {
@@ -340,6 +348,17 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
             @Override
             public Long execute(Jedis connection) {
                 return connection.hincrBy(key, field, value);
+            }
+        }.runBinary(key);
+    }
+
+    @Override
+    public Double hincrByFloat(final byte[] key, final byte[] field, final double value) {
+        return new JedisClusterCommand<Double>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public Double execute(Jedis connection) {
+                return connection.hincrByFloat(key, field, value);
             }
         }.runBinary(key);
     }
@@ -1112,7 +1131,25 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
              }
          }.runBinary(key);
     }
-    
+
+    @Override
+    public Long pfadd(final byte[] key, final byte[]... elements) {
+        return new JedisClusterCommand<Long>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public Long execute(Jedis connection) { return connection.pfadd(key, elements); }
+        }.runBinary(key);
+    }
+
+    @Override
+    public long pfcount(final byte[] key) {
+        return new JedisClusterCommand<Long>(connectionHandler, timeout,
+                maxRedirections) {
+            @Override
+            public Long execute(Jedis connection) { return connection.pfcount(key); }
+        }.runBinary(key);
+    }
+
     public Map<String, JedisPool> getClusterNodes() {
         return connectionHandler.getNodes();
     }

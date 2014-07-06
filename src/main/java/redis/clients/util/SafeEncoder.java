@@ -33,6 +33,8 @@ public class SafeEncoder {
 
     public static String encode(final byte[] data) {
         try {
+            if (data == null)
+                return null;
             return new String(data, Protocol.CHARSET);
         } catch (UnsupportedEncodingException e) {
             throw new JedisException(e);

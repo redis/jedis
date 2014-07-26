@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -8,8 +10,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
  * PoolableObjectFactory custom impl.
  */
 class JedisFactory implements PooledObjectFactory<Jedis> {
-    private final String host;
-    private final int port;
+    private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
     private final int timeout;
     private final String password;
     private final int database;
@@ -23,12 +24,15 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     public JedisFactory(final String host, final int port, final int timeout,
 	    final String password, final int database, final String clientName) {
 	super();
-	this.host = host;
-	this.port = port;
+	this.hostAndPort.set(new HostAndPort(host, port));
 	this.timeout = timeout;
 	this.password = password;
 	this.database = database;
 	this.clientName = clientName;
+    }
+
+    public void setHostAndPort(final HostAndPort hostAndPort) {
+        this.hostAndPort.set(hostAndPort);
     }
 
     @Override
@@ -60,7 +64,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     @Override
     public PooledObject<Jedis> makeObject() throws Exception {
-	final Jedis jedis = new Jedis(this.host, this.port, this.timeout);
+    final HostAndPort hostAndPort = this.hostAndPort.get();
+	final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), this.timeout);
 
 	jedis.connect();
 	if (null != this.password) {
@@ -86,7 +91,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     public boolean validateObject(PooledObject<Jedis> pooledJedis) {
 	final BinaryJedis jedis = pooledJedis.getObject();
 	try {
-	    return jedis.isConnected() && jedis.ping().equals("PONG");
+	    HostAndPort hostAndPort = this.hostAndPort.get();
+
+	    String connectionHost = jedis.getClient().getHost();
+	    int connectionPort = jedis.getClient().getPort();
+
+	    return hostAndPort.getHost().equals(connectionHost) && hostAndPort.getPort() == connectionPort &&
+	            jedis.isConnected() && jedis.ping().equals("PONG");
 	} catch (final Exception e) {
 	    return false;
 	}

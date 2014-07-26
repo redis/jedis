@@ -74,6 +74,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	initPool(master);
     }
 
+    private volatile JedisFactory factory;
     private volatile HostAndPort currentHostMaster;
 
     public void destroy() {
@@ -91,10 +92,15 @@ public class JedisSentinelPool extends Pool<Jedis> {
     private void initPool(HostAndPort master) {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
+	    if (factory == null) {
+	        factory = new JedisFactory(master.getHost(), master.getPort(),
+	                                   timeout, password, database);
+	        initPool(poolConfig, factory);
+	    } else {
+	        factory.setHostAndPort(currentHostMaster);
+	    }
+
 	    log.info("Created JedisPool to master at " + master);
-	    initPool(poolConfig,
-		    new JedisFactory(master.getHost(), master.getPort(),
-			    timeout, password, database));
 	}
     }
 

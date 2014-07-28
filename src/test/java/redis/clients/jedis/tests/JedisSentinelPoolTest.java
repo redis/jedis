@@ -47,6 +47,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 		new GenericObjectPoolConfig(), 1000, "foobared", 2);
 
 	forceFailover(pool);
+	// after failover sentinel needs a bit of time to stabilize before a new failover
+	Thread.sleep(100);
 	forceFailover(pool);
 
 	// you can test failover as much as possible
@@ -140,18 +142,19 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	HostAndPort oldMaster = pool.getCurrentHostMaster();
 
 	// jedis connection should be master
-	Jedis jedis = pool.getResource();
-	assertEquals("PONG", jedis.ping());
+	Jedis beforeFailoverJedis = pool.getResource();
+	assertEquals("PONG", beforeFailoverJedis.ping());
 
 	waitForFailover(pool, oldMaster);
-	// JedisSentinelPool recognize master but may not changed internal pool
-	// yet
-	Thread.sleep(100);
+
+	Jedis afterFailoverJedis = pool.getResource();
+	assertEquals("PONG", afterFailoverJedis.ping());
+	assertEquals("foobared", afterFailoverJedis.configGet("requirepass").get(1));
+	assertEquals(2, afterFailoverJedis.getDB().intValue());
 	
-	jedis = pool.getResource();
-	assertEquals("PONG", jedis.ping());
-	assertEquals("foobared", jedis.configGet("requirepass").get(1));
-	assertEquals(2, jedis.getDB().intValue());
+	// returning both connections to the pool should not throw
+	beforeFailoverJedis.close();
+	afterFailoverJedis.close();
     }
 
     private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
@@ -167,10 +170,9 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    throws InterruptedException {
 
 	while (true) {
-	    String host = pool.getCurrentHostMaster().getHost();
-	    int port = pool.getCurrentHostMaster().getPort();
+	    HostAndPort currentHostMaster = pool.getCurrentHostMaster();
 
-	    if (host.equals(newMaster.getHost()) && port == newMaster.getPort())
+	    if (newMaster.equals(currentHostMaster))
 		break;
 
 	    System.out

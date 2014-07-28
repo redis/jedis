@@ -21,18 +21,24 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    .get(2);
     protected static HostAndPort slave1 = HostAndPortUtil.getRedisServers()
 	    .get(3);
+
     protected static HostAndPort sentinel1 = HostAndPortUtil
 	    .getSentinelServers().get(1);
+    protected static HostAndPort sentinel2 = HostAndPortUtil
+            .getSentinelServers().get(3);
 
     protected static Jedis sentinelJedis1;
+    protected static Jedis sentinelJedis2;
 
     protected Set<String> sentinels = new HashSet<String>();
 
     @Before
     public void setUp() throws Exception {
 	sentinels.add(sentinel1.toString());
+	sentinels.add(sentinel2.toString());
 
 	sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
+	sentinelJedis2 = new Jedis(sentinel2.getHost(), sentinel2.getPort());
     }
 
     @Test
@@ -137,11 +143,6 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	Jedis jedis = pool.getResource();
 	assertEquals("PONG", jedis.ping());
 
-	// It can throw JedisDataException while there's no slave to promote
-	// There's nothing we can do, so we just pass Exception to make test
-	// fail fast
-	sentinelJedis1.sentinelFailover(MASTER_NAME);
-	
 	waitForFailover(pool, oldMaster);
 	// JedisSentinelPool recognize master but may not changed internal pool
 	// yet
@@ -156,7 +157,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
 	    throws InterruptedException {
 	HostAndPort newMaster = JedisSentinelTestUtil
-		.waitForNewPromotedMaster(sentinelJedis1);
+		.waitForNewPromotedMaster(MASTER_NAME, sentinelJedis1, sentinelJedis2);
 
 	waitForJedisSentinelPoolRecognizeNewMaster(pool, newMaster);
     }

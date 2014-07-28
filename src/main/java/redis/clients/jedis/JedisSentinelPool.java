@@ -126,20 +126,24 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
 		log.fine("Connecting to Sentinel " + hap);
 
+		Jedis jedis = null;
 		try {
-		    Jedis jedis = new Jedis(hap.getHost(), hap.getPort());
+		    jedis = new Jedis(hap.getHost(), hap.getPort());
 
 		    if (master == null) {
 			master = toHostAndPort(jedis
 				.sentinelGetMasterAddrByName(masterName));
 			log.fine("Found Redis master at " + master);
-			jedis.disconnect();
 			break outer;
 		    }
 		} catch (JedisConnectionException e) {
 		    log.warning("Cannot connect to sentinel running @ " + hap
 			    + ". Trying next one.");
-		}
+		} finally {
+		    if (jedis != null) {
+	        jedis.close();
+		    }
+		}		
 	    }
 
 	    try {

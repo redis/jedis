@@ -65,8 +65,10 @@ public class JedisSentinelPool extends Pool<Jedis> {
     public JedisSentinelPool(String masterName, Set<String> sentinels,
 	    final GenericObjectPoolConfig poolConfig, int timeout,
 	    final String password, final int database) {
-    // Proper master failover detection dependes on testOnBorrow, so force it here
-    poolConfig.setTestOnBorrow(true);
+    // Proper master failover detection dependes on testOnBorrow or testOnReturn, so force it here
+    if (!poolConfig.getTestOnBorrow() && !poolConfig.getTestOnReturn()) {
+        poolConfig.setTestOnBorrow(true);
+    }
 
 	this.poolConfig = poolConfig;
 	this.timeout = timeout;

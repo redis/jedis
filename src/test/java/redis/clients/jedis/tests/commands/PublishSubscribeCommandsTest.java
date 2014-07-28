@@ -3,16 +3,17 @@ package redis.clients.jedis.tests.commands;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
 public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
@@ -29,7 +30,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	});
 	t.start();
     }
-    
+
     @Test
     public void subscribe() throws InterruptedException {
 	jedis.subscribe(new JedisPubSub() {
@@ -42,8 +43,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    public void onSubscribe(String channel, int subscribedChannels) {
 		assertEquals("foo", channel);
 		assertEquals(1, subscribedChannels);
-		
-		//now that I'm subscribed... publish
+
+		// now that I'm subscribed... publish
 		publishOne("foo", "exit");
 	    }
 
@@ -62,6 +63,124 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		    String message) {
 	    }
 	}, "foo");
+    }
+    
+    
+    @Test
+    public void pubSubChannels(){
+    final List<String> expectedActiveChannels = Arrays.asList("testchan1", "testchan2", "testchan3");
+	jedis.subscribe(new JedisPubSub() {
+		private int count = 0;
+		
+		@Override
+		public void onUnsubscribe(String channel, int subscribedChannels) {
+		}
+		
+		@Override
+		public void onSubscribe(String channel, int subscribedChannels) {
+			count++;
+			//All channels are subscribed
+			if (count == 3) {
+			    	Jedis otherJedis = createJedis();
+			    	List<String> activeChannels = otherJedis.pubsubChannels("test*");
+			    	assertTrue(expectedActiveChannels.containsAll(activeChannels));
+			    	unsubscribe();
+			}
+		}
+		
+		@Override
+		public void onPUnsubscribe(String pattern, int subscribedChannels) {
+		}
+		
+		@Override
+		public void onPSubscribe(String pattern, int subscribedChannels) {
+		}
+		
+		@Override
+		public void onPMessage(String pattern, String channel, String message) {
+		}
+		
+		@Override
+		public void onMessage(String channel, String message) {
+		}
+	}, "testchan1", "testchan2", "testchan3");
+    }
+    
+    @Test
+    public void pubSubNumPat(){
+	jedis.psubscribe(new JedisPubSub() {
+	    private int count=0;
+	    @Override
+	    public void onUnsubscribe(String channel, int subscribedChannels) {
+	    }
+	    
+	    @Override
+	    public void onSubscribe(String channel, int subscribedChannels) {
+	    }
+	    
+	    @Override
+	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
+	    }
+	    
+	    @Override
+	    public void onPSubscribe(String pattern, int subscribedChannels) {
+		count++;
+		if (count == 3) {
+		    Jedis otherJedis = createJedis();
+		    Long numPatterns = otherJedis.pubsubNumPat();
+		    assertEquals(new Long(2l), numPatterns);
+		    punsubscribe();
+		}
+	    }
+	    
+	    @Override
+	    public void onPMessage(String pattern, String channel, String message) {
+	    }
+	    
+	    @Override
+	    public void onMessage(String channel, String message) {
+	    }
+	}, "test*", "test*", "chan*");
+    }
+    
+    @Test
+    public void pubSubNumSub(){
+	final Map<String, String> expectedNumSub = new HashMap<String, String>();
+	expectedNumSub.put("testchannel2", "1");
+	expectedNumSub.put("testchannel1", "1");
+	jedis.subscribe(new JedisPubSub() {
+	    private int count=0;
+	    @Override
+	    public void onUnsubscribe(String channel, int subscribedChannels) {
+	    }
+	    
+	    @Override
+	    public void onSubscribe(String channel, int subscribedChannels) {
+		count++;
+		if (count == 2) {
+		    Jedis otherJedis = createJedis();
+		    Map<String, String> numSub = otherJedis.pubsubNumSub("testchannel1", "testchannel2");
+		    assertEquals(expectedNumSub, numSub);
+		    unsubscribe();
+		}
+	    }
+	    
+	    @Override
+	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
+	    }
+	    
+	    @Override
+	    public void onPSubscribe(String pattern, int subscribedChannels) {
+	    }
+	    
+	    @Override
+	    public void onPMessage(String pattern, String channel, String message) {
+	    }
+	    
+	    @Override
+	    public void onMessage(String channel, String message) {
+	    }
+	}, "testchannel1", "testchannel2");
     }
 
     @Test
@@ -140,7 +259,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
-		publishOne(pattern.replace("*",  "123"), "exit");
+		publishOne(pattern.replace("*", "123"), "exit");
 	    }
 
 	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
@@ -264,7 +383,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
 		assertEquals(1, subscribedChannels);
-		publishOne(SafeEncoder.encode(pattern).replace("*", "bar"), "exit");
+		publishOne(SafeEncoder.encode(pattern).replace("*", "bar"),
+			"exit");
 	    }
 
 	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
@@ -297,7 +417,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-		publishOne(SafeEncoder.encode(pattern).replace("*", "123"), "exit");
+		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
+			"exit");
 	    }
 
 	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
@@ -320,8 +441,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
 	    public void onSubscribe(byte[] channel, int subscribedChannels) {
 		publishOne(SafeEncoder.encode(channel), "exit");
-		
-		if(!SafeEncoder.encode(channel).equals("bar")) {
+
+		if (!SafeEncoder.encode(channel).equals("bar")) {
 		    this.subscribe(SafeEncoder.encode("bar"));
 		    this.psubscribe(SafeEncoder.encode("bar.*"));
 		}
@@ -331,7 +452,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-		publishOne(SafeEncoder.encode(pattern).replace("*", "123"), "exit");
+		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
+			"exit");
 	    }
 
 	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {

@@ -13,32 +13,39 @@ public class ConnectionTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        client = new Connection();
+	client = new Connection();
     }
 
     @After
     public void tearDown() throws Exception {
-        client.disconnect();
+	client.disconnect();
     }
 
     @Test(expected = JedisConnectionException.class)
     public void checkUnkownHost() {
-        client.setHost("someunknownhost");
-        client.connect();
+	client.setHost("someunknownhost");
+	client.connect();
     }
 
     @Test(expected = JedisConnectionException.class)
     public void checkWrongPort() {
-        client.setHost("localhost");
-        client.setPort(55665);
-        client.connect();
+	client.setHost("localhost");
+	client.setPort(55665);
+	client.connect();
     }
-    
+
     @Test
     public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
 	client.setHost("localhost");
-        client.setPort(6379);
+	client.setPort(6379);
 	client.setTimeoutInfinite();
     }
 
+    @Test
+    public void checkCloseable() {
+	client.setHost("localhost");
+	client.setPort(6379);
+	client.connect();
+	client.close();
+    }
 }

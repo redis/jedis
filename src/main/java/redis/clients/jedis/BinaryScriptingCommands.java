@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 
 public interface BinaryScriptingCommands {
@@ -8,7 +7,7 @@ public interface BinaryScriptingCommands {
     Object eval(byte[] script, byte[] keyCount, byte[]... params);
 
     Object eval(byte[] script, int keyCount, byte[]... params);
-    
+
     Object eval(byte[] script, List<byte[]> keys, List<byte[]> args);
 
     Object eval(byte[] script);

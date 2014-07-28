@@ -47,6 +47,8 @@ public interface BinaryJedisCommands {
 
     Long incrBy(byte[] key, long integer);
 
+    Double incrByFloat(byte[] key, double value);
+
     Long incr(byte[] key);
 
     Long append(byte[] key, byte[] value);
@@ -64,6 +66,8 @@ public interface BinaryJedisCommands {
     List<byte[]> hmget(byte[] key, byte[]... fields);
 
     Long hincrBy(byte[] key, byte[] field, long value);
+
+    Double hincrByFloat(byte[] key, byte[] field, double value);
 
     Boolean hexists(byte[] key, byte[] field);
 
@@ -115,7 +119,7 @@ public interface BinaryJedisCommands {
 
     Long zadd(byte[] key, double score, byte[] member);
 
-    Long zadd(byte[] key, Map<Double, byte[]> scoreMembers);
+    Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
     Set<byte[]> zrange(byte[] key, long start, long end);
 
@@ -211,4 +215,8 @@ public interface BinaryJedisCommands {
     Long bitcount(final byte[] key);
 
     Long bitcount(final byte[] key, long start, long end);
+    
+    Long pfadd(final byte[] key, final byte[]... elements);
+    
+    long pfcount(final byte[] key);
 }

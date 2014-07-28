@@ -74,14 +74,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	initPool(master);
     }
 
-    public void returnBrokenResource(final Jedis resource) {
-	returnBrokenResourceObject(resource);
-    }
-
-    public void returnResource(final Jedis resource) {
-	returnResourceObject(resource);
-    }
-
     private volatile HostAndPort currentHostMaster;
 
     public void destroy() {
@@ -100,8 +92,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
 	    log.info("Created JedisPool to master at " + master);
-	    initPool(poolConfig, new JedisFactory(master.getHost(), master.getPort(),
-		    timeout, password, database));
+	    initPool(poolConfig,
+		    new JedisFactory(master.getHost(), master.getPort(),
+			    timeout, password, database));
 	}
     }
 
@@ -163,10 +156,30 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
 
     private HostAndPort toHostAndPort(List<String> getMasterAddrByNameResult) {
-    	String host = getMasterAddrByNameResult.get(0);
-    	int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
-    	
-    	return new HostAndPort(host, port);
+	String host = getMasterAddrByNameResult.get(0);
+	int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
+
+	return new HostAndPort(host, port);
+    }
+
+    @Override
+    public Jedis getResource() {
+	Jedis jedis = super.getResource();
+	jedis.setDataSource(this);
+	return jedis;
+    }
+
+    public void returnBrokenResource(final Jedis resource) {
+	if (resource != null) {
+	    returnBrokenResourceObject(resource);
+	}
+    }
+
+    public void returnResource(final Jedis resource) {
+	if (resource != null) {
+	    resource.resetState();
+	    returnResourceObject(resource);
+	}
     }
 
     protected class JedisPubSubAdapter extends JedisPubSub {

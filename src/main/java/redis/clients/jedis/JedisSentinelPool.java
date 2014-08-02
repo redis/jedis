@@ -65,10 +65,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
     public JedisSentinelPool(String masterName, Set<String> sentinels,
 	    final GenericObjectPoolConfig poolConfig, int timeout,
 	    final String password, final int database) {
-    // Proper master failover detection dependes on testOnBorrow or testOnReturn, so force it here
-    if (!poolConfig.getTestOnBorrow() && !poolConfig.getTestOnReturn()) {
-        poolConfig.setTestOnBorrow(true);
-    }
 
 	this.poolConfig = poolConfig;
 	this.timeout = timeout;
@@ -103,6 +99,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	        initPool(poolConfig, factory);
 	    } else {
 	        factory.setHostAndPort(currentHostMaster);
+	        // although we clear the pool, we still have to check the returned object
+	        // in getResource, this call only clears idle instances, not borrowed instances
+	        internalPool.clear();
 	    }
 
 	    log.info("Created JedisPool to master at " + master);
@@ -143,7 +142,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		    if (jedis != null) {
 	        jedis.close();
 		    }
-		}		
+		}
 	    }
 
 	    try {
@@ -179,9 +178,22 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
     @Override
     public Jedis getResource() {
-	Jedis jedis = super.getResource();
-	jedis.setDataSource(this);
-	return jedis;
+	while (true) {
+	    Jedis jedis = super.getResource();
+	    jedis.setDataSource(this);
+
+	    // get a reference because it can change concurrently
+	    final HostAndPort master = currentHostMaster;
+	    final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(),
+	       jedis.getClient().getPort());
+
+	    if (master.equals(connection)) {
+	        // connected to the correct master
+	        return jedis;
+	    } else {
+	        returnBrokenResource(jedis);
+	    }
+	}
     }
 
     public void returnBrokenResource(final Jedis resource) {

@@ -1116,8 +1116,8 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     /**
      * Atomically return and remove the first (LPOP) or last (RPOP) element of
-     * the list. For example if the list contains the elements "a","b","c" LPOP
-     * will return "a" and the list will become "b","c".
+     * the list. For example if the list contains the elements "a","b","c" RPOP
+     * will return "c" and the list will become "a","b".
      * <p>
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.

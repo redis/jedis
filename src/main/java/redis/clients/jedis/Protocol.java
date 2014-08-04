@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -18,6 +14,8 @@ public final class Protocol {
     private static final String ASK_RESPONSE = "ASK";
     private static final String MOVED_RESPONSE = "MOVED";
     private static final String CLUSTERDOWN_RESPONSE = "CLUSTERDOWN";
+    private static final String CROSSSLOT_RESPONSE = "CROSSSLOT";
+
     public static final int DEFAULT_PORT = 6379;
     public static final int DEFAULT_SENTINEL_PORT = 26379;
     public static final int DEFAULT_TIMEOUT = 2000;
@@ -59,7 +57,7 @@ public final class Protocol {
     public static final String CLUSTER_REPLICATE = "replicate";
     public static final String CLUSTER_SLAVES = "slaves";
     public static final String CLUSTER_FAILOVER = "failover";
-    public static final String PUBSUB_CHANNELS= "channels";
+    public static final String PUBSUB_CHANNELS = "channels";
     public static final String PUBSUB_NUMSUB = "numsub";
     public static final String PUBSUB_NUM_PAT = "numpat";
 
@@ -109,6 +107,8 @@ public final class Protocol {
 		    Integer.valueOf(askInfo[0]));
 	} else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
 	    throw new JedisClusterException(message);
+	} else if (message.startsWith(CROSSSLOT_RESPONSE)) {
+	    throw new JedisClusterCrossSlotException(message);
 	}
 	throw new JedisDataException(message);
     }
@@ -201,7 +201,7 @@ public final class Protocol {
     }
 
     public static final byte[] toByteArray(final boolean value) {
-    return toByteArray(value ? 1 : 0);
+	return toByteArray(value ? 1 : 0);
     }
 
     public static final byte[] toByteArray(final int value) {

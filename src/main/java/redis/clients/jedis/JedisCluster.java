@@ -394,7 +394,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.hdel(key);
+		return connection.hlen(key);
 	    }
 	}.run(key);
     }

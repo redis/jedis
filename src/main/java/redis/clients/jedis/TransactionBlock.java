@@ -9,10 +9,10 @@ import redis.clients.jedis.exceptions.JedisException;
  * @see https://github.com/xetorthio/jedis/pull/498
  */
 public abstract class TransactionBlock extends Transaction {
-	// For shadowing
-	@SuppressWarnings("unused")
-	private Client client;	
-	
+    // For shadowing
+    @SuppressWarnings("unused")
+    private Client client;
+
     public TransactionBlock(Client client) {
 	super(client);
     }
@@ -23,6 +23,6 @@ public abstract class TransactionBlock extends Transaction {
     public abstract void execute() throws JedisException;
 
     public void setClient(Client client) {
-	    super.setClient(client);
+	super.setClient(client);
     }
 }

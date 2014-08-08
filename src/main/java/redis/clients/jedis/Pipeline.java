@@ -70,15 +70,15 @@ public class Pipeline extends MultiKeyPipelineBase {
     }
 
     public void clear() {
-        if (isInMulti()) {
-            discard();
-        }
+	if (isInMulti()) {
+	    discard();
+	}
 
-        sync();
+	sync();
     }
 
     public boolean isInMulti() {
-        return currentMulti != null;
+	return currentMulti != null;
     }
 
     /**

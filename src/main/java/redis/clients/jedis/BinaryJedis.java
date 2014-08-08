@@ -22,11 +22,10 @@ import redis.clients.util.SafeEncoder;
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	MultiKeyBinaryCommands, AdvancedBinaryJedisCommands,
 	BinaryScriptingCommands, Closeable {
-
     protected Client client = null;
     protected Transaction transaction = null;
     protected Pipeline pipeline = null;
-
+    
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
@@ -1771,10 +1770,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public List<Object> multi(final TransactionBlock jedisTransaction) {
 	List<Object> results = null;
 	jedisTransaction.setClient(client);
-    client.multi();
-    client.getOne();	// expected OK
-    jedisTransaction.execute();
-    results = jedisTransaction.exec();
+	client.multi();
+	client.getOne();	// expected OK
+	jedisTransaction.execute();
+	results = jedisTransaction.exec();
 	return results;
     }
 
@@ -1794,24 +1793,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     public void resetState() {
-        if (client.isConnected()) {
-            if (transaction != null) {
-                transaction.clear();
-            }
+	if (client.isConnected()) {
+	    if (transaction != null) {
+		transaction.clear();
+	    }
 
-            if (pipeline != null) {
-                pipeline.clear();
-            }
+	    if (pipeline != null) {
+		pipeline.clear();
+	    }
 
-            if (client.isInWatch()) {
-                unwatch();
-            }
+	    if (client.isInWatch()) {
+		unwatch();
+	    }
 
-            client.resetState();
-        }
+	    client.resetState();
+	}
 
-        transaction = null;
-        pipeline = null;
+	transaction = null;
+	pipeline = null;
     }
 
     public String watch(final byte[]... keys) {

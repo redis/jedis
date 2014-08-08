@@ -32,9 +32,9 @@ public class Transaction extends MultiKeyPipelineBase {
     }
 
     public void clear() {
-        if (inTransaction) {
-            discard();
-        }
+	if (inTransaction) {
+	    discard();
+	}
     }
 
     public List<Object> exec() {
@@ -60,7 +60,7 @@ public class Transaction extends MultiKeyPipelineBase {
     public List<Response<?>> execGetResponse() {
 	// Discard QUEUED or ERROR
 	client.getMany(getPipelinedResponseLength());
-    client.exec();
+	client.exec();
 
 	List<Object> unformatted = client.getObjectMultiBulkReply();
 	if (unformatted == null) {
@@ -81,8 +81,8 @@ public class Transaction extends MultiKeyPipelineBase {
 	return client.getStatusCodeReply();
     }
 
-	public void setClient(Client client) {
+    public void setClient(Client client) {
 	this.client = client;
-	}
+    }
 
 }

@@ -25,10 +25,10 @@ public class Queable {
     }
 
     protected boolean hasPipelinedResponse() {
-    	return pipelinedResponses.size() > 0;
+	return pipelinedResponses.size() > 0;
     }
-    
+
     protected int getPipelinedResponseLength() {
-    	return pipelinedResponses.size();
+	return pipelinedResponses.size();
     }
 }

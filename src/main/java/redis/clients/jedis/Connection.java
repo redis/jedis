@@ -231,42 +231,42 @@ public class Connection implements Closeable {
     }
 
     public Object getOne() {
-        flush();
-        return readProtocolWithCheckingBroken();
+	flush();
+	return readProtocolWithCheckingBroken();
     }
 
     public boolean isBroken() {
-        return broken;
+	return broken;
     }
 
     protected void flush() {
-        try {
-            outputStream.flush();
-        } catch (IOException ex) {
-            broken = true;
-            throw new JedisConnectionException(ex);
-        }
+	try {
+	    outputStream.flush();
+	} catch (IOException ex) {
+	    broken = true;
+	    throw new JedisConnectionException(ex);
+	}
     }
 
     protected Object readProtocolWithCheckingBroken() {
-        try {
-            return Protocol.read(inputStream);
-        } catch (JedisConnectionException exc) {
-            broken = true;
-            throw exc;
-        }
+	try {
+	    return Protocol.read(inputStream);
+	} catch (JedisConnectionException exc) {
+	    broken = true;
+	    throw exc;
+	}
     }
 
     public List<Object> getMany(int count) {
-    	flush();
-    	List<Object> responses = new ArrayList<Object>();
-    	for (int i = 0 ; i < count ; i++) {
-    		try {
-    			responses.add(readProtocolWithCheckingBroken());
-    		} catch (JedisDataException e) {
-    			responses.add(e);
-    		}
-    	}
-    	return responses;
+	flush();
+	List<Object> responses = new ArrayList<Object>();
+	for (int i = 0; i < count; i++) {
+	    try {
+		responses.add(readProtocolWithCheckingBroken());
+	    } catch (JedisDataException e) {
+		responses.add(e);
+	    }
+	}
+	return responses;
     }
 }

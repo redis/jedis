@@ -14,6 +14,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -155,7 +156,7 @@ public class ShardedJedisPoolTest extends Assert {
 	// items on one shard
 	// alter shard 1 and recreate pool
 	pool.destroy();
-	shards.set(1, new JedisShardInfo("nohost", 1234));
+	shards.set(1, new JedisShardInfo("localhost", 1234));
 	pool = new ShardedJedisPool(redisConfig, shards);
 	jedis = pool.getResource();
 	Long actual = Long.valueOf(0);
@@ -233,4 +234,69 @@ public class ShardedJedisPoolTest extends Assert {
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
     }
+
+    @Test
+    public void returnResourceShouldResetState() throws URISyntaxException {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(new JedisShardInfo(new URI(
+		"redis://:foobared@localhost:6380")));
+	shards.add(new JedisShardInfo(new URI(
+		"redis://:foobared@localhost:6379")));
+
+	ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+
+	ShardedJedis jedis = pool.getResource();
+	jedis.set("pipelined", String.valueOf(0));
+	jedis.set("pipelined2", String.valueOf(0));
+
+	ShardedJedisPipeline pipeline = jedis.pipelined();
+
+	pipeline.incr("pipelined");
+	pipeline.incr("pipelined2");
+
+	jedis.resetState();
+
+	pipeline = jedis.pipelined();
+	pipeline.incr("pipelined");
+	pipeline.incr("pipelined2");
+	List<Object> results = pipeline.syncAndReturnAll();
+
+	assertEquals(2, results.size());
+	pool.returnResource(jedis);
+	pool.destroy();
+    }
+
+    @Test
+    public void checkResourceIsCloseable() throws URISyntaxException {
+	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+	config.setMaxTotal(1);
+	config.setBlockWhenExhausted(false);
+
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(new JedisShardInfo(new URI(
+		"redis://:foobared@localhost:6380")));
+	shards.add(new JedisShardInfo(new URI(
+		"redis://:foobared@localhost:6379")));
+
+	ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+
+	ShardedJedis jedis = pool.getResource();
+	try {
+	    jedis.set("hello", "jedis");
+	} finally {
+	    jedis.close();
+	}
+
+	ShardedJedis jedis2 = pool.getResource();
+	try {
+	    assertEquals(jedis, jedis2);
+	} finally {
+	    jedis2.close();
+	}
+    }
+
 }

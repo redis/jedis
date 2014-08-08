@@ -61,6 +61,11 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     public void monitor() {
 	new Thread(new Runnable() {
 	    public void run() {
+		try {
+		    // sleep 100ms to make sure that monitor thread runs first
+		    Thread.sleep(100);
+		} catch (InterruptedException e) {
+		}
 		Jedis j = new Jedis("localhost");
 		j.auth("foobared");
 		for (int i = 0; i < 5; i++) {
@@ -112,10 +117,10 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 	resp = jedis.debug(DebugParams.RELOAD());
 	assertNotNull(resp);
     }
-    
+
     @Test
     public void waitReplicas() {
 	Long replicas = jedis.waitReplicas(1, 100);
-	assertEquals(1, replicas.longValue()); 
+	assertEquals(1, replicas.longValue());
     }
 }

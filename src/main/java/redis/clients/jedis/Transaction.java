@@ -6,78 +6,83 @@ import java.util.List;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 /**
- * Transaction is nearly identical to Pipeline, only differences are the multi/discard behaviors
+ * Transaction is nearly identical to Pipeline, only differences are the
+ * multi/discard behaviors
  */
 public class Transaction extends MultiKeyPipelineBase {
 
     protected boolean inTransaction = true;
 
-    protected Transaction(){
-        // client will be set later in transaction block
+    protected Transaction() {
+	// client will be set later in transaction block
     }
 
     public Transaction(final Client client) {
-        this.client = client;
+	this.client = client;
     }
 
     @Override
     protected Client getClient(String key) {
-        return client;
+	return client;
     }
 
     @Override
     protected Client getClient(byte[] key) {
-        return client;
+	return client;
+    }
+
+    public void clear() {
+        if (inTransaction) {
+            discard();
+        }
     }
 
     public List<Object> exec() {
-    	// Discard QUEUED or ERROR
-    	client.getMany(getPipelinedResponseLength());
-    	
-        client.exec();
+	// Discard QUEUED or ERROR
+	client.getMany(getPipelinedResponseLength());
+	client.exec();
 
-        List<Object> unformatted = client.getObjectMultiBulkReply();
-        if (unformatted == null) {
-            return null;
-        }
-        List<Object> formatted = new ArrayList<Object>();
-        for (Object o : unformatted) {
-            try {
-                formatted.add(generateResponse(o).get());
-            } catch (JedisDataException e) {
-                formatted.add(e);
-            }
-        }
-        return formatted;
+	List<Object> unformatted = client.getObjectMultiBulkReply();
+	if (unformatted == null) {
+	    return null;
+	}
+	List<Object> formatted = new ArrayList<Object>();
+	for (Object o : unformatted) {
+	    try {
+		formatted.add(generateResponse(o).get());
+	    } catch (JedisDataException e) {
+		formatted.add(e);
+	    }
+	}
+	return formatted;
     }
 
     public List<Response<?>> execGetResponse() {
-    	// Discard QUEUED or ERROR
-    	client.getMany(getPipelinedResponseLength());
-    	
-        client.exec();
+	// Discard QUEUED or ERROR
+	client.getMany(getPipelinedResponseLength());
+    client.exec();
 
-        List<Object> unformatted = client.getObjectMultiBulkReply();
-        if (unformatted == null) {
-            return null;
-        }
-        List<Response<?>> response = new ArrayList<Response<?>>();
-        for (Object o : unformatted) {
-            response.add(generateResponse(o));
-        }
-        return response;
+	List<Object> unformatted = client.getObjectMultiBulkReply();
+	if (unformatted == null) {
+	    return null;
+	}
+	List<Response<?>> response = new ArrayList<Response<?>>();
+	for (Object o : unformatted) {
+	    response.add(generateResponse(o));
+	}
+	return response;
     }
 
     public String discard() {
-    	client.getMany(getPipelinedResponseLength());
-        client.discard();
-        inTransaction = false;
-        clean();
-        return client.getStatusCodeReply();
+	client.getMany(getPipelinedResponseLength());
+	client.discard();
+	inTransaction = false;
+	clean();
+	return client.getStatusCodeReply();
     }
 
 	public void setClient(Client client) {
-		this.client = client;
+	this.client = client;
 	}
 
 }

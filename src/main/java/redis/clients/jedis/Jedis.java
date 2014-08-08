@@ -1,22 +1,20 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
+
 import java.net.URI;
 import java.util.*;
+import java.util.Map.Entry;
 
-public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands {
+public class Jedis extends BinaryJedis implements JedisCommands,
+	MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands,
+	BasicCommands, ClusterCommands {
+
+    protected Pool<Jedis> dataSource = null;
+
     public Jedis(final String host) {
 	super(host);
     }
@@ -56,24 +54,29 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     /**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).
+     * 
      * @param key
      * @param value
-     * @param nxxx NX|XX, NX -- Only set the key if it does not already exist.
-     *                    XX -- Only set the key if it already exist.
-     * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
-     * @param time expire time in the units of {@param #expx}
+     * @param nxxx
+     *            NX|XX, NX -- Only set the key if it does not already exist. XX
+     *            -- Only set the key if it already exist.
+     * @param expx
+     *            EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time
+     *            expire time in the units of {@param #expx}
      * @return Status code reply
      */
-    public String set(final String key, final String value, final String nxxx, final String expx, final long time) {
-        checkIsInMulti();
-        client.set(key, value, nxxx, expx, time);
-        return client.getStatusCodeReply();
+    public String set(final String key, final String value, final String nxxx,
+	    final String expx, final long time) {
+	checkIsInMulti();
+	client.set(key, value, nxxx, expx, time);
+	return client.getStatusCodeReply();
     }
 
     /**
-     * Get the value of the specified key. If the key does not exist the special
-     * value 'nil' is returned. If the value stored at key is not a string an
-     * error is returned because GET can only handle string values.
+     * Get the value of the specified key. If the key does not exist null is
+     * returned. If the value stored at key is not a string an error is returned
+     * because GET can only handle string values.
      * <p>
      * Time complexity: O(1)
      * 
@@ -119,8 +122,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public Long del(String key) {
-    client.del(key);
-    return client.getIntegerReply();
+	client.del(key);
+	return client.getIntegerReply();
     }
 
     /**
@@ -542,6 +545,31 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     /**
+     * INCRBYFLOAT
+     * <p>
+     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are
+     * not "double" types. Simply the string stored at the key is parsed as a
+     * base double precision floating point value, incremented, and then
+     * converted back as a string.  There is no DECRYBYFLOAT but providing a
+     * negative value will work as expected.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Double reply, this commands will reply with the new value of key
+     *         after the increment.
+     */
+    public Double incrByFloat(final String key, final double value) {
+        checkIsInMulti();
+        client.incrByFloat(key, value);
+        String dval = client.getBulkReply();
+        return (dval != null ? new Double(dval) : null);
+    }
+
+    /**
      * Increment the number stored at key by one. If the key does not exist or
      * contains a value of a wrong type, set the key to the value of "0" before
      * to perform the increment operation.
@@ -731,6 +759,32 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	checkIsInMulti();
 	client.hincrBy(key, field, value);
 	return client.getIntegerReply();
+    }
+
+    /**
+     * Increment the number stored at field in the hash at key by a double
+     * precision floating point value. If key does not exist,
+     * a new key holding a hash is created. If field does not
+     * exist or holds a string, the value is set to 0 before applying the
+     * operation. Since the value argument is signed you can use this command to
+     * perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBYFLOAT is limited to
+     * double precision floating point values.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Double precision floating point reply The new value at field after the increment
+     *         operation.
+     */
+    public Double hincrByFloat(final String key, final String field, final double value) {
+        checkIsInMulti();
+        client.hincrByFloat(key, field, value);
+        final String dval = client.getBulkReply();
+        return (dval != null ? new Double(dval) : null);
     }
 
     /**
@@ -1062,8 +1116,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     /**
      * Atomically return and remove the first (LPOP) or last (RPOP) element of
-     * the list. For example if the list contains the elements "a","b","c" LPOP
-     * will return "a" and the list will become "b","c".
+     * the list. For example if the list contains the elements "a","b","c" RPOP
+     * will return "c" and the list will become "a","b".
      * <p>
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.
@@ -1381,7 +1435,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	client.srandmember(key);
 	return client.getBulkReply();
     }
-    
+
     public List<String> srandmember(final String key, final int count) {
 	checkIsInMulti();
 	client.srandmember(key, count);
@@ -1415,7 +1469,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return client.getIntegerReply();
     }
 
-    public Long zadd(final String key, final Map<Double, String> scoreMembers) {
+    public Long zadd(final String key, final Map<String, Double> scoreMembers) {
 	checkIsInMulti();
 	client.zadd(key, scoreMembers);
 	return client.getIntegerReply();
@@ -1789,39 +1843,39 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public List<String> blpop(String... args) {
-        client.blpop(args);
-        client.setTimeoutInfinite();
-        final List<String> multiBulkReply = client.getMultiBulkReply();
-        client.rollbackTimeout();
-        return multiBulkReply;
+	client.blpop(args);
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     public List<String> brpop(String... args) {
-        client.brpop(args);
-        client.setTimeoutInfinite();
-        final List<String> multiBulkReply = client.getMultiBulkReply();
-        client.rollbackTimeout();
-        return multiBulkReply;
+	client.brpop(args);
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     public List<String> blpop(String arg) {
-        String[] args = new String[1];
-        args[0] = arg;
-        client.blpop(args);
-        client.setTimeoutInfinite();
-        final List<String> multiBulkReply = client.getMultiBulkReply();
-        client.rollbackTimeout();
-        return multiBulkReply;
+	String[] args = new String[1];
+	args[0] = arg;
+	client.blpop(args);
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     public List<String> brpop(String arg) {
-        String[] args = new String[1];
-        args[0] = arg;
-        client.brpop(args);
-        client.setTimeoutInfinite();
-        final List<String> multiBulkReply = client.getMultiBulkReply();
-        client.rollbackTimeout();
-        return multiBulkReply;
+	String[] args = new String[1];
+	args[0] = arg;
+	client.brpop(args);
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     /**
@@ -1954,8 +2008,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return multiBulkReply;
     }
 
-
-
     public Long zcount(final String key, final double min, final double max) {
 	checkIsInMulti();
 	client.zcount(key, min, max);
@@ -2020,8 +2072,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * @see #zcount(String, double, double)
      * 
      * @param key
-     * @param min a double or Double.MIN_VALUE for "-inf"
-     * @param max a double or Double.MAX_VALUE for "+inf"
+     * @param min
+     *            a double or Double.MIN_VALUE for "-inf"
+     * @param max
+     *            a double or Double.MAX_VALUE for "+inf"
      * @return Multi bulk reply specifically a list of elements in the specified
      *         score range.
      */
@@ -2628,8 +2682,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public Boolean setbit(String key, long offset, String value) {
-    client.setbit(key, offset, value);
-    return client.getIntegerReply() == 1;
+	client.setbit(key, offset, value);
+	return client.getIntegerReply() == 1;
     }
 
     /**
@@ -2652,6 +2706,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     public String getrange(String key, long startOffset, long endOffset) {
 	client.getrange(key, startOffset, endOffset);
 	return client.getBulkReply();
+    }
+    
+    public Long bitpos(final String key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+	client.bitpos(key, value, params);
+	return client.getIntegerReply();
     }
 
     /**
@@ -2742,26 +2805,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public void subscribe(final JedisPubSub jedisPubSub,
-        final String... channels) {
-    client.setTimeoutInfinite();
-    jedisPubSub.proceed(client, channels);
-    client.rollbackTimeout();
+	    final String... channels) {
+	client.setTimeoutInfinite();
+	jedisPubSub.proceed(client, channels);
+	client.rollbackTimeout();
     }
 
     public Long publish(final String channel, final String message) {
-    checkIsInMulti();
-    connect();
-    client.publish(channel, message);
-    return client.getIntegerReply();
+	checkIsInMulti();
+	connect();
+	client.publish(channel, message);
+	return client.getIntegerReply();
     }
 
     public void psubscribe(final JedisPubSub jedisPubSub,
-        final String... patterns) {
-    checkIsInMulti();
-    connect();
-    client.setTimeoutInfinite();
-    jedisPubSub.proceedWithPatterns(client, patterns);
-    client.rollbackTimeout();
+	    final String... patterns) {
+	checkIsInMulti();
+	connect();
+	client.setTimeoutInfinite();
+	jedisPubSub.proceedWithPatterns(client, patterns);
+	client.rollbackTimeout();
     }
 
     protected static String[] getParams(List<String> keys, List<String> args) {
@@ -2792,17 +2855,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     private Object getEvalResult() {
-	Object result = client.getOne();
-	
+	return evalResult(client.getOne());
+    }
+
+    private Object evalResult(Object result) {
 	if (result instanceof byte[])
 	    return SafeEncoder.encode((byte[]) result);
 
 	if (result instanceof List<?>) {
 	    List<?> list = (List<?>) result;
-	    List<String> listResult = new ArrayList<String>(list.size());
+	    List<Object> listResult = new ArrayList<Object>(list.size());
 	    for (Object bin : list) {
-		listResult.add((bin == null ? null : SafeEncoder
-			.encode((byte[]) bin)));
+		listResult.add(evalResult(bin));
 	    }
 
 	    return listResult;
@@ -2870,18 +2934,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
 
     public Long bitcount(final String key) {
-        client.bitcount(key);
-        return client.getIntegerReply();
+	client.bitcount(key);
+	return client.getIntegerReply();
     }
 
     public Long bitcount(final String key, long start, long end) {
-        client.bitcount(key, start, end);
-        return client.getIntegerReply();
+	client.bitcount(key, start, end);
+	return client.getIntegerReply();
     }
 
     public Long bitop(BitOP op, final String destKey, String... srcKeys) {
-        client.bitop(op, destKey, srcKeys);
-        return client.getIntegerReply();
+	client.bitop(op, destKey, srcKeys);
+	return client.getIntegerReply();
     }
 
     /**
@@ -2917,7 +2981,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * @return
      */
     @SuppressWarnings("rawtypes")
-	public List<Map<String, String>> sentinelMasters() {
+    public List<Map<String, String>> sentinelMasters() {
 	client.sentinel(Protocol.SENTINEL_MASTERS);
 	final List<Object> reply = client.getObjectMultiBulkReply();
 
@@ -2995,7 +3059,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
      * @return
      */
     @SuppressWarnings("rawtypes")
-	public List<Map<String, String>> sentinelSlaves(String masterName) {
+    public List<Map<String, String>> sentinelSlaves(String masterName) {
 	client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
 	final List<Object> reply = client.getObjectMultiBulkReply();
 
@@ -3006,212 +3070,490 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 	return slaves;
     }
 
-    public byte[] dump(final String key) {
-	    checkIsInMulti();
-	    client.dump(key);
-	    return client.getBinaryBulkReply();
-    }
-    
-    public String restore(final String key, final int ttl, final byte[] serializedValue) {
-    	checkIsInMulti();
-    	client.restore(key, ttl, serializedValue);
-    	return client.getStatusCodeReply();
-    }
-    
-    public Long pexpire(final String key, final int milliseconds) {
-    	checkIsInMulti();
-    	client.pexpire(key, milliseconds);
-    	return client.getIntegerReply();
-    }
-    
-    public Long pexpireAt(final String key, final long millisecondsTimestamp) {
-    	checkIsInMulti();
-    	client.pexpireAt(key, millisecondsTimestamp);
-    	return client.getIntegerReply();
-    }
-    
-    public Long pttl(final String key) {
-    	checkIsInMulti();
-    	client.pttl(key);
-    	return client.getIntegerReply();
-    }
-    
-    public Double incrByFloat(final String key, final double increment) {
-    	checkIsInMulti();
-    	client.incrByFloat(key, increment);
-    	String relpy = client.getBulkReply();
-    	return (relpy != null ? new Double(relpy) : null);    
-    }
-    
-    public String psetex(final String key, final int milliseconds, final String value) {
-    	checkIsInMulti();
-    	client.psetex(key, milliseconds, value);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String set(final String key, final String value, final String nxxx) {
-    	checkIsInMulti();
-    	client.set(key, value, nxxx);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String set(final String key, final String value, final String nxxx, final String expx, final int time) {
-    	checkIsInMulti();
-    	client.set(key, value, nxxx, expx, time);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String clientKill(final String client) {
-    	checkIsInMulti();
-    	this.client.clientKill(client);
-    	return this.client.getStatusCodeReply();
-    }
-    
-    public String clientSetname(final String name) {
-    	checkIsInMulti();
-    	client.clientSetname(name);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
-    	checkIsInMulti();
-    	client.migrate(host, port, key, destinationDb, timeout);
-    	return client.getStatusCodeReply();
-    }
-    
-    public Double hincrByFloat(final String key, final String field, double increment) {
-    	checkIsInMulti();
-    	client.hincrByFloat(key, field, increment);
-    	String relpy = client.getBulkReply();
-    	return (relpy != null ? new Double(relpy) : null);
+    public String sentinelFailover(String masterName) {
+	client.sentinel(Protocol.SENTINEL_FAILOVER, masterName);
+	return client.getStatusCodeReply();
     }
 
+    public String sentinelMonitor(String masterName, String ip, int port,
+	    int quorum) {
+	client.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip,
+		String.valueOf(port), String.valueOf(quorum));
+	return client.getStatusCodeReply();
+    }
+
+    public String sentinelRemove(String masterName) {
+	client.sentinel(Protocol.SENTINEL_REMOVE, masterName);
+	return client.getStatusCodeReply();
+    }
+
+    public String sentinelSet(String masterName,
+	    Map<String, String> parameterMap) {
+	int index = 0;
+	int paramsLength = parameterMap.size() * 2 + 2;
+	String[] params = new String[paramsLength];
+
+	params[index++] = Protocol.SENTINEL_SET;
+	params[index++] = masterName;
+	for (Entry<String, String> entry : parameterMap.entrySet()) {
+	    params[index++] = entry.getKey();
+	    params[index++] = entry.getValue();
+	}
+
+	client.sentinel(params);
+	return client.getStatusCodeReply();
+    }
+
+    public byte[] dump(final String key) {
+	checkIsInMulti();
+	client.dump(key);
+	return client.getBinaryBulkReply();
+    }
+
+    public String restore(final String key, final int ttl,
+	    final byte[] serializedValue) {
+	checkIsInMulti();
+	client.restore(key, ttl, serializedValue);
+	return client.getStatusCodeReply();
+    }
+
+    @Deprecated
+    public Long pexpire(final String key, final int milliseconds) {
+	return pexpire(key, (long) milliseconds);
+    }
+
+    public Long pexpire(final String key, final long milliseconds) {
+	checkIsInMulti();
+	client.pexpire(key, milliseconds);
+	return client.getIntegerReply();
+    }
+
+    public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+	checkIsInMulti();
+	client.pexpireAt(key, millisecondsTimestamp);
+	return client.getIntegerReply();
+    }
+
+    public Long pttl(final String key) {
+	checkIsInMulti();
+	client.pttl(key);
+	return client.getIntegerReply();
+    }
+
+
+    public String psetex(final String key, final int milliseconds,
+	    final String value) {
+	checkIsInMulti();
+	client.psetex(key, milliseconds, value);
+	return client.getStatusCodeReply();
+    }
+
+    public String set(final String key, final String value, final String nxxx) {
+	checkIsInMulti();
+	client.set(key, value, nxxx);
+	return client.getStatusCodeReply();
+    }
+
+    public String set(final String key, final String value, final String nxxx,
+	    final String expx, final int time) {
+	checkIsInMulti();
+	client.set(key, value, nxxx, expx, time);
+	return client.getStatusCodeReply();
+    }
+
+    public String clientKill(final String client) {
+	checkIsInMulti();
+	this.client.clientKill(client);
+	return this.client.getStatusCodeReply();
+    }
+
+    public String clientSetname(final String name) {
+	checkIsInMulti();
+	client.clientSetname(name);
+	return client.getStatusCodeReply();
+    }
+
+    public String migrate(final String host, final int port, final String key,
+	    final int destinationDb, final int timeout) {
+	checkIsInMulti();
+	client.migrate(host, port, key, destinationDb, timeout);
+	return client.getStatusCodeReply();
+    }
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public ScanResult<String> scan(int cursor) {
 	return scan(cursor, new ScanParams());
     }
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public ScanResult<String> scan(int cursor, final ScanParams params) {
 	checkIsInMulti();
 	client.scan(cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[])result.get(0)));
+	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
 	List<String> results = new ArrayList<String>();
-	List<byte[]> rawResults = (List<byte[]>)result.get(1);
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	for (byte[] bs : rawResults) {
 	    results.add(SafeEncoder.encode(bs));
 	}
 	return new ScanResult<String>(newcursor, results);
     }
-    
-    public ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor) {
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
+    public ScanResult<Map.Entry<String, String>> hscan(final String key,
+	    int cursor) {
 	return hscan(key, cursor, new ScanParams());
     }
-    
-    public ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor, final ScanParams params) {
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
+    public ScanResult<Map.Entry<String, String>> hscan(final String key,
+	    int cursor, final ScanParams params) {
 	checkIsInMulti();
 	client.hscan(key, cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[])result.get(0)));
+	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
 	List<Map.Entry<String, String>> results = new ArrayList<Map.Entry<String, String>>();
-	List<byte[]> rawResults = (List<byte[]>)result.get(1);
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	Iterator<byte[]> iterator = rawResults.iterator();
-	while(iterator.hasNext()) {
-	    results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next())));
+	while (iterator.hasNext()) {
+	    results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder
+		    .encode(iterator.next()), SafeEncoder.encode(iterator
+		    .next())));
 	}
 	return new ScanResult<Map.Entry<String, String>>(newcursor, results);
     }
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public ScanResult<String> sscan(final String key, int cursor) {
 	return sscan(key, cursor, new ScanParams());
     }
-    
-    public ScanResult<String> sscan(final String key, int cursor, final ScanParams params) {
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
+    public ScanResult<String> sscan(final String key, int cursor,
+	    final ScanParams params) {
 	checkIsInMulti();
 	client.sscan(key, cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[])result.get(0)));
+	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
 	List<String> results = new ArrayList<String>();
-	List<byte[]> rawResults = (List<byte[]>)result.get(1);
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	for (byte[] bs : rawResults) {
 	    results.add(SafeEncoder.encode(bs));
 	}
 	return new ScanResult<String>(newcursor, results);
     }
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public ScanResult<Tuple> zscan(final String key, int cursor) {
 	return zscan(key, cursor, new ScanParams());
     }
-    
-    public ScanResult<Tuple> zscan(final String key, int cursor, final ScanParams params) {
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
+    public ScanResult<Tuple> zscan(final String key, int cursor,
+	    final ScanParams params) {
 	checkIsInMulti();
 	client.zscan(key, cursor, params);
 	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[])result.get(0)));
+	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
 	List<Tuple> results = new ArrayList<Tuple>();
-	List<byte[]> rawResults = (List<byte[]>)result.get(1);
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
 	Iterator<byte[]> iterator = rawResults.iterator();
-	while(iterator.hasNext()) {
-	    results.add(new Tuple(SafeEncoder.encode(iterator.next()), Double.valueOf(SafeEncoder.encode(iterator.next()))));
+	while (iterator.hasNext()) {
+	    results.add(new Tuple(SafeEncoder.encode(iterator.next()), Double
+		    .valueOf(SafeEncoder.encode(iterator.next()))));
 	}
 	return new ScanResult<Tuple>(newcursor, results);
     }
-    public String clusterNodes() {
-    	checkIsInMulti();
-    	client.clusterNodes();
-    	return client.getBulkReply();
-    }
-    
-    public String clusterMeet(final String ip, final int port) {
-    	checkIsInMulti();
-    	client.clusterMeet(ip, port);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String clusterAddSlots(final int ...slots) {
-    	checkIsInMulti();
-    	client.clusterAddSlots(slots);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String clusterDelSlots(final int ...slots) {
-    	checkIsInMulti();
-    	client.clusterDelSlots(slots);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String clusterInfo() {
-    	checkIsInMulti();
-    	client.clusterInfo();
-    	return client.getStatusCodeReply();
-    }
-    
-    public List<String> clusterGetKeysInSlot(final int slot, final int count) {
-    	checkIsInMulti();
-    	client.clusterGetKeysInSlot(slot, count);
-    	return client.getMultiBulkReply();
-    }
-    
-    public String clusterSetSlotNode(final int slot, final String nodeId) {
-    	checkIsInMulti();
-    	client.clusterSetSlotNode(slot, nodeId);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String clusterSetSlotMigrating(final int slot, final String nodeId) {
-    	checkIsInMulti();
-    	client.clusterSetSlotMigrating(slot, nodeId);
-    	return client.getStatusCodeReply();
-    }
-    
-    public String clusterSetSlotImporting(final int slot, final String nodeId) {
-    	checkIsInMulti();
-    	client.clusterSetSlotImporting(slot, nodeId);
-    	return client.getStatusCodeReply();
+
+    public ScanResult<String> scan(final String cursor) {
+	return scan(cursor, new ScanParams());
     }
 
-	public String asking() {
-		checkIsInMulti();
-    	client.asking();
-    	return client.getStatusCodeReply();
+    public ScanResult<String> scan(final String cursor, final ScanParams params) {
+	checkIsInMulti();
+	client.scan(cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	String newcursor = new String((byte[]) result.get(0));
+	List<String> results = new ArrayList<String>();
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	for (byte[] bs : rawResults) {
+	    results.add(SafeEncoder.encode(bs));
 	}
+	return new ScanResult<String>(newcursor, results);
+    }
+
+    public ScanResult<Map.Entry<String, String>> hscan(final String key,
+	    final String cursor) {
+	return hscan(key, cursor, new ScanParams());
+    }
+
+    public ScanResult<Map.Entry<String, String>> hscan(final String key,
+	    final String cursor, final ScanParams params) {
+	checkIsInMulti();
+	client.hscan(key, cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	String newcursor = new String((byte[]) result.get(0));
+	List<Map.Entry<String, String>> results = new ArrayList<Map.Entry<String, String>>();
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	Iterator<byte[]> iterator = rawResults.iterator();
+	while (iterator.hasNext()) {
+	    results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder
+		    .encode(iterator.next()), SafeEncoder.encode(iterator
+		    .next())));
+	}
+	return new ScanResult<Map.Entry<String, String>>(newcursor, results);
+    }
+
+    public ScanResult<String> sscan(final String key, final String cursor) {
+	return sscan(key, cursor, new ScanParams());
+    }
+
+    public ScanResult<String> sscan(final String key, final String cursor,
+	    final ScanParams params) {
+	checkIsInMulti();
+	client.sscan(key, cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	String newcursor = new String((byte[]) result.get(0));
+	List<String> results = new ArrayList<String>();
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	for (byte[] bs : rawResults) {
+	    results.add(SafeEncoder.encode(bs));
+	}
+	return new ScanResult<String>(newcursor, results);
+    }
+
+    public ScanResult<Tuple> zscan(final String key, final String cursor) {
+	return zscan(key, cursor, new ScanParams());
+    }
+
+    public ScanResult<Tuple> zscan(final String key, final String cursor,
+	    final ScanParams params) {
+	checkIsInMulti();
+	client.zscan(key, cursor, params);
+	List<Object> result = client.getObjectMultiBulkReply();
+	String newcursor = new String((byte[]) result.get(0));
+	List<Tuple> results = new ArrayList<Tuple>();
+	List<byte[]> rawResults = (List<byte[]>) result.get(1);
+	Iterator<byte[]> iterator = rawResults.iterator();
+	while (iterator.hasNext()) {
+	    results.add(new Tuple(SafeEncoder.encode(iterator.next()), Double
+		    .valueOf(SafeEncoder.encode(iterator.next()))));
+	}
+	return new ScanResult<Tuple>(newcursor, results);
+    }
+
+    public String clusterNodes() {
+	checkIsInMulti();
+	client.clusterNodes();
+	return client.getBulkReply();
+    }
+
+    public String clusterMeet(final String ip, final int port) {
+	checkIsInMulti();
+	client.clusterMeet(ip, port);
+	return client.getStatusCodeReply();
+    }
+
+    public String clusterAddSlots(final int... slots) {
+	checkIsInMulti();
+	client.clusterAddSlots(slots);
+	return client.getStatusCodeReply();
+    }
+
+    public String clusterDelSlots(final int... slots) {
+	checkIsInMulti();
+	client.clusterDelSlots(slots);
+	return client.getStatusCodeReply();
+    }
+
+    public String clusterInfo() {
+	checkIsInMulti();
+	client.clusterInfo();
+	return client.getStatusCodeReply();
+    }
+
+    public List<String> clusterGetKeysInSlot(final int slot, final int count) {
+	checkIsInMulti();
+	client.clusterGetKeysInSlot(slot, count);
+	return client.getMultiBulkReply();
+    }
+
+    public String clusterSetSlotNode(final int slot, final String nodeId) {
+	checkIsInMulti();
+	client.clusterSetSlotNode(slot, nodeId);
+	return client.getStatusCodeReply();
+    }
+
+    public String clusterSetSlotMigrating(final int slot, final String nodeId) {
+	checkIsInMulti();
+	client.clusterSetSlotMigrating(slot, nodeId);
+	return client.getStatusCodeReply();
+    }
+
+    public String clusterSetSlotImporting(final int slot, final String nodeId) {
+	checkIsInMulti();
+	client.clusterSetSlotImporting(slot, nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterSetSlotStable(final int slot) {
+	checkIsInMulti();
+	client.clusterSetSlotStable(slot);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterForget(final String nodeId) {
+	checkIsInMulti();
+	client.clusterForget(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterFlushSlots() {
+	checkIsInMulti();
+	client.clusterFlushSlots();
+	return client.getStatusCodeReply();
+    }
+    
+    public Long clusterKeySlot(final String key) {
+	checkIsInMulti();
+	client.clusterKeySlot(key);
+	return client.getIntegerReply();
+    }
+    
+    public Long clusterCountKeysInSlot(final int slot) {
+	checkIsInMulti();
+	client.clusterCountKeysInSlot(slot);
+	return client.getIntegerReply();
+    }
+    
+    public String clusterSaveConfig() {
+	checkIsInMulti();
+	client.clusterSaveConfig();
+	return client.getStatusCodeReply();
+    }
+    
+    public String clusterReplicate(final String nodeId) {
+	checkIsInMulti();
+	client.clusterReplicate(nodeId);
+	return client.getStatusCodeReply();
+    }
+    
+    public List<String> clusterSlaves(final String nodeId) {
+	checkIsInMulti();
+	client.clusterSlaves(nodeId);
+	return client.getMultiBulkReply();
+    }
+    
+    public String clusterFailover() {
+	checkIsInMulti();
+	client.clusterFailover();
+	return client.getStatusCodeReply();
+    }
+
+    public String asking() {
+	checkIsInMulti();
+	client.asking();
+	return client.getStatusCodeReply();
+    }
+
+    public List<String> pubsubChannels(String pattern) {
+	checkIsInMulti();
+	client.pubsubChannels(pattern);
+	return client.getMultiBulkReply();
+    }
+
+    public Long pubsubNumPat() {
+	checkIsInMulti();
+	client.pubsubNumPat();
+	return client.getIntegerReply();
+    }
+
+    public Map<String, String> pubsubNumSub(String... channels) {
+	checkIsInMulti();
+	client.pubsubNumSub(channels);
+	return BuilderFactory.STRING_MAP
+		.build(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public void close() {
+	if (dataSource != null) {
+	    if (client.isBroken()) {
+		this.dataSource.returnBrokenResource(this);
+	    } else {
+		this.dataSource.returnResource(this);
+	    }
+	} else {
+	    client.close();
+	}
+    }
+
+    public void setDataSource(Pool<Jedis> jedisPool) {
+        this.dataSource = jedisPool;
+    }
+
+    public Long pfadd(final String key, final String... elements) {
+	checkIsInMulti();
+	client.pfadd(key, elements);
+	return client.getIntegerReply();
+    }
+
+    public long pfcount(final String key) {
+	checkIsInMulti();
+	client.pfcount(key);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public long pfcount(String... keys) {
+        checkIsInMulti();
+	client.pfcount(keys);
+	return client.getIntegerReply();
+    }
+
+    public String pfmerge(final String destkey, final String... sourcekeys) {
+	checkIsInMulti();
+	client.pfmerge(destkey, sourcekeys);
+	return client.getStatusCodeReply();
+    }
 }

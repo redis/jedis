@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
@@ -90,5 +91,13 @@ public class JedisTest extends JedisCommandTestBase {
 	Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
+    }
+    
+    @Test
+    public void checkCloseable() {
+	jedis.close();
+	BinaryJedis bj = new BinaryJedis("localhost");
+	bj.connect();
+	bj.close();
     }
 }

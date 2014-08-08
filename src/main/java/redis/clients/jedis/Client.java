@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.Protocol.Command.HSCAN;
+import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
     public Client(final String host) {
@@ -24,8 +23,10 @@ public class Client extends BinaryClient implements Commands {
 	set(SafeEncoder.encode(key), SafeEncoder.encode(value));
     }
 
-    public void set(final String key, final String value, final String nxxx, final String expx, final long time) {
-        set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
+    public void set(final String key, final String value, final String nxxx,
+	    final String expx, final long time) {
+	set(SafeEncoder.encode(key), SafeEncoder.encode(value),
+		SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
     }
 
     public void get(final String key) {
@@ -392,14 +393,14 @@ public class Client extends BinaryClient implements Commands {
 	}
 	blpop(bargs);
     }
-    
+
     public void blpop(final int timeout, final String... keys) {
-    	List<String> args = new ArrayList<String>();
-    	for (String arg : keys) {
-    	    args.add(arg);
-    	}
-    	args.add(String.valueOf(timeout));
-    	blpop(args.toArray(new String[args.size()]));
+	List<String> args = new ArrayList<String>();
+	for (String arg : keys) {
+	    args.add(arg);
+	}
+	args.add(String.valueOf(timeout));
+	blpop(args.toArray(new String[args.size()]));
     }
 
     public void sort(final String key, final SortingParams sortingParameters,
@@ -419,14 +420,14 @@ public class Client extends BinaryClient implements Commands {
 	}
 	brpop(bargs);
     }
-    
+
     public void brpop(final int timeout, final String... keys) {
-    	List<String> args = new ArrayList<String>();
-    	for (String arg : keys) {
-    	    args.add(arg);
-    	}
-    	args.add(String.valueOf(timeout));
-    	brpop(args.toArray(new String[args.size()]));
+	List<String> args = new ArrayList<String>();
+	for (String arg : keys) {
+	    args.add(arg);
+	}
+	args.add(String.valueOf(timeout));
+	brpop(args.toArray(new String[args.size()]));
     }
 
     public void zcount(final String key, final double min, final double max) {
@@ -621,13 +622,16 @@ public class Client extends BinaryClient implements Commands {
     }
 
     public void setbit(final String key, final long offset, final String value) {
-    setbit(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
+	setbit(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
 
     public void getbit(String key, long offset) {
 	getbit(SafeEncoder.encode(key), offset);
     }
 
+    public void bitpos(final String key, final boolean value, final BitPosParams params) {
+	bitpos(SafeEncoder.encode(key), value, params);
+    }
     public void setrange(String key, long offset, String value) {
 	setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
@@ -671,6 +675,18 @@ public class Client extends BinaryClient implements Commands {
 	}
 	subscribe(cs);
     }
+    
+    public void pubsubChannels(String pattern) {
+	pubsub(Protocol.PUBSUB_CHANNELS, pattern);
+    }
+    
+    public void pubsubNumPat() {
+	pubsub(Protocol.PUBSUB_NUM_PAT);
+    }
+
+    public void pubsubNumSub(String... channels) {
+	pubsub(Protocol.PUBSUB_NUMSUB, channels);
+    }
 
     public void configSet(String parameter, String value) {
 	configSet(SafeEncoder.encode(parameter), SafeEncoder.encode(value));
@@ -710,12 +726,14 @@ public class Client extends BinaryClient implements Commands {
 	scriptLoad(SafeEncoder.encode(script));
     }
 
-    public void zadd(String key, Map<Double, String> scoreMembers) {
-	HashMap<Double, byte[]> binaryScoreMembers = new HashMap<Double, byte[]>();
+    public void zadd(String key, Map<String, Double> scoreMembers) {
 
-	for (Map.Entry<Double, String> entry : scoreMembers.entrySet()) {
-	    binaryScoreMembers.put(entry.getKey(),
-		    SafeEncoder.encode(entry.getValue()));
+	HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
+
+	for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
+
+	    binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()),
+		    entry.getValue());
 	}
 
 	zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
@@ -734,15 +752,15 @@ public class Client extends BinaryClient implements Commands {
     }
 
     public void bitcount(final String key) {
-        bitcount(SafeEncoder.encode(key));
+	bitcount(SafeEncoder.encode(key));
     }
 
     public void bitcount(final String key, long start, long end) {
-        bitcount(SafeEncoder.encode(key), start, end);
+	bitcount(SafeEncoder.encode(key), start, end);
     }
 
     public void bitop(BitOP op, final String destKey, String... srcKeys) {
-        bitop(op, SafeEncoder.encode(destKey), getByteParams(srcKeys));
+	bitop(op, SafeEncoder.encode(destKey), getByteParams(srcKeys));
     }
 
     public void sentinel(final String... args) {
@@ -753,132 +771,244 @@ public class Client extends BinaryClient implements Commands {
 	sentinel(arg);
     }
 
-    public void dump(final String key) { 
-    	dump(SafeEncoder.encode(key));
+    public void dump(final String key) {
+	dump(SafeEncoder.encode(key));
     }
-    
-    public void restore(final String key, final int ttl, final byte[] serializedValue) {
-    	restore(SafeEncoder.encode(key), ttl, serializedValue);
+
+    public void restore(final String key, final int ttl,
+	    final byte[] serializedValue) {
+	restore(SafeEncoder.encode(key), ttl, serializedValue);
     }
-    
+
+    @Deprecated
     public void pexpire(final String key, final int milliseconds) {
-    	pexpire(SafeEncoder.encode(key), milliseconds);
+	pexpire(key, (long) milliseconds);
     }
     
+    public void pexpire(final String key, final long milliseconds) {
+	pexpire(SafeEncoder.encode(key), milliseconds);
+    }
+
     public void pexpireAt(final String key, final long millisecondsTimestamp) {
-    	pexpireAt(SafeEncoder.encode(key), millisecondsTimestamp);
+	pexpireAt(SafeEncoder.encode(key), millisecondsTimestamp);
     }
-    
+
     public void pttl(final String key) {
-    	pttl(SafeEncoder.encode(key));
+	pttl(SafeEncoder.encode(key));
     }
-    
+
     public void incrByFloat(final String key, final double increment) {
-    	incrByFloat(SafeEncoder.encode(key), increment);
+	incrByFloat(SafeEncoder.encode(key), increment);
     }
-    
-    public void psetex(final String key, final int milliseconds, final String value) {
-    	psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
+
+    public void psetex(final String key, final int milliseconds,
+	    final String value) {
+	psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
     }
-    
+
     public void set(final String key, final String value, final String nxxx) {
-    	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx));
+	set(SafeEncoder.encode(key), SafeEncoder.encode(value),
+		SafeEncoder.encode(nxxx));
     }
-    
-    public void set(final String key, final String value, final String nxxx, final String expx, final int time) {
-    	set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
+
+    public void set(final String key, final String value, final String nxxx,
+	    final String expx, final int time) {
+	set(SafeEncoder.encode(key), SafeEncoder.encode(value),
+		SafeEncoder.encode(nxxx), SafeEncoder.encode(expx), time);
     }
-    
+
     public void srandmember(final String key, final int count) {
-    	srandmember(SafeEncoder.encode(key), count);
+	srandmember(SafeEncoder.encode(key), count);
     }
 
     public void clientKill(final String client) {
-    	clientKill(SafeEncoder.encode(client));
+	clientKill(SafeEncoder.encode(client));
     }
-    
+
     public void clientSetname(final String name) {
-    	clientSetname(SafeEncoder.encode(name));
+	clientSetname(SafeEncoder.encode(name));
     }
-    
-    public void migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
-    	migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key), destinationDb, timeout);
+
+    public void migrate(final String host, final int port, final String key,
+	    final int destinationDb, final int timeout) {
+	migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key),
+		destinationDb, timeout);
     }
-    
-    public void hincrByFloat(final String key, final String field, double increment) {
-    	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), increment);
+
+    public void hincrByFloat(final String key, final String field,
+	    double increment) {
+	hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field),
+		increment);
     }
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public void hscan(final String key, int cursor, final ScanParams params) {
- 	hscan(SafeEncoder.encode(key), cursor, params);
+	hscan(SafeEncoder.encode(key), cursor, params);
     }
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     public void sscan(final String key, int cursor, final ScanParams params) {
- 	sscan(SafeEncoder.encode(key), cursor, params);
+	sscan(SafeEncoder.encode(key), cursor, params);
+    }
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
+    public void zscan(final String key, int cursor, final ScanParams params) {
+	zscan(SafeEncoder.encode(key), cursor, params);
     }
     
-    public void zscan(final String key, int cursor, final ScanParams params) {
- 	zscan(SafeEncoder.encode(key), cursor, params);
+    public void scan(final String cursor, final ScanParams params) {
+	scan(SafeEncoder.encode(cursor), params);
+    }
+    
+    public void hscan(final String key, final String cursor, final ScanParams params) {
+	hscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
+    }
+    
+    public void sscan(final String key, final String cursor, final ScanParams params) {
+	sscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
+    }
+    
+    public void zscan(final String key, final String cursor, final ScanParams params) {
+	zscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
     public void cluster(final String subcommand, final int... args) {
-	final byte[][] arg = new byte[args.length+1][];
+	final byte[][] arg = new byte[args.length + 1][];
 	for (int i = 1; i < arg.length; i++) {
-	    arg[i] = toByteArray(args[i-1]);
-	}
-	arg[0] = SafeEncoder.encode(subcommand);
-	cluster(arg);
-    }
-
-    public void cluster(final String subcommand, final String... args) {
-	final byte[][] arg = new byte[args.length+1][];
-	for (int i = 1; i < arg.length; i++) {
-	    arg[i] = SafeEncoder.encode(args[i-1]);
+	    arg[i] = toByteArray(args[i - 1]);
 	}
 	arg[0] = SafeEncoder.encode(subcommand);
 	cluster(arg);
     }
     
+    public void pubsub(final String subcommand, final String... args) {
+    	final byte[][] arg = new byte[args.length+1][];
+    	for (int i = 1; i < arg.length; i++) {
+    	    arg[i] = SafeEncoder.encode(args[i-1]);
+    	}
+    	arg[0] = SafeEncoder.encode(subcommand);
+    	pubsub(arg);
+    }
+
+    public void cluster(final String subcommand, final String... args) {
+	final byte[][] arg = new byte[args.length + 1][];
+	for (int i = 1; i < arg.length; i++) {
+	    arg[i] = SafeEncoder.encode(args[i - 1]);
+	}
+	arg[0] = SafeEncoder.encode(subcommand);
+	cluster(arg);
+    }
+
     public void cluster(final String subcommand) {
 	final byte[][] arg = new byte[1][];
 	arg[0] = SafeEncoder.encode(subcommand);
 	cluster(arg);
     }
-    
+
     public void clusterNodes() {
 	cluster(Protocol.CLUSTER_NODES);
     }
-    
+
     public void clusterMeet(final String ip, final int port) {
 	cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
     }
-    
-    public void clusterAddSlots(final int ...slots) {
+
+    public void clusterAddSlots(final int... slots) {
 	cluster(Protocol.CLUSTER_ADDSLOTS, slots);
     }
-    
-    public void clusterDelSlots(final int ...slots) {
+
+    public void clusterDelSlots(final int... slots) {
 	cluster(Protocol.CLUSTER_DELSLOTS, slots);
     }
-    
+
     public void clusterInfo() {
 	cluster(Protocol.CLUSTER_INFO);
     }
-    
+
     public void clusterGetKeysInSlot(final int slot, final int count) {
-    	final int[] args = new int[]{ slot, count };
-    	cluster(Protocol.CLUSTER_GETKEYSINSLOT, args);
+	final int[] args = new int[] { slot, count };
+	cluster(Protocol.CLUSTER_GETKEYSINSLOT, args);
     }
-    
+
     public void clusterSetSlotNode(final int slot, final String nodeId) {
-	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_NODE, nodeId);
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
+		Protocol.CLUSTER_SETSLOT_NODE, nodeId);
     }
-    
+
     public void clusterSetSlotMigrating(final int slot, final String nodeId) {
-	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_MIGRATING, nodeId);
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
+		Protocol.CLUSTER_SETSLOT_MIGRATING, nodeId);
+    }
+
+    public void clusterSetSlotImporting(final int slot, final String nodeId) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
+		Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    }
+
+    public void pfadd(String key, final String... elements) {
+	pfadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(elements));
+    }
+
+    public void pfcount(final String key) {
+	pfcount(SafeEncoder.encode(key));
+    }
+
+    public void pfcount(final String...keys) {
+	pfcount(SafeEncoder.encodeMany(keys));
+    }
+
+    public void pfmerge(final String destkey, final String... sourcekeys) {
+	pfmerge(SafeEncoder.encode(destkey), SafeEncoder.encodeMany(sourcekeys));
+    }
+public void clusterSetSlotStable(final int slot) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
+		Protocol.CLUSTER_SETSLOT_STABLE);
     }
     
-    public void clusterSetSlotImporting(final int slot, final String nodeId) {
-	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot), Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    public void clusterForget(final String nodeId) {
+	cluster(Protocol.CLUSTER_FORGET, nodeId);
+    }
+
+    public void clusterFlushSlots() {
+	cluster(Protocol.CLUSTER_FLUSHSLOT);
+    }
+
+    public void clusterKeySlot(final String key) {
+	cluster(Protocol.CLUSTER_KEYSLOT, key);
+    }
+
+    public void clusterCountKeysInSlot(final int slot) {
+	cluster(Protocol.CLUSTER_COUNTKEYINSLOT, String.valueOf(slot));
+    }
+
+    public void clusterSaveConfig() {
+	cluster(Protocol.CLUSTER_SAVECONFIG);
+    }
+
+    public void clusterReplicate(final String nodeId) {
+	cluster(Protocol.CLUSTER_REPLICATE, nodeId);
+    }
+
+    public void clusterSlaves(final String nodeId) {
+	cluster(Protocol.CLUSTER_SLAVES, nodeId);
+    }
+
+    public void clusterFailover() {
+	cluster(Protocol.CLUSTER_FAILOVER);
     }
 }

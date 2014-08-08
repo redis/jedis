@@ -7,9 +7,11 @@ import java.util.Set;
 /**
  * Common interface for sharded and non-sharded Jedis
  */
-public interface
-        JedisCommands {
+public interface JedisCommands {
     String set(String key, String value);
+
+    String set(String key, String value, String nxxx,
+                    String expx, long time);
 
     String get(String key);
 
@@ -114,8 +116,8 @@ public interface
     Long strlen(String key);
 
     Long zadd(String key, double score, String member);
-    
-    Long zadd(String key, Map<Double, String> scoreMembers);
+
+    Long zadd(String key, Map<String, Double> scoreMembers);
 
     Set<String> zrange(String key, long start, long end);
 
@@ -152,50 +154,50 @@ public interface
     Set<String> zrevrangeByScore(String key, double max, double min);
 
     Set<String> zrangeByScore(String key, double min, double max, int offset,
-            int count);
+	    int count);
 
     Set<String> zrevrangeByScore(String key, String max, String min);
 
     Set<String> zrangeByScore(String key, String min, String max, int offset,
-            int count);
+	    int count);
 
     Set<String> zrevrangeByScore(String key, double max, double min,
-            int offset, int count);
+	    int offset, int count);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
 
     Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
 
     Set<Tuple> zrangeByScoreWithScores(String key, double min, double max,
-            int offset, int count);
-    
+	    int offset, int count);
+
     Set<String> zrevrangeByScore(String key, String max, String min,
-            int offset, int count);
+	    int offset, int count);
 
     Set<Tuple> zrangeByScoreWithScores(String key, String min, String max);
-    
+
     Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
 
     Set<Tuple> zrangeByScoreWithScores(String key, String min, String max,
-            int offset, int count);
+	    int offset, int count);
 
     Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min,
-            int offset, int count);
-    
+	    int offset, int count);
+
     Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min,
-            int offset, int count);
+	    int offset, int count);
 
     Long zremrangeByRank(String key, long start, long end);
 
     Long zremrangeByScore(String key, double start, double end);
-    
+
     Long zremrangeByScore(String key, String start, String end);
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
-            String value);
-    
+	    String value);
+
     Long lpushx(String key, String... string);
-    
+
     Long rpushx(String key, String... string);
 
     List<String> blpop(String arg);
@@ -211,10 +213,39 @@ public interface
     Long bitcount(final String key);
 
     Long bitcount(final String key, long start, long end);
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor);
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     ScanResult<String> sscan(final String key, int cursor);
-    
+
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531 
+     */
     ScanResult<Tuple> zscan(final String key, int cursor);
+    
+    ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
+    
+    ScanResult<String> sscan(final String key, final String cursor);
+    
+    ScanResult<Tuple> zscan(final String key, final String cursor);
+    
+    Long pfadd(final String key, final String... elements);
+    
+    long pfcount(final String key);
+
 }

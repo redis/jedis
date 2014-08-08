@@ -1,12 +1,11 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 import java.util.Set;
 
-
 /**
- * Multikey related commands (these are split out because they are non-shardable)
+ * Multikey related commands (these are split out because they are
+ * non-shardable)
  */
 public interface MultiKeyCommandsPipeline {
     Response<Long> del(String... keys);
@@ -39,7 +38,8 @@ public interface MultiKeyCommandsPipeline {
 
     Response<Long> smove(String srckey, String dstkey, String member);
 
-    Response<Long> sort(String key, SortingParams sortingParameters, String dstkey);
+    Response<Long> sort(String key, SortingParams sortingParameters,
+	    String dstkey);
 
     Response<Long> sort(String key, String dstkey);
 
@@ -64,4 +64,8 @@ public interface MultiKeyCommandsPipeline {
     Response<String> randomKey();
 
     Response<Long> bitop(BitOP op, final String destKey, String... srcKeys);
+    
+    Response<String> pfmerge(final String destkey, final String... sourcekeys);
+
+    Response<Long> pfcount(final String...keys);
 }

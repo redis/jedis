@@ -18,7 +18,7 @@ public class JedisPool extends Pool<Jedis> {
 	this(new GenericObjectPoolConfig(), host, port,
 		Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null);
     }
-    
+
     public JedisPool(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
@@ -79,11 +79,23 @@ public class JedisPool extends Pool<Jedis> {
 		database, clientName));
     }
 
+    @Override
+    public Jedis getResource() {
+	Jedis jedis = super.getResource();
+	jedis.setDataSource(this);
+	return jedis;
+    }
+
     public void returnBrokenResource(final Jedis resource) {
-	returnBrokenResourceObject(resource);
+	if (resource != null) {
+	    returnBrokenResourceObject(resource);
+	}
     }
 
     public void returnResource(final Jedis resource) {
-	returnResourceObject(resource);
+	if (resource != null) {
+	    resource.resetState();
+	    returnResourceObject(resource);
+	}
     }
 }

@@ -51,18 +51,17 @@ public class Sharded<R, S extends ShardInfo<R>> {
     }
 
     private void initialize(List<S> shards) {
-	nodes = new TreeMap<Long, S>();
-	String name = null;
-	for (int i = 0; i != shards.size(); ++i) {
-	    final S shardInfo = shards.get(i);
-	    name = shardInfo.getName();
-	    if (name==null || name.isEmpty()){
-	    	name = "Sharded:"+String.valueOf(i);
-	    }
-		nodes.put(this.algo.hash(name), shardInfo);
-		
-	    resources.put(shardInfo, shardInfo.createResource());
-	}
+    	nodes = new TreeMap<Long, S>();
+    	String name = null;
+    	for (int i = 0; i != shards.size(); ++i) {
+    	    final S shardInfo = shards.get(i);
+    	    name = shardInfo.getName();
+    	    if (name==null || name.isEmpty()){
+    	    	name = "Sharded:"+String.valueOf(i);
+    	    }
+    		nodes.put(this.algo.hash(name), shardInfo);
+    	    resources.put(shardInfo, shardInfo.createResource());
+    	}
     }
 
     public R getShard(byte[] key) {

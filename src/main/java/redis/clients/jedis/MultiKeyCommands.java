@@ -70,14 +70,6 @@ public interface MultiKeyCommands {
 
     Long bitop(BitOP op, final String destKey, String... srcKeys);
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    ScanResult<String> scan(int cursor);
-    
     ScanResult<String> scan(final String cursor);
     
     String pfmerge(final String destkey, final String... sourcekeys);

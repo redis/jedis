@@ -1419,58 +1419,6 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	return null;
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    @Override
-    public ScanResult<Entry<String, String>> hscan(final String key,
-	    final int cursor) {
-	return new JedisClusterCommand<ScanResult<Entry<String, String>>>(
-		connectionHandler, timeout, maxRedirections) {
-	    @Override
-	    public ScanResult<Entry<String, String>> execute(Jedis connection) {
-		return connection.hscan(key, cursor);
-	    }
-	}.run(null);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    @Override
-    public ScanResult<String> sscan(final String key, final int cursor) {
-	return new JedisClusterCommand<ScanResult<String>>(connectionHandler,
-		timeout, maxRedirections) {
-	    @Override
-	    public ScanResult<String> execute(Jedis connection) {
-		return connection.sscan(key, cursor);
-	    }
-	}.run(null);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    @Override
-    public ScanResult<Tuple> zscan(final String key, final int cursor) {
-	return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler,
-		timeout, maxRedirections) {
-	    @Override
-	    public ScanResult<Tuple> execute(Jedis connection) {
-		return connection.zscan(key, cursor);
-	    }
-	}.run(null);
-    }
-    
     @Override
     public ScanResult<Entry<String, String>> hscan(final String key,
 	    final String cursor) {

@@ -1011,4 +1011,8 @@ public void clusterSetSlotStable(final int slot) {
     public void clusterFailover() {
 	cluster(Protocol.CLUSTER_FAILOVER);
     }
+    
+    public void clusterSlots() {
+	cluster(Protocol.CLUSTER_SLOTS);
+    }
 }

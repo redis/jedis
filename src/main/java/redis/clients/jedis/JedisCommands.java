@@ -113,6 +113,8 @@ public interface JedisCommands {
 
     String srandmember(String key);
 
+    List<String> srandmember(String key, int count);
+
     Long strlen(String key);
 
     Long zadd(String key, double score, String member);
@@ -214,30 +216,6 @@ public interface JedisCommands {
 
     Long bitcount(final String key, long start, long end);
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor);
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    ScanResult<String> sscan(final String key, int cursor);
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    ScanResult<Tuple> zscan(final String key, int cursor);
-    
     ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
     
     ScanResult<String> sscan(final String key, final String cursor);

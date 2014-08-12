@@ -345,10 +345,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(key);
 	return j.srandmember(key);
     }
-    public List<String> srandmember(String key,int count) {
-    	Jedis j = getShard(key);
-    	return j.srandmember(key,count);
-    }
     public List<String> brpop(int timeout,String key) {
         Jedis j = getShard(key);
         return j.brpop(timeout,key);
@@ -357,6 +353,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
         Jedis j = getShard(key);
         return j.blpop(timeout,key);
     }
+
+    @Override
+    public List<String> srandmember(String key, int count) {
+    Jedis j = getShard(key);
+    return j.srandmember(key, count);
+    }
+
     public Long zadd(String key, double score, String member) {
 	Jedis j = getShard(key);
 	return j.zadd(key, score, member);
@@ -558,41 +561,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	return j.bitcount(key, start, end);
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Entry<String, String>> hscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.hscan(key, cursor);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> sscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.sscan(key, cursor);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Tuple> zscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.zscan(key, cursor);
-    }
-
-    public ScanResult<Entry<String, String>> hscan(String key,
-	    final String cursor) {
+    public ScanResult<Entry<String, String>> hscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.hscan(key, cursor);
     }

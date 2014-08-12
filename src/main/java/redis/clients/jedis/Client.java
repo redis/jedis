@@ -780,11 +780,6 @@ public class Client extends BinaryClient implements Commands {
 	restore(SafeEncoder.encode(key), ttl, serializedValue);
     }
 
-    @Deprecated
-    public void pexpire(final String key, final int milliseconds) {
-	pexpire(key, (long) milliseconds);
-    }
-    
     public void pexpire(final String key, final long milliseconds) {
 	pexpire(SafeEncoder.encode(key), milliseconds);
     }
@@ -841,36 +836,6 @@ public class Client extends BinaryClient implements Commands {
 		increment);
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void hscan(final String key, int cursor, final ScanParams params) {
-	hscan(SafeEncoder.encode(key), cursor, params);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void sscan(final String key, int cursor, final ScanParams params) {
-	sscan(SafeEncoder.encode(key), cursor, params);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void zscan(final String key, int cursor, final ScanParams params) {
-	zscan(SafeEncoder.encode(key), cursor, params);
-    }
-    
     public void scan(final String cursor, final ScanParams params) {
 	scan(SafeEncoder.encode(cursor), params);
     }
@@ -1010,5 +975,9 @@ public void clusterSetSlotStable(final int slot) {
 
     public void clusterFailover() {
 	cluster(Protocol.CLUSTER_FAILOVER);
+    }
+    
+    public void clusterSlots() {
+	cluster(Protocol.CLUSTER_SLOTS);
     }
 }

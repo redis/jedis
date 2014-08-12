@@ -12,3 +12,4 @@ tags
 .idea
 *.aof
 *.rdb
+.DS_Store

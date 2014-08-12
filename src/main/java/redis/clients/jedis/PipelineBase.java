@@ -177,9 +177,9 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> getrange(byte[] key, long startOffset, long endOffset) {
+    public Response<byte[]> getrange(byte[] key, long startOffset, long endOffset) {
 	getClient(key).getrange(key, startOffset, endOffset);
-	return getResponse(BuilderFactory.LONG);
+	return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> hdel(String key, String... field) {
@@ -1096,16 +1096,6 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
     public Response<Long> objectIdletime(byte[] key) {
 	getClient(key).objectIdletime(key);
 	return getResponse(BuilderFactory.LONG);
-    }
-
-    @Deprecated
-    public Response<Long> pexpire(String key, int milliseconds) {
-	return pexpire(key, (long) milliseconds);
-    }
-
-    @Deprecated
-    public Response<Long> pexpire(byte[] key, int milliseconds) {
-	return pexpire(key, (long) milliseconds);
     }
 
     public Response<Long> pexpire(String key, long milliseconds) {

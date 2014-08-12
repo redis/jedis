@@ -34,7 +34,7 @@ public interface BinaryRedisPipeline {
 
     Response<byte[]> getSet(byte[] key, byte[] value);
 
-    Response<Long> getrange(byte[] key, long startOffset, long endOffset);
+    Response<byte[]> getrange(byte[] key, long startOffset, long endOffset);
 
     Response<Long> hdel(byte[] key, byte[]... field);
 

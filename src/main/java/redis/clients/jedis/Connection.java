@@ -21,7 +21,6 @@ public class Connection implements Closeable {
     private Socket socket;
     private RedisOutputStream outputStream;
     private RedisInputStream inputStream;
-    private int pipelinedCommands = 0;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
 
     private boolean broken = false;
@@ -78,7 +77,6 @@ public class Connection implements Closeable {
 	try {
 	    connect();
 	    Protocol.sendCommand(outputStream, cmd, args);
-	    pipelinedCommands++;
 	    return this;
 	} catch (JedisConnectionException ex) {
 	    // Any other exceptions related to connection?
@@ -91,7 +89,6 @@ public class Connection implements Closeable {
 	try {
 	    connect();
 	    Protocol.sendCommand(outputStream, cmd, new byte[0][]);
-	    pipelinedCommands++;
 	    return this;
 	} catch (JedisConnectionException ex) {
 	    // Any other exceptions related to connection?
@@ -180,7 +177,6 @@ public class Connection implements Closeable {
 
     protected String getStatusCodeReply() {
 	flush();
-	pipelinedCommands--;
 	final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
 	if (null == resp) {
 	    return null;
@@ -200,13 +196,11 @@ public class Connection implements Closeable {
 
     public byte[] getBinaryBulkReply() {
 	flush();
-	pipelinedCommands--;
 	return (byte[]) readProtocolWithCheckingBroken();
     }
 
     public Long getIntegerReply() {
 	flush();
-	pipelinedCommands--;
 	return (Long) readProtocolWithCheckingBroken();
     }
 
@@ -217,12 +211,7 @@ public class Connection implements Closeable {
     @SuppressWarnings("unchecked")
     public List<byte[]> getBinaryMultiBulkReply() {
 	flush();
-	pipelinedCommands--;
 	return (List<byte[]>) readProtocolWithCheckingBroken();
-    }
-
-    public void resetPipelinedCount() {
-	pipelinedCommands = 0;
     }
 
     @SuppressWarnings("unchecked")
@@ -232,38 +221,17 @@ public class Connection implements Closeable {
 
     public List<Object> getObjectMultiBulkReply() {
 	flush();
-	pipelinedCommands--;
 	return getRawObjectMultiBulkReply();
     }
 
     @SuppressWarnings("unchecked")
     public List<Long> getIntegerMultiBulkReply() {
-	flush();
-	pipelinedCommands--;
-	return (List<Long>) readProtocolWithCheckingBroken();
-    }
-
-    public List<Object> getAll() {
-	return getAll(0);
-    }
-
-    public List<Object> getAll(int except) {
-	List<Object> all = new ArrayList<Object>();
-	flush();
-	while (pipelinedCommands > except) {
-	    try {
-		all.add(readProtocolWithCheckingBroken());
-	    } catch (JedisDataException e) {
-		all.add(e);
-	    }
-	    pipelinedCommands--;
-	}
-	return all;
+        flush();
+        return (List<Long>) Protocol.read(inputStream);
     }
 
     public Object getOne() {
 	flush();
-	pipelinedCommands--;
 	return readProtocolWithCheckingBroken();
     }
 
@@ -287,5 +255,18 @@ public class Connection implements Closeable {
 	    broken = true;
 	    throw exc;
 	}
+    }
+
+    public List<Object> getMany(int count) {
+	flush();
+	List<Object> responses = new ArrayList<Object>();
+	for (int i = 0; i < count; i++) {
+	    try {
+		responses.add(readProtocolWithCheckingBroken());
+	    } catch (JedisDataException e) {
+		responses.add(e);
+	    }
+	}
+	return responses;
     }
 }

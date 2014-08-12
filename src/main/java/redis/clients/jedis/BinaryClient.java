@@ -963,9 +963,6 @@ public class BinaryClient extends Connection {
     }
 
     public void resetState() {
-	if (isInMulti())
-	    discard();
-
 	if (isInWatch())
 	    unwatch();
     }

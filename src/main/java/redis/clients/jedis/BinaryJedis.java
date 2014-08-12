@@ -23,7 +23,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	MultiKeyBinaryCommands, AdvancedBinaryJedisCommands,
 	BinaryScriptingCommands, Closeable {
     protected Client client = null;
-
+    protected Transaction transaction = null;
+    protected Pipeline pipeline = null;
+    
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
@@ -1753,7 +1755,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public Transaction multi() {
 	client.multi();
-	return new Transaction(client);
+	client.getOne();	// expected OK
+	transaction = new Transaction(client);
+	return transaction;
     }
 
     @Deprecated
@@ -1767,6 +1771,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	List<Object> results = null;
 	jedisTransaction.setClient(client);
 	client.multi();
+	client.getOne();	// expected OK
 	jedisTransaction.execute();
 	results = jedisTransaction.exec();
 	return results;
@@ -1789,9 +1794,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public void resetState() {
 	if (client.isConnected()) {
+	    if (transaction != null) {
+		transaction.clear();
+	    }
+
+	    if (pipeline != null) {
+		pipeline.clear();
+	    }
+
+	    if (client.isInWatch()) {
+		unwatch();
+	    }
+
 	    client.resetState();
-	    client.getAll();
 	}
+
+	transaction = null;
+	pipeline = null;
     }
 
     public String watch(final byte[]... keys) {
@@ -2207,7 +2226,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     public Pipeline pipelined() {
-	Pipeline pipeline = new Pipeline();
+	pipeline = new Pipeline();
 	pipeline.setClient(client);
 	return pipeline;
     }

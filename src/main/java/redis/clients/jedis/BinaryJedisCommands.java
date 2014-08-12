@@ -115,6 +115,8 @@ public interface BinaryJedisCommands {
 
     byte[] srandmember(byte[] key);
 
+    List<byte[]> srandmember(final byte[] key, final int count);
+
     Long strlen(byte[] key);
 
     Long zadd(byte[] key, double score, byte[] member);

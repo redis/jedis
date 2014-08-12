@@ -624,6 +624,17 @@ public class JedisCluster implements JedisCommands, BasicCommands {
     }
 
     @Override
+    public List<String> srandmember(final String key, final int count) {
+        return new JedisClusterCommand<List<String>>(connectionHandler, timeout,
+            maxRedirections) {
+            @Override
+            public List<String> execute(Jedis connection) {
+            return connection.srandmember(key, count);
+            }
+        }.run(key);
+    }
+
+    @Override
     public Long strlen(final String key) {
 	return new JedisClusterCommand<Long>(connectionHandler, timeout,
 		maxRedirections) {

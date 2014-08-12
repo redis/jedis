@@ -177,9 +177,9 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> getrange(byte[] key, long startOffset, long endOffset) {
+    public Response<byte[]> getrange(byte[] key, long startOffset, long endOffset) {
 	getClient(key).getrange(key, startOffset, endOffset);
-	return getResponse(BuilderFactory.LONG);
+	return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> hdel(String key, String... field) {

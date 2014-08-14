@@ -203,8 +203,12 @@ public interface JedisCommands {
     Long rpushx(String key, String... string);
 
     List<String> blpop(String arg);
+    
+    List<String> blpop(int timeout, String key);
 
     List<String> brpop(String arg);
+    
+    List<String> brpop(int timeout, String key);
 
     Long del(String key);
 

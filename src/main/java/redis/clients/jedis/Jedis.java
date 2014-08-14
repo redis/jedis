@@ -3433,4 +3433,31 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.pfmerge(destkey, sourcekeys);
 	return client.getStatusCodeReply();
     }
+
+    @Override
+    public List<String> blpop(int timeout, String key) {
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.add(String.valueOf(timeout));
+	client.blpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
+    }
+
+    @Override
+    public List<String> brpop(int timeout, String key) {
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.add(String.valueOf(timeout));
+	client.brpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
+    }  
+
 }

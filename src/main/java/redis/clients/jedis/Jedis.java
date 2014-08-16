@@ -36,6 +36,15 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     /**
+	 * Resets the client.
+	 * <p>
+	 * Reads all remaining responses from the input.
+	 */
+	public void reset() {
+		client.getAll();
+	}
+
+	/**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).
      * <p>

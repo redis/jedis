@@ -32,6 +32,15 @@ public class ZParams {
 	return this;
     }
 
+    public ZParams weights(final double... weights) {
+	params.add(WEIGHTS.raw);
+	for (final double weight : weights) {
+	    params.add(Protocol.toByteArray(weight));
+	}
+
+	return this;
+    }
+
     public Collection<byte[]> getParams() {
 	return Collections.unmodifiableCollection(params);
     }

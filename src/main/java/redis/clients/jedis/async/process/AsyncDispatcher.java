@@ -30,9 +30,6 @@ public class AsyncDispatcher extends Thread {
 
     private final ByteBuffer readBuffer;
 
-    //private Queue<AsyncJedisTask> readTaskQueue = new LinkedList<AsyncJedisTask>();
-    //private LinkedList<AsyncJedisTask> writeTaskQueue = new LinkedList<AsyncJedisTask>();
-
     private Deque<AsyncJedisTask> readTaskQueue = new LinkedBlockingDeque<AsyncJedisTask>();
     private Deque<AsyncJedisTask> writeTaskQueue = new LinkedBlockingDeque<AsyncJedisTask>();
 

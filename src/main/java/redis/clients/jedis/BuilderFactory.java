@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.util.SafeEncoder;
+import redis.clients.util.Slowlog;
 
 public class BuilderFactory {
     public static final Builder<Double> DOUBLE = new Builder<Double>() {
@@ -251,6 +252,20 @@ public class BuilderFactory {
 
 	public String toString() {
 	    return "ZSet<Tuple>";
+	}
+    };
+
+    public static final Builder<List<Slowlog>> SLOWLOG_LIST = new Builder<List<Slowlog>>() {
+	@Override
+	public List<Slowlog> build(Object data) {
+	    if (null == data) {
+		return null;
+	    }
+	    return Slowlog.from((List<Object>) data);
+	}
+
+	public String toString() {
+	    return "List<Slowlog>";
 	}
     };
 

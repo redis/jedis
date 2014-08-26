@@ -70,6 +70,8 @@ public interface Commands {
 
     public void incrBy(final String key, final long integer);
 
+    public void incrByFloat(final String key, final double value);
+
     public void incr(final String key);
 
     public void append(final String key, final String value);
@@ -89,6 +91,8 @@ public interface Commands {
     public void hmget(final String key, final List<String> fields);
 
     public void hincrBy(final String key, final String field, final long value);
+
+    public void hincrByFloat(final String key, final String field, final double value);
 
     public void hexists(final String key, final String field);
 
@@ -350,13 +354,13 @@ public interface Commands {
 
     public void bitop(BitOP op, final String destKey, List<String> srcKeys);
 
-    public void scan(int cursor, final ScanParams params);
+    public void scan(final String cursor, final ScanParams params);
 
-    public void hscan(final String key, int cursor, final ScanParams params);
+    public void hscan(final String key, final String cursor, final ScanParams params);
 
-    public void sscan(final String key, int cursor, final ScanParams params);
+    public void sscan(final String key, final String cursor, final ScanParams params);
 
-    public void zscan(final String key, int cursor, final ScanParams params);
-
+    public void zscan(final String key, final String cursor, final ScanParams params);
+    
     public void waitReplicas(int replicas, long timeout);
 }

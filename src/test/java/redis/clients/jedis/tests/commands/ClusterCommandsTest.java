@@ -40,28 +40,26 @@ public class ClusterCommandsTest extends JedisTestBase {
 
     @AfterClass
     public static void removeSlots() throws InterruptedException {
-	// This is to wait for gossip to replicate data.
-	waitForEqualClusterSize();
 	String[] nodes = node1.clusterNodes().split("\n");
 	String node1Id = nodes[0].split(" ")[0];
 	node1.clusterDelSlots(1, 2, 3, 4, 5, 500);
 	node1.clusterSetSlotNode(5000, node1Id);
 	node1.clusterDelSlots(5000, 10000);
+	node1.clusterDelSlots(3000, 3001, 3002);
+	node2.clusterDelSlots(4000, 4001, 4002);
+	node1.clusterAddSlots(6000);
 	node1.clusterDelSlots(6000);
-	node2.clusterDelSlots(6000, 1, 2, 3, 4, 5, 500, 5000);
-	try {
-	    node2.clusterDelSlots(10000);
-	} catch (JedisDataException jde) {
-	    // Do nothing, slot may or may not be assigned depending on gossip
-	}
+	waitForGossip();
+	node2.clusterDelSlots(6000);
+	node1.clusterDelSlots(6000);
     }
 
-    private static void waitForEqualClusterSize() throws InterruptedException {
-	boolean notEqualSize = true;
-	while (notEqualSize) {
-	    notEqualSize = getClusterAttribute(node1.clusterInfo(),
-		    "cluster_known_nodes") == getClusterAttribute(
-		    node2.clusterInfo(), "cluster_size") ? false : true;
+    private static void waitForGossip() {
+	boolean notReady = true;
+	while (notReady) {
+	    if (node1.clusterNodes().contains("6000")) {
+		notReady = false;
+	    }
 	}
     }
 
@@ -73,6 +71,15 @@ public class ClusterCommandsTest extends JedisTestBase {
 	    }
 	}
 	return 0;
+    }
+    
+    @Test
+    public void clusterSetSlotImporting() {
+	node2.clusterAddSlots(6000);
+	String[] nodes = node1.clusterNodes().split("\n");
+	String nodeId = nodes[0].split(" ")[0];
+	String status = node1.clusterSetSlotImporting(6000, nodeId);
+	assertEquals("OK", status);
     }
 
     @Test
@@ -129,13 +136,34 @@ public class ClusterCommandsTest extends JedisTestBase {
 	String status = node1.clusterSetSlotMigrating(5000, nodeId);
 	assertEquals("OK", status);
     }
-
+    
     @Test
-    public void clusterSetSlotImporting() {
-	node2.clusterAddSlots(6000);
-	String[] nodes = node1.clusterNodes().split("\n");
-	String nodeId = nodes[0].split(" ")[0];
-	String status = node1.clusterSetSlotImporting(6000, nodeId);
+    public void clusterSlots() {
+	// please see cluster slot output format from below commit
+	// @see:
+	// https://github.com/antirez/redis/commit/e14829de3025ffb0d3294e5e5a1553afd9f10b60
+	String status = node1.clusterAddSlots(3000, 3001, 3002);
 	assertEquals("OK", status);
+	status = node2.clusterAddSlots(4000, 4001, 4002);
+	assertEquals("OK", status);
+
+	List<Object> slots = node1.clusterSlots();
+	assertNotNull(slots);
+	assertTrue(slots.size() > 0);
+
+	for (Object slotInfoObj : slots) {
+	    List<Object> slotInfo = (List<Object>) slotInfoObj;
+	    assertNotNull(slots);
+	    assertTrue(slots.size() >= 2);
+
+	    assertTrue(slotInfo.get(0) instanceof Long);
+	    assertTrue(slotInfo.get(1) instanceof Long);
+
+	    if (slots.size() > 2) {
+		// assigned slots
+		assertTrue(slotInfo.get(2) instanceof List);
+	    }
+	}
     }
+
 }

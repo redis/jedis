@@ -10,6 +10,9 @@ import java.util.Set;
 public interface JedisCommands {
     String set(String key, String value);
 
+    String set(String key, String value, String nxxx,
+                    String expx, long time);
+
     String get(String key);
 
     Boolean exists(String key);
@@ -109,6 +112,8 @@ public interface JedisCommands {
     Boolean sismember(String key, String member);
 
     String srandmember(String key);
+
+    List<String> srandmember(String key, int count);
 
     Long strlen(String key);
 
@@ -211,9 +216,14 @@ public interface JedisCommands {
 
     Long bitcount(final String key, long start, long end);
 
-    ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor);
+    ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
+    
+    ScanResult<String> sscan(final String key, final String cursor);
+    
+    ScanResult<Tuple> zscan(final String key, final String cursor);
+    
+    Long pfadd(final String key, final String... elements);
+    
+    long pfcount(final String key);
 
-    ScanResult<String> sscan(final String key, int cursor);
-
-    ScanResult<Tuple> zscan(final String key, int cursor);
 }

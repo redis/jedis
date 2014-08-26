@@ -31,6 +31,12 @@ public class Pipeline extends MultiKeyPipelineBase {
 	    return values;
 	}
 
+	public void setResponseDependency(Response<?> dependency) {
+	    for (Response<?> response : responses) {
+		response.setDependency(dependency);
+	    }
+	}
+
 	public void addResponse(Response<?> response) {
 	    responses.add(response);
 	}
@@ -63,13 +69,25 @@ public class Pipeline extends MultiKeyPipelineBase {
 	return client;
     }
 
+    public void clear() {
+	if (isInMulti()) {
+	    discard();
+	}
+
+	sync();
+    }
+
+    public boolean isInMulti() {
+	return currentMulti != null;
+    }
+
     /**
      * Syncronize pipeline by reading all responses. This operation close the
      * pipeline. In order to get return values from pipelined commands, capture
      * the different Response<?> of the commands you execute.
      */
     public void sync() {
-	List<Object> unformatted = client.getAll();
+	List<Object> unformatted = client.getMany(getPipelinedResponseLength());
 	for (Object o : unformatted) {
 	    generateResponse(o);
 	}
@@ -84,7 +102,7 @@ public class Pipeline extends MultiKeyPipelineBase {
      * @return A list of all the responses in the order you executed them.
      */
     public List<Object> syncAndReturnAll() {
-	List<Object> unformatted = client.getAll();
+	List<Object> unformatted = client.getMany(getPipelinedResponseLength());
 	List<Object> formatted = new ArrayList<Object>();
 
 	for (Object o : unformatted) {
@@ -98,24 +116,33 @@ public class Pipeline extends MultiKeyPipelineBase {
     }
 
     public Response<String> discard() {
+	if (currentMulti == null)
+	    throw new JedisDataException("DISCARD without MULTI");
 	client.discard();
 	currentMulti = null;
 	return getResponse(BuilderFactory.STRING);
     }
 
     public Response<List<Object>> exec() {
+	if (currentMulti == null)
+	    throw new JedisDataException("EXEC without MULTI");
+
 	client.exec();
 	Response<List<Object>> response = super.getResponse(currentMulti);
+	currentMulti.setResponseDependency(response);
 	currentMulti = null;
 	return response;
     }
 
     public Response<String> multi() {
+	if (currentMulti != null)
+	    throw new JedisDataException("MULTI calls can not be nested");
+
 	client.multi();
 	Response<String> response = getResponse(BuilderFactory.STRING); // Expecting
 									// OK
 	currentMulti = new MultiResponseBuilder();
 	return response;
     }
-
+    
 }

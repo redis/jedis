@@ -188,4 +188,8 @@ public interface RedisPipeline {
     Response<Long> bitcount(String key);
 
     Response<Long> bitcount(String key, long start, long end);
+    
+    Response<Long> pfadd(final String key, final String... elements);
+    
+    Response<Long> pfcount(final String key);
 }

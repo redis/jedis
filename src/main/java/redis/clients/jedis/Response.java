@@ -8,6 +8,8 @@ public class Response<T> {
     private boolean set = false;
     private Builder<T> builder;
     private Object data;
+    private Response<?> dependency = null;
+    private boolean requestDependencyBuild = false;
 
     public Response(Builder<T> b) {
 	this.builder = b;
@@ -19,21 +21,37 @@ public class Response<T> {
     }
 
     public T get() {
+	// if response has dependency response and dependency is not built,
+	// build it first and no more!!
+	if (!requestDependencyBuild && dependency != null && dependency.set
+		&& !dependency.built) {
+	    requestDependencyBuild = true;
+	    dependency.build();
+	}
 	if (!set) {
 	    throw new JedisDataException(
 		    "Please close pipeline or multi block before calling this method.");
 	}
 	if (!built) {
-	    if (data != null) {
-		if (data instanceof JedisDataException) {
-		    throw new JedisDataException((JedisDataException) data);
-		}
-		response = builder.build(data);
-	    }
-	    this.data = null;
-	    built = true;
+	    build();
 	}
 	return response;
+    }
+
+    public void setDependency(Response<?> dependency) {
+	this.dependency = dependency;
+	this.requestDependencyBuild = false;
+    }
+
+    private void build() {
+	if (data != null) {
+	    if (data instanceof JedisDataException) {
+		throw new JedisDataException((JedisDataException) data);
+	    }
+	    response = builder.build(data);
+	}
+	data = null;
+	built = true;
     }
 
     public String toString() {

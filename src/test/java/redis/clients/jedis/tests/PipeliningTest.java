@@ -15,7 +15,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.PipelineBlock;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -35,21 +34,10 @@ public class PipeliningTest extends Assert {
 
     @Test
     public void pipeline() throws UnsupportedEncodingException {
-	List<Object> results = jedis.pipelined(new PipelineBlock() {
-	    public void execute() {
-		set("foo", "bar");
-		get("foo");
-	    }
-	});
-
-	assertEquals(2, results.size());
-	assertEquals("OK", results.get(0));
-	assertEquals("bar", results.get(1));
-
 	Pipeline p = jedis.pipelined();
 	p.set("foo", "bar");
 	p.get("foo");
-	results = p.syncAndReturnAll();
+	List<Object> results = p.syncAndReturnAll();
 
 	assertEquals(2, results.size());
 	assertEquals("OK", results.get(0));
@@ -64,6 +52,9 @@ public class PipeliningTest extends Assert {
 	jedis.hset("hash", "foo", "bar");
 	jedis.zadd("zset", 1, "foo");
 	jedis.sadd("set", "foo");
+        jedis.setrange("setrange", 0, "0123456789");
+        byte[] bytesForSetRange = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        jedis.setrange("setrangebytes".getBytes(), 0, bytesForSetRange);
 
 	Pipeline p = jedis.pipelined();
 	Response<String> string = p.get("string");
@@ -80,8 +71,10 @@ public class PipeliningTest extends Assert {
 	p.sadd("set", "foo");
 	Response<Set<String>> smembers = p.smembers("set");
 	Response<Set<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0,
-		-1);
-	p.sync();
+            -1);
+        Response<String> getrange = p.getrange("setrange", 1, 3);
+        Response<byte[]> getrangeBytes = p.getrange("setrangebytes".getBytes(), 6, 8);
+            p.sync();
 
 	assertEquals("foo", string.get());
 	assertEquals("foo", list.get());
@@ -95,6 +88,9 @@ public class PipeliningTest extends Assert {
 	assertNotNull(hgetAll.get().get("foo"));
 	assertEquals(1, smembers.get().size());
 	assertEquals(1, zrangeWithScores.get().size());
+    assertEquals("123", getrange.get());
+    byte[] expectedGetRangeBytes = {6, 7, 8};
+    assertArrayEquals(expectedGetRangeBytes, getrangeBytes.get());
     }
 
     @Test
@@ -261,6 +257,47 @@ public class PipeliningTest extends Assert {
 	assertEquals(new Long(-1), r3.get().get(0));
 	assertEquals(new Long(-3), r3.get().get(1));
 
+    }
+
+    @Test
+    public void multiWithSync() {
+	jedis.set("foo", "314");
+	jedis.set("bar", "foo");
+	jedis.set("hello", "world");
+	Pipeline p = jedis.pipelined();
+	Response<String> r1 = p.get("bar");
+	p.multi();
+	Response<String> r2 = p.get("foo");
+	p.exec();
+	Response<String> r3 = p.get("hello");
+	p.sync();
+	
+	// before multi
+	assertEquals("foo", r1.get());
+	// It should be readable whether exec's response was built or not
+	assertEquals("314", r2.get());
+	// after multi
+	assertEquals("world", r3.get());
+    }
+
+    @Test(expected = JedisDataException.class)
+    public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMulti() {
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.exec();
+    }
+
+    @Test(expected = JedisDataException.class)
+    public void pipelineDiscardShoudThrowJedisDataExceptionWhenNotInMulti() {
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.discard();
+    }
+
+    @Test(expected = JedisDataException.class)
+    public void pipelineMultiShoudThrowJedisDataExceptionWhenAlreadyInMulti() {
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.multi();
+	pipeline.set("foo", "3");
+	pipeline.multi();
     }
 
     @Test

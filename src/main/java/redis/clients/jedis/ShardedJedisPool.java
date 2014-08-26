@@ -32,6 +32,28 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 	super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
     }
 
+    @Override
+    public ShardedJedis getResource() {
+	ShardedJedis jedis = super.getResource();
+	jedis.setDataSource(this);
+	return jedis;
+    }
+
+    @Override
+    public void returnBrokenResource(final ShardedJedis resource) {
+	if (resource != null) {
+	    returnBrokenResourceObject(resource);
+	}
+    }
+
+    @Override
+    public void returnResource(final ShardedJedis resource) {
+	if (resource != null) {
+	    resource.resetState();
+	    returnResourceObject(resource);
+	}
+    }
+
     /**
      * PoolableObjectFactory custom impl.
      */

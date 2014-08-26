@@ -41,4 +41,11 @@ public class ConnectionTest extends Assert {
 	client.setTimeoutInfinite();
     }
 
+    @Test
+    public void checkCloseable() {
+	client.setHost("localhost");
+	client.setPort(6379);
+	client.connect();
+	client.close();
+    }
 }

@@ -1,26 +1,22 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Command.EXISTS;
+import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryClient extends Connection {
     public enum LIST_POSITION {
@@ -203,6 +199,10 @@ public class BinaryClient extends Connection {
 	sendCommand(INCRBY, key, toByteArray(integer));
     }
 
+    public void incrByFloat(final byte[] key, final double value) {
+        sendCommand(INCRBYFLOAT, key, toByteArray(value));
+    }
+
     public void incr(final byte[] key) {
 	sendCommand(INCR, key);
     }
@@ -320,7 +320,7 @@ public class BinaryClient extends Connection {
     public void sadd(final byte[] key, final byte[]... members) {
 	sendCommand(SADD, joinParameters(key, members));
     }
-
+    
     public void smembers(final byte[] key) {
 	sendCommand(SMEMBERS, key);
     }
@@ -560,7 +560,10 @@ public class BinaryClient extends Connection {
     public void punsubscribe(final byte[]... patterns) {
 	sendCommand(PUNSUBSCRIBE, patterns);
     }
-
+    
+    public void pubsub(final byte[]... args) {
+    	sendCommand(PUBSUB, args);
+    }
     public void zcount(final byte[] key, final double min, final double max) {
 
 	byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf"
@@ -926,7 +929,15 @@ public class BinaryClient extends Connection {
     public void getbit(byte[] key, long offset) {
 	sendCommand(GETBIT, key, toByteArray(offset));
     }
-
+    
+    public void bitpos(final byte[] key, final boolean value, final BitPosParams params) {
+	final List<byte[]> args = new ArrayList<byte[]>();
+	args.add(key);
+	args.add(toByteArray(value));
+	args.addAll(params.getParams());
+	sendCommand(BITPOS, args.toArray(new byte[args.size()][]));
+    }
+    
     public void setrange(byte[] key, long offset, byte[] value) {
 	sendCommand(SETRANGE, key, toByteArray(offset), value);
     }
@@ -945,10 +956,13 @@ public class BinaryClient extends Connection {
 	super.disconnect();
     }
 
-    public void resetState() {
-	if (isInMulti())
-	    discard();
+    @Override
+    public void close() {
+	db = 0;
+	super.close();
+    }
 
+    public void resetState() {
 	if (isInWatch())
 	    unwatch();
     }
@@ -1082,7 +1096,7 @@ public class BinaryClient extends Connection {
 	sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
     }
 
-    public void pexpire(final byte[] key, final int milliseconds) {
+    public void pexpire(final byte[] key, final long milliseconds) {
 	sendCommand(PEXPIRE, key, toByteArray(milliseconds));
     }
 
@@ -1092,10 +1106,6 @@ public class BinaryClient extends Connection {
 
     public void pttl(final byte[] key) {
 	sendCommand(PTTL, key);
-    }
-
-    public void incrByFloat(final byte[] key, final double increment) {
-	sendCommand(INCRBYFLOAT, key, toByteArray(increment));
     }
 
     public void psetex(final byte[] key, final int milliseconds,
@@ -1147,33 +1157,33 @@ public class BinaryClient extends Connection {
 	sendCommand(HINCRBYFLOAT, key, field, toByteArray(increment));
     }
 
-    public void scan(int cursor, final ScanParams params) {
+    public void scan(final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(SCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void hscan(final byte[] key, int cursor, final ScanParams params) {
+    public void hscan(final byte[] key, final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(HSCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void sscan(final byte[] key, int cursor, final ScanParams params) {
+    public void sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(SSCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void zscan(final byte[] key, int cursor, final ScanParams params) {
+    public void zscan(final byte[] key, final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
-	args.add(toByteArray(cursor));
+	args.add(cursor);
 	args.addAll(params.getParams());
 	sendCommand(ZSCAN, args.toArray(new byte[args.size()][]));
     }
@@ -1188,5 +1198,21 @@ public class BinaryClient extends Connection {
 
     public void asking() {
 	sendCommand(Command.ASKING);
+    }
+    
+    public void pfadd(final byte[] key, final byte[]... elements) {
+   	sendCommand(PFADD, joinParameters(key, elements));
+    }
+    
+    public void pfcount(final byte[] key) {
+   	sendCommand(PFCOUNT, key);
+    }
+
+    public void pfcount(final byte[]...keys) {
+   	sendCommand(PFCOUNT, keys);
+    }
+
+    public void pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
+   	sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
     }
 }

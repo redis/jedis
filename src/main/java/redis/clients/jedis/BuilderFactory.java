@@ -103,6 +103,7 @@ public class BuilderFactory {
 	}
 
     };
+    
     public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
 	@SuppressWarnings("unchecked")
 	public Set<String> build(Object data) {

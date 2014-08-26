@@ -12,12 +12,19 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
 public class HashesCommandsTest extends JedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
     final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
     final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
-
+    
+    final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+    final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+    final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
+    final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+    
     @Test
     public void hset() {
 	long status = jedis.hset("foo", "bar", "car");
@@ -143,6 +150,25 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	assertEquals(0, bvalue);
 	bvalue = jedis.hincrBy(bfoo, bbar, -10);
 	assertEquals(-10, bvalue);
+
+    }
+
+    @Test
+    public void hincrByFloat() {
+        Double value = jedis.hincrByFloat("foo", "bar", 1.5d);
+        assertEquals((Double) 1.5d, value);
+        value = jedis.hincrByFloat("foo", "bar", -1.5d);
+        assertEquals((Double) 0d, value);
+        value = jedis.hincrByFloat("foo", "bar", -10.7d);
+        assertEquals(Double.compare(-10.7d, value), 0);
+
+        // Binary
+        double bvalue = jedis.hincrByFloat(bfoo, bbar, 1.5d);
+        assertEquals(Double.compare(1.5d, bvalue), 0);
+        bvalue = jedis.hincrByFloat(bfoo, bbar, -1.5d);
+        assertEquals(Double.compare(0d, bvalue), 0);
+        bvalue = jedis.hincrByFloat(bfoo, bbar, -10.7d);
+        assertEquals(Double.compare(-10.7d, value), 0);
 
     }
 
@@ -295,10 +321,18 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	jedis.hset("foo", "b", "b");
 	jedis.hset("foo", "a", "a");
 
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
+	
+	// binary
+	jedis.hset(bfoo, bbar, bcar);
+	
+	ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY);
+	
+	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+	assertFalse(bResult.getResult().isEmpty());
     }
 
     @Test
@@ -309,11 +343,25 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	jedis.hset("foo", "b", "b");
 	jedis.hset("foo", "a", "a");
 	jedis.hset("foo", "aa", "aa");
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0,
-		params);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 
+		SCAN_POINTER_START, params);
 
-	assertEquals(0, result.getCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
+	
+	// binary
+	params = new ScanParams();
+	params.match(bbarstar);
+	
+	jedis.hset(bfoo, bbar, bcar);
+	jedis.hset(bfoo, bbar1, bcar);
+	jedis.hset(bfoo, bbar2, bcar);
+	jedis.hset(bfoo, bbar3, bcar);
+	
+	ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
+	
+	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+	assertFalse(bResult.getResult().isEmpty());
     }
 
     @Test
@@ -325,9 +373,22 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	    jedis.hset("foo", "a" + i, "a" + i);
 	}
 
-	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 0,
-		params);
+	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 
+		SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
+	
+	// binary
+	params = new ScanParams();
+	params.count(2);
+	
+	jedis.hset(bfoo, bbar, bcar);
+	jedis.hset(bfoo, bbar1, bcar);
+	jedis.hset(bfoo, bbar2, bcar);
+	jedis.hset(bfoo, bbar3, bcar);
+	
+	ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
+	
+	assertFalse(bResult.getResult().isEmpty());
     }
 }

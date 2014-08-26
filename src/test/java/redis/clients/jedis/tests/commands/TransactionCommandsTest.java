@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +16,6 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
-import redis.clients.jedis.TransactionBlock;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
@@ -62,41 +62,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	trans.scard(bfoo);
 
 	response = trans.exec();
-
-	expected = new ArrayList<Object>();
-	expected.add(1L);
-	expected.add(1L);
-	expected.add(2L);
-	assertEquals(expected, response);
-
-    }
-
-    @Test
-    public void multiBlock() {
-	List<Object> response = jedis.multi(new TransactionBlock() {
-	    @Override
-	    public void execute() {
-		sadd("foo", "a");
-		sadd("foo", "b");
-		scard("foo");
-	    }
-	});
-
-	List<Object> expected = new ArrayList<Object>();
-	expected.add(1L);
-	expected.add(1L);
-	expected.add(2L);
-	assertEquals(expected, response);
-
-	// Binary
-	response = jedis.multi(new TransactionBlock() {
-	    @Override
-	    public void execute() {
-		sadd(bfoo, ba);
-		sadd(bfoo, bb);
-		scard(bfoo);
-	    }
-	});
 
 	expected = new ArrayList<Object>();
 	expected.add(1L);

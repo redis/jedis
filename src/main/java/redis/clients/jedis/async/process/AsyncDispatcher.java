@@ -13,11 +13,12 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 public class AsyncDispatcher extends Thread {
@@ -29,10 +30,17 @@ public class AsyncDispatcher extends Thread {
 
     private final ByteBuffer readBuffer;
 
-    private Queue<AsyncJedisTask> readTaskQueue = new LinkedList<AsyncJedisTask>();
-    private LinkedList<AsyncJedisTask> writeTaskQueue = new LinkedList<AsyncJedisTask>();
+    //private Queue<AsyncJedisTask> readTaskQueue = new LinkedList<AsyncJedisTask>();
+    //private LinkedList<AsyncJedisTask> writeTaskQueue = new LinkedList<AsyncJedisTask>();
+
+    private Deque<AsyncJedisTask> readTaskQueue = new LinkedBlockingDeque<AsyncJedisTask>();
+    private Deque<AsyncJedisTask> writeTaskQueue = new LinkedBlockingDeque<AsyncJedisTask>();
 
     private String password;
+    
+    private volatile AtomicInteger allWriteTasksCounter = new AtomicInteger();
+    private volatile AtomicInteger allReadTasksCounter = new AtomicInteger();
+    private volatile AtomicInteger allResponsedTasksCounter = new AtomicInteger();
 
     static {
 	/**
@@ -115,6 +123,7 @@ public class AsyncDispatcher extends Thread {
     }
 
     public synchronized void registerRequest(AsyncJedisTask task) {
+	allWriteTasksCounter.incrementAndGet();
 	writeTaskQueue.add(task);
     }
 
@@ -196,6 +205,7 @@ public class AsyncDispatcher extends Thread {
 
 	    if (length == index) {
 		writeTaskQueue.poll();
+		allReadTasksCounter.incrementAndGet();
 		readTaskQueue.add(task);
 		task = writeTaskQueue.peek();
 	    } else {
@@ -225,6 +235,7 @@ public class AsyncDispatcher extends Thread {
 		// TODO : Thread Pool?
 		task.callback();
 
+		allResponsedTasksCounter.incrementAndGet();
 		readTaskQueue.poll();
 		task = readTaskQueue.peek();
 	    }

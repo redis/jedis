@@ -1,19 +1,15 @@
 package redis.clients.jedis.tests.commands.async;
 
+import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.tests.commands.async.util.CommandWithWaiting;
+import redis.clients.jedis.tests.commands.async.util.DoNothingCallback;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
-
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
-import redis.clients.util.SafeEncoder;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-
-public class AsyncAllKindOfValuesCommandsTest extends JedisCommandTestBase {
+public class AsyncAllKindOfValuesCommandsTest extends AsyncJedisCommandTestBase {
     final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
     final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
     final byte[] bfoo2 = { 0x01, 0x02, 0x03, 0x04, 0x0B };
@@ -29,520 +25,468 @@ public class AsyncAllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void ping() {
-	String status = jedis.ping();
-	assertEquals("PONG", status);
+	asyncJedis.ping(STRING_CALLBACK.withReset());
+	assertEquals("PONG", STRING_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void exists() {
-	String status = jedis.set("foo", "bar");
-	assertEquals("OK", status);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
 
-	status = jedis.set(bfoo, bbar);
-	assertEquals("OK", status);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), "foo");
+	assertTrue(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	boolean reply = jedis.exists("foo");
-	assertTrue(reply);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), bfoo);
+	assertTrue(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	reply = jedis.exists(bfoo);
-	assertTrue(reply);
+	CommandWithWaiting.del(asyncJedis, "foo");
+	CommandWithWaiting.del(asyncJedis, bfoo);
 
-	long lreply = jedis.del("foo");
-	assertEquals(1, lreply);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), "foo");
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	lreply = jedis.del(bfoo);
-	assertEquals(1, lreply);
-
-	reply = jedis.exists("foo");
-	assertFalse(reply);
-
-	reply = jedis.exists(bfoo);
-	assertFalse(reply);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), bfoo);
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void del() {
-	jedis.set("foo1", "bar1");
-	jedis.set("foo2", "bar2");
-	jedis.set("foo3", "bar3");
+	CommandWithWaiting.set(asyncJedis, "foo1", "bar1");
+	CommandWithWaiting.set(asyncJedis, "foo2", "bar2");
+	CommandWithWaiting.set(asyncJedis, "foo3", "bar3");
 
-	long reply = jedis.del("foo1", "foo2", "foo3");
-	assertEquals(3, reply);
+	asyncJedis.del(LONG_CALLBACK.withReset(), "foo1", "foo2", "foo3");
+	assertEquals(new Long(3), LONG_CALLBACK.getResponseWithWaiting(2000));
 
-	Boolean breply = jedis.exists("foo1");
-	assertFalse(breply);
-	breply = jedis.exists("foo2");
-	assertFalse(breply);
-	breply = jedis.exists("foo3");
-	assertFalse(breply);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), "foo1");
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo1", "bar1");
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), "foo2");
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	reply = jedis.del("foo1", "foo2");
-	assertEquals(1, reply);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), "foo3");
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	reply = jedis.del("foo1", "foo2");
-	assertEquals(0, reply);
+	CommandWithWaiting.set(asyncJedis, "foo1", "bar1");
 
-	// Binary ...
-	jedis.set(bfoo1, bbar1);
-	jedis.set(bfoo2, bbar2);
-	jedis.set(bfoo3, bbar3);
+	asyncJedis.del(LONG_CALLBACK.withReset(), "foo1", "foo2");
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	reply = jedis.del(bfoo1, bfoo2, bfoo3);
-	assertEquals(3, reply);
+	asyncJedis.del(LONG_CALLBACK.withReset(), "foo1", "foo2");
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	breply = jedis.exists(bfoo1);
-	assertFalse(breply);
-	breply = jedis.exists(bfoo2);
-	assertFalse(breply);
-	breply = jedis.exists(bfoo3);
-	assertFalse(breply);
+	// binary
+	CommandWithWaiting.set(asyncJedis, "foo1", "bar1");
+	CommandWithWaiting.set(asyncJedis, "foo2", "bar2");
+	CommandWithWaiting.set(asyncJedis, "foo3", "bar3");
 
-	jedis.set(bfoo1, bbar1);
+	CommandWithWaiting.set(asyncJedis, bfoo1, bbar1);
+	CommandWithWaiting.set(asyncJedis, bfoo2, bbar2);
+	CommandWithWaiting.set(asyncJedis, bfoo3, bbar3);
 
-	reply = jedis.del(bfoo1, bfoo2);
-	assertEquals(1, reply);
+	asyncJedis.del(LONG_CALLBACK.withReset(), bfoo1, bfoo2, bfoo3);
+	assertEquals(new Long(3), LONG_CALLBACK.getResponseWithWaiting(2000));
 
-	reply = jedis.del(bfoo1, bfoo2);
-	assertEquals(0, reply);
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), bfoo1);
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), bfoo2);
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), bfoo3);
+	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+
+	CommandWithWaiting.set(asyncJedis, bfoo1, bbar1);
+
+	LONG_CALLBACK.reset();
+	asyncJedis.del(LONG_CALLBACK, bfoo1, bfoo2);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.del(LONG_CALLBACK.withReset(), bfoo1, bfoo2);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void type() {
-	jedis.set("foo", "bar");
-	String status = jedis.type("foo");
-	assertEquals("string", status);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
+	asyncJedis.type(STRING_CALLBACK.withReset(), "foo");
+	STRING_CALLBACK.waitForComplete(100);
+	assertEquals("string", STRING_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	jedis.set(bfoo, bbar);
-	status = jedis.type(bfoo);
-	assertEquals("string", status);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+
+	asyncJedis.type(STRING_CALLBACK.withReset(), bfoo);
+	assertEquals("string", STRING_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void keys() {
-	jedis.set("foo", "bar");
-	jedis.set("foobar", "bar");
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+	CommandWithWaiting.set(asyncJedis, "foobar", "bar");
 
-	Set<String> keys = jedis.keys("foo*");
+	asyncJedis.keys(STRING_SET_CALLBACK.withReset(), "foo*");
+
 	Set<String> expected = new HashSet<String>();
 	expected.add("foo");
 	expected.add("foobar");
-	assertEquals(expected, keys);
+
+	assertEquals(expected, STRING_SET_CALLBACK.getResponseWithWaiting(1000));
 
 	expected = new HashSet<String>();
-	keys = jedis.keys("bar*");
 
-	assertEquals(expected, keys);
+	asyncJedis.keys(STRING_SET_CALLBACK.withReset(), "bar*");
+	assertEquals(expected, STRING_SET_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	jedis.set(bfoo, bbar);
-	jedis.set(bfoobar, bbar);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+	CommandWithWaiting.set(asyncJedis, bfoobar, bbar);
 
-	Set<byte[]> bkeys = jedis.keys(bfoostar);
+	asyncJedis.keys(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoostar);
+
+	Set<byte[]> bkeys = BYTE_ARRAY_SET_CALLBACK
+		.getResponseWithWaiting(1000);
 	assertEquals(2, bkeys.size());
 	assertTrue(setContains(bkeys, bfoo));
 	assertTrue(setContains(bkeys, bfoobar));
 
-	bkeys = jedis.keys(bbarstar);
-
-	assertEquals(0, bkeys.size());
+	asyncJedis.keys(BYTE_ARRAY_SET_CALLBACK.withReset(), bbarstar);
+	assertEquals(0, STRING_SET_CALLBACK.getResponseWithWaiting(1000).size());
     }
 
     @Test
     public void randomKey() {
-	assertEquals(null, jedis.randomKey());
+	asyncJedis.randomKey(STRING_CALLBACK.withReset());
+	assertEquals(null, STRING_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
 
-	assertEquals("foo", jedis.randomKey());
+	asyncJedis.randomKey(STRING_CALLBACK.withReset());
+	assertEquals("foo", STRING_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("bar", "foo");
+	CommandWithWaiting.set(asyncJedis, "bar", "foo");
 
-	String randomkey = jedis.randomKey();
-	assertTrue(randomkey.equals("foo") || randomkey.equals("bar"));
+	asyncJedis.randomKey(STRING_CALLBACK.withReset());
+	String response = STRING_CALLBACK.getResponseWithWaiting(1000);
+	assertTrue(response.equals("foo") || response.equals("bar"));
+
+	CommandWithWaiting.del(asyncJedis, "foo", "bar");
+	asyncJedis.del(new DoNothingCallback<Long>(), "foo", "bar");
 
 	// Binary
-	jedis.del("foo");
-	jedis.del("bar");
-	assertEquals(null, jedis.randomKey());
+	asyncJedis.randomKey(STRING_CALLBACK.withReset());
+	assertNull(STRING_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set(bfoo, bbar);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
 
-	assertArrayEquals(bfoo, jedis.randomBinaryKey());
+	asyncJedis.randomBinaryKey(BYTE_ARRAY_CALLBACK.withReset());
+	assertArrayEquals(bfoo,
+		BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set(bbar, bfoo);
+	CommandWithWaiting.set(asyncJedis, bbar, bfoo);
 
-	byte[] randomBkey = jedis.randomBinaryKey();
+	asyncJedis.randomBinaryKey(BYTE_ARRAY_CALLBACK.withReset());
+	byte[] randomBkey = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
 	assertTrue(Arrays.equals(randomBkey, bfoo)
 		|| Arrays.equals(randomBkey, bbar));
-
     }
 
     @Test
     public void rename() {
-	jedis.set("foo", "bar");
-	String status = jedis.rename("foo", "bar");
-	assertEquals("OK", status);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
 
-	String value = jedis.get("foo");
-	assertEquals(null, value);
+	asyncJedis.rename(STRING_CALLBACK.withReset(), "foo", "bar");
+	assertEquals("OK", STRING_CALLBACK.getResponseWithWaiting(1000));
 
-	value = jedis.get("bar");
-	assertEquals("bar", value);
+	asyncJedis.get(STRING_CALLBACK.withReset(), "foo");
+	assertEquals(null, STRING_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.get(STRING_CALLBACK.withReset(), "bar");
+	assertEquals("bar", STRING_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	jedis.set(bfoo, bbar);
-	String bstatus = jedis.rename(bfoo, bbar);
-	assertEquals("OK", bstatus);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
 
-	byte[] bvalue = jedis.get(bfoo);
-	assertEquals(null, bvalue);
+	asyncJedis.rename(STRING_CALLBACK.withReset(), bfoo, bbar);
+	assertEquals("OK", STRING_CALLBACK.getResponseWithWaiting(1000));
 
-	bvalue = jedis.get(bbar);
-	assertArrayEquals(bbar, bvalue);
+	asyncJedis.get(BYTE_ARRAY_CALLBACK.withReset(), bfoo);
+	assertEquals(null, BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.get(BYTE_ARRAY_CALLBACK.withReset(), bbar);
+	assertArrayEquals(bbar,
+		BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void renameOldAndNewAreTheSame() {
 	try {
-	    jedis.set("foo", "bar");
-	    jedis.rename("foo", "foo");
+	    CommandWithWaiting.set(asyncJedis, "foo", "bar");
+	    asyncJedis.rename(STRING_CALLBACK.withReset(), "foo", "foo");
+	    STRING_CALLBACK.getResponseWithWaiting(1000);
 	    fail("JedisDataException expected");
 	} catch (final JedisDataException e) {
 	}
 
 	// Binary
 	try {
-	    jedis.set(bfoo, bbar);
-	    jedis.rename(bfoo, bfoo);
+	    CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+	    asyncJedis.rename(STRING_CALLBACK.withReset(), bfoo, bfoo);
+	    STRING_CALLBACK.getResponseWithWaiting(1000);
 	    fail("JedisDataException expected");
 	} catch (final JedisDataException e) {
 	}
-
     }
 
     @Test
     public void renamenx() {
-	jedis.set("foo", "bar");
-	long status = jedis.renamenx("foo", "bar");
-	assertEquals(1, status);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
 
-	jedis.set("foo", "bar");
-	status = jedis.renamenx("foo", "bar");
-	assertEquals(0, status);
+	asyncJedis.renamenx(LONG_CALLBACK.withReset(), "foo", "bar");
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
+	asyncJedis.renamenx(LONG_CALLBACK.withReset(), "foo", "bar");
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	jedis.set(bfoo, bbar);
-	long bstatus = jedis.renamenx(bfoo, bbar);
-	assertEquals(1, bstatus);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
 
-	jedis.set(bfoo, bbar);
-	bstatus = jedis.renamenx(bfoo, bbar);
-	assertEquals(0, bstatus);
+	asyncJedis.renamenx(LONG_CALLBACK.withReset(), bfoo, bbar);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+
+	asyncJedis.renamenx(LONG_CALLBACK.withReset(), bfoo, bbar);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void dbSize() {
-	long size = jedis.dbSize();
-	assertEquals(0, size);
+	asyncJedis.dbSize(LONG_CALLBACK.withReset());
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
-	size = jedis.dbSize();
-	assertEquals(1, size);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
+	asyncJedis.dbSize(LONG_CALLBACK.withReset());
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	jedis.set(bfoo, bbar);
-	size = jedis.dbSize();
-	assertEquals(2, size);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+
+	asyncJedis.dbSize(LONG_CALLBACK.withReset());
+	assertEquals(new Long(2), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void expire() {
-	long status = jedis.expire("foo", 20);
-	assertEquals(0, status);
+	asyncJedis.expire(LONG_CALLBACK.withReset(), "foo", 20);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
-	status = jedis.expire("foo", 20);
-	assertEquals(1, status);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
+	asyncJedis.expire(LONG_CALLBACK.withReset(), "foo", 20);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	long bstatus = jedis.expire(bfoo, 20);
-	assertEquals(0, bstatus);
+	asyncJedis.expire(LONG_CALLBACK.withReset(), bfoo, 20);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set(bfoo, bbar);
-	bstatus = jedis.expire(bfoo, 20);
-	assertEquals(1, bstatus);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
 
+	asyncJedis.expire(LONG_CALLBACK.withReset(), bfoo, 20);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void expireAt() {
 	long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
-	long status = jedis.expireAt("foo", unixTime);
-	assertEquals(0, status);
+	asyncJedis.expireAt(LONG_CALLBACK.withReset(), "foo", unixTime);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
 	unixTime = (System.currentTimeMillis() / 1000L) + 20;
-	status = jedis.expireAt("foo", unixTime);
-	assertEquals(1, status);
+	asyncJedis.expireAt(LONG_CALLBACK.withReset(), "foo", unixTime);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	// Binary
-	long bstatus = jedis.expireAt(bfoo, unixTime);
-	assertEquals(0, bstatus);
+	// binary
+	asyncJedis.expireAt(LONG_CALLBACK.withReset(), bfoo, unixTime);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set(bfoo, bbar);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+
 	unixTime = (System.currentTimeMillis() / 1000L) + 20;
-	bstatus = jedis.expireAt(bfoo, unixTime);
-	assertEquals(1, bstatus);
-
+	asyncJedis.expireAt(LONG_CALLBACK.withReset(), bfoo, unixTime);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void ttl() {
-	long ttl = jedis.ttl("foo");
-	assertEquals(-2, ttl);
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), "foo");
+	assertEquals(new Long(-2), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
-	ttl = jedis.ttl("foo");
-	assertEquals(-1, ttl);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
 
-	jedis.expire("foo", 20);
-	ttl = jedis.ttl("foo");
-	assertTrue(ttl >= 0 && ttl <= 20);
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), "foo");
+	assertEquals(new Long(-1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.expire(new DoNothingCallback<Long>(), "foo", 200);
+
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), "foo");
+	Long ttl = LONG_CALLBACK.getResponseWithWaiting(1000);
+	assertTrue(ttl >= 0 && ttl <= 200);
 
 	// Binary
-	long bttl = jedis.ttl(bfoo);
-	assertEquals(-2, bttl);
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), bfoo);
+	assertEquals(new Long(-2), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set(bfoo, bbar);
-	bttl = jedis.ttl(bfoo);
-	assertEquals(-1, bttl);
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
 
-	jedis.expire(bfoo, 20);
-	bttl = jedis.ttl(bfoo);
-	assertTrue(bttl >= 0 && bttl <= 20);
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), bfoo);
+	assertEquals(new Long(-1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-    }
+	asyncJedis.expire(new DoNothingCallback<Long>(), bfoo, 200);
 
-    @Test
-    public void select() {
-	jedis.set("foo", "bar");
-	String status = jedis.select(1);
-	assertEquals("OK", status);
-	assertEquals(null, jedis.get("foo"));
-	status = jedis.select(0);
-	assertEquals("OK", status);
-	assertEquals("bar", jedis.get("foo"));
-	// Binary
-	jedis.set(bfoo, bbar);
-	String bstatus = jedis.select(1);
-	assertEquals("OK", bstatus);
-	assertEquals(null, jedis.get(bfoo));
-	bstatus = jedis.select(0);
-	assertEquals("OK", bstatus);
-	assertArrayEquals(bbar, jedis.get(bfoo));
-    }
-
-    @Test
-    public void getDB() {
-	assertEquals(0, jedis.getDB().longValue());
-	jedis.select(1);
-	assertEquals(1, jedis.getDB().longValue());
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), bfoo);
+	ttl = LONG_CALLBACK.getResponseWithWaiting(1000);
+	assertTrue(ttl >= 0 && ttl <= 200);
     }
 
     @Test
     public void move() {
-	long status = jedis.move("foo", 1);
-	assertEquals(0, status);
+	asyncJedis.move(LONG_CALLBACK.withReset(), "foo", 1);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
-	status = jedis.move("foo", 1);
-	assertEquals(1, status);
-	assertEquals(null, jedis.get("foo"));
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
 
+	asyncJedis.move(LONG_CALLBACK.withReset(), "foo", 1);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.get(STRING_CALLBACK.withReset(), "foo");
+	assertEquals(null, STRING_CALLBACK.getResponseWithWaiting(1000));
+
+	// we can't check with AsyncJedis, so we borrow Blocking API
 	jedis.select(1);
 	assertEquals("bar", jedis.get("foo"));
 
 	// Binary
 	jedis.select(0);
-	long bstatus = jedis.move(bfoo, 1);
-	assertEquals(0, bstatus);
 
-	jedis.set(bfoo, bbar);
-	bstatus = jedis.move(bfoo, 1);
-	assertEquals(1, bstatus);
-	assertEquals(null, jedis.get(bfoo));
+	asyncJedis.move(LONG_CALLBACK.withReset(), bfoo, 1);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
+	CommandWithWaiting.set(asyncJedis, bfoo, bbar);
+
+	asyncJedis.move(LONG_CALLBACK.withReset(), bfoo, 1);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.get(BYTE_ARRAY_CALLBACK.withReset(), bfoo);
+	assertEquals(null, BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
+
+	// we can't check with AsyncJedis, so we borrow Blocking API
 	jedis.select(1);
 	assertArrayEquals(bbar, jedis.get(bfoo));
-
     }
 
     @Test
     public void flushDB() {
-	jedis.set("foo", "bar");
-	assertEquals(1, jedis.dbSize().intValue());
-	jedis.set("bar", "foo");
-	jedis.move("bar", 1);
-	String status = jedis.flushDB();
-	assertEquals("OK", status);
-	assertEquals(0, jedis.dbSize().intValue());
-	jedis.select(1);
-	assertEquals(1, jedis.dbSize().intValue());
-	jedis.del("bar");
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+	CommandWithWaiting.set(asyncJedis, "bar", "foo");
+	CommandWithWaiting.move(asyncJedis, "bar", 1);
 
-	// Binary
-	jedis.select(0);
-	jedis.set(bfoo, bbar);
-	assertEquals(1, jedis.dbSize().intValue());
-	jedis.set(bbar, bfoo);
-	jedis.move(bbar, 1);
-	String bstatus = jedis.flushDB();
-	assertEquals("OK", bstatus);
-	assertEquals(0, jedis.dbSize().intValue());
-	jedis.select(1);
-	assertEquals(1, jedis.dbSize().intValue());
+	asyncJedis.flushDB(STRING_CALLBACK.withReset());
+	assertEquals("OK", STRING_CALLBACK.getResponseWithWaiting(1000));
 
-    }
-
-    @Test
-    public void flushAll() {
-	jedis.set("foo", "bar");
-	assertEquals(1, jedis.dbSize().intValue());
-	jedis.set("bar", "foo");
-	jedis.move("bar", 1);
-	String status = jedis.flushAll();
-	assertEquals("OK", status);
-	assertEquals(0, jedis.dbSize().intValue());
-	jedis.select(1);
-	assertEquals(0, jedis.dbSize().intValue());
-
-	// Binary
-	jedis.select(0);
-	jedis.set(bfoo, bbar);
-	assertEquals(1, jedis.dbSize().intValue());
-	jedis.set(bbar, bfoo);
-	jedis.move(bbar, 1);
-	String bstatus = jedis.flushAll();
-	assertEquals("OK", bstatus);
-	assertEquals(0, jedis.dbSize().intValue());
-	jedis.select(1);
-	assertEquals(0, jedis.dbSize().intValue());
-
+	asyncJedis.dbSize(LONG_CALLBACK.withReset());
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void persist() {
-	jedis.setex("foo", 60 * 60, "bar");
-	assertTrue(jedis.ttl("foo") > 0);
-	long status = jedis.persist("foo");
-	assertEquals(1, status);
-	assertEquals(-1, jedis.ttl("foo").intValue());
+	CommandWithWaiting.setex(asyncJedis, "foo", 60 * 60, "bar");
+
+	asyncJedis.persist(LONG_CALLBACK.withReset(), "foo");
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), "foo");
+	assertEquals(new Long(-1), LONG_CALLBACK.getResponseWithWaiting(1000));
 
 	// Binary
-	jedis.setex(bfoo, 60 * 60, bbar);
-	assertTrue(jedis.ttl(bfoo) > 0);
-	long bstatus = jedis.persist(bfoo);
-	assertEquals(1, bstatus);
-	assertEquals(-1, jedis.ttl(bfoo).intValue());
+	CommandWithWaiting.setex(asyncJedis, bfoo, 60 * 60, bbar);
+	asyncJedis.setex(new DoNothingCallback<String>(), bfoo, 60 * 60, bbar);
 
+	asyncJedis.persist(LONG_CALLBACK.withReset(), bfoo);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.ttl(LONG_CALLBACK.withReset(), bfoo);
+	assertEquals(new Long(-1), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void echo() {
-	String result = jedis.echo("hello world");
-	assertEquals("hello world", result);
-
-	// Binary
-	byte[] bresult = jedis.echo(SafeEncoder.encode("hello world"));
-	assertArrayEquals(SafeEncoder.encode("hello world"), bresult);
+	asyncJedis.echo(STRING_CALLBACK.withReset(), "hello world");
+	assertEquals("hello world",
+		STRING_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void dumpAndRestore() {
-	jedis.set("foo1", "bar1");
-	byte[] sv = jedis.dump("foo1");
-	jedis.restore("foo2", 0, sv);
-	assertTrue(jedis.exists("foo2"));
+	CommandWithWaiting.set(asyncJedis, "foo1", "bar1");
+
+	asyncJedis.dump(BYTE_ARRAY_CALLBACK.withReset(), "foo1");
+	asyncJedis.restore(new DoNothingCallback<String>(), "foo2", 0,
+		BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
+
+	asyncJedis.exists(BOOLEAN_CALLBACK.withReset(), "foo2");
+	assertTrue("foo2", BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void pexpire() {
-	long status = jedis.pexpire("foo", 10000);
-	assertEquals(0, status);
+	asyncJedis.pexpire(LONG_CALLBACK.withReset(), "foo", 10000);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
-	status = jedis.pexpire("foo", 10000);
-	assertEquals(1, status);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
+	asyncJedis.pexpire(LONG_CALLBACK.withReset(), "foo", 10000);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void pexpireAt() {
 	long unixTime = (System.currentTimeMillis()) + 10000;
 
-	long status = jedis.pexpireAt("foo", unixTime);
-	assertEquals(0, status);
+	asyncJedis.pexpireAt(LONG_CALLBACK.withReset(), "foo", unixTime);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
+
 	unixTime = (System.currentTimeMillis()) + 10000;
-	status = jedis.pexpireAt("foo", unixTime);
-	assertEquals(1, status);
+	asyncJedis.pexpire(LONG_CALLBACK.withReset(), "foo", unixTime);
+	assertEquals(new Long(1), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void pttl() {
-	long pttl = jedis.pttl("foo");
-	assertEquals(-2, pttl);
+	asyncJedis.pttl(LONG_CALLBACK.withReset(), "foo");
+	assertEquals(new Long(-2), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	jedis.set("foo", "bar");
-	pttl = jedis.pttl("foo");
-	assertEquals(-1, pttl);
+	CommandWithWaiting.set(asyncJedis, "foo", "bar");
 
-	jedis.pexpire("foo", 20000);
-	pttl = jedis.pttl("foo");
+	asyncJedis.pttl(LONG_CALLBACK.withReset(), "foo");
+	assertEquals(new Long(-1), LONG_CALLBACK.getResponseWithWaiting(1000));
+
+	CommandWithWaiting.pexpire(asyncJedis, "foo", 20000);
+	asyncJedis.pexpire(new DoNothingCallback<Long>(), "foo", 20000);
+
+	asyncJedis.pttl(LONG_CALLBACK.withReset(), "foo");
+
+	Long pttl = LONG_CALLBACK.getResponseWithWaiting(1000);
 	assertTrue(pttl >= 0 && pttl <= 20000);
-    }
-
-    @Test
-    public void scan() {
-	jedis.set("b", "b");
-	jedis.set("a", "a");
-
-	ScanResult<String> result = jedis.scan(SCAN_POINTER_START);
-
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
-	assertFalse(result.getResult().isEmpty());
-    }
-
-    @Test
-    public void scanMatch() {
-	ScanParams params = new ScanParams();
-	params.match("a*");
-
-	jedis.set("b", "b");
-	jedis.set("a", "a");
-	jedis.set("aa", "aa");
-	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
-
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
-	assertFalse(result.getResult().isEmpty());
-    }
-
-    @Test
-    public void scanCount() {
-	ScanParams params = new ScanParams();
-	params.count(2);
-
-	for (int i = 0; i < 10; i++) {
-	    jedis.set("a" + i, "a" + i);
-	}
-
-	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
-
-	assertFalse(result.getResult().isEmpty());
     }
 }

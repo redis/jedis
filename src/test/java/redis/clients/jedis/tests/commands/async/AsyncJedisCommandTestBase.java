@@ -1,23 +1,31 @@
 package redis.clients.jedis.tests.commands.async;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ComparisonFailure;
-
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Tuple;
+import redis.clients.jedis.async.AsyncJedis;
+import redis.clients.jedis.async.callback.AsyncResponseCallback;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
+import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.jedis.tests.commands.async.util.AsyncJUnitTestCallback;
+import redis.clients.jedis.tests.commands.async.util.DoNothingCallback;
+import redis.clients.util.Slowlog;
 
-public abstract class AsyncJedisCommandTestBase extends JedisTestBase {
-    protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-    protected Jedis jedis;
+public abstract class AsyncJedisCommandTestBase extends JedisCommandTestBase {
+    protected AsyncJedis asyncJedis;
+    protected final Lock lock = new ReentrantLock(true);
 
     public AsyncJedisCommandTestBase() {
 	super();
@@ -25,72 +33,44 @@ public abstract class AsyncJedisCommandTestBase extends JedisTestBase {
 
     @Before
     public void setUp() throws Exception {
-	jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-	jedis.connect();
-	jedis.auth("foobared");
-	jedis.configSet("timeout", "300");
-	jedis.flushAll();
+	super.setUp();
+
+	asyncJedis = new AsyncJedis(hnp.getHost(), hnp.getPort(), "foobared");
+	asyncJedis.configSet(new DoNothingCallback<String>(), "timeout", "300");
+	asyncJedis.flushAll(STRING_CALLBACK.withReset());
+	STRING_CALLBACK.getResponseWithWaiting(1000);
     }
 
     @After
     public void tearDown() {
-	jedis.disconnect();
+	super.tearDown();
+
+	try {
+	    asyncJedis.stop();
+	} catch (InterruptedException e) {
+	    // FIXME : pass or fail?
+	}
     }
 
-    protected Jedis createJedis() {
-	Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
-	j.connect();
-	j.auth("foobared");
-	j.flushAll();
+    protected AsyncJedis createAsyncJedis() throws IOException {
+	AsyncJedis j = new AsyncJedis(hnp.getHost(), hnp.getPort(), "foobared");
+	j.flushAll(STRING_CALLBACK.withReset());
+	STRING_CALLBACK.getResponseWithWaiting(1000);
 	return j;
     }
 
-    protected void assertEquals(List<byte[]> expected, List<byte[]> actual) {
-	assertEquals(expected.size(), actual.size());
-	for (int n = 0; n < expected.size(); n++) {
-	    assertArrayEquals(expected.get(n), actual.get(n));
-	}
-    }
-
-    protected void assertEquals(Set<byte[]> expected, Set<byte[]> actual) {
-	assertEquals(expected.size(), actual.size());
-	Iterator<byte[]> e = expected.iterator();
-	while (e.hasNext()) {
-	    byte[] next = e.next();
-	    boolean contained = false;
-	    for (byte[] element : expected) {
-		if (Arrays.equals(next, element)) {
-		    contained = true;
-		}
-	    }
-	    if (!contained) {
-		throw new ComparisonFailure("element is missing",
-			Arrays.toString(next), actual.toString());
-	    }
-	}
-    }
-
-    protected boolean arrayContains(List<byte[]> array, byte[] expected) {
-	for (byte[] a : array) {
-	    try {
-		assertArrayEquals(a, expected);
-		return true;
-	    } catch (AssertionError e) {
-
-	    }
-	}
-	return false;
-    }
-
-    protected boolean setContains(Set<byte[]> set, byte[] expected) {
-	for (byte[] a : set) {
-	    try {
-		assertArrayEquals(a, expected);
-		return true;
-	    } catch (AssertionError e) {
-
-	    }
-	}
-	return false;
-    }
+    protected final AsyncJUnitTestCallback<Long> LONG_CALLBACK = new AsyncJUnitTestCallback<Long>();
+    protected final AsyncJUnitTestCallback<String> STRING_CALLBACK = new AsyncJUnitTestCallback<String>();
+    protected final AsyncJUnitTestCallback<byte[]> BYTE_ARRAY_CALLBACK = new AsyncJUnitTestCallback<byte[]>();
+    protected final AsyncJUnitTestCallback<Boolean> BOOLEAN_CALLBACK = new AsyncJUnitTestCallback<Boolean>();
+    protected final AsyncJUnitTestCallback<Double> DOUBLE_CALLBACK = new AsyncJUnitTestCallback<Double>();
+    protected final AsyncJUnitTestCallback<Set<String>> STRING_SET_CALLBACK = new AsyncJUnitTestCallback<Set<String>>();
+    protected final AsyncJUnitTestCallback<List<String>> STRING_LIST_CALLBACK = new AsyncJUnitTestCallback<List<String>>();
+    protected final AsyncJUnitTestCallback<Set<byte[]>> BYTE_ARRAY_SET_CALLBACK = new AsyncJUnitTestCallback<Set<byte[]>>();
+    protected final AsyncJUnitTestCallback<List<byte[]>> BYTE_ARRAY_LIST_CALLBACK = new AsyncJUnitTestCallback<List<byte[]>>();
+    protected final AsyncJUnitTestCallback<List<Slowlog>> SLOWLOG_LIST_CALLBACK = new AsyncJUnitTestCallback<List<Slowlog>>();
+    protected final AsyncJUnitTestCallback<Set<Tuple>> TUPLE_SET_CALLBACK = new AsyncJUnitTestCallback<Set<Tuple>>();
+    protected final AsyncJUnitTestCallback<Set<Tuple>> TUPLE_BINARY_SET_CALLBACK = new AsyncJUnitTestCallback<Set<Tuple>>();
+    protected final AsyncJUnitTestCallback<Map<String, String>> STRING_MAP_CALLBACK = new AsyncJUnitTestCallback<Map<String, String>>();
+    protected final AsyncJUnitTestCallback<Map<byte[], byte[]>> BYTE_ARRAY_MAP_CALLBACK = new AsyncJUnitTestCallback<Map<byte[], byte[]>>();
 }

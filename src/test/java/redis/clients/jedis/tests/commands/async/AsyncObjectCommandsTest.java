@@ -1,83 +1,52 @@
 package redis.clients.jedis.tests.commands.async;
 
 import org.junit.Test;
-import redis.clients.jedis.async.callback.AsyncResponseCallback;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.jedis.tests.commands.async.util.CommandWithWaiting;
 import redis.clients.util.SafeEncoder;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Condition;
 
 public class AsyncObjectCommandsTest extends AsyncJedisCommandTestBase {
 
     private String key = "mylist";
     private byte[] binaryKey = SafeEncoder.encode(key);
 
-
     @Test
     public void objectRefcount() throws InterruptedException {
-        asyncJedis.lpush(new DoNothingCallback<Long>(), key, "hello world");
+	CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
-        AsyncJUnitTestCallback<Long> callback = new AsyncJUnitTestCallback<Long>();
-        asyncJedis.objectRefcount(callback, key);
-        callback.waitForComplete(100);
+	asyncJedis.objectRefcount(LONG_CALLBACK.withReset(), key);
+	assertEquals(new Long(1L), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-        if (callback.getException() != null) {
-            throw callback.getException();
-        }
-        assertEquals(new Long(1L), callback.getResponse());
-
-	    // Binary
-        asyncJedis.objectRefcount(callback, binaryKey);
-        callback.waitForComplete(100);
-
-        if (callback.getException() != null) {
-            throw callback.getException();
-        }
-        assertEquals(new Long(1L), callback.getResponse());
+	// Binary
+	asyncJedis.objectRefcount(LONG_CALLBACK.withReset(), binaryKey);
+	assertEquals(new Long(1L), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void objectEncoding() {
-        asyncJedis.lpush(new DoNothingCallback<Long>(), key, "hello world");
+	CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
-        AsyncJUnitTestCallback<String> callback = new AsyncJUnitTestCallback<String>();
-        asyncJedis.objectEncoding(callback, key);
-        callback.waitForComplete(100);
+	asyncJedis.objectEncoding(STRING_CALLBACK.withReset(), key);
+	assertEquals("ziplist", STRING_CALLBACK.getResponseWithWaiting(1000));
 
-        if (callback.getException() != null) {
-            throw callback.getException();
-        }
-        assertEquals("ziplist", callback.getResponse());
+	// Binary
+	CommandWithWaiting.lpush(asyncJedis, binaryKey,
+		"hello world".getBytes());
 
-        // Binary
-        asyncJedis.lpush(new DoNothingCallback<Long>(), binaryKey, "hello world".getBytes());
-
-        AsyncJUnitTestCallback<byte[]> callback2 = new AsyncJUnitTestCallback<byte[]>();
-        asyncJedis.objectEncoding(callback2, binaryKey);
-        callback2.waitForComplete(100);
-
-        assertArrayEquals("ziplist".getBytes(), callback2.getResponse());
+	asyncJedis.objectEncoding(BYTE_ARRAY_CALLBACK.withReset(), binaryKey);
+	assertArrayEquals("ziplist".getBytes(),
+		BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
     }
 
     @Test
     public void objectIdletime() throws InterruptedException {
-        asyncJedis.lpush(new DoNothingCallback<Long>(), key, "hello world");
+	CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
-        AsyncJUnitTestCallback<Long> callback = new AsyncJUnitTestCallback<Long>();
-        asyncJedis.objectIdletime(callback, key);
-        callback.waitForComplete(100);
+	asyncJedis.objectIdletime(LONG_CALLBACK.withReset(), key);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-        assertEquals(new Long(0), callback.getResponse());
-
-        // Binary
-        asyncJedis.objectIdletime(callback, binaryKey);
-        callback.waitForComplete(100);
-
-        assertEquals(new Long(0), callback.getResponse());
+	// Binary
+	asyncJedis.objectIdletime(LONG_CALLBACK.withReset(), binaryKey);
+	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
     }
 
 }

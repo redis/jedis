@@ -3,7 +3,7 @@ apply plugin: 'maven'
 apply plugin: 'eclipse'
 
 group = 'com.googlecode.jedis'
-archiveBaseName = 'jedis'
+archivesBaseName = 'jedis'
 version = '1.5.0'
 
 repositories {

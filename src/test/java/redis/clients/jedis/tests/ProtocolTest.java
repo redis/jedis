@@ -80,7 +80,7 @@ public class ProtocolTest extends JedisTestBase {
 
 	assertEquals(expectedCommand, sb.toString());
     }
-
+    
     @Test
     public void buildALongCommand() throws IOException {
 	int keyCount = 100;

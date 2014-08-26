@@ -162,12 +162,6 @@ public abstract class JedisPubSub {
 
 	/* Invalidate instance since this thread is no longer listening */
 	this.client = null;
-
-	/*
-	 * Reset pipeline count because subscribe() calls would have increased
-	 * it but nothing decremented it.
-	 */
-	client.resetPipelinedCount();
     }
 
     public int getSubscribedChannels() {

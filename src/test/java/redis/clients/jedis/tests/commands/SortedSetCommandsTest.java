@@ -783,7 +783,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("bar", 2, "b");
 
 	ZParams params = new ZParams();
-	params.weights(2, 2.5);
+	params.weightsByDouble(2, 2.5);
 	params.aggregate(ZParams.Aggregate.SUM);
 	long result = jedis.zunionstore("dst", params, "foo", "bar");
 
@@ -802,7 +802,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd(bbar, 2, bb);
 
 	ZParams bparams = new ZParams();
-	bparams.weights(2, 2.5);
+	bparams.weightsByDouble(2, 2.5);
 	bparams.aggregate(ZParams.Aggregate.SUM);
 	long bresult = jedis.zunionstore(SafeEncoder.encode("dst"), bparams,
 		bfoo, bbar);
@@ -855,7 +855,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("bar", 2, "a");
 
 	ZParams params = new ZParams();
-	params.weights(2, 2.5);
+	params.weightsByDouble(2, 2.5);
 	params.aggregate(ZParams.Aggregate.SUM);
 	long result = jedis.zinterstore("dst", params, "foo", "bar");
 
@@ -872,7 +872,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd(bbar, 2, ba);
 
 	ZParams bparams = new ZParams();
-	bparams.weights(2, 2.5);
+	bparams.weightsByDouble(2, 2.5);
 	bparams.aggregate(ZParams.Aggregate.SUM);
 	long bresult = jedis.zinterstore(SafeEncoder.encode("dst"), bparams,
 		bfoo, bbar);

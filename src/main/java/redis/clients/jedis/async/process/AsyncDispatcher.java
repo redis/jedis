@@ -35,9 +35,9 @@ public class AsyncDispatcher extends Thread {
 
     private String password;
     
-    private volatile AtomicInteger allWriteTasksCounter = new AtomicInteger();
-    private volatile AtomicInteger allReadTasksCounter = new AtomicInteger();
-    private volatile AtomicInteger allResponsedTasksCounter = new AtomicInteger();
+    private final AtomicInteger allWriteTasksCounter = new AtomicInteger();
+    private final AtomicInteger allReadTasksCounter = new AtomicInteger();
+    private final AtomicInteger allResponsedTasksCounter = new AtomicInteger();
 
     static {
 	/**

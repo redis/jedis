@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
@@ -310,6 +312,22 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	bh.put(bcar, bbar);
 	jedis.hmset(bfoo, bh);
 	Map<byte[], byte[]> bhash = jedis.hgetAll(bfoo);
+
+	assertEquals(2, bhash.size());
+	assertArrayEquals(bcar, bhash.get(bbar));
+	assertArrayEquals(bbar, bhash.get(bcar));
+    }
+
+    @Test
+    public void hgetAllPipeline() {
+	Map<byte[], byte[]> bh = new HashMap<byte[], byte[]>();
+	bh.put(bbar, bcar);
+	bh.put(bcar, bbar);
+	jedis.hmset(bfoo, bh);
+	Pipeline pipeline = jedis.pipelined();
+	Response<Map<byte[], byte[]>> bhashResponse = pipeline.hgetAll(bfoo);
+	pipeline.sync();
+	Map<byte[], byte[]> bhash = bhashResponse.get();
 
 	assertEquals(2, bhash.size());
 	assertArrayEquals(bcar, bhash.get(bbar));

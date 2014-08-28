@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 public class AsyncDispatcher extends Thread {
@@ -35,10 +34,6 @@ public class AsyncDispatcher extends Thread {
 
     private String password;
     
-    private final AtomicInteger allWriteTasksCounter = new AtomicInteger();
-    private final AtomicInteger allReadTasksCounter = new AtomicInteger();
-    private final AtomicInteger allResponsedTasksCounter = new AtomicInteger();
-
     static {
 	/**
 	 * this is to avoid the jvm bug: NullPointerException in Selector.open()
@@ -120,7 +115,6 @@ public class AsyncDispatcher extends Thread {
     }
 
     public synchronized void registerRequest(AsyncJedisTask task) {
-	allWriteTasksCounter.incrementAndGet();
 	writeTaskQueue.add(task);
     }
 
@@ -202,7 +196,6 @@ public class AsyncDispatcher extends Thread {
 
 	    if (length == index) {
 		writeTaskQueue.poll();
-		allReadTasksCounter.incrementAndGet();
 		readTaskQueue.add(task);
 		task = writeTaskQueue.peek();
 	    } else {
@@ -232,7 +225,6 @@ public class AsyncDispatcher extends Thread {
 		// TODO : Thread Pool?
 		task.callback();
 
-		allResponsedTasksCounter.incrementAndGet();
 		readTaskQueue.poll();
 		task = readTaskQueue.peek();
 	    }

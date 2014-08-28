@@ -209,29 +209,32 @@ public class AsyncDispatcher extends Thread {
     }
 
     private void handleRead(SelectionKey key) throws IOException {
-	int numOfBytes = readDataFromSocket(key);
-	if (numOfBytes == -1) {
-	    key.cancel();
-	    throw new JedisConnectionException(
-		    "It seems like server has closed the connection.");
-	}
-
-	AsyncJedisTask task = readTaskQueue.peek();
-	while (readBuffer.hasRemaining()) {
-	    if (task == null) {
+	int numOfBytes;
+	do {
+	    numOfBytes = readDataFromSocket(key);
+	    if (numOfBytes == -1) {
+		key.cancel();
 		throw new JedisConnectionException(
-			"Remaining received data but no remaining request");
-	    }
+			"It seems like server has closed the connection.");
+	    } else if (numOfBytes > 0) {
+		AsyncJedisTask task = readTaskQueue.peek();
+		while (readBuffer.hasRemaining()) {
+		    if (task == null) {
+			throw new JedisConnectionException(
+				"Remaining received data but no remaining request");
+		    }
 
-	    task.appendPartialResponse(readBuffer.get());
-	    if (task.isReadComplete()) {
-		// TODO : Thread Pool?
-		task.callback();
+		    task.appendPartialResponse(readBuffer.get());
+		    if (task.isReadComplete()) {
+			// TODO : Thread Pool?
+			task.callback();
 
-		readTaskQueue.poll();
-		task = readTaskQueue.peek();
+			readTaskQueue.poll();
+			task = readTaskQueue.peek();
+		    }
+		}
 	    }
-	}
+	} while (numOfBytes > 0);
     }
 
     private int readDataFromSocket(SelectionKey key) throws IOException {

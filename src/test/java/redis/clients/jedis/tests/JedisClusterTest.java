@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -14,9 +15,11 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
@@ -319,6 +322,33 @@ public class JedisClusterTest extends Assert {
 	//assertEquals("foo", jc.get("51")); // it leads Max Redirections
 	node2.clusterSetSlotStable(slot51);
 	assertEquals("foo", jc.get("51"));
+    }
+    
+    @Test
+    public void testCloseable() {
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+	
+	JedisCluster jc = null;
+	try {
+	    jc = new JedisCluster(jedisClusterNode);
+	    jc.set("51", "foo");
+	} finally {
+	    if (jc != null) {
+		jc.close();
+	    }
+	}
+
+	Iterator<JedisPool> poolIterator = jc.getClusterNodes().values().iterator();
+	while (poolIterator.hasNext()) {
+	    JedisPool pool = poolIterator.next();
+	    try {
+		pool.getResource();
+		fail("JedisCluster's internal pools should be already destroyed");
+	    } catch (JedisConnectionException e) {
+		// ok to go...
+	    }
+	}
     }
     
     private static String getNodeServingSlotRange(String infoOutput) {

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
@@ -171,7 +172,7 @@ public class BuilderFactory {
 	@SuppressWarnings("unchecked")
 	public Map<byte[], byte[]> build(Object data) {
 	    final List<byte[]> flatHash = (List<byte[]>) data;
-	    final Map<byte[], byte[]> hash = new HashMap<byte[], byte[]>();
+	    final Map<byte[], byte[]> hash = new JedisByteHashMap();
 	    final Iterator<byte[]> iterator = flatHash.iterator();
 	    while (iterator.hasNext()) {
 		hash.put(iterator.next(), iterator.next());

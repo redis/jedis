@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class AsyncDispatcher extends Thread {
+    private static final int SELECTOR_SELECT_TIMEOUT = 300;
+
     protected Logger log = Logger.getLogger(getClass().getName());
 
     private Connection connection;
@@ -81,29 +83,30 @@ public class AsyncDispatcher extends Thread {
 		|| readTaskQueue.peek() != null) {
 
 	    try {
-		int num = selector.selectNow();
+		interestOpWriteIfAnyRequestPending();
+		
+		int num = selector.select(SELECTOR_SELECT_TIMEOUT);
+		if (num < 0) {
+		    continue;
+		}
+		
 		Set selectedKeys = selector.selectedKeys();
 
-		if (selectedKeys.size() <= 0) {
-		    interestOpWriteIfAnyRequestPending();
-		} else {
-		    Iterator it = selectedKeys.iterator();
+		Iterator it = selectedKeys.iterator();
+		while (it.hasNext()) {
+		    SelectionKey key = (SelectionKey) it.next();
 
-		    while (it.hasNext()) {
-			SelectionKey key = (SelectionKey) it.next();
-
-			if (key.isReadable()) {
-			    handleRead(key);
-			}
-
-			if (key.isValid() && key.isWritable()) {
-			    handleWrite(key);
-			    key.interestOps(key.interestOps()
-				    & ~SelectionKey.OP_WRITE);
-			}
-
-			it.remove();
+		    if (key.isReadable()) {
+			handleRead(key);
 		    }
+
+		    if (key.isValid() && key.isWritable()) {
+			handleWrite(key);
+			key.interestOps(key.interestOps()
+				& ~SelectionKey.OP_WRITE);
+		    }
+
+		    it.remove();
 		}
 	    } catch (IOException e) {
 		handleConnectionException(new JedisConnectionException(e));
@@ -115,6 +118,7 @@ public class AsyncDispatcher extends Thread {
 
     public synchronized void registerRequest(AsyncJedisTask task) {
 	writeTaskQueue.add(task);
+	selector.wakeup();
     }
 
     public void setShutdown(boolean shutdown) {

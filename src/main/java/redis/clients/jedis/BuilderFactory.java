@@ -104,6 +104,26 @@ public class BuilderFactory {
 
     };
     
+    public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
+	@SuppressWarnings("unchecked")
+	public Map<String, String> build(Object data) {
+	    final List<Object> flatHash = (List<Object>) data;
+	    final Map<String, String> hash = new HashMap<String, String>();
+	    final Iterator<Object> iterator = flatHash.iterator();
+	    while (iterator.hasNext()) {
+		hash.put(SafeEncoder.encode((byte[]) iterator.next()),
+			String.valueOf((Long) iterator.next()));
+	    }
+
+	    return hash;
+	}
+
+	public String toString() {
+	    return "PUBSUB_NUMSUB_MAP<String, String>";
+	}
+
+    };
+    
     public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
 	@SuppressWarnings("unchecked")
 	public Set<String> build(Object data) {

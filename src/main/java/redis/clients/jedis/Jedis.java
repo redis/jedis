@@ -3511,7 +3511,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public Map<String, String> pubsubNumSub(String... channels) {
 	checkIsInMulti();
 	client.pubsubNumSub(channels);
-	return BuilderFactory.STRING_MAP
+	return BuilderFactory.PUBSUB_NUMSUB_MAP
 		.build(client.getBinaryMultiBulkReply());
     }
 

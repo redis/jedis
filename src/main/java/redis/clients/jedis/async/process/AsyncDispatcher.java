@@ -51,7 +51,6 @@ public class AsyncDispatcher extends Thread {
 	connect();
 
 	selector = Selector.open();
-	connection.getSocketChannel();
 	configureSocketChannelToUseSelector();
 
 	if (bufferSize <= 0) {

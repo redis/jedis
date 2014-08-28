@@ -351,19 +351,7 @@ public class AsyncHashesCommandsTest extends AsyncJedisCommandTestBase {
 		.getResponseWithWaiting(1000);
 
 	assertEquals(2, bhash.size());
-	int matchCount = 0;
-	for (Map.Entry<byte[], byte[]> entry : bhash.entrySet()) {
-	    byte[] key = entry.getKey();
-	    if (Arrays.equals(key, bbar)) {
-		matchCount++;
-		assertArrayEquals(bcar, entry.getValue());
-	    } else if (Arrays.equals(key, bcar)) {
-		matchCount++;
-		assertArrayEquals(bbar, entry.getValue());
-	    } else {
-		fail("wrong key");
-	    }
-	}
-	assertEquals(2, matchCount);
+    assertArrayEquals(bcar, bhash.get(bbar));
+    assertArrayEquals(bbar, bhash.get(bcar));
     }
 }

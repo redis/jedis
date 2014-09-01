@@ -26,13 +26,13 @@ public class Pipeline extends MultiKeyPipelineBase {
 	    for (int i = 0; i < list.size(); i++) {
 		Response<?> response = responses.get(i);
 		response.set(list.get(i));
-        Object builtResponse;
-        try {
-            builtResponse = response.get();
-        } catch (JedisDataException e) {
-            builtResponse = e;
-        }
-        values.add(builtResponse);
+		Object builtResponse;
+		try {
+		    builtResponse = response.get();
+		} catch (JedisDataException e) {
+		    builtResponse = e;
+		}
+		values.add(builtResponse);
 	    }
 	    return values;
 	}

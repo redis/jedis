@@ -98,4 +98,12 @@ public class JedisPool extends Pool<Jedis> {
 	    returnResourceObject(resource);
 	}
     }
+
+    public int getNumActive() {
+        if (this.internalPool == null || this.internalPool.isClosed()) {
+            return -1;
+        }
+
+        return this.internalPool.getNumActive();
+    }
 }

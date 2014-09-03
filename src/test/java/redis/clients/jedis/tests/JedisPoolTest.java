@@ -266,7 +266,12 @@ public class JedisPoolTest extends Assert {
         assertEquals(2, pool.getNumActive());
 
         pool.returnResource(jedis);
+        assertEquals(1, pool.getNumActive());
+
         pool.returnResource(jedis2);
+
+        assertEquals(0, pool.getNumActive());
+
         pool.destroy();
     }
 }

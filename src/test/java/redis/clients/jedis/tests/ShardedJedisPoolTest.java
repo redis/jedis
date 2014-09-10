@@ -57,14 +57,13 @@ public class ShardedJedisPoolTest extends Assert {
 
     @Test
     public void checkCloseableConnections() throws Exception {
-	Closer closer = new Closer();
-	ShardedJedisPool pool = closer.register(new ShardedJedisPool(
-		new GenericObjectPoolConfig(), shards));
+	ShardedJedisPool pool = new ShardedJedisPool(
+		new GenericObjectPoolConfig(), shards);
 	ShardedJedis jedis = pool.getResource();
 	jedis.set("foo", "bar");
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
-	closer.close();
+	pool.close();
 	assertTrue(pool.isClosed());
     }
 

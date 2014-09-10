@@ -68,7 +68,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	}
 
 	Integer dbIndex = JedisURIHelper.getDBIndex(uri);
-	if (dbIndex != null) {
+	if (dbIndex > 0) {
 	    client.select(dbIndex);
 	    client.getStatusCodeReply();
 	}

@@ -647,6 +647,9 @@ public class Client extends BinaryClient implements Commands {
 	getbit(SafeEncoder.encode(key), offset);
     }
 
+    public void bitpos(final String key, final boolean value, final BitPosParams params) {
+	bitpos(SafeEncoder.encode(key), value, params);
+    }
     public void setrange(String key, long offset, String value) {
 	setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
@@ -795,7 +798,7 @@ public class Client extends BinaryClient implements Commands {
 	restore(SafeEncoder.encode(key), ttl, serializedValue);
     }
 
-    public void pexpire(final String key, final int milliseconds) {
+    public void pexpire(final String key, final long milliseconds) {
 	pexpire(SafeEncoder.encode(key), milliseconds);
     }
 
@@ -851,36 +854,6 @@ public class Client extends BinaryClient implements Commands {
 		increment);
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void hscan(final String key, int cursor, final ScanParams params) {
-	hscan(SafeEncoder.encode(key), cursor, params);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void sscan(final String key, int cursor, final ScanParams params) {
-	sscan(SafeEncoder.encode(key), cursor, params);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void zscan(final String key, int cursor, final ScanParams params) {
-	zscan(SafeEncoder.encode(key), cursor, params);
-    }
-    
     public void scan(final String cursor, final ScanParams params) {
 	scan(SafeEncoder.encode(cursor), params);
     }
@@ -968,5 +941,61 @@ public class Client extends BinaryClient implements Commands {
     public void clusterSetSlotImporting(final int slot, final String nodeId) {
 	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
 		Protocol.CLUSTER_SETSLOT_IMPORTING, nodeId);
+    }
+
+    public void pfadd(String key, final String... elements) {
+	pfadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(elements));
+    }
+
+    public void pfcount(final String key) {
+	pfcount(SafeEncoder.encode(key));
+    }
+
+    public void pfcount(final String...keys) {
+	pfcount(SafeEncoder.encodeMany(keys));
+    }
+
+    public void pfmerge(final String destkey, final String... sourcekeys) {
+	pfmerge(SafeEncoder.encode(destkey), SafeEncoder.encodeMany(sourcekeys));
+    }
+public void clusterSetSlotStable(final int slot) {
+	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
+		Protocol.CLUSTER_SETSLOT_STABLE);
+    }
+    
+    public void clusterForget(final String nodeId) {
+	cluster(Protocol.CLUSTER_FORGET, nodeId);
+    }
+
+    public void clusterFlushSlots() {
+	cluster(Protocol.CLUSTER_FLUSHSLOT);
+    }
+
+    public void clusterKeySlot(final String key) {
+	cluster(Protocol.CLUSTER_KEYSLOT, key);
+    }
+
+    public void clusterCountKeysInSlot(final int slot) {
+	cluster(Protocol.CLUSTER_COUNTKEYINSLOT, String.valueOf(slot));
+    }
+
+    public void clusterSaveConfig() {
+	cluster(Protocol.CLUSTER_SAVECONFIG);
+    }
+
+    public void clusterReplicate(final String nodeId) {
+	cluster(Protocol.CLUSTER_REPLICATE, nodeId);
+    }
+
+    public void clusterSlaves(final String nodeId) {
+	cluster(Protocol.CLUSTER_SLAVES, nodeId);
+    }
+
+    public void clusterFailover() {
+	cluster(Protocol.CLUSTER_FAILOVER);
+    }
+    
+    public void clusterSlots() {
+	cluster(Protocol.CLUSTER_SLOTS);
     }
 }

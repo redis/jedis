@@ -79,6 +79,13 @@ public class JedisPool extends Pool<Jedis> {
 		database, clientName));
     }
 
+    @Override
+    public Jedis getResource() {
+	Jedis jedis = super.getResource();
+	jedis.setDataSource(this);
+	return jedis;
+    }
+
     public void returnBrokenResource(final Jedis resource) {
 	if (resource != null) {
 	    returnBrokenResourceObject(resource);
@@ -90,5 +97,13 @@ public class JedisPool extends Pool<Jedis> {
 	    resource.resetState();
 	    returnResourceObject(resource);
 	}
+    }
+
+    public int getNumActive() {
+        if (this.internalPool == null || this.internalPool.isClosed()) {
+            return -1;
+        }
+
+        return this.internalPool.getNumActive();
     }
 }

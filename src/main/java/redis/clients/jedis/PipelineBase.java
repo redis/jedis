@@ -142,7 +142,25 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	getClient(key).getbit(key, offset);
 	return getResponse(BuilderFactory.BOOLEAN);
     }
-
+    
+    public Response<Long> bitpos(final String key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Response<Long> bitpos(final String key, final boolean value, final BitPosParams params) {
+	getClient(key).bitpos(key, value, params);
+	return getResponse(BuilderFactory.LONG);
+    }
+    
+    public Response<Long> bitpos(final byte[] key, final boolean value) {
+	return bitpos(key, value, new BitPosParams());
+    }
+    
+    public Response<Long> bitpos(final byte[] key, final boolean value, final BitPosParams params) {
+	getClient(key).bitpos(key, value, params);
+	return getResponse(BuilderFactory.LONG);
+    }
+    
     public Response<String> getrange(String key, long startOffset,
 	    long endOffset) {
 	getClient(key).getrange(key, startOffset, endOffset);
@@ -159,9 +177,9 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
-    public Response<Long> getrange(byte[] key, long startOffset, long endOffset) {
+    public Response<byte[]> getrange(byte[] key, long startOffset, long endOffset) {
 	getClient(key).getrange(key, startOffset, endOffset);
-	return getResponse(BuilderFactory.LONG);
+	return getResponse(BuilderFactory.BYTE_ARRAY);
     }
 
     public Response<Long> hdel(String key, String... field) {
@@ -1130,12 +1148,12 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> pexpire(String key, int milliseconds) {
+    public Response<Long> pexpire(String key, long milliseconds) {
 	getClient(key).pexpire(key, milliseconds);
 	return getResponse(BuilderFactory.LONG);
     }
 
-    public Response<Long> pexpire(byte[] key, int milliseconds) {
+    public Response<Long> pexpire(byte[] key, long milliseconds) {
 	getClient(key).pexpire(key, milliseconds);
 	return getResponse(BuilderFactory.LONG);
     }
@@ -1254,4 +1272,28 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.STRING);
     }
 
+    @Override
+    public Response<Long> pfadd(byte[] key, byte[]... elements) {
+	getClient(key).pfadd(key, elements);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Long> pfcount(byte[] key) {
+	getClient(key).pfcount(key);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Long> pfadd(String key, String... elements) {
+	getClient(key).pfadd(key, elements);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Long> pfcount(String key) {
+	getClient(key).pfcount(key);
+	return getResponse(BuilderFactory.LONG);
+    }
+    
 }

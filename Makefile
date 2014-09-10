@@ -153,6 +153,42 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node3.conf
 endef
 
+define REDIS_CLUSTER_NODE4_CONF
+daemonize yes
+port 7382
+cluster-node-timeout 50
+pidfile /tmp/redis_cluster_node4.pid
+logfile /tmp/redis_cluster_node4.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node4.conf
+endef
+
+define REDIS_CLUSTER_NODE5_CONF
+daemonize yes
+port 7383
+cluster-node-timeout 5000
+pidfile /tmp/redis_cluster_node5.pid
+logfile /tmp/redis_cluster_node5.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node5.conf
+endef
+
+define REDIS_CLUSTER_NODE6_CONF
+daemonize yes
+port 7384
+cluster-node-timeout 5000
+pidfile /tmp/redis_cluster_node6.pid
+logfile /tmp/redis_cluster_node6.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node6.conf
+endef
+
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF
@@ -166,6 +202,9 @@ export REDIS_SENTINEL3
 export REDIS_CLUSTER_NODE1_CONF
 export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
+export REDIS_CLUSTER_NODE4_CONF
+export REDIS_CLUSTER_NODE5_CONF
+export REDIS_CLUSTER_NODE6_CONF
 
 start: cleanup
 	echo "$$REDIS1_CONF" | redis-server -
@@ -183,6 +222,9 @@ start: cleanup
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE6_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -202,17 +244,28 @@ stop:
 	kill `cat /tmp/redis_cluster_node1.pid` || true
 	kill `cat /tmp/redis_cluster_node2.pid` || true
 	kill `cat /tmp/redis_cluster_node3.pid` || true
+	kill `cat /tmp/redis_cluster_node4.pid` || true
+	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_cluster_node6.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
 	rm -f /tmp/redis_cluster_node1.conf
 	rm -f /tmp/redis_cluster_node2.conf
 	rm -f /tmp/redis_cluster_node3.conf
+	rm -f /tmp/redis_cluster_node4.conf
+	rm -f /tmp/redis_cluster_node5.conf
+	rm -f /tmp/redis_cluster_node6.conf
 
 test:
 	make start
 	sleep 2
 	mvn -Dtest=${TEST} clean compile test
+	make stop
+
+package:
+	make start
+	mvn clean package
 	make stop
 
 deploy:

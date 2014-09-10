@@ -14,8 +14,13 @@ public class JedisURIHelper {
     public static Integer getDBIndex(URI uri) {
 	String[] pathSplit = uri.getPath().split("/", 2);
 	if (pathSplit.length > 1) {
-	    return Integer.parseInt(pathSplit[1]);
+	    String dbIndexStr = pathSplit[1];
+	    if (dbIndexStr.isEmpty()) {
+		return 0;
+	    }
+	    return Integer.parseInt(dbIndexStr);
+	} else {
+	    return 0;
 	}
-	return null;
     }
 }

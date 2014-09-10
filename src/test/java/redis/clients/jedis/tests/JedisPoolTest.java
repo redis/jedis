@@ -32,15 +32,14 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void checkCloseableConnections() throws Exception {
-	Closer closer = new Closer();
-	JedisPool pool = closer.register(new JedisPool(new JedisPoolConfig(), hnp.getHost(),
-		     hnp.getPort(), 2000));
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		     hnp.getPort(), 2000);
 	Jedis jedis = pool.getResource();
 	jedis.auth("foobared");
 	jedis.set("foo", "bar");
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
-	closer.close();
+	pool.close();
 	assertTrue(pool.isClosed());
     }
 

@@ -39,15 +39,14 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     public void checkCloseableConnections() throws Exception {
 	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 
-	Closer closer = new Closer();
-	JedisSentinelPool pool = closer.register(new JedisSentinelPool(
-		MASTER_NAME, sentinels, config, 1000, "foobared", 2));
+	JedisSentinelPool pool = new JedisSentinelPool(
+		MASTER_NAME, sentinels, config, 1000, "foobared", 2);
 	Jedis jedis = pool.getResource();
 	jedis.auth("foobared");
 	jedis.set("foo", "bar");
 	assertEquals("bar", jedis.get("foo"));
 	pool.returnResource(jedis);
-	closer.close();
+	pool.close();
 	assertTrue(pool.isClosed());
     }
 

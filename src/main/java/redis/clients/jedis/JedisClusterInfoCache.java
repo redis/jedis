@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 public class JedisClusterInfoCache {
     public static final ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
 
@@ -20,6 +22,11 @@ public class JedisClusterInfoCache {
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final Lock r = rwl.readLock();
     private final Lock w = rwl.writeLock();
+    private final GenericObjectPoolConfig poolConfig;
+    
+    public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig) {
+	this.poolConfig = poolConfig;
+    }
 
     public void discoverClusterNodesAndSlots(Jedis jedis) {
 	w.lock();
@@ -90,7 +97,7 @@ public class JedisClusterInfoCache {
 	    if (nodes.containsKey(nodeKey))
 		return;
 
-	    JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
+	    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort());
 	    nodes.put(nodeKey, nodePool);
 	} finally {
 	    w.unlock();

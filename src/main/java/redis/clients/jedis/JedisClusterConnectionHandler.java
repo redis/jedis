@@ -11,8 +11,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public abstract class JedisClusterConnectionHandler {
-    protected JedisClusterInfoCache cache = new JedisClusterInfoCache();
-    final protected GenericObjectPoolConfig poolConfig;
+    protected JedisClusterInfoCache cache;
 
     abstract Jedis getConnection();
 
@@ -29,8 +28,8 @@ public abstract class JedisClusterConnectionHandler {
     abstract Jedis getConnectionFromSlot(int slot);
 
     public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig) {
-    this.poolConfig = poolConfig;
-	initializeSlotsCache(nodes);
+	cache = new JedisClusterInfoCache(poolConfig);
+	initializeSlotsCache(nodes, poolConfig);
     }
 
     public Map<String, JedisPool> getNodes() {
@@ -41,7 +40,7 @@ public abstract class JedisClusterConnectionHandler {
 	cache.assignSlotToNode(slot, targetNode);
     }
 
-    private void initializeSlotsCache(Set<HostAndPort> startNodes) {
+    private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig) {
 	for (HostAndPort hostAndPort : startNodes) {
 	    JedisPool jp = new JedisPool(poolConfig, hostAndPort.getHost(),
 		    hostAndPort.getPort());

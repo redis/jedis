@@ -358,17 +358,6 @@ public class JedisClusterTest extends Assert {
         jc.set("52", "poolTestValue");
     }
 
-    @Test(expected = JedisConnectionException.class)
-    public void testIfPoolConfigAppliesToClusterPools() {
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setMaxTotal(0);
-        config.setMaxWaitMillis(2000);
-        Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-        jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-        JedisCluster jc = new JedisCluster(jedisClusterNode, config);
-        jc.set("52", "poolTestValue");
-    }
-
     private static String getNodeServingSlotRange(String infoOutput) {
 	// f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0 1394372400827 0 connected 5461-10922
 	for (String infoLine : infoOutput.split("\n")) {

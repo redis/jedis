@@ -1102,6 +1102,51 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 	    }
 	}.run(key);
     }
+    
+    @Override
+    public Long zlexcount(final String key, final String min, final String max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.zlexcount(key, min, max);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection.zrangeByLex(key, min, max);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection.zrangeByLex(key, min, max, offset, count);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Long zremrangeByLex(final String key, final String min, final String max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.zremrangeByLex(key, min, max);
+	    }
+	}.run(key);
+    }
 
     @Override
     public Long linsert(final String key, final LIST_POSITION where,
@@ -1490,4 +1535,5 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 	    }
 	}.run(key);
     }
+
 }

@@ -1026,6 +1026,56 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return getResponse(BuilderFactory.DOUBLE);
     }
 
+    @Override
+    public Response<Long> zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	getClient(key).zlexcount(key, min, max);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Long> zlexcount(final String key, final String min, final String max) {
+	getClient(key).zlexcount(key, min, max);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
+	getClient(key).zrangeByLex(key, min, max);
+	return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+    }
+
+    @Override
+    public Response<Set<String>> zrangeByLex(final String key, final String max, final String min) {
+	getClient(key).zrangeByLex(key, min, max);
+	return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    @Override
+    public Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] max,
+	    final byte[] min, final int offset, final int count) {
+	getClient(key).zrangeByLex(key, min, max, offset, count);
+	return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+    }
+
+    @Override
+    public Response<Set<String>> zrangeByLex(final String key, final String max,
+	    final String min, final int offset, final int count) {
+	getClient(key).zrangeByLex(key, min, max, offset, count);
+	return getResponse(BuilderFactory.STRING_ZSET);
+    }
+
+    @Override
+    public Response<Long> zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	getClient(key).zremrangeByLex(key, min, max);
+	return getResponse(BuilderFactory.LONG);
+    }
+
+    @Override
+    public Response<Long> zremrangeByLex(final String key, final String min, final String max) {
+	getClient(key).zremrangeByLex(key, min, max);
+	return getResponse(BuilderFactory.LONG);
+    }
+
     public Response<Long> bitcount(String key) {
 	getClient(key).bitcount(key);
 	return getResponse(BuilderFactory.LONG);

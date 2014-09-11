@@ -194,6 +194,15 @@ public interface JedisCommands {
     Long zremrangeByScore(String key, double start, double end);
 
     Long zremrangeByScore(String key, String start, String end);
+    
+    Long zlexcount(final String key, final String min, final String max);
+    
+    Set<String> zrangeByLex(final String key, final String min, final String max);
+
+    Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count);
+    
+    Long zremrangeByLex(final String key, final String min, final String max);
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
 	    String value);

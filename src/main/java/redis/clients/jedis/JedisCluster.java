@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class JedisCluster implements JedisCommands, BasicCommands {
+public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     public static final short HASHSLOTS = 16384;
     private static final int DEFAULT_TIMEOUT = 1;
     private static final int DEFAULT_MAX_REDIRECTIONS = 5;
@@ -49,6 +50,21 @@ public class JedisCluster implements JedisCommands, BasicCommands {
             jedisClusterNode, poolConfig);
     this.timeout = timeout;
     this.maxRedirections = maxRedirections;
+    }
+    
+    @Override
+    public void close() {
+	if (connectionHandler != null) {
+	    for (JedisPool pool : connectionHandler.getNodes().values()) {
+		try {
+		    if (pool != null) {
+			pool.destroy();
+		    }
+		} catch (Exception e) {
+		    // pass
+		}
+	    }
+	}
     }
 
     @Override
@@ -412,7 +428,7 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.hdel(key);
+		return connection.hlen(key);
 	    }
 	}.run(key);
     }
@@ -639,6 +655,17 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		return connection.srandmember(key);
 	    }
 	}.run(key);
+    }
+
+    @Override
+    public List<String> srandmember(final String key, final int count) {
+        return new JedisClusterCommand<List<String>>(connectionHandler, timeout,
+            maxRedirections) {
+            @Override
+            public List<String> execute(Jedis connection) {
+            return connection.srandmember(key, count);
+            }
+        }.run(key);
     }
 
     @Override
@@ -1093,6 +1120,51 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	    }
 	}.run(key);
     }
+    
+    @Override
+    public Long zlexcount(final String key, final String min, final String max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.zlexcount(key, min, max);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection.zrangeByLex(key, min, max);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection.zrangeByLex(key, min, max, offset, count);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Long zremrangeByLex(final String key, final String min, final String max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.zremrangeByLex(key, min, max);
+	    }
+	}.run(key);
+    }
 
     @Override
     public Long linsert(final String key, final LIST_POSITION where,
@@ -1426,58 +1498,6 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 	return null;
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    @Override
-    public ScanResult<Entry<String, String>> hscan(final String key,
-	    final int cursor) {
-	return new JedisClusterCommand<ScanResult<Entry<String, String>>>(
-		connectionHandler, timeout, maxRedirections) {
-	    @Override
-	    public ScanResult<Entry<String, String>> execute(Jedis connection) {
-		return connection.hscan(key, cursor);
-	    }
-	}.run(null);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    @Override
-    public ScanResult<String> sscan(final String key, final int cursor) {
-	return new JedisClusterCommand<ScanResult<String>>(connectionHandler,
-		timeout, maxRedirections) {
-	    @Override
-	    public ScanResult<String> execute(Jedis connection) {
-		return connection.sscan(key, cursor);
-	    }
-	}.run(null);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    @Override
-    public ScanResult<Tuple> zscan(final String key, final int cursor) {
-	return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler,
-		timeout, maxRedirections) {
-	    @Override
-	    public ScanResult<Tuple> execute(Jedis connection) {
-		return connection.zscan(key, cursor);
-	    }
-	}.run(null);
-    }
-    
     @Override
     public ScanResult<Entry<String, String>> hscan(final String key,
 	    final String cursor) {
@@ -1532,5 +1552,27 @@ public class JedisCluster implements JedisCommands, BasicCommands {
 		return connection.pfcount(key);
 	    }
 	}.run(key);
+    }
+
+    @Override
+    public List<String> blpop(final int timeout, final String key) {
+	return new JedisClusterCommand<List<String>>(connectionHandler,
+		timeout, maxRedirections) {
+	    @Override
+	    public List<String> execute(Jedis connection) {
+		return connection.blpop(timeout,key);
+	    }
+	}.run(null);
+    }
+
+    @Override
+    public List<String> brpop(final int timeout, final String key) {
+	return new JedisClusterCommand<List<String>>(connectionHandler,
+		timeout, maxRedirections) {
+	    @Override
+	    public List<String> execute(Jedis connection) {
+		return connection.brpop(timeout,key);
+	    }
+	}.run(null);
     }
 }

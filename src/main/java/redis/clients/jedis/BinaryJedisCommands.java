@@ -115,6 +115,8 @@ public interface BinaryJedisCommands {
 
     byte[] srandmember(byte[] key);
 
+    List<byte[]> srandmember(final byte[] key, final int count);
+
     Long strlen(byte[] key);
 
     Long zadd(byte[] key, double score, byte[] member);
@@ -194,6 +196,15 @@ public interface BinaryJedisCommands {
     Long zremrangeByScore(byte[] key, double start, double end);
 
     Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
+    
+    Long zlexcount(final byte[] key, final byte[] min, final byte[] max);
+    
+    Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+
+    Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    int offset, int count);
+    
+    Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
     Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot,
 	    byte[] value);

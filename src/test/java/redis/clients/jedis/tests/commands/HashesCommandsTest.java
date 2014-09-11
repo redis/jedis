@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
@@ -317,13 +319,29 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     }
 
     @Test
+    public void hgetAllPipeline() {
+	Map<byte[], byte[]> bh = new HashMap<byte[], byte[]>();
+	bh.put(bbar, bcar);
+	bh.put(bcar, bbar);
+	jedis.hmset(bfoo, bh);
+	Pipeline pipeline = jedis.pipelined();
+	Response<Map<byte[], byte[]>> bhashResponse = pipeline.hgetAll(bfoo);
+	pipeline.sync();
+	Map<byte[], byte[]> bhash = bhashResponse.get();
+
+	assertEquals(2, bhash.size());
+	assertArrayEquals(bcar, bhash.get(bbar));
+	assertArrayEquals(bbar, bhash.get(bcar));
+    }
+
+    @Test
     public void hscan() {
 	jedis.hset("foo", "b", "b");
 	jedis.hset("foo", "a", "a");
 
 	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START);
 
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
 	
 	// binary
@@ -346,7 +364,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 	ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", 
 		SCAN_POINTER_START, params);
 
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
+	assertEquals(SCAN_POINTER_START, result.getCursor());
 	assertFalse(result.getResult().isEmpty());
 	
 	// binary

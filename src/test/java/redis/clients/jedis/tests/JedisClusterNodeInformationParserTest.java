@@ -17,7 +17,7 @@ public class JedisClusterNodeInformationParserTest extends Assert {
 
     @Test
     public void testParseNodeMyself() {
-	String nodeInfo = "9b0d2ab38ee31482c95fdb2c7847a0d40e88d518 :0 myself,master - 0 0 1 connected 0-5460";
+	String nodeInfo = "9b0d2ab38ee31482c95fdb2c7847a0d40e88d518 :7379 myself,master - 0 0 1 connected 0-5460";
 	HostAndPort current = new HostAndPort("localhost", 7379);
 	ClusterNodeInformation clusterNodeInfo = parser
 		.parse(nodeInfo, current);
@@ -44,7 +44,7 @@ public class JedisClusterNodeInformationParserTest extends Assert {
 
     @Test
     public void testParseSlotBeingMigrated() {
-	String nodeInfo = "5f4a2236d00008fba7ac0dd24b95762b446767bd :0 myself,master - 0 0 1 connected 0-5459 [5460->-5f4a2236d00008fba7ac0dd24b95762b446767bd] [5461-<-5f4a2236d00008fba7ac0dd24b95762b446767bd]";
+	String nodeInfo = "5f4a2236d00008fba7ac0dd24b95762b446767bd :7379 myself,master - 0 0 1 connected 0-5459 [5460->-5f4a2236d00008fba7ac0dd24b95762b446767bd] [5461-<-5f4a2236d00008fba7ac0dd24b95762b446767bd]";
 	HostAndPort current = new HostAndPort("localhost", 7379);
 	ClusterNodeInformation clusterNodeInfo = parser
 		.parse(nodeInfo, current);

@@ -7,6 +7,7 @@ import redis.clients.util.SafeEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import static redis.clients.jedis.Protocol.Command.*;
@@ -827,6 +828,25 @@ public class BinaryClient extends Connection {
 	args.addAll(params.getParams());
 	sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
     }
+    
+    public void zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	sendCommand(ZLEXCOUNT, key, min, max);
+    }
+
+    public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	sendCommand(ZRANGEBYLEX, key, min, max);
+    }
+
+    public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    final int offset, final int count) {
+	sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.raw, 
+		toByteArray(offset), toByteArray(count));
+    }
+
+    public void zremrangeByLex(byte[] key, byte[] min, byte[] max) {
+	sendCommand(ZREMRANGEBYLEX, key, min, max);
+    }
+
 
     public void save() {
 	sendCommand(SAVE);
@@ -963,9 +983,6 @@ public class BinaryClient extends Connection {
     }
 
     public void resetState() {
-	if (isInMulti())
-	    discard();
-
 	if (isInWatch())
 	    unwatch();
     }
@@ -1099,11 +1116,6 @@ public class BinaryClient extends Connection {
 	sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
     }
 
-    @Deprecated
-    public void pexpire(final byte[] key, final int milliseconds) {
-	pexpire(key, (long) milliseconds);
-    }
-
     public void pexpire(final byte[] key, final long milliseconds) {
 	sendCommand(PEXPIRE, key, toByteArray(milliseconds));
     }
@@ -1165,61 +1177,6 @@ public class BinaryClient extends Connection {
 	sendCommand(HINCRBYFLOAT, key, field, toByteArray(increment));
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531
-     */
-    public void scan(int cursor, final ScanParams params) {
-	final List<byte[]> args = new ArrayList<byte[]>();
-	args.add(toByteArray(cursor));
-	args.addAll(params.getParams());
-	sendCommand(SCAN, args.toArray(new byte[args.size()][]));
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void hscan(final byte[] key, int cursor, final ScanParams params) {
-	final List<byte[]> args = new ArrayList<byte[]>();
-	args.add(key);
-	args.add(toByteArray(cursor));
-	args.addAll(params.getParams());
-	sendCommand(HSCAN, args.toArray(new byte[args.size()][]));
-    }
-    
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void sscan(final byte[] key, int cursor, final ScanParams params) {
-	final List<byte[]> args = new ArrayList<byte[]>();
-	args.add(key);
-	args.add(toByteArray(cursor));
-	args.addAll(params.getParams());
-	sendCommand(SSCAN, args.toArray(new byte[args.size()][]));
-    }
-    
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void zscan(final byte[] key, int cursor, final ScanParams params) {
-	final List<byte[]> args = new ArrayList<byte[]>();
-	args.add(key);
-	args.add(toByteArray(cursor));
-	args.addAll(params.getParams());
-	sendCommand(ZSCAN, args.toArray(new byte[args.size()][]));
-    }
-    
     public void scan(final byte[] cursor, final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(cursor);

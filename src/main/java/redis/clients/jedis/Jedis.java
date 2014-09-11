@@ -35,6 +35,10 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	super(uri);
     }
 
+    public Jedis(final URI uri, final int timeout) {
+	super(uri, timeout);
+    }
+
     /**
      * Set the string value as value of the key. The string can't be longer than
      * 1073741824 bytes (1 GB).
@@ -547,26 +551,27 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     /**
      * INCRBYFLOAT
      * <p>
-     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * INCRBYFLOAT commands are limited to double precision floating point
+     * values.
      * <p>
      * Note: this is actually a string operation, that is, in Redis there are
      * not "double" types. Simply the string stored at the key is parsed as a
      * base double precision floating point value, incremented, and then
-     * converted back as a string.  There is no DECRYBYFLOAT but providing a
+     * converted back as a string. There is no DECRYBYFLOAT but providing a
      * negative value will work as expected.
      * <p>
      * Time complexity: O(1)
-     *
+     * 
      * @param key
      * @param value
      * @return Double reply, this commands will reply with the new value of key
      *         after the increment.
      */
     public Double incrByFloat(final String key, final double value) {
-        checkIsInMulti();
-        client.incrByFloat(key, value);
-        String dval = client.getBulkReply();
-        return (dval != null ? new Double(dval) : null);
+	checkIsInMulti();
+	client.incrByFloat(key, value);
+	String dval = client.getBulkReply();
+	return (dval != null ? new Double(dval) : null);
     }
 
     /**
@@ -763,28 +768,29 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     /**
      * Increment the number stored at field in the hash at key by a double
-     * precision floating point value. If key does not exist,
-     * a new key holding a hash is created. If field does not
-     * exist or holds a string, the value is set to 0 before applying the
-     * operation. Since the value argument is signed you can use this command to
-     * perform both increments and decrements.
+     * precision floating point value. If key does not exist, a new key holding
+     * a hash is created. If field does not exist or holds a string, the value
+     * is set to 0 before applying the operation. Since the value argument is
+     * signed you can use this command to perform both increments and
+     * decrements.
      * <p>
-     * The range of values supported by HINCRBYFLOAT is limited to
-     * double precision floating point values.
+     * The range of values supported by HINCRBYFLOAT is limited to double
+     * precision floating point values.
      * <p>
      * <b>Time complexity:</b> O(1)
-     *
+     * 
      * @param key
      * @param field
      * @param value
-     * @return Double precision floating point reply The new value at field after the increment
-     *         operation.
+     * @return Double precision floating point reply The new value at field
+     *         after the increment operation.
      */
-    public Double hincrByFloat(final String key, final String field, final double value) {
-        checkIsInMulti();
-        client.hincrByFloat(key, field, value);
-        final String dval = client.getBulkReply();
-        return (dval != null ? new Double(dval) : null);
+    public Double hincrByFloat(final String key, final String field,
+	    final double value) {
+	checkIsInMulti();
+	client.hincrByFloat(key, field, value);
+	final String dval = client.getBulkReply();
+	return (dval != null ? new Double(dval) : null);
     }
 
     /**
@@ -1116,8 +1122,8 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     /**
      * Atomically return and remove the first (LPOP) or last (RPOP) element of
-     * the list. For example if the list contains the elements "a","b","c" LPOP
-     * will return "a" and the list will become "b","c".
+     * the list. For example if the list contains the elements "a","b","c" RPOP
+     * will return "c" and the list will become "a","b".
      * <p>
      * If the key does not exist or the list is already empty the special value
      * 'nil' is returned.
@@ -2609,6 +2615,35 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.zinterstore(dstkey, params, sets);
 	return client.getIntegerReply();
     }
+    
+    @Override
+    public Long zlexcount(final String key, final String min, final String max) {
+	checkIsInMulti();
+	client.zlexcount(key, min, max);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max, offset, count);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    @Override
+    public Long zremrangeByLex(final String key, final String min, final String max) {
+	checkIsInMulti();
+	client.zremrangeByLex(key, min, max);
+	return client.getIntegerReply();
+    }
 
     public Long strlen(final String key) {
 	client.strlen(key);
@@ -2707,12 +2742,13 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.getrange(key, startOffset, endOffset);
 	return client.getBulkReply();
     }
-    
+
     public Long bitpos(final String key, final boolean value) {
 	return bitpos(key, value, new BitPosParams());
     }
-    
-    public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+
+    public Long bitpos(final String key, final boolean value,
+	    final BitPosParams params) {
 	client.bitpos(key, value, params);
 	return client.getIntegerReply();
     }
@@ -3117,11 +3153,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	return client.getStatusCodeReply();
     }
 
-    @Deprecated
-    public Long pexpire(final String key, final int milliseconds) {
-	return pexpire(key, (long) milliseconds);
-    }
-
     public Long pexpire(final String key, final long milliseconds) {
 	checkIsInMulti();
 	client.pexpire(key, milliseconds);
@@ -3139,7 +3170,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.pttl(key);
 	return client.getIntegerReply();
     }
-
 
     public String psetex(final String key, final int milliseconds,
 	    final String value) {
@@ -3178,131 +3208,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	checkIsInMulti();
 	client.migrate(host, port, key, destinationDb, timeout);
 	return client.getStatusCodeReply();
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> scan(int cursor) {
-	return scan(cursor, new ScanParams());
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> scan(int cursor, final ScanParams params) {
-	checkIsInMulti();
-	client.scan(cursor, params);
-	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
-	List<String> results = new ArrayList<String>();
-	List<byte[]> rawResults = (List<byte[]>) result.get(1);
-	for (byte[] bs : rawResults) {
-	    results.add(SafeEncoder.encode(bs));
-	}
-	return new ScanResult<String>(newcursor, results);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Map.Entry<String, String>> hscan(final String key,
-	    int cursor) {
-	return hscan(key, cursor, new ScanParams());
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Map.Entry<String, String>> hscan(final String key,
-	    int cursor, final ScanParams params) {
-	checkIsInMulti();
-	client.hscan(key, cursor, params);
-	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
-	List<Map.Entry<String, String>> results = new ArrayList<Map.Entry<String, String>>();
-	List<byte[]> rawResults = (List<byte[]>) result.get(1);
-	Iterator<byte[]> iterator = rawResults.iterator();
-	while (iterator.hasNext()) {
-	    results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder
-		    .encode(iterator.next()), SafeEncoder.encode(iterator
-		    .next())));
-	}
-	return new ScanResult<Map.Entry<String, String>>(newcursor, results);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> sscan(final String key, int cursor) {
-	return sscan(key, cursor, new ScanParams());
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> sscan(final String key, int cursor,
-	    final ScanParams params) {
-	checkIsInMulti();
-	client.sscan(key, cursor, params);
-	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
-	List<String> results = new ArrayList<String>();
-	List<byte[]> rawResults = (List<byte[]>) result.get(1);
-	for (byte[] bs : rawResults) {
-	    results.add(SafeEncoder.encode(bs));
-	}
-	return new ScanResult<String>(newcursor, results);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Tuple> zscan(final String key, int cursor) {
-	return zscan(key, cursor, new ScanParams());
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Tuple> zscan(final String key, int cursor,
-	    final ScanParams params) {
-	checkIsInMulti();
-	client.zscan(key, cursor, params);
-	List<Object> result = client.getObjectMultiBulkReply();
-	int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
-	List<Tuple> results = new ArrayList<Tuple>();
-	List<byte[]> rawResults = (List<byte[]>) result.get(1);
-	Iterator<byte[]> iterator = rawResults.iterator();
-	while (iterator.hasNext()) {
-	    results.add(new Tuple(SafeEncoder.encode(iterator.next()), Double
-		    .valueOf(SafeEncoder.encode(iterator.next()))));
-	}
-	return new ScanResult<Tuple>(newcursor, results);
     }
 
     public ScanResult<String> scan(final String cursor) {
@@ -3435,59 +3340,66 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterSetSlotImporting(slot, nodeId);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterSetSlotStable(final int slot) {
 	checkIsInMulti();
 	client.clusterSetSlotStable(slot);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterForget(final String nodeId) {
 	checkIsInMulti();
 	client.clusterForget(nodeId);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterFlushSlots() {
 	checkIsInMulti();
 	client.clusterFlushSlots();
 	return client.getStatusCodeReply();
     }
-    
+
     public Long clusterKeySlot(final String key) {
 	checkIsInMulti();
 	client.clusterKeySlot(key);
 	return client.getIntegerReply();
     }
-    
+
     public Long clusterCountKeysInSlot(final int slot) {
 	checkIsInMulti();
 	client.clusterCountKeysInSlot(slot);
 	return client.getIntegerReply();
     }
-    
+
     public String clusterSaveConfig() {
 	checkIsInMulti();
 	client.clusterSaveConfig();
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterReplicate(final String nodeId) {
 	checkIsInMulti();
 	client.clusterReplicate(nodeId);
 	return client.getStatusCodeReply();
     }
-    
+
     public List<String> clusterSlaves(final String nodeId) {
 	checkIsInMulti();
 	client.clusterSlaves(nodeId);
 	return client.getMultiBulkReply();
     }
-    
+
     public String clusterFailover() {
 	checkIsInMulti();
 	client.clusterFailover();
 	return client.getStatusCodeReply();
+    }
+    
+    @Override
+    public List<Object> clusterSlots() {
+	checkIsInMulti();
+	client.clusterSlots();
+	return client.getObjectMultiBulkReply();
     }
 
     public String asking() {
@@ -3511,7 +3423,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public Map<String, String> pubsubNumSub(String... channels) {
 	checkIsInMulti();
 	client.pubsubNumSub(channels);
-	return BuilderFactory.STRING_MAP
+	return BuilderFactory.PUBSUB_NUMSUB_MAP
 		.build(client.getBinaryMultiBulkReply());
     }
 
@@ -3529,7 +3441,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     public void setDataSource(Pool<Jedis> jedisPool) {
-        this.dataSource = jedisPool;
+	this.dataSource = jedisPool;
     }
 
     public Long pfadd(final String key, final String... elements) {
@@ -3546,7 +3458,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     @Override
     public long pfcount(String... keys) {
-        checkIsInMulti();
+	checkIsInMulti();
 	client.pfcount(keys);
 	return client.getIntegerReply();
     }
@@ -3556,4 +3468,31 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.pfmerge(destkey, sourcekeys);
 	return client.getStatusCodeReply();
     }
+
+    @Override
+    public List<String> blpop(int timeout, String key) {
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.add(String.valueOf(timeout));
+	client.blpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
+    }
+
+    @Override
+    public List<String> brpop(int timeout, String key) {
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.add(String.valueOf(timeout));
+	client.brpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
+    }  
+
 }

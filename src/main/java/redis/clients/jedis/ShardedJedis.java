@@ -125,12 +125,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(arg);
 	return j.blpop(arg);
     }
-
+    public List<String> blpop(int timeout,String key){
+	Jedis j = getShard(key);
+	return j.blpop(timeout,key);
+    }
     public List<String> brpop(String arg) {
 	Jedis j = getShard(arg);
 	return j.brpop(arg);
     }
-
+    public List<String> brpop(int timeout,String key) {
+	Jedis j = getShard(key);
+	return j.brpop(timeout,key);
+    }
     public Long decrBy(String key, long integer) {
 	Jedis j = getShard(key);
 	return j.decrBy(key, integer);
@@ -346,6 +352,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	return j.srandmember(key);
     }
 
+    @Override
+    public List<String> srandmember(String key, int count) {
+    Jedis j = getShard(key);
+    return j.srandmember(key, count);
+    }
+
     public Long zadd(String key, double score, String member) {
 	Jedis j = getShard(key);
 	return j.zadd(key, score, member);
@@ -530,6 +542,27 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(key);
 	return j.zremrangeByScore(key, start, end);
     }
+    
+    @Override
+    public Long zlexcount(final String key, final String min, final String max) {
+	return getShard(key).zlexcount(key, min, max);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+	return getShard(key).zrangeByLex(key, min, max);
+    }
+
+    @Override
+    public Set<String> zrangeByLex(final String key, final String min, final String max,
+	    final int offset, final int count) {
+	return getShard(key).zrangeByLex(key, min, max, offset, count);
+    }
+
+    @Override
+    public Long zremrangeByLex(final String key, final String min, final String max) {
+	return getShard(key).zremrangeByLex(key, min, max);
+    }
 
     public Long linsert(String key, LIST_POSITION where, String pivot,
 	    String value) {
@@ -547,41 +580,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	return j.bitcount(key, start, end);
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Entry<String, String>> hscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.hscan(key, cursor);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<String> sscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.sscan(key, cursor);
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public ScanResult<Tuple> zscan(String key, int cursor) {
-	Jedis j = getShard(key);
-	return j.zscan(key, cursor);
-    }
-
-    public ScanResult<Entry<String, String>> hscan(String key,
-	    final String cursor) {
+    public ScanResult<Entry<String, String>> hscan(String key, final String cursor) {
 	Jedis j = getShard(key);
 	return j.hscan(key, cursor);
     }
@@ -639,4 +638,5 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(key);
 	return j.pfcount(key);
     }
+    
 }

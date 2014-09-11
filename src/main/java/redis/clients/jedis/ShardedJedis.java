@@ -125,12 +125,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(arg);
 	return j.blpop(arg);
     }
-
+    public List<String> blpop(int timeout,String key){
+	Jedis j = getShard(key);
+	return j.blpop(timeout,key);
+    }
     public List<String> brpop(String arg) {
 	Jedis j = getShard(arg);
 	return j.brpop(arg);
     }
-
+    public List<String> brpop(int timeout,String key) {
+	Jedis j = getShard(key);
+	return j.brpop(timeout,key);
+    }
     public Long decrBy(String key, long integer) {
 	Jedis j = getShard(key);
 	return j.decrBy(key, integer);

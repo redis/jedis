@@ -1,11 +1,10 @@
 package redis.clients.jedis.tests.commands;
 
+import org.junit.Test;
+import redis.clients.jedis.exceptions.JedisDataException;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.junit.Test;
-
-import redis.clients.jedis.exceptions.JedisDataException;
 
 public class StringValuesCommandsTest extends JedisCommandTestBase {
     @Test
@@ -51,6 +50,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 	expected.add("bar");
 	expected.add("foo");
 	values = jedis.mget("foo", "bar");
+
+	assertEquals(expected, values);
+
+	List<String> keys = new ArrayList<String>();
+	keys.add("foo");
+	keys.add("bar");
+	values = jedis.mget(keys);
 
 	assertEquals(expected, values);
     }

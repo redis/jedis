@@ -11,6 +11,7 @@ import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 
 public abstract class JedisClusterConnectionHandler {
     protected final JedisClusterInfoCache cache;
+    private ThreadLocal<Random> random = new ThreadLocal<Random>();
 
     abstract Jedis getConnection();
 
@@ -27,7 +28,8 @@ public abstract class JedisClusterConnectionHandler {
     abstract Jedis getConnectionFromSlot(int slot);
 
     public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig) {
-    this.cache = new JedisClusterInfoCache(poolConfig);
+	this.cache = new JedisClusterInfoCache(poolConfig);
+	this.random.set(new Random());
 	initializeSlotsCache(nodes, poolConfig);
     }
 
@@ -80,7 +82,7 @@ public abstract class JedisClusterConnectionHandler {
 
     protected JedisPool getRandomConnection() {
 	Object[] nodeArray = cache.getNodes().values().toArray();
-	return (JedisPool) (nodeArray[new Random().nextInt(nodeArray.length)]);
+	return (JedisPool) (nodeArray[this.random.get().nextInt(nodeArray.length)]);
     }
 
 }

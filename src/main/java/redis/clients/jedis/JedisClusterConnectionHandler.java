@@ -1,17 +1,17 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 
 public abstract class JedisClusterConnectionHandler {
-    protected JedisClusterInfoCache cache;
+    protected final JedisClusterInfoCache cache;
+    private ThreadLocal<Random> random = new ThreadLocal<Random>();
 
     abstract Jedis getConnection();
 
@@ -28,7 +28,8 @@ public abstract class JedisClusterConnectionHandler {
     abstract Jedis getConnectionFromSlot(int slot);
 
     public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig) {
-	cache = new JedisClusterInfoCache(poolConfig);
+	this.cache = new JedisClusterInfoCache(poolConfig);
+	this.random.set(new Random());
 	initializeSlotsCache(nodes, poolConfig);
     }
 
@@ -81,7 +82,7 @@ public abstract class JedisClusterConnectionHandler {
 
     protected JedisPool getRandomConnection() {
 	Object[] nodeArray = cache.getNodes().values().toArray();
-	return (JedisPool) (nodeArray[new Random().nextInt(nodeArray.length)]);
+	return (JedisPool) (nodeArray[this.random.get().nextInt(nodeArray.length)]);
     }
 
 }

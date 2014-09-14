@@ -16,9 +16,15 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterException;
+import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
-import redis.clients.jedis.exceptions.*;
 import redis.clients.util.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
@@ -80,48 +86,19 @@ public class JedisClusterTest extends Assert {
     
     @AfterClass
     public static void cleanUp() {
-	int slotTest = JedisClusterCRC16.getSlot("test");
-	int slot51 = JedisClusterCRC16.getSlot("51");
-	
-	String node1Id = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
-	String node2Id = JedisClusterTestUtil.getNodeId(node2.clusterNodes());
-	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
-	node2.clusterSetSlotNode(slotTest, node3Id);
-	node2.clusterSetSlotNode(slot51, node3Id);
-	node2.clusterDelSlots(slotTest, slot51);
-	
-	// forget about all nodes
-	node1.clusterForget(node2Id);
-	node1.clusterForget(node3Id);
-	node2.clusterForget(node1Id);
-	node2.clusterForget(node3Id);
-	node3.clusterForget(node1Id);
-	node3.clusterForget(node2Id);
+	node1.flushDB();
+	node2.flushDB();
+	node3.flushDB();
+	node4.flushDB();
+	node1.clusterReset(Reset.SOFT);
+	node2.clusterReset(Reset.SOFT);
+	node3.clusterReset(Reset.SOFT);
+	node4.clusterReset(Reset.SOFT);
     }
 
     @After
     public void tearDown() throws InterruptedException {
-	// clear all slots
-	int[] slotsToDelete = new int[JedisCluster.HASHSLOTS];
-	for (int i = 0; i < JedisCluster.HASHSLOTS; i++) {
-	    slotsToDelete[i] = i;
-	}
-	
-	node1.clusterDelSlots(slotsToDelete);
-	node2.clusterDelSlots(slotsToDelete);
-	node3.clusterDelSlots(slotsToDelete);
-	
-	clearAnyInconsistentMigration(node1);
-	clearAnyInconsistentMigration(node2);
-	clearAnyInconsistentMigration(node3);
-    }
-
-    private void clearAnyInconsistentMigration(Jedis node) {
-	// FIXME: it's too slow... apply pipeline if possible
-	List<Integer> slots = getInconsistentSlots(node.clusterNodes());
-	for (Integer slot : slots) {
-	    node.clusterSetSlotStable(slot);
-	}
+	cleanUp();
     }
 
     @Test(expected = JedisMovedDataException.class)
@@ -319,7 +296,18 @@ public class JedisClusterTest extends Assert {
 	node2.clusterSetSlotStable(slot51);
 	assertEquals("foo", jc.get("51"));
     }
-    
+
+    @Test(expected = JedisConnectionException.class)
+    public void testIfPoolConfigAppliesToClusterPools() {
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+        config.setMaxTotal(0);
+        config.setMaxWaitMillis(2000);
+        Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+        jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+        JedisCluster jc = new JedisCluster(jedisClusterNode, config);
+        jc.set("52", "poolTestValue");
+    }
+
     @Test
     public void testCloseable() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -369,46 +357,6 @@ public class JedisClusterTest extends Assert {
 		}
 	    }
 	}
-	return null;
-    }
-    
-    private List<Integer> getInconsistentSlots(String infoOuput) {
-	for (String infoLine : infoOuput.split("\n")) {
-	    if (infoLine.contains("myself")) {
-		return getSlotsBeingMigrated(infoLine);
-	    }
-	}
-	
-	return null;
-    }
-
-    private List<Integer> getSlotsBeingMigrated(String infoLine) {
-	List<Integer> inconsistentSlots = new ArrayList<Integer>();
-	
-	String[] splitted = infoLine.split(" ");
-	
-	if (splitted.length > 8) {
-	    for (int index = 8 ; index < splitted.length ; index++) {
-		String info = splitted[index];
-		Integer slot = getSlotFromMigrationInfo(info);
-		if (slot != null) {
-		    inconsistentSlots.add(slot);
-		}
-	    }
-	}
-	
-	return inconsistentSlots;
-    }
-    
-    private Integer getSlotFromMigrationInfo(String info) {
-	if (info.startsWith("[")) {
-	    if (info.contains("-<-")) {
-		return Integer.parseInt(info.split("-<-")[0].substring(1));
-	    } else if (info.contains("->-")) {
-		return Integer.parseInt(info.split("->-")[0].substring(1));
-	    }
-	}
-	
 	return null;
     }
     

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -944,6 +945,10 @@ public class Client extends BinaryClient implements Commands {
 
     public void clusterMeet(final String ip, final int port) {
 	cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
+    }
+
+    public void clusterReset(Reset resetType) {
+	cluster(Protocol.CLUSTER_RESET, resetType.toString());
     }
 
     public void clusterAddSlots(final int... slots) {

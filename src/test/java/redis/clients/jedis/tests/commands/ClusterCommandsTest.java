@@ -9,9 +9,10 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
+import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 
 public class ClusterCommandsTest extends JedisTestBase {
     private static Jedis node1;
@@ -42,16 +43,8 @@ public class ClusterCommandsTest extends JedisTestBase {
     public static void removeSlots() throws InterruptedException {
 	String[] nodes = node1.clusterNodes().split("\n");
 	String node1Id = nodes[0].split(" ")[0];
-	node1.clusterDelSlots(1, 2, 3, 4, 5, 500);
-	node1.clusterSetSlotNode(5000, node1Id);
-	node1.clusterDelSlots(5000, 10000);
-	node1.clusterDelSlots(3000, 3001, 3002);
-	node2.clusterDelSlots(4000, 4001, 4002);
-	node1.clusterAddSlots(6000);
-	node1.clusterDelSlots(6000);
-	waitForGossip();
-	node2.clusterDelSlots(6000);
-	node1.clusterDelSlots(6000);
+	node1.clusterReset(Reset.SOFT);
+	node2.clusterReset(Reset.SOFT);
     }
 
     private static void waitForGossip() {
@@ -63,14 +56,20 @@ public class ClusterCommandsTest extends JedisTestBase {
 	}
     }
 
-    private static int getClusterAttribute(String clusterInfo,
-	    String attributeName) {
-	for (String infoElement : clusterInfo.split("\n")) {
-	    if (infoElement.contains(attributeName)) {
-		return Integer.valueOf(infoElement.split(":")[1].trim());
-	    }
-	}
-	return 0;
+    @Test
+    public void testClusterSoftReset() {
+        node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+        assertEquals(2, node1.clusterNodes().split("\n").length);
+        node1.clusterReset(Reset.SOFT);
+        assertEquals(1, node1.clusterNodes().split("\n").length);
+    }
+    
+    @Test
+    public void testClusterHardReset() {
+	String nodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
+	node1.clusterReset(Reset.HARD);
+	String newNodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
+	assertNotEquals(nodeId, newNodeId);
     }
     
     @Test

@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import java.util.List;
 
+import redis.clients.jedis.JedisCluster.Reset;
+
 public interface ClusterCommands {
     String clusterNodes();
 
@@ -40,4 +42,6 @@ public interface ClusterCommands {
     String clusterFailover();
     
     List<Object> clusterSlots();
+    
+    String clusterReset(Reset resetType);
 }

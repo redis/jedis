@@ -41,19 +41,8 @@ public class ClusterCommandsTest extends JedisTestBase {
 
     @AfterClass
     public static void removeSlots() throws InterruptedException {
-	String[] nodes = node1.clusterNodes().split("\n");
-	String node1Id = nodes[0].split(" ")[0];
 	node1.clusterReset(Reset.SOFT);
 	node2.clusterReset(Reset.SOFT);
-    }
-
-    private static void waitForGossip() {
-	boolean notReady = true;
-	while (notReady) {
-	    if (node1.clusterNodes().contains("6000")) {
-		notReady = false;
-	    }
-	}
     }
 
     @Test

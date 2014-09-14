@@ -41,25 +41,14 @@ public class ClusterCommandsTest extends JedisTestBase {
 
     @AfterClass
     public static void removeSlots() throws InterruptedException {
-	String[] nodes = node1.clusterNodes().split("\n");
-	String node1Id = nodes[0].split(" ")[0];
 	node1.clusterReset(Reset.SOFT);
 	node2.clusterReset(Reset.SOFT);
-    }
-
-    private static void waitForGossip() {
-	boolean notReady = true;
-	while (notReady) {
-	    if (node1.clusterNodes().contains("6000")) {
-		notReady = false;
-	    }
-	}
     }
 
     @Test
     public void testClusterSoftReset() {
         node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-        assertEquals(2, node1.clusterNodes().split("\n").length);
+        assertTrue(node1.clusterNodes().split("\n").length > 1);
         node1.clusterReset(Reset.SOFT);
         assertEquals(1, node1.clusterNodes().split("\n").length);
     }

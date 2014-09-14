@@ -31,7 +31,6 @@ public class HostAndPortUtil {
 	clusterHostAndPortList.add(new HostAndPort("localhost", 7382));
 	clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
 	clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
-	clusterHostAndPortList.add(new HostAndPort("localhost", 7385));
 
 	String envRedisHosts = System.getProperty("redis-hosts");
 	String envSentinelHosts = System.getProperty("sentinel-hosts");

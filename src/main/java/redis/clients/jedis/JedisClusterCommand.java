@@ -13,7 +13,7 @@ public abstract class JedisClusterCommand<T> {
     private JedisClusterConnectionHandler connectionHandler;
     private int commandTimeout;
     private int redirections;
-	private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>;
+    private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>;
 
     public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler,
 	    int timeout, int maxRedirections) {

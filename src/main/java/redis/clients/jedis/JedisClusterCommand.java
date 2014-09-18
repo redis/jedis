@@ -13,6 +13,7 @@ public abstract class JedisClusterCommand<T> {
     private JedisClusterConnectionHandler connectionHandler;
     private int commandTimeout;
     private int redirections;
+	private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>;
 
     public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler,
 	    int timeout, int maxRedirections) {
@@ -41,21 +42,24 @@ public abstract class JedisClusterCommand<T> {
 
 	Jedis connection = null;
 	try {
-	    if (tryRandomNode) {
-		connection = connectionHandler.getConnection();
-	    } else {
-		connection = connectionHandler
-			.getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
-	    }
+	    
 
 	    if (asking) {
 		// TODO: Pipeline asking with the original command to make it
 		// faster....
+		connection = askConnection.get();
 		connection.asking();
 
 		// if asking success, reset asking flag
 		asking = false;
-	    }
+	    }else{
+		    if (tryRandomNode) {
+		         connection = connectionHandler.getConnection();
+	        } else {
+		         connection = connectionHandler
+			     .getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
+	        }
+		}
 
 	    return execute(connection);
 	} catch (JedisConnectionException jce) {
@@ -72,8 +76,7 @@ public abstract class JedisClusterCommand<T> {
 	} catch (JedisRedirectionException jre) {
 	    if (jre instanceof JedisAskDataException) {
 		asking = true;
-		this.connectionHandler.assignSlotToNode(jre.getSlot(),
-			jre.getTargetNode());
+		askConnection.set(this.connectionHandler.getConnectonFromNode(jre.getTargetNode()));
 	    } else if (jre instanceof JedisMovedDataException) {
 		// it rebuilds cluster's slot cache
 		// recommended by Redis cluster specification

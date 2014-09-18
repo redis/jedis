@@ -26,6 +26,11 @@ public abstract class JedisClusterConnectionHandler {
     }
 
     abstract Jedis getConnectionFromSlot(int slot);
+	
+	public Jedis getConnectionFromNode(HostAndPort node) {
+	   cache.setNodeIfNotExist(node);
+	   return cache.getNode(JedisClusterInfoCache.getNodeKey(node)).getResource();
+	}
 
     public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig) {
 	this.cache = new JedisClusterInfoCache(poolConfig);

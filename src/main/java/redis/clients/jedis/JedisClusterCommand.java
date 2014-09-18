@@ -53,13 +53,13 @@ public abstract class JedisClusterCommand<T> {
 		// if asking success, reset asking flag
 		asking = false;
 	    }else{
-		    if (tryRandomNode) {
-		         connection = connectionHandler.getConnection();
+		if (tryRandomNode) {
+		    connection = connectionHandler.getConnection();
 	        } else {
-		         connection = connectionHandler
+		    connection = connectionHandler
 			     .getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
 	        }
-		}
+	    }
 
 	    return execute(connection);
 	} catch (JedisConnectionException jce) {

@@ -28,7 +28,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
      * @deprecated CDI eyes only
      */
     public Jedis() {
-	super((String)null);
+	super("localhost");
     }
     
     public Jedis(final String host) {

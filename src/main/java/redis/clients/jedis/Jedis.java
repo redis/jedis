@@ -23,6 +23,14 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     protected Pool<Jedis> dataSource = null;
 
+    /**
+     * CDI eyes only
+     * @deprecated CDI eyes only
+     */
+    public Jedis() {
+	super((String)null);
+    }
+    
     public Jedis(final String host) {
 	super(host);
     }

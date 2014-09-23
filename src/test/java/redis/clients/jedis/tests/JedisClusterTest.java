@@ -22,7 +22,6 @@ import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
 
@@ -31,6 +30,7 @@ public class JedisClusterTest extends Assert {
     private static Jedis node2;
     private static Jedis node3;
     private static Jedis node4;
+    private  String localHost = "127.0.0.1";
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -58,8 +58,8 @@ public class JedisClusterTest extends Assert {
 	// ---- configure cluster
 
 	// add nodes to cluster
-	node2.clusterMeet(nodeInfo1.getHost(), nodeInfo1.getPort());
-	node3.clusterMeet(nodeInfo1.getHost(), nodeInfo1.getPort());
+	node2.clusterMeet(localHost, nodeInfo1.getPort());
+	node3.clusterMeet(localHost, nodeInfo1.getPort());
 	// split available slots across the three nodes
 	int slotsPerNode = JedisCluster.HASHSLOTS / 3;
 	int[] node1Slots = new int[slotsPerNode];
@@ -161,14 +161,14 @@ public class JedisClusterTest extends Assert {
 	    node2.set("e", "e");
 	}catch(JedisMovedDataException jme){
             assertEquals(15363, jme.getSlot());
-            assertEquals(nodeInfo3, jme.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
 	}
 	
 	try{
 	    node3.set("e", "e");
 	}catch(JedisAskDataException jae){
             assertEquals(15363, jae.getSlot());
-            assertEquals(nodeInfo2, jae.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo2.getPort()), jae.getTargetNode());
 	}
 	
 	jc.set("e", "e");
@@ -177,13 +177,13 @@ public class JedisClusterTest extends Assert {
 	    node2.get("e");
 	}catch(JedisMovedDataException jme){
             assertEquals(15363, jme.getSlot());
-            assertEquals(nodeInfo3, jme.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
 	}
 	try{
 	    node3.get("e");
 	}catch(JedisAskDataException jae){
             assertEquals(15363, jae.getSlot());
-            assertEquals(nodeInfo2, jae.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo2.getPort()), jae.getTargetNode());
 	}
 	
 	assertEquals("e", jc.get("e"));
@@ -204,7 +204,7 @@ public class JedisClusterTest extends Assert {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(nodeInfo1);
 	JedisCluster jc = new JedisCluster(jedisClusterNode);
-	node4.clusterMeet(nodeInfo1.getHost(), nodeInfo1.getPort());
+	node4.clusterMeet(localHost, nodeInfo1.getPort());
 
 	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
         String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
@@ -229,14 +229,14 @@ public class JedisClusterTest extends Assert {
 	    node4.set("e", "e");
 	}catch(JedisMovedDataException jme){
             assertEquals(15363, jme.getSlot());
-            assertEquals(nodeInfo3, jme.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
 	}
 	
 	try{
 	    node3.set("e", "e");
 	}catch(JedisAskDataException jae){
             assertEquals(15363, jae.getSlot());
-            assertEquals(nodeInfo4, jae.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo4.getPort()), jae.getTargetNode());
 	}
 	
          jc.set("e", "e");
@@ -245,13 +245,13 @@ public class JedisClusterTest extends Assert {
 	    node4.get("e");
 	}catch(JedisMovedDataException jme){
             assertEquals(15363, jme.getSlot());
-            assertEquals(nodeInfo3, jme.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
 	}
 	try{
 	    node3.get("e");
 	}catch(JedisAskDataException jae){
             assertEquals(15363, jae.getSlot());
-            assertEquals(nodeInfo4, jae.getTargetNode());
+            assertEquals(new HostAndPort(localHost, nodeInfo4.getPort()), jae.getTargetNode());
 	}
 	
 	assertEquals("e", jc.get("e"));

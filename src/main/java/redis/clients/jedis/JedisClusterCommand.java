@@ -76,7 +76,7 @@ public abstract class JedisClusterCommand<T> {
 	} catch (JedisRedirectionException jre) {
 	    if (jre instanceof JedisAskDataException) {
 		asking = true;
-		askConnection.set(this.connectionHandler.getConnectonFromNode(jre.getTargetNode()));
+		askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
 	    } else if (jre instanceof JedisMovedDataException) {
 		// it rebuilds cluster's slot cache
 		// recommended by Redis cluster specification

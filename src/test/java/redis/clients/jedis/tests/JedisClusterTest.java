@@ -225,8 +225,8 @@ public class JedisClusterTest extends Assert {
         String node3IdFromNode4 = null;
         //wait for renaming node'name 
 	do{
-	    node4IdFromNode3 = JedisClusterTestUtil.getNodeId(node3.clusterNodes(), nodeInfo4);
-	    node3IdFromNode4 = JedisClusterTestUtil.getNodeId(node4.clusterNodes(), nodeInfo3);
+	    node4IdFromNode3 = JedisClusterTestUtil.getNodeId(node3.clusterNodes(), new HostAndPort(localHost,nodeInfo4.getPort()));
+	    node3IdFromNode4 = JedisClusterTestUtil.getNodeId(node4.clusterNodes(), new HostAndPort(localHost,nodeInfo3.getPort()));
 	    if(node4Id.equals(node4IdFromNode3) && node3Id.equals(node3IdFromNode4)){
 		break;
 	    }else{

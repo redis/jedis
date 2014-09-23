@@ -1,9 +1,18 @@
 package redis.clients.jedis.tests;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
@@ -457,6 +466,33 @@ public class JedisClusterTest extends Assert {
 		// ok to go...
 	    }
 	}
+    }
+    
+    @Test
+    public void testJedisClusterRunsWithMultithreaded() throws InterruptedException, ExecutionException {
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+	final JedisCluster jc = new JedisCluster(jedisClusterNode);
+	jc.set("foo", "bar");
+	
+	ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 100, 0, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10));
+	List<Future<String>> futures = new ArrayList<Future<String>>();
+	for (int i = 0 ; i < 50 ; i++) {
+	    executor.submit(new Callable<String>() {
+		@Override
+		public String call() throws Exception {
+		    // FIXME : invalidate slot cache from JedisCluster to test random connection also does work
+		    return jc.get("foo");
+		}
+	    });
+	}
+
+	for (Future<String> future : futures) {
+	    String value = future.get();
+	    assertEquals("bar", value);
+	}
+	
+	jc.close();
     }
     
     private static String getNodeServingSlotRange(String infoOutput) {

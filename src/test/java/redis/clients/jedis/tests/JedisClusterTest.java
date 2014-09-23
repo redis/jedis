@@ -3,6 +3,7 @@ package redis.clients.jedis.tests;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
@@ -36,6 +37,7 @@ public class JedisClusterTest extends Assert {
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
     private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
+    protected Logger log = Logger.getLogger(getClass().getName());
     
     @Before
     public void setUp() throws InterruptedException {
@@ -150,6 +152,7 @@ public class JedisClusterTest extends Assert {
      */
     @Test
     public  void testMigrate(){
+	log.info("test migrate slot");
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(nodeInfo1);
 	JedisCluster jc = new JedisCluster(jedisClusterNode);
@@ -201,6 +204,7 @@ public class JedisClusterTest extends Assert {
     
     @Test
     public void  testMigrateToNewNode(){
+	log.info("test migrate slot to new node");
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(nodeInfo1);
 	JedisCluster jc = new JedisCluster(jedisClusterNode);
@@ -218,6 +222,7 @@ public class JedisClusterTest extends Assert {
 		break;
 	    }else{
 		try {
+		    log.info("wait for renaming node's name sleep 50ms");
 		    Thread.sleep(50);
 		} catch (InterruptedException e) {
 		}

@@ -1,5 +1,6 @@
 package redis.clients.util;
 
+
 /**
  * CRC16 Implementation according to CCITT standard
  * Polynomial : 1021 (x^16 + x^12 + x^5 + 1)
@@ -29,16 +30,36 @@ public class JedisClusterCRC16 {
 	0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0, };
 
     public static int getSlot(String key) {
-	int s = key.indexOf("{");
-	if (s > -1) {
-	    int e = key.indexOf("}", s+1);
-	    if (e > -1 && e != s+1) {
-		key = key.substring(s+1, e);
-	    }
-	}
-	// optimization with modulo operator with power of 2
-	// equivalent to getCRC16(key) % 16384
-	return getCRC16(key) & (16384 - 1);
+        return getSlot(SafeEncoder.encode(key));
+    }
+
+    public static int getSlot(byte[] key) {
+        final byte leftBrace = '{';
+        final byte rightBrace = '}';
+
+        int begin = 0;
+        int end = key.length;
+
+        int leftPos;
+        for (leftPos = 0; leftPos < key.length && leftBrace != key[leftPos]; ++leftPos) {
+        }
+
+        boolean foundLeftBrace = leftPos < key.length;
+        if (foundLeftBrace) {
+            int rightPos;
+            for (rightPos = leftPos + 1; rightPos < key.length && rightBrace != key[rightPos]; ++rightPos) {
+            }
+
+            boolean foundRightBrace = rightPos < key.length;
+            int innerKeyLength = (rightPos - leftPos) - 1;
+            boolean hasInnerKey = 0 < innerKeyLength;
+            if (foundRightBrace && hasInnerKey) {
+                begin = leftPos + 1;
+                end = rightPos;
+            }
+        }
+
+        return getCRC16(key, begin, end) & (16384 - 1);
     }
 
     /**
@@ -46,20 +67,23 @@ public class JedisClusterCRC16 {
      * implementation is from mp911de/lettuce, modified with some more optimizations
      * 
      * @param bytes
+     * @param begin
+     * @param end
      * @return CRC16 as integer value
      * @see https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331
      */
-    public static int getCRC16(byte[] bytes) {
+    public static int getCRC16(byte[] bytes, int begin, int end) {
 	int crc = 0x0000;
 
-	for (byte b : bytes) {
-	    crc = ((crc << 8) ^ LOOKUP_TABLE[((crc >>> 8) ^ (b & 0xFF)) & 0xFF]);
+	for (int i=begin; i < end; ++i) {
+	    crc = ((crc << 8) ^ LOOKUP_TABLE[((crc >>> 8) ^ (bytes[i] & 0xFF)) & 0xFF]);
 	}
 	return crc & 0xFFFF;
     }
 
     public static int getCRC16(String key) {
-	return getCRC16(key.getBytes());
+        byte[] keyBytes = SafeEncoder.encode(key);
+	return getCRC16(keyBytes, 0, keyBytes.length);
     }
 
 }

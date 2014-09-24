@@ -211,20 +211,8 @@ public class JedisClusterTest extends Assert {
 	
     }
     
-    //@Test
-    /*
-     * sometimes failed.Need more research
-     * the node what newly join to cluster,the link to all other may be broken.
-     * So the cluster is down in his view. in the meantime,all other node think cluster is ok 
-     * reproduce:
-     * config set loglevel debug
-     * and observe redis's log
-     * will see that
-     * 15098:M 23 Sep 12:34:56.613 . I/O error reading from node link: connection closed
-     * 15098:M 23 Sep 12:34:56.619 . I/O error reading from node link: connection closed
-     * 
-     */
-    public void  testMigrateToNewNode(){
+    @Test
+    public void  testMigrateToNewNode() throws InterruptedException{
 	log.info("test migrate slot to new node");
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(nodeInfo1);
@@ -233,22 +221,7 @@ public class JedisClusterTest extends Assert {
 
 	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
         String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
-        String node4IdFromNode3 = null;
-        String node3IdFromNode4 = null;
-        //wait for renaming node'name 
-	do{
-	    node4IdFromNode3 = JedisClusterTestUtil.getNodeId(node3.clusterNodes(), new HostAndPort(localHost,nodeInfo4.getPort()));
-	    node3IdFromNode4 = JedisClusterTestUtil.getNodeId(node4.clusterNodes(), new HostAndPort(localHost,nodeInfo3.getPort()));
-	    if(node4Id.equals(node4IdFromNode3) && node3Id.equals(node3IdFromNode4)){
-		break;
-	    }else{
-		try {
-		    log.info("wait for renaming node's name sleep 50ms");
-		    Thread.sleep(50);
-		} catch (InterruptedException e) {
-		}
-	    }
-	}while(true);
+	 JedisClusterTestUtil.waitForClusterReady(node4);
 	node3.clusterSetSlotMigrating(15363, node4Id);
 	node4.clusterSetSlotImporting(15363, node3Id);
 	try{

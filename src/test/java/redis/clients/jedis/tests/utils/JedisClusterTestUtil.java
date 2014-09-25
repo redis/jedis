@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.utils;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisException;
 
@@ -26,6 +27,16 @@ public class JedisClusterTestUtil {
     public static String getNodeId(String infoOutput) {
 	for (String infoLine : infoOutput.split("\n")) {
 	    if (infoLine.contains("myself")) {
+		return infoLine.split(" ")[0];
+	    }
+	}
+	return "";
+    }
+    
+    public static String getNodeId(String infoOutput,HostAndPort node){
+	
+	for (String infoLine : infoOutput.split("\n")) {
+	    if (infoLine.contains(node.toString())) {
 		return infoLine.split(" ")[0];
 	    }
 	}

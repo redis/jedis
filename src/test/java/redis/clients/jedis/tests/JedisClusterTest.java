@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -39,11 +40,13 @@ public class JedisClusterTest extends Assert {
     private static Jedis node2;
     private static Jedis node3;
     private static Jedis node4;
+    private  String localHost = "127.0.0.1";
 
     private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
     private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
     private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
     private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
+    protected Logger log = Logger.getLogger(getClass().getName());
     
     @Before
     public void setUp() throws InterruptedException {
@@ -66,9 +69,9 @@ public class JedisClusterTest extends Assert {
 	// ---- configure cluster
 
 	// add nodes to cluster
-	node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-	node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
-
+	node1.clusterMeet(localHost, nodeInfo2.getPort());
+	node1.clusterMeet(localHost, nodeInfo3.getPort());
+	
 	// split available slots across the three nodes
 	int slotsPerNode = JedisCluster.HASHSLOTS / 3;
 	int[] node1Slots = new int[slotsPerNode];
@@ -91,7 +94,7 @@ public class JedisClusterTest extends Assert {
 	JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
     }
     
-    @AfterClass
+   @AfterClass
     public static void cleanUp() {
 	node1.flushDB();
 	node2.flushDB();
@@ -103,7 +106,7 @@ public class JedisClusterTest extends Assert {
 	node4.clusterReset(Reset.SOFT);
     }
 
-    @After
+   @After
     public void tearDown() throws InterruptedException {
 	cleanUp();
     }
@@ -151,6 +154,115 @@ public class JedisClusterTest extends Assert {
 	jc.set("test", "test");
 	assertEquals("bar", node3.get("foo"));
 	assertEquals("test", node2.get("test"));
+    }
+    
+    /**
+     * slot->nodes
+     * 15363 node3 e
+     */
+    @Test
+    public  void testMigrate(){
+	log.info("test migrate slot");
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(nodeInfo1);
+	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
+	String node2Id = JedisClusterTestUtil.getNodeId(node2.clusterNodes());
+	node3.clusterSetSlotMigrating(15363, node2Id);
+	node2.clusterSetSlotImporting(15363, node3Id);
+	try{
+	    node2.set("e", "e");
+	}catch(JedisMovedDataException jme){
+            assertEquals(15363, jme.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
+	}
+	
+	try{
+	    node3.set("e", "e");
+	}catch(JedisAskDataException jae){
+            assertEquals(15363, jae.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo2.getPort()), jae.getTargetNode());
+	}
+	
+	jc.set("e", "e");
+	
+	try{
+	    node2.get("e");
+	}catch(JedisMovedDataException jme){
+            assertEquals(15363, jme.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
+	}
+	try{
+	    node3.get("e");
+	}catch(JedisAskDataException jae){
+            assertEquals(15363, jae.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo2.getPort()), jae.getTargetNode());
+	}
+	
+	assertEquals("e", jc.get("e"));
+	
+	node2.clusterSetSlotNode(15363, node2Id);
+	node3.clusterSetSlotNode(15363, node2Id);
+	//assertEquals("e", jc.get("e"));
+	assertEquals("e", node2.get("e"));
+	
+	//assertEquals("e", node3.get("e"));
+	
+	
+	
+    }
+    
+    @Test
+    public void  testMigrateToNewNode() throws InterruptedException{
+	log.info("test migrate slot to new node");
+	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+	jedisClusterNode.add(nodeInfo1);
+	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	node4.clusterMeet(localHost, nodeInfo1.getPort());
+
+	String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
+        String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
+	 JedisClusterTestUtil.waitForClusterReady(node4);
+	node3.clusterSetSlotMigrating(15363, node4Id);
+	node4.clusterSetSlotImporting(15363, node3Id);
+	try{
+	    node4.set("e", "e");
+	}catch(JedisMovedDataException jme){
+            assertEquals(15363, jme.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
+	}
+	
+	try{
+	    node3.set("e", "e");
+	}catch(JedisAskDataException jae){
+            assertEquals(15363, jae.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo4.getPort()), jae.getTargetNode());
+	}
+	
+         jc.set("e", "e");
+	
+	try{
+	    node4.get("e");
+	}catch(JedisMovedDataException jme){
+            assertEquals(15363, jme.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo3.getPort()), jme.getTargetNode());
+	}
+	try{
+	    node3.get("e");
+	}catch(JedisAskDataException jae){
+            assertEquals(15363, jae.getSlot());
+            assertEquals(new HostAndPort(localHost, nodeInfo4.getPort()), jae.getTargetNode());
+	}
+	
+	assertEquals("e", jc.get("e"));
+	
+	node4.clusterSetSlotNode(15363, node4Id);
+	node3.clusterSetSlotNode(15363, node4Id);
+	//assertEquals("e", jc.get("e"));
+	assertEquals("e", node4.get("e"));
+	
+	//assertEquals("e", node3.get("e"));
+	
     }
 
     @Test

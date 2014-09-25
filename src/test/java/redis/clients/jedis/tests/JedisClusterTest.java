@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,9 +24,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -134,19 +134,33 @@ public class JedisClusterTest extends Assert {
 	node2.get("test");
     }
 
+    JedisCommands getStringInterface(Set<HostAndPort> nodes) {
+        return new JedisCluster(nodes);
+    }
+
+    Map<String, JedisPool> getClusterNodes(JedisCommands jc) {
+        JedisCluster cluster = (JedisCluster) jc;
+        return cluster.getClusterNodes();
+    }
+
+    void shutdown(JedisCommands jc) {
+        JedisCluster cluster = (JedisCluster) jc;
+        cluster.close();
+    }
+
     @Test
     public void testDiscoverNodesAutomatically() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
-	assertEquals(3, jc.getClusterNodes().size());
+	JedisCommands jc = getStringInterface(jedisClusterNode);
+	assertEquals(3, getClusterNodes(jc).size());
     }
 
     @Test
     public void testCalculateConnectionPerSlot() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	jc.set("foo", "bar");
 	jc.set("test", "test");
 	assertEquals("bar", node3.get("foo"));
@@ -157,7 +171,7 @@ public class JedisClusterTest extends Assert {
     public void testRecalculateSlotsWhenMoved() throws InterruptedException {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	int slot51 = JedisClusterCRC16.getSlot("51");
 	node2.clusterDelSlots(slot51);
 	node3.clusterDelSlots(slot51);
@@ -172,27 +186,27 @@ public class JedisClusterTest extends Assert {
     public void testAskResponse() throws InterruptedException {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	int slot51 = JedisClusterCRC16.getSlot("51");
 	node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
 	node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
 	jc.set("51", "foo");
 	assertEquals("foo", jc.get("51"));
     }
-
+/*
     @Test(expected = JedisClusterException.class)
     public void testThrowExceptionWithoutKey() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	jc.ping();
     }
-
+*/
     @Test(expected = JedisClusterMaxRedirectionsException.class)
     public void testRedisClusterMaxRedirections() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	int slot51 = JedisClusterCRC16.getSlot("51");
 	// This will cause an infinite redirection loop
 	node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -273,7 +287,7 @@ public class JedisClusterTest extends Assert {
     public void testClusterCountKeysInSlot() {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	
 	for (int index = 0 ; index < 5 ; index++) {
 	    jc.set("foo{bar}" + index, "hello");
@@ -287,7 +301,7 @@ public class JedisClusterTest extends Assert {
     public void testStableSlotWhenMigratingNodeOrImportingNodeIsNotSpecified() throws InterruptedException {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
-	JedisCluster jc = new JedisCluster(jedisClusterNode);
+	JedisCommands jc = getStringInterface(jedisClusterNode);
 	
 	int slot51 = JedisClusterCRC16.getSlot("51");
 	jc.set("51", "foo");
@@ -346,7 +360,7 @@ public class JedisClusterTest extends Assert {
     public void testJedisClusterRunsWithMultithreaded() throws InterruptedException, ExecutionException {
 	Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
 	jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-	final JedisCluster jc = new JedisCluster(jedisClusterNode);
+	final JedisCommands jc = getStringInterface(jedisClusterNode);
 	jc.set("foo", "bar");
 	
 	ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 100, 0, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10));
@@ -366,7 +380,7 @@ public class JedisClusterTest extends Assert {
 	    assertEquals("bar", value);
 	}
 	
-	jc.close();
+	shutdown(jc);
     }
     
     private static String getNodeServingSlotRange(String infoOutput) {

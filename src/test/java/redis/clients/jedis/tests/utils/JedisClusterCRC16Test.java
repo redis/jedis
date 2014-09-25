@@ -21,7 +21,8 @@ public class JedisClusterCRC16Test {
 	    assertEquals(entry.getValue().intValue(), JedisClusterCRC16.getCRC16(entry.getKey()));
 	    
 	    // byte array version
-	    assertEquals(entry.getValue().intValue(), JedisClusterCRC16.getCRC16(entry.getKey().getBytes()));
+            byte[] byteKey = entry.getKey().getBytes();
+	    assertEquals(entry.getValue().intValue(), JedisClusterCRC16.getCRC16(byteKey, 0, byteKey.length));
 	}
     }
     

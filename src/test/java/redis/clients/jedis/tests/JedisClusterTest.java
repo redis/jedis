@@ -69,8 +69,9 @@ public class JedisClusterTest extends Assert {
 	// ---- configure cluster
 
 	// add nodes to cluster
-	node2.clusterMeet(localHost, nodeInfo1.getPort());
-	node3.clusterMeet(localHost, nodeInfo1.getPort());
+	node1.clusterMeet(localHost, nodeInfo2.getPort());
+	node1.clusterMeet(localHost, nodeInfo3.getPort());
+	
 	// split available slots across the three nodes
 	int slotsPerNode = JedisCluster.HASHSLOTS / 3;
 	int[] node1Slots = new int[slotsPerNode];

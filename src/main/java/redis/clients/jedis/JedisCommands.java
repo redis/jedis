@@ -201,6 +201,11 @@ public interface JedisCommands {
 
     Set<String> zrangeByLex(final String key, final String min, final String max,
 	    final int offset, final int count);
+
+    Set<String> zrevrangeByLex(final String key, final String max, final String min);
+
+    Set<String> zrevrangeByLex(final String key, final String max, final String min,
+	    final int offset, final int count);
     
     Long zremrangeByLex(final String key, final String min, final String max);
 

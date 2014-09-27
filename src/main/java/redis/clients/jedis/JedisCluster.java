@@ -1158,6 +1158,29 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
+    public Set<String> zrevrangeByLex(final String key, final String max, final String min) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection.zrevrangeByLex(key, max, min);
+	    }
+	}.run(key);
+    }
+
+    @Override
+    public Set<String> zrevrangeByLex(final String key, final String max, final String min,
+	    final int offset, final int count) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+		maxRedirections) {
+	    @Override
+	    public Set<String> execute(Jedis connection) {
+		return connection.zrevrangeByLex(key, max, min, offset, count);
+	    }
+	}.run(key);
+    }
+
+    @Override
     public Long zremrangeByLex(final String key, final String min, final String max) {
 	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
 		maxRedirections) {
@@ -1629,4 +1652,5 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 	    }
 	}.run(null);
     }
+
 }

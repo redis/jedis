@@ -846,10 +846,19 @@ public class BinaryClient extends Connection {
 		toByteArray(offset), toByteArray(count));
     }
 
+    public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
+	sendCommand(ZREVRANGEBYLEX, key, max, min);
+    }
+    
+    public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+	    final int offset, final int count) {
+	sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.raw, 
+		toByteArray(offset), toByteArray(count));
+    }
+    
     public void zremrangeByLex(byte[] key, byte[] min, byte[] max) {
 	sendCommand(ZREMRANGEBYLEX, key, min, max);
     }
-
 
     public void save() {
 	sendCommand(SAVE);

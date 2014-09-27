@@ -2647,6 +2647,21 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     @Override
+    public Set<String> zrevrangeByLex(String key, String max, String min) {
+	checkIsInMulti();
+	client.zrevrangeByLex(key, max, min);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }
+
+    @Override
+    public Set<String> zrevrangeByLex(String key, String max, String min,
+	    int offset, int count) {
+	checkIsInMulti();
+	client.zrevrangeByLex(key, max, min, offset, count);
+	return new LinkedHashSet<String>(client.getMultiBulkReply());
+    }  
+
+    @Override
     public Long zremrangeByLex(final String key, final String min, final String max) {
 	checkIsInMulti();
 	client.zremrangeByLex(key, min, max);
@@ -3637,6 +3652,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	final List<String> multiBulkReply = client.getMultiBulkReply();
 	client.rollbackTimeout();
 	return multiBulkReply;
-    }  
+    }
 
 }

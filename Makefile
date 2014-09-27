@@ -116,6 +116,18 @@ pidfile /tmp/sentinel3.pid
 logfile /tmp/sentinel3.log
 endef
 
+define REDIS_SENTINEL4
+port 26382
+daemonize yes
+sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel auth-pass mymaster foobared
+sentinel down-after-milliseconds mymaster 2000
+sentinel parallel-syncs mymaster 1
+sentinel failover-timeout mymaster 120000
+pidfile /tmp/sentinel4.pid
+logfile /tmp/sentinel4.log
+endef
+
 # CLUSTER REDIS NODES
 define REDIS_CLUSTER_NODE1_CONF
 daemonize yes
@@ -199,6 +211,7 @@ export REDIS7_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
+export REDIS_SENTINEL4
 export REDIS_CLUSTER_NODE1_CONF
 export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
@@ -219,6 +232,8 @@ start: cleanup
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
+	@sleep 0.5
+	echo "$$REDIS_SENTINEL4" > /tmp/sentinel4.conf && redis-server /tmp/sentinel4.conf --sentinel
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
@@ -241,6 +256,7 @@ stop:
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
+	kill `cat /tmp/sentinel4.pid`
 	kill `cat /tmp/redis_cluster_node1.pid` || true
 	kill `cat /tmp/redis_cluster_node2.pid` || true
 	kill `cat /tmp/redis_cluster_node3.pid` || true

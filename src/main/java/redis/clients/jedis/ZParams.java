@@ -23,9 +23,15 @@ public class ZParams {
 
     private List<byte[]> params = new ArrayList<byte[]>();
 
-    public ZParams weights(final int... weights) {
+	/**
+	 * Set weights.
+	 * 
+	 * @param weights
+	 *            weights.
+	 */
+    public ZParams weights(final double... weights) {
 	params.add(WEIGHTS.raw);
-	for (final int weight : weights) {
+	for (final double weight : weights) {
 	    params.add(Protocol.toByteArray(weight));
 	}
 

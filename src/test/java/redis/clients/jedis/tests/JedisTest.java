@@ -57,6 +57,14 @@ public class JedisTest extends JedisCommandTestBase {
 	jedis.hmget("foobar", "foo");
     }
 
+    @Test(expected = JedisConnectionException.class)
+    public void timeoutConnectionWithURI() throws Exception {
+	jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
+	jedis.configSet("timeout", "1");
+	Thread.sleep(2000);
+	jedis.hmget("foobar", "foo");
+    }
+
     @Test(expected = JedisDataException.class)
     public void failWhenSendingNullValues() {
 	jedis.set("foo", null);
@@ -92,7 +100,22 @@ public class JedisTest extends JedisCommandTestBase {
 	assertEquals("PONG", jedis.ping());
 	assertEquals("bar", jedis.get("foo"));
     }
-    
+
+    @Test
+    public void allowUrlWithNoDBAndNoPassword() {
+	Jedis jedis = new Jedis("redis://localhost:6380");
+	jedis.auth("foobared");
+	assertEquals(jedis.getClient().getHost(), "localhost");
+	assertEquals(jedis.getClient().getPort(), 6380);
+	assertEquals(jedis.getDB(), (Long) 0L);
+	
+	jedis = new Jedis("redis://localhost:6380/");
+	jedis.auth("foobared");
+	assertEquals(jedis.getClient().getHost(), "localhost");
+	assertEquals(jedis.getClient().getPort(), 6380);
+	assertEquals(jedis.getDB(), (Long) 0L);
+    }
+
     @Test
     public void checkCloseable() {
 	jedis.close();

@@ -17,21 +17,20 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
+import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	MultiKeyBinaryCommands, AdvancedBinaryJedisCommands,
 	BinaryScriptingCommands, Closeable {
     protected Client client = null;
-
+    protected Transaction transaction = null;
+    protected Pipeline pipeline = null;
+    
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
-	    client = new Client(uri.getHost(), uri.getPort());
-	    client.auth(uri.getUserInfo().split(":", 2)[1]);
-	    client.getStatusCodeReply();
-	    client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	    client.getStatusCodeReply();
+	    initializeClientFromURI(uri);
 	} else {
 	    client = new Client(host);
 	}
@@ -53,11 +52,28 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     public BinaryJedis(URI uri) {
+	initializeClientFromURI(uri);
+    }
+
+    public BinaryJedis(final URI uri, final int timeout) {
+	initializeClientFromURI(uri);
+	client.setTimeout(timeout);
+    }
+
+    private void initializeClientFromURI(URI uri) {
 	client = new Client(uri.getHost(), uri.getPort());
-	client.auth(uri.getUserInfo().split(":", 2)[1]);
-	client.getStatusCodeReply();
-	client.select(Integer.parseInt(uri.getPath().split("/", 2)[1]));
-	client.getStatusCodeReply();
+
+	String password = JedisURIHelper.getPassword(uri);
+	if (password != null) {
+	    client.auth(password);
+	    client.getStatusCodeReply();
+	}
+
+	Integer dbIndex = JedisURIHelper.getDBIndex(uri);
+	if (dbIndex > 0) {
+	    client.select(dbIndex);
+	    client.getStatusCodeReply();
+	}
     }
 
     public String ping() {
@@ -1753,7 +1769,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public Transaction multi() {
 	client.multi();
-	return new Transaction(client);
+	client.getOne();	// expected OK
+	transaction = new Transaction(client);
+	return transaction;
     }
 
     @Deprecated
@@ -1767,6 +1785,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	List<Object> results = null;
 	jedisTransaction.setClient(client);
 	client.multi();
+	client.getOne();	// expected OK
 	jedisTransaction.execute();
 	results = jedisTransaction.exec();
 	return results;
@@ -1789,9 +1808,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public void resetState() {
 	if (client.isConnected()) {
+	    if (transaction != null) {
+		transaction.clear();
+	    }
+
+	    if (pipeline != null) {
+		pipeline.clear();
+	    }
+
+	    if (client.isInWatch()) {
+		unwatch();
+	    }
+
 	    client.resetState();
-	    client.getAll();
 	}
+
+	transaction = null;
+	pipeline = null;
     }
 
     public String watch(final byte[]... keys) {
@@ -2207,7 +2240,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     public Pipeline pipelined() {
-	Pipeline pipeline = new Pipeline();
+	pipeline = new Pipeline();
 	pipeline.setClient(client);
 	return pipeline;
     }
@@ -2790,6 +2823,35 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	    final byte[]... sets) {
 	checkIsInMulti();
 	client.zinterstore(dstkey, params, sets);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public Long zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	checkIsInMulti();
+	client.zlexcount(key, min, max);
+	return client.getIntegerReply();
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max);
+	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    final int offset, final int count) {
+	checkIsInMulti();
+	client.zrangeByLex(key, min, max, offset, count);
+	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	checkIsInMulti();
+	client.zremrangeByLex(key, min, max);
 	return client.getIntegerReply();
     }
 
@@ -3383,11 +3445,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	checkIsInMulti();
 	client.restore(key, ttl, serializedValue);
 	return client.getStatusCodeReply();
-    }
-
-    @Deprecated
-    public Long pexpire(final byte[] key, final int milliseconds) {
-	return pexpire(key, (long) milliseconds);
     }
 
     public Long pexpire(final byte[] key, final long milliseconds) {

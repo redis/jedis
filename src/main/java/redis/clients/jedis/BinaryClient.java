@@ -48,6 +48,10 @@ public class BinaryClient extends Connection {
 	return isInWatch;
     }
 
+    public BinaryClient() {
+	this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+    }
+    
     public BinaryClient(final String host) {
 	super(host);
     }

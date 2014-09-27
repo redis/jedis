@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import org.junit.Test;
 
 import redis.clients.util.JedisClusterCRC16;
+import redis.clients.util.SafeEncoder;
 
 public class JedisClusterCRC16Test {
 
@@ -21,7 +22,7 @@ public class JedisClusterCRC16Test {
 	    assertEquals(entry.getValue().intValue(), JedisClusterCRC16.getCRC16(entry.getKey()));
 	    
 	    // byte array version
-	    assertEquals(entry.getValue().intValue(), JedisClusterCRC16.getCRC16(entry.getKey().getBytes()));
+	    assertEquals(entry.getValue().intValue(), JedisClusterCRC16.getCRC16(SafeEncoder.encode(entry.getKey())));
 	}
     }
     

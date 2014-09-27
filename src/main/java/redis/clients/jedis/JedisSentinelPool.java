@@ -65,6 +65,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     public JedisSentinelPool(String masterName, Set<String> sentinels,
 	    final GenericObjectPoolConfig poolConfig, int timeout,
 	    final String password, final int database) {
+
 	this.poolConfig = poolConfig;
 	this.timeout = timeout;
 	this.password = password;
@@ -74,6 +75,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	initPool(master);
     }
 
+    private volatile JedisFactory factory;
     private volatile HostAndPort currentHostMaster;
 
     public void destroy() {
@@ -91,10 +93,18 @@ public class JedisSentinelPool extends Pool<Jedis> {
     private void initPool(HostAndPort master) {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
+	    if (factory == null) {
+	        factory = new JedisFactory(master.getHost(), master.getPort(),
+	                                   timeout, password, database);
+	        initPool(poolConfig, factory);
+	    } else {
+	        factory.setHostAndPort(currentHostMaster);
+	        // although we clear the pool, we still have to check the returned object
+	        // in getResource, this call only clears idle instances, not borrowed instances
+	        internalPool.clear();
+	    }
+
 	    log.info("Created JedisPool to master at " + master);
-	    initPool(poolConfig,
-		    new JedisFactory(master.getHost(), master.getPort(),
-			    timeout, password, database));
 	}
     }
 
@@ -115,19 +125,30 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
 		log.fine("Connecting to Sentinel " + hap);
 
+		Jedis jedis = null;
 		try {
-		    Jedis jedis = new Jedis(hap.getHost(), hap.getPort());
+		    jedis = new Jedis(hap.getHost(), hap.getPort());
 
 		    if (master == null) {
-			master = toHostAndPort(jedis
-				.sentinelGetMasterAddrByName(masterName));
+			List<String> masterAddr = jedis
+				.sentinelGetMasterAddrByName(masterName);
+			if (masterAddr == null || masterAddr.size() != 2) {
+			    log.warning("Can not get master addr, master name: "
+				    + masterName + ". Sentinel: " + hap + ".");
+			    continue;
+			}
+
+			master = toHostAndPort(masterAddr);
 			log.fine("Found Redis master at " + master);
-			jedis.disconnect();
 			break outer;
 		    }
 		} catch (JedisConnectionException e) {
 		    log.warning("Cannot connect to sentinel running @ " + hap
 			    + ". Trying next one.");
+		} finally {
+		    if (jedis != null) {
+			jedis.close();
+		    }
 		}
 	    }
 
@@ -164,9 +185,22 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
     @Override
     public Jedis getResource() {
-	Jedis jedis = super.getResource();
-	jedis.setDataSource(this);
-	return jedis;
+	while (true) {
+	    Jedis jedis = super.getResource();
+	    jedis.setDataSource(this);
+
+	    // get a reference because it can change concurrently
+	    final HostAndPort master = currentHostMaster;
+	    final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(),
+	       jedis.getClient().getPort());
+
+	    if (master.equals(connection)) {
+	        // connected to the correct master
+	        return jedis;
+	    } else {
+	        returnBrokenResource(jedis);
+	    }
+	}
     }
 
     public void returnBrokenResource(final Jedis resource) {

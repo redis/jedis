@@ -301,38 +301,6 @@ public interface Commands {
 
     public void bitop(BitOP op, final String destKey, String... srcKeys);
 
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void scan(int cursor, final ScanParams params);
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void hscan(final String key, int cursor, final ScanParams params);
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void sscan(final String key, int cursor, final ScanParams params);
-
-    @Deprecated
-    /**
-     * This method is deprecated due to bug (scan cursor should be unsigned long)
-     * And will be removed on next major release
-     * @see https://github.com/xetorthio/jedis/issues/531 
-     */
-    public void zscan(final String key, int cursor, final ScanParams params);
-
     public void scan(final String cursor, final ScanParams params);
 
     public void hscan(final String key, final String cursor, final ScanParams params);

@@ -3,13 +3,18 @@ package redis.clients.jedis;
 import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 public class BinaryJedisCluster implements BinaryJedisCommands,
-	MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands {
+	MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, 
+	Closeable {
     
     public static final short HASHSLOTS = 16384;
     protected static final int DEFAULT_TIMEOUT = 1;
@@ -21,21 +26,21 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
     protected JedisClusterConnectionHandler connectionHandler;
     
     public BinaryJedisCluster(Set<HostAndPort> nodes, int timeout) {
-        this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS);
-        }
+	this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, new GenericObjectPoolConfig());
+    }
 
     public BinaryJedisCluster(Set<HostAndPort> nodes) {
-    this(nodes, DEFAULT_TIMEOUT);
+	this(nodes, DEFAULT_TIMEOUT);
     }
 
     public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int timeout,
-        int maxRedirections) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(
-        jedisClusterNode);
-    this.timeout = timeout;
-    this.maxRedirections = maxRedirections;
+	    int maxRedirections, final GenericObjectPoolConfig poolConfig) {
+	this.connectionHandler = new JedisSlotBasedConnectionHandler(
+		jedisClusterNode, poolConfig);
+	this.timeout = timeout;
+	this.maxRedirections = maxRedirections;
     }
-    
+
     @Override
     public String set(final byte[] key, final byte[] value) {
         return new JedisClusterCommand<String>(connectionHandler, timeout,
@@ -1150,6 +1155,62 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
             public Long execute(Jedis connection) { return connection.pfcount(key); }
         }.runBinary(key);
     }
+    
+    @Override
+    public List<byte[]> srandmember(final byte[] key, final int count) {
+	return new JedisClusterCommand<List<byte[]>>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public List<byte[]> execute(Jedis connection) {
+		return connection.srandmember(key, count);
+	    }
+	}.runBinary(key);
+    }
+
+    @Override
+    public Long zlexcount(final byte[] key, final byte[] min, final byte[] max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.zlexcount(key, min, max);
+	    }
+	}.runBinary(key);
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	return new JedisClusterCommand<Set<byte[]>>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public Set<byte[]> execute(Jedis connection) {
+		return connection.zrangeByLex(key, min, max);
+	    }
+	}.runBinary(key);
+    }
+
+    @Override
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+	    final int offset, final int count) {
+	return new JedisClusterCommand<Set<byte[]>>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public Set<byte[]> execute(Jedis connection) {
+		return connection.zrangeByLex(key, min, max, offset, count);
+	    }
+	}.runBinary(key);
+    }
+
+    @Override
+    public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public Long execute(Jedis connection) {
+		return connection.zremrangeByLex(key, min, max);
+	    }
+	}.runBinary(key);
+    }
 
     public Map<String, JedisPool> getClusterNodes() {
         return connectionHandler.getNodes();
@@ -1633,5 +1694,20 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
 		return connection.pfcount(keys);
 	    }
 	}.runBinary(keys.length, keys);
+    }
+
+    @Override
+    public void close() throws IOException {
+	if (connectionHandler != null) {
+	    for (JedisPool pool : connectionHandler.getNodes().values()) {
+		try {
+		    if (pool != null) {
+			pool.destroy();
+		    }
+		} catch (Exception e) {
+		    // pass
+		}
+	    }
+	}	
     }
 }

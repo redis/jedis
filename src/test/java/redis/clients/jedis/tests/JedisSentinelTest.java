@@ -85,16 +85,16 @@ public class JedisSentinelTest extends JedisTestBase {
     public void sentinelFailover() throws InterruptedException {
 	Jedis j = new Jedis(sentinelForFailover.getHost(),
 		sentinelForFailover.getPort());
+	Jedis j2 = new Jedis(sentinelForFailover.getHost(),
+	                    sentinelForFailover.getPort());
 
 	try {
 	    List<String> masterHostAndPort = j
 		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
 	    HostAndPort currentMaster = new HostAndPort(masterHostAndPort.get(0), 
 		    Integer.parseInt(masterHostAndPort.get(1)));
-	    String result = j.sentinelFailover(FAILOVER_MASTER_NAME);
-	    assertEquals("OK", result);
 
-	    JedisSentinelTestUtil.waitForNewPromotedMaster(j);
+	    JedisSentinelTestUtil.waitForNewPromotedMaster(FAILOVER_MASTER_NAME, j, j2);
 
 	    masterHostAndPort = j
 		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);

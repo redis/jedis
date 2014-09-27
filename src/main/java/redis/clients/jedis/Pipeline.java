@@ -1,9 +1,9 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisDataException;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Pipeline extends MultiKeyPipelineBase {
 
@@ -26,7 +26,13 @@ public class Pipeline extends MultiKeyPipelineBase {
 	    for (int i = 0; i < list.size(); i++) {
 		Response<?> response = responses.get(i);
 		response.set(list.get(i));
-		values.add(response.get());
+		Object builtResponse;
+		try {
+		    builtResponse = response.get();
+		} catch (JedisDataException e) {
+		    builtResponse = e;
+		}
+		values.add(builtResponse);
 	    }
 	    return values;
 	}
@@ -69,13 +75,25 @@ public class Pipeline extends MultiKeyPipelineBase {
 	return client;
     }
 
+    public void clear() {
+	if (isInMulti()) {
+	    discard();
+	}
+
+	sync();
+    }
+
+    public boolean isInMulti() {
+	return currentMulti != null;
+    }
+
     /**
      * Syncronize pipeline by reading all responses. This operation close the
      * pipeline. In order to get return values from pipelined commands, capture
      * the different Response<?> of the commands you execute.
      */
     public void sync() {
-	List<Object> unformatted = client.getAll();
+	List<Object> unformatted = client.getMany(getPipelinedResponseLength());
 	for (Object o : unformatted) {
 	    generateResponse(o);
 	}
@@ -90,7 +108,7 @@ public class Pipeline extends MultiKeyPipelineBase {
      * @return A list of all the responses in the order you executed them.
      */
     public List<Object> syncAndReturnAll() {
-	List<Object> unformatted = client.getAll();
+	List<Object> unformatted = client.getMany(getPipelinedResponseLength());
 	List<Object> formatted = new ArrayList<Object>();
 
 	for (Object o : unformatted) {
@@ -106,7 +124,6 @@ public class Pipeline extends MultiKeyPipelineBase {
     public Response<String> discard() {
 	if (currentMulti == null)
 	    throw new JedisDataException("DISCARD without MULTI");
-
 	client.discard();
 	currentMulti = null;
 	return getResponse(BuilderFactory.STRING);

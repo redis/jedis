@@ -56,6 +56,18 @@ public class ShardedJedisPoolTest extends Assert {
     }
 
     @Test
+    public void checkCloseableConnections() throws Exception {
+	ShardedJedisPool pool = new ShardedJedisPool(
+		new GenericObjectPoolConfig(), shards);
+	ShardedJedis jedis = pool.getResource();
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
+	pool.returnResource(jedis);
+	pool.close();
+	assertTrue(pool.isClosed());
+    }
+
+    @Test
     public void checkConnectionWithDefaultPort() {
 	ShardedJedisPool pool = new ShardedJedisPool(
 		new GenericObjectPoolConfig(), shards);

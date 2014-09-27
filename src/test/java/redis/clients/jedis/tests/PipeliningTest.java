@@ -1,23 +1,13 @@
 package redis.clients.jedis.tests;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 public class PipeliningTest extends Assert {
     private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -52,6 +42,9 @@ public class PipeliningTest extends Assert {
 	jedis.hset("hash", "foo", "bar");
 	jedis.zadd("zset", 1, "foo");
 	jedis.sadd("set", "foo");
+        jedis.setrange("setrange", 0, "0123456789");
+        byte[] bytesForSetRange = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        jedis.setrange("setrangebytes".getBytes(), 0, bytesForSetRange);
 
 	Pipeline p = jedis.pipelined();
 	Response<String> string = p.get("string");
@@ -68,8 +61,10 @@ public class PipeliningTest extends Assert {
 	p.sadd("set", "foo");
 	Response<Set<String>> smembers = p.smembers("set");
 	Response<Set<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0,
-		-1);
-	p.sync();
+            -1);
+        Response<String> getrange = p.getrange("setrange", 1, 3);
+        Response<byte[]> getrangeBytes = p.getrange("setrangebytes".getBytes(), 6, 8);
+            p.sync();
 
 	assertEquals("foo", string.get());
 	assertEquals("foo", list.get());
@@ -83,6 +78,9 @@ public class PipeliningTest extends Assert {
 	assertNotNull(hgetAll.get().get("foo"));
 	assertEquals(1, smembers.get().size());
 	assertEquals(1, zrangeWithScores.get().size());
+    assertEquals("123", getrange.get());
+    byte[] expectedGetRangeBytes = {6, 7, 8};
+    assertArrayEquals(expectedGetRangeBytes, getrangeBytes.get());
     }
 
     @Test
@@ -372,5 +370,80 @@ public class PipeliningTest extends Assert {
 	assertNull(result0.get());
 	assertNull(result1.get());
 	assertEquals("13", result2.get());
+    }
+
+    @Test
+    public void testPipelinedTransactionResponse() {
+
+        String key1 = "key1";
+        String val1 = "val1";
+
+        String key2 = "key2";
+        String val2 = "val2";
+
+        String key3 = "key3";
+        String field1 = "field1";
+        String field2 = "field2";
+        String field3 = "field3";
+        String field4 = "field4";
+
+        String value1 = "value1";
+        String value2 = "value2";
+        String value3 = "value3";
+        String value4 = "value4";
+
+        Map<String, String> hashMap = new HashMap<String, String>();
+        hashMap.put(field1, value1);
+        hashMap.put(field2, value2);
+
+        String key4 = "key4";
+        Map<String, String> hashMap1 = new HashMap<String, String>();
+        hashMap1.put(field3, value3);
+        hashMap1.put(field4, value4);
+
+
+        jedis.set(key1, val1);
+        jedis.set(key2, val2);
+        jedis.hmset(key3, hashMap);
+        jedis.hmset(key4, hashMap1);
+
+        Pipeline pipeline = jedis.pipelined();
+        pipeline.multi();
+
+        pipeline.get(key1);
+        pipeline.hgetAll(key2);
+        pipeline.hgetAll(key3);
+        pipeline.get(key4);
+
+        Response<List<Object> > response = pipeline.exec();
+        pipeline.sync();
+
+        List<Object> result = response.get();
+
+        assertEquals(4, result.size());
+
+        assertEquals("val1", result.get(0));
+
+        assertTrue(result.get(1) instanceof JedisDataException);
+
+        Map<String, String> hashMapReceived = (Map<String, String>)result.get(2);
+        Iterator<String> iterator = hashMapReceived.keySet().iterator();
+        String mapKey1 = iterator.next();
+        String mapKey2 = iterator.next();
+        assertFalse(iterator.hasNext());
+        verifyHasBothValues(mapKey1, mapKey2, field1, field2);
+        String mapValue1 = hashMapReceived.get(mapKey1);
+        String mapValue2 = hashMapReceived.get(mapKey2);
+        verifyHasBothValues(mapValue1, mapValue2, value1, value2);
+
+        assertTrue(result.get(3) instanceof JedisDataException);
+    }
+
+    private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {
+        assertFalse(firstKey.equals(secondKey));
+        assertTrue(firstKey.equals(value1)
+                || firstKey.equals(value2));
+        assertTrue(secondKey.equals(value1)
+                || secondKey.equals(value2));
     }
 }

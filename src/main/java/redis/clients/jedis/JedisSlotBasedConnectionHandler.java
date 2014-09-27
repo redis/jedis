@@ -1,17 +1,19 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
-
 public class JedisSlotBasedConnectionHandler extends
 	JedisClusterConnectionHandler {
 
-    public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes) {
-	super(nodes);
+    public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+        final GenericObjectPoolConfig poolConfig) {
+	super(nodes, poolConfig);
     }
 
     public Jedis getConnection() {
@@ -47,13 +49,8 @@ public class JedisSlotBasedConnectionHandler extends
     }
 
     @Override
-    public void assignSlotToNode(int slot, HostAndPort targetNode) {
-	super.assignSlotToNode(slot, targetNode);
-    }
-
-    @Override
     public Jedis getConnectionFromSlot(int slot) {
-	JedisPool connectionPool = slots.get(slot);
+	JedisPool connectionPool = cache.getSlotPool(slot);
 	if (connectionPool != null) {
 	    // It can't guaranteed to get valid connection because of node assignment
 	    return connectionPool.getResource();
@@ -64,7 +61,7 @@ public class JedisSlotBasedConnectionHandler extends
     
     private List<JedisPool> getShuffledNodesPool() {
 	List<JedisPool> pools = new ArrayList<JedisPool>();
-	pools.addAll(nodes.values());
+	pools.addAll(cache.getNodes().values());
 	Collections.shuffle(pools);
 	return pools;
     }

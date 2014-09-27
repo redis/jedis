@@ -26,6 +26,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     protected Transaction transaction = null;
     protected Pipeline pipeline = null;
     
+    public BinaryJedis() {
+	this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+    }
+    
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {

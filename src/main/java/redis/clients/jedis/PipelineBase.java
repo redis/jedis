@@ -1039,27 +1039,27 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
     }
 
     @Override
-    public Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
+    public Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
 	getClient(key).zrangeByLex(key, min, max);
 	return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     @Override
-    public Response<Set<String>> zrangeByLex(final String key, final String max, final String min) {
+    public Response<Set<String>> zrangeByLex(final String key, final String min, final String max) {
 	getClient(key).zrangeByLex(key, min, max);
 	return getResponse(BuilderFactory.STRING_ZSET);
     }
 
     @Override
-    public Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] max,
-	    final byte[] min, final int offset, final int count) {
+    public Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] min,
+	    final byte[] max, final int offset, final int count) {
 	getClient(key).zrangeByLex(key, min, max, offset, count);
 	return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
     }
 
     @Override
-    public Response<Set<String>> zrangeByLex(final String key, final String max,
-	    final String min, final int offset, final int count) {
+    public Response<Set<String>> zrangeByLex(final String key, final String min,
+	    final String max, final int offset, final int count) {
 	getClient(key).zrangeByLex(key, min, max, offset, count);
 	return getResponse(BuilderFactory.STRING_ZSET);
     }

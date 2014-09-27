@@ -13,6 +13,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 public class JedisSentinelPoolTest extends JedisTestBase {
@@ -42,27 +43,22 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	sentinelJedis2 = new Jedis(sentinel2.getHost(), sentinel2.getPort());
     }
     
-    @Test
-    public void errorMasterNameNotThrowException() throws InterruptedException {
+    @Test(expected=JedisConnectionException.class)
+    public void initializeWithNotAvailableSentinelsShouldThrowException() {
+	Set<String> wrongSentinels = new HashSet<String>();
+	wrongSentinels.add(new HostAndPort("localhost", 65432).toString());
+	wrongSentinels.add(new HostAndPort("localhost", 65431).toString());
+	
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels);
+	pool.destroy();
+    }
+    
+    @Test(expected=JedisException.class)
+    public void initializeWithNotMonitoredMasterNameShouldThrowException() {
 	final String wrongMasterName = "wrongMasterName";
-	new Thread(new Runnable() {
-	    @Override
-	    public void run() {
-		try {
-		    TimeUnit.SECONDS.sleep(3);
-		    sentinelJedis1.sentinelMonitor(wrongMasterName,
-			    "127.0.0.1", master.getPort(), 2);
-		} catch (InterruptedException e) {
-		    e.printStackTrace();
-		}
-
-	    }
-	}).start();
-
 	JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName,
 		sentinels);
 	pool.destroy();
-	sentinelJedis1.sentinelRemove(wrongMasterName);
     }
     
     @Test

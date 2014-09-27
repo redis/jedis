@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {
@@ -112,52 +113,55 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	    final String masterName) {
 
 	HostAndPort master = null;
-	boolean running = true;
+	boolean sentinelAvailable = false;
 
-	outer: while (running) {
+	log.info("Trying to find master from available Sentinels...");
 
-	    log.info("Trying to find master from available Sentinels...");
+	for (String sentinel : sentinels) {
+	    final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
+		    .split(":")));
 
-	    for (String sentinel : sentinels) {
+	    log.fine("Connecting to Sentinel " + hap);
 
-		final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
-			.split(":")));
+	    Jedis jedis = null;
+	    try {
+		jedis = new Jedis(hap.getHost(), hap.getPort());
 
-		log.fine("Connecting to Sentinel " + hap);
+		if (master == null) {
+		    List<String> masterAddr = jedis
+			    .sentinelGetMasterAddrByName(masterName);
 
-		Jedis jedis = null;
-		try {
-		    jedis = new Jedis(hap.getHost(), hap.getPort());
+		    // connected to sentinel...
+		    sentinelAvailable = true;
 
-		    if (master == null) {
-			List<String> masterAddr = jedis
-				.sentinelGetMasterAddrByName(masterName);
-			if (masterAddr == null || masterAddr.size() != 2) {
-			    log.warning("Can not get master addr, master name: "
-				    + masterName + ". Sentinel: " + hap + ".");
-			    continue;
-			}
-
-			master = toHostAndPort(masterAddr);
-			log.fine("Found Redis master at " + master);
-			break outer;
+		    if (masterAddr == null || masterAddr.size() != 2) {
+			log.warning("Can not get master addr, master name: "
+				+ masterName + ". Sentinel: " + hap + ".");
+			continue;
 		    }
-		} catch (JedisConnectionException e) {
-		    log.warning("Cannot connect to sentinel running @ " + hap
-			    + ". Trying next one.");
-		} finally {
-		    if (jedis != null) {
-			jedis.close();
-		    }
+
+		    master = toHostAndPort(masterAddr);
+		    log.fine("Found Redis master at " + master);
+		    break;
+		}
+	    } catch (JedisConnectionException e) {
+		log.warning("Cannot connect to sentinel running @ " + hap
+			+ ". Trying next one.");
+	    } finally {
+		if (jedis != null) {
+		    jedis.close();
 		}
 	    }
+	}
 
-	    try {
-		log.severe("All sentinels down, cannot determine where is "
-			+ masterName + " master is running... sleeping 1000ms.");
-		Thread.sleep(1000);
-	    } catch (InterruptedException e) {
-		e.printStackTrace();
+	if (master == null) {
+	    if (sentinelAvailable) {
+		// can connect to sentinel, but master name seems to not monitored
+		throw new JedisException("Can connect to sentinel, but " + masterName
+			+ " seems to be not monitored...");
+	    } else {
+		throw new JedisConnectionException("All sentinels down, cannot determine where is "
+			+ masterName + " master is running...");
 	    }
 	}
 

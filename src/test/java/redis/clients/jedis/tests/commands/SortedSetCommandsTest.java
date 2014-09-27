@@ -137,6 +137,48 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	// with LIMIT 
 	assertEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
     }
+    
+    @Test
+    public void zrevrangeByLex() {
+	jedis.zadd("foo", 1, "aa");
+	jedis.zadd("foo", 1, "c");
+	jedis.zadd("foo", 1, "bb");
+	jedis.zadd("foo", 1, "d");
+	
+	Set<String> expected = new LinkedHashSet<String>();
+	expected.add("c");
+	expected.add("bb");
+	
+	// exclusive aa ~ inclusive c
+	assertEquals(expected, jedis.zrevrangeByLex("foo", "[c", "(aa"));
+	
+	expected.clear();
+	expected.add("c");
+	expected.add("bb");
+	
+	// with LIMIT
+	assertEquals(expected, jedis.zrevrangeByLex("foo", "+", "-", 1, 2));	
+    }
+    
+    @Test
+    public void zrevrangeByLexBinary() {
+	// binary
+	jedis.zadd(bfoo, 1, ba);
+	jedis.zadd(bfoo, 1, bc);
+	jedis.zadd(bfoo, 1, bb);
+	
+	Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
+	bExpected.add(bb);
+	
+	assertEquals(bExpected, jedis.zrevrangeByLex(bfoo, bExclusiveC, bInclusiveB));
+	
+	bExpected.clear();
+	bExpected.add(bb);
+	bExpected.add(ba);
+	
+	// with LIMIT 
+	assertEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
+    }
 
     @Test
     public void zrevrange() {

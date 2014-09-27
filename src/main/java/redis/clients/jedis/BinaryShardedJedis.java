@@ -509,6 +509,19 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 	Jedis j = getShard(key);
 	return j.zrangeByLex(key, min, max, offset, count);
     }
+    
+    @Override
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+	Jedis j = getShard(key);
+	return j.zrevrangeByLex(key, max, min);
+    }
+
+    @Override
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min,
+	    int offset, int count) {
+	Jedis j = getShard(key);
+	return j.zrevrangeByLex(key, max, min, offset, count);
+    }
 
     @Override
     public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {

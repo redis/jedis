@@ -203,6 +203,11 @@ public interface BinaryJedisCommands {
 
     Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
 	    int offset, int count);
+
+    Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);
+
+    Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+	    int offset, int count);
     
     Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 

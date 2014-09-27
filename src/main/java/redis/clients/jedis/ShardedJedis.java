@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
 
@@ -558,7 +559,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	    final int offset, final int count) {
 	return getShard(key).zrangeByLex(key, min, max, offset, count);
     }
+    
+    @Override
+    public Set<String> zrevrangeByLex(String key, String max, String min) {
+	return getShard(key).zrevrangeByLex(key, max, min);
+    }
 
+    @Override
+    public Set<String> zrevrangeByLex(String key, String max, String min,
+	    int offset, int count) {
+	return getShard(key).zrevrangeByLex(key, max, min, offset, count);
+    }
+    
     @Override
     public Long zremrangeByLex(final String key, final String min, final String max) {
 	return getShard(key).zremrangeByLex(key, min, max);
@@ -638,5 +650,5 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(key);
 	return j.pfcount(key);
     }
-    
+
 }

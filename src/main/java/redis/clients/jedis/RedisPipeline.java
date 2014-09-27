@@ -192,6 +192,11 @@ public interface RedisPipeline {
     Response<Set<String>> zrangeByLex(final String key, final String max, final String min,
 	    final int offset, final int count);
     
+    Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min);
+    
+    Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min,
+	    final int offset, final int count);
+    
     Response<Long> zremrangeByLex(final String key, final String start, final String end);
 
     Response<Long> bitcount(String key);

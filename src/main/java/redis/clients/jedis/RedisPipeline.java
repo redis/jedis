@@ -187,9 +187,9 @@ public interface RedisPipeline {
     
     Response<Long> zlexcount(final String key, final String min, final String max);
     
-    Response<Set<String>> zrangeByLex(final String key, final String max, final String min);
+    Response<Set<String>> zrangeByLex(final String key, final String min, final String max);
 
-    Response<Set<String>> zrangeByLex(final String key, final String max, final String min,
+    Response<Set<String>> zrangeByLex(final String key, final String min, final String max,
 	    final int offset, final int count);
     
     Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min);

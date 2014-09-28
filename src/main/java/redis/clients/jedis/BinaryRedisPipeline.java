@@ -209,9 +209,9 @@ public interface BinaryRedisPipeline {
     
     Response<Long> zlexcount(final byte[] key, final byte[] min, final byte[] max);
     
-    Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] max, final byte[] min);
+    Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
-    Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+    Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
 	    int offset, int count);
     
     Response<Set<byte[]>> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);

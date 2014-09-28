@@ -34,6 +34,11 @@ public class HostAndPort {
     }
 
     @Override
+    public int hashCode() {
+        return 31 * convertHost(host).hashCode() + port;
+    }
+
+    @Override
     public String toString() {
 	return host + ":" + port;
     }

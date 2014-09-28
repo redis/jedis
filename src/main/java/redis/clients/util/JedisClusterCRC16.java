@@ -59,7 +59,7 @@ public class JedisClusterCRC16 {
     }
 
     public static int getCRC16(String key) {
-	return getCRC16(key.getBytes());
+	return getCRC16(SafeEncoder.encode(key));
     }
 
 }

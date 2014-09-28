@@ -600,6 +600,16 @@ public class Client extends BinaryClient implements Commands {
 	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max), 
 		offset, count);
     }
+
+    public void zrevrangeByLex(String key, String max, String min) {
+	zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min));
+    }
+
+    public void zrevrangeByLex(String key, String max, String min, int offset,
+	    int count) {
+	zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min), 
+		offset, count);
+    }
     
     public void zremrangeByLex(final String key, final String min, final String max) {
 	zremrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
@@ -1003,4 +1013,5 @@ public void clusterSetSlotStable(final int slot) {
     public void clusterSlots() {
 	cluster(Protocol.CLUSTER_SLOTS);
     }
+
 }

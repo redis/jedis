@@ -2847,6 +2847,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	client.zrangeByLex(key, min, max, offset, count);
 	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
     }
+    
+    @Override
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+	checkIsInMulti();
+	client.zrevrangeByLex(key, max, min);
+	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
+
+    @Override
+    public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min,
+	    int offset, int count) {
+	checkIsInMulti();
+	client.zrevrangeByLex(key, max, min, offset, count);
+	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
+    }
 
     @Override
     public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
@@ -3630,4 +3645,5 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	}
 	return new ScanResult<Tuple>(newcursor, results);
     }
+
 }

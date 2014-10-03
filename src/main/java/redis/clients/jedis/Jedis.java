@@ -322,9 +322,11 @@ public class Jedis extends BinaryJedis implements JedisCommands,
      * 
      * @param key
      * @return Integer reply, returns the remaining time to live in seconds of a
-     *         key that has an EXPIRE. 
-     *         If the Key does not have an associated expire, -1 is returned.
-     *         If the Key does not exists, -2 is returned. 
+     *         key that has an EXPIRE.
+     *         In Redis 2.6 or older, if the Key does not exists or does not
+     *         have an associated expire, -1 is returned.
+     *         In Redis 2.8 or newer, if the Key does not have an associated expire, -1 is returned 
+     *         or if the Key does not exists, -2 is returned. 
      */
     public Long ttl(final String key) {
 	checkIsInMulti();

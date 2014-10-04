@@ -93,15 +93,15 @@ public class Pipeline extends MultiKeyPipelineBase {
      * the different Response<?> of the commands you execute.
      */
     public void sync() {
-        if (client.isConnected()) {
+    	if (getPipelinedResponseLength() > 0) {
             List<Object> unformatted = client.getMany(getPipelinedResponseLength());
             for (Object o : unformatted) {
                 generateResponse(o);
             }
-        }
+    	}
     }
     /**
-     * Syncronize pipeline by reading all responses. This operation close the
+     * Synchronize pipeline by reading all responses. This operation close the
      * pipeline. Whenever possible try to avoid using this version and use
      * Pipeline.sync() as it won't go through all the responses and generate the
      * right response type (usually it is a waste of time).
@@ -109,10 +109,9 @@ public class Pipeline extends MultiKeyPipelineBase {
      * @return A list of all the responses in the order you executed them.
      */
     public List<Object> syncAndReturnAll() {
-        if (client.isConnected()) {
+        if (getPipelinedResponseLength() > 0) {
             List<Object> unformatted = client.getMany(getPipelinedResponseLength());
             List<Object> formatted = new ArrayList<Object>();
-
             for (Object o : unformatted) {
                 try {
                     formatted.add(generateResponse(o).get());

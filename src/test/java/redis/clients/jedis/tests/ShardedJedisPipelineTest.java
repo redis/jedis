@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
@@ -130,4 +132,32 @@ public class ShardedJedisPipelineTest {
 	p.sync();
 	assertNull(shouldNotExist.get());
     }
+    
+    @Test
+    public void testSyncWithNoCommandQueued() {
+	JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.getHost(),
+		redis1.getPort());
+	JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.getHost(),
+		redis2.getPort());
+	shardInfo1.setPassword("foobared");
+	shardInfo2.setPassword("foobared");
+	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+	shards.add(shardInfo1);
+	shards.add(shardInfo2);
+	
+	ShardedJedis jedis2 = new ShardedJedis(shards);
+	
+	ShardedJedisPipeline pipeline = jedis2.pipelined();
+	pipeline.sync();
+	
+	jedis2.close();
+	
+	jedis2 = new ShardedJedis(shards);
+	pipeline = jedis2.pipelined();
+	List<Object> resp = pipeline.syncAndReturnAll();
+	assertTrue(resp.isEmpty());
+	
+	jedis2.close();
+    }
+
 }

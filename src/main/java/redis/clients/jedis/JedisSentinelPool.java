@@ -127,23 +127,21 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	    try {
 		jedis = new Jedis(hap.getHost(), hap.getPort());
 
-		if (master == null) {
-		    List<String> masterAddr = jedis
-			    .sentinelGetMasterAddrByName(masterName);
+		List<String> masterAddr = jedis
+			.sentinelGetMasterAddrByName(masterName);
 
-		    // connected to sentinel...
-		    sentinelAvailable = true;
+		// connected to sentinel...
+		sentinelAvailable = true;
 
-		    if (masterAddr == null || masterAddr.size() != 2) {
-			log.warning("Can not get master addr, master name: "
-				+ masterName + ". Sentinel: " + hap + ".");
-			continue;
-		    }
-
-		    master = toHostAndPort(masterAddr);
-		    log.fine("Found Redis master at " + master);
-		    break;
+		if (masterAddr == null || masterAddr.size() != 2) {
+		    log.warning("Can not get master addr, master name: "
+			    + masterName + ". Sentinel: " + hap + ".");
+		    continue;
 		}
+
+		master = toHostAndPort(masterAddr);
+		log.fine("Found Redis master at " + master);
+		break;
 	    } catch (JedisConnectionException e) {
 		log.warning("Cannot connect to sentinel running @ " + hap
 			+ ". Trying next one.");

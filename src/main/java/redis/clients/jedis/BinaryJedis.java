@@ -28,7 +28,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     protected Pipeline pipeline = null;
     
     public BinaryJedis() {
-	this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+	client = new Client();
     }
     
     public BinaryJedis(final String host) {

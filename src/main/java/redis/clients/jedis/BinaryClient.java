@@ -49,7 +49,7 @@ public class BinaryClient extends Connection {
     }
 
     public BinaryClient() {
-	super(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+	super();
     }
     
     public BinaryClient(final String host) {

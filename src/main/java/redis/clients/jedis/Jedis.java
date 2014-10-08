@@ -23,6 +23,8 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     protected Pool<Jedis> dataSource = null;
 
+    public Jedis() {}
+    
     public Jedis(final String host) {
 	super(host);
     }

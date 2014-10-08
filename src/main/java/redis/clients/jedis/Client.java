@@ -12,6 +12,11 @@ import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
+    
+    public Client() {
+	super(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+    }
+    
     public Client(final String host) {
 	super(host);
     }

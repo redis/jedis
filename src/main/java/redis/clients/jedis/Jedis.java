@@ -23,9 +23,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     protected Pool<Jedis> dataSource = null;
 
-    public Jedis() {
-	super(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
-    }
+    public Jedis() {}
     
     public Jedis(final String host) {
 	super(host);

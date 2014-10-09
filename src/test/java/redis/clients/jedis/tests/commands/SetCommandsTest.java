@@ -20,7 +20,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     final byte[] bc = { 0x0C };
     final byte[] bd = { 0x0D };
     final byte[] bx = { 0x42 };
-    
+
     final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
     final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
     final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
@@ -468,11 +468,12 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	jedis.sadd(bfoo, ba, bb);
-	
-	ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY);
+
+	ScanResult<byte[]> bResult = jedis.sscan(bfoo,
+		SCAN_POINTER_START_BINARY);
 
 	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
@@ -484,17 +485,19 @@ public class SetCommandsTest extends JedisCommandTestBase {
 	params.match("a*");
 
 	jedis.sadd("foo", "b", "a", "aa");
-	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
+	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START,
+		params);
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	params = new ScanParams();
 	params.match(bbarstar);
 
 	jedis.sadd(bfoo, bbar1, bbar2, bbar3);
-	ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
+	ScanResult<byte[]> bResult = jedis.sscan(bfoo,
+		SCAN_POINTER_START_BINARY, params);
 
 	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
@@ -507,16 +510,18 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
 	jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
 
-	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
+	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START,
+		params);
 
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	params = new ScanParams();
 	params.count(2);
-	
+
 	jedis.sadd(bfoo, bbar1, bbar2, bbar3);
-	ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
+	ScanResult<byte[]> bResult = jedis.sscan(bfoo,
+		SCAN_POINTER_START_BINARY, params);
 
 	assertFalse(bResult.getResult().isEmpty());
     }

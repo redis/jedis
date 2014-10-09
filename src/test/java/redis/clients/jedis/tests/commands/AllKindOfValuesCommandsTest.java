@@ -523,14 +523,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY);
-	
+
 	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
     }
-    
+
     @Test
     public void scanMatch() {
 	ScanParams params = new ScanParams();
@@ -543,7 +543,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	params = new ScanParams();
 	params.match(bfoostar);
@@ -551,9 +551,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set(bfoo1, bbar);
 	jedis.set(bfoo2, bbar);
 	jedis.set(bfoo3, bbar);
-	
-	ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
-	
+
+	ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY,
+		params);
+
 	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
     }
@@ -570,7 +571,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
 
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	params = new ScanParams();
 	params.count(2);
@@ -578,9 +579,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 	jedis.set(bfoo1, bbar);
 	jedis.set(bfoo2, bbar);
 	jedis.set(bfoo3, bbar);
-	
-	ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
-	
+
+	ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY,
+		params);
+
 	assertFalse(bResult.getResult().isEmpty());
     }
 }

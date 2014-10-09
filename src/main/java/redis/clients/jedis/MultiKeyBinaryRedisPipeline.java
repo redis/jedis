@@ -65,8 +65,8 @@ public interface MultiKeyBinaryRedisPipeline {
     Response<byte[]> randomKeyBinary();
 
     Response<Long> bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
-    
+
     Response<String> pfmerge(final byte[] destkey, final byte[]... sourcekeys);
 
-    Response<Long> pfcount(final byte[] ... keys);
+    Response<Long> pfcount(final byte[]... keys);
 }

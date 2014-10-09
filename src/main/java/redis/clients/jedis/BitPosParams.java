@@ -17,7 +17,7 @@ public class BitPosParams {
 
     public BitPosParams(long start, long end) {
 	this(start);
-	
+
 	params.add(Protocol.toByteArray(end));
     }
 

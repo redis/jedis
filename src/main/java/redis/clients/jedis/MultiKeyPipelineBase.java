@@ -367,10 +367,10 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 	client.info();
 	return getResponse(BuilderFactory.STRING);
     }
-    
+
     public Response<List<String>> time() {
-    client.time();
-    return getResponse(BuilderFactory.STRING_LIST);
+	client.time();
+	return getResponse(BuilderFactory.STRING_LIST);
     }
 
     public Response<Long> dbSize() {
@@ -451,7 +451,7 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 	client.clusterSetSlotImporting(slot, nodeId);
 	return getResponse(BuilderFactory.STRING);
     }
-    
+
     @Override
     public Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {
 	client.pfmerge(destkey, sourcekeys);
@@ -465,13 +465,13 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
     }
 
     @Override
-    public Response<Long> pfcount(String...keys) {
+    public Response<Long> pfcount(String... keys) {
 	client.pfcount(keys);
 	return getResponse(BuilderFactory.LONG);
     }
 
     @Override
-    public Response<Long> pfcount(final byte[] ... keys) {
+    public Response<Long> pfcount(final byte[]... keys) {
 	client.pfcount(keys);
 	return getResponse(BuilderFactory.LONG);
     }

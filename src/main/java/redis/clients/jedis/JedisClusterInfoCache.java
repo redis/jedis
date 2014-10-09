@@ -23,7 +23,7 @@ public class JedisClusterInfoCache {
     private final Lock r = rwl.readLock();
     private final Lock w = rwl.writeLock();
     private final GenericObjectPoolConfig poolConfig;
-    
+
     public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig) {
 	this.poolConfig = poolConfig;
     }
@@ -97,7 +97,8 @@ public class JedisClusterInfoCache {
 	    if (nodes.containsKey(nodeKey))
 		return;
 
-	    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort());
+	    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(),
+		    node.getPort());
 	    nodes.put(nodeKey, nodePool);
 	} finally {
 	    w.unlock();

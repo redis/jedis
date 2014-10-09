@@ -47,12 +47,12 @@ public class ClusterCommandsTest extends JedisTestBase {
 
     @Test
     public void testClusterSoftReset() {
-        node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-        assertTrue(node1.clusterNodes().split("\n").length > 1);
-        node1.clusterReset(Reset.SOFT);
-        assertEquals(1, node1.clusterNodes().split("\n").length);
+	node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+	assertTrue(node1.clusterNodes().split("\n").length > 1);
+	node1.clusterReset(Reset.SOFT);
+	assertEquals(1, node1.clusterNodes().split("\n").length);
     }
-    
+
     @Test
     public void testClusterHardReset() {
 	String nodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
@@ -60,7 +60,7 @@ public class ClusterCommandsTest extends JedisTestBase {
 	String newNodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
 	assertNotEquals(nodeId, newNodeId);
     }
-    
+
     @Test
     public void clusterSetSlotImporting() {
 	node2.clusterAddSlots(6000);
@@ -124,7 +124,7 @@ public class ClusterCommandsTest extends JedisTestBase {
 	String status = node1.clusterSetSlotMigrating(5000, nodeId);
 	assertEquals("OK", status);
     }
-    
+
     @Test
     public void clusterSlots() {
 	// please see cluster slot output format from below commit

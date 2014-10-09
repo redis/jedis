@@ -33,7 +33,7 @@ public class JedisPoolTest extends Assert {
     @Test
     public void checkCloseableConnections() throws Exception {
 	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
-		     hnp.getPort(), 2000);
+		hnp.getPort(), 2000);
 	Jedis jedis = pool.getResource();
 	jedis.auth("foobared");
 	jedis.set("foo", "bar");
@@ -270,37 +270,37 @@ public class JedisPoolTest extends Assert {
 
     @Test
     public void getNumActiveIsNegativeWhenPoolIsClosed() {
-        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
-                hnp.getPort(), 2000, "foobared", 0, "my_shiny_client_name");
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort(), 2000, "foobared", 0, "my_shiny_client_name");
 
-        pool.destroy();
-        assertTrue(pool.getNumActive() < 0);
+	pool.destroy();
+	assertTrue(pool.getNumActive() < 0);
     }
 
     @Test
     public void getNumActiveReturnsTheCorrectNumber() {
-        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
-            hnp.getPort(), 2000);
-        Jedis jedis = pool.getResource();
-        jedis.auth("foobared");
-        jedis.set("foo", "bar");
-        assertEquals("bar", jedis.get("foo"));
+	JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(),
+		hnp.getPort(), 2000);
+	Jedis jedis = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
+	assertEquals("bar", jedis.get("foo"));
 
-        assertEquals(1, pool.getNumActive());
+	assertEquals(1, pool.getNumActive());
 
-        Jedis jedis2 = pool.getResource();
-        jedis.auth("foobared");
-        jedis.set("foo", "bar");
+	Jedis jedis2 = pool.getResource();
+	jedis.auth("foobared");
+	jedis.set("foo", "bar");
 
-        assertEquals(2, pool.getNumActive());
+	assertEquals(2, pool.getNumActive());
 
-        pool.returnResource(jedis);
-        assertEquals(1, pool.getNumActive());
+	pool.returnResource(jedis);
+	assertEquals(1, pool.getNumActive());
 
-        pool.returnResource(jedis2);
+	pool.returnResource(jedis2);
 
-        assertEquals(0, pool.getNumActive());
+	assertEquals(0, pool.getNumActive());
 
-        pool.destroy();
+	pool.destroy();
     }
 }

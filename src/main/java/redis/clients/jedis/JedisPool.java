@@ -13,7 +13,7 @@ public class JedisPool extends Pool<Jedis> {
     public JedisPool() {
 	this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
     }
-    
+
     public JedisPool(final GenericObjectPoolConfig poolConfig, final String host) {
 	this(poolConfig, host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
 		null, Protocol.DEFAULT_DATABASE, null);
@@ -119,10 +119,10 @@ public class JedisPool extends Pool<Jedis> {
     }
 
     public int getNumActive() {
-        if (this.internalPool == null || this.internalPool.isClosed()) {
-            return -1;
-        }
+	if (this.internalPool == null || this.internalPool.isClosed()) {
+	    return -1;
+	}
 
-        return this.internalPool.getNumActive();
+	return this.internalPool.getNumActive();
     }
 }

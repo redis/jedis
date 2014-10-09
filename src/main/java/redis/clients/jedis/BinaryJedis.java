@@ -26,11 +26,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     protected Client client = null;
     protected Transaction transaction = null;
     protected Pipeline pipeline = null;
-    
+
     public BinaryJedis() {
 	client = new Client();
     }
-    
+
     public BinaryJedis(final String host) {
 	URI uri = URI.create(host);
 	if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
@@ -2821,20 +2821,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     @Override
-    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min,
+	    final byte[] max) {
 	checkIsInMulti();
 	client.zrangeByLex(key, min, max);
 	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
     }
 
     @Override
-    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
-	    final int offset, final int count) {
+    public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min,
+	    final byte[] max, final int offset, final int count) {
 	checkIsInMulti();
 	client.zrangeByLex(key, min, max, offset, count);
 	return new LinkedHashSet<byte[]>(client.getBinaryMultiBulkReply());
     }
-    
+
     @Override
     public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
 	checkIsInMulti();
@@ -2851,7 +2852,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     @Override
-    public Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+    public Long zremrangeByLex(final byte[] key, final byte[] min,
+	    final byte[] max) {
 	checkIsInMulti();
 	client.zremrangeByLex(key, min, max);
 	return client.getIntegerReply();

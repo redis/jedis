@@ -95,14 +95,16 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	if (!master.equals(currentHostMaster)) {
 	    currentHostMaster = master;
 	    if (factory == null) {
-	        factory = new JedisFactory(master.getHost(), master.getPort(),
-	                                   timeout, password, database);
-	        initPool(poolConfig, factory);
+		factory = new JedisFactory(master.getHost(), master.getPort(),
+			timeout, password, database);
+		initPool(poolConfig, factory);
 	    } else {
-	        factory.setHostAndPort(currentHostMaster);
-	        // although we clear the pool, we still have to check the returned object
-	        // in getResource, this call only clears idle instances, not borrowed instances
-	        internalPool.clear();
+		factory.setHostAndPort(currentHostMaster);
+		// although we clear the pool, we still have to check the
+		// returned object
+		// in getResource, this call only clears idle instances, not
+		// borrowed instances
+		internalPool.clear();
 	    }
 
 	    log.info("Created JedisPool to master at " + master);
@@ -154,12 +156,14 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
 	if (master == null) {
 	    if (sentinelAvailable) {
-		// can connect to sentinel, but master name seems to not monitored
-		throw new JedisException("Can connect to sentinel, but " + masterName
-			+ " seems to be not monitored...");
+		// can connect to sentinel, but master name seems to not
+		// monitored
+		throw new JedisException("Can connect to sentinel, but "
+			+ masterName + " seems to be not monitored...");
 	    } else {
-		throw new JedisConnectionException("All sentinels down, cannot determine where is "
-			+ masterName + " master is running...");
+		throw new JedisConnectionException(
+			"All sentinels down, cannot determine where is "
+				+ masterName + " master is running...");
 	    }
 	}
 
@@ -193,14 +197,14 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
 	    // get a reference because it can change concurrently
 	    final HostAndPort master = currentHostMaster;
-	    final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(),
-	       jedis.getClient().getPort());
+	    final HostAndPort connection = new HostAndPort(jedis.getClient()
+		    .getHost(), jedis.getClient().getPort());
 
 	    if (master.equals(connection)) {
-	        // connected to the correct master
-	        return jedis;
+		// connected to the correct master
+		return jedis;
 	    } else {
-	        returnBrokenResource(jedis);
+		returnBrokenResource(jedis);
 	    }
 	}
     }

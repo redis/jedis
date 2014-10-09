@@ -2,7 +2,6 @@ package redis.clients.jedis.tests;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
@@ -27,7 +26,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     protected static HostAndPort sentinel1 = HostAndPortUtil
 	    .getSentinelServers().get(1);
     protected static HostAndPort sentinel2 = HostAndPortUtil
-            .getSentinelServers().get(3);
+	    .getSentinelServers().get(3);
 
     protected static Jedis sentinelJedis1;
     protected static Jedis sentinelJedis2;
@@ -42,31 +41,32 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
 	sentinelJedis2 = new Jedis(sentinel2.getHost(), sentinel2.getPort());
     }
-    
-    @Test(expected=JedisConnectionException.class)
+
+    @Test(expected = JedisConnectionException.class)
     public void initializeWithNotAvailableSentinelsShouldThrowException() {
 	Set<String> wrongSentinels = new HashSet<String>();
 	wrongSentinels.add(new HostAndPort("localhost", 65432).toString());
 	wrongSentinels.add(new HostAndPort("localhost", 65431).toString());
-	
-	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels);
+
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME,
+		wrongSentinels);
 	pool.destroy();
     }
-    
-    @Test(expected=JedisException.class)
+
+    @Test(expected = JedisException.class)
     public void initializeWithNotMonitoredMasterNameShouldThrowException() {
 	final String wrongMasterName = "wrongMasterName";
 	JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName,
 		sentinels);
 	pool.destroy();
     }
-    
+
     @Test
     public void checkCloseableConnections() throws Exception {
 	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 
-	JedisSentinelPool pool = new JedisSentinelPool(
-		MASTER_NAME, sentinels, config, 1000, "foobared", 2);
+	JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+		config, 1000, "foobared", 2);
 	Jedis jedis = pool.getResource();
 	jedis.auth("foobared");
 	jedis.set("foo", "bar");
@@ -82,13 +82,14 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 		new GenericObjectPoolConfig(), 1000, "foobared", 2);
 
 	forceFailover(pool);
-	// after failover sentinel needs a bit of time to stabilize before a new failover
+	// after failover sentinel needs a bit of time to stabilize before a new
+	// failover
 	Thread.sleep(100);
 	forceFailover(pool);
 
 	// you can test failover as much as possible
     }
-    
+
     @Test
     public void returnResourceShouldResetState() {
 	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
@@ -99,13 +100,13 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
 	Jedis jedis = pool.getResource();
 	Jedis jedis2 = null;
-	
+
 	try {
 	    jedis.set("hello", "jedis");
 	    Transaction t = jedis.multi();
 	    t.set("hello", "world");
 	    pool.returnResource(jedis);
-	    
+
 	    jedis2 = pool.getResource();
 
 	    assertTrue(jedis == jedis2);
@@ -118,11 +119,11 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	} finally {
 	    if (jedis2 != null)
 		pool.returnResource(jedis2);
-	    
+
 	    pool.destroy();
 	}
     }
-    
+
     @Test
     public void checkResourceIsCloseable() {
 	GenericObjectPoolConfig config = new GenericObjectPoolConfig();
@@ -184,9 +185,10 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
 	Jedis afterFailoverJedis = pool.getResource();
 	assertEquals("PONG", afterFailoverJedis.ping());
-	assertEquals("foobared", afterFailoverJedis.configGet("requirepass").get(1));
+	assertEquals("foobared", afterFailoverJedis.configGet("requirepass")
+		.get(1));
 	assertEquals(2, afterFailoverJedis.getDB().intValue());
-	
+
 	// returning both connections to the pool should not throw
 	beforeFailoverJedis.close();
 	afterFailoverJedis.close();
@@ -194,8 +196,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
     private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
 	    throws InterruptedException {
-	HostAndPort newMaster = JedisSentinelTestUtil
-		.waitForNewPromotedMaster(MASTER_NAME, sentinelJedis1, sentinelJedis2);
+	HostAndPort newMaster = JedisSentinelTestUtil.waitForNewPromotedMaster(
+		MASTER_NAME, sentinelJedis1, sentinelJedis2);
 
 	waitForJedisSentinelPoolRecognizeNewMaster(pool, newMaster);
     }
@@ -216,5 +218,5 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 	    Thread.sleep(100);
 	}
     }
-    
+
 }

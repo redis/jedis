@@ -81,7 +81,8 @@ public interface Commands {
 
     public void hincrBy(final String key, final String field, final long value);
 
-    public void hincrByFloat(final String key, final String field, final double value);
+    public void hincrByFloat(final String key, final String field,
+	    final double value);
 
     public void hexists(final String key, final String field);
 
@@ -303,11 +304,14 @@ public interface Commands {
 
     public void scan(final String cursor, final ScanParams params);
 
-    public void hscan(final String key, final String cursor, final ScanParams params);
+    public void hscan(final String key, final String cursor,
+	    final ScanParams params);
 
-    public void sscan(final String key, final String cursor, final ScanParams params);
+    public void sscan(final String key, final String cursor,
+	    final ScanParams params);
 
-    public void zscan(final String key, final String cursor, final ScanParams params);
-    
+    public void zscan(final String key, final String cursor,
+	    final ScanParams params);
+
     public void waitReplicas(int replicas, long timeout);
 }

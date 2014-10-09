@@ -3,6 +3,7 @@ package redis.clients.jedis.tests;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 import redis.clients.jedis.HostAndPort;
 import redis.clients.util.ClusterNodeInformation;
 import redis.clients.util.ClusterNodeInformationParser;

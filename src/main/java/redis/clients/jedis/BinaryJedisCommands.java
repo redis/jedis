@@ -196,19 +196,20 @@ public interface BinaryJedisCommands {
     Long zremrangeByScore(byte[] key, double start, double end);
 
     Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
-    
+
     Long zlexcount(final byte[] key, final byte[] min, final byte[] max);
-    
+
     Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
-    Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
-	    int offset, int count);
+    Set<byte[]> zrangeByLex(final byte[] key, final byte[] min,
+	    final byte[] max, int offset, int count);
 
-    Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);
+    Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max,
+	    final byte[] min);
 
-    Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
-	    int offset, int count);
-    
+    Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max,
+	    final byte[] min, int offset, int count);
+
     Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
     Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot,
@@ -231,8 +232,8 @@ public interface BinaryJedisCommands {
     Long bitcount(final byte[] key);
 
     Long bitcount(final byte[] key, long start, long end);
-    
+
     Long pfadd(final byte[] key, final byte[]... elements);
-    
+
     long pfcount(final byte[] key);
 }

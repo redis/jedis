@@ -71,8 +71,8 @@ public interface MultiKeyCommands {
     Long bitop(BitOP op, final String destKey, String... srcKeys);
 
     ScanResult<String> scan(final String cursor);
-    
+
     String pfmerge(final String destkey, final String... sourcekeys);
 
-    long pfcount(final String...keys);
+    long pfcount(final String... keys);
 }

@@ -51,7 +51,7 @@ public class BinaryClient extends Connection {
     public BinaryClient() {
 	super();
     }
-    
+
     public BinaryClient(final String host) {
 	super(host);
     }
@@ -208,7 +208,7 @@ public class BinaryClient extends Connection {
     }
 
     public void incrByFloat(final byte[] key, final double value) {
-        sendCommand(INCRBYFLOAT, key, toByteArray(value));
+	sendCommand(INCRBYFLOAT, key, toByteArray(value));
     }
 
     public void incr(final byte[] key) {
@@ -328,7 +328,7 @@ public class BinaryClient extends Connection {
     public void sadd(final byte[] key, final byte[]... members) {
 	sendCommand(SADD, joinParameters(key, members));
     }
-    
+
     public void smembers(final byte[] key) {
 	sendCommand(SMEMBERS, key);
     }
@@ -568,10 +568,11 @@ public class BinaryClient extends Connection {
     public void punsubscribe(final byte[]... patterns) {
 	sendCommand(PUNSUBSCRIBE, patterns);
     }
-    
+
     public void pubsub(final byte[]... args) {
-    	sendCommand(PUBSUB, args);
+	sendCommand(PUBSUB, args);
     }
+
     public void zcount(final byte[] key, final double min, final double max) {
 
 	byte byteArrayMin[] = (min == Double.NEGATIVE_INFINITY) ? "-inf"
@@ -835,7 +836,7 @@ public class BinaryClient extends Connection {
 	args.addAll(params.getParams());
 	sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
     }
-    
+
     public void zlexcount(final byte[] key, final byte[] min, final byte[] max) {
 	sendCommand(ZLEXCOUNT, key, min, max);
     }
@@ -844,22 +845,23 @@ public class BinaryClient extends Connection {
 	sendCommand(ZRANGEBYLEX, key, min, max);
     }
 
-    public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
-	    final int offset, final int count) {
-	sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.raw, 
+    public void zrangeByLex(final byte[] key, final byte[] min,
+	    final byte[] max, final int offset, final int count) {
+	sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.raw, toByteArray(offset),
+		toByteArray(count));
+    }
+
+    public void zrevrangeByLex(final byte[] key, final byte[] max,
+	    final byte[] min) {
+	sendCommand(ZREVRANGEBYLEX, key, max, min);
+    }
+
+    public void zrevrangeByLex(final byte[] key, final byte[] max,
+	    final byte[] min, final int offset, final int count) {
+	sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.raw,
 		toByteArray(offset), toByteArray(count));
     }
 
-    public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
-	sendCommand(ZREVRANGEBYLEX, key, max, min);
-    }
-    
-    public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
-	    final int offset, final int count) {
-	sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.raw, 
-		toByteArray(offset), toByteArray(count));
-    }
-    
     public void zremrangeByLex(byte[] key, byte[] min, byte[] max) {
 	sendCommand(ZREMRANGEBYLEX, key, min, max);
     }
@@ -965,15 +967,16 @@ public class BinaryClient extends Connection {
     public void getbit(byte[] key, long offset) {
 	sendCommand(GETBIT, key, toByteArray(offset));
     }
-    
-    public void bitpos(final byte[] key, final boolean value, final BitPosParams params) {
+
+    public void bitpos(final byte[] key, final boolean value,
+	    final BitPosParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
 	args.add(toByteArray(value));
 	args.addAll(params.getParams());
 	sendCommand(BITPOS, args.toArray(new byte[args.size()][]));
     }
-    
+
     public void setrange(byte[] key, long offset, byte[] value) {
 	sendCommand(SETRANGE, key, toByteArray(offset), value);
     }
@@ -1200,7 +1203,8 @@ public class BinaryClient extends Connection {
 	sendCommand(SCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void hscan(final byte[] key, final byte[] cursor, final ScanParams params) {
+    public void hscan(final byte[] key, final byte[] cursor,
+	    final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
 	args.add(cursor);
@@ -1208,7 +1212,8 @@ public class BinaryClient extends Connection {
 	sendCommand(HSCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
+    public void sscan(final byte[] key, final byte[] cursor,
+	    final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
 	args.add(cursor);
@@ -1216,7 +1221,8 @@ public class BinaryClient extends Connection {
 	sendCommand(SSCAN, args.toArray(new byte[args.size()][]));
     }
 
-    public void zscan(final byte[] key, final byte[] cursor, final ScanParams params) {
+    public void zscan(final byte[] key, final byte[] cursor,
+	    final ScanParams params) {
 	final List<byte[]> args = new ArrayList<byte[]>();
 	args.add(key);
 	args.add(cursor);
@@ -1235,20 +1241,20 @@ public class BinaryClient extends Connection {
     public void asking() {
 	sendCommand(Command.ASKING);
     }
-    
+
     public void pfadd(final byte[] key, final byte[]... elements) {
-   	sendCommand(PFADD, joinParameters(key, elements));
-    }
-    
-    public void pfcount(final byte[] key) {
-   	sendCommand(PFCOUNT, key);
+	sendCommand(PFADD, joinParameters(key, elements));
     }
 
-    public void pfcount(final byte[]...keys) {
-   	sendCommand(PFCOUNT, keys);
+    public void pfcount(final byte[] key) {
+	sendCommand(PFCOUNT, key);
+    }
+
+    public void pfcount(final byte[]... keys) {
+	sendCommand(PFCOUNT, keys);
     }
 
     public void pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
-   	sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
+	sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
     }
 }

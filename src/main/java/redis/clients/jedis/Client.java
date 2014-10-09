@@ -12,11 +12,11 @@ import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
-    
+
     public Client() {
 	super();
     }
-    
+
     public Client(final String host) {
 	super(host);
     }
@@ -591,33 +591,38 @@ public class Client extends BinaryClient implements Commands {
 	}
 	zinterstore(SafeEncoder.encode(dstkey), params, bsets);
     }
-    
+
     public void zlexcount(final String key, final String min, final String max) {
-	zlexcount(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+	zlexcount(SafeEncoder.encode(key), SafeEncoder.encode(min),
+		SafeEncoder.encode(max));
     }
-    
+
     public void zrangeByLex(final String key, final String min, final String max) {
-	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min),
+		SafeEncoder.encode(max));
     }
-    
-    public void zrangeByLex(final String key, final String min, final String max, 
-	    final int offset, final int count) {
-	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max), 
-		offset, count);
+
+    public void zrangeByLex(final String key, final String min,
+	    final String max, final int offset, final int count) {
+	zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min),
+		SafeEncoder.encode(max), offset, count);
     }
 
     public void zrevrangeByLex(String key, String max, String min) {
-	zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min));
+	zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max),
+		SafeEncoder.encode(min));
     }
 
     public void zrevrangeByLex(String key, String max, String min, int offset,
 	    int count) {
-	zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min), 
-		offset, count);
+	zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max),
+		SafeEncoder.encode(min), offset, count);
     }
-    
-    public void zremrangeByLex(final String key, final String min, final String max) {
-	zremrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+
+    public void zremrangeByLex(final String key, final String min,
+	    final String max) {
+	zremrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min),
+		SafeEncoder.encode(max));
     }
 
     public void strlen(final String key) {
@@ -663,9 +668,11 @@ public class Client extends BinaryClient implements Commands {
 	getbit(SafeEncoder.encode(key), offset);
     }
 
-    public void bitpos(final String key, final boolean value, final BitPosParams params) {
+    public void bitpos(final String key, final boolean value,
+	    final BitPosParams params) {
 	bitpos(SafeEncoder.encode(key), value, params);
     }
+
     public void setrange(String key, long offset, String value) {
 	setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
     }
@@ -709,11 +716,11 @@ public class Client extends BinaryClient implements Commands {
 	}
 	subscribe(cs);
     }
-    
+
     public void pubsubChannels(String pattern) {
 	pubsub(Protocol.PUBSUB_CHANNELS, pattern);
     }
-    
+
     public void pubsubNumPat() {
 	pubsub(Protocol.PUBSUB_NUM_PAT);
     }
@@ -873,16 +880,19 @@ public class Client extends BinaryClient implements Commands {
     public void scan(final String cursor, final ScanParams params) {
 	scan(SafeEncoder.encode(cursor), params);
     }
-    
-    public void hscan(final String key, final String cursor, final ScanParams params) {
+
+    public void hscan(final String key, final String cursor,
+	    final ScanParams params) {
 	hscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
-    
-    public void sscan(final String key, final String cursor, final ScanParams params) {
+
+    public void sscan(final String key, final String cursor,
+	    final ScanParams params) {
 	sscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
-    
-    public void zscan(final String key, final String cursor, final ScanParams params) {
+
+    public void zscan(final String key, final String cursor,
+	    final ScanParams params) {
 	zscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
     }
 
@@ -894,14 +904,14 @@ public class Client extends BinaryClient implements Commands {
 	arg[0] = SafeEncoder.encode(subcommand);
 	cluster(arg);
     }
-    
+
     public void pubsub(final String subcommand, final String... args) {
-    	final byte[][] arg = new byte[args.length+1][];
-    	for (int i = 1; i < arg.length; i++) {
-    	    arg[i] = SafeEncoder.encode(args[i-1]);
-    	}
-    	arg[0] = SafeEncoder.encode(subcommand);
-    	pubsub(arg);
+	final byte[][] arg = new byte[args.length + 1][];
+	for (int i = 1; i < arg.length; i++) {
+	    arg[i] = SafeEncoder.encode(args[i - 1]);
+	}
+	arg[0] = SafeEncoder.encode(subcommand);
+	pubsub(arg);
     }
 
     public void cluster(final String subcommand, final String... args) {
@@ -971,18 +981,19 @@ public class Client extends BinaryClient implements Commands {
 	pfcount(SafeEncoder.encode(key));
     }
 
-    public void pfcount(final String...keys) {
+    public void pfcount(final String... keys) {
 	pfcount(SafeEncoder.encodeMany(keys));
     }
 
     public void pfmerge(final String destkey, final String... sourcekeys) {
 	pfmerge(SafeEncoder.encode(destkey), SafeEncoder.encodeMany(sourcekeys));
     }
-public void clusterSetSlotStable(final int slot) {
+
+    public void clusterSetSlotStable(final int slot) {
 	cluster(Protocol.CLUSTER_SETSLOT, String.valueOf(slot),
 		Protocol.CLUSTER_SETSLOT_STABLE);
     }
-    
+
     public void clusterForget(final String nodeId) {
 	cluster(Protocol.CLUSTER_FORGET, nodeId);
     }
@@ -1014,7 +1025,7 @@ public void clusterSetSlotStable(final int slot) {
     public void clusterFailover() {
 	cluster(Protocol.CLUSTER_FAILOVER);
     }
-    
+
     public void clusterSlots() {
 	cluster(Protocol.CLUSTER_SLOTS);
     }

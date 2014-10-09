@@ -1,16 +1,17 @@
 package redis.clients.jedis;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.util.ClusterNodeInformation;
-import redis.clients.util.ClusterNodeInformationParser;
-import redis.clients.util.SafeEncoder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
+import redis.clients.util.ClusterNodeInformation;
+import redis.clients.util.ClusterNodeInformationParser;
+import redis.clients.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
     public static final ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
@@ -24,7 +25,7 @@ public class JedisClusterInfoCache {
     private final GenericObjectPoolConfig poolConfig;
 
     public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig) {
-        this.poolConfig = poolConfig;
+	this.poolConfig = poolConfig;
     }
 
     public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -96,7 +97,8 @@ public class JedisClusterInfoCache {
 	    if (nodes.containsKey(nodeKey))
 		return;
 
-	    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort());
+	    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(),
+		    node.getPort());
 	    nodes.put(nodeKey, nodePool);
 	} finally {
 	    w.unlock();

@@ -16,15 +16,15 @@ public class ScanResult<T> {
 	this.cursor = cursor;
 	this.results = results;
     }
-    
+
     public String getCursor() {
 	return SafeEncoder.encode(cursor);
     }
-    
+
     public byte[] getCursorAsBytes() {
 	return cursor;
     }
-    
+
     public List<T> getResult() {
 	return results;
     }

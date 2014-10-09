@@ -104,7 +104,7 @@ public class BuilderFactory {
 	}
 
     };
-    
+
     public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
 	@SuppressWarnings("unchecked")
 	public Map<String, String> build(Object data) {
@@ -124,7 +124,7 @@ public class BuilderFactory {
 	}
 
     };
-    
+
     public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
 	@SuppressWarnings("unchecked")
 	public Set<String> build(Object data) {

@@ -1,9 +1,9 @@
 package redis.clients.util;
 
-import redis.clients.jedis.HostAndPort;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import redis.clients.jedis.HostAndPort;
 
 public class ClusterNodeInformation {
     private HostAndPort node;
@@ -14,35 +14,35 @@ public class ClusterNodeInformation {
     public ClusterNodeInformation(HostAndPort node) {
 	this.node = node;
 	this.availableSlots = new ArrayList<Integer>();
-        this.slotsBeingImported = new ArrayList<Integer>();
-        this.slotsBeingMigrated = new ArrayList<Integer>();
+	this.slotsBeingImported = new ArrayList<Integer>();
+	this.slotsBeingMigrated = new ArrayList<Integer>();
     }
 
     public void addAvailableSlot(int slot) {
-        availableSlots.add(slot);
+	availableSlots.add(slot);
     }
 
     public void addSlotBeingImported(int slot) {
-        slotsBeingImported.add(slot);
+	slotsBeingImported.add(slot);
     }
 
     public void addSlotBeingMigrated(int slot) {
-        slotsBeingMigrated.add(slot);
+	slotsBeingMigrated.add(slot);
     }
 
     public HostAndPort getNode() {
-        return node;
+	return node;
     }
 
     public List<Integer> getAvailableSlots() {
-        return availableSlots;
+	return availableSlots;
     }
 
     public List<Integer> getSlotsBeingImported() {
-        return slotsBeingImported;
+	return slotsBeingImported;
     }
 
     public List<Integer> getSlotsBeingMigrated() {
-        return slotsBeingMigrated;
+	return slotsBeingMigrated;
     }
 }

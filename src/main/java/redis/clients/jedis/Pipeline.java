@@ -1,9 +1,9 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.exceptions.JedisDataException;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Pipeline extends MultiKeyPipelineBase {
 
@@ -150,5 +150,5 @@ public class Pipeline extends MultiKeyPipelineBase {
 	currentMulti = new MultiResponseBuilder();
 	return response;
     }
-    
+
 }

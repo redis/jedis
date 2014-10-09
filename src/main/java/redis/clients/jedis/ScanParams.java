@@ -13,14 +13,15 @@ import redis.clients.util.SafeEncoder;
 public class ScanParams {
     private List<byte[]> params = new ArrayList<byte[]>();
     public final static String SCAN_POINTER_START = String.valueOf(0);
-    public final static byte[] SCAN_POINTER_START_BINARY = SafeEncoder.encode(SCAN_POINTER_START);
+    public final static byte[] SCAN_POINTER_START_BINARY = SafeEncoder
+	    .encode(SCAN_POINTER_START);
 
     public ScanParams match(final byte[] pattern) {
 	params.add(MATCH.raw);
 	params.add(pattern);
-    return this;
+	return this;
     }
-    
+
     public ScanParams match(final String pattern) {
 	params.add(MATCH.raw);
 	params.add(SafeEncoder.encode(pattern));

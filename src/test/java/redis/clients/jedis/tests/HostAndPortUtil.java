@@ -12,18 +12,29 @@ public class HostAndPortUtil {
     private static List<HostAndPort> clusterHostAndPortList = new ArrayList<HostAndPort>();
 
     static {
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT));
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 1));
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 2));
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 3));
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 4));
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 5));
-	redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 6));
-	
-	sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
-	sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
-	sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2));
-	sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 3));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT + 1));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT + 2));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT + 3));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT + 4));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT + 5));
+	redisHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_PORT + 6));
+
+	sentinelHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_SENTINEL_PORT));
+	sentinelHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_SENTINEL_PORT + 1));
+	sentinelHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_SENTINEL_PORT + 2));
+	sentinelHostAndPortList.add(new HostAndPort("localhost",
+		Protocol.DEFAULT_SENTINEL_PORT + 3));
 
 	clusterHostAndPortList.add(new HostAndPort("localhost", 7379));
 	clusterHostAndPortList.add(new HostAndPort("localhost", 7380));

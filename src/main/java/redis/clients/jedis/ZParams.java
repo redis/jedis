@@ -23,12 +23,12 @@ public class ZParams {
 
     private List<byte[]> params = new ArrayList<byte[]>();
 
-	/**
-	 * Set weights.
-	 * 
-	 * @param weights
-	 *            weights.
-	 */
+    /**
+     * Set weights.
+     * 
+     * @param weights
+     *            weights.
+     */
     public ZParams weights(final double... weights) {
 	params.add(WEIGHTS.raw);
 	for (final double weight : weights) {

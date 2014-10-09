@@ -42,7 +42,6 @@ public abstract class JedisClusterCommand<T> {
 
 	Jedis connection = null;
 	try {
-	    
 
 	    if (asking) {
 		// TODO: Pipeline asking with the original command to make it
@@ -52,13 +51,14 @@ public abstract class JedisClusterCommand<T> {
 
 		// if asking success, reset asking flag
 		asking = false;
-	    }else{
+	    } else {
 		if (tryRandomNode) {
 		    connection = connectionHandler.getConnection();
-	        } else {
+		} else {
 		    connection = connectionHandler
-			     .getConnectionFromSlot(JedisClusterCRC16.getSlot(key));
-	        }
+			    .getConnectionFromSlot(JedisClusterCRC16
+				    .getSlot(key));
+		}
 	    }
 
 	    return execute(connection);
@@ -76,7 +76,8 @@ public abstract class JedisClusterCommand<T> {
 	} catch (JedisRedirectionException jre) {
 	    if (jre instanceof JedisAskDataException) {
 		asking = true;
-		askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
+		askConnection.set(this.connectionHandler
+			.getConnectionFromNode(jre.getTargetNode()));
 	    } else if (jre instanceof JedisMovedDataException) {
 		// it rebuilds cluster's slot cache
 		// recommended by Redis cluster specification

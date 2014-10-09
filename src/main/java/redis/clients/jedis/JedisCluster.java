@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
@@ -10,12 +8,16 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+
 public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     public static final short HASHSLOTS = 16384;
     private static final int DEFAULT_TIMEOUT = 1;
     private static final int DEFAULT_MAX_REDIRECTIONS = 5;
-    
-    public static enum Reset {SOFT, HARD}
+
+    public static enum Reset {
+	SOFT, HARD
+    }
 
     private int timeout;
     private int maxRedirections;
@@ -30,30 +32,28 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 	this(nodes, DEFAULT_TIMEOUT);
     }
 
-    public JedisCluster(Set<HostAndPort> nodes, int timeout,
-	    int maxRedirections) {
-        this(nodes, timeout, maxRedirections,
-                new GenericObjectPoolConfig());
+    public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxRedirections) {
+	this(nodes, timeout, maxRedirections, new GenericObjectPoolConfig());
     }
 
     public JedisCluster(Set<HostAndPort> nodes,
-        final GenericObjectPoolConfig poolConfig) {
-    this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+	    final GenericObjectPoolConfig poolConfig) {
+	this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig);
     }
 
     public JedisCluster(Set<HostAndPort> nodes, int timeout,
-        final GenericObjectPoolConfig poolConfig) {
-    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+	    final GenericObjectPoolConfig poolConfig) {
+	this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig);
     }
 
     public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout,
-        int maxRedirections, final GenericObjectPoolConfig poolConfig) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(
-            jedisClusterNode, poolConfig);
-    this.timeout = timeout;
-    this.maxRedirections = maxRedirections;
+	    int maxRedirections, final GenericObjectPoolConfig poolConfig) {
+	this.connectionHandler = new JedisSlotBasedConnectionHandler(
+		jedisClusterNode, poolConfig);
+	this.timeout = timeout;
+	this.maxRedirections = maxRedirections;
     }
-    
+
     @Override
     public void close() {
 	if (connectionHandler != null) {
@@ -82,14 +82,14 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
     @Override
     public String set(final String key, final String value, final String nxxx,
-                      final String expx, final long time) {
-        return new JedisClusterCommand<String>(connectionHandler, timeout,
-                maxRedirections) {
-            @Override
-            public String execute(Jedis connection) {
-                return connection.set(key, value, nxxx, expx, time);
-            }
-        }.run(key);
+	    final String expx, final long time) {
+	return new JedisClusterCommand<String>(connectionHandler, timeout,
+		maxRedirections) {
+	    @Override
+	    public String execute(Jedis connection) {
+		return connection.set(key, value, nxxx, expx, time);
+	    }
+	}.run(key);
     }
 
     @Override
@@ -153,8 +153,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection
-			.expireAt(key, unixTime);
+		return connection.expireAt(key, unixTime);
 	    }
 	}.run(key);
     }
@@ -177,8 +176,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Boolean execute(Jedis connection) {
-		return connection.setbit(key, offset,
-			value);
+		return connection.setbit(key, offset, value);
 	    }
 	}.run(key);
     }
@@ -190,8 +188,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Boolean execute(Jedis connection) {
-		return connection.setbit(key, offset,
-			value);
+		return connection.setbit(key, offset, value);
 	    }
 	}.run(key);
     }
@@ -213,8 +210,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.setrange(key, offset,
-			value);
+		return connection.setrange(key, offset, value);
 	    }
 	}.run(key);
     }
@@ -226,8 +222,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public String execute(Jedis connection) {
-		return connection.getrange(key,
-			startOffset, endOffset);
+		return connection.getrange(key, startOffset, endOffset);
 	    }
 	}.run(key);
     }
@@ -260,8 +255,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public String execute(Jedis connection) {
-		return connection.setex(key, seconds,
-			value);
+		return connection.setex(key, seconds, value);
 	    }
 	}.run(key);
     }
@@ -327,8 +321,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public String execute(Jedis connection) {
-		return connection
-			.substr(key, start, end);
+		return connection.substr(key, start, end);
 	    }
 	}.run(key);
     }
@@ -339,8 +332,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection
-			.hset(key, field, value);
+		return connection.hset(key, field, value);
 	    }
 	}.run(key);
     }
@@ -362,8 +354,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.hsetnx(key, field,
-			value);
+		return connection.hsetnx(key, field, value);
 	    }
 	}.run(key);
     }
@@ -396,8 +387,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.hincrBy(key, field,
-			value);
+		return connection.hincrBy(key, field, value);
 	    }
 	}.run(key);
     }
@@ -508,8 +498,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		timeout, maxRedirections) {
 	    @Override
 	    public List<String> execute(Jedis connection) {
-		return connection
-			.lrange(key, start, end);
+		return connection.lrange(key, start, end);
 	    }
 	}.run(key);
     }
@@ -542,8 +531,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public String execute(Jedis connection) {
-		return connection
-			.lset(key, index, value);
+		return connection.lset(key, index, value);
 	    }
 	}.run(key);
     }
@@ -554,8 +542,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection
-			.lrem(key, count, value);
+		return connection.lrem(key, count, value);
 	    }
 	}.run(key);
     }
@@ -661,13 +648,13 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
     @Override
     public List<String> srandmember(final String key, final int count) {
-        return new JedisClusterCommand<List<String>>(connectionHandler, timeout,
-            maxRedirections) {
-            @Override
-            public List<String> execute(Jedis connection) {
-            return connection.srandmember(key, count);
-            }
-        }.run(key);
+	return new JedisClusterCommand<List<String>>(connectionHandler,
+		timeout, maxRedirections) {
+	    @Override
+	    public List<String> execute(Jedis connection) {
+		return connection.srandmember(key, count);
+	    }
+	}.run(key);
     }
 
     @Override
@@ -687,8 +674,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.zadd(key, score,
-			member);
+		return connection.zadd(key, score, member);
 	    }
 	}.run(key);
     }
@@ -699,8 +685,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection
-			.zadd(key, scoreMembers);
+		return connection.zadd(key, scoreMembers);
 	    }
 	}.run(key);
     }
@@ -711,8 +696,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection
-			.zrange(key, start, end);
+		return connection.zrange(key, start, end);
 	    }
 	}.run(key);
     }
@@ -735,8 +719,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Double execute(Jedis connection) {
-		return connection.zincrby(key, score,
-			member);
+		return connection.zincrby(key, score, member);
 	    }
 	}.run(key);
     }
@@ -770,8 +753,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrevrange(key, start,
-			end);
+		return connection.zrevrange(key, start, end);
 	    }
 	}.run(key);
     }
@@ -783,8 +765,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection.zrangeWithScores(key,
-			start, end);
+		return connection.zrangeWithScores(key, start, end);
 	    }
 	}.run(key);
     }
@@ -796,8 +777,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection.zrevrangeWithScores(
-			key, start, end);
+		return connection.zrevrangeWithScores(key, start, end);
 	    }
 	}.run(key);
     }
@@ -842,8 +822,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		timeout, maxRedirections) {
 	    @Override
 	    public List<String> execute(Jedis connection) {
-		return connection.sort(key,
-			sortingParameters);
+		return connection.sort(key, sortingParameters);
 	    }
 	}.run(key);
     }
@@ -877,8 +856,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrangeByScore(key,
-			min, max);
+		return connection.zrangeByScore(key, min, max);
 	    }
 	}.run(key);
     }
@@ -890,8 +868,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrangeByScore(key,
-			min, max);
+		return connection.zrangeByScore(key, min, max);
 	    }
 	}.run(key);
     }
@@ -903,8 +880,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrevrangeByScore(key,
-			min, max);
+		return connection.zrevrangeByScore(key, min, max);
 	    }
 	}.run(key);
     }
@@ -916,8 +892,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrangeByScore(key,
-			min, max, offset, count);
+		return connection.zrangeByScore(key, min, max, offset, count);
 	    }
 	}.run(key);
     }
@@ -929,8 +904,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrevrangeByScore(key,
-			min, max);
+		return connection.zrevrangeByScore(key, min, max);
 	    }
 	}.run(key);
     }
@@ -942,8 +916,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrangeByScore(key,
-			min, max, offset, count);
+		return connection.zrangeByScore(key, min, max, offset, count);
 	    }
 	}.run(key);
     }
@@ -955,8 +928,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrevrangeByScore(key,
-			min, max, offset, count);
+		return connection
+			.zrevrangeByScore(key, min, max, offset, count);
 	    }
 	}.run(key);
     }
@@ -968,8 +941,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrangeByScoreWithScores(key, min, max);
+		return connection.zrangeByScoreWithScores(key, min, max);
 	    }
 	}.run(key);
     }
@@ -981,8 +953,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrevrangeByScoreWithScores(key, min, max);
+		return connection.zrevrangeByScoreWithScores(key, min, max);
 	    }
 	}.run(key);
     }
@@ -995,8 +966,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrangeByScoreWithScores(key, min, max, offset, count);
+		return connection.zrangeByScoreWithScores(key, min, max,
+			offset, count);
 	    }
 	}.run(key);
     }
@@ -1008,8 +979,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
-		return connection.zrevrangeByScore(key,
-			min, max, offset, count);
+		return connection
+			.zrevrangeByScore(key, min, max, offset, count);
 	    }
 	}.run(key);
     }
@@ -1021,8 +992,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrangeByScoreWithScores(key, min, max);
+		return connection.zrangeByScoreWithScores(key, min, max);
 	    }
 	}.run(key);
     }
@@ -1034,8 +1004,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrevrangeByScoreWithScores(key, min, max);
+		return connection.zrevrangeByScoreWithScores(key, min, max);
 	    }
 	}.run(key);
     }
@@ -1048,8 +1017,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrangeByScoreWithScores(key, min, max, offset, count);
+		return connection.zrangeByScoreWithScores(key, min, max,
+			offset, count);
 	    }
 	}.run(key);
     }
@@ -1062,9 +1031,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrevrangeByScoreWithScores(key, max, min, offset,
-				count);
+		return connection.zrevrangeByScoreWithScores(key, max, min,
+			offset, count);
 	    }
 	}.run(key);
     }
@@ -1077,9 +1045,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Set<Tuple> execute(Jedis connection) {
-		return connection
-			.zrevrangeByScoreWithScores(key, max, min, offset,
-				count);
+		return connection.zrevrangeByScoreWithScores(key, max, min,
+			offset, count);
 	    }
 	}.run(key);
     }
@@ -1091,8 +1058,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.zremrangeByRank(key,
-			start, end);
+		return connection.zremrangeByRank(key, start, end);
 	    }
 	}.run(key);
     }
@@ -1104,8 +1070,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.zremrangeByScore(key,
-			start, end);
+		return connection.zremrangeByScore(key, start, end);
 	    }
 	}.run(key);
     }
@@ -1117,15 +1082,14 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.zremrangeByScore(key,
-			start, end);
+		return connection.zremrangeByScore(key, start, end);
 	    }
 	}.run(key);
     }
-    
+
     @Override
     public Long zlexcount(final String key, final String min, final String max) {
-	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
+	return new JedisClusterCommand<Long>(connectionHandler, timeout,
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
@@ -1135,8 +1099,9 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
-    public Set<String> zrangeByLex(final String key, final String min, final String max) {
-	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+    public Set<String> zrangeByLex(final String key, final String min,
+	    final String max) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout,
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
@@ -1146,9 +1111,9 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
-    public Set<String> zrangeByLex(final String key, final String min, final String max,
-	    final int offset, final int count) {
-	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+    public Set<String> zrangeByLex(final String key, final String min,
+	    final String max, final int offset, final int count) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout,
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
@@ -1158,8 +1123,9 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
-    public Set<String> zrevrangeByLex(final String key, final String max, final String min) {
-	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+    public Set<String> zrevrangeByLex(final String key, final String max,
+	    final String min) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout,
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
@@ -1169,9 +1135,9 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
-    public Set<String> zrevrangeByLex(final String key, final String max, final String min,
-	    final int offset, final int count) {
-	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, 
+    public Set<String> zrevrangeByLex(final String key, final String max,
+	    final String min, final int offset, final int count) {
+	return new JedisClusterCommand<Set<String>>(connectionHandler, timeout,
 		maxRedirections) {
 	    @Override
 	    public Set<String> execute(Jedis connection) {
@@ -1181,8 +1147,9 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
-    public Long zremrangeByLex(final String key, final String min, final String max) {
-	return new JedisClusterCommand<Long>(connectionHandler, timeout, 
+    public Long zremrangeByLex(final String key, final String min,
+	    final String max) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout,
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
@@ -1198,8 +1165,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.linsert(key, where,
-			pivot, value);
+		return connection.linsert(key, where, pivot, value);
 	    }
 	}.run(key);
     }
@@ -1298,8 +1264,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
-		return connection.bitcount(key, start,
-			end);
+		return connection.bitcount(key, start, end);
 	    }
 	}.run(key);
     }
@@ -1534,7 +1499,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 	    }
 	}.run(null);
     }
-    
+
     @Override
     public ScanResult<String> sscan(final String key, final String cursor) {
 	return new JedisClusterCommand<ScanResult<String>>(connectionHandler,
@@ -1545,7 +1510,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 	    }
 	}.run(null);
     }
-    
+
     @Override
     public ScanResult<Tuple> zscan(final String key, final String cursor) {
 	return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler,
@@ -1559,8 +1524,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
     @Override
     public Long pfadd(final String key, final String... elements) {
-	return new JedisClusterCommand<Long>(connectionHandler, 
-		timeout, maxRedirections) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout,
+		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
 		return connection.pfadd(key, elements);
@@ -1570,8 +1535,8 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
     @Override
     public long pfcount(final String key) {
-	return new JedisClusterCommand<Long>(connectionHandler, 
-		timeout, maxRedirections) {
+	return new JedisClusterCommand<Long>(connectionHandler, timeout,
+		maxRedirections) {
 	    @Override
 	    public Long execute(Jedis connection) {
 		return connection.pfcount(key);
@@ -1585,7 +1550,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		timeout, maxRedirections) {
 	    @Override
 	    public List<String> execute(Jedis connection) {
-		return connection.blpop(timeout,key);
+		return connection.blpop(timeout, key);
 	    }
 	}.run(null);
     }
@@ -1596,7 +1561,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 		timeout, maxRedirections) {
 	    @Override
 	    public List<String> execute(Jedis connection) {
-		return connection.brpop(timeout,key);
+		return connection.brpop(timeout, key);
 	    }
 	}.run(null);
     }

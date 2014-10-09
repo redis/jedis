@@ -22,8 +22,8 @@ public class JedisSentinelTest extends JedisTestBase {
 
     protected static HostAndPort master = HostAndPortUtil.getRedisServers()
 	    .get(0);
-    protected static HostAndPort slave = HostAndPortUtil.getRedisServers()
-	    .get(4);
+    protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(
+	    4);
     protected static HostAndPort sentinel = HostAndPortUtil
 	    .getSentinelServers().get(0);
 
@@ -86,15 +86,17 @@ public class JedisSentinelTest extends JedisTestBase {
 	Jedis j = new Jedis(sentinelForFailover.getHost(),
 		sentinelForFailover.getPort());
 	Jedis j2 = new Jedis(sentinelForFailover.getHost(),
-	                    sentinelForFailover.getPort());
+		sentinelForFailover.getPort());
 
 	try {
 	    List<String> masterHostAndPort = j
 		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
-	    HostAndPort currentMaster = new HostAndPort(masterHostAndPort.get(0), 
+	    HostAndPort currentMaster = new HostAndPort(
+		    masterHostAndPort.get(0),
 		    Integer.parseInt(masterHostAndPort.get(1)));
 
-	    JedisSentinelTestUtil.waitForNewPromotedMaster(FAILOVER_MASTER_NAME, j, j2);
+	    JedisSentinelTestUtil.waitForNewPromotedMaster(
+		    FAILOVER_MASTER_NAME, j, j2);
 
 	    masterHostAndPort = j
 		    .sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
@@ -204,5 +206,5 @@ public class JedisSentinelTest extends JedisTestBase {
 	    j.close();
 	}
     }
-    
+
 }

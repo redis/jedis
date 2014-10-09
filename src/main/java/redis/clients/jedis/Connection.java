@@ -16,7 +16,7 @@ import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
-    
+
     private String host = Protocol.DEFAULT_HOST;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
@@ -24,14 +24,14 @@ public class Connection implements Closeable {
     private RedisInputStream inputStream;
     private int timeout = Protocol.DEFAULT_TIMEOUT;
     private boolean broken = false;
-    
+
     public Connection() {
     }
-    
+
     public Connection(final String host) {
 	this.host = host;
     }
-    
+
     public Connection(final String host, final int port) {
 	this.host = host;
 	this.port = port;
@@ -223,8 +223,8 @@ public class Connection implements Closeable {
 
     @SuppressWarnings("unchecked")
     public List<Long> getIntegerMultiBulkReply() {
-        flush();
-        return (List<Long>) Protocol.read(inputStream);
+	flush();
+	return (List<Long>) Protocol.read(inputStream);
     }
 
     public Object getOne() {

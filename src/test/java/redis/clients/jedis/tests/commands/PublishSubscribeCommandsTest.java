@@ -64,64 +64,68 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    }
 	}, "foo");
     }
-    
-    
+
     @Test
-    public void pubSubChannels(){
-    final List<String> expectedActiveChannels = Arrays.asList("testchan1", "testchan2", "testchan3");
+    public void pubSubChannels() {
+	final List<String> expectedActiveChannels = Arrays.asList("testchan1",
+		"testchan2", "testchan3");
 	jedis.subscribe(new JedisPubSub() {
-		private int count = 0;
-		
-		@Override
-		public void onUnsubscribe(String channel, int subscribedChannels) {
-		}
-		
-		@Override
-		public void onSubscribe(String channel, int subscribedChannels) {
-			count++;
-			//All channels are subscribed
-			if (count == 3) {
-			    	Jedis otherJedis = createJedis();
-			    	List<String> activeChannels = otherJedis.pubsubChannels("test*");
-			    	assertTrue(expectedActiveChannels.containsAll(activeChannels));
-			    	unsubscribe();
-			}
-		}
-		
-		@Override
-		public void onPUnsubscribe(String pattern, int subscribedChannels) {
-		}
-		
-		@Override
-		public void onPSubscribe(String pattern, int subscribedChannels) {
-		}
-		
-		@Override
-		public void onPMessage(String pattern, String channel, String message) {
-		}
-		
-		@Override
-		public void onMessage(String channel, String message) {
-		}
-	}, "testchan1", "testchan2", "testchan3");
-    }
-    
-    @Test
-    public void pubSubNumPat(){
-	jedis.psubscribe(new JedisPubSub() {
-	    private int count=0;
+	    private int count = 0;
+
 	    @Override
 	    public void onUnsubscribe(String channel, int subscribedChannels) {
 	    }
-	    
+
 	    @Override
 	    public void onSubscribe(String channel, int subscribedChannels) {
+		count++;
+		// All channels are subscribed
+		if (count == 3) {
+		    Jedis otherJedis = createJedis();
+		    List<String> activeChannels = otherJedis
+			    .pubsubChannels("test*");
+		    assertTrue(expectedActiveChannels
+			    .containsAll(activeChannels));
+		    unsubscribe();
+		}
 	    }
-	    
+
 	    @Override
 	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
 	    }
-	    
+
+	    @Override
+	    public void onPSubscribe(String pattern, int subscribedChannels) {
+	    }
+
+	    @Override
+	    public void onPMessage(String pattern, String channel,
+		    String message) {
+	    }
+
+	    @Override
+	    public void onMessage(String channel, String message) {
+	    }
+	}, "testchan1", "testchan2", "testchan3");
+    }
+
+    @Test
+    public void pubSubNumPat() {
+	jedis.psubscribe(new JedisPubSub() {
+	    private int count = 0;
+
+	    @Override
+	    public void onUnsubscribe(String channel, int subscribedChannels) {
+	    }
+
+	    @Override
+	    public void onSubscribe(String channel, int subscribedChannels) {
+	    }
+
+	    @Override
+	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
+	    }
+
 	    @Override
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 		count++;
@@ -132,51 +136,55 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		    punsubscribe();
 		}
 	    }
-	    
+
 	    @Override
-	    public void onPMessage(String pattern, String channel, String message) {
+	    public void onPMessage(String pattern, String channel,
+		    String message) {
 	    }
-	    
+
 	    @Override
 	    public void onMessage(String channel, String message) {
 	    }
 	}, "test*", "test*", "chan*");
     }
-    
+
     @Test
-    public void pubSubNumSub(){
+    public void pubSubNumSub() {
 	final Map<String, String> expectedNumSub = new HashMap<String, String>();
 	expectedNumSub.put("testchannel2", "1");
 	expectedNumSub.put("testchannel1", "1");
 	jedis.subscribe(new JedisPubSub() {
-	    private int count=0;
+	    private int count = 0;
+
 	    @Override
 	    public void onUnsubscribe(String channel, int subscribedChannels) {
 	    }
-	    
+
 	    @Override
 	    public void onSubscribe(String channel, int subscribedChannels) {
 		count++;
 		if (count == 2) {
 		    Jedis otherJedis = createJedis();
-		    Map<String, String> numSub = otherJedis.pubsubNumSub("testchannel1", "testchannel2");
+		    Map<String, String> numSub = otherJedis.pubsubNumSub(
+			    "testchannel1", "testchannel2");
 		    assertEquals(expectedNumSub, numSub);
 		    unsubscribe();
 		}
 	    }
-	    
+
 	    @Override
 	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
 	    }
-	    
+
 	    @Override
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 	    }
-	    
+
 	    @Override
-	    public void onPMessage(String pattern, String channel, String message) {
+	    public void onPMessage(String pattern, String channel,
+		    String message) {
 	    }
-	    
+
 	    @Override
 	    public void onMessage(String channel, String message) {
 	    }

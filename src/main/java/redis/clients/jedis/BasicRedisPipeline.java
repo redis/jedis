@@ -26,7 +26,7 @@ public interface BasicRedisPipeline {
     Response<String> flushAll();
 
     Response<String> info();
-    
+
     Response<List<String>> time();
 
     Response<Long> dbSize();

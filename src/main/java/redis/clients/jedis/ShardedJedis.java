@@ -125,18 +125,22 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(arg);
 	return j.blpop(arg);
     }
-    public List<String> blpop(int timeout,String key){
+
+    public List<String> blpop(int timeout, String key) {
 	Jedis j = getShard(key);
-	return j.blpop(timeout,key);
+	return j.blpop(timeout, key);
     }
+
     public List<String> brpop(String arg) {
 	Jedis j = getShard(arg);
 	return j.brpop(arg);
     }
-    public List<String> brpop(int timeout,String key) {
+
+    public List<String> brpop(int timeout, String key) {
 	Jedis j = getShard(key);
-	return j.brpop(timeout,key);
+	return j.brpop(timeout, key);
     }
+
     public Long decrBy(String key, long integer) {
 	Jedis j = getShard(key);
 	return j.decrBy(key, integer);
@@ -354,8 +358,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 
     @Override
     public List<String> srandmember(String key, int count) {
-    Jedis j = getShard(key);
-    return j.srandmember(key, count);
+	Jedis j = getShard(key);
+	return j.srandmember(key, count);
     }
 
     public Long zadd(String key, double score, String member) {
@@ -542,25 +546,27 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands,
 	Jedis j = getShard(key);
 	return j.zremrangeByScore(key, start, end);
     }
-    
+
     @Override
     public Long zlexcount(final String key, final String min, final String max) {
 	return getShard(key).zlexcount(key, min, max);
     }
 
     @Override
-    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+    public Set<String> zrangeByLex(final String key, final String min,
+	    final String max) {
 	return getShard(key).zrangeByLex(key, min, max);
     }
 
     @Override
-    public Set<String> zrangeByLex(final String key, final String min, final String max,
-	    final int offset, final int count) {
+    public Set<String> zrangeByLex(final String key, final String min,
+	    final String max, final int offset, final int count) {
 	return getShard(key).zrangeByLex(key, min, max, offset, count);
     }
 
     @Override
-    public Long zremrangeByLex(final String key, final String min, final String max) {
+    public Long zremrangeByLex(final String key, final String min,
+	    final String max) {
 	return getShard(key).zremrangeByLex(key, min, max);
     }
 

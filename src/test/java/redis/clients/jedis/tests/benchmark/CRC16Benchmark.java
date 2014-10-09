@@ -7,10 +7,9 @@ import redis.clients.util.JedisClusterCRC16;
 public class CRC16Benchmark {
     private static final int TOTAL_OPERATIONS = 100000000;
 
-    private static String[] TEST_SET = {
-	"", "123456789", "sfger132515", "hae9Napahngaikeethievubaibogiech", 
-	"AAAAAAAAAAAAAAAAAAAAAA", "Hello, World!"
-    };
+    private static String[] TEST_SET = { "", "123456789", "sfger132515",
+	    "hae9Napahngaikeethievubaibogiech", "AAAAAAAAAAAAAAAAAAAAAA",
+	    "Hello, World!" };
 
     public static void main(String[] args) {
 	long begin = Calendar.getInstance().getTimeInMillis();

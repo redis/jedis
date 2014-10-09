@@ -26,7 +26,7 @@ public class ScanResult<T> {
 	this.cursor = cursor;
 	this.results = results;
     }
-    
+
     @Deprecated
     /**
      * This method is deprecated due to bug (scan cursor should be unsigned long)
@@ -44,11 +44,11 @@ public class ScanResult<T> {
     public String getStringCursor() {
 	return SafeEncoder.encode(cursor);
     }
-    
+
     public byte[] getCursorAsBytes() {
 	return cursor;
     }
-    
+
     public List<T> getResult() {
 	return results;
     }

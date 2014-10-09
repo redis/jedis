@@ -115,10 +115,10 @@ public class JedisPool extends Pool<Jedis> {
     }
 
     public int getNumActive() {
-        if (this.internalPool == null || this.internalPool.isClosed()) {
-            return -1;
-        }
+	if (this.internalPool == null || this.internalPool.isClosed()) {
+	    return -1;
+	}
 
-        return this.internalPool.getNumActive();
+	return this.internalPool.getNumActive();
     }
 }

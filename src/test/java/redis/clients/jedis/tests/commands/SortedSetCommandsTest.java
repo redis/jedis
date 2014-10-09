@@ -20,14 +20,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     final byte[] ba = { 0x0A };
     final byte[] bb = { 0x0B };
     final byte[] bc = { 0x0C };
-    
+
     final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
     final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
     final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
-    
+
     final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
-    final byte[] bInclusiveB = { 0x5B, 0x0B }; 
-    final byte[] bExclusiveC = { 0x28, 0x0C }; 
+    final byte[] bInclusiveB = { 0x5B, 0x0B };
+    final byte[] bExclusiveC = { 0x28, 0x0C };
     final byte[] bLexMinusInf = { 0x2D };
     final byte[] bLexPlusInf = { 0x2B };
 
@@ -59,7 +59,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	assertEquals(0, bstatus);
 
     }
-    
+
     @Test
     public void zrange() {
 	jedis.zadd("foo", 1d, "a");
@@ -96,29 +96,29 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	assertEquals(bexpected, brange);
 
     }
-    
+
     @Test
     public void zrangeByLex() {
 	jedis.zadd("foo", 1, "aa");
 	jedis.zadd("foo", 1, "c");
 	jedis.zadd("foo", 1, "bb");
 	jedis.zadd("foo", 1, "d");
-	
+
 	Set<String> expected = new LinkedHashSet<String>();
 	expected.add("bb");
 	expected.add("c");
-	
+
 	// exclusive aa ~ inclusive c
 	assertEquals(expected, jedis.zrangeByLex("foo", "(aa", "[c"));
-	
+
 	expected.clear();
 	expected.add("bb");
 	expected.add("c");
-	
+
 	// with LIMIT
-	assertEquals(expected, jedis.zrangeByLex("foo", "-", "+", 1, 2));	
+	assertEquals(expected, jedis.zrangeByLex("foo", "-", "+", 1, 2));
     }
-    
+
     @Test
     public void zrangeByLexBinary() {
 	// binary
@@ -129,14 +129,16 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
 	bExpected.add(bb);
 
-	assertEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
+	assertEquals(bExpected,
+		jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
 
 	bExpected.clear();
 	bExpected.add(ba);
 	bExpected.add(bb);
 
-	// with LIMIT 
-	assertEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
+	// with LIMIT
+	assertEquals(bExpected,
+		jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
     }
 
     @Test
@@ -448,7 +450,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(3, bresult);
     }
-    
+
     @Test
     public void zlexcount() {
 	jedis.zadd("foo", 1, "a");
@@ -461,14 +463,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	result = jedis.zlexcount("foo", "-", "+");
 	assertEquals(4, result);
-	
+
 	result = jedis.zlexcount("foo", "-", "(c");
 	assertEquals(3, result);
-	
+
 	result = jedis.zlexcount("foo", "[aa", "+");
 	assertEquals(3, result);
     }
-    
+
     @Test
     public void zlexcountBinary() {
 	// Binary
@@ -820,7 +822,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
     }
-    
+
     @Test
     public void zremrangeByLex() {
 	jedis.zadd("foo", 1, "a");
@@ -838,22 +840,23 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(expected, jedis.zrangeByLex("foo", "-", "+"));
     }
-    
+
     @Test
     public void zremrangeByLexBinary() {
 	jedis.zadd(bfoo, 1, ba);
 	jedis.zadd(bfoo, 1, bc);
 	jedis.zadd(bfoo, 1, bb);
-	
+
 	long bresult = jedis.zremrangeByLex(bfoo, bInclusiveB, bExclusiveC);
-	
+
 	assertEquals(1, bresult);
-	
+
 	Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
 	bexpected.add(ba);
 	bexpected.add(bc);
-	
-	assertEquals(bexpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
+
+	assertEquals(bexpected,
+		jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
     }
 
     @Test
@@ -1021,12 +1024,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	jedis.zadd(bfoo, 1, ba);
 	jedis.zadd(bfoo, 1, bb);
-	
-	ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY);
+
+	ScanResult<Tuple> bResult = jedis
+		.zscan(bfoo, SCAN_POINTER_START_BINARY);
 
 	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
@@ -1040,11 +1044,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("foo", 2, "b");
 	jedis.zadd("foo", 1, "a");
 	jedis.zadd("foo", 11, "aa");
-	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START, params);
+	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START,
+		params);
 
 	assertEquals(SCAN_POINTER_START, result.getStringCursor());
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	params = new ScanParams();
 	params.match(bbarstar);
@@ -1052,11 +1057,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd(bfoo, 2, bbar1);
 	jedis.zadd(bfoo, 1, bbar2);
 	jedis.zadd(bfoo, 11, bbar3);
-	ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY, params);
+	ScanResult<Tuple> bResult = jedis.zscan(bfoo,
+		SCAN_POINTER_START_BINARY, params);
 
 	assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
 	assertFalse(bResult.getResult().isEmpty());
-	
+
     }
 
     @Test
@@ -1070,19 +1076,21 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 	jedis.zadd("foo", 4, "a4");
 	jedis.zadd("foo", 5, "a5");
 
-	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START, params);
+	ScanResult<Tuple> result = jedis.zscan("foo", SCAN_POINTER_START,
+		params);
 
 	assertFalse(result.getResult().isEmpty());
-	
+
 	// binary
 	params = new ScanParams();
 	params.count(2);
-	
+
 	jedis.zadd(bfoo, 2, bbar1);
 	jedis.zadd(bfoo, 1, bbar2);
 	jedis.zadd(bfoo, 11, bbar3);
-	
-	ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY, params);
+
+	ScanResult<Tuple> bResult = jedis.zscan(bfoo,
+		SCAN_POINTER_START_BINARY, params);
 
 	assertFalse(bResult.getResult().isEmpty());
     }

@@ -322,11 +322,11 @@ public class Jedis extends BinaryJedis implements JedisCommands,
      * 
      * @param key
      * @return Integer reply, returns the remaining time to live in seconds of a
-     *         key that has an EXPIRE.
-     *         In Redis 2.6 or older, if the Key does not exists or does not
-     *         have an associated expire, -1 is returned.
-     *         In Redis 2.8 or newer, if the Key does not have an associated expire, -1 is returned 
-     *         or if the Key does not exists, -2 is returned. 
+     *         key that has an EXPIRE. In Redis 2.6 or older, if the Key does
+     *         not exists or does not have an associated expire, -1 is returned.
+     *         In Redis 2.8 or newer, if the Key does not have an associated
+     *         expire, -1 is returned or if the Key does not exists, -2 is
+     *         returned.
      */
     public Long ttl(final String key) {
 	checkIsInMulti();
@@ -2626,7 +2626,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.zinterstore(dstkey, params, sets);
 	return client.getIntegerReply();
     }
-    
+
     @Override
     public Long zlexcount(final String key, final String min, final String max) {
 	checkIsInMulti();
@@ -2635,22 +2635,24 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     @Override
-    public Set<String> zrangeByLex(final String key, final String min, final String max) {
+    public Set<String> zrangeByLex(final String key, final String min,
+	    final String max) {
 	checkIsInMulti();
 	client.zrangeByLex(key, min, max);
 	return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
 
     @Override
-    public Set<String> zrangeByLex(final String key, final String min, final String max,
-	    final int offset, final int count) {
+    public Set<String> zrangeByLex(final String key, final String min,
+	    final String max, final int offset, final int count) {
 	checkIsInMulti();
 	client.zrangeByLex(key, min, max, offset, count);
 	return new LinkedHashSet<String>(client.getMultiBulkReply());
     }
 
     @Override
-    public Long zremrangeByLex(final String key, final String min, final String max) {
+    public Long zremrangeByLex(final String key, final String min,
+	    final String max) {
 	checkIsInMulti();
 	client.zremrangeByLex(key, min, max);
 	return client.getIntegerReply();
@@ -3439,7 +3441,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterMeet(ip, port);
 	return client.getStatusCodeReply();
     }
-    
+
     public String clusterReset(final Reset resetType) {
 	checkIsInMulti();
 	client.clusterReset(resetType);
@@ -3541,7 +3543,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	client.clusterFailover();
 	return client.getStatusCodeReply();
     }
-    
+
     @Override
     public List<Object> clusterSlots() {
 	checkIsInMulti();
@@ -3570,8 +3572,8 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public Map<String, String> pubsubNumSub(String... channels) {
 	checkIsInMulti();
 	client.pubsubNumSub(channels);
-	return BuilderFactory.PUBSUB_NUMSUB_MAP
-		.build(client.getBinaryMultiBulkReply());
+	return BuilderFactory.PUBSUB_NUMSUB_MAP.build(client
+		.getBinaryMultiBulkReply());
     }
 
     @Override
@@ -3640,6 +3642,6 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 	final List<String> multiBulkReply = client.getMultiBulkReply();
 	client.rollbackTimeout();
 	return multiBulkReply;
-    }  
+    }
 
 }

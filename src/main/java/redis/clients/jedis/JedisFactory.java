@@ -32,7 +32,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     }
 
     public void setHostAndPort(final HostAndPort hostAndPort) {
-        this.hostAndPort.set(hostAndPort);
+	this.hostAndPort.set(hostAndPort);
     }
 
     @Override
@@ -64,8 +64,9 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     @Override
     public PooledObject<Jedis> makeObject() throws Exception {
-    final HostAndPort hostAndPort = this.hostAndPort.get();
-	final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), this.timeout);
+	final HostAndPort hostAndPort = this.hostAndPort.get();
+	final Jedis jedis = new Jedis(hostAndPort.getHost(),
+		hostAndPort.getPort(), this.timeout);
 
 	jedis.connect();
 	if (null != this.password) {
@@ -96,8 +97,9 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 	    String connectionHost = jedis.getClient().getHost();
 	    int connectionPort = jedis.getClient().getPort();
 
-	    return hostAndPort.getHost().equals(connectionHost) && hostAndPort.getPort() == connectionPort &&
-	            jedis.isConnected() && jedis.ping().equals("PONG");
+	    return hostAndPort.getHost().equals(connectionHost)
+		    && hostAndPort.getPort() == connectionPort
+		    && jedis.isConnected() && jedis.ping().equals("PONG");
 	} catch (final Exception e) {
 	    return false;
 	}

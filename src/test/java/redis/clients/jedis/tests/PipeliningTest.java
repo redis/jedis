@@ -253,7 +253,7 @@ public class PipeliningTest extends Assert {
 	p.exec();
 	Response<String> r3 = p.get("hello");
 	p.sync();
-	
+
 	// before multi
 	assertEquals("foo", r1.get());
 	// It should be readable whether exec's response was built or not
@@ -367,75 +367,74 @@ public class PipeliningTest extends Assert {
     @Test
     public void testPipelinedTransactionResponse() {
 
-        String key1 = "key1";
-        String val1 = "val1";
+	String key1 = "key1";
+	String val1 = "val1";
 
-        String key2 = "key2";
-        String val2 = "val2";
+	String key2 = "key2";
+	String val2 = "val2";
 
-        String key3 = "key3";
-        String field1 = "field1";
-        String field2 = "field2";
-        String field3 = "field3";
-        String field4 = "field4";
+	String key3 = "key3";
+	String field1 = "field1";
+	String field2 = "field2";
+	String field3 = "field3";
+	String field4 = "field4";
 
-        String value1 = "value1";
-        String value2 = "value2";
-        String value3 = "value3";
-        String value4 = "value4";
+	String value1 = "value1";
+	String value2 = "value2";
+	String value3 = "value3";
+	String value4 = "value4";
 
-        Map<String, String> hashMap = new HashMap<String, String>();
-        hashMap.put(field1, value1);
-        hashMap.put(field2, value2);
+	Map<String, String> hashMap = new HashMap<String, String>();
+	hashMap.put(field1, value1);
+	hashMap.put(field2, value2);
 
-        String key4 = "key4";
-        Map<String, String> hashMap1 = new HashMap<String, String>();
-        hashMap1.put(field3, value3);
-        hashMap1.put(field4, value4);
+	String key4 = "key4";
+	Map<String, String> hashMap1 = new HashMap<String, String>();
+	hashMap1.put(field3, value3);
+	hashMap1.put(field4, value4);
 
+	jedis.set(key1, val1);
+	jedis.set(key2, val2);
+	jedis.hmset(key3, hashMap);
+	jedis.hmset(key4, hashMap1);
 
-        jedis.set(key1, val1);
-        jedis.set(key2, val2);
-        jedis.hmset(key3, hashMap);
-        jedis.hmset(key4, hashMap1);
+	Pipeline pipeline = jedis.pipelined();
+	pipeline.multi();
 
-        Pipeline pipeline = jedis.pipelined();
-        pipeline.multi();
+	pipeline.get(key1);
+	pipeline.hgetAll(key2);
+	pipeline.hgetAll(key3);
+	pipeline.get(key4);
 
-        pipeline.get(key1);
-        pipeline.hgetAll(key2);
-        pipeline.hgetAll(key3);
-        pipeline.get(key4);
+	Response<List<Object>> response = pipeline.exec();
+	pipeline.sync();
 
-        Response<List<Object> > response = pipeline.exec();
-        pipeline.sync();
+	List<Object> result = response.get();
 
-        List<Object> result = response.get();
+	assertEquals(4, result.size());
 
-        assertEquals(4, result.size());
+	assertEquals("val1", result.get(0));
 
-        assertEquals("val1", result.get(0));
+	assertTrue(result.get(1) instanceof JedisDataException);
 
-        assertTrue(result.get(1) instanceof JedisDataException);
+	Map<String, String> hashMapReceived = (Map<String, String>) result
+		.get(2);
+	Iterator<String> iterator = hashMapReceived.keySet().iterator();
+	String mapKey1 = iterator.next();
+	String mapKey2 = iterator.next();
+	assertFalse(iterator.hasNext());
+	verifyHasBothValues(mapKey1, mapKey2, field1, field2);
+	String mapValue1 = hashMapReceived.get(mapKey1);
+	String mapValue2 = hashMapReceived.get(mapKey2);
+	verifyHasBothValues(mapValue1, mapValue2, value1, value2);
 
-        Map<String, String> hashMapReceived = (Map<String, String>)result.get(2);
-        Iterator<String> iterator = hashMapReceived.keySet().iterator();
-        String mapKey1 = iterator.next();
-        String mapKey2 = iterator.next();
-        assertFalse(iterator.hasNext());
-        verifyHasBothValues(mapKey1, mapKey2, field1, field2);
-        String mapValue1 = hashMapReceived.get(mapKey1);
-        String mapValue2 = hashMapReceived.get(mapKey2);
-        verifyHasBothValues(mapValue1, mapValue2, value1, value2);
-
-        assertTrue(result.get(3) instanceof JedisDataException);
+	assertTrue(result.get(3) instanceof JedisDataException);
     }
 
-    private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {
-        assertFalse(firstKey.equals(secondKey));
-        assertTrue(firstKey.equals(value1)
-                || firstKey.equals(value2));
-        assertTrue(secondKey.equals(value1)
-                || secondKey.equals(value2));
+    private void verifyHasBothValues(String firstKey, String secondKey,
+	    String value1, String value2) {
+	assertFalse(firstKey.equals(secondKey));
+	assertTrue(firstKey.equals(value1) || firstKey.equals(value2));
+	assertTrue(secondKey.equals(value1) || secondKey.equals(value2));
     }
 }

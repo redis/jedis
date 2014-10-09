@@ -183,7 +183,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     @Test
     public void scriptEvalReturnNullValues() {
 	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
-	List<String> results = (List<String>) jedis.eval(script, 2, "key1", "key2", "1", "2");
+	List<String> results = (List<String>) jedis.eval(script, 2, "key1",
+		"key2", "1", "2");
 	assertEquals("key1", results.get(0));
 	assertEquals("key2", results.get(1));
 	assertEquals("1", results.get(2));
@@ -194,7 +195,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     public void scriptEvalShaReturnNullValues() {
 	String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
 	String sha = jedis.scriptLoad(script);
-	List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1", "key2", "1", "2");
+	List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1",
+		"key2", "1", "2");
 	assertEquals("key1", results.get(0));
 	assertEquals("key2", results.get(1));
 	assertEquals("1", results.get(2));
@@ -202,6 +204,6 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     }
 
     private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-	return CoreMatchers.<T>hasItem(equalTo(expected));
+	return CoreMatchers.<T> hasItem(equalTo(expected));
     }
 }

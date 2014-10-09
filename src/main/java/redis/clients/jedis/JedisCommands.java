@@ -10,8 +10,7 @@ import java.util.Set;
 public interface JedisCommands {
     String set(String key, String value);
 
-    String set(String key, String value, String nxxx,
-                    String expx, long time);
+    String set(String key, String value, String nxxx, String expx, long time);
 
     String get(String key);
 
@@ -194,14 +193,14 @@ public interface JedisCommands {
     Long zremrangeByScore(String key, double start, double end);
 
     Long zremrangeByScore(String key, String start, String end);
-    
+
     Long zlexcount(final String key, final String min, final String max);
-    
+
     Set<String> zrangeByLex(final String key, final String min, final String max);
 
-    Set<String> zrangeByLex(final String key, final String min, final String max,
-	    final int offset, final int count);
-    
+    Set<String> zrangeByLex(final String key, final String min,
+	    final String max, final int offset, final int count);
+
     Long zremrangeByLex(final String key, final String min, final String max);
 
     Long linsert(String key, Client.LIST_POSITION where, String pivot,
@@ -212,11 +211,11 @@ public interface JedisCommands {
     Long rpushx(String key, String... string);
 
     List<String> blpop(String arg);
-    
+
     List<String> blpop(int timeout, String key);
 
     List<String> brpop(String arg);
-    
+
     List<String> brpop(int timeout, String key);
 
     Long del(String key);
@@ -252,15 +251,16 @@ public interface JedisCommands {
      * @see https://github.com/xetorthio/jedis/issues/531 
      */
     ScanResult<Tuple> zscan(final String key, int cursor);
-    
-    ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
-    
+
+    ScanResult<Map.Entry<String, String>> hscan(final String key,
+	    final String cursor);
+
     ScanResult<String> sscan(final String key, final String cursor);
-    
+
     ScanResult<Tuple> zscan(final String key, final String cursor);
-    
+
     Long pfadd(final String key, final String... elements);
-    
+
     long pfcount(final String key);
 
 }

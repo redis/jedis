@@ -17,7 +17,7 @@ import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
     
-    private String host;
+    private String host = Protocol.DEFAULT_HOST;
     private int port = Protocol.DEFAULT_PORT;
     private Socket socket;
     private RedisOutputStream outputStream;
@@ -27,7 +27,6 @@ public class Connection implements Closeable {
     private boolean broken = false;
     
     public Connection() {
-	this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
     }
     
     public Connection(final String host) {

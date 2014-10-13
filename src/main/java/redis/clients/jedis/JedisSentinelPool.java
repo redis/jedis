@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pair;
 import redis.clients.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {
@@ -23,7 +25,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
     protected int database = Protocol.DEFAULT_DATABASE;
 
-    protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
+    protected Set<SentinelListener> masterListeners = 
+            new HashSet<SentinelListener>();
 
     protected Logger log = Logger.getLogger(getClass().getName());
 
@@ -79,11 +82,11 @@ public class JedisSentinelPool extends Pool<Jedis> {
     private volatile JedisFactory factory;
     private volatile HostAndPort currentHostMaster;
 
+    @Override
     public void destroy() {
-	for (MasterListener m : masterListeners) {
+	for (SentinelListener m : masterListeners) {
 	    m.shutdown();
 	}
-
 	super.destroy();
     }
 
@@ -107,7 +110,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		internalPool.clear();
 	    }
 
-	    log.info("Created JedisPool to master at " + master);
+	    log.log(Level.INFO, "Created JedisPool to master at {0}", master);
 	}
     }
 
@@ -123,7 +126,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	    final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
 		    .split(":")));
 
-	    log.fine("Connecting to Sentinel " + hap);
+	    log.log(Level.FINE, "Connecting to Sentinel {0}", hap);
 
 	    Jedis jedis = null;
 	    try {
@@ -136,17 +139,15 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		sentinelAvailable = true;
 
 		if (masterAddr == null || masterAddr.size() != 2) {
-		    log.warning("Can not get master addr, master name: "
-			    + masterName + ". Sentinel: " + hap + ".");
+		    log.log(Level.WARNING, "Can not get master addr, master name: {0}. Sentinel: {1}.", new Object[]{masterName, hap});
 		    continue;
 		}
 
 		master = toHostAndPort(masterAddr);
-		log.fine("Found Redis master at " + master);
+		log.log(Level.FINE, "Found Redis master at {0}", master);
 		break;
 	    } catch (JedisConnectionException e) {
-		log.warning("Cannot connect to sentinel running @ " + hap
-			+ ". Trying next one.");
+		log.log(Level.WARNING, "Cannot connect to sentinel running @ {0}. Trying next one.", hap);
 	    } finally {
 		if (jedis != null) {
 		    jedis.close();
@@ -170,23 +171,51 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	log.info("Redis master running at " + master
 		+ ", starting Sentinel listeners...");
 
-	for (String sentinel : sentinels) {
-	    final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
-		    .split(":")));
-	    MasterListener masterListener = new MasterListener(masterName,
-		    hap.getHost(), hap.getPort());
-	    masterListeners.add(masterListener);
-	    masterListener.start();
-	}
+        initSentinelListeners(sentinels, masterName, new Pair<JedisSentinelPubSubAdapter, String[]>(
+                            new JedisSentinelPubSubAdapter(masterName) {
+                @Override
+                public boolean isValidMessage(final String channel, 
+                        final String[] messageParts) {
+                    return null!=messageParts && messageParts.length > 3;
+                }
 
+                @Override
+                public String getMasterName(final String[] messageParts) {
+                    return messageParts[0];
+                }
+
+                @Override
+                public void handleMessage(final String channel, 
+                        final String[] switchMasterMsg) {
+                    initPool(toHostAndPort(Arrays.asList(
+                            switchMasterMsg[3],
+                            switchMasterMsg[4])));
+                }
+            }, new String[]{"+switch-master"}));
 	return master;
     }
 
-    private HostAndPort toHostAndPort(List<String> getMasterAddrByNameResult) {
-	String host = getMasterAddrByNameResult.get(0);
-	int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
+    protected void initSentinelListeners(Set<String> sentinels, 
+            final String masterName, 
+            final Pair<JedisSentinelPubSubAdapter, String[]>...subscriptions) {
+        for (String sentinel : sentinels) {
+            final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
+                    .split(":")));
+            final SentinelListener masterListener = new SentinelListener(
+                    masterName, hap.getHost(),hap.getPort(),
+                    subscriptions);
+            masterListeners.add(masterListener);
+            masterListener.start();
+        }
+    }
 
-	return new HostAndPort(host, port);
+    protected HostAndPort toHostAndPort(final List<String> hostPort) {
+        if (null != hostPort && hostPort.size() > 1) {
+            String host = hostPort.get(0);
+            int port = Integer.parseInt(hostPort.get(1));
+            return new HostAndPort(host, port);
+        }
+        return null;
     }
 
     @Override
@@ -209,12 +238,14 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	}
     }
 
+    @Override
     public void returnBrokenResource(final Jedis resource) {
 	if (resource != null) {
 	    returnBrokenResourceObject(resource);
 	}
     }
 
+    @Override
     public void returnResource(final Jedis resource) {
 	if (resource != null) {
 	    resource.resetState();
@@ -246,102 +277,142 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	@Override
 	public void onUnsubscribe(String channel, int subscribedChannels) {
 	}
+
+    }
+    
+    protected abstract class JedisSentinelPubSubAdapter 
+                            extends JedisPubSubAdapter {
+
+        protected final String masterName;
+        protected String sentinelHost;
+        protected int sentinelPort;
+        
+        public JedisSentinelPubSubAdapter(final String masterName) {
+            this.masterName = masterName;
+        }
+        
+        public void setHost(final String host){
+            this.sentinelHost = host;
+        }
+        
+        public void setPort(final int port){
+            this.sentinelPort = port;
+        }
+        
+        @Override
+        public void onMessage(final String channel, final String message) {
+            log.log(Level.FINE, "Sentinel {0}:{1} published: {2}.", 
+                    new Object[]{sentinelHost, sentinelPort, message});
+            final String[] messageParts = message.split(" ");
+            if (!isValidMessage(channel, messageParts)) {
+                log.log(Level.SEVERE, 
+                        "Invalid message received on Sentinel {0}:{1} on channel {2} : {3}", 
+                        new Object[]{sentinelHost, sentinelPort, channel, message});
+            } else if (!this.masterName.equalsIgnoreCase(getMasterName(messageParts))) {
+                log.log(Level.FINE, 
+                        "Ignoring message on {0} for master name {1}, our master name is {2}", 
+                        new Object[]{masterName, message, masterName});
+            } else {
+                handleMessage(channel, messageParts);
+            }
+        }
+
+        public abstract boolean isValidMessage(final String channel, 
+                final String[] messageParts);
+
+        public abstract String getMasterName(final String[] messageParts);
+
+        public abstract void handleMessage(final String channel, 
+                final String[] messageParts);
     }
 
-    protected class MasterListener extends Thread {
+    protected class SentinelListener extends Thread {
+        
+        public final static long DEFAULT_RETRY_WAIT_TIME = 5000;
 
-	protected String masterName;
-	protected String host;
-	protected int port;
-	protected long subscribeRetryWaitTimeMillis = 5000;
-	protected Jedis j;
-	protected AtomicBoolean running = new AtomicBoolean(false);
+        protected String masterName;
+        protected String sentinelHost;
+        protected int sentinelPort;
+        protected long subscribeRetryWaitTimeMillis;
+        protected Jedis j;
+        protected AtomicBoolean running = new AtomicBoolean(false);
+        private final Pair<JedisSentinelPubSubAdapter, String[]>[] subscriptions;
 
-	protected MasterListener() {
-	}
+        public SentinelListener(final String masterName, final String host, 
+                final int port, 
+                final Pair<JedisSentinelPubSubAdapter, String[]>...subscriptions) {
+            this(masterName, host, port, DEFAULT_RETRY_WAIT_TIME,subscriptions);
+        }
 
-	public MasterListener(String masterName, String host, int port) {
-	    this.masterName = masterName;
-	    this.host = host;
-	    this.port = port;
-	}
+        public SentinelListener(final String masterName, final String host, 
+                final int port, final long subscribeRetryWaitTimeMillis,
+                final Pair<JedisSentinelPubSubAdapter, String[]>...subscriptions) {
+            if (null==subscriptions || subscriptions.length == 0){
+                throw new JedisException(
+                        "There are no subscriptions to listen on");
+            }
+            this.masterName = masterName;
+            this.sentinelHost = host;
+            this.sentinelPort = port;
+            this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
+            this.subscriptions = subscriptions;
+        }
 
-	public MasterListener(String masterName, String host, int port,
-		long subscribeRetryWaitTimeMillis) {
-	    this(masterName, host, port);
-	    this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
-	}
+        @Override
+        public void run() {
 
-	public void run() {
+            running.set(true);
 
-	    running.set(true);
+            while (running.get()) {
+                // Connect to the Sentinel
+                j = new Jedis(sentinelHost, sentinelPort);
+                try {
+                    for (final Pair<JedisSentinelPubSubAdapter, String[]> subscription : 
+                            subscriptions) {
+                        // Set the Sentinel host and port to subscribe to
+                        subscription.getLeft().setHost(sentinelHost);
+                        subscription.getLeft().setPort(sentinelPort);
+                        j.subscribe(subscription.getLeft(), 
+                                subscription.getRight());
+                    }
+                } catch (JedisConnectionException e) {
+                    if (running.get()) {
+                        log.log(Level.SEVERE,
+                                "Lost connection to Sentinel at {0}:{1}. "
+                                        + "Sleeping {2}ms and retrying.",
+                                new Object[]{sentinelHost, sentinelPort, 
+                                    subscribeRetryWaitTimeMillis});
+                        try {
+                            Thread.sleep(subscribeRetryWaitTimeMillis);
+                        } catch (InterruptedException e1) {
+                            log.log(Level.SEVERE, 
+                            "Interruped while sleeping to retry connecting "
+                                    + "to Sentinel: {0}", 
+                                e1.getMessage());
+                        }
+                    } else {
+                        log.log(Level.FINE,
+                                "Unsubscribing from Sentinel at {0}:{1}", 
+                                new Object[]{sentinelHost, sentinelPort});
+                    }
+                }
+            }
+        }
 
-	    while (running.get()) {
+        public void shutdown() {
+            try {
+                log.log(Level.FINE, "Shutting down listener on {0}:{1}", 
+                        new Object[]{sentinelHost, sentinelPort});
+                running.set(false);
+                // This isn't good, the Jedis object is not thread safe
+                j.disconnect();
+            } catch (Exception e) {
+                log.log(Level.SEVERE, 
+                        "Caught exception while shutting down: {0}", 
+                        e.getMessage());
+            }
+        }
 
-		j = new Jedis(host, port);
-
-		try {
-		    j.subscribe(new JedisPubSubAdapter() {
-			@Override
-			public void onMessage(String channel, String message) {
-			    log.fine("Sentinel " + host + ":" + port
-				    + " published: " + message + ".");
-
-			    String[] switchMasterMsg = message.split(" ");
-
-			    if (switchMasterMsg.length > 3) {
-
-				if (masterName.equals(switchMasterMsg[0])) {
-				    initPool(toHostAndPort(Arrays.asList(
-					    switchMasterMsg[3],
-					    switchMasterMsg[4])));
-				} else {
-				    log.fine("Ignoring message on +switch-master for master name "
-					    + switchMasterMsg[0]
-					    + ", our master name is "
-					    + masterName);
-				}
-
-			    } else {
-				log.severe("Invalid message received on Sentinel "
-					+ host
-					+ ":"
-					+ port
-					+ " on channel +switch-master: "
-					+ message);
-			    }
-			}
-		    }, "+switch-master");
-
-		} catch (JedisConnectionException e) {
-
-		    if (running.get()) {
-			log.severe("Lost connection to Sentinel at " + host
-				+ ":" + port
-				+ ". Sleeping 5000ms and retrying.");
-			try {
-			    Thread.sleep(subscribeRetryWaitTimeMillis);
-			} catch (InterruptedException e1) {
-			    e1.printStackTrace();
-			}
-		    } else {
-			log.fine("Unsubscribing from Sentinel at " + host + ":"
-				+ port);
-		    }
-		}
-	    }
-	}
-
-	public void shutdown() {
-	    try {
-		log.fine("Shutting down listener on " + host + ":" + port);
-		running.set(false);
-		// This isn't good, the Jedis object is not thread safe
-		j.disconnect();
-	    } catch (Exception e) {
-		log.severe("Caught exception while shutting down: "
-			+ e.getMessage());
-	    }
-	}
     }
+
 }

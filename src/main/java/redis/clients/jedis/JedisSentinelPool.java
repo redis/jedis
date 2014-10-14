@@ -172,7 +172,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		+ ", starting Sentinel listeners...");
 
         initSentinelListeners(sentinels, masterName, new Pair<JedisSentinelPubSubAdapter, String[]>(
-                            new JedisSentinelPubSubAdapter(masterName) {
+                            new JedisSentinelPubSubAdapter() {
                 @Override
                 public boolean isValidMessage(final String channel, 
                         final String[] messageParts) {
@@ -283,19 +283,14 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected abstract class JedisSentinelPubSubAdapter 
                             extends JedisPubSubAdapter {
 
-        protected final String masterName;
+        protected String masterName;
         protected String sentinelHost;
         protected int sentinelPort;
         
-        public JedisSentinelPubSubAdapter(final String masterName) {
+        public void listenOn(final String masterName, final String host,
+                final int port){
             this.masterName = masterName;
-        }
-        
-        public void setHost(final String host){
             this.sentinelHost = host;
-        }
-        
-        public void setPort(final int port){
             this.sentinelPort = port;
         }
         
@@ -370,8 +365,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
                     for (final Pair<JedisSentinelPubSubAdapter, String[]> subscription : 
                             subscriptions) {
                         // Set the Sentinel host and port to subscribe to
-                        subscription.getLeft().setHost(sentinelHost);
-                        subscription.getLeft().setPort(sentinelPort);
+                        subscription.getLeft().listenOn(masterName, sentinelHost,
+                                sentinelPort);
                         j.subscribe(subscription.getLeft(), 
                                 subscription.getRight());
                     }

@@ -247,9 +247,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public Set<byte[]> keys(final byte[] pattern) {
 	checkIsInMulti();
 	client.keys(pattern);
-	final HashSet<byte[]> keySet = new HashSet<byte[]>(
-		client.getBinaryMultiBulkReply());
-	return keySet;
+	return new HashSet<byte[]>(client.getBinaryMultiBulkReply());
     }
 
     /**
@@ -513,7 +511,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     /**
      * Set the the respective keys to the respective values. MSET will replace
-     * old values with new values, while {@link #msetnx(String...) MSETNX} will
+     * old values with new values, while {@link #msetnx(byte[]...) MSETNX} will
      * not perform any operation at all even if just a single key already
      * exists.
      * <p>
@@ -526,7 +524,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * either see the changes to both A and B at once, or no modification at
      * all.
      * 
-     * @see #msetnx(String...)
+     * @see #msetnx(byte[]...)
      * 
      * @param keysvalues
      * @return Status code reply Basically +OK as MSET can't fail
@@ -539,7 +537,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     /**
      * Set the the respective keys to the respective values.
-     * {@link #mset(String...) MSET} will replace old values with new values,
+     * {@link #mset(byte[]...) MSET} will replace old values with new values,
      * while MSETNX will not perform any operation at all even if just a single
      * key already exists.
      * <p>
@@ -552,8 +550,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * either see the changes to both A and B at once, or no modification at
      * all.
      * 
-     * @see #mset(String...)
-     * 
+     * @see #mset(byte[]...)
+     *
      * @param keysvalues
      * @return Integer reply, specifically: 1 if the all the keys were set 0 if
      *         no key was set (at least one key already existed)
@@ -565,7 +563,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     /**
-     * IDECRBY work just like {@link #decr(String) INCR} but instead to
+     * DECRRBY work just like {@link #decr(byte[]) INCR} but instead to
      * decrement by 1 the decrement is integer.
      * <p>
      * INCR commands are limited to 64 bit signed integers.
@@ -649,7 +647,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     /**
-     * INCRBYFLOAT work just like {@link #incrBy(byte[]) INCRBY} but increments
+     * INCRBYFLOAT work just like {@link #incrBy(byte[], long)} INCRBY} but increments
      * by floats instead of integers.
      * <p>
      * INCRBYFLOAT commands are limited to double precision floating point
@@ -667,8 +665,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * @see #decr(byte[])
      * @see #decrBy(byte[], long)
      * 
-     * @param key
-     * @param integer
+     * @param key the key to increment
+     * @param integer the value to increment by
      * @return Integer reply, this commands will reply with the new value of key
      *         after the increment.
      */
@@ -972,8 +970,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public List<byte[]> hvals(final byte[] key) {
 	checkIsInMulti();
 	client.hvals(key);
-	final List<byte[]> lresult = client.getBinaryMultiBulkReply();
-	return lresult;
+	return client.getBinaryMultiBulkReply();
     }
 
     /**
@@ -1178,7 +1175,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * O(N) (with N being the length of the list), setting the first or last
      * elements of the list is O(1).
      * 
-     * @see #lindex(byte[], int)
+     * @see #lindex(byte[], long)
      * 
      * @param key
      * @param index
@@ -1299,11 +1296,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     /**
      * Return all the members (elements) of the set value stored at key. This is
-     * just syntax glue for {@link #sinter(String...) SINTER}.
+     * just syntax glue for {@link #sinter(byte[]...)} SINTER}.
      * <p>
      * Time complexity O(N)
      * 
-     * @param key
+     * @param key the key of the set
      * @return Multi bulk reply
      */
     public Set<byte[]> smembers(final byte[] key) {
@@ -1320,8 +1317,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * <p>
      * Time complexity O(1)
      * 
-     * @param key
-     * @param member
+     * @param key the key of the set
+     * @param member the set member to remove
      * @return Integer reply, specifically: 1 if the new element was removed 0
      *         if the new element was not a member of the set
      */
@@ -1414,7 +1411,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     /**
      * Return the members of a set resulting from the intersection of all the
      * sets hold at the specified keys. Like in
-     * {@link #lrange(byte[], int, int) LRANGE} the result is sent to the client
+     * {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the client
      * as a multi-bulk reply (see the protocol specification for more
      * information). If just a single key is specified, then this command
      * produces the same result as {@link #smembers(byte[]) SMEMBERS}. Actually
@@ -1438,7 +1435,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     /**
-     * This commnad works exactly like {@link #sinter(String...) SINTER} but
+     * This commnad works exactly like {@link #sinter(byte[]...) SINTER} but
      * instead of being returned the resulting set is sotred as dstkey.
      * <p>
      * Time complexity O(N*M) worst case where N is the cardinality of the
@@ -1456,7 +1453,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     /**
      * Return the members of a set resulting from the union of all the sets hold
-     * at the specified keys. Like in {@link #lrange(byte[], int, int) LRANGE}
+     * at the specified keys. Like in {@link #lrange(byte[], long, long)} LRANGE}
      * the result is sent to the client as a multi-bulk reply (see the protocol
      * specification for more information). If just a single key is specified,
      * then this command produces the same result as {@link #smembers(byte[])
@@ -1478,7 +1475,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     /**
-     * This command works exactly like {@link #sunion(String...) SUNION} but
+     * This command works exactly like {@link #sunion(byte[]...) SUNION} but
      * instead of being returned the resulting set is stored as dstkey. Any
      * existing value in dstkey will be over-written.
      * <p>
@@ -1526,7 +1523,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     /**
-     * This command works exactly like {@link #sdiff(String...) SDIFF} but
+     * This command works exactly like {@link #sdiff(byte[]...) SDIFF} but
      * instead of being returned the resulting set is stored in dstkey.
      * 
      * @param dstkey
@@ -1720,16 +1717,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	    final long end) {
 	checkIsInMulti();
 	client.zrangeWithScores(key, start, end);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return getBinaryTupledSet();
     }
 
     public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start,
 	    final long end) {
 	checkIsInMulti();
 	client.zrevrangeWithScores(key, start, end);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return getBinaryTupledSet();
     }
 
     /**
@@ -1778,12 +1773,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * @see https://github.com/xetorthio/jedis/pull/498
      */
     public List<Object> multi(final TransactionBlock jedisTransaction) {
-	List<Object> results = null;
 	jedisTransaction.setClient(client);
 	client.multi();
 	jedisTransaction.execute();
-	results = jedisTransaction.exec();
-	return results;
+	return jedisTransaction.exec();
     }
 
     protected void checkIsInMulti() {
@@ -1989,7 +1982,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #brpop(int, String...)
+     * @see #brpop(int, byte[]...)
      * 
      * @param timeout
      * @param keys
@@ -2002,18 +1995,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      *         programming language used.
      */
     public List<byte[]> blpop(final int timeout, final byte[]... keys) {
-	checkIsInMulti();
-	final List<byte[]> args = new ArrayList<byte[]>();
-	for (final byte[] arg : keys) {
-	    args.add(arg);
-	}
-	args.add(Protocol.toByteArray(timeout));
+	return blpop(getArgsAddTimeout(timeout, keys));
+    }
 
-	client.blpop(args.toArray(new byte[args.size()][]));
-	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+    private byte[][] getArgsAddTimeout (int timeout, byte[][] keys) {
+	int size = keys.length;
+	final byte[][] args = new byte[size + 1][];
+	for (int at = 0; at != size; ++at) {
+	    args[at] = keys[at];
+	}
+	args[size] = Protocol.toByteArray(timeout);
+	return args;
     }
 
     /**
@@ -2118,7 +2110,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * <p>
      * Time complexity: O(1)
      * 
-     * @see #blpop(int, String...)
+     * @see #blpop(int, byte[]...)
      * 
      * @param timeout
      * @param keys
@@ -2131,59 +2123,39 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      *         programming language used.
      */
     public List<byte[]> brpop(final int timeout, final byte[]... keys) {
-	checkIsInMulti();
-	final List<byte[]> args = new ArrayList<byte[]>();
-	for (final byte[] arg : keys) {
-	    args.add(arg);
-	}
-	args.add(Protocol.toByteArray(timeout));
-
-	client.brpop(args.toArray(new byte[args.size()][]));
-	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-
-	return multiBulkReply;
+	return brpop(getArgsAddTimeout(timeout, keys));
     }
 
+    @Deprecated
     public List<byte[]> blpop(byte[] arg) {
-	checkIsInMulti();
-	byte[][] args = new byte[1][];
-	args[0] = arg;
-	client.blpop(args);
-	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+	return blpop(new byte[][]{arg});
     }
 
+    @Deprecated
     public List<byte[]> brpop(byte[] arg) {
-	checkIsInMulti();
-	byte[][] args = new byte[1][];
-	args[0] = arg;
-	client.brpop(args);
-	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+	return brpop(new byte[][]{arg});
     }
 
     public List<byte[]> blpop(byte[]... args) {
 	checkIsInMulti();
 	client.blpop(args);
 	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+	try {
+	    return client.getBinaryMultiBulkReply();
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     public List<byte[]> brpop(byte[]... args) {
 	checkIsInMulti();
 	client.brpop(args);
 	client.setTimeoutInfinite();
-	final List<byte[]> multiBulkReply = client.getBinaryMultiBulkReply();
-	client.rollbackTimeout();
-	return multiBulkReply;
+	try {
+	    return client.getBinaryMultiBulkReply();
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     /**
@@ -2438,8 +2410,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	    final byte[] min, final byte[] max) {
 	checkIsInMulti();
 	client.zrangeByScoreWithScores(key, min, max);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return getBinaryTupledSet();
     }
 
     /**
@@ -2510,8 +2481,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	    final int count) {
 	checkIsInMulti();
 	client.zrangeByScoreWithScores(key, min, max, offset, count);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return getBinaryTupledSet();
     }
 
     private Set<Tuple> getBinaryTupledSet() {
@@ -2568,8 +2538,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	    final byte[] max, final byte[] min) {
 	checkIsInMulti();
 	client.zrevrangeByScoreWithScores(key, max, min);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return getBinaryTupledSet();
     }
 
     public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key,
@@ -2577,8 +2546,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	    final int count) {
 	checkIsInMulti();
 	client.zrevrangeByScoreWithScores(key, max, min, offset, count);
-	Set<Tuple> set = getBinaryTupledSet();
-	return set;
+	return getBinaryTupledSet();
     }
 
     /**
@@ -2633,10 +2601,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * input keys N, before passing the input keys and the other (optional)
      * arguments.
      * <p>
-     * As the terms imply, the {@link #zinterstore(String, String...)
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...)}
      * ZINTERSTORE} command requires an element to be present in each of the
      * given inputs to be inserted in the result. The
-     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all
+     * {@link #zunionstore(byte[], byte[]...)}} command inserts all
      * elements across all inputs.
      * <p>
      * Using the WEIGHTS option, it is possible to add weight to each input
@@ -2655,10 +2623,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
      * 
-     * @see #zunionstore(String, String...)
-     * @see #zunionstore(String, ZParams, String...)
-     * @see #zinterstore(String, String...)
-     * @see #zinterstore(String, ZParams, String...)
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
      * 
      * @param dstkey
      * @param sets
@@ -2677,10 +2645,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * input keys N, before passing the input keys and the other (optional)
      * arguments.
      * <p>
-     * As the terms imply, the {@link #zinterstore(String, String...)
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...)
      * ZINTERSTORE} command requires an element to be present in each of the
      * given inputs to be inserted in the result. The
-     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all
+     * {@link #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all
      * elements across all inputs.
      * <p>
      * Using the WEIGHTS option, it is possible to add weight to each input
@@ -2699,10 +2667,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
      * 
-     * @see #zunionstore(String, String...)
-     * @see #zunionstore(String, ZParams, String...)
-     * @see #zinterstore(String, String...)
-     * @see #zinterstore(String, ZParams, String...)
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
      * 
      * @param dstkey
      * @param sets
@@ -2723,10 +2691,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * input keys N, before passing the input keys and the other (optional)
      * arguments.
      * <p>
-     * As the terms imply, the {@link #zinterstore(String, String...)
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...)
      * ZINTERSTORE} command requires an element to be present in each of the
      * given inputs to be inserted in the result. The
-     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all
+     * {@link #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all
      * elements across all inputs.
      * <p>
      * Using the WEIGHTS option, it is possible to add weight to each input
@@ -2745,10 +2713,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
      * 
-     * @see #zunionstore(String, String...)
-     * @see #zunionstore(String, ZParams, String...)
-     * @see #zinterstore(String, String...)
-     * @see #zinterstore(String, ZParams, String...)
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
      * 
      * @param dstkey
      * @param sets
@@ -2767,10 +2735,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * input keys N, before passing the input keys and the other (optional)
      * arguments.
      * <p>
-     * As the terms imply, the {@link #zinterstore(String, String...)
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...)
      * ZINTERSTORE} command requires an element to be present in each of the
      * given inputs to be inserted in the result. The
-     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all
+     * {@link #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all
      * elements across all inputs.
      * <p>
      * Using the WEIGHTS option, it is possible to add weight to each input
@@ -2789,10 +2757,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * sizes of the input sorted sets, and M being the number of elements in the
      * resulting sorted set
      * 
-     * @see #zunionstore(String, String...)
-     * @see #zunionstore(String, ZParams, String...)
-     * @see #zinterstore(String, String...)
-     * @see #zinterstore(String, ZParams, String...)
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
      * 
      * @param dstkey
      * @param sets
@@ -2927,7 +2895,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      */
     public String shutdown() {
 	client.shutdown();
-	String status = null;
+	String status;
 	try {
 	    status = client.getStatusCodeReply();
 	} catch (JedisException ex) {
@@ -3093,7 +3061,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * configuration parameters are supported.
      * <p>
      * The list of configuration parameters supported by CONFIG SET can be
-     * obtained issuing a {@link #configGet(String) CONFIG GET *} command.
+     * obtained issuing a {@link #configGet(byte[]) CONFIG GET *} command.
      * <p>
      * The configuration set using CONFIG SET is immediately loaded by the Redis
      * server that will start acting as specified starting from the next
@@ -3197,9 +3165,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
 	client.brpoplpush(source, destination, timeout);
 	client.setTimeoutInfinite();
-	byte[] reply = client.getBinaryBulkReply();
-	client.rollbackTimeout();
-	return reply;
+	try {
+	    return client.getBinaryBulkReply();
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     /**
@@ -3259,14 +3229,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
 	client.setTimeoutInfinite();
-	jedisPubSub.proceed(client, channels);
-	client.rollbackTimeout();
+	try {
+	    jedisPubSub.proceed(client, channels);
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
 	client.setTimeoutInfinite();
-	jedisPubSub.proceedWithPatterns(client, patterns);
-	client.rollbackTimeout();
+	try {
+	    jedisPubSub.proceedWithPatterns(client, patterns);
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     public Long getDB() {
@@ -3281,15 +3257,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
      * @return Script result
      */
     public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-	client.setTimeoutInfinite();
-	client.eval(script, toByteArray(keys.size()), getParams(keys, args));
-	return client.getOne();
+	return eval(script, toByteArray(keys.size()), getParams(keys, args));
     }
 
     private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
-	int keyCount = keys.size();
-	int argCount = args.size();
-	byte[][] params = new byte[keyCount + args.size()][];
+	final int keyCount = keys.size();
+	final int argCount = args.size();
+	byte[][] params = new byte[keyCount + argCount][];
 
 	for (int i = 0; i < keyCount; i++)
 	    params[i] = keys.get(i);
@@ -3302,49 +3276,38 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
 	client.setTimeoutInfinite();
-	client.eval(script, keyCount, params);
-	return client.getOne();
+	try {
+	    client.eval(script, keyCount, params);
+	    return client.getOne();
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     public Object eval(byte[] script, int keyCount, byte[]... params) {
-	client.setTimeoutInfinite();
-	client.eval(script, SafeEncoder.encode(Integer.toString(keyCount)),
-		params);
-	return client.getOne();
+	return eval(script, toByteArray(keyCount), params);
     }
 
     public Object eval(byte[] script) {
-	client.setTimeoutInfinite();
-	client.eval(script, 0);
-	return client.getOne();
+	return eval(script, 0);
     }
 
     public Object evalsha(byte[] sha1) {
-	client.setTimeoutInfinite();
-	client.evalsha(sha1, 0);
-	return client.getOne();
+	return evalsha(sha1, 1);
     }
 
     public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-
-	int keyCount = keys == null ? 0 : keys.size();
-	int argCount = args == null ? 0 : args.size();
-
-	byte[][] params = new byte[keyCount + argCount][];
-
-	for (int i = 0; i < keyCount; i++)
-	    params[i] = keys.get(i);
-
-	for (int i = 0; i < argCount; i++)
-	    params[keyCount + i] = args.get(i);
-
-	return evalsha(sha1, keyCount, params);
+	return evalsha(sha1, keys.size(), getParams(keys, args));
     }
 
     public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
 	client.setTimeoutInfinite();
-	client.evalsha(sha1, keyCount, params);
-	return client.getOne();
+	try {
+	    client.evalsha(sha1, keyCount, params);
+	    return client.getOne();
+	} finally {
+	    client.rollbackTimeout();
+	}
     }
 
     public String scriptFlush() {

@@ -217,7 +217,7 @@ public interface JedisCommands {
     Long rpushx(String key, String... string);
 
     /**
-     * @deprecated unusable command
+     * @deprecated unusable command, this will be removed in 3.0.0.
      */
     @Deprecated
     List<String> blpop(String arg);
@@ -225,7 +225,7 @@ public interface JedisCommands {
     List<String> blpop(int timeout, String key);
 
     /**
-     * @deprecated unusable command
+     * @deprecated unusable command, this will be removed in 3.0.0.
      */
     @Deprecated
     List<String> brpop(String arg);

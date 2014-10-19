@@ -48,7 +48,7 @@ Please add unit tests in order to prove your modification works smoothly. And pl
 
 # Jedis Test Environment
 
-Jedis unit tests run with [```Redis unstable branch```](https://github.com/antirez/redis).
+Jedis unit tests run with latest [```Redis unstable branch```](https://github.com/antirez/redis).
 Please let them prepared and installed.
 
 Jedis unit tests use many Redis instances, so we use ```Makefile``` to prepare environment. 

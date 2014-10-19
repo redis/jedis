@@ -12,7 +12,8 @@ Please post General questions to Google Group. It can be closed without answer w
 
 ## Code Convention
 
-* Jedis uses ```Java Convention``` which seems to only supported by Eclipse.
+* Jedis uses ```Java Convention```.
+  * It seems to only supported by Eclipse.
 * In Eclipse (or STS), you can change properties for project
   * Java Code Style -> Formatter -> Active Profile to Java Conventions [built-in]
 * reflect by selection (only changes indentation)
@@ -24,6 +25,7 @@ Please post General questions to Google Group. It can be closed without answer w
 ## Adding commands
 
 * Jedis uses many interfaces to structure commands
+  * planned to write documentation about it, contribution is more welcome!
 * We need to add commands to all interfaces which have responsibility to expose
   * ex) We need to add ping() command to BasicCommands, and provide implementation to all of classes which implemented BasicCommands
 
@@ -46,7 +48,7 @@ Please add unit tests in order to prove your modification works smoothly. And pl
 
 # Jedis Test Environment
 
-Jedis unit tests run with ```[Redis unstable branch](https://github.com/antirez/redis)```.
+Jedis unit tests run with [```Redis unstable branch```](https://github.com/antirez/redis).
 Please let them prepared and installed.
 
 Jedis unit tests use many Redis instances, so we use ```Makefile``` to prepare environment. 

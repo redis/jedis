@@ -48,6 +48,8 @@ public interface JedisCommands {
 
     Long incrBy(String key, long integer);
 
+    Double incrByFloat(String key, double value);
+
     Long incr(String key);
 
     Long append(String key, String value);

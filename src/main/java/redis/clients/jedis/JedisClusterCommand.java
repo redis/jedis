@@ -72,7 +72,7 @@ public abstract class JedisClusterCommand<T> {
 	    connection = null;
 
 	    // retry with random connection
-	    return runWithRetries(key, redirections--, true, asking);
+	    return runWithRetries(key, redirections - 1, true, asking);
 	} catch (JedisRedirectionException jre) {
 	    if (jre instanceof JedisAskDataException) {
 		asking = true;

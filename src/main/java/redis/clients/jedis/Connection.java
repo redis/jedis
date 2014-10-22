@@ -1,5 +1,12 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -7,13 +14,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-
-import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
     private String host;
@@ -173,7 +173,7 @@ public class Connection implements Closeable {
 		&& !socket.isOutputShutdown();
     }
 
-    protected String getStatusCodeReply() {
+    public String getStatusCodeReply() {
 	flush();
 	final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
 	if (null == resp) {
@@ -255,9 +255,9 @@ public class Connection implements Closeable {
 	}
     }
 
-    public List<Object> getMany(int count) {
+    public List<Object> getMany(final int count) {
 	flush();
-	List<Object> responses = new ArrayList<Object>();
+	final List<Object> responses = new ArrayList<Object>(count);
 	for (int i = 0; i < count; i++) {
 	    try {
 		responses.add(readProtocolWithCheckingBroken());

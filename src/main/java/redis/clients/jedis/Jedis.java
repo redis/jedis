@@ -1845,56 +1845,54 @@ public class Jedis extends BinaryJedis implements JedisCommands,
      *         programming language used.
      */
     public List<String> blpop(final int timeout, final String... keys) {
-	return blpop(getArgsAddTimeout(timeout, keys));
-    }
-
-    private String[] getArgsAddTimeout (int timeout, String[] keys) {
-	final int keyCount = keys.length;
-	final String[] args = new String[keyCount + 1];
-	for (int at = 0; at != keyCount; ++at) {
-	    args[at] = keys[at];
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	for (String arg : keys) {
+	    args.add(arg);
 	}
+	args.add(String.valueOf(timeout));
 
-	args[keyCount] = String.valueOf(timeout);
-	return args;
+	client.blpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     public List<String> blpop(String... args) {
-	checkIsInMulti();
 	client.blpop(args);
 	client.setTimeoutInfinite();
-	try {
-	    return client.getMultiBulkReply();
-	} finally {
-	    client.rollbackTimeout();
-	}
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     public List<String> brpop(String... args) {
-	checkIsInMulti();
 	client.brpop(args);
 	client.setTimeoutInfinite();
-	try {
-	    return client.getMultiBulkReply();
-	} finally {
-	    client.rollbackTimeout();
-	}
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
-    /**
-     * @deprecated unusable command
-     */
-    @Deprecated
     public List<String> blpop(String arg) {
-	return blpop(new String[]{arg});
+	String[] args = new String[1];
+	args[0] = arg;
+	client.blpop(args);
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
-    /**
-     * @deprecated unusable command
-     */
-    @Deprecated
     public List<String> brpop(String arg) {
-	return brpop(new String[]{arg});
+	String[] args = new String[1];
+	args[0] = arg;
+	client.brpop(args);
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     /**
@@ -2012,7 +2010,19 @@ public class Jedis extends BinaryJedis implements JedisCommands,
      *         programming language used.
      */
     public List<String> brpop(final int timeout, final String... keys) {
-	return brpop(getArgsAddTimeout(timeout, keys));
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	for (String arg : keys) {
+	    args.add(arg);
+	}
+	args.add(String.valueOf(timeout));
+
+	client.brpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+
+	return multiBulkReply;
     }
 
     public Long zcount(final String key, final double min, final double max) {
@@ -2714,11 +2724,9 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public String brpoplpush(String source, String destination, int timeout) {
 	client.brpoplpush(source, destination, timeout);
 	client.setTimeoutInfinite();
-	try {
-	    return client.getBulkReply();
-	} finally {
-	    client.rollbackTimeout();
-	}
+	String reply = client.getBulkReply();
+	client.rollbackTimeout();
+	return reply;
     }
 
     /**
@@ -2853,22 +2861,16 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     public Object eval(String script, int keyCount, String... params) {
 	client.setTimeoutInfinite();
-	try {
-	    client.eval(script, keyCount, params);
-	    return getEvalResult();
-	} finally {
-	    client.rollbackTimeout();
-	}
+	client.eval(script, keyCount, params);
+
+	return getEvalResult();
     }
 
     public void subscribe(final JedisPubSub jedisPubSub,
 	    final String... channels) {
 	client.setTimeoutInfinite();
-	try {
-	    jedisPubSub.proceed(client, channels);
-	} finally {
-	    client.rollbackTimeout();
-	}
+	jedisPubSub.proceed(client, channels);
+	client.rollbackTimeout();
     }
 
     public Long publish(final String channel, final String message) {
@@ -2881,12 +2883,10 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public void psubscribe(final JedisPubSub jedisPubSub,
 	    final String... patterns) {
 	checkIsInMulti();
+	connect();
 	client.setTimeoutInfinite();
-	try {
-	    jedisPubSub.proceedWithPatterns(client, patterns);
-	} finally {
-	    client.rollbackTimeout();
-	}
+	jedisPubSub.proceedWithPatterns(client, patterns);
+	client.rollbackTimeout();
     }
 
     protected static String[] getParams(List<String> keys, List<String> args) {
@@ -2944,6 +2944,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     public Object evalsha(String sha1, int keyCount, String... params) {
 	checkIsInMulti();
 	client.evalsha(sha1, keyCount, params);
+
 	return getEvalResult();
     }
 
@@ -3502,12 +3503,28 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     @Override
     public List<String> blpop(int timeout, String key) {
-	return blpop(key, String.valueOf(timeout));
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.add(String.valueOf(timeout));
+	client.blpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
     @Override
     public List<String> brpop(int timeout, String key) {
-	return brpop(key, String.valueOf(timeout));
+	checkIsInMulti();
+	List<String> args = new ArrayList<String>();
+	args.add(key);
+	args.add(String.valueOf(timeout));
+	client.brpop(args.toArray(new String[args.size()]));
+	client.setTimeoutInfinite();
+	final List<String> multiBulkReply = client.getMultiBulkReply();
+	client.rollbackTimeout();
+	return multiBulkReply;
     }
 
 }

@@ -128,67 +128,61 @@ public final class Protocol {
     }
 
     private static Object process(final RedisInputStream is) {
-	try {
-	    byte b = is.readByte();
-	    if (b == MINUS_BYTE) {
-		processError(is);
-	    } else if (b == ASTERISK_BYTE) {
-		return processMultiBulkReply(is);
-	    } else if (b == COLON_BYTE) {
-		return processInteger(is);
-	    } else if (b == DOLLAR_BYTE) {
-		return processBulkReply(is);
-	    } else if (b == PLUS_BYTE) {
-		return processStatusCodeReply(is);
-	    } else {
-		throw new JedisConnectionException("Unknown reply: " + (char) b);
-	    }
-	} catch (IOException e) {
-	    throw new JedisConnectionException(e);
+
+	final byte b = is.readByte();
+	if (b == PLUS_BYTE) {
+	    return processStatusCodeReply(is);
+	} else if (b == DOLLAR_BYTE) {
+	    return processBulkReply(is);
+	} else if (b == ASTERISK_BYTE) {
+	    return processMultiBulkReply(is);
+	} else if (b == COLON_BYTE) {
+	    return processInteger(is);
+	} else  if (b == MINUS_BYTE) {
+	    processError(is);
+	    return null;
+	} else {
+	    throw new JedisConnectionException("Unknown reply: " + (char) b);
 	}
-	return null;
     }
 
     private static byte[] processStatusCodeReply(final RedisInputStream is) {
-	return SafeEncoder.encode(is.readLine());
+	return is.readLineBytes();
     }
 
     private static byte[] processBulkReply(final RedisInputStream is) {
-	int len = Integer.parseInt(is.readLine());
+	final int len = is.readIntCrLf();
 	if (len == -1) {
 	    return null;
 	}
-	byte[] read = new byte[len];
+
+	final byte[] read = new byte[len];
 	int offset = 0;
-	try {
-	    while (offset < len) {
-		int size = is.read(read, offset, (len - offset));
-		if (size == -1)
-		    throw new JedisConnectionException(
-			    "It seems like server has closed the connection.");
-		offset += size;
-	    }
-	    // read 2 more bytes for the command delimiter
-	    is.readByte();
-	    is.readByte();
-	} catch (IOException e) {
-	    throw new JedisConnectionException(e);
+	while (offset < len) {
+	    final int size = is.read(read, offset, (len - offset));
+	    if (size == -1)
+		throw new JedisConnectionException(
+			"It seems like server has closed the connection.");
+	    offset += size;
 	}
+
+	// read 2 more bytes for the command delimiter
+	is.readByte();
+	is.readByte();
 
 	return read;
     }
 
     private static Long processInteger(final RedisInputStream is) {
-	String num = is.readLine();
-	return Long.valueOf(num);
+	return is.readLongCrLf();
     }
 
     private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-	int num = Integer.parseInt(is.readLine());
+	final int num = is.readIntCrLf();
 	if (num == -1) {
 	    return null;
 	}
-	List<Object> ret = new ArrayList<Object>(num);
+	final List<Object> ret = new ArrayList<Object>(num);
 	for (int i = 0; i < num; i++) {
 	    try {
 		ret.add(process(is));

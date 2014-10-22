@@ -565,7 +565,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
     }
 
     /**
-     * DECRBY work just like {@link #decr(byte[]) INCR} but instead to
+     * DECRRBY work just like {@link #decr(byte[]) INCR} but instead to
      * decrement by 1 the decrement is integer.
      * <p>
      * INCR commands are limited to 64 bit signed integers.
@@ -2145,18 +2145,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return brpop(getArgsAddTimeout(timeout, keys));
     }
 
-
-    /**
-     * @deprecated unusable command, this command will be removed in 3.0.0.
-     */
     @Deprecated
     public List<byte[]> blpop(byte[] arg) {
 	return blpop(new byte[][]{arg});
     }
 
-    /**
-     * @deprecated unusable command, this command will be removed in 3.0.0.
-     */
     @Deprecated
     public List<byte[]> brpop(byte[] arg) {
 	return brpop(new byte[][]{arg});

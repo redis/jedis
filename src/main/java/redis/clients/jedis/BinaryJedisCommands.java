@@ -220,14 +220,13 @@ public interface BinaryJedisCommands {
 
 
     /**
-     * @deprecated unusable command, this command will be removed in 3.0.0.
+     * @deprecated This command has no meaning.
      */
     @Deprecated
     List<byte[]> blpop(byte[] arg);
 
-
     /**
-     * @deprecated unusable command, this command will be removed in 3.0.0.
+     * @deprecated This command has no meaning.
      */
     @Deprecated
     List<byte[]> brpop(byte[] arg);

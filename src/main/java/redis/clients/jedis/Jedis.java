@@ -1882,7 +1882,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     /**
-     * @deprecated unusable command, this command will be removed in 3.0.0.
+     * @deprecated unusable command
      */
     @Deprecated
     public List<String> blpop(String arg) {
@@ -1890,7 +1890,7 @@ public class Jedis extends BinaryJedis implements JedisCommands,
     }
 
     /**
-     * @deprecated unusable command, this command will be removed in 3.0.0.
+     * @deprecated unusable command
      */
     @Deprecated
     public List<String> brpop(String arg) {

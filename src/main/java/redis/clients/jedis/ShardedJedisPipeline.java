@@ -61,14 +61,6 @@ public class ShardedJedisPipeline extends PipelineBase {
 	return formatted;
     }
 
-    /**
-     * This method will be removed in Jedis 3.0. Use the methods that return
-     * Response's and call sync().
-     */
-    @Deprecated
-    public void execute() {
-    }
-
     @Override
     protected Client getClient(String key) {
 	Client client = jedis.getShard(key).getClient();

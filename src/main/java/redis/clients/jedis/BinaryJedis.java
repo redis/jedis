@@ -1778,23 +1778,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	return transaction;
     }
 
-    @Deprecated
-    /**
-     * This method is deprecated due to its error prone
-     * and will be removed on next major release
-     * You can use multi() instead
-     * @see https://github.com/xetorthio/jedis/pull/498
-     */
-    public List<Object> multi(final TransactionBlock jedisTransaction) {
-	List<Object> results = null;
-	jedisTransaction.setClient(client);
-	client.multi();
-	client.getOne(); // expected OK
-	jedisTransaction.execute();
-	results = jedisTransaction.exec();
-	return results;
-    }
-
     protected void checkIsInMulti() {
 	if (client.isInMulti()) {
 	    throw new JedisDataException(
@@ -2228,19 +2211,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 	checkIsInMulti();
 	client.auth(password);
 	return client.getStatusCodeReply();
-    }
-
-    @Deprecated
-    /**
-     * This method is deprecated due to its error prone with multi
-     * and will be removed on next major release
-     * You can use pipelined() instead
-     * @see https://github.com/xetorthio/jedis/pull/498
-     */
-    public List<Object> pipelined(final PipelineBlock jedisPipeline) {
-	jedisPipeline.setClient(client);
-	jedisPipeline.execute();
-	return jedisPipeline.syncAndReturnAll();
     }
 
     public Pipeline pipelined() {

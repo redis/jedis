@@ -143,37 +143,6 @@ public class ShardedJedisTest extends Assert {
     }
 
     @Test
-    public void shardedPipeline() {
-	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-	shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
-	shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
-	shards.get(0).setPassword("foobared");
-	shards.get(1).setPassword("foobared");
-	ShardedJedis jedis = new ShardedJedis(shards);
-
-	final List<String> keys = getKeysDifferentShard(jedis);
-	jedis.set(keys.get(0), "a");
-	jedis.set(keys.get(1), "b");
-
-	assertNotSame(jedis.getShard(keys.get(0)), jedis.getShard(keys.get(1)));
-
-	List<Object> results = jedis.pipelined(new ShardedJedisPipeline() {
-	    public void execute() {
-		get(keys.get(0));
-		get(keys.get(1));
-	    }
-	});
-
-	List<Object> expected = new ArrayList<Object>(2);
-	expected.add(SafeEncoder.encode("a"));
-	expected.add(SafeEncoder.encode("b"));
-
-	assertEquals(2, results.size());
-	assertArrayEquals(SafeEncoder.encode("a"), (byte[]) results.get(0));
-	assertArrayEquals(SafeEncoder.encode("b"), (byte[]) results.get(1));
-    }
-
-    @Test
     public void testMD5Sharding() {
 	List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
 	shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));

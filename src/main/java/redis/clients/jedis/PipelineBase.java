@@ -8,7 +8,7 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
+public abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	RedisPipeline {
 
     protected abstract Client getClient(String key);

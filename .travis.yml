@@ -4,6 +4,5 @@ jdk:
   - openjdk7
   - oraclejdk7
   - oraclejdk8
-  - openjdk8
 install: make travis-install
 script: make test

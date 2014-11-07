@@ -255,7 +255,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		j = new Jedis(host, port);
 
 		try {
-		    j.subscribe(new JedisPubSubAdaptor() {
+		    j.subscribe(new JedisPubSub() {
 			@Override
 			public void onMessage(String channel, String message) {
 			    log.fine("Sentinel " + host + ":" + port

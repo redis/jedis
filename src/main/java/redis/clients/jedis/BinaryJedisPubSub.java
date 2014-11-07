@@ -16,18 +16,17 @@ public abstract class BinaryJedisPubSub {
     private int subscribedChannels = 0;
     private Client client;
 
-    public abstract void onMessage(byte[] channel, byte[] message);
+	public void onMessage(byte[] channel, byte[] message) {}
 
-    public abstract void onPMessage(byte[] pattern, byte[] channel,
-	    byte[] message);
+	public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {}
 
-    public abstract void onSubscribe(byte[] channel, int subscribedChannels);
+	public void onSubscribe(byte[] channel, int subscribedChannels) {}
 
-    public abstract void onUnsubscribe(byte[] channel, int subscribedChannels);
+	public void onUnsubscribe(byte[] channel, int subscribedChannels) {}
 
-    public abstract void onPUnsubscribe(byte[] pattern, int subscribedChannels);
+	public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {}
 
-    public abstract void onPSubscribe(byte[] pattern, int subscribedChannels);
+	public void onPSubscribe(byte[] pattern, int subscribedChannels) {}
 
     public void unsubscribe() {
 	client.unsubscribe();

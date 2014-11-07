@@ -31,7 +31,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void subscribe() throws InterruptedException {
-	jedis.subscribe(new JedisPubSubAdaptor() {
+	jedis.subscribe(new JedisPubSub() {
 	    public void onMessage(String channel, String message) {
 		assertEquals("foo", channel);
 		assertEquals("exit", message);
@@ -57,7 +57,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void pubSubChannels() {
 	final List<String> expectedActiveChannels = Arrays.asList("testchan1",
 		"testchan2", "testchan3");
-	jedis.subscribe(new JedisPubSubAdaptor() {
+	jedis.subscribe(new JedisPubSub() {
 	    private int count = 0;
 
 	    @Override
@@ -78,7 +78,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
     @Test
     public void pubSubNumPat() {
-	jedis.psubscribe(new JedisPubSubAdaptor() {
+	jedis.psubscribe(new JedisPubSub() {
 	    private int count = 0;
 
 	    @Override
@@ -100,7 +100,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	final Map<String, String> expectedNumSub = new HashMap<String, String>();
 	expectedNumSub.put("testchannel2", "1");
 	expectedNumSub.put("testchannel1", "1");
-	jedis.subscribe(new JedisPubSubAdaptor() {
+	jedis.subscribe(new JedisPubSub() {
 	    private int count = 0;
 
 	    @Override
@@ -120,7 +120,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void subscribeMany() throws UnknownHostException, IOException,
 	    InterruptedException {
-	jedis.subscribe(new JedisPubSubAdaptor() {
+	jedis.subscribe(new JedisPubSub() {
 	    public void onMessage(String channel, String message) {
 		unsubscribe(channel);
 	    }
@@ -135,7 +135,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void psubscribe() throws UnknownHostException, IOException,
 	    InterruptedException {
-	jedis.psubscribe(new JedisPubSubAdaptor() {
+	jedis.psubscribe(new JedisPubSub() {
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 		assertEquals("foo.*", pattern);
 		assertEquals(1, subscribedChannels);
@@ -161,7 +161,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void psubscribeMany() throws UnknownHostException, IOException,
 	    InterruptedException {
-	jedis.psubscribe(new JedisPubSubAdaptor() {
+	jedis.psubscribe(new JedisPubSub() {
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 		publishOne(pattern.replace("*", "123"), "exit");
 	    }
@@ -176,7 +176,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void subscribeLazily() throws UnknownHostException, IOException,
 	    InterruptedException {
-	final JedisPubSub pubsub = new JedisPubSubAdaptor() {
+	final JedisPubSub pubsub = new JedisPubSub() {
 	    public void onMessage(String channel, String message) {
 		unsubscribe(channel);
 	    }
@@ -205,7 +205,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void binarySubscribe() throws UnknownHostException, IOException,
 	    InterruptedException {
-	jedis.subscribe(new BinaryJedisPubSubAdaptor() {
+	jedis.subscribe(new BinaryJedisPubSub() {
 	    public void onMessage(byte[] channel, byte[] message) {
 		assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
 		assertTrue(Arrays.equals(SafeEncoder.encode("exit"), message));
@@ -228,7 +228,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void binarySubscribeMany() throws UnknownHostException, IOException,
 	    InterruptedException {
-	jedis.subscribe(new BinaryJedisPubSubAdaptor() {
+	jedis.subscribe(new BinaryJedisPubSub() {
 	    public void onMessage(byte[] channel, byte[] message) {
 		unsubscribe(channel);
 	    }
@@ -242,7 +242,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void binaryPsubscribe() throws UnknownHostException, IOException,
 	    InterruptedException {
-	jedis.psubscribe(new BinaryJedisPubSubAdaptor() {
+	jedis.psubscribe(new BinaryJedisPubSub() {
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
 		assertEquals(1, subscribedChannels);
@@ -269,7 +269,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void binaryPsubscribeMany() throws UnknownHostException,
 	    IOException, InterruptedException {
-	jedis.psubscribe(new BinaryJedisPubSubAdaptor() {
+	jedis.psubscribe(new BinaryJedisPubSub() {
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
 			"exit");
@@ -285,7 +285,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     @Test
     public void binarySubscribeLazily() throws UnknownHostException,
 	    IOException, InterruptedException {
-	final BinaryJedisPubSub pubsub = new BinaryJedisPubSubAdaptor() {
+	final BinaryJedisPubSub pubsub = new BinaryJedisPubSub() {
 	    public void onMessage(byte[] channel, byte[] message) {
 		unsubscribe(channel);
 	    }
@@ -315,7 +315,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
     @Test(expected = JedisConnectionException.class)
     public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
-	JedisPubSub pubsub = new JedisPubSubAdaptor();
+	JedisPubSub pubsub = new JedisPubSub() {};
 	pubsub.unsubscribe();
     }
 
@@ -351,7 +351,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	});
 	t.start();
 	try {
-	    jedis.subscribe(new JedisPubSubAdaptor() {
+	    jedis.subscribe(new JedisPubSub() {
 		public void onMessage(String channel, String message) {
 		    try {
 			// wait 0.5 secs to slow down subscribe and

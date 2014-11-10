@@ -450,6 +450,25 @@ public class PipeliningTest extends Assert {
 
 	assertTrue(result.get(3) instanceof JedisDataException);
     }
+    
+    @Test
+    public void testSyncWithNoCommandQueued() {
+	// we need to test with fresh instance of Jedis
+	Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+	
+	Pipeline pipeline = jedis2.pipelined();
+	pipeline.sync();
+	
+	jedis2.close();
+	
+	jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+	
+	pipeline = jedis2.pipelined();
+	List<Object> resp = pipeline.syncAndReturnAll();
+	assertTrue(resp.isEmpty());
+	
+	jedis2.close();
+    }
 
     private void verifyHasBothValues(String firstKey, String secondKey,
 	    String value1, String value2) {

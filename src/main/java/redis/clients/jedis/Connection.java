@@ -155,8 +155,8 @@ public class Connection implements Closeable {
 	if (isConnected()) {
 	    try {
 		inputStream.close();
-		outputStream.close();
 		if (!socket.isClosed()) {
+		    outputStream.close();
 		    socket.close();
 		}
 	    } catch (IOException ex) {

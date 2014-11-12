@@ -19,7 +19,7 @@ import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands,
 	MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands,
-	BasicCommands, ClusterCommands {
+	BasicCommands, ClusterCommands, SentinelCommands {
 
     protected Pool<Jedis> dataSource = null;
 

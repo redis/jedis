@@ -24,4 +24,11 @@ public class Queable {
 	return lr;
     }
 
+    protected boolean hasPipelinedResponse() {
+	return pipelinedResponses.size() > 0;
+    }
+
+    protected int getPipelinedResponseLength() {
+	return pipelinedResponses.size();
+    }
 }

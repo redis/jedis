@@ -10,9 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import redis.clients.jedis.BinaryJedisPubSub;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.SafeEncoder;
 
@@ -52,16 +50,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		assertEquals("foo", channel);
 		assertEquals(0, subscribedChannels);
 	    }
-
-	    public void onPSubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    public void onPMessage(String pattern, String channel,
-		    String message) {
-	    }
 	}, "foo");
     }
 
@@ -71,10 +59,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		"testchan2", "testchan3");
 	jedis.subscribe(new JedisPubSub() {
 	    private int count = 0;
-
-	    @Override
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
 
 	    @Override
 	    public void onSubscribe(String channel, int subscribedChannels) {
@@ -89,23 +73,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		    unsubscribe();
 		}
 	    }
-
-	    @Override
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    @Override
-	    public void onPSubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    @Override
-	    public void onPMessage(String pattern, String channel,
-		    String message) {
-	    }
-
-	    @Override
-	    public void onMessage(String channel, String message) {
-	    }
 	}, "testchan1", "testchan2", "testchan3");
     }
 
@@ -113,18 +80,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void pubSubNumPat() {
 	jedis.psubscribe(new JedisPubSub() {
 	    private int count = 0;
-
-	    @Override
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    @Override
-	    public void onSubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    @Override
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-	    }
 
 	    @Override
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
@@ -137,14 +92,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		}
 	    }
 
-	    @Override
-	    public void onPMessage(String pattern, String channel,
-		    String message) {
-	    }
-
-	    @Override
-	    public void onMessage(String channel, String message) {
-	    }
 	}, "test*", "test*", "chan*");
     }
 
@@ -157,10 +104,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    private int count = 0;
 
 	    @Override
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    @Override
 	    public void onSubscribe(String channel, int subscribedChannels) {
 		count++;
 		if (count == 2) {
@@ -170,23 +113,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		    assertEquals(expectedNumSub, numSub);
 		    unsubscribe();
 		}
-	    }
-
-	    @Override
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    @Override
-	    public void onPSubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    @Override
-	    public void onPMessage(String pattern, String channel,
-		    String message) {
-	    }
-
-	    @Override
-	    public void onMessage(String channel, String message) {
 	    }
 	}, "testchannel1", "testchannel2");
     }
@@ -203,18 +129,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		publishOne(channel, "exit");
 	    }
 
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    public void onPSubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    public void onPMessage(String pattern, String channel,
-		    String message) {
-	    }
 	}, "foo", "bar");
     }
 
@@ -222,15 +136,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void psubscribe() throws UnknownHostException, IOException,
 	    InterruptedException {
 	jedis.psubscribe(new JedisPubSub() {
-	    public void onMessage(String channel, String message) {
-	    }
-
-	    public void onSubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 		assertEquals("foo.*", pattern);
 		assertEquals(1, subscribedChannels);
@@ -257,20 +162,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void psubscribeMany() throws UnknownHostException, IOException,
 	    InterruptedException {
 	jedis.psubscribe(new JedisPubSub() {
-	    public void onMessage(String channel, String message) {
-	    }
-
-	    public void onSubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 		publishOne(pattern.replace("*", "123"), "exit");
-	    }
-
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
 	    }
 
 	    public void onPMessage(String pattern, String channel,
@@ -296,14 +189,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		}
 	    }
 
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
 	    public void onPSubscribe(String pattern, int subscribedChannels) {
 		publishOne(pattern.replace("*", "123"), "exit");
-	    }
-
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
 	    }
 
 	    public void onPMessage(String pattern, String channel,
@@ -335,16 +222,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
 		assertEquals(0, subscribedChannels);
 	    }
-
-	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-	    }
-
-	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
-	    }
-
-	    public void onPMessage(byte[] pattern, byte[] channel,
-		    byte[] message) {
-	    }
 	}, SafeEncoder.encode("foo"));
     }
 
@@ -359,19 +236,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 	    public void onSubscribe(byte[] channel, int subscribedChannels) {
 		publishOne(SafeEncoder.encode(channel), "exit");
 	    }
-
-	    public void onUnsubscribe(byte[] channel, int subscribedChannels) {
-	    }
-
-	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-	    }
-
-	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
-	    }
-
-	    public void onPMessage(byte[] pattern, byte[] channel,
-		    byte[] message) {
-	    }
 	}, SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
     }
 
@@ -379,15 +243,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void binaryPsubscribe() throws UnknownHostException, IOException,
 	    InterruptedException {
 	jedis.psubscribe(new BinaryJedisPubSub() {
-	    public void onMessage(byte[] channel, byte[] message) {
-	    }
-
-	    public void onSubscribe(byte[] channel, int subscribedChannels) {
-	    }
-
-	    public void onUnsubscribe(byte[] channel, int subscribedChannels) {
-	    }
-
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
 		assertEquals(1, subscribedChannels);
@@ -415,21 +270,9 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     public void binaryPsubscribeMany() throws UnknownHostException,
 	    IOException, InterruptedException {
 	jedis.psubscribe(new BinaryJedisPubSub() {
-	    public void onMessage(byte[] channel, byte[] message) {
-	    }
-
-	    public void onSubscribe(byte[] channel, int subscribedChannels) {
-	    }
-
-	    public void onUnsubscribe(byte[] channel, int subscribedChannels) {
-	    }
-
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
 			"exit");
-	    }
-
-	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
 	    }
 
 	    public void onPMessage(byte[] pattern, byte[] channel,
@@ -456,15 +299,9 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 		}
 	    }
 
-	    public void onUnsubscribe(byte[] channel, int subscribedChannels) {
-	    }
-
 	    public void onPSubscribe(byte[] pattern, int subscribedChannels) {
 		publishOne(SafeEncoder.encode(pattern).replace("*", "123"),
 			"exit");
-	    }
-
-	    public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
 	    }
 
 	    public void onPMessage(byte[] pattern, byte[] channel,
@@ -478,26 +315,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
     @Test(expected = JedisConnectionException.class)
     public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
-	JedisPubSub pubsub = new JedisPubSub() {
-	    public void onMessage(String channel, String message) {
-	    }
-
-	    public void onPMessage(String pattern, String channel,
-		    String message) {
-	    }
-
-	    public void onSubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    public void onUnsubscribe(String channel, int subscribedChannels) {
-	    }
-
-	    public void onPUnsubscribe(String pattern, int subscribedChannels) {
-	    }
-
-	    public void onPSubscribe(String pattern, int subscribedChannels) {
-	    }
-	};
+	JedisPubSub pubsub = new JedisPubSub() {};
 	pubsub.unsubscribe();
     }
 
@@ -549,23 +367,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
 			fail(e.getMessage());
 		    }
-		}
-
-		public void onSubscribe(String channel, int subscribedChannels) {
-		}
-
-		public void onUnsubscribe(String channel, int subscribedChannels) {
-		}
-
-		public void onPSubscribe(String pattern, int subscribedChannels) {
-		}
-
-		public void onPUnsubscribe(String pattern,
-			int subscribedChannels) {
-		}
-
-		public void onPMessage(String pattern, String channel,
-			String message) {
 		}
 	    }, "foo");
 	} finally {

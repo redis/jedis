@@ -219,8 +219,18 @@ public interface BinaryJedisCommands {
 
     Long rpushx(byte[] key, byte[]... arg);
 
+
+    /**
+     * @deprecated unusable command, this command will be removed in 3.0.0.
+     */
+    @Deprecated
     List<byte[]> blpop(byte[] arg);
 
+
+    /**
+     * @deprecated unusable command, this command will be removed in 3.0.0.
+     */
+    @Deprecated
     List<byte[]> brpop(byte[] arg);
 
     Long del(byte[] key);

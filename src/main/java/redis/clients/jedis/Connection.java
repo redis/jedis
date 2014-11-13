@@ -54,7 +54,6 @@ public class Connection implements Closeable {
 	    if (!isConnected()) {
 		connect();
 	    }
-	    socket.setKeepAlive(true);
 	    socket.setSoTimeout(0);
 	} catch (SocketException ex) {
 	    broken = true;
@@ -65,7 +64,6 @@ public class Connection implements Closeable {
     public void rollbackTimeout() {
 	try {
 	    socket.setSoTimeout(timeout);
-	    socket.setKeepAlive(false);
 	} catch (SocketException ex) {
 	    broken = true;
 	    throw new JedisConnectionException(ex);

@@ -294,6 +294,17 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }
 
     @Override
+    public Double incrByFloat(final String key, final double value) {
+    return new JedisClusterCommand<Double>(connectionHandler, timeout,
+        maxRedirections) {
+        @Override
+        public Double execute(Jedis connection) {
+        return connection.incrByFloat(key, value);
+        }
+    }.run(key);
+    }
+
+    @Override
     public Long incr(final String key) {
 	return new JedisClusterCommand<Long>(connectionHandler, timeout,
 		maxRedirections) {

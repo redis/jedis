@@ -1,8 +1,13 @@
 package redis.clients.jedis.tests;
 
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Assert;
 import org.junit.Test;
@@ -204,6 +209,56 @@ public class JedisPoolTest extends Assert {
 	pool0.returnResource(jedis);
 	pool0.destroy();
 	assertTrue(pool0.isClosed());
+    }
+
+    @Test
+    public void returnResourceDestroysResourceOnException() {
+
+    class CrashingJedis extends Jedis {
+        @Override
+        public void resetState() {
+        throw new RuntimeException();
+        }
+    }
+
+    final AtomicInteger destroyed = new AtomicInteger(0);
+
+    class CrashingJedisPooledObjectFactory implements PooledObjectFactory<Jedis> {
+
+        @Override
+        public PooledObject<Jedis> makeObject() throws Exception {
+        return new DefaultPooledObject<Jedis>(new CrashingJedis());
+        }
+
+        @Override
+        public void destroyObject(PooledObject<Jedis> p) throws Exception {
+        destroyed.incrementAndGet();
+        }
+
+        @Override
+        public boolean validateObject(PooledObject<Jedis> p) {
+        return true;
+        }
+
+        @Override
+        public void activateObject(PooledObject<Jedis> p) throws Exception {}
+
+        @Override
+        public void passivateObject(PooledObject<Jedis> p) throws Exception {}
+    }
+
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
+    pool.initPool(config, new CrashingJedisPooledObjectFactory());
+    Jedis crashingJedis = pool.getResource();
+
+    try {
+        pool.returnResource(crashingJedis);
+    }
+    catch (Exception ignored) {}
+
+    assertEquals(destroyed.get(), 1);
     }
 
     @Test

@@ -5,6 +5,7 @@ import java.net.URI;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.Pool;
 
@@ -108,10 +109,17 @@ public class JedisPool extends Pool<Jedis> {
     }
 
     public void returnResource(final Jedis resource) {
-	if (resource != null) {
-	    resource.resetState();
-	    returnResourceObject(resource);
-	}
+    if (resource != null) {
+        try {
+            resource.resetState();
+            returnResourceObject(resource);
+        }
+        catch (Exception e) {
+            returnBrokenResource(resource);
+            throw new JedisException(
+                    "Could not return the resource to the pool", e);
+        }
+    }
     }
 
     public int getNumActive() {

@@ -215,7 +215,11 @@ public class JedisPoolTest extends Assert {
     public void returnResourceDestroysResourceOnException() {
 
     class CrashingJedis extends Jedis {
-        @Override
+        public CrashingJedis(String host) {
+	    super(host);
+	}
+
+	@Override
         public void resetState() {
         throw new RuntimeException();
         }
@@ -227,7 +231,7 @@ public class JedisPoolTest extends Assert {
 
         @Override
         public PooledObject<Jedis> makeObject() throws Exception {
-        return new DefaultPooledObject<Jedis>(new CrashingJedis());
+        return new DefaultPooledObject<Jedis>(new CrashingJedis("localhost"));
         }
 
         @Override

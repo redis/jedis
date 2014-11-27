@@ -34,6 +34,7 @@ public class Transaction extends MultiKeyPipelineBase {
     public List<Object> exec() {
 	client.exec();
 	client.getAll(1); // Discard all but the last reply
+	inTransaction = false;
 
 	List<Object> unformatted = client.getObjectMultiBulkReply();
 	if (unformatted == null) {
@@ -53,6 +54,7 @@ public class Transaction extends MultiKeyPipelineBase {
     public List<Response<?>> execGetResponse() {
 	client.exec();
 	client.getAll(1); // Discard all but the last reply
+	inTransaction = false;
 
 	List<Object> unformatted = client.getObjectMultiBulkReply();
 	if (unformatted == null) {

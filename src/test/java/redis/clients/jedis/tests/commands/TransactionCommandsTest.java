@@ -303,4 +303,21 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 	assertEquals(1, resp.size());
 	assertEquals("foo", jedis.get("mykey"));
     }
+    
+    @Test
+    public void testResetStateWithFullyExecutedTransaction() {
+	Jedis jedis2 = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
+	jedis2.auth("foobared");
+	
+	Transaction t = jedis2.multi();
+	t.set("mykey", "foo");
+	t.get("mykey");
+	
+	List<Object> resp = t.exec();
+	assertNotNull(resp);
+	assertEquals(2, resp.size());
+	
+	jedis2.resetState();
+	jedis2.close();
+    }
 }

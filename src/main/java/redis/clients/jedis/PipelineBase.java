@@ -1299,7 +1299,7 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
     }
 
     public Response<String> evalsha(String script) {
-	return this.evalsha(script, 0, new String[0]);
+	return this.evalsha(script, 0);
     }
 
     public Response<String> evalsha(String sha1, List<String> keys,
@@ -1308,8 +1308,8 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return this.evalsha(sha1, keys.size(), argv);
     }
 
-    public Response<String> evalsha(String sha1, int numKeys, String[] argv) {
-	getClient(sha1).evalsha(sha1, numKeys, argv);
+    public Response<String> evalsha(String sha1, int numKeys, String... args) {
+	getClient(sha1).evalsha(sha1, numKeys, args);
 	return getResponse(BuilderFactory.STRING);
     }
 

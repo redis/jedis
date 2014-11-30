@@ -1263,7 +1263,7 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
     }
 
     public Response<String> eval(String script) {
-	return this.eval(script, 0, new String[0]);
+	return this.eval(script, 0);
     }
 
     public Response<String> eval(String script, List<String> keys,
@@ -1272,8 +1272,8 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline,
 	return this.eval(script, keys.size(), argv);
     }
 
-    public Response<String> eval(String script, int numKeys, String[] argv) {
-	getClient(script).eval(script, numKeys, argv);
+    public Response<String> eval(String script, int numKeys, String... args) {
+	getClient(script).eval(script, numKeys, args);
 	return getResponse(BuilderFactory.STRING);
     }
 

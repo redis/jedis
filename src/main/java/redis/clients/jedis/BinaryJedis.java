@@ -1595,8 +1595,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands,
 
     public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
 	checkIsInMulti();
-	client.zaddBinary(key, scoreMembers);
-	return client.getIntegerReply();
+        if (scoreMembers.isEmpty()) {
+            //empty map would throw a strange exception
+            return Long.valueOf(0);
+        }
+        else {
+            client.zaddBinary(key, scoreMembers);
+            return client.getIntegerReply();
+        }
     }
 
     public Set<byte[]> zrange(final byte[] key, final long start, final long end) {

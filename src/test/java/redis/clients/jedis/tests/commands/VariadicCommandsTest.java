@@ -145,6 +145,12 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
 	status = jedis.zadd(bfoo, bscoreMembers);
 	assertEquals(1, status);
 
+        status = jedis.zadd("foo", new HashMap<String, Double>());
+        assertEquals(0, status);
+
+        status = jedis.zadd(bfoo, new HashMap<byte[], Double>());
+        assertEquals(0, status);
+        
     }
 
     @Test

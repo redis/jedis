@@ -1492,8 +1492,14 @@ public class Jedis extends BinaryJedis implements JedisCommands,
 
     public Long zadd(final String key, final Map<String, Double> scoreMembers) {
 	checkIsInMulti();
-	client.zadd(key, scoreMembers);
-	return client.getIntegerReply();
+        if (scoreMembers.isEmpty()) {
+            //empty map would throw a strange exception
+            return Long.valueOf(0);
+        }
+        else {
+            client.zadd(key, scoreMembers);
+            return client.getIntegerReply();
+        }
     }
 
     public Set<String> zrange(final String key, final long start, final long end) {

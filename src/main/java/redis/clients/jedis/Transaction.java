@@ -41,6 +41,7 @@ public class Transaction extends MultiKeyPipelineBase {
 	// Discard QUEUED or ERROR
 	client.getMany(getPipelinedResponseLength());
 	client.exec();
+	inTransaction = false;
 
 	List<Object> unformatted = client.getObjectMultiBulkReply();
 	if (unformatted == null) {
@@ -61,6 +62,7 @@ public class Transaction extends MultiKeyPipelineBase {
 	// Discard QUEUED or ERROR
 	client.getMany(getPipelinedResponseLength());
 	client.exec();
+	inTransaction = false;
 
 	List<Object> unformatted = client.getObjectMultiBulkReply();
 	if (unformatted == null) {

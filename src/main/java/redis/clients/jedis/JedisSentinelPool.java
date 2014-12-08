@@ -12,7 +12,6 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.Pair;
 import redis.clients.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {
@@ -175,40 +174,37 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		"Redis master running at {0}, starting Sentinel listeners...",
 		master);
 
-	initSentinelListeners(sentinels, masterName,
-		new Pair<JedisSentinelPubSubAdapter, String[]>(
-			new JedisSentinelPubSubAdapter() {
-			    @Override
-			    public boolean isValidMessage(final String channel,
-				    final String[] messageParts) {
-				return null != messageParts
-					&& messageParts.length > 3;
-			    }
+	initSentinelListeners(sentinels, masterName, new SentinelSubscription(
+		new JedisSentinelPubSubAdapter() {
+		    @Override
+		    public boolean isValidMessage(final String channel,
+			    final String[] messageParts) {
+			return null != messageParts && messageParts.length > 3;
+		    }
 
-			    @Override
-			    public String getMasterName(
-				    final String[] messageParts) {
-				return messageParts[0];
-			    }
+		    @Override
+		    public String getMasterName(final String[] messageParts) {
+			return messageParts[0];
+		    }
 
-			    @Override
-			    public void handleMessage(final String channel,
-				    final String[] switchMasterMsg) {
-				initPool(toHostAndPort(Arrays.asList(
-					switchMasterMsg[3], switchMasterMsg[4])));
-			    }
-			}, new String[] { "+switch-master" }));
+		    @Override
+		    public void handleMessage(final String channel,
+			    final String[] switchMasterMsg) {
+			initPool(toHostAndPort(Arrays.asList(
+				switchMasterMsg[3], switchMasterMsg[4])));
+		    }
+		}, new String[] { "+switch-master" }));
 	return master;
     }
 
-    protected void initSentinelListeners(Set<String> sentinels,
+    protected void initSentinelListeners(final Set<String> sentinels,
 	    final String masterName,
-	    final Pair<JedisSentinelPubSubAdapter, String[]>... subscriptions) {
+	    final SentinelSubscription...sentinelSubscription) {
 	for (String sentinel : sentinels) {
 	    final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel
 		    .split(":")));
 	    final SentinelListener masterListener = new SentinelListener(
-		    masterName, hap.getHost(), hap.getPort(), subscriptions);
+		    masterName, hap.getHost(), hap.getPort(), sentinelSubscription);
 	    masterListeners.add(masterListener);
 	    masterListener.start();
 	}
@@ -310,13 +306,13 @@ public class JedisSentinelPool extends Pool<Jedis> {
 	protected long subscribeRetryWaitTimeMillis;
 	protected Jedis j;
 	protected AtomicBoolean running = new AtomicBoolean(false);
-	private final Pair<JedisSentinelPubSubAdapter, String[]>[] subscriptions;
+	private final SentinelSubscription[] subscriptions;
 
 	public SentinelListener(
 		final String masterName,
 		final String host,
 		final int port,
-		final Pair<JedisSentinelPubSubAdapter, String[]>... subscriptions) {
+		final SentinelSubscription[] subscriptions) {
 	    this(masterName, host, port, DEFAULT_RETRY_WAIT_TIME, subscriptions);
 	}
 
@@ -325,7 +321,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		final String host,
 		final int port,
 		final long subscribeRetryWaitTimeMillis,
-		final Pair<JedisSentinelPubSubAdapter, String[]>... subscriptions) {
+		final SentinelSubscription[] subscriptions) {
 	    if (null == subscriptions || subscriptions.length == 0) {
 		throw new JedisException(
 			"There are no subscriptions to listen on");
@@ -346,12 +342,12 @@ public class JedisSentinelPool extends Pool<Jedis> {
 		// Connect to the Sentinel
 		j = new Jedis(sentinelHost, sentinelPort);
 		try {
-		    for (final Pair<JedisSentinelPubSubAdapter, String[]> subscription : subscriptions) {
+		    for (final SentinelSubscription subscription : subscriptions) {
 			// Set the Sentinel host and port to subscribe to
-			subscription.getLeft().listenOn(masterName,
+			subscription.getSentinelAdapter().listenOn(masterName,
 				sentinelHost, sentinelPort);
-			j.subscribe(subscription.getLeft(),
-				subscription.getRight());
+			j.subscribe(subscription.getSentinelAdapter(),
+				subscription.getChannels());
 		    }
 		} catch (JedisConnectionException e) {
 		    if (running.get()) {
@@ -390,6 +386,29 @@ public class JedisSentinelPool extends Pool<Jedis> {
 			e.getMessage());
 	    }
 	}
+    }
+    
+    protected class SentinelSubscription{
+
+	
+	private JedisSentinelPubSubAdapter sentinelAdapter;
+	/**
+	 * Redis channels to listen on
+	 */
+	private String[] channels;
+	
+	public SentinelSubscription(final JedisSentinelPubSubAdapter sentinelAdapter, final String[] channels){
+	    this.sentinelAdapter = sentinelAdapter;
+	    this.channels = channels;
+	}
+	
+	public JedisSentinelPubSubAdapter getSentinelAdapter() {
+	    return sentinelAdapter;
+	}
+
+	public String[] getChannels() {
+	    return channels;
+	}	
     }
 
 }

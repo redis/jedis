@@ -7,5 +7,5 @@ package redis.clients.jedis;
  * @see https://github.com/xetorthio/jedis/pull/498
  */
 public abstract class PipelineBlock extends Pipeline {
-    public abstract void execute();
+  public abstract void execute();
 }

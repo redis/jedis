@@ -1,5 +1,5 @@
 package redis.clients.jedis;
 
 public enum BitOP {
-    AND, OR, XOR, NOT;
+  AND, OR, XOR, NOT;
 }

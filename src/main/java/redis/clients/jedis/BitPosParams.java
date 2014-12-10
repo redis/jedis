@@ -6,22 +6,22 @@ import java.util.Collections;
 import java.util.List;
 
 public class BitPosParams {
-    private List<byte[]> params = new ArrayList<byte[]>();
+  private List<byte[]> params = new ArrayList<byte[]>();
 
-    protected BitPosParams() {
-    }
+  protected BitPosParams() {
+  }
 
-    public BitPosParams(long start) {
-	params.add(Protocol.toByteArray(start));
-    }
+  public BitPosParams(long start) {
+    params.add(Protocol.toByteArray(start));
+  }
 
-    public BitPosParams(long start, long end) {
-	this(start);
+  public BitPosParams(long start, long end) {
+    this(start);
 
-	params.add(Protocol.toByteArray(end));
-    }
+    params.add(Protocol.toByteArray(end));
+  }
 
-    public Collection<byte[]> getParams() {
-	return Collections.unmodifiableCollection(params);
-    }
+  public Collection<byte[]> getParams() {
+    return Collections.unmodifiableCollection(params);
+  }
 }

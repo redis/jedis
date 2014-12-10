@@ -31,8 +31,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
 
     public void disconnect() {
 	for (Jedis jedis : getAllShards()) {
-	    jedis.quit();
-	    jedis.disconnect();
+		try {
+			jedis.quit();
+			jedis.disconnect();
+		} catch (Exception e) {
+			// ignore the exception node, so that all other normal nodes can release all connections.
+		}
 	}
     }
 

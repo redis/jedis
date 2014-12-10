@@ -12,15 +12,10 @@ Please post General questions to Google Group. It can be closed without answer w
 
 ## Code Convention
 
-* Jedis uses ```Java Convention```.
-  * It seems to only supported by Eclipse.
-* In Eclipse (or STS), you can change properties for project
-  * Java Code Style -> Formatter -> Active Profile to Java Conventions [built-in]
-* reflect by selection (only changes indentation)
-  * Menu -> Source -> Correct Indentation
-* reflect all (don't recommend)
-  * Menu -> Source -> Format
-* If you're using other IDEs than Eclipse, please do your work from your IDE, and correct indentation from Eclipse
+* Jedis uses ```HBase Formatter``` introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
+* You can import code style file (located to hbase-formatter.xml) to Eclipse, IntelliJ
+  * line break by column count seems not working with IntelliJ
+* You can run ```mvn java-formatter:format``` anytime to reformat without IDEs
 
 ## Adding commands
 

@@ -125,6 +125,14 @@
           <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
         </configuration>
       </plugin>
+      <plugin>
+	      <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+	      <artifactId>maven-java-formatter-plugin</artifactId>
+	      <version>0.4</version>
+	      <configuration>
+		      <configFile>${project.basedir}/hbase-formatter.xml</configFile>
+	      </configuration>
+      </plugin>
 		</plugins>
 	</build>
 </project>

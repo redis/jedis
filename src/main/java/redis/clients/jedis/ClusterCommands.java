@@ -5,43 +5,43 @@ import java.util.List;
 import redis.clients.jedis.JedisCluster.Reset;
 
 public interface ClusterCommands {
-    String clusterNodes();
+  String clusterNodes();
 
-    String clusterMeet(final String ip, final int port);
+  String clusterMeet(final String ip, final int port);
 
-    String clusterAddSlots(final int... slots);
+  String clusterAddSlots(final int... slots);
 
-    String clusterDelSlots(final int... slots);
+  String clusterDelSlots(final int... slots);
 
-    String clusterInfo();
+  String clusterInfo();
 
-    List<String> clusterGetKeysInSlot(final int slot, final int count);
+  List<String> clusterGetKeysInSlot(final int slot, final int count);
 
-    String clusterSetSlotNode(final int slot, final String nodeId);
+  String clusterSetSlotNode(final int slot, final String nodeId);
 
-    String clusterSetSlotMigrating(final int slot, final String nodeId);
+  String clusterSetSlotMigrating(final int slot, final String nodeId);
 
-    String clusterSetSlotImporting(final int slot, final String nodeId);
+  String clusterSetSlotImporting(final int slot, final String nodeId);
 
-    String clusterSetSlotStable(final int slot);
+  String clusterSetSlotStable(final int slot);
 
-    String clusterForget(final String nodeId);
+  String clusterForget(final String nodeId);
 
-    String clusterFlushSlots();
+  String clusterFlushSlots();
 
-    Long clusterKeySlot(final String key);
+  Long clusterKeySlot(final String key);
 
-    Long clusterCountKeysInSlot(final int slot);
+  Long clusterCountKeysInSlot(final int slot);
 
-    String clusterSaveConfig();
+  String clusterSaveConfig();
 
-    String clusterReplicate(final String nodeId);
+  String clusterReplicate(final String nodeId);
 
-    List<String> clusterSlaves(final String nodeId);
+  List<String> clusterSlaves(final String nodeId);
 
-    String clusterFailover();
+  String clusterFailover();
 
-    List<Object> clusterSlots();
+  List<Object> clusterSlots();
 
-    String clusterReset(Reset resetType);
+  String clusterReset(Reset resetType);
 }

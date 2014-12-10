@@ -2,43 +2,43 @@ package redis.clients.jedis;
 
 public interface BasicCommands {
 
-    String ping();
+  String ping();
 
-    String quit();
+  String quit();
 
-    String flushDB();
+  String flushDB();
 
-    Long dbSize();
+  Long dbSize();
 
-    String select(int index);
+  String select(int index);
 
-    String flushAll();
+  String flushAll();
 
-    String auth(String password);
+  String auth(String password);
 
-    String save();
+  String save();
 
-    String bgsave();
+  String bgsave();
 
-    String bgrewriteaof();
+  String bgrewriteaof();
 
-    Long lastsave();
+  Long lastsave();
 
-    String shutdown();
+  String shutdown();
 
-    String info();
+  String info();
 
-    String info(String section);
+  String info(String section);
 
-    String slaveof(String host, int port);
+  String slaveof(String host, int port);
 
-    String slaveofNoOne();
+  String slaveofNoOne();
 
-    Long getDB();
+  Long getDB();
 
-    String debug(DebugParams params);
+  String debug(DebugParams params);
 
-    String configResetStat();
+  String configResetStat();
 
-    Long waitReplicas(int replicas, long timeout);
+  Long waitReplicas(int replicas, long timeout);
 }

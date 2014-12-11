@@ -12,7 +12,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.util.Hashing;
+import redis.clients.util.SafeEncoder;
 import redis.clients.util.Sharded;
 
 public class ShardedJedisTest extends Assert {

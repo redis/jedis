@@ -19,8 +19,14 @@ public class ShardedJedisTest extends Assert {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);
 
+  /**
+   * Test for "Issue - BinaryShardedJedis.disconnect() may occur memory leak".
+   * You can find more detailed information at https://github.com/xetorthio/jedis/issues/808
+   *
+   * @throws InterruptedException
+   */
   @Test
-  public void disconnect() throws InterruptedException {
+  public void testAvoidLeaksUponDisconnect() throws InterruptedException {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(2);
     // 6379
     JedisShardInfo shard1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());

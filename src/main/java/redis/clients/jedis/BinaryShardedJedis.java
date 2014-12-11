@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
@@ -32,12 +33,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     for (Jedis jedis : getAllShards()) {
       try {
         jedis.quit();
-      } catch (Exception e) {
+      } catch (JedisConnectionException e) {
         // ignore the exception node, so that all other normal nodes can release all connections.
       }
       try {
         jedis.disconnect();
-      } catch (Exception e) {
+      } catch (JedisConnectionException e) {
         // ignore the exception node, so that all other normal nodes can release all connections.
       }
     }

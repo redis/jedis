@@ -69,8 +69,7 @@ public class ProtocolTest extends JedisTestBase {
 
   @Test
   public void buildACommand() throws IOException {
-    Protocol.sendCommand(scw, Protocol.Command.GET,
-        "SOMEKEY".getBytes(Protocol.CHARSET));
+    Protocol.sendCommand(scw, Protocol.Command.GET, "SOMEKEY".getBytes(Protocol.CHARSET));
 
     String expectedCommand = "*2\r\n$3\r\nGET\r\n$7\r\nSOMEKEY\r\n";
 
@@ -94,8 +93,7 @@ public class ProtocolTest extends JedisTestBase {
     for (int i = 0; i < keys.length; i++) {
       String keyName = "SOMEKEY" + i;
       keys[i] = keyName.getBytes(Protocol.CHARSET);
-      expectedCommandBuffer.append("$" + keyName.length() + "\r\n"
-          + keyName + "\r\n");
+      expectedCommandBuffer.append("$" + keyName.length() + "\r\n" + keyName + "\r\n");
     }
 
     Protocol.sendCommand(scw, Protocol.Command.GET, keys);

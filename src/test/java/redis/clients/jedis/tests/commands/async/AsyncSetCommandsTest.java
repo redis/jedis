@@ -8,484 +8,477 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class AsyncSetCommandsTest extends AsyncJedisCommandTestBase {
-    final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
-    final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
-    final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
-    final byte[] ba = { 0x0A };
-    final byte[] bb = { 0x0B };
-    final byte[] bc = { 0x0C };
-    final byte[] bd = { 0x0D };
-    final byte[] bx = { 0x42 };
-
-    @Test
-    public void sadd() {
-	asyncJedis.sadd(LONG_CALLBACK.withReset(), "foo", "a");
-	long status = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(1, status);
-
-	asyncJedis.sadd(LONG_CALLBACK.withReset(), "foo", "a");
-	status = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(0, status);
-
-	// binary
-	asyncJedis.sadd(LONG_CALLBACK.withReset(), bfoo, ba);
-	long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(1, bstatus);
-
-	asyncJedis.sadd(LONG_CALLBACK.withReset(), bfoo, ba);
-	bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(0, bstatus);
-    }
-
-    @Test
-    public void smembers() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
-
-	Set<String> expected = new HashSet<String>();
-	expected.add("a");
-	expected.add("b");
-
-	asyncJedis.smembers(STRING_SET_CALLBACK.withReset(), "foo");
-	Set<String> members = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
+  final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
+  final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
+  final byte[] ba = { 0x0A };
+  final byte[] bb = { 0x0B };
+  final byte[] bc = { 0x0C };
+  final byte[] bd = { 0x0D };
+  final byte[] bx = { 0x42 };
 
-	assertEquals(expected, members);
+  @Test
+  public void sadd() {
+    asyncJedis.sadd(LONG_CALLBACK.withReset(), "foo", "a");
+    long status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(1, status);
+
+    asyncJedis.sadd(LONG_CALLBACK.withReset(), "foo", "a");
+    status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(0, status);
+
+    // binary
+    asyncJedis.sadd(LONG_CALLBACK.withReset(), bfoo, ba);
+    long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(1, bstatus);
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    asyncJedis.sadd(LONG_CALLBACK.withReset(), bfoo, ba);
+    bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(0, bstatus);
+  }
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(ba);
+  @Test
+  public void smembers() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+
+    Set<String> expected = new HashSet<String>();
+    expected.add("a");
+    expected.add("b");
+
+    asyncJedis.smembers(STRING_SET_CALLBACK.withReset(), "foo");
+    Set<String> members = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
 
-	asyncJedis.smembers(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo);
-	Set<byte[]> bmembers = BYTE_ARRAY_SET_CALLBACK
-		.getResponseWithWaiting(1000);
-	assertEquals(bexpected, bmembers);
-    }
+    assertEquals(expected, members);
 
-    @Test
-    public void srem() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	asyncJedis.srem(LONG_CALLBACK.withReset(), "foo", "a");
-	long status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(ba);
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("b");
+    asyncJedis.smembers(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo);
+    Set<byte[]> bmembers = BYTE_ARRAY_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(bexpected, bmembers);
+  }
 
-	assertEquals(1, status);
-	// blocking API
-	assertEquals(expected, jedis.smembers("foo"));
+  @Test
+  public void srem() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	asyncJedis.srem(LONG_CALLBACK.withReset(), "foo", "bar");
-	status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    asyncJedis.srem(LONG_CALLBACK.withReset(), "foo", "a");
+    long status = LONG_CALLBACK.getResponseWithWaiting(1000);
 
-	assertEquals(0, status);
+    Set<String> expected = new HashSet<String>();
+    expected.add("b");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    assertEquals(1, status);
+    // blocking API
+    assertEquals(expected, jedis.smembers("foo"));
 
-	asyncJedis.srem(LONG_CALLBACK.withReset(), bfoo, ba);
-	long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    asyncJedis.srem(LONG_CALLBACK.withReset(), "foo", "bar");
+    status = LONG_CALLBACK.getResponseWithWaiting(1000);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
+    assertEquals(0, status);
 
-	assertEquals(1, bstatus);
-	// blocking API
-	assertEquals(bexpected, jedis.smembers(bfoo));
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	asyncJedis.srem(LONG_CALLBACK.withReset(), bfoo, bbar);
-	bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    asyncJedis.srem(LONG_CALLBACK.withReset(), bfoo, ba);
+    long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
 
-	assertEquals(0, bstatus);
-    }
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
 
-    @Test
-    public void spop() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    assertEquals(1, bstatus);
+    // blocking API
+    assertEquals(bexpected, jedis.smembers(bfoo));
 
-	asyncJedis.spop(STRING_CALLBACK.withReset(), "foo");
-	String member = STRING_CALLBACK.getResponseWithWaiting(1000);
+    asyncJedis.srem(LONG_CALLBACK.withReset(), bfoo, bbar);
+    bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
 
-	assertTrue("a".equals(member) || "b".equals(member));
-	// blocking API
-	assertEquals(1, jedis.smembers("foo").size());
+    assertEquals(0, bstatus);
+  }
 
-	asyncJedis.spop(STRING_CALLBACK.withReset(), "bar");
-	member = STRING_CALLBACK.getResponseWithWaiting(1000);
-	assertNull(member);
+  @Test
+  public void spop() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    asyncJedis.spop(STRING_CALLBACK.withReset(), "foo");
+    String member = STRING_CALLBACK.getResponseWithWaiting(1000);
 
-	asyncJedis.spop(BYTE_ARRAY_CALLBACK.withReset(), bfoo);
-	byte[] bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
+    assertTrue("a".equals(member) || "b".equals(member));
+    // blocking API
+    assertEquals(1, jedis.smembers("foo").size());
 
-	assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
-	// blocking API
-	assertEquals(1, jedis.smembers(bfoo).size());
+    asyncJedis.spop(STRING_CALLBACK.withReset(), "bar");
+    member = STRING_CALLBACK.getResponseWithWaiting(1000);
+    assertNull(member);
 
-	asyncJedis.spop(BYTE_ARRAY_CALLBACK.withReset(), bbar);
-	bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
-	assertNull(bmember);
-    }
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-    @Test
-    public void smove() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    asyncJedis.spop(BYTE_ARRAY_CALLBACK.withReset(), bfoo);
+    byte[] bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
+    // blocking API
+    assertEquals(1, jedis.smembers(bfoo).size());
 
-	asyncJedis.smove(LONG_CALLBACK.withReset(), "foo", "bar", "a");
-	long status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    asyncJedis.spop(BYTE_ARRAY_CALLBACK.withReset(), bbar);
+    bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
+    assertNull(bmember);
+  }
 
-	Set<String> expectedSrc = new HashSet<String>();
-	expectedSrc.add("b");
+  @Test
+  public void smove() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	Set<String> expectedDst = new HashSet<String>();
-	expectedDst.add("c");
-	expectedDst.add("a");
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	assertEquals(status, 1);
-	assertEquals(expectedSrc, jedis.smembers("foo"));
-	assertEquals(expectedDst, jedis.smembers("bar"));
+    asyncJedis.smove(LONG_CALLBACK.withReset(), "foo", "bar", "a");
+    long status = LONG_CALLBACK.getResponseWithWaiting(1000);
 
-	asyncJedis.smove(LONG_CALLBACK.withReset(), "foo", "bar", "a");
-	status = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(status, 0);
+    Set<String> expectedSrc = new HashSet<String>();
+    expectedSrc.add("b");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    Set<String> expectedDst = new HashSet<String>();
+    expectedDst.add("c");
+    expectedDst.add("a");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    assertEquals(status, 1);
+    assertEquals(expectedSrc, jedis.smembers("foo"));
+    assertEquals(expectedDst, jedis.smembers("bar"));
 
-	asyncJedis.smove(LONG_CALLBACK.withReset(), bfoo, bbar, ba);
-	long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    asyncJedis.smove(LONG_CALLBACK.withReset(), "foo", "bar", "a");
+    status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(status, 0);
 
-	Set<byte[]> bexpectedSrc = new HashSet<byte[]>();
-	bexpectedSrc.add(bb);
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	Set<byte[]> bexpectedDst = new HashSet<byte[]>();
-	bexpectedDst.add(bc);
-	bexpectedDst.add(ba);
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-	assertEquals(bstatus, 1);
-	assertEquals(bexpectedSrc, jedis.smembers(bfoo));
-	assertEquals(bexpectedDst, jedis.smembers(bbar));
+    asyncJedis.smove(LONG_CALLBACK.withReset(), bfoo, bbar, ba);
+    long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
 
-	asyncJedis.smove(LONG_CALLBACK.withReset(), bfoo, bbar, ba);
-	bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(bstatus, 0);
-    }
+    Set<byte[]> bexpectedSrc = new HashSet<byte[]>();
+    bexpectedSrc.add(bb);
 
-    @Test
-    public void scard() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    Set<byte[]> bexpectedDst = new HashSet<byte[]>();
+    bexpectedDst.add(bc);
+    bexpectedDst.add(ba);
 
-	asyncJedis.scard(LONG_CALLBACK.withReset(), "foo");
-	long card = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(2, card);
+    assertEquals(bstatus, 1);
+    assertEquals(bexpectedSrc, jedis.smembers(bfoo));
+    assertEquals(bexpectedDst, jedis.smembers(bbar));
 
-	asyncJedis.scard(LONG_CALLBACK.withReset(), "bar");
-	card = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(0, card);
+    asyncJedis.smove(LONG_CALLBACK.withReset(), bfoo, bbar, ba);
+    bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(bstatus, 0);
+  }
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+  @Test
+  public void scard() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	asyncJedis.scard(LONG_CALLBACK.withReset(), bfoo);
-	long bcard = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(2, bcard);
+    asyncJedis.scard(LONG_CALLBACK.withReset(), "foo");
+    long card = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(2, card);
 
-	asyncJedis.scard(LONG_CALLBACK.withReset(), bbar);
-	bcard = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(0, bcard);
-    }
+    asyncJedis.scard(LONG_CALLBACK.withReset(), "bar");
+    card = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(0, card);
 
-    @Test
-    public void sismember() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), "foo", "a");
-	assertTrue(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+    asyncJedis.scard(LONG_CALLBACK.withReset(), bfoo);
+    long bcard = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(2, bcard);
 
-	asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), "foo", "c");
-	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+    asyncJedis.scard(LONG_CALLBACK.withReset(), bbar);
+    bcard = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(0, bcard);
+  }
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+  @Test
+  public void sismember() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), bfoo, ba);
-	assertTrue(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+    asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), "foo", "a");
+    assertTrue(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), bfoo, bc);
-	assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
-    }
+    asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), "foo", "c");
+    assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-    @Test
-    public void sinter() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "b");
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), bfoo, ba);
+    assertTrue(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("b");
+    asyncJedis.sismember(BOOLEAN_CALLBACK.withReset(), bfoo, bc);
+    assertFalse(BOOLEAN_CALLBACK.getResponseWithWaiting(1000));
+  }
 
-	asyncJedis.sinter(STRING_SET_CALLBACK.withReset(), "foo", "bar");
-	Set<String> intersection = STRING_SET_CALLBACK
-		.getResponseWithWaiting(1000);
-	assertEquals(expected, intersection);
+  @Test
+  public void sinter() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    CommandWithWaiting.sadd(asyncJedis, "bar", "b");
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bb);
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    Set<String> expected = new HashSet<String>();
+    expected.add("b");
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
+    asyncJedis.sinter(STRING_SET_CALLBACK.withReset(), "foo", "bar");
+    Set<String> intersection = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(expected, intersection);
 
-	asyncJedis.sinter(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo, bbar);
-	Set<byte[]> bintersection = BYTE_ARRAY_SET_CALLBACK
-		.getResponseWithWaiting(1000);
-	assertEquals(bexpected, bintersection);
-    }
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-    @Test
-    public void sinterstore() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    CommandWithWaiting.sadd(asyncJedis, bbar, bb);
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "b");
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("b");
+    asyncJedis.sinter(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo, bbar);
+    Set<byte[]> bintersection = BYTE_ARRAY_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(bexpected, bintersection);
+  }
 
-	asyncJedis.sinterstore(LONG_CALLBACK.withReset(), "car", "foo", "bar");
-	long status = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(1, status);
+  @Test
+  public void sinterstore() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	assertEquals(expected, jedis.smembers("car"));
+    CommandWithWaiting.sadd(asyncJedis, "bar", "b");
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    Set<String> expected = new HashSet<String>();
+    expected.add("b");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bb);
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    asyncJedis.sinterstore(LONG_CALLBACK.withReset(), "car", "foo", "bar");
+    long status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(1, status);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
+    assertEquals(expected, jedis.smembers("car"));
 
-	asyncJedis.sinterstore(LONG_CALLBACK.withReset(), bcar, bfoo, bbar);
-	long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(1, bstatus);
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	assertEquals(bexpected, jedis.smembers(bcar));
-    }
+    CommandWithWaiting.sadd(asyncJedis, bbar, bb);
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-    @Test
-    public void sunion() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "b");
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    asyncJedis.sinterstore(LONG_CALLBACK.withReset(), bcar, bfoo, bbar);
+    long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(1, bstatus);
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("a");
-	expected.add("b");
-	expected.add("c");
+    assertEquals(bexpected, jedis.smembers(bcar));
+  }
 
-	asyncJedis.sunion(STRING_SET_CALLBACK.withReset(), "foo", "bar");
-	Set<String> union = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(expected, union);
+  @Test
+  public void sunion() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    CommandWithWaiting.sadd(asyncJedis, "bar", "b");
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bb);
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    Set<String> expected = new HashSet<String>();
+    expected.add("a");
+    expected.add("b");
+    expected.add("c");
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(bc);
-	bexpected.add(ba);
+    asyncJedis.sunion(STRING_SET_CALLBACK.withReset(), "foo", "bar");
+    Set<String> union = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(expected, union);
 
-	asyncJedis.sunion(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo, bbar);
-	Set<byte[]> bunion = BYTE_ARRAY_SET_CALLBACK
-		.getResponseWithWaiting(1000);
-	assertEquals(bexpected, bunion);
-    }
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-    @Test
-    public void sunionstore() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    CommandWithWaiting.sadd(asyncJedis, bbar, bb);
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "b");
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(bc);
+    bexpected.add(ba);
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("a");
-	expected.add("b");
-	expected.add("c");
+    asyncJedis.sunion(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo, bbar);
+    Set<byte[]> bunion = BYTE_ARRAY_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(bexpected, bunion);
+  }
 
-	asyncJedis.sunionstore(LONG_CALLBACK.withReset(), "car", "foo", "bar");
-	long status = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(3, status);
+  @Test
+  public void sunionstore() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	assertEquals(expected, jedis.smembers("car"));
+    CommandWithWaiting.sadd(asyncJedis, "bar", "b");
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    Set<String> expected = new HashSet<String>();
+    expected.add("a");
+    expected.add("b");
+    expected.add("c");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bb);
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    asyncJedis.sunionstore(LONG_CALLBACK.withReset(), "car", "foo", "bar");
+    long status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(3, status);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(bc);
-	bexpected.add(ba);
+    assertEquals(expected, jedis.smembers("car"));
 
-	asyncJedis.sunionstore(LONG_CALLBACK.withReset(), bcar, bfoo, bbar);
-	long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(3, bstatus);
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
 
-	assertEquals(bexpected, jedis.smembers(bcar));
-    }
+    CommandWithWaiting.sadd(asyncJedis, bbar, bb);
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-    @Test
-    public void sdiff() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "x");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "c");
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(bc);
+    bexpected.add(ba);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    asyncJedis.sunionstore(LONG_CALLBACK.withReset(), bcar, bfoo, bbar);
+    long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(3, bstatus);
 
-	CommandWithWaiting.sadd(asyncJedis, "car", "a");
-	CommandWithWaiting.sadd(asyncJedis, "car", "d");
+    assertEquals(bexpected, jedis.smembers(bcar));
+  }
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("x");
-	expected.add("b");
+  @Test
+  public void sdiff() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "x");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "c");
 
-	asyncJedis.sdiff(STRING_SET_CALLBACK.withReset(), "foo", "bar", "car");
-	Set<String> diff = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(expected, diff);
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bx);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bc);
+    CommandWithWaiting.sadd(asyncJedis, "car", "a");
+    CommandWithWaiting.sadd(asyncJedis, "car", "d");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    Set<String> expected = new HashSet<String>();
+    expected.add("x");
+    expected.add("b");
 
-	CommandWithWaiting.sadd(asyncJedis, bcar, ba);
-	CommandWithWaiting.sadd(asyncJedis, bcar, bd);
+    asyncJedis.sdiff(STRING_SET_CALLBACK.withReset(), "foo", "bar", "car");
+    Set<String> diff = STRING_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(expected, diff);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(bx);
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bx);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bc);
 
-	asyncJedis.sdiff(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo, bbar, bcar);
-	Set<byte[]> bdiff = BYTE_ARRAY_SET_CALLBACK
-		.getResponseWithWaiting(1000);
-	assertEquals(bexpected, bdiff);
-    }
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-    @Test
-    public void sdiffstore() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "x");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "c");
+    CommandWithWaiting.sadd(asyncJedis, bcar, ba);
+    CommandWithWaiting.sadd(asyncJedis, bcar, bd);
 
-	CommandWithWaiting.sadd(asyncJedis, "bar", "c");
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(bx);
 
-	CommandWithWaiting.sadd(asyncJedis, "car", "a");
-	CommandWithWaiting.sadd(asyncJedis, "car", "d");
+    asyncJedis.sdiff(BYTE_ARRAY_SET_CALLBACK.withReset(), bfoo, bbar, bcar);
+    Set<byte[]> bdiff = BYTE_ARRAY_SET_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(bexpected, bdiff);
+  }
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("d");
-	expected.add("a");
+  @Test
+  public void sdiffstore() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "x");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "c");
 
-	asyncJedis.sdiffstore(LONG_CALLBACK.withReset(), "tar", "foo", "bar",
-		"car");
-	long status = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(2, status);
-	assertEquals(expected, jedis.smembers("car"));
+    CommandWithWaiting.sadd(asyncJedis, "bar", "c");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bx);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bc);
+    CommandWithWaiting.sadd(asyncJedis, "car", "a");
+    CommandWithWaiting.sadd(asyncJedis, "car", "d");
 
-	CommandWithWaiting.sadd(asyncJedis, bbar, bc);
+    Set<String> expected = new HashSet<String>();
+    expected.add("d");
+    expected.add("a");
 
-	CommandWithWaiting.sadd(asyncJedis, bcar, ba);
-	CommandWithWaiting.sadd(asyncJedis, bcar, bd);
+    asyncJedis.sdiffstore(LONG_CALLBACK.withReset(), "tar", "foo", "bar", "car");
+    long status = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(2, status);
+    assertEquals(expected, jedis.smembers("car"));
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bd);
-	bexpected.add(ba);
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bx);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bc);
 
-	asyncJedis.sdiffstore(LONG_CALLBACK.withReset(), "tar".getBytes(),
-		bfoo, bbar, bcar);
-	long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
-	assertEquals(2, bstatus);
-	assertEquals(bexpected, jedis.smembers(bcar));
-    }
+    CommandWithWaiting.sadd(asyncJedis, bbar, bc);
 
-    @Test
-    public void srandmember() {
-	CommandWithWaiting.sadd(asyncJedis, "foo", "a");
-	CommandWithWaiting.sadd(asyncJedis, "foo", "b");
+    CommandWithWaiting.sadd(asyncJedis, bcar, ba);
+    CommandWithWaiting.sadd(asyncJedis, bcar, bd);
 
-	asyncJedis.srandmember(STRING_CALLBACK.withReset(), "foo");
-	String member = STRING_CALLBACK.getResponseWithWaiting(1000);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bd);
+    bexpected.add(ba);
 
-	assertTrue("a".equals(member) || "b".equals(member));
-	assertEquals(2, jedis.smembers("foo").size());
+    asyncJedis.sdiffstore(LONG_CALLBACK.withReset(), "tar".getBytes(), bfoo, bbar, bcar);
+    long bstatus = LONG_CALLBACK.getResponseWithWaiting(1000);
+    assertEquals(2, bstatus);
+    assertEquals(bexpected, jedis.smembers(bcar));
+  }
 
-	asyncJedis.srandmember(STRING_CALLBACK.withReset(), "bar");
-	member = STRING_CALLBACK.getResponseWithWaiting(1000);
-	assertNull(member);
+  @Test
+  public void srandmember() {
+    CommandWithWaiting.sadd(asyncJedis, "foo", "a");
+    CommandWithWaiting.sadd(asyncJedis, "foo", "b");
 
-	// Binary
-	CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
-	CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+    asyncJedis.srandmember(STRING_CALLBACK.withReset(), "foo");
+    String member = STRING_CALLBACK.getResponseWithWaiting(1000);
 
-	asyncJedis.srandmember(BYTE_ARRAY_CALLBACK.withReset(), bfoo);
-	byte[] bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
+    assertTrue("a".equals(member) || "b".equals(member));
+    assertEquals(2, jedis.smembers("foo").size());
 
-	assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
-	assertEquals(2, jedis.smembers(bfoo).size());
+    asyncJedis.srandmember(STRING_CALLBACK.withReset(), "bar");
+    member = STRING_CALLBACK.getResponseWithWaiting(1000);
+    assertNull(member);
 
-	asyncJedis.srandmember(BYTE_ARRAY_CALLBACK.withReset(), bbar);
-	bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
-	assertNull(bmember);
-    }
+    // Binary
+    CommandWithWaiting.sadd(asyncJedis, bfoo, ba);
+    CommandWithWaiting.sadd(asyncJedis, bfoo, bb);
+
+    asyncJedis.srandmember(BYTE_ARRAY_CALLBACK.withReset(), bfoo);
+    byte[] bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
+
+    assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
+    assertEquals(2, jedis.smembers(bfoo).size());
+
+    asyncJedis.srandmember(BYTE_ARRAY_CALLBACK.withReset(), bbar);
+    bmember = BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
+    assertNull(bmember);
+  }
 }

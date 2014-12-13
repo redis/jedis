@@ -274,18 +274,18 @@ public class BuilderFactory {
     }
   };
 
-    public static final Builder<List<Slowlog>> SLOWLOG_LIST = new Builder<List<Slowlog>>() {
-	@Override
-	public List<Slowlog> build(Object data) {
-	    if (null == data) {
-		return null;
-	    }
-	    return Slowlog.from((List<Object>) data);
-	}
+  public static final Builder<List<Slowlog>> SLOWLOG_LIST = new Builder<List<Slowlog>>() {
+    @Override
+    public List<Slowlog> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return Slowlog.from((List<Object>) data);
+    }
 
-	public String toString() {
-	    return "List<Slowlog>";
-	}
-    };
+    public String toString() {
+      return "List<Slowlog>";
+    }
+  };
 
 }

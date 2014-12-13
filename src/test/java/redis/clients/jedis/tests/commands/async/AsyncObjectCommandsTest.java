@@ -6,47 +6,45 @@ import redis.clients.util.SafeEncoder;
 
 public class AsyncObjectCommandsTest extends AsyncJedisCommandTestBase {
 
-    private String key = "mylist";
-    private byte[] binaryKey = SafeEncoder.encode(key);
+  private String key = "mylist";
+  private byte[] binaryKey = SafeEncoder.encode(key);
 
-    @Test
-    public void objectRefcount() throws InterruptedException {
-	CommandWithWaiting.lpush(asyncJedis, key, "hello world");
+  @Test
+  public void objectRefcount() throws InterruptedException {
+    CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
-	asyncJedis.objectRefcount(LONG_CALLBACK.withReset(), key);
-	assertEquals(new Long(1L), LONG_CALLBACK.getResponseWithWaiting(1000));
+    asyncJedis.objectRefcount(LONG_CALLBACK.withReset(), key);
+    assertEquals(new Long(1L), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	// Binary
-	asyncJedis.objectRefcount(LONG_CALLBACK.withReset(), binaryKey);
-	assertEquals(new Long(1L), LONG_CALLBACK.getResponseWithWaiting(1000));
-    }
+    // Binary
+    asyncJedis.objectRefcount(LONG_CALLBACK.withReset(), binaryKey);
+    assertEquals(new Long(1L), LONG_CALLBACK.getResponseWithWaiting(1000));
+  }
 
-    @Test
-    public void objectEncoding() {
-	CommandWithWaiting.lpush(asyncJedis, key, "hello world");
+  @Test
+  public void objectEncoding() {
+    CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
-	asyncJedis.objectEncoding(STRING_CALLBACK.withReset(), key);
-	assertEquals("ziplist", STRING_CALLBACK.getResponseWithWaiting(1000));
+    asyncJedis.objectEncoding(STRING_CALLBACK.withReset(), key);
+    assertEquals("ziplist", STRING_CALLBACK.getResponseWithWaiting(1000));
 
-	// Binary
-	CommandWithWaiting.lpush(asyncJedis, binaryKey,
-		"hello world".getBytes());
+    // Binary
+    CommandWithWaiting.lpush(asyncJedis, binaryKey, "hello world".getBytes());
 
-	asyncJedis.objectEncoding(BYTE_ARRAY_CALLBACK.withReset(), binaryKey);
-	assertArrayEquals("ziplist".getBytes(),
-		BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
-    }
+    asyncJedis.objectEncoding(BYTE_ARRAY_CALLBACK.withReset(), binaryKey);
+    assertArrayEquals("ziplist".getBytes(), BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
+  }
 
-    @Test
-    public void objectIdletime() throws InterruptedException {
-	CommandWithWaiting.lpush(asyncJedis, key, "hello world");
+  @Test
+  public void objectIdletime() throws InterruptedException {
+    CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
-	asyncJedis.objectIdletime(LONG_CALLBACK.withReset(), key);
-	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
+    asyncJedis.objectIdletime(LONG_CALLBACK.withReset(), key);
+    assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
 
-	// Binary
-	asyncJedis.objectIdletime(LONG_CALLBACK.withReset(), binaryKey);
-	assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
-    }
+    // Binary
+    asyncJedis.objectIdletime(LONG_CALLBACK.withReset(), binaryKey);
+    assertEquals(new Long(0), LONG_CALLBACK.getResponseWithWaiting(1000));
+  }
 
 }

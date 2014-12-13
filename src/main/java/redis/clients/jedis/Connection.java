@@ -185,9 +185,8 @@ public class Connection implements Closeable {
   }
 
   public boolean isConnected() {
-    return socket != null && socket.isBound() && !socket.isClosed()
-        && socket.isConnected() && socketChannel.isConnected()
-        && !socket.isInputShutdown() && !socket.isOutputShutdown();
+    return socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected()
+        && socketChannel.isConnected() && !socket.isInputShutdown() && !socket.isOutputShutdown();
   }
 
   protected String getStatusCodeReply() {

@@ -8,7 +8,8 @@ import org.junit.Test;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
-public class ConnectionTest extends Assert {
+public class ConnectionCloseTest extends Assert {
+
   private Connection client;
 
   @Before
@@ -18,7 +19,7 @@ public class ConnectionTest extends Assert {
 
   @After
   public void tearDown() throws Exception {
-    client.disconnect();
+    client.close();
   }
 
   @Test(expected = JedisConnectionException.class)
@@ -39,13 +40,5 @@ public class ConnectionTest extends Assert {
     client.setHost("localhost");
     client.setPort(6379);
     client.setTimeoutInfinite();
-  }
-
-  @Test
-  public void checkCloseable() {
-    client.setHost("localhost");
-    client.setPort(6379);
-    client.connect();
-    client.close();
   }
 }

@@ -15,7 +15,7 @@ import redis.clients.jedis.tests.commands.async.util.AsyncJUnitTestCallback;
 
 public class AsyncGetSetBenchmark {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
-  private static final int TOTAL_OPERATIONS = 100000;
+  private static final int TOTAL_OPERATIONS = 1000000;
 
   public static void main(String[] args) throws UnknownHostException, IOException,
       InterruptedException {
@@ -42,7 +42,7 @@ public class AsyncGetSetBenchmark {
 
     long elapsed = Calendar.getInstance().getTimeInMillis() - begin;
 
-    System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
+    System.out.println((TOTAL_OPERATIONS / elapsed * 1000 * 2) + " ops");
   }
 
   public static class ResponseCounterCallback<T> implements AsyncResponseCallback<T> {

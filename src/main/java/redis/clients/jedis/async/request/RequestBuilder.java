@@ -9,49 +9,52 @@ import java.util.List;
 
 public class RequestBuilder {
   public static byte[] build(final Protocol.Command command) {
-    return build(command.raw, new byte[0][]);
-  }
-
-  public static byte[] build(final Protocol.Command command, final byte[]... args) {
-    return build(command.raw, args);
-  }
-
-  public static byte[] build(final Protocol.Command command, final String... args) {
-    final byte[][] bargs = new byte[args.length][];
-    for (int i = 0; i < args.length; i++) {
-      bargs[i] = SafeEncoder.encode(args[i]);
-    }
-    return build(command, bargs);
-  }
-
-  public static byte[] build(final byte[] command, final byte[]... args) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    write(buffer, Protocol.ASTERISK_BYTE);
-    writeIntCrLf(buffer, args.length + 1);
-    write(buffer, Protocol.DOLLAR_BYTE);
-    writeIntCrLf(buffer, command.length);
-    write(buffer, command);
-    writeCrLf(buffer);
-
-    for (final byte[] arg : args) {
-      write(buffer, Protocol.DOLLAR_BYTE);
-      writeIntCrLf(buffer, arg.length);
-      write(buffer, arg);
-      writeCrLf(buffer);
-    }
-
+    writeCommand(buffer, command, 0);
     return buffer.toByteArray();
   }
 
-  public static void write(final ByteArrayOutputStream buffer, final byte b) {
+  public static byte[] build(final Protocol.Command command, final byte[]... args) {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    writeCommand(buffer, command, args.length);
+    for (final byte[] arg : args) {
+      writeArgument(buffer, arg);
+    }
+    return buffer.toByteArray();
+  }
+
+  public static byte[] build(final Protocol.Command command, final String... args) {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    writeCommand(buffer, command, args.length);
+    for (final String arg : args) {
+      writeArgument(buffer, SafeEncoder.encode(arg));
+    }
+    return buffer.toByteArray();
+  }
+
+  private static void writeCommand(final ByteArrayOutputStream buffer,
+      final Protocol.Command command, final int argCount) {
+    write(buffer, Protocol.ASTERISK_BYTE);
+    writeIntCrLf(buffer, argCount + 1);
+    writeArgument(buffer, command.raw);
+  }
+
+  private static void writeArgument(ByteArrayOutputStream buffer, byte[] arg) {
+    write(buffer, Protocol.DOLLAR_BYTE);
+    writeIntCrLf(buffer, arg.length);
+    write(buffer, arg);
+    writeCrLf(buffer);
+  }
+
+  private static void write(final ByteArrayOutputStream buffer, final byte b) {
     buffer.write(b);
   }
 
-  public static void write(final ByteArrayOutputStream buffer, final byte[] b) {
+  private static void write(final ByteArrayOutputStream buffer, final byte[] b) {
     buffer.write(b, 0, b.length);
   }
 
-  public static void writeCrLf(final ByteArrayOutputStream buffer) {
+  private static void writeCrLf(final ByteArrayOutputStream buffer) {
     buffer.write((byte) '\r');
     buffer.write((byte) '\n');
   }
@@ -77,7 +80,7 @@ public class RequestBuilder {
       'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
       't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
-  public static void writeIntCrLf(final ByteArrayOutputStream buffer, final int value) {
+  private static void writeIntCrLf(final ByteArrayOutputStream buffer, final int value) {
     int val = value;
     if (val < 0) {
       buffer.write((byte) '-');

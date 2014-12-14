@@ -216,12 +216,13 @@ public class AsyncDispatcher extends Thread {
         throw new JedisConnectionException("It seems like server has closed the connection.");
       } else if (numOfBytes > 0) {
         AsyncJedisTask task = readTaskQueue.peek();
+
         while (readBuffer.hasRemaining()) {
           if (task == null) {
             throw new JedisConnectionException("Remaining received data but no remaining request");
           }
 
-          task.appendPartialResponse(readBuffer.get());
+          task.appendPartialResponse(readBuffer);
           if (task.isReadComplete()) {
             // TODO : Thread Pool?
             task.callback();

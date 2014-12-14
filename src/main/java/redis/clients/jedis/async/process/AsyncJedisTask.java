@@ -5,6 +5,8 @@ import redis.clients.jedis.async.callback.AsyncResponseCallback;
 import redis.clients.jedis.async.response.BasicResponseBuilder;
 import redis.clients.jedis.exceptions.JedisException;
 
+import java.nio.ByteBuffer;
+
 public class AsyncJedisTask {
   private final byte[] request;
 
@@ -50,8 +52,8 @@ public class AsyncJedisTask {
     responseBuilder = new BasicResponseBuilder<T>();
   }
 
-  public void appendPartialResponse(byte b) {
-    getResponseBuilder().appendPartialResponse(b);
+  public void appendPartialResponse(final ByteBuffer buffer) {
+    getResponseBuilder().appendPartialResponse(buffer);
   }
 
   public boolean isReadComplete() {

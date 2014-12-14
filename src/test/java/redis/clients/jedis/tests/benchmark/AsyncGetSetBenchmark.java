@@ -22,7 +22,7 @@ public class AsyncGetSetBenchmark {
     AsyncJedis jedis = new AsyncJedis(hnp.getHost(), hnp.getPort(), "foobared");
     AsyncJUnitTestCallback<String> callback = new AsyncJUnitTestCallback<String>();
     jedis.flushAll(callback);
-    callback.getResponseWithWaiting(1000);
+    callback.getResponseWithWaiting(10000);
 
     long begin = Calendar.getInstance().getTimeInMillis();
 

@@ -12,7 +12,6 @@ public class AsyncJUnitTestCallback<T> implements AsyncResponseCallback<T> {
   public void execute(T response, JedisException exc) {
     try {
       this.response = response;
-      ;
       this.exception = exc;
     } finally {
       complete = true;

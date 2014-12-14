@@ -10,7 +10,7 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class GetSetBenchmark {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
-  private static final int TOTAL_OPERATIONS = 100000;
+  private static final int TOTAL_OPERATIONS = 1000000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {
     Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort());
@@ -30,6 +30,6 @@ public class GetSetBenchmark {
 
     jedis.disconnect();
 
-    System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
+    System.out.println((TOTAL_OPERATIONS / elapsed * 1000 * 2) + " ops");
   }
 }

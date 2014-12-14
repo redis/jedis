@@ -2,7 +2,7 @@ package redis.clients.jedis.async.response;
 
 public class IntegerResponseBuilder extends BasicResponseBuilder<Long> {
   private boolean carrigeReturn = false;
-  private StringBuffer buffer = new StringBuffer();
+  private StringBuilder buffer = new StringBuilder();
 
   public void appendPartialResponse(byte b) {
     if (carrigeReturn && b == '\n') {

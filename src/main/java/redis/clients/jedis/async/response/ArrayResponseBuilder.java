@@ -7,7 +7,7 @@ public class ArrayResponseBuilder extends BasicResponseBuilder<List<Object>> {
   private boolean carrigeReturn = false;
   private Integer count = null;
 
-  private StringBuffer countBuffer = new StringBuffer();
+  private StringBuilder countBuffer = new StringBuilder();
   private BasicResponseBuilder currentChildResponse;
 
   public void appendPartialResponse(byte b) {

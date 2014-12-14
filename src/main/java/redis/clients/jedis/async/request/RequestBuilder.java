@@ -3,6 +3,7 @@ package redis.clients.jedis.async.request;
 import redis.clients.jedis.Protocol;
 import redis.clients.util.SafeEncoder;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class RequestBuilder {
   }
 
   public static byte[] build(final byte[] command, final byte[]... args) {
-    List<Byte> buffer = new ArrayList<Byte>();
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     write(buffer, Protocol.ASTERISK_BYTE);
     writeIntCrLf(buffer, args.length + 1);
     write(buffer, Protocol.DOLLAR_BYTE);
@@ -39,34 +40,20 @@ public class RequestBuilder {
       writeCrLf(buffer);
     }
 
-    return convertToByteArray(buffer);
+    return buffer.toByteArray();
   }
 
-  private static byte[] convertToByteArray(List<Byte> buffer) {
-    byte[] resp = new byte[buffer.size()];
-    for (int i = 0; i < resp.length; i++) {
-      resp[i] = buffer.get(i);
-    }
-    return resp;
+  public static void write(final ByteArrayOutputStream buffer, final byte b) {
+    buffer.write(b);
   }
 
-  public static void write(final List<Byte> buffer, final byte b) {
-    buffer.add(b);
+  public static void write(final ByteArrayOutputStream buffer, final byte[] b) {
+    buffer.write(b, 0, b.length);
   }
 
-  public static void write(final List<Byte> buffer, final byte[] b) {
-    write(buffer, b, 0, b.length);
-  }
-
-  public static void write(final List<Byte> buffer, final byte b[], final int off, final int len) {
-    for (int idx = off; idx < off + len; idx++) {
-      buffer.add(b[idx]);
-    }
-  }
-
-  public static void writeCrLf(final List<Byte> buffer) {
-    buffer.add((byte) '\r');
-    buffer.add((byte) '\n');
+  public static void writeCrLf(final ByteArrayOutputStream buffer) {
+    buffer.write((byte) '\r');
+    buffer.write((byte) '\n');
   }
 
   private final static int[] sizeTable = { 9, 99, 999, 9999, 99999, 999999, 9999999, 99999999,
@@ -90,10 +77,10 @@ public class RequestBuilder {
       'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
       't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
-  public static void writeIntCrLf(final List<Byte> buffer, final int value) {
+  public static void writeIntCrLf(final ByteArrayOutputStream buffer, final int value) {
     int val = value;
     if (val < 0) {
-      buffer.add((byte) '-');
+      buffer.write((byte) '-');
       val = -val;
     }
 
@@ -124,9 +111,7 @@ public class RequestBuilder {
       if (val == 0) break;
     }
 
-    for (byte b : numBuffer) {
-      buffer.add(b);
-    }
+    buffer.write(numBuffer, 0, numBuffer.length);
 
     writeCrLf(buffer);
   }

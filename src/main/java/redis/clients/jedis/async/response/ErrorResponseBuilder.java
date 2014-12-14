@@ -5,7 +5,7 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class ErrorResponseBuilder extends BasicResponseBuilder<String> {
   private boolean carrigeReturn = false;
-  private StringBuffer buffer = new StringBuffer();
+  private StringBuilder buffer = new StringBuilder();
 
   public void appendPartialResponse(byte b) {
     if (carrigeReturn && b == '\n') {

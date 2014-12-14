@@ -17,7 +17,7 @@ public class SocketChannelReader {
     if (size <= 0) {
       throw new IllegalArgumentException("Buffer size <= 0");
     }
-    buffer = ByteBuffer.allocateDirect(size);
+    buffer = ByteBuffer.allocate(size);
   }
 
   public SocketChannelReader(SocketChannel channel) {

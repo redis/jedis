@@ -1,12 +1,10 @@
 package redis.clients.jedis.async.response;
 
-import java.util.ArrayList;
-
 public class BulkStringResponseBuilder extends BasicResponseBuilder<byte[]> {
   private boolean carrigeReturn = false;
   private Integer length = null;
 
-  private StringBuffer lengthBuffer = new StringBuffer();
+  private StringBuilder lengthBuffer = new StringBuilder();
   private byte[] buffer;
   private int currIndex = 0;
 

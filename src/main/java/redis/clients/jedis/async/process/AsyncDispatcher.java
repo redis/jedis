@@ -30,6 +30,7 @@ public class AsyncDispatcher extends Thread {
   private AtomicBoolean shutdown = new AtomicBoolean(false);
 
   private final ByteBuffer readBuffer;
+  private final ByteBuffer writeBuffer;
 
   private Deque<AsyncJedisTask> readTaskQueue = new LinkedBlockingDeque<AsyncJedisTask>();
   private Deque<AsyncJedisTask> writeTaskQueue = new LinkedBlockingDeque<AsyncJedisTask>();
@@ -58,7 +59,8 @@ public class AsyncDispatcher extends Thread {
       throw new IllegalArgumentException("Buffer bufferSize <= 0");
     }
 
-    readBuffer = ByteBuffer.allocateDirect(bufferSize);
+    readBuffer = ByteBuffer.allocate(bufferSize);
+    writeBuffer = ByteBuffer.allocate(bufferSize);
   }
 
   public void setPassword(String password) {
@@ -180,7 +182,11 @@ public class AsyncDispatcher extends Thread {
       int index = task.getWrittenIndex();
       int length = task.getRequest().length;
       int remain = length - index;
-      int writtenLen = sc.write(ByteBuffer.wrap(task.getRequest(), index, remain));
+
+      writeBuffer.clear();
+      writeBuffer.put(task.getRequest(), index, Math.min(remain, writeBuffer.remaining()));
+      writeBuffer.flip();
+      int writtenLen = sc.write(writeBuffer);
 
       if (writtenLen == -1) {
         key.cancel();

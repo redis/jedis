@@ -83,20 +83,20 @@ String value = jc.get("foo");
 
 ## I want to contribute!
 
-That is great! Just fork the project in github. Create a topic branch, write some code, and add some tests for your new code.
+That is great!
 
-To run the tests:
-
-- Use the latest redis master branch.
-
-- Run ```make test```. This will run 2 instances of redis. We use 2 redis
-	servers, one on default port (6379) and the other one on (6380). Both have
-	authentication enabled with default password (foobared). This way we can
-	test both sharding and auth command. For the Sentinel tests to we use a
-	default Sentinel configuration that is configured to properly authenticate
-	using the same password with a master called mymaster running on 6379.
+Please see CONTRIBUTING.md on project's root directory for follow up how to contribute to Jedis project.
 
 Thanks for helping!
+
+## Sponsorship
+
+YourKit supports open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
+and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
+innovative and intelligent tools for profiling Java and .NET applications.
+
+![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
 
 ## License
 

@@ -2,10 +2,7 @@ package redis.clients.jedis.async;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.async.callback.AsyncResponseCallback;
-import redis.clients.jedis.async.commands.AsyncAdvancedJedisCommands;
-import redis.clients.jedis.async.commands.AsyncBasicCommands;
-import redis.clients.jedis.async.commands.AsyncJedisCommands;
-import redis.clients.jedis.async.commands.AsyncMultiKeyCommands;
+import redis.clients.jedis.async.commands.*;
 import redis.clients.jedis.async.process.AsyncJedisTask;
 import redis.clients.jedis.async.request.RequestBuilder;
 import redis.clients.jedis.async.request.RequestParameterBuilder;
@@ -24,7 +21,7 @@ import static redis.clients.jedis.Protocol.Keyword.LIMIT;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 public class AsyncJedis extends AsyncBinaryJedis implements AsyncBasicCommands, AsyncJedisCommands,
-    AsyncMultiKeyCommands, AsyncAdvancedJedisCommands, Closeable {
+    AsyncMultiKeyCommands, AsyncAdvancedJedisCommands, AsyncScriptingCommands, Closeable {
   public AsyncJedis(String host) throws IOException {
     super(host);
   }
@@ -876,5 +873,58 @@ public class AsyncJedis extends AsyncBinaryJedis implements AsyncBasicCommands, 
   public void slowlogGet(AsyncResponseCallback<List<Slowlog>> callback, long entries) {
     byte[] request = RequestBuilder.build(SLOWLOG, Protocol.Keyword.GET.raw, toByteArray(entries));
     processor.registerRequest(new AsyncJedisTask(request, SLOWLOG_LIST, callback));
+  }
+
+  @Override
+  public void eval(AsyncResponseCallback<Object> callback, String script,
+      int keyCount, String... params) {
+    byte[] request = RequestBuilder.build(EVAL,
+        RequestParameterBuilder.buildEvalParameter(script, keyCount, params));
+    processor.registerRequest(new AsyncJedisTask(request, EVAL_STRING, callback));
+  }
+
+  @Override
+  public void eval(AsyncResponseCallback<Object> callback, String script,
+      List<String> keys, List<String> args) {
+    eval(callback, script, keys.size(), RequestParameterBuilder.convertEvalListArgs(keys, args));
+  }
+
+  @Override
+  public void eval(AsyncResponseCallback<Object> callback, String script) {
+    eval(callback, script, 0);
+  }
+
+  @Override
+  public void evalsha(AsyncResponseCallback<Object> callback, String sha1) {
+    evalsha(callback, sha1, 0);
+  }
+
+  @Override
+  public void evalsha(AsyncResponseCallback<Object> callback, String sha1,
+      List<String> keys, List<String> args) {
+    evalsha(callback, sha1, keys.size(), RequestParameterBuilder.convertEvalListArgs(keys, args));
+  }
+
+  @Override
+  public void evalsha(AsyncResponseCallback<Object> callback, String sha1,
+      int keyCount, String... params) {
+    byte[] request = RequestBuilder.build(EVALSHA,
+        RequestParameterBuilder.buildEvalParameter(sha1, keyCount, params));
+    processor.registerRequest(new AsyncJedisTask(request, EVAL_STRING, callback));
+  }
+
+  @Override
+  public void scriptExists(AsyncResponseCallback<List<Boolean>> callback,
+      String... sha1) {
+    byte[] request = RequestBuilder.build(SCRIPT,
+        RequestParameterBuilder.joinParameters(Protocol.Keyword.EXISTS.raw, sha1));
+    processor.registerRequest(new AsyncJedisTask(request, BOOLEAN_LIST, callback));
+  }
+
+  @Override
+  public void scriptLoad(AsyncResponseCallback<String> callback, String script) {
+    byte[] request = RequestBuilder.build(SCRIPT, Protocol.Keyword.LOAD.raw,
+        SafeEncoder.encode(script));
+    processor.registerRequest(new AsyncJedisTask(request, STRING, callback));
   }
 }

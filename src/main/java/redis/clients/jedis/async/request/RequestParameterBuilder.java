@@ -27,6 +27,15 @@ public class RequestParameterBuilder {
     return SafeEncoder.encodeMany(result);
   }
 
+  public static byte[][] joinParameters(byte[] first, String[] rest) {
+    byte[][] restEncoded = SafeEncoder.encodeMany(rest);
+
+    byte[][] result = new byte[restEncoded.length + 1][];
+    result[0] = first;
+    System.arraycopy(restEncoded, 0, result, 1, restEncoded.length);
+    return result;
+  }
+
   public static byte[] convertRangeParameter(double value) {
     if (value == Double.POSITIVE_INFINITY) {
       return "+inf".getBytes();
@@ -198,4 +207,55 @@ public class RequestParameterBuilder {
     return bargs;
   }
 
+  public static byte[][] buildEvalParameter(byte[] script, byte[] keyCount, byte[][] params) {
+    final byte[][] allArgs = new byte[params.length + 2][];
+
+    allArgs[0] = script;
+    allArgs[1] = keyCount;
+
+    for (int i = 0; i < params.length; i++)
+      allArgs[i + 2] = params[i];
+
+    return allArgs;
+  }
+
+  public static byte[][] buildEvalParameter(String script, int keyCount, String...params) {
+    final byte[][] allArgs = new byte[params.length + 2][];
+
+    allArgs[0] = SafeEncoder.encode(script);
+    allArgs[1] = toByteArray(keyCount);
+
+    for (int i = 0; i < params.length; i++)
+      allArgs[i + 2] = SafeEncoder.encode(params[i]);
+
+    return allArgs;
+  }
+
+  public static byte[][] convertEvalBinaryListArgs(List<byte[]> keys, List<byte[]> args) {
+    final int keyCount = keys.size();
+    final int argCount = args.size();
+    byte[][] params = new byte[keyCount + argCount][];
+
+    for (int i = 0; i < keyCount; i++)
+      params[i] = keys.get(i);
+
+    for (int i = 0; i < argCount; i++)
+      params[keyCount + i] = args.get(i);
+
+    return params;
+  }
+
+  public static String[] convertEvalListArgs(List<String> keys, List<String> args) {
+    final int keyCount = keys.size();
+    final int argCount = args.size();
+    String[] params = new String[keyCount + argCount];
+
+    for (int i = 0; i < keyCount; i++)
+      params[i] = keys.get(i);
+
+    for (int i = 0; i < argCount; i++)
+      params[keyCount + i] = args.get(i);
+
+    return params;
+  }
 }

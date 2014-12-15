@@ -37,8 +37,8 @@ public abstract class AsyncJedisCommandTestBase extends JedisCommandTestBase {
 
     asyncJedis = new AsyncJedis(hnp.getHost(), hnp.getPort(), "foobared");
     asyncJedis.configSet(new DoNothingCallback<String>(), "timeout", "300");
-    asyncJedis.flushAll(STRING_CALLBACK.withReset());
-    STRING_CALLBACK.getResponseWithWaiting(1000);
+
+    jedis.flushAll();
   }
 
   @After
@@ -52,17 +52,11 @@ public abstract class AsyncJedisCommandTestBase extends JedisCommandTestBase {
     }
   }
 
-  protected AsyncJedis createAsyncJedis() throws IOException {
-    AsyncJedis j = new AsyncJedis(hnp.getHost(), hnp.getPort(), "foobared");
-    j.flushAll(STRING_CALLBACK.withReset());
-    STRING_CALLBACK.getResponseWithWaiting(1000);
-    return j;
-  }
-
   protected final AsyncJUnitTestCallback<Long> LONG_CALLBACK = new AsyncJUnitTestCallback<Long>();
   protected final AsyncJUnitTestCallback<String> STRING_CALLBACK = new AsyncJUnitTestCallback<String>();
   protected final AsyncJUnitTestCallback<byte[]> BYTE_ARRAY_CALLBACK = new AsyncJUnitTestCallback<byte[]>();
   protected final AsyncJUnitTestCallback<Boolean> BOOLEAN_CALLBACK = new AsyncJUnitTestCallback<Boolean>();
+  protected final AsyncJUnitTestCallback<List<Boolean>> BOOLEAN_LIST_CALLBACK = new AsyncJUnitTestCallback<List<Boolean>>();
   protected final AsyncJUnitTestCallback<Double> DOUBLE_CALLBACK = new AsyncJUnitTestCallback<Double>();
   protected final AsyncJUnitTestCallback<Set<String>> STRING_SET_CALLBACK = new AsyncJUnitTestCallback<Set<String>>();
   protected final AsyncJUnitTestCallback<List<String>> STRING_LIST_CALLBACK = new AsyncJUnitTestCallback<List<String>>();
@@ -73,4 +67,5 @@ public abstract class AsyncJedisCommandTestBase extends JedisCommandTestBase {
   protected final AsyncJUnitTestCallback<Set<Tuple>> TUPLE_BINARY_SET_CALLBACK = new AsyncJUnitTestCallback<Set<Tuple>>();
   protected final AsyncJUnitTestCallback<Map<String, String>> STRING_MAP_CALLBACK = new AsyncJUnitTestCallback<Map<String, String>>();
   protected final AsyncJUnitTestCallback<Map<byte[], byte[]>> BYTE_ARRAY_MAP_CALLBACK = new AsyncJUnitTestCallback<Map<byte[], byte[]>>();
+  protected final AsyncJUnitTestCallback<Object> OBJECT_CALLBACK = new AsyncJUnitTestCallback<Object>();
 }

@@ -116,6 +116,18 @@ pidfile /tmp/sentinel3.pid
 logfile /tmp/sentinel3.log
 endef
 
+define REDIS_SENTINEL4
+port 26382
+daemonize yes
+sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel auth-pass mymaster foobared
+sentinel down-after-milliseconds mymaster 2000
+sentinel parallel-syncs mymaster 1
+sentinel failover-timeout mymaster 120000
+pidfile /tmp/sentinel4.pid
+logfile /tmp/sentinel4.log
+endef
+
 # CLUSTER REDIS NODES
 define REDIS_CLUSTER_NODE1_CONF
 daemonize yes
@@ -153,6 +165,42 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node3.conf
 endef
 
+define REDIS_CLUSTER_NODE4_CONF
+daemonize yes
+port 7382
+cluster-node-timeout 50
+pidfile /tmp/redis_cluster_node4.pid
+logfile /tmp/redis_cluster_node4.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node4.conf
+endef
+
+define REDIS_CLUSTER_NODE5_CONF
+daemonize yes
+port 7383
+cluster-node-timeout 5000
+pidfile /tmp/redis_cluster_node5.pid
+logfile /tmp/redis_cluster_node5.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node5.conf
+endef
+
+define REDIS_CLUSTER_NODE6_CONF
+daemonize yes
+port 7384
+cluster-node-timeout 5000
+pidfile /tmp/redis_cluster_node6.pid
+logfile /tmp/redis_cluster_node6.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node6.conf
+endef
+
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF
@@ -163,9 +211,13 @@ export REDIS7_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
+export REDIS_SENTINEL4
 export REDIS_CLUSTER_NODE1_CONF
 export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
+export REDIS_CLUSTER_NODE4_CONF
+export REDIS_CLUSTER_NODE5_CONF
+export REDIS_CLUSTER_NODE6_CONF
 
 start: cleanup
 	echo "$$REDIS1_CONF" | redis-server -
@@ -180,9 +232,14 @@ start: cleanup
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
+	@sleep 0.5
+	echo "$$REDIS_SENTINEL4" > /tmp/sentinel4.conf && redis-server /tmp/sentinel4.conf --sentinel
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE6_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -199,20 +256,32 @@ stop:
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
+	kill `cat /tmp/sentinel4.pid`
 	kill `cat /tmp/redis_cluster_node1.pid` || true
 	kill `cat /tmp/redis_cluster_node2.pid` || true
 	kill `cat /tmp/redis_cluster_node3.pid` || true
+	kill `cat /tmp/redis_cluster_node4.pid` || true
+	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_cluster_node6.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
 	rm -f /tmp/redis_cluster_node1.conf
 	rm -f /tmp/redis_cluster_node2.conf
 	rm -f /tmp/redis_cluster_node3.conf
+	rm -f /tmp/redis_cluster_node4.conf
+	rm -f /tmp/redis_cluster_node5.conf
+	rm -f /tmp/redis_cluster_node6.conf
 
 test:
 	make start
 	sleep 2
 	mvn -Dtest=${TEST} clean compile test
+	make stop
+
+package:
+	make start
+	mvn clean package
 	make stop
 
 deploy:

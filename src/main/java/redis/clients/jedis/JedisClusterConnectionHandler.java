@@ -1,147 +1,84 @@
 package redis.clients.jedis;
 
-import java.util.HashMap;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
+
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public abstract class JedisClusterConnectionHandler {
+  protected final JedisClusterInfoCache cache;
 
-    protected Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-    protected Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  abstract Jedis getConnection();
 
-    abstract Jedis getConnection();
+  public void returnConnection(Jedis connection) {
+    cache.getNode(getNodeKey(connection.getClient())).returnResource(connection);
+  }
 
-    protected void returnConnection(Jedis connection) {
-	nodes.get(getNodeKey(connection.getClient()))
-		.returnResource(connection);
+  public void returnBrokenConnection(Jedis connection) {
+    cache.getNode(getNodeKey(connection.getClient())).returnBrokenResource(connection);
+  }
+
+  abstract Jedis getConnectionFromSlot(int slot);
+
+  public Jedis getConnectionFromNode(HostAndPort node) {
+    cache.setNodeIfNotExist(node);
+    return cache.getNode(JedisClusterInfoCache.getNodeKey(node)).getResource();
+  }
+
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig poolConfig) {
+    this.cache = new JedisClusterInfoCache(poolConfig);
+    initializeSlotsCache(nodes, poolConfig);
+  }
+
+  public Map<String, JedisPool> getNodes() {
+    return cache.getNodes();
+  }
+
+  public void assignSlotToNode(int slot, HostAndPort targetNode) {
+    cache.assignSlotToNode(slot, targetNode);
+  }
+
+  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig) {
+    for (HostAndPort hostAndPort : startNodes) {
+      JedisPool jp = new JedisPool(poolConfig, hostAndPort.getHost(), hostAndPort.getPort());
+
+      Jedis jedis = null;
+      try {
+        jedis = jp.getResource();
+        cache.discoverClusterNodesAndSlots(jedis);
+        break;
+      } catch (JedisConnectionException e) {
+        // try next nodes
+      } finally {
+        if (jedis != null) {
+          jedis.close();
+        }
+      }
     }
 
-    public void returnBrokenConnection(Jedis connection) {
-	nodes.get(getNodeKey(connection.getClient())).returnBrokenResource(
-		connection);
+    for (HostAndPort node : startNodes) {
+      cache.setNodeIfNotExist(node);
     }
+  }
 
-    abstract Jedis getConnectionFromSlot(int slot);
-
-    public JedisClusterConnectionHandler(Set<HostAndPort> nodes) {
-	initializeSlotsCache(nodes);
+  public void renewSlotCache() {
+    for (JedisPool jp : cache.getNodes().values()) {
+      Jedis jedis = null;
+      try {
+        jedis = jp.getResource();
+        cache.discoverClusterSlots(jedis);
+        break;
+      } finally {
+        if (jedis != null) {
+          jedis.close();
+        }
+      }
     }
+  }
 
-    public Map<String, JedisPool> getNodes() {
-	return nodes;
-    }
-
-    private void initializeSlotsCache(Set<HostAndPort> startNodes) {
-	for (HostAndPort hostAndPort : startNodes) {
-	    JedisPool jp = new JedisPool(hostAndPort.getHost(),
-		    hostAndPort.getPort());
-
-	    this.nodes.clear();
-	    this.slots.clear();
-
-	    Jedis jedis = null;
-	    try {
-		jedis = jp.getResource();
-		discoverClusterNodesAndSlots(jedis);
-		break;
-	    } catch (JedisConnectionException e) {
-		if (jedis != null) {
-		    jp.returnBrokenResource(jedis);
-		    jedis = null;
-		}
-
-		// try next nodes
-	    } finally {
-		if (jedis != null) {
-		    jp.returnResource(jedis);
-		}
-	    }
-	}
-
-	for (HostAndPort node : startNodes) {
-	    setNodeIfNotExist(node);
-	}
-    }
-    
-    private void discoverClusterNodesAndSlots(Jedis jedis) {
-	String localNodes = jedis.clusterNodes();
-	for (String nodeInfo : localNodes.split("\n")) {
-	    HostAndPort node = getHostAndPortFromNodeLine(nodeInfo, jedis);
-	    setNodeIfNotExist(node);
-	    
-	    JedisPool nodePool = nodes.get(getNodeKey(node));
-	    populateNodeSlots(nodeInfo, nodePool);
-	}
-    }
-    
-    private void setNodeIfNotExist(HostAndPort node) {
-	String nodeKey = getNodeKey(node);
-	if (nodes.containsKey(nodeKey))
-	    return;
-	
-	JedisPool nodePool = new JedisPool(node.getHost(), node.getPort());
-	nodes.put(nodeKey, nodePool);
-    }
-
-    private void populateNodeSlots(String nodeInfo, JedisPool nodePool) {
-	String[] nodeInfoArray = nodeInfo.split(" ");
-	if (nodeInfoArray.length > 7) {
-	    for (int i = 8; i < nodeInfoArray.length; i++) {
-		processSlot(nodeInfoArray[i], nodePool);
-	    }
-	}
-    }
-
-    private void processSlot(String slot, JedisPool nodePool) {
-	if (slot.contains("-")) {
-	    String[] slotRange = slot.split("-");
-	    for (int i = Integer.valueOf(slotRange[0]); i <= Integer
-		    .valueOf(slotRange[1]); i++) {
-		slots.put(i, nodePool);
-	    }
-	} else {
-	    slots.put(Integer.valueOf(slot), nodePool);
-	}
-    }
-
-    private HostAndPort getHostAndPortFromNodeLine(String nodeInfo,
-	    Jedis currentConnection) {
-	String stringHostAndPort = nodeInfo.split(" ", 3)[1];
-	if (":0".equals(stringHostAndPort)) {
-	    return new HostAndPort(currentConnection.getClient().getHost(),
-		    currentConnection.getClient().getPort());
-	}
-	String[] arrayHostAndPort = stringHostAndPort.split(":");
-	return new HostAndPort(arrayHostAndPort[0],
-		Integer.valueOf(arrayHostAndPort[1]));
-    }
-
-    public void assignSlotToNode(int slot, HostAndPort targetNode) {
-	JedisPool targetPool = nodes.get(getNodeKey(targetNode));
-
-	if (targetPool != null) {
-	    slots.put(slot, targetPool);
-	} else {
-	    setNodeIfNotExist(targetNode);
-	    
-	    targetPool = nodes.get(getNodeKey(targetNode));
-	    slots.put(slot, targetPool);
-	}
-    }
-
-    protected JedisPool getRandomConnection() {
-	Object[] nodeArray = nodes.values().toArray();
-	return (JedisPool) (nodeArray[new Random().nextInt(nodeArray.length)]);
-    }
-
-    protected String getNodeKey(HostAndPort hnp) {
-	return hnp.getHost() + ":" + hnp.getPort();
-    }
-
-    protected String getNodeKey(Client client) {
-	return client.getHost() + ":" + client.getPort();
-    }
 }

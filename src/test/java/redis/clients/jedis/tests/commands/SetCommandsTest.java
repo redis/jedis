@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,483 +11,514 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 
 public class SetCommandsTest extends JedisCommandTestBase {
-    final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
-    final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
-    final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
-    final byte[] ba = { 0x0A };
-    final byte[] bb = { 0x0B };
-    final byte[] bc = { 0x0C };
-    final byte[] bd = { 0x0D };
-    final byte[] bx = { 0x42 };
+  final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
+  final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
+  final byte[] ba = { 0x0A };
+  final byte[] bb = { 0x0B };
+  final byte[] bc = { 0x0C };
+  final byte[] bd = { 0x0D };
+  final byte[] bx = { 0x42 };
 
-    @Test
-    public void sadd() {
-	long status = jedis.sadd("foo", "a");
-	assertEquals(1, status);
+  final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+  final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+  final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
+  final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
 
-	status = jedis.sadd("foo", "a");
-	assertEquals(0, status);
+  @Test
+  public void sadd() {
+    long status = jedis.sadd("foo", "a");
+    assertEquals(1, status);
 
-	long bstatus = jedis.sadd(bfoo, ba);
-	assertEquals(1, bstatus);
+    status = jedis.sadd("foo", "a");
+    assertEquals(0, status);
 
-	bstatus = jedis.sadd(bfoo, ba);
-	assertEquals(0, bstatus);
+    long bstatus = jedis.sadd(bfoo, ba);
+    assertEquals(1, bstatus);
 
-    }
+    bstatus = jedis.sadd(bfoo, ba);
+    assertEquals(0, bstatus);
 
-    @Test
-    public void smembers() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("a");
-	expected.add("b");
+  @Test
+  public void smembers() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	Set<String> members = jedis.smembers("foo");
+    Set<String> expected = new HashSet<String>();
+    expected.add("a");
+    expected.add("b");
 
-	assertEquals(expected, members);
+    Set<String> members = jedis.smembers("foo");
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    assertEquals(expected, members);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(ba);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	Set<byte[]> bmembers = jedis.smembers(bfoo);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(ba);
 
-	assertEquals(bexpected, bmembers);
-    }
+    Set<byte[]> bmembers = jedis.smembers(bfoo);
 
-    @Test
-    public void srem() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+    assertEquals(bexpected, bmembers);
+  }
 
-	long status = jedis.srem("foo", "a");
+  @Test
+  public void srem() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("b");
+    long status = jedis.srem("foo", "a");
 
-	assertEquals(1, status);
-	assertEquals(expected, jedis.smembers("foo"));
+    Set<String> expected = new HashSet<String>();
+    expected.add("b");
 
-	status = jedis.srem("foo", "bar");
+    assertEquals(1, status);
+    assertEquals(expected, jedis.smembers("foo"));
 
-	assertEquals(0, status);
+    status = jedis.srem("foo", "bar");
 
-	// Binary
+    assertEquals(0, status);
 
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    // Binary
 
-	long bstatus = jedis.srem(bfoo, ba);
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
+    long bstatus = jedis.srem(bfoo, ba);
 
-	assertEquals(1, bstatus);
-	assertEquals(bexpected, jedis.smembers(bfoo));
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
 
-	bstatus = jedis.srem(bfoo, bbar);
+    assertEquals(1, bstatus);
+    assertEquals(bexpected, jedis.smembers(bfoo));
 
-	assertEquals(0, bstatus);
+    bstatus = jedis.srem(bfoo, bbar);
 
-    }
+    assertEquals(0, bstatus);
 
-    @Test
-    public void spop() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	String member = jedis.spop("foo");
+  @Test
+  public void spop() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	assertTrue("a".equals(member) || "b".equals(member));
-	assertEquals(1, jedis.smembers("foo").size());
+    String member = jedis.spop("foo");
 
-	member = jedis.spop("bar");
-	assertNull(member);
+    assertTrue("a".equals(member) || "b".equals(member));
+    assertEquals(1, jedis.smembers("foo").size());
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    member = jedis.spop("bar");
+    assertNull(member);
 
-	byte[] bmember = jedis.spop(bfoo);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
-	assertEquals(1, jedis.smembers(bfoo).size());
+    byte[] bmember = jedis.spop(bfoo);
 
-	bmember = jedis.spop(bbar);
-	assertNull(bmember);
+    assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
+    assertEquals(1, jedis.smembers(bfoo).size());
 
-    }
+    bmember = jedis.spop(bbar);
+    assertNull(bmember);
 
-    @Test
-    public void smove() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	jedis.sadd("bar", "c");
+  @Test
+  public void smove() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	long status = jedis.smove("foo", "bar", "a");
+    jedis.sadd("bar", "c");
 
-	Set<String> expectedSrc = new HashSet<String>();
-	expectedSrc.add("b");
+    long status = jedis.smove("foo", "bar", "a");
 
-	Set<String> expectedDst = new HashSet<String>();
-	expectedDst.add("c");
-	expectedDst.add("a");
+    Set<String> expectedSrc = new HashSet<String>();
+    expectedSrc.add("b");
 
-	assertEquals(status, 1);
-	assertEquals(expectedSrc, jedis.smembers("foo"));
-	assertEquals(expectedDst, jedis.smembers("bar"));
+    Set<String> expectedDst = new HashSet<String>();
+    expectedDst.add("c");
+    expectedDst.add("a");
 
-	status = jedis.smove("foo", "bar", "a");
+    assertEquals(status, 1);
+    assertEquals(expectedSrc, jedis.smembers("foo"));
+    assertEquals(expectedDst, jedis.smembers("bar"));
 
-	assertEquals(status, 0);
+    status = jedis.smove("foo", "bar", "a");
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    assertEquals(status, 0);
 
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	long bstatus = jedis.smove(bfoo, bbar, ba);
+    jedis.sadd(bbar, bc);
 
-	Set<byte[]> bexpectedSrc = new HashSet<byte[]>();
-	bexpectedSrc.add(bb);
+    long bstatus = jedis.smove(bfoo, bbar, ba);
 
-	Set<byte[]> bexpectedDst = new HashSet<byte[]>();
-	bexpectedDst.add(bc);
-	bexpectedDst.add(ba);
+    Set<byte[]> bexpectedSrc = new HashSet<byte[]>();
+    bexpectedSrc.add(bb);
 
-	assertEquals(bstatus, 1);
-	assertEquals(bexpectedSrc, jedis.smembers(bfoo));
-	assertEquals(bexpectedDst, jedis.smembers(bbar));
+    Set<byte[]> bexpectedDst = new HashSet<byte[]>();
+    bexpectedDst.add(bc);
+    bexpectedDst.add(ba);
 
-	bstatus = jedis.smove(bfoo, bbar, ba);
-	assertEquals(bstatus, 0);
+    assertEquals(bstatus, 1);
+    assertEquals(bexpectedSrc, jedis.smembers(bfoo));
+    assertEquals(bexpectedDst, jedis.smembers(bbar));
 
-    }
+    bstatus = jedis.smove(bfoo, bbar, ba);
+    assertEquals(bstatus, 0);
 
-    @Test
-    public void scard() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	long card = jedis.scard("foo");
+  @Test
+  public void scard() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	assertEquals(2, card);
+    long card = jedis.scard("foo");
 
-	card = jedis.scard("bar");
-	assertEquals(0, card);
+    assertEquals(2, card);
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    card = jedis.scard("bar");
+    assertEquals(0, card);
 
-	long bcard = jedis.scard(bfoo);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	assertEquals(2, bcard);
+    long bcard = jedis.scard(bfoo);
 
-	bcard = jedis.scard(bbar);
-	assertEquals(0, bcard);
+    assertEquals(2, bcard);
 
-    }
+    bcard = jedis.scard(bbar);
+    assertEquals(0, bcard);
 
-    @Test
-    public void sismember() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	assertTrue(jedis.sismember("foo", "a"));
+  @Test
+  public void sismember() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	assertFalse(jedis.sismember("foo", "c"));
+    assertTrue(jedis.sismember("foo", "a"));
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    assertFalse(jedis.sismember("foo", "c"));
 
-	assertTrue(jedis.sismember(bfoo, ba));
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	assertFalse(jedis.sismember(bfoo, bc));
+    assertTrue(jedis.sismember(bfoo, ba));
 
-    }
+    assertFalse(jedis.sismember(bfoo, bc));
 
-    @Test
-    public void sinter() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	jedis.sadd("bar", "b");
-	jedis.sadd("bar", "c");
+  @Test
+  public void sinter() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("b");
+    jedis.sadd("bar", "b");
+    jedis.sadd("bar", "c");
 
-	Set<String> intersection = jedis.sinter("foo", "bar");
-	assertEquals(expected, intersection);
+    Set<String> expected = new HashSet<String>();
+    expected.add("b");
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    Set<String> intersection = jedis.sinter("foo", "bar");
+    assertEquals(expected, intersection);
 
-	jedis.sadd(bbar, bb);
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
+    jedis.sadd(bbar, bb);
+    jedis.sadd(bbar, bc);
 
-	Set<byte[]> bintersection = jedis.sinter(bfoo, bbar);
-	assertEquals(bexpected, bintersection);
-    }
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
 
-    @Test
-    public void sinterstore() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+    Set<byte[]> bintersection = jedis.sinter(bfoo, bbar);
+    assertEquals(bexpected, bintersection);
+  }
 
-	jedis.sadd("bar", "b");
-	jedis.sadd("bar", "c");
+  @Test
+  public void sinterstore() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("b");
+    jedis.sadd("bar", "b");
+    jedis.sadd("bar", "c");
 
-	long status = jedis.sinterstore("car", "foo", "bar");
-	assertEquals(1, status);
+    Set<String> expected = new HashSet<String>();
+    expected.add("b");
 
-	assertEquals(expected, jedis.smembers("car"));
+    long status = jedis.sinterstore("car", "foo", "bar");
+    assertEquals(1, status);
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    assertEquals(expected, jedis.smembers("car"));
 
-	jedis.sadd(bbar, bb);
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
+    jedis.sadd(bbar, bb);
+    jedis.sadd(bbar, bc);
 
-	long bstatus = jedis.sinterstore(bcar, bfoo, bbar);
-	assertEquals(1, bstatus);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
 
-	assertEquals(bexpected, jedis.smembers(bcar));
+    long bstatus = jedis.sinterstore(bcar, bfoo, bbar);
+    assertEquals(1, bstatus);
 
-    }
+    assertEquals(bexpected, jedis.smembers(bcar));
 
-    @Test
-    public void sunion() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	jedis.sadd("bar", "b");
-	jedis.sadd("bar", "c");
+  @Test
+  public void sunion() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("a");
-	expected.add("b");
-	expected.add("c");
+    jedis.sadd("bar", "b");
+    jedis.sadd("bar", "c");
 
-	Set<String> union = jedis.sunion("foo", "bar");
-	assertEquals(expected, union);
+    Set<String> expected = new HashSet<String>();
+    expected.add("a");
+    expected.add("b");
+    expected.add("c");
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    Set<String> union = jedis.sunion("foo", "bar");
+    assertEquals(expected, union);
 
-	jedis.sadd(bbar, bb);
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(bc);
-	bexpected.add(ba);
+    jedis.sadd(bbar, bb);
+    jedis.sadd(bbar, bc);
 
-	Set<byte[]> bunion = jedis.sunion(bfoo, bbar);
-	assertEquals(bexpected, bunion);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(bc);
+    bexpected.add(ba);
 
-    }
+    Set<byte[]> bunion = jedis.sunion(bfoo, bbar);
+    assertEquals(bexpected, bunion);
 
-    @Test
-    public void sunionstore() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	jedis.sadd("bar", "b");
-	jedis.sadd("bar", "c");
+  @Test
+  public void sunionstore() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("a");
-	expected.add("b");
-	expected.add("c");
+    jedis.sadd("bar", "b");
+    jedis.sadd("bar", "c");
 
-	long status = jedis.sunionstore("car", "foo", "bar");
-	assertEquals(3, status);
+    Set<String> expected = new HashSet<String>();
+    expected.add("a");
+    expected.add("b");
+    expected.add("c");
 
-	assertEquals(expected, jedis.smembers("car"));
+    long status = jedis.sunionstore("car", "foo", "bar");
+    assertEquals(3, status);
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    assertEquals(expected, jedis.smembers("car"));
 
-	jedis.sadd(bbar, bb);
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(bc);
-	bexpected.add(ba);
+    jedis.sadd(bbar, bb);
+    jedis.sadd(bbar, bc);
 
-	long bstatus = jedis.sunionstore(bcar, bfoo, bbar);
-	assertEquals(3, bstatus);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(bc);
+    bexpected.add(ba);
 
-	assertEquals(bexpected, jedis.smembers(bcar));
+    long bstatus = jedis.sunionstore(bcar, bfoo, bbar);
+    assertEquals(3, bstatus);
 
-    }
+    assertEquals(bexpected, jedis.smembers(bcar));
 
-    @Test
-    public void sdiff() {
-	jedis.sadd("foo", "x");
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
-	jedis.sadd("foo", "c");
+  }
 
-	jedis.sadd("bar", "c");
+  @Test
+  public void sdiff() {
+    jedis.sadd("foo", "x");
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
+    jedis.sadd("foo", "c");
 
-	jedis.sadd("car", "a");
-	jedis.sadd("car", "d");
+    jedis.sadd("bar", "c");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("x");
-	expected.add("b");
+    jedis.sadd("car", "a");
+    jedis.sadd("car", "d");
 
-	Set<String> diff = jedis.sdiff("foo", "bar", "car");
-	assertEquals(expected, diff);
+    Set<String> expected = new HashSet<String>();
+    expected.add("x");
+    expected.add("b");
 
-	// Binary
-	jedis.sadd(bfoo, bx);
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
-	jedis.sadd(bfoo, bc);
+    Set<String> diff = jedis.sdiff("foo", "bar", "car");
+    assertEquals(expected, diff);
 
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, bx);
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
+    jedis.sadd(bfoo, bc);
 
-	jedis.sadd(bcar, ba);
-	jedis.sadd(bcar, bd);
+    jedis.sadd(bbar, bc);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bb);
-	bexpected.add(bx);
+    jedis.sadd(bcar, ba);
+    jedis.sadd(bcar, bd);
 
-	Set<byte[]> bdiff = jedis.sdiff(bfoo, bbar, bcar);
-	assertEquals(bexpected, bdiff);
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bb);
+    bexpected.add(bx);
 
-    }
+    Set<byte[]> bdiff = jedis.sdiff(bfoo, bbar, bcar);
+    assertEquals(bexpected, bdiff);
 
-    @Test
-    public void sdiffstore() {
-	jedis.sadd("foo", "x");
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
-	jedis.sadd("foo", "c");
+  }
 
-	jedis.sadd("bar", "c");
+  @Test
+  public void sdiffstore() {
+    jedis.sadd("foo", "x");
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
+    jedis.sadd("foo", "c");
 
-	jedis.sadd("car", "a");
-	jedis.sadd("car", "d");
+    jedis.sadd("bar", "c");
 
-	Set<String> expected = new HashSet<String>();
-	expected.add("d");
-	expected.add("a");
+    jedis.sadd("car", "a");
+    jedis.sadd("car", "d");
 
-	long status = jedis.sdiffstore("tar", "foo", "bar", "car");
-	assertEquals(2, status);
-	assertEquals(expected, jedis.smembers("car"));
+    Set<String> expected = new HashSet<String>();
+    expected.add("d");
+    expected.add("a");
 
-	// Binary
-	jedis.sadd(bfoo, bx);
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
-	jedis.sadd(bfoo, bc);
+    long status = jedis.sdiffstore("tar", "foo", "bar", "car");
+    assertEquals(2, status);
+    assertEquals(expected, jedis.smembers("car"));
 
-	jedis.sadd(bbar, bc);
+    // Binary
+    jedis.sadd(bfoo, bx);
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
+    jedis.sadd(bfoo, bc);
 
-	jedis.sadd(bcar, ba);
-	jedis.sadd(bcar, bd);
+    jedis.sadd(bbar, bc);
 
-	Set<byte[]> bexpected = new HashSet<byte[]>();
-	bexpected.add(bd);
-	bexpected.add(ba);
+    jedis.sadd(bcar, ba);
+    jedis.sadd(bcar, bd);
 
-	long bstatus = jedis.sdiffstore("tar".getBytes(), bfoo, bbar, bcar);
-	assertEquals(2, bstatus);
-	assertEquals(bexpected, jedis.smembers(bcar));
+    Set<byte[]> bexpected = new HashSet<byte[]>();
+    bexpected.add(bd);
+    bexpected.add(ba);
 
-    }
+    long bstatus = jedis.sdiffstore("tar".getBytes(), bfoo, bbar, bcar);
+    assertEquals(2, bstatus);
+    assertEquals(bexpected, jedis.smembers(bcar));
 
-    @Test
-    public void srandmember() {
-	jedis.sadd("foo", "a");
-	jedis.sadd("foo", "b");
+  }
 
-	String member = jedis.srandmember("foo");
+  @Test
+  public void srandmember() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
 
-	assertTrue("a".equals(member) || "b".equals(member));
-	assertEquals(2, jedis.smembers("foo").size());
+    String member = jedis.srandmember("foo");
 
-	member = jedis.srandmember("bar");
-	assertNull(member);
+    assertTrue("a".equals(member) || "b".equals(member));
+    assertEquals(2, jedis.smembers("foo").size());
 
-	// Binary
-	jedis.sadd(bfoo, ba);
-	jedis.sadd(bfoo, bb);
+    member = jedis.srandmember("bar");
+    assertNull(member);
 
-	byte[] bmember = jedis.srandmember(bfoo);
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
 
-	assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
-	assertEquals(2, jedis.smembers(bfoo).size());
+    byte[] bmember = jedis.srandmember(bfoo);
 
-	bmember = jedis.srandmember(bbar);
-	assertNull(bmember);
-    }
+    assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
+    assertEquals(2, jedis.smembers(bfoo).size());
 
-    @Test
-    public void sscan() {
-	jedis.sadd("foo", "a", "b");
+    bmember = jedis.srandmember(bbar);
+    assertNull(bmember);
+  }
 
-	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START);
+  @Test
+  public void sscan() {
+    jedis.sadd("foo", "a", "b");
 
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
-	assertFalse(result.getResult().isEmpty());
-    }
+    ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START);
 
-    @Test
-    public void sscanMatch() {
-	ScanParams params = new ScanParams();
-	params.match("a*");
+    assertEquals(SCAN_POINTER_START, result.getCursor());
+    assertFalse(result.getResult().isEmpty());
 
-	jedis.sadd("foo", "b", "a", "aa");
-	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
+    // binary
+    jedis.sadd(bfoo, ba, bb);
 
-	assertEquals(SCAN_POINTER_START, result.getStringCursor());
-	assertFalse(result.getResult().isEmpty());
-    }
+    ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY);
 
-    @Test
-    public void sscanCount() {
-	ScanParams params = new ScanParams();
-	params.count(2);
+    assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+    assertFalse(bResult.getResult().isEmpty());
+  }
 
-	jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
+  @Test
+  public void sscanMatch() {
+    ScanParams params = new ScanParams();
+    params.match("a*");
 
-	ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
+    jedis.sadd("foo", "b", "a", "aa");
+    ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
 
-	assertFalse(result.getResult().isEmpty());
-    }
+    assertEquals(SCAN_POINTER_START, result.getCursor());
+    assertFalse(result.getResult().isEmpty());
+
+    // binary
+    params = new ScanParams();
+    params.match(bbarstar);
+
+    jedis.sadd(bfoo, bbar1, bbar2, bbar3);
+    ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
+
+    assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+    assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  public void sscanCount() {
+    ScanParams params = new ScanParams();
+    params.count(2);
+
+    jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
+
+    ScanResult<String> result = jedis.sscan("foo", SCAN_POINTER_START, params);
+
+    assertFalse(result.getResult().isEmpty());
+
+    // binary
+    params = new ScanParams();
+    params.count(2);
+
+    jedis.sadd(bfoo, bbar1, bbar2, bbar3);
+    ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
+
+    assertFalse(bResult.getResult().isEmpty());
+  }
 }

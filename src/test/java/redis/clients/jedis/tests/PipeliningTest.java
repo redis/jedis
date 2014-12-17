@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +21,9 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.SafeEncoder;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 
 public class PipeliningTest extends Assert {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -308,12 +313,23 @@ public class PipeliningTest extends Assert {
     String script = "return 'success!'";
 
     Pipeline p = jedis.pipelined();
-    Response<String> result = p.eval(script);
+    Response<Object> result = p.eval(script);
     p.sync();
 
     assertEquals("success!", result.get());
   }
 
+  @Test
+  public void testEvalWithBinary() {
+    String script = "return 'success!'";
+
+    Pipeline p = jedis.pipelined();
+    Response<Object> result = p.eval(SafeEncoder.encode(script));
+    p.sync();
+
+    assertArrayEquals(SafeEncoder.encode("success!"), (byte[]) result.get());
+  }
+  
   @Test
   public void testEvalKeyAndArg() {
     String key = "test";
@@ -322,15 +338,65 @@ public class PipeliningTest extends Assert {
 
     Pipeline p = jedis.pipelined();
     p.set(key, "0");
-    Response<String> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
     p.incr(key);
-    Response<String> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
     Response<String> result2 = p.get(key);
     p.sync();
 
     assertNull(result0.get());
     assertNull(result1.get());
     assertEquals("13", result2.get());
+  }
+
+  @Test
+  public void testEvalKeyAndArgWithBinary() {
+    // binary
+    byte[] bKey = SafeEncoder.encode("test");
+    byte[] bArg = SafeEncoder.encode("3");
+    byte[] bScript = SafeEncoder
+        .encode("redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])");
+
+    Pipeline bP = jedis.pipelined();
+    bP.set(bKey, SafeEncoder.encode("0"));
+    Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey),
+        Arrays.asList(bArg));
+    bP.incr(bKey);
+    Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey),
+        Arrays.asList(bArg));
+    Response<byte[]> bResult2 = bP.get(bKey);
+    bP.sync();
+
+    assertNull(bResult0.get());
+    assertNull(bResult1.get());
+    assertArrayEquals(SafeEncoder.encode("13"), bResult2.get());
+  }
+
+  @Test
+  public void testEvalNestedLists() {
+    String script = "return { {KEYS[1]} , {2} }";
+
+    Pipeline p = jedis.pipelined();
+    Response<Object> result = p.eval(script, 1, "key1");
+    p.sync();
+
+    List<?> results = (List<?>) result.get();
+    assertThat((List<String>) results.get(0), listWithItem("key1"));
+    assertThat((List<Long>) results.get(1), listWithItem(2L));
+  }
+
+  @Test
+  public void testEvalNestedListsWithBinary() {
+    byte[] bScript = SafeEncoder.encode("return { {KEYS[1]} , {2} }");
+    byte[] bKey = SafeEncoder.encode("key1");
+
+    Pipeline p = jedis.pipelined();
+    Response<Object> result = p.eval(bScript, 1, bKey);
+    p.sync();
+
+    List<?> results = (List<?>) result.get();
+    assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
+    assertThat((List<Long>) results.get(1), listWithItem(2L));
   }
 
   @Test
@@ -341,7 +407,7 @@ public class PipeliningTest extends Assert {
     assertTrue(jedis.scriptExists(sha1));
 
     Pipeline p = jedis.pipelined();
-    Response<String> result = p.evalsha(sha1);
+    Response<Object> result = p.evalsha(sha1);
     p.sync();
 
     assertEquals("success!", result.get());
@@ -358,15 +424,40 @@ public class PipeliningTest extends Assert {
 
     Pipeline p = jedis.pipelined();
     p.set(key, "0");
-    Response<String> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
     p.incr(key);
-    Response<String> result1 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result1 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
     Response<String> result2 = p.get(key);
     p.sync();
 
     assertNull(result0.get());
     assertNull(result1.get());
     assertEquals("13", result2.get());
+  }
+
+  @Test
+  public void testEvalshaKeyAndArgWithBinary() {
+    byte[] bKey = SafeEncoder.encode("test");
+    byte[] bArg = SafeEncoder.encode("3");
+    String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
+    byte[] bScript = SafeEncoder.encode(script);
+    byte[] bSha1 = jedis.scriptLoad(bScript);
+
+    assertTrue(jedis.scriptExists(bSha1) == 1);
+
+    Pipeline p = jedis.pipelined();
+    p.set(bKey, SafeEncoder.encode("0"));
+    Response<Object> result0 = p.evalsha(bSha1, Arrays.asList(bKey),
+        Arrays.asList(bArg));
+    p.incr(bKey);
+    Response<Object> result1 = p.evalsha(bSha1, Arrays.asList(bKey),
+        Arrays.asList(bArg));
+    Response<byte[]> result2 = p.get(bKey);
+    p.sync();
+
+    assertNull(result0.get());
+    assertNull(result1.get());
+    assertArrayEquals(SafeEncoder.encode("13"), result2.get());
   }
 
   @Test
@@ -458,5 +549,9 @@ public class PipeliningTest extends Assert {
     assertFalse(firstKey.equals(secondKey));
     assertTrue(firstKey.equals(value1) || firstKey.equals(value2));
     assertTrue(secondKey.equals(value1) || secondKey.equals(value2));
+  }
+
+  private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
+    return CoreMatchers.<T>hasItem(equalTo(expected));
   }
 }

@@ -112,7 +112,7 @@ public class BuilderFactory {
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-          String.valueOf((Long) iterator.next()));
+            String.valueOf((Long) iterator.next()));
       }
 
       return hash;
@@ -271,6 +271,63 @@ public class BuilderFactory {
     public String toString() {
       return "ZSet<Tuple>";
     }
+  };
+
+  public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
+
+    @Override
+    public Object build(Object data) {
+      return evalResult(data);
+    }
+
+    public String toString() {
+      return "Eval<Object>";
+    }
+
+    private Object evalResult(Object result) {
+      if (result instanceof byte[])
+        return SafeEncoder.encode((byte[]) result);
+
+      if (result instanceof List<?>) {
+        List<?> list = (List<?>) result;
+        List<Object> listResult = new ArrayList<Object>(list.size());
+        for (Object bin : list) {
+          listResult.add(evalResult(bin));
+        }
+
+        return listResult;
+      }
+
+      return result;
+    }
+
+  };
+
+  public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {
+
+    @Override
+    public Object build(Object data) {
+      return evalResult(data);
+    }
+
+    public String toString() {
+      return "Eval<Object>";
+    }
+
+    private Object evalResult(Object result) {
+      if (result instanceof List<?>) {
+        List<?> list = (List<?>) result;
+        List<Object> listResult = new ArrayList<Object>(list.size());
+        for (Object bin : list) {
+          listResult.add(evalResult(bin));
+        }
+
+        return listResult;
+      }
+
+      return result;
+    }
+
   };
 
 }

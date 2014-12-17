@@ -1230,34 +1230,6 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.DOUBLE);
   }
 
-  public Response<String> eval(String script) {
-    return this.eval(script, 0);
-  }
-
-  public Response<String> eval(String script, List<String> keys, List<String> args) {
-    String[] argv = Jedis.getParams(keys, args);
-    return this.eval(script, keys.size(), argv);
-  }
-
-  public Response<String> eval(String script, int numKeys, String... args) {
-    getClient(script).eval(script, numKeys, args);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  public Response<String> evalsha(String script) {
-    return this.evalsha(script, 0);
-  }
-
-  public Response<String> evalsha(String sha1, List<String> keys, List<String> args) {
-    String[] argv = Jedis.getParams(keys, args);
-    return this.evalsha(sha1, keys.size(), argv);
-  }
-
-  public Response<String> evalsha(String sha1, int numKeys, String... args) {
-    getClient(sha1).evalsha(sha1, numKeys, args);
-    return getResponse(BuilderFactory.STRING);
-  }
-
   @Override
   public Response<Long> pfadd(byte[] key, byte[]... elements) {
     getClient(key).pfadd(key, elements);

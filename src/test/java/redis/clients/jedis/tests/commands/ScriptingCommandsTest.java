@@ -62,6 +62,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     assertEquals("first", new String(responses.get(2)));
     assertEquals("second", new String(responses.get(3)));
     assertEquals("third", new String(responses.get(4)));
+
+    binaryJedis.close();
   }
 
   @Test
@@ -158,9 +160,9 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptLoadBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    List<Long> exists = jedis.scriptExists(SafeEncoder
+    Long exists = jedis.scriptExists(SafeEncoder
         .encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
-    assertEquals(new Long(1), exists.get(0));
+    assertEquals((Long) 1L, exists);
   }
 
   @Test

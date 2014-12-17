@@ -2875,10 +2875,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Script result
    */
   public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-    return eval(script, toByteArray(keys.size()), getParams(keys, args));
+    return eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
   }
 
-  private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+  protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
     byte[][] params = new byte[keyCount + argCount][];
@@ -2915,7 +2915,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-    return evalsha(sha1, keys.size(), getParams(keys, args));
+    return evalsha(sha1, keys.size(), getParamsWithBinary(keys, args));
   }
 
   public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
@@ -2933,6 +2933,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  public Long scriptExists(byte[] sha1) {
+    byte[][] a = new byte[1][];
+    a[0] = sha1;
+    return scriptExists(a).get(0);
+  }
+  
   public List<Long> scriptExists(byte[]... sha1) {
     client.scriptExists(sha1);
     return client.getIntegerMultiBulkReply();

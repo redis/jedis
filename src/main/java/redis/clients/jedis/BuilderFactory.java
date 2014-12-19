@@ -112,7 +112,7 @@ public class BuilderFactory {
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-            String.valueOf((Long) iterator.next()));
+          String.valueOf((Long) iterator.next()));
       }
 
       return hash;
@@ -285,8 +285,7 @@ public class BuilderFactory {
     }
 
     private Object evalResult(Object result) {
-      if (result instanceof byte[])
-        return SafeEncoder.encode((byte[]) result);
+      if (result instanceof byte[]) return SafeEncoder.encode((byte[]) result);
 
       if (result instanceof List<?>) {
         List<?> list = (List<?>) result;

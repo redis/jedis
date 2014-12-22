@@ -12,13 +12,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.util.SafeEncoder;
 
 public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   public static final short HASHSLOTS = 16384;
@@ -1445,16 +1442,6 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(key);
   }
 
-  // @Override
-  // public List<byte[]> blpop(final int timeout, final byte[] key) {
-  // return new JedisClusterCommand<List<byte[]>>(connectionHandler, timeout, maxRedirections) {
-  // @Override
-  // public List<byte[]> execute(Jedis connection) {
-  // return connection.blpop(timeout, key);
-  // }
-  // }.run(SafeEncoder.encode(key));
-  // }
-
   @Override
   public List<String> brpop(final int timeout, final String key) {
     return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
@@ -1464,16 +1451,6 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       }
     }.run(key);
   }
-
-  // @Override
-  // public List<byte[]> brpop(final int timeout, final byte[] key) {
-  // return new JedisClusterCommand<List<byte[]>>(connectionHandler, timeout, maxRedirections) {
-  // @Override
-  // public List<byte[]> execute(Jedis connection) {
-  // return connection.brpop(timeout, key);
-  // }
-  // }.run(SafeEncoder.encode(key));
-  // }
 
   public ScanResult<String> scan() {
     return scan(null);

@@ -1,14 +1,24 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.SafeEncoder;
 
 public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   public static final short HASHSLOTS = 16384;
@@ -1332,6 +1342,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     return connectionHandler.getNodes();
   }
 
+  public List<JedisPool> getMasterNodes() {
+    return connectionHandler.getMasterNodes();
+  }
+
   @Override
   public Long waitReplicas(int replicas, long timeout) {
     // TODO Auto-generated method stub
@@ -1346,7 +1360,19 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Entry<String, String>> hscan(final String key, final String cursor,
+      final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler, timeout,
+        maxRedirections) {
+      @Override
+      public ScanResult<Entry<String, String>> execute(Jedis connection) {
+        return connection.hscan(key, cursor, params);
+      }
+    }.run(key);
   }
 
   @Override
@@ -1356,7 +1382,17 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<String> execute(Jedis connection) {
         return connection.sscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, timeout, maxRedirections) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
+        return connection.sscan(key, cursor, params);
+      }
+    }.run(key);
   }
 
   @Override
@@ -1366,7 +1402,17 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, timeout, maxRedirections) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor, params);
+      }
+    }.run(key);
   }
 
   @Override
@@ -1396,8 +1442,18 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public List<String> execute(Jedis connection) {
         return connection.blpop(timeout, key);
       }
-    }.run(null);
+    }.run(key);
   }
+
+  // @Override
+  // public List<byte[]> blpop(final int timeout, final byte[] key) {
+  // return new JedisClusterCommand<List<byte[]>>(connectionHandler, timeout, maxRedirections) {
+  // @Override
+  // public List<byte[]> execute(Jedis connection) {
+  // return connection.blpop(timeout, key);
+  // }
+  // }.run(SafeEncoder.encode(key));
+  // }
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
@@ -1406,7 +1462,66 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public List<String> execute(Jedis connection) {
         return connection.brpop(timeout, key);
       }
-    }.run(null);
+    }.run(key);
   }
 
+  // @Override
+  // public List<byte[]> brpop(final int timeout, final byte[] key) {
+  // return new JedisClusterCommand<List<byte[]>>(connectionHandler, timeout, maxRedirections) {
+  // @Override
+  // public List<byte[]> execute(Jedis connection) {
+  // return connection.brpop(timeout, key);
+  // }
+  // }.run(SafeEncoder.encode(key));
+  // }
+
+  public ScanResult<String> scan() {
+    return scan(null);
+  }
+
+  public ScanResult<String> scan(final ScanParams params) {
+    ThreadPoolExecutor executor = new ThreadPoolExecutor(1, Runtime.getRuntime()
+        .availableProcessors(), 0, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(
+        connectionHandler.getNodes().size()));
+
+    List<Future<List<String>>> futures = new ArrayList<Future<List<String>>>();
+    for (final JedisPool entry : connectionHandler.getMasterNodes()) {
+      futures.add(executor.submit(new Callable<List<String>>() {
+        @Override
+        public List<String> call() throws Exception {
+          Jedis resource = entry.getResource();
+          try {
+            List<String> result = new ArrayList<String>();
+            String cursor = "0";
+            do {
+              ScanResult<String> scan;
+              if (params == null) {
+                scan = resource.scan(cursor);
+              } else {
+                scan = resource.scan(cursor, params);
+              }
+              result.addAll(scan.getResult());
+              cursor = scan.getCursor();
+            } while (!cursor.equals("0"));
+            return result;
+          } finally {
+            entry.returnResource(resource);
+          }
+        }
+      }));
+    }
+
+    executor.shutdown();
+
+    List<String> result = new ArrayList<String>();
+    for (Future<List<String>> future : futures) {
+      try {
+        result.addAll(future.get());
+      } catch (InterruptedException ex) {
+      } catch (ExecutionException ex) {
+      }
+    }
+
+    return new ScanResult<String>("0", result);
+  }
 }

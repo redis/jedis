@@ -236,9 +236,16 @@ public interface JedisCommands {
 
   ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
 
+  ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor,
+      final ScanParams params);
+
   ScanResult<String> sscan(final String key, final String cursor);
 
+  ScanResult<String> sscan(final String key, final String cursor, final ScanParams params);
+
   ScanResult<Tuple> zscan(final String key, final String cursor);
+
+  ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams params);
 
   Long pfadd(final String key, final String... elements);
 

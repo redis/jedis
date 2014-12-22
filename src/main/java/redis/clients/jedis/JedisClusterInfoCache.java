@@ -2,8 +2,11 @@ package redis.clients.jedis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -18,6 +21,7 @@ public class JedisClusterInfoCache {
 
   private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
   private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private List<JedisPool> masters = new LinkedList<JedisPool>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -44,6 +48,8 @@ public class JedisClusterInfoCache {
         setNodeIfNotExist(targetNode);
         assignSlotsToNode(clusterNodeInfo.getAvailableSlots(), targetNode);
       }
+
+      discoverClusterSlots(jedis);
     } finally {
       w.unlock();
     }
@@ -54,6 +60,7 @@ public class JedisClusterInfoCache {
 
     try {
       this.slots.clear();
+      this.masters.clear();
 
       List<Object> slots = jedis.clusterSlots();
 
@@ -76,6 +83,7 @@ public class JedisClusterInfoCache {
         HostAndPort targetNode = generateHostAndPort(hostInfos);
 
         setNodeIfNotExist(targetNode);
+        masters.add(getNode(getNodeKey(targetNode)));
         assignSlotsToNode(slotNums, targetNode);
       }
     } finally {
@@ -156,6 +164,15 @@ public class JedisClusterInfoCache {
     r.lock();
     try {
       return new HashMap<String, JedisPool>(nodes);
+    } finally {
+      r.unlock();
+    }
+  }
+
+  public List<JedisPool> getMasterNodes() {
+    r.lock();
+    try {
+      return new ArrayList<JedisPool>(masters);
     } finally {
       r.unlock();
     }

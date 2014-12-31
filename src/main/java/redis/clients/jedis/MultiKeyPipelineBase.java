@@ -289,9 +289,9 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> configGet(String pattern) {
+  public Response<List<String>> configGet(String pattern) {
     client.configGet(pattern);
-    return getResponse(BuilderFactory.STRING);
+    return getResponse(BuilderFactory.STRING_LIST);
   }
 
   public Response<String> configSet(String parameter, String value) {

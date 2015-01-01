@@ -66,6 +66,9 @@ public final class Protocol {
   public static final String PUBSUB_NUMSUB = "numsub";
   public static final String PUBSUB_NUM_PAT = "numpat";
 
+  public static final byte[] BYTES_TRUE = toByteArray(1);
+  public static final byte[] BYTES_FALSE = toByteArray(0);
+
   private Protocol() {
     // this prevent the class from instantiation
   }
@@ -194,7 +197,7 @@ public final class Protocol {
   }
 
   public static final byte[] toByteArray(final boolean value) {
-    return toByteArray(value ? 1 : 0);
+    return value ? BYTES_TRUE : BYTES_FALSE;
   }
 
   public static final byte[] toByteArray(final int value) {

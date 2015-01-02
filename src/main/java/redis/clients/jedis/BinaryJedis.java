@@ -72,7 +72,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       client.getStatusCodeReply();
     }
 
-    Integer dbIndex = JedisURIHelper.getDBIndex(uri);
+    int dbIndex = JedisURIHelper.getDBIndex(uri);
     if (dbIndex > 0) {
       client.select(dbIndex);
       client.getStatusCodeReply();

@@ -2,10 +2,12 @@ package redis.clients.jedis;
 
 import java.net.URI;
 
+import redis.clients.util.JedisURIHelper;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
+  
   public String toString() {
     return host + ":" + port + "*" + getWeight();
   }
@@ -15,6 +17,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private int port;
   private String password = null;
   private String name = null;
+  //Default Redis DB
+  private int db = 0;
 
   public String getHost() {
     return host;
@@ -30,7 +34,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
       this.host = uri.getHost();
       this.port = uri.getPort();
-      this.password = uri.getUserInfo().split(":", 2)[1];
+      this.password = JedisURIHelper.getPassword(uri);
+      this.db = JedisURIHelper.getDBIndex(uri);
     } else {
       this.host = host;
       this.port = Protocol.DEFAULT_PORT;
@@ -69,7 +74,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     super(Sharded.DEFAULT_WEIGHT);
     this.host = uri.getHost();
     this.port = uri.getPort();
-    this.password = uri.getUserInfo().split(":", 2)[1];
+    this.password = JedisURIHelper.getPassword(uri);
+    this.db = JedisURIHelper.getDBIndex(uri);
   }
 
   public String getPassword() {
@@ -91,9 +97,16 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public String getName() {
     return name;
   }
+  
+  public int getDb() {
+    return db;
+  }
 
   @Override
   public Jedis createResource() {
-    return new Jedis(this);
+    Jedis jedis = new Jedis(this);
+    jedis.select(db);
+    return jedis;
   }
+
 }

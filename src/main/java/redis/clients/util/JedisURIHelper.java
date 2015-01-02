@@ -11,7 +11,7 @@ public class JedisURIHelper {
     return null;
   }
 
-  public static Integer getDBIndex(URI uri) {
+  public static int getDBIndex(URI uri) {
     String[] pathSplit = uri.getPath().split("/", 2);
     if (pathSplit.length > 1) {
       String dbIndexStr = pathSplit[1];

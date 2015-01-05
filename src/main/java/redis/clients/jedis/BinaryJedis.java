@@ -2938,7 +2938,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     a[0] = sha1;
     return scriptExists(a).get(0);
   }
-  
+
   public List<Long> scriptExists(byte[]... sha1) {
     client.scriptExists(sha1);
     return client.getIntegerMultiBulkReply();

@@ -329,7 +329,7 @@ public class PipeliningTest extends Assert {
 
     assertArrayEquals(SafeEncoder.encode("success!"), (byte[]) result.get());
   }
-  
+
   @Test
   public void testEvalKeyAndArg() {
     String key = "test";
@@ -359,11 +359,9 @@ public class PipeliningTest extends Assert {
 
     Pipeline bP = jedis.pipelined();
     bP.set(bKey, SafeEncoder.encode("0"));
-    Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey),
-        Arrays.asList(bArg));
+    Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
     bP.incr(bKey);
-    Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey),
-        Arrays.asList(bArg));
+    Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
     Response<byte[]> bResult2 = bP.get(bKey);
     bP.sync();
 
@@ -447,11 +445,9 @@ public class PipeliningTest extends Assert {
 
     Pipeline p = jedis.pipelined();
     p.set(bKey, SafeEncoder.encode("0"));
-    Response<Object> result0 = p.evalsha(bSha1, Arrays.asList(bKey),
-        Arrays.asList(bArg));
+    Response<Object> result0 = p.evalsha(bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
     p.incr(bKey);
-    Response<Object> result1 = p.evalsha(bSha1, Arrays.asList(bKey),
-        Arrays.asList(bArg));
+    Response<Object> result1 = p.evalsha(bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
     Response<byte[]> result2 = p.get(bKey);
     p.sync();
 
@@ -552,6 +548,6 @@ public class PipeliningTest extends Assert {
   }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T>hasItem(equalTo(expected));
+    return CoreMatchers.<T> hasItem(equalTo(expected));
   }
 }

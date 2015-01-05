@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.List;
 import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 
 import java.util.Map;
@@ -39,14 +40,21 @@ public abstract class JedisClusterConnectionHandler {
     return cache.getNodes();
   }
 
+  public List<JedisPool> getMasterNodes() {
+    return cache.getMasterNodes();
+  }
+
   public void assignSlotToNode(int slot, HostAndPort targetNode) {
     cache.assignSlotToNode(slot, targetNode);
   }
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig) {
     for (HostAndPort hostAndPort : startNodes) {
-      Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort());
+      JedisPool jp = new JedisPool(poolConfig, hostAndPort.getHost(), hostAndPort.getPort());
+
+      Jedis jedis = null;
       try {
+        jedis = jp.getResource();
         cache.discoverClusterNodesAndSlots(jedis);
         break;
       } catch (JedisConnectionException e) {

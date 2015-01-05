@@ -588,14 +588,30 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.hscan(key, cursor);
   }
 
+  public ScanResult<Entry<String, String>> hscan(String key, final String cursor,
+      final ScanParams params) {
+    Jedis j = getShard(key);
+    return j.hscan(key, cursor, params);
+  }
+
   public ScanResult<String> sscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.sscan(key, cursor);
   }
 
+  public ScanResult<String> sscan(String key, final String cursor, final ScanParams params) {
+    Jedis j = getShard(key);
+    return j.sscan(key, cursor, params);
+  }
+
   public ScanResult<Tuple> zscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.zscan(key, cursor);
+  }
+
+  public ScanResult<Tuple> zscan(String key, final String cursor, final ScanParams params) {
+    Jedis j = getShard(key);
+    return j.zscan(key, cursor, params);
   }
 
   @Override
@@ -606,13 +622,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       for (Jedis jedis : getAllShards()) {
         if (jedis.getClient().isBroken()) {
           broken = true;
-          break;
         }
       }
 
       if (broken) {
         dataSource.returnBrokenResource(this);
       } else {
+        this.resetState();
         dataSource.returnResource(this);
       }
 

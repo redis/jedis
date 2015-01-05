@@ -7,7 +7,7 @@ public class HostAndPort {
   private int port;
 
   public HostAndPort(String host, int port) {
-    this.host = host;
+    this.host = convertHost(host);
     this.port = port;
   }
 
@@ -46,6 +46,7 @@ public class HostAndPort {
   private String convertHost(String host) {
     if (host.equals("127.0.0.1")) return LOCALHOST_STR;
     else if (host.equals("::1")) return LOCALHOST_STR;
+    else if (host.isEmpty()) return LOCALHOST_STR;
 
     return host;
   }

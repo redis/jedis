@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
@@ -112,7 +112,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     Jedis jedis = new Jedis(this);
     try {
       jedis.select(db);
-    } catch(JedisConnectionException e) {
+    } catch(JedisException e) {
       log.log(Level.SEVERE, "Can't select database due a Redis connection problem", e);
     }
       

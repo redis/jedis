@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -174,16 +173,16 @@ public class JedisPoolTest extends Assert {
         "foobared");
 
     Jedis jedis0 = pool.getResource();
-    assertEquals(0L, jedis0.getDB().longValue());
+    assertEquals(0, jedis0.getDB());
 
     jedis0.select(1);
-    assertEquals(1L, jedis0.getDB().longValue());
+    assertEquals(1, jedis0.getDB());
 
     pool.returnResource(jedis0);
 
     Jedis jedis1 = pool.getResource();
     assertTrue("Jedis instance was not reused", jedis1 == jedis0);
-    assertEquals(0L, jedis1.getDB().longValue());
+    assertEquals(0, jedis1.getDB());
 
     pool.returnResource(jedis1);
     pool.destroy();

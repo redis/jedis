@@ -1299,10 +1299,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
-  public Long getDB() {
-    return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
+  public int getDB() {
+    return new JedisClusterCommand<Integer>(connectionHandler, timeout, maxRedirections) {
       @Override
-      public Long execute(Jedis connection) {
+      public Integer execute(Jedis connection) {
         return connection.getDB();
       }
     }.run(null);

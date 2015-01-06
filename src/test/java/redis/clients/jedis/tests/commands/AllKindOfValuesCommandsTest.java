@@ -348,9 +348,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void getDB() {
-    assertEquals(0, jedis.getDB());
+    assertEquals(0, jedis.getDB().longValue());
     jedis.select(1);
-    assertEquals(1, jedis.getDB());
+    assertEquals(1, jedis.getDB().longValue());
   }
 
   @Test

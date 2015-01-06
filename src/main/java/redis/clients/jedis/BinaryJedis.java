@@ -46,6 +46,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client(shardInfo.getHost(), shardInfo.getPort());
     client.setTimeout(shardInfo.getTimeout());
     client.setPassword(shardInfo.getPassword());
+    client.setDb(shardInfo.getDb());
   }
 
   public BinaryJedis(URI uri) {
@@ -2856,7 +2857,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
-  public Long getDB() {
+  public int getDB() {
     return client.getDB();
   }
 

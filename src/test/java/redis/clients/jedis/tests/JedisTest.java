@@ -106,13 +106,13 @@ public class JedisTest extends JedisCommandTestBase {
     jedis.auth("foobared");
     assertEquals(jedis.getClient().getHost(), "localhost");
     assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), (Long) 0L);
+    assertEquals(jedis.getDB(), 0);
 
     jedis = new Jedis("redis://localhost:6380/");
     jedis.auth("foobared");
     assertEquals(jedis.getClient().getHost(), "localhost");
     assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), (Long) 0L);
+    assertEquals(jedis.getDB(), 0);
   }
 
   @Test

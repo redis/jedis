@@ -178,7 +178,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     Jedis afterFailoverJedis = pool.getResource();
     assertEquals("PONG", afterFailoverJedis.ping());
     assertEquals("foobared", afterFailoverJedis.configGet("requirepass").get(1));
-    assertEquals(2, afterFailoverJedis.getDB());
+    assertEquals(2, afterFailoverJedis.getDB().intValue());
 
     // returning both connections to the pool should not throw
     beforeFailoverJedis.close();

@@ -2866,7 +2866,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
-  public int getDB() {
+  public Long getDB() {
     return client.getDB();
   }
 

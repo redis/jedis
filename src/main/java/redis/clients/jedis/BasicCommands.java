@@ -34,7 +34,7 @@ public interface BasicCommands {
 
   String slaveofNoOne();
 
-  int getDB();
+  Long getDB();
 
   String debug(DebugParams params);
 

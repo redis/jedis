@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-import java.util.logging.Logger;
 
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.ShardInfo;
@@ -9,8 +8,6 @@ import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
 
-  protected Logger log = Logger.getLogger(getClass().getName());
-  
   public String toString() {
     return host + ":" + port + "*" + getWeight();
   }

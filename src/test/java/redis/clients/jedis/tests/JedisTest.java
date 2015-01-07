@@ -14,6 +14,7 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.util.SafeEncoder;
 
@@ -98,6 +99,19 @@ public class JedisTest extends JedisCommandTestBase {
     Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
+  }
+  
+  @Test
+  public void shouldNotUpdateDbIndexIfSelectFails() throws URISyntaxException {
+    int currentDb = jedis.getDB();
+    try {
+      int invalidDb = -1;
+      jedis.select(invalidDb);
+      
+      fail("Should throw an exception if tried to select invalid db");
+    } catch(JedisException e) {
+      assertEquals(currentDb, jedis.getDB());
+    }
   }
 
   @Test

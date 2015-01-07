@@ -77,6 +77,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     if (dbIndex > 0) {
       client.select(dbIndex);
       client.getStatusCodeReply();
+      client.setDb(dbIndex);
     }
   }
 
@@ -366,7 +367,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String select(final int index) {
     checkIsInMulti();
     client.select(index);
-    return client.getStatusCodeReply();
+    String statusCodeReply = client.getStatusCodeReply();
+    client.setDb(index);
+    
+    return statusCodeReply;
   }
 
   /**

@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-import java.util.logging.Logger;
 
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.ShardInfo;
@@ -67,6 +66,14 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public JedisShardInfo(String host, int port, int timeout, int weight) {
     super(weight);
     this.host = host;
+    this.port = port;
+    this.timeout = timeout;
+  }
+  
+  public JedisShardInfo(String host, String name, int port, int timeout, int weight) {
+    super(weight);
+    this.host = host;
+    this.name = name;
     this.port = port;
     this.timeout = timeout;
   }

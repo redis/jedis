@@ -72,6 +72,10 @@ public class BinaryClient extends Connection {
   public void setPassword(final String password) {
     this.password = password;
   }
+  
+  public void setDb(long db) {
+    this.db = db;
+  }
 
   @Override
   public void connect() {

@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;

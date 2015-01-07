@@ -52,6 +52,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client(shardInfo.getHost(), shardInfo.getPort());
     client.setTimeout(shardInfo.getTimeout());
     client.setPassword(shardInfo.getPassword());
+    client.setDb(shardInfo.getDb());
   }
 
   public BinaryJedis(URI uri) {
@@ -72,7 +73,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       client.getStatusCodeReply();
     }
 
-    Integer dbIndex = JedisURIHelper.getDBIndex(uri);
+    int dbIndex = JedisURIHelper.getDBIndex(uri);
     if (dbIndex > 0) {
       client.select(dbIndex);
       client.getStatusCodeReply();

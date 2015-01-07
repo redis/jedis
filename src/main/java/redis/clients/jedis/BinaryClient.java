@@ -159,7 +159,6 @@ public class BinaryClient extends Connection {
   }
 
   public void select(final int index) {
-    db = index;
     sendCommand(SELECT, toByteArray(index));
   }
 

@@ -12,7 +12,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     return host + ":" + port + "*" + getWeight();
   }
 
-  private int timeout;
+  private int connectionTimeout;
+  private int soTimeout;
   private String host;
   private int port;
   private String password = null;
@@ -55,19 +56,20 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisShardInfo(String host, int port, int timeout) {
-    this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+    this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT);
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name) {
-    this(host, port, timeout, Sharded.DEFAULT_WEIGHT);
+    this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT);
     this.name = name;
   }
 
-  public JedisShardInfo(String host, int port, int timeout, int weight) {
+  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight) {
     super(weight);
     this.host = host;
     this.port = port;
-    this.timeout = timeout;
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
   }
   
   public JedisShardInfo(String host, String name, int port, int timeout, int weight) {
@@ -75,7 +77,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.host = host;
     this.name = name;
     this.port = port;
-    this.timeout = timeout;
+    this.connectionTimeout = timeout;
+    this.soTimeout = timeout;
   }
 
   public JedisShardInfo(URI uri) {
@@ -94,14 +97,22 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.password = auth;
   }
 
-  public int getTimeout() {
-    return timeout;
+  public int getConnectionTimeout() {
+    return connectionTimeout;
   }
-
-  public void setTimeout(int timeout) {
-    this.timeout = timeout;
+  
+  public void setConnectionTimeout(int connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
   }
-
+  
+  public int getSoTimeout() {
+    return soTimeout;
+  }
+  
+  public void setSoTimeout(int soTimeout) {
+    this.soTimeout = soTimeout;
+  }
+  
   public String getName() {
     return name;
   }

@@ -39,12 +39,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host, final int port, final int timeout) {
     client = new Client(host, port);
-    client.setTimeout(timeout);
+    client.setConnectionTimeout(timeout);
+    client.setSoTimeout(timeout);
+  }
+  
+  public BinaryJedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
+    client = new Client(host, port);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
     client = new Client(shardInfo.getHost(), shardInfo.getPort());
-    client.setTimeout(shardInfo.getTimeout());
+    client.setConnectionTimeout(shardInfo.getConnectionTimeout());
+    client.setSoTimeout(shardInfo.getSoTimeout());
     client.setPassword(shardInfo.getPassword());
     client.setDb(shardInfo.getDb());
   }
@@ -55,7 +63,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final URI uri, final int timeout) {
     initializeClientFromURI(uri);
-    client.setTimeout(timeout);
+    client.setConnectionTimeout(timeout);
+    client.setSoTimeout(timeout);
+  }
+  
+  public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout) {
+    initializeClientFromURI(uri);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
   }
 
   private void initializeClientFromURI(URI uri) {

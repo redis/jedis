@@ -1,12 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,6 +8,13 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
+
 public class Connection implements Closeable {
   private String host;
   private int port = Protocol.DEFAULT_PORT;
@@ -22,22 +22,30 @@ public class Connection implements Closeable {
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
   private int pipelinedCommands = 0;
-  private int timeout = Protocol.DEFAULT_TIMEOUT;
-
+  private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean broken = false;
 
   public Socket getSocket() {
     return socket;
   }
 
-  public int getTimeout() {
-    return timeout;
+  public int getConnectionTimeout() {
+    return connectionTimeout;
+  }
+  
+  public int getSoTimeout() {
+    return soTimeout;
   }
 
-  public void setTimeout(final int timeout) {
-    this.timeout = timeout;
+  public void setConnectionTimeout(int connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
   }
-
+  
+  public void setSoTimeout(int soTimeout) {
+    this.soTimeout = soTimeout;
+  }
+  
   public void setTimeoutInfinite() {
     try {
       if (!isConnected()) {
@@ -52,7 +60,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(timeout);
+      socket.setSoTimeout(soTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -139,8 +147,8 @@ public class Connection implements Closeable {
         // immediately
         // <-@wjw_add
 
-        socket.connect(new InetSocketAddress(host, port), timeout);
-        socket.setSoTimeout(timeout);
+        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
+        socket.setSoTimeout(soTimeout);
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {

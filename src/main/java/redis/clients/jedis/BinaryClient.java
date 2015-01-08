@@ -73,7 +73,7 @@ public class BinaryClient extends Connection {
     this.password = password;
   }
   
-  public void setDb(long db) {
+  public void setDb(int db) {
     this.db = db;
   }
 

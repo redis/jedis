@@ -23,7 +23,7 @@ public class JedisPool extends Pool<Jedis> {
 
   public JedisPool(final String host) {
     URI uri = URI.create(host);
-    if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
+    if (JedisURIHelper.isValid(uri)) {
       String h = uri.getHost();
       int port = uri.getPort();
       String password = JedisURIHelper.getPassword(uri);
@@ -74,9 +74,7 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri, final int timeout) {
-    super(poolConfig, new JedisFactory(uri.getHost(), uri.getPort(), timeout,
-        JedisURIHelper.getPassword(uri),
-        JedisURIHelper.getDBIndex(uri), null));
+    super(poolConfig, new JedisFactory(uri, timeout, null));
   }
 
   @Override

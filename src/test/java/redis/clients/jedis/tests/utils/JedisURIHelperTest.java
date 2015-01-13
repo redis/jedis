@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 import java.net.URI;
@@ -40,6 +41,14 @@ public class JedisURIHelperTest {
   public void shouldGetDefaultDbFromURIIfNoDbWasSpecified() throws URISyntaxException {
     URI uri = new URI("redis://host:9000");
     assertEquals(0, JedisURIHelper.getDBIndex(uri));
+  }
+  
+  @Test
+  public void shouldValidateInvalidURIs() throws URISyntaxException {
+    assertFalse(JedisURIHelper.isValid(new URI("host:9000")));
+    assertFalse(JedisURIHelper.isValid(new URI("user:password@host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("host:9000/0")));
+    assertFalse(JedisURIHelper.isValid(new URI("redis://host/0")));
   }
   
 }

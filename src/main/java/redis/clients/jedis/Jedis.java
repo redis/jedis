@@ -33,10 +33,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Jedis(final String host, final int port, final int timeout) {
     super(host, port, timeout);
   }
-  
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
-    super(host, port, connectionTimeout, soTimeout);
-  }
 
   public Jedis(JedisShardInfo shardInfo) {
     super(shardInfo);
@@ -48,10 +44,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public Jedis(final URI uri, final int timeout) {
     super(uri, timeout);
-  }
-  
-  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout) {
-    super(uri, connectionTimeout, soTimeout);
   }
 
   /**

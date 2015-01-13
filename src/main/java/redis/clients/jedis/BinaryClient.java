@@ -36,7 +36,7 @@ public class BinaryClient extends Connection {
 
   private String password;
 
-  private long db;
+  private int db;
 
   private boolean isInWatch;
 
@@ -73,7 +73,7 @@ public class BinaryClient extends Connection {
     this.password = password;
   }
   
-  public void setDb(long db) {
+  public void setDb(int db) {
     this.db = db;
   }
 
@@ -931,7 +931,7 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
-  public Long getDB() {
+  public int getDB() {
     return db;
   }
 

@@ -12,6 +12,7 @@ import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -68,6 +69,12 @@ public class JedisTest extends JedisCommandTestBase {
   @Test(expected = JedisDataException.class)
   public void failWhenSendingNullValues() {
     jedis.set("foo", null);
+  }
+  
+  @Test(expected = InvalidURIException.class)
+  public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
+    Jedis j = new Jedis(new URI("localhost:6380"));
+    j.ping();
   }
 
   @Test

@@ -385,7 +385,10 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 
 	public Response<String> select(int index) {
 		client.select(index);
-		return getResponse(BuilderFactory.STRING);
+		Response<String> response = getResponse(BuilderFactory.STRING);
+		client.setDb(index);
+		
+		return response;
 	}
 
 	public Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {

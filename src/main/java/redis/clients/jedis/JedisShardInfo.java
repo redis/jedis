@@ -77,7 +77,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.host = host;
     this.name = name;
     this.port = port;
-    this.timeout = timeout;
+    this.connectionTimeout = timeout;
+    this.soTimeout = timeout;
   }
 
   public JedisShardInfo(URI uri) {

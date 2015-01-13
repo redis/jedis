@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
@@ -65,6 +66,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   private void initializeClientFromURI(URI uri) {
+    if(!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    }
+    
     client = new Client(uri.getHost(), uri.getPort());
 
     String password = JedisURIHelper.getPassword(uri);

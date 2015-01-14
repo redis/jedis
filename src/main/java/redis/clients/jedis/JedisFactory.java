@@ -1,10 +1,14 @@
 package redis.clients.jedis;
 
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+
+import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.util.JedisURIHelper;
 
 /**
  * PoolableObjectFactory custom impl.
@@ -23,11 +27,22 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   public JedisFactory(final String host, final int port, final int timeout, final String password,
       final int database, final String clientName) {
-    super();
     this.hostAndPort.set(new HostAndPort(host, port));
     this.timeout = timeout;
     this.password = password;
     this.database = database;
+    this.clientName = clientName;
+  }
+  
+  public JedisFactory(final URI uri, final int timeout, final String clientName) {
+    if(!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    }
+    
+    this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
+    this.timeout = timeout;
+    this.password = JedisURIHelper.getPassword(uri);
+    this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
   }
 

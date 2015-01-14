@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.net.URI;
 
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
@@ -32,7 +33,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public JedisShardInfo(String host) {
     super(Sharded.DEFAULT_WEIGHT);
     URI uri = URI.create(host);
-    if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
+    if (JedisURIHelper.isValid(uri)) {
       this.host = uri.getHost();
       this.port = uri.getPort();
       this.password = JedisURIHelper.getPassword(uri);
@@ -83,6 +84,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
   public JedisShardInfo(URI uri) {
     super(Sharded.DEFAULT_WEIGHT);
+    if(!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    }
+    
     this.host = uri.getHost();
     this.port = uri.getPort();
     this.password = JedisURIHelper.getPassword(uri);

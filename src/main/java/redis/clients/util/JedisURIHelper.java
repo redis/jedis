@@ -26,4 +26,17 @@ public class JedisURIHelper {
       return DEFAULT_DB;
     }
   }
+  
+  public static boolean isValid(URI uri) {
+    if(isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1) {
+      return false;
+    }
+    
+    return true;
+  }
+  
+  private static boolean isEmpty(String value) {
+    return value == null || value.trim().length() == 0;
+  }
+  
 }

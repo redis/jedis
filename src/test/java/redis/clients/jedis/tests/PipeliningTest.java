@@ -232,6 +232,29 @@ public class PipeliningTest extends Assert {
   }
 
   @Test
+  public void multiWithMassiveRequests() {
+    Pipeline p = jedis.pipelined();
+    p.multi();
+
+    List<Response<?>> responseList = new ArrayList<Response<?>>();
+    for (int i = 0; i < 100000; i++) {
+      // any operation should be ok, but shouldn't forget about timeout
+      responseList.add(p.setbit("test", 1, true));
+    }
+
+    Response<List<Object>> exec = p.exec();
+    p.sync();
+
+    // we don't need to check return value
+    // if below codes run without throwing Exception, we're ok
+    exec.get();
+
+    for (Response<?> resp : responseList) {
+      resp.get();
+    }
+  }
+
+  @Test
   public void multiWithSync() {
     jedis.set("foo", "314");
     jedis.set("bar", "foo");

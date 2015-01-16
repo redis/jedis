@@ -1,13 +1,7 @@
 package redis.clients.jedis.tests;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -253,6 +247,29 @@ public class PipeliningTest extends Assert {
     assertEquals(new Long(-1), r3.get().get(0));
     assertEquals(new Long(-3), r3.get().get(1));
 
+  }
+
+  @Test
+  public void multiWithMassiveRequests() {
+    Pipeline p = jedis.pipelined();
+    p.multi();
+
+    List<Response<?>> responseList = new ArrayList<Response<?>>();
+    for (int i = 0; i < 100000; i++) {
+      // any operation should be ok, but shouldn't forget about timeout
+      responseList.add(p.setbit("test", 1, true));
+    }
+
+    Response<List<Object>> exec = p.exec();
+    p.sync();
+
+    // we don't need to check return value
+    // if below codes run without throwing Exception, we're ok
+    exec.get();
+
+    for (Response<?> resp : responseList) {
+      resp.get();
+    }
   }
 
   @Test

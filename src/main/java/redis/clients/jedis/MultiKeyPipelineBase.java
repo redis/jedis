@@ -367,6 +367,11 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements
 		client.info();
 		return getResponse(BuilderFactory.STRING);
 	}
+	
+  public Response<String> info(final String section) {
+    client.info(section);
+    return getResponse(BuilderFactory.STRING);
+  }
 
 	public Response<Long> dbSize() {
 		client.dbSize();

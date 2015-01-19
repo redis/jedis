@@ -49,8 +49,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setConnectionTimeout(timeout);
     client.setSoTimeout(timeout);
   }
-  
-  public BinaryJedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
+      final int soTimeout) {
     client = new Client(host, port);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
@@ -73,7 +74,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setConnectionTimeout(timeout);
     client.setSoTimeout(timeout);
   }
-  
+
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout) {
     initializeClientFromURI(uri);
     client.setConnectionTimeout(connectionTimeout);
@@ -81,10 +82,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   private void initializeClientFromURI(URI uri) {
-    if(!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-    
+
     client = new Client(uri.getHost(), uri.getPort());
 
     String password = JedisURIHelper.getPassword(uri);
@@ -389,7 +391,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.select(index);
     String statusCodeReply = client.getStatusCodeReply();
     client.setDb(index);
-    
+
     return statusCodeReply;
   }
 

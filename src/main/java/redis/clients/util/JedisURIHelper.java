@@ -3,9 +3,9 @@ package redis.clients.util;
 import java.net.URI;
 
 public class JedisURIHelper {
-  
+
   private static final int DEFAULT_DB = 0;
-  
+
   public static String getPassword(URI uri) {
     String userInfo = uri.getUserInfo();
     if (userInfo != null) {
@@ -26,17 +26,17 @@ public class JedisURIHelper {
       return DEFAULT_DB;
     }
   }
-  
+
   public static boolean isValid(URI uri) {
-    if(isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1) {
+    if (isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1) {
       return false;
     }
-    
+
     return true;
   }
-  
+
   private static boolean isEmpty(String value) {
     return value == null || value.trim().length() == 0;
   }
-  
+
 }

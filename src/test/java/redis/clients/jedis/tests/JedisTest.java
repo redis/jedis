@@ -70,7 +70,7 @@ public class JedisTest extends JedisCommandTestBase {
   public void failWhenSendingNullValues() {
     jedis.set("foo", null);
   }
-  
+
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
     Jedis j = new Jedis(new URI("localhost:6380"));
@@ -107,16 +107,16 @@ public class JedisTest extends JedisCommandTestBase {
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
   }
-  
+
   @Test
   public void shouldNotUpdateDbIndexIfSelectFails() throws URISyntaxException {
     long currentDb = jedis.getDB();
     try {
       int invalidDb = -1;
       jedis.select(invalidDb);
-      
+
       fail("Should throw an exception if tried to select invalid db");
-    } catch(JedisException e) {
+    } catch (JedisException e) {
       assertEquals(currentDb, jedis.getDB().intValue());
     }
   }

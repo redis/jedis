@@ -289,6 +289,9 @@ deploy:
 	mvn clean deploy
 	make stop
 
+format:
+	mvn java-formatter:format
+
 release:
 	make start
 	mvn release:clean

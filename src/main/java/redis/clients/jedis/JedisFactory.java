@@ -33,12 +33,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.database = database;
     this.clientName = clientName;
   }
-  
+
   public JedisFactory(final URI uri, final int timeout, final String clientName) {
-    if(!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-    
+
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
     this.timeout = timeout;
     this.password = JedisURIHelper.getPassword(uri);

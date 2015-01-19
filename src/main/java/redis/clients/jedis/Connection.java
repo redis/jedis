@@ -45,7 +45,7 @@ public class Connection implements Closeable {
   public int getConnectionTimeout() {
     return connectionTimeout;
   }
-  
+
   public int getSoTimeout() {
     return soTimeout;
   }
@@ -53,11 +53,11 @@ public class Connection implements Closeable {
   public void setConnectionTimeout(int connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
-  
+
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
   }
-  
+
   public void setTimeoutInfinite() {
     try {
       if (!isConnected()) {

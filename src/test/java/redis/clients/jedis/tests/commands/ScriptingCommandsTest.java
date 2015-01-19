@@ -160,8 +160,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptLoadBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    Long exists = jedis.scriptExists(SafeEncoder
-        .encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    Long exists = jedis
+        .scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
     assertEquals((Long) 1L, exists);
   }
 

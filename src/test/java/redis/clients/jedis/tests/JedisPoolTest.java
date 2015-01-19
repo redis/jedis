@@ -161,7 +161,7 @@ public class JedisPoolTest extends Assert {
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
   }
-  
+
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
     JedisPool pool = new JedisPool(new URI("localhost:6380"));

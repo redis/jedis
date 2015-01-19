@@ -359,6 +359,11 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
     return getResponse(BuilderFactory.STRING);
   }
 
+  public Response<String> info(final String section) {
+    client.info(section);
+    return getResponse(BuilderFactory.STRING);
+  }
+
   public Response<List<String>> time() {
     client.time();
     return getResponse(BuilderFactory.STRING_LIST);

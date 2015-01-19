@@ -18,7 +18,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private int port;
   private String password = null;
   private String name = null;
-  //Default Redis DB
+  // Default Redis DB
   private int db = 0;
 
   public String getHost() {
@@ -70,7 +70,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.port = port;
     this.timeout = timeout;
   }
-  
+
   public JedisShardInfo(String host, String name, int port, int timeout, int weight) {
     super(weight);
     this.host = host;
@@ -81,10 +81,11 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
   public JedisShardInfo(URI uri) {
     super(Sharded.DEFAULT_WEIGHT);
-    if(!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-    
+
     this.host = uri.getHost();
     this.port = uri.getPort();
     this.password = JedisURIHelper.getPassword(uri);
@@ -110,7 +111,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public String getName() {
     return name;
   }
-  
+
   public int getDb() {
     return db;
   }

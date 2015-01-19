@@ -60,10 +60,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   private void initializeClientFromURI(URI uri) {
-    if(!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-    
+
     client = new Client(uri.getHost(), uri.getPort());
 
     String password = JedisURIHelper.getPassword(uri);
@@ -368,7 +369,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.select(index);
     String statusCodeReply = client.getStatusCodeReply();
     client.setDb(index);
-    
+
     return statusCodeReply;
   }
 

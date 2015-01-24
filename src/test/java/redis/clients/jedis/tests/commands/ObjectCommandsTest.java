@@ -25,11 +25,11 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
   public void objectEncoding() {
     jedis.lpush(key, "hello world");
     String encoding = jedis.objectEncoding(key);
-    assertEquals("ziplist", encoding);
+    assertEquals("quicklist", encoding);
 
     // Binary
     encoding = SafeEncoder.encode(jedis.objectEncoding(binaryKey));
-    assertEquals("ziplist", encoding);
+    assertEquals("quicklist", encoding);
   }
 
   @Test

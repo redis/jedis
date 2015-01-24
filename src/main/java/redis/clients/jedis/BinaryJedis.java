@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisByteHashMap;
@@ -45,13 +46,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host, final int port, final int timeout) {
     client = new Client(host, port);
-    client.setTimeout(timeout);
+    client.setConnectionTimeout(timeout);
+    client.setSoTimeout(timeout);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
+      final int soTimeout) {
+    client = new Client(host, port);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
     client = new Client(shardInfo.getHost(), shardInfo.getPort());
-    client.setTimeout(shardInfo.getTimeout());
+    client.setConnectionTimeout(shardInfo.getConnectionTimeout());
+    client.setSoTimeout(shardInfo.getSoTimeout());
     client.setPassword(shardInfo.getPassword());
+    client.setDb(shardInfo.getDb());
   }
 
   public BinaryJedis(URI uri) {
@@ -60,10 +71,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final URI uri, final int timeout) {
     initializeClientFromURI(uri);
-    client.setTimeout(timeout);
+    client.setConnectionTimeout(timeout);
+    client.setSoTimeout(timeout);
+  }
+
+  public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout) {
+    initializeClientFromURI(uri);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
   }
 
   private void initializeClientFromURI(URI uri) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    }
+
     client = new Client(uri.getHost(), uri.getPort());
 
     String password = JedisURIHelper.getPassword(uri);
@@ -72,10 +95,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       client.getStatusCodeReply();
     }
 
-    Integer dbIndex = JedisURIHelper.getDBIndex(uri);
+    int dbIndex = JedisURIHelper.getDBIndex(uri);
     if (dbIndex > 0) {
       client.select(dbIndex);
       client.getStatusCodeReply();
+      client.setDb(dbIndex);
     }
   }
 
@@ -365,7 +389,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String select(final int index) {
     checkIsInMulti();
     client.select(index);
-    return client.getStatusCodeReply();
+    String statusCodeReply = client.getStatusCodeReply();
+    client.setDb(index);
+
+    return statusCodeReply;
   }
 
   /**
@@ -2865,7 +2892,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
-  public Long getDB() {
+  public int getDB() {
     return client.getDB();
   }
 
@@ -2875,10 +2902,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Script result
    */
   public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-    return eval(script, toByteArray(keys.size()), getParams(keys, args));
+    return eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
   }
 
-  private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+  protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
     byte[][] params = new byte[keyCount + argCount][];
@@ -2915,7 +2942,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-    return evalsha(sha1, keys.size(), getParams(keys, args));
+    return evalsha(sha1, keys.size(), getParamsWithBinary(keys, args));
   }
 
   public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
@@ -2931,6 +2958,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String scriptFlush() {
     client.scriptFlush();
     return client.getStatusCodeReply();
+  }
+
+  public Long scriptExists(byte[] sha1) {
+    byte[][] a = new byte[1][];
+    a[0] = sha1;
+    return scriptExists(a).get(0);
   }
 
   public List<Long> scriptExists(byte[]... sha1) {

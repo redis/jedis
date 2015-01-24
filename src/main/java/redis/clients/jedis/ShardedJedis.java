@@ -606,13 +606,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       for (Jedis jedis : getAllShards()) {
         if (jedis.getClient().isBroken()) {
           broken = true;
+          break;
         }
       }
 
       if (broken) {
         dataSource.returnBrokenResource(this);
       } else {
-        this.resetState();
         dataSource.returnResource(this);
       }
 

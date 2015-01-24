@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +16,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class JedisPoolTest extends Assert {
@@ -162,6 +162,11 @@ public class JedisPoolTest extends Assert {
     assertEquals("bar", jedis.get("foo"));
   }
 
+  @Test(expected = InvalidURIException.class)
+  public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
+    JedisPool pool = new JedisPool(new URI("localhost:6380"));
+  }
+
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
     new JedisPool("redis://localhost:6380");
@@ -174,16 +179,16 @@ public class JedisPoolTest extends Assert {
         "foobared");
 
     Jedis jedis0 = pool.getResource();
-    assertEquals(0L, jedis0.getDB().longValue());
+    assertEquals(0, jedis0.getDB());
 
     jedis0.select(1);
-    assertEquals(1L, jedis0.getDB().longValue());
+    assertEquals(1, jedis0.getDB());
 
     pool.returnResource(jedis0);
 
     Jedis jedis1 = pool.getResource();
     assertTrue("Jedis instance was not reused", jedis1 == jedis0);
-    assertEquals(0L, jedis1.getDB().longValue());
+    assertEquals(0, jedis1.getDB());
 
     pool.returnResource(jedis1);
     pool.destroy();

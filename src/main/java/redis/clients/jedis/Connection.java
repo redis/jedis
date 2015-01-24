@@ -22,7 +22,8 @@ public class Connection implements Closeable {
   private Socket socket;
   private SocketChannelReader channelReader;
   private SocketChannelWriter channelWriter;
-  private int timeout = Protocol.DEFAULT_TIMEOUT;
+  private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private SocketChannel socketChannel;
 
   public SocketChannel getSocketChannel() {
@@ -35,12 +36,20 @@ public class Connection implements Closeable {
     return socket;
   }
 
-  public int getTimeout() {
-    return timeout;
+  public int getConnectionTimeout() {
+    return connectionTimeout;
   }
 
-  public void setTimeout(final int timeout) {
-    this.timeout = timeout;
+  public int getSoTimeout() {
+    return soTimeout;
+  }
+
+  public void setConnectionTimeout(int connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
+  }
+
+  public void setSoTimeout(int soTimeout) {
+    this.soTimeout = soTimeout;
   }
 
   public void setTimeoutInfinite() {
@@ -57,7 +66,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(timeout);
+      socket.setSoTimeout(soTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -151,8 +160,8 @@ public class Connection implements Closeable {
         // immediately
         // <-@wjw_add
 
-        socket.connect(new InetSocketAddress(host, port), timeout);
-        socket.setSoTimeout(timeout);
+        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
+        socket.setSoTimeout(soTimeout);
         socketChannel.configureBlocking(true);
         channelReader = new SocketChannelReader(socket.getChannel());
         channelWriter = new SocketChannelWriter(socket.getChannel());

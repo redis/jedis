@@ -26,13 +26,13 @@ public class AsyncObjectCommandsTest extends AsyncJedisCommandTestBase {
     CommandWithWaiting.lpush(asyncJedis, key, "hello world");
 
     asyncJedis.objectEncoding(STRING_CALLBACK.withReset(), key);
-    assertEquals("ziplist", STRING_CALLBACK.getResponseWithWaiting(1000));
+    assertEquals("quicklist", STRING_CALLBACK.getResponseWithWaiting(1000));
 
     // Binary
     CommandWithWaiting.lpush(asyncJedis, binaryKey, "hello world".getBytes());
 
     asyncJedis.objectEncoding(BYTE_ARRAY_CALLBACK.withReset(), binaryKey);
-    assertArrayEquals("ziplist".getBytes(), BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
+    assertArrayEquals("quicklist".getBytes(), BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000));
   }
 
   @Test

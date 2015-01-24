@@ -308,6 +308,62 @@ public class BuilderFactory {
     }
   };
 
+  public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
+
+    @Override
+    public Object build(Object data) {
+      return evalResult(data);
+    }
+
+    public String toString() {
+      return "Eval<Object>";
+    }
+
+    private Object evalResult(Object result) {
+      if (result instanceof byte[]) return SafeEncoder.encode((byte[]) result);
+
+      if (result instanceof List<?>) {
+        List<?> list = (List<?>) result;
+        List<Object> listResult = new ArrayList<Object>(list.size());
+        for (Object bin : list) {
+          listResult.add(evalResult(bin));
+        }
+
+        return listResult;
+      }
+
+      return result;
+    }
+
+  };
+
+  public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {
+
+    @Override
+    public Object build(Object data) {
+      return evalResult(data);
+    }
+
+    public String toString() {
+      return "Eval<Object>";
+    }
+
+    private Object evalResult(Object result) {
+      if (result instanceof List<?>) {
+        List<?> list = (List<?>) result;
+        List<Object> listResult = new ArrayList<Object>(list.size());
+        for (Object bin : list) {
+          listResult.add(evalResult(bin));
+        }
+
+        return listResult;
+      }
+
+      return result;
+    }
+
+  };
+
   public static final Builder<Object> EVAL_STRING = new Builder<Object>() {
     @Override
     public Object build(Object data) {
@@ -329,6 +385,7 @@ public class BuilderFactory {
     public String toString() {
       return "EVAL_STRING";
     }
+
   };
 
 }

@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
@@ -26,6 +27,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bfoobar = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
   final byte[] bfoostar = { 0x01, 0x02, 0x03, 0x04, '*' };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+
+  final byte[] bnx = { 0x6E, 0x78 };
+  final byte[] bex = { 0x65, 0x78 };
+  final long expireSeconds = 2;
 
   @Test
   public void ping() {
@@ -581,5 +586,35 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  public void setNxExAndGet() {
+    String status = jedis.set("hello", "world", "NX", "EX", expireSeconds);
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    String value = jedis.get("hello");
+    assertEquals("world", value);
+
+    jedis.set("hello", "bar", "NX", "EX", expireSeconds);
+    value = jedis.get("hello");
+    assertEquals("world", value);
+
+    long ttl = jedis.ttl("hello");
+    assertTrue(ttl > 0 && ttl <= expireSeconds);
+
+    // binary
+    byte[] bworld = { 0x77, 0x6F, 0x72, 0x6C, 0x64 };
+    byte[] bhello = { 0x68, 0x65, 0x6C, 0x6C, 0x6F };
+    String bstatus = jedis.set(bworld, bhello, bnx, bex, expireSeconds);
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(bstatus));
+    byte[] bvalue = jedis.get(bworld);
+    assertTrue(Arrays.equals(bhello, bvalue));
+
+    jedis.set(bworld, bbar, bnx, bex, expireSeconds);
+    bvalue = jedis.get(bworld);
+    assertTrue(Arrays.equals(bhello, bvalue));
+
+    long bttl = jedis.ttl(bworld);
+    assertTrue(bttl > 0 && bttl <= expireSeconds);
   }
 }

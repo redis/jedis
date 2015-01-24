@@ -137,15 +137,16 @@ public class AsyncScriptingCommandsTest extends AsyncJedisCommandTestBase {
 
     asyncJedis.eval(OBJECT_CALLBACK.withReset(), "return redis.call('get','foo')");
     asyncJedis.scriptFlush(STRING_CALLBACK.withReset());
-    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(), "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
+    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(),
+      "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
     assertFalse(BOOLEAN_LIST_CALLBACK.getResponseWithWaiting(2000).get(0));
   }
 
   @Test
   public void scriptExists() {
     asyncJedis.scriptLoad(STRING_CALLBACK.withReset(), "return redis.call('get','foo')");
-    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(), "ffffffffffffffffffffffffffffffffffffffff",
-        "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
+    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(),
+      "ffffffffffffffffffffffffffffffffffffffff", "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
     List<Boolean> exists = BOOLEAN_LIST_CALLBACK.getResponseWithWaiting(1000);
     assertFalse(exists.get(0));
     assertTrue(exists.get(1));
@@ -153,10 +154,11 @@ public class AsyncScriptingCommandsTest extends AsyncJedisCommandTestBase {
 
   @Test
   public void scriptExistsBinary() {
-    asyncJedis.scriptLoad(BYTE_ARRAY_CALLBACK.withReset(), SafeEncoder.encode("return redis.call('get','foo')"));
+    asyncJedis.scriptLoad(BYTE_ARRAY_CALLBACK.withReset(),
+      SafeEncoder.encode("return redis.call('get','foo')"));
     asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(),
-        SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),
-        SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+      SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),
+      SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
     List<Boolean> exists = BOOLEAN_LIST_CALLBACK.getResponseWithWaiting(1000);
     assertFalse(exists.get(0));
     assertTrue(exists.get(1));
@@ -165,15 +167,18 @@ public class AsyncScriptingCommandsTest extends AsyncJedisCommandTestBase {
   @Test
   public void scriptLoad() {
     asyncJedis.scriptLoad(STRING_CALLBACK.withReset(), "return redis.call('get','foo')");
-    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(), "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
+    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(),
+      "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
     assertTrue(BOOLEAN_LIST_CALLBACK.getResponseWithWaiting(1000).get(0));
   }
 
   @Test
   public void scriptLoadBinary() {
-    asyncJedis.scriptLoad(BYTE_ARRAY_CALLBACK.withReset(), SafeEncoder.encode("return redis.call('get','foo')"));
+    asyncJedis.scriptLoad(BYTE_ARRAY_CALLBACK.withReset(),
+      SafeEncoder.encode("return redis.call('get','foo')"));
     BYTE_ARRAY_CALLBACK.getResponseWithWaiting(1000);
-    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(), "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
+    asyncJedis.scriptExists(BOOLEAN_LIST_CALLBACK.withReset(),
+      "6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
     assertTrue(BOOLEAN_LIST_CALLBACK.getResponseWithWaiting(1000).get(0));
   }
 

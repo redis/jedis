@@ -53,7 +53,7 @@ public class BuilderFactory {
     }
   };
 
-    public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
+  public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
     public byte[] build(Object data) {
       return ((byte[]) data); // deleted == 1
     }

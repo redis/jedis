@@ -876,16 +876,16 @@ public class AsyncJedis extends AsyncBinaryJedis implements AsyncBasicCommands, 
   }
 
   @Override
-  public void eval(AsyncResponseCallback<Object> callback, String script,
-      int keyCount, String... params) {
+  public void eval(AsyncResponseCallback<Object> callback, String script, int keyCount,
+      String... params) {
     byte[] request = RequestBuilder.build(EVAL,
-        RequestParameterBuilder.buildEvalParameter(script, keyCount, params));
+      RequestParameterBuilder.buildEvalParameter(script, keyCount, params));
     processor.registerRequest(new AsyncJedisTask(request, EVAL_STRING, callback));
   }
 
   @Override
-  public void eval(AsyncResponseCallback<Object> callback, String script,
-      List<String> keys, List<String> args) {
+  public void eval(AsyncResponseCallback<Object> callback, String script, List<String> keys,
+      List<String> args) {
     eval(callback, script, keys.size(), RequestParameterBuilder.convertEvalListArgs(keys, args));
   }
 
@@ -900,31 +900,30 @@ public class AsyncJedis extends AsyncBinaryJedis implements AsyncBasicCommands, 
   }
 
   @Override
-  public void evalsha(AsyncResponseCallback<Object> callback, String sha1,
-      List<String> keys, List<String> args) {
+  public void evalsha(AsyncResponseCallback<Object> callback, String sha1, List<String> keys,
+      List<String> args) {
     evalsha(callback, sha1, keys.size(), RequestParameterBuilder.convertEvalListArgs(keys, args));
   }
 
   @Override
-  public void evalsha(AsyncResponseCallback<Object> callback, String sha1,
-      int keyCount, String... params) {
+  public void evalsha(AsyncResponseCallback<Object> callback, String sha1, int keyCount,
+      String... params) {
     byte[] request = RequestBuilder.build(EVALSHA,
-        RequestParameterBuilder.buildEvalParameter(sha1, keyCount, params));
+      RequestParameterBuilder.buildEvalParameter(sha1, keyCount, params));
     processor.registerRequest(new AsyncJedisTask(request, EVAL_STRING, callback));
   }
 
   @Override
-  public void scriptExists(AsyncResponseCallback<List<Boolean>> callback,
-      String... sha1) {
+  public void scriptExists(AsyncResponseCallback<List<Boolean>> callback, String... sha1) {
     byte[] request = RequestBuilder.build(SCRIPT,
-        RequestParameterBuilder.joinParameters(Protocol.Keyword.EXISTS.raw, sha1));
+      RequestParameterBuilder.joinParameters(Protocol.Keyword.EXISTS.raw, sha1));
     processor.registerRequest(new AsyncJedisTask(request, BOOLEAN_LIST, callback));
   }
 
   @Override
   public void scriptLoad(AsyncResponseCallback<String> callback, String script) {
     byte[] request = RequestBuilder.build(SCRIPT, Protocol.Keyword.LOAD.raw,
-        SafeEncoder.encode(script));
+      SafeEncoder.encode(script));
     processor.registerRequest(new AsyncJedisTask(request, STRING, callback));
   }
 }

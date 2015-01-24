@@ -19,8 +19,8 @@ import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 public class AsyncBinaryJedis implements AsyncBasicCommands, AsyncBinaryJedisCommands,
-    AsyncMultiKeyBinaryCommands, AsyncAdvancedBinaryJedisCommands,
-    AsyncBinaryScriptingCommands, Closeable {
+    AsyncMultiKeyBinaryCommands, AsyncAdvancedBinaryJedisCommands, AsyncBinaryScriptingCommands,
+    Closeable {
   public static final int BUFFER_SIZE = 8192;
 
   protected final AsyncDispatcher processor;
@@ -1097,23 +1097,24 @@ public class AsyncBinaryJedis implements AsyncBasicCommands, AsyncBinaryJedisCom
   }
 
   @Override
-  public void eval(AsyncResponseCallback<Object> callback, byte[] script,
-      byte[] keyCount, byte[]... params) {
+  public void eval(AsyncResponseCallback<Object> callback, byte[] script, byte[] keyCount,
+      byte[]... params) {
     byte[] request = RequestBuilder.build(EVAL,
-        RequestParameterBuilder.buildEvalParameter(script, keyCount, params));
+      RequestParameterBuilder.buildEvalParameter(script, keyCount, params));
     processor.registerRequest(new AsyncJedisTask(request, callback));
   }
 
   @Override
-  public void eval(AsyncResponseCallback<Object> callback, byte[] script,
-      int keyCount, byte[]... params) {
+  public void eval(AsyncResponseCallback<Object> callback, byte[] script, int keyCount,
+      byte[]... params) {
     eval(callback, script, toByteArray(keyCount), params);
   }
 
   @Override
-  public void eval(AsyncResponseCallback<Object> callback, byte[] script,
-      List<byte[]> keys, List<byte[]> args) {
-    eval(callback, script, keys.size(), RequestParameterBuilder.convertEvalBinaryListArgs(keys, args));
+  public void eval(AsyncResponseCallback<Object> callback, byte[] script, List<byte[]> keys,
+      List<byte[]> args) {
+    eval(callback, script, keys.size(),
+      RequestParameterBuilder.convertEvalBinaryListArgs(keys, args));
   }
 
   @Override
@@ -1127,25 +1128,24 @@ public class AsyncBinaryJedis implements AsyncBasicCommands, AsyncBinaryJedisCom
   }
 
   @Override
-  public void evalsha(AsyncResponseCallback<Object> callback, byte[] sha1,
-      List<byte[]> keys, List<byte[]> args) {
-    evalsha(callback, sha1, keys.size(), RequestParameterBuilder.convertEvalBinaryListArgs(keys,
-        args));
+  public void evalsha(AsyncResponseCallback<Object> callback, byte[] sha1, List<byte[]> keys,
+      List<byte[]> args) {
+    evalsha(callback, sha1, keys.size(),
+      RequestParameterBuilder.convertEvalBinaryListArgs(keys, args));
   }
 
   @Override
-  public void evalsha(AsyncResponseCallback<Object> callback, byte[] sha1,
-      int keyCount, byte[]... params) {
+  public void evalsha(AsyncResponseCallback<Object> callback, byte[] sha1, int keyCount,
+      byte[]... params) {
     byte[] request = RequestBuilder.build(EVALSHA,
-        RequestParameterBuilder.buildEvalParameter(sha1, toByteArray(keyCount), params));
+      RequestParameterBuilder.buildEvalParameter(sha1, toByteArray(keyCount), params));
     processor.registerRequest(new AsyncJedisTask(request, callback));
   }
 
   @Override
-  public void scriptExists(AsyncResponseCallback<List<Boolean>> callback,
-      byte[]... sha1) {
+  public void scriptExists(AsyncResponseCallback<List<Boolean>> callback, byte[]... sha1) {
     byte[] request = RequestBuilder.build(SCRIPT,
-        RequestParameterBuilder.joinParameters(Protocol.Keyword.EXISTS.raw, sha1));
+      RequestParameterBuilder.joinParameters(Protocol.Keyword.EXISTS.raw, sha1));
     processor.registerRequest(new AsyncJedisTask(request, BOOLEAN_LIST, callback));
   }
 

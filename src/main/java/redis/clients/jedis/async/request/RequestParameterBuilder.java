@@ -219,7 +219,7 @@ public class RequestParameterBuilder {
     return allArgs;
   }
 
-  public static byte[][] buildEvalParameter(String script, int keyCount, String...params) {
+  public static byte[][] buildEvalParameter(String script, int keyCount, String... params) {
     final byte[][] allArgs = new byte[params.length + 2][];
 
     allArgs[0] = SafeEncoder.encode(script);

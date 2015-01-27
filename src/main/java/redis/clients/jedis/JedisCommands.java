@@ -8,241 +8,240 @@ import java.util.Set;
  * Common interface for sharded and non-sharded Jedis
  */
 public interface JedisCommands {
-    String set(String key, String value);
+  String set(String key, String value);
 
-    String set(String key, String value, String nxxx, String expx, long time);
+  String set(String key, String value, String nxxx, String expx, long time);
 
-    String get(String key);
+  String get(String key);
 
-    Boolean exists(String key);
+  Boolean exists(String key);
 
-    Long persist(String key);
+  Long persist(String key);
 
-    String type(String key);
+  String type(String key);
 
-    Long expire(String key, int seconds);
+  Long expire(String key, int seconds);
 
-    Long expireAt(String key, long unixTime);
+  Long expireAt(String key, long unixTime);
 
-    Long ttl(String key);
+  Long ttl(String key);
 
-    Boolean setbit(String key, long offset, boolean value);
+  Boolean setbit(String key, long offset, boolean value);
 
-    Boolean setbit(String key, long offset, String value);
+  Boolean setbit(String key, long offset, String value);
 
-    Boolean getbit(String key, long offset);
+  Boolean getbit(String key, long offset);
 
-    Long setrange(String key, long offset, String value);
+  Long setrange(String key, long offset, String value);
 
-    String getrange(String key, long startOffset, long endOffset);
+  String getrange(String key, long startOffset, long endOffset);
 
-    String getSet(String key, String value);
+  String getSet(String key, String value);
 
-    Long setnx(String key, String value);
+  Long setnx(String key, String value);
 
-    String setex(String key, int seconds, String value);
+  String setex(String key, int seconds, String value);
 
-    Long decrBy(String key, long integer);
+  Long decrBy(String key, long integer);
 
-    Long decr(String key);
+  Long decr(String key);
 
-    Long incrBy(String key, long integer);
+  Long incrBy(String key, long integer);
 
-    Long incr(String key);
+  Double incrByFloat(String key, double value);
 
-    Long append(String key, String value);
+  Long incr(String key);
 
-    String substr(String key, int start, int end);
+  Long append(String key, String value);
 
-    Long hset(String key, String field, String value);
+  String substr(String key, int start, int end);
 
-    String hget(String key, String field);
+  Long hset(String key, String field, String value);
 
-    Long hsetnx(String key, String field, String value);
+  String hget(String key, String field);
 
-    String hmset(String key, Map<String, String> hash);
+  Long hsetnx(String key, String field, String value);
 
-    List<String> hmget(String key, String... fields);
+  String hmset(String key, Map<String, String> hash);
 
-    Long hincrBy(String key, String field, long value);
+  List<String> hmget(String key, String... fields);
 
-    Boolean hexists(String key, String field);
+  Long hincrBy(String key, String field, long value);
 
-    Long hdel(String key, String... field);
+  Boolean hexists(String key, String field);
 
-    Long hlen(String key);
+  Long hdel(String key, String... field);
 
-    Set<String> hkeys(String key);
+  Long hlen(String key);
 
-    List<String> hvals(String key);
+  Set<String> hkeys(String key);
 
-    Map<String, String> hgetAll(String key);
+  List<String> hvals(String key);
 
-    Long rpush(String key, String... string);
+  Map<String, String> hgetAll(String key);
 
-    Long lpush(String key, String... string);
+  Long rpush(String key, String... string);
 
-    Long llen(String key);
+  Long lpush(String key, String... string);
 
-    List<String> lrange(String key, long start, long end);
+  Long llen(String key);
 
-    String ltrim(String key, long start, long end);
+  List<String> lrange(String key, long start, long end);
 
-    String lindex(String key, long index);
+  String ltrim(String key, long start, long end);
 
-    String lset(String key, long index, String value);
+  String lindex(String key, long index);
 
-    Long lrem(String key, long count, String value);
+  String lset(String key, long index, String value);
 
-    String lpop(String key);
+  Long lrem(String key, long count, String value);
 
-    String rpop(String key);
+  String lpop(String key);
 
-    Long sadd(String key, String... member);
+  String rpop(String key);
 
-    Set<String> smembers(String key);
+  Long sadd(String key, String... member);
 
-    Long srem(String key, String... member);
+  Set<String> smembers(String key);
 
-    String spop(String key);
+  Long srem(String key, String... member);
 
-    Long scard(String key);
+  String spop(String key);
 
-    Boolean sismember(String key, String member);
+  Long scard(String key);
 
-    String srandmember(String key);
+  Boolean sismember(String key, String member);
 
-    List<String> srandmember(String key, int count);
+  String srandmember(String key);
 
-    Long strlen(String key);
+  List<String> srandmember(String key, int count);
 
-    Long zadd(String key, double score, String member);
+  Long strlen(String key);
 
-    Long zadd(String key, Map<String, Double> scoreMembers);
+  Long zadd(String key, double score, String member);
 
-    Set<String> zrange(String key, long start, long end);
+  Long zadd(String key, Map<String, Double> scoreMembers);
 
-    Long zrem(String key, String... member);
+  Set<String> zrange(String key, long start, long end);
 
-    Double zincrby(String key, double score, String member);
+  Long zrem(String key, String... member);
 
-    Long zrank(String key, String member);
+  Double zincrby(String key, double score, String member);
 
-    Long zrevrank(String key, String member);
+  Long zrank(String key, String member);
 
-    Set<String> zrevrange(String key, long start, long end);
+  Long zrevrank(String key, String member);
 
-    Set<Tuple> zrangeWithScores(String key, long start, long end);
+  Set<String> zrevrange(String key, long start, long end);
 
-    Set<Tuple> zrevrangeWithScores(String key, long start, long end);
+  Set<Tuple> zrangeWithScores(String key, long start, long end);
 
-    Long zcard(String key);
+  Set<Tuple> zrevrangeWithScores(String key, long start, long end);
 
-    Double zscore(String key, String member);
+  Long zcard(String key);
 
-    List<String> sort(String key);
+  Double zscore(String key, String member);
 
-    List<String> sort(String key, SortingParams sortingParameters);
+  List<String> sort(String key);
 
-    Long zcount(String key, double min, double max);
+  List<String> sort(String key, SortingParams sortingParameters);
 
-    Long zcount(String key, String min, String max);
+  Long zcount(String key, double min, double max);
 
-    Set<String> zrangeByScore(String key, double min, double max);
+  Long zcount(String key, String min, String max);
 
-    Set<String> zrangeByScore(String key, String min, String max);
+  Set<String> zrangeByScore(String key, double min, double max);
 
-    Set<String> zrevrangeByScore(String key, double max, double min);
+  Set<String> zrangeByScore(String key, String min, String max);
 
-    Set<String> zrangeByScore(String key, double min, double max, int offset,
-	    int count);
+  Set<String> zrevrangeByScore(String key, double max, double min);
 
-    Set<String> zrevrangeByScore(String key, String max, String min);
+  Set<String> zrangeByScore(String key, double min, double max, int offset, int count);
 
-    Set<String> zrangeByScore(String key, String min, String max, int offset,
-	    int count);
+  Set<String> zrevrangeByScore(String key, String max, String min);
 
-    Set<String> zrevrangeByScore(String key, double max, double min,
-	    int offset, int count);
+  Set<String> zrangeByScore(String key, String min, String max, int offset, int count);
 
-    Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
+  Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count);
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
+  Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
 
-    Set<Tuple> zrangeByScoreWithScores(String key, double min, double max,
-	    int offset, int count);
+  Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
 
-    Set<String> zrevrangeByScore(String key, String max, String min,
-	    int offset, int count);
+  Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
-    Set<Tuple> zrangeByScoreWithScores(String key, String min, String max);
+  Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count);
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
+  Set<Tuple> zrangeByScoreWithScores(String key, String min, String max);
 
-    Set<Tuple> zrangeByScoreWithScores(String key, String min, String max,
-	    int offset, int count);
+  Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min,
-	    int offset, int count);
+  Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min,
-	    int offset, int count);
+  Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
-    Long zremrangeByRank(String key, long start, long end);
+  Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
-    Long zremrangeByScore(String key, double start, double end);
+  Long zremrangeByRank(String key, long start, long end);
 
-    Long zremrangeByScore(String key, String start, String end);
+  Long zremrangeByScore(String key, double start, double end);
 
-    Long zlexcount(final String key, final String min, final String max);
+  Long zremrangeByScore(String key, String start, String end);
 
-    Set<String> zrangeByLex(final String key, final String min, final String max);
+  Long zlexcount(final String key, final String min, final String max);
 
-    Set<String> zrangeByLex(final String key, final String min,
-	    final String max, final int offset, final int count);
+  Set<String> zrangeByLex(final String key, final String min, final String max);
 
-    Set<String> zrevrangeByLex(final String key, final String max,
-	    final String min);
+  Set<String> zrangeByLex(final String key, final String min, final String max, final int offset,
+      final int count);
 
-    Set<String> zrevrangeByLex(final String key, final String max,
-	    final String min, final int offset, final int count);
+  Set<String> zrevrangeByLex(final String key, final String max, final String min);
 
-    Long zremrangeByLex(final String key, final String min, final String max);
+  Set<String> zrevrangeByLex(final String key, final String max, final String min,
+      final int offset, final int count);
 
-    Long linsert(String key, Client.LIST_POSITION where, String pivot,
-	    String value);
+  Long zremrangeByLex(final String key, final String min, final String max);
 
-    Long lpushx(String key, String... string);
+  Long linsert(String key, Client.LIST_POSITION where, String pivot, String value);
 
-    Long rpushx(String key, String... string);
+  Long lpushx(String key, String... string);
 
-    List<String> blpop(String arg);
+  Long rpushx(String key, String... string);
 
-    List<String> blpop(int timeout, String key);
+  /**
+   * @deprecated unusable command, this will be removed in 3.0.0.
+   */
+  @Deprecated
+  List<String> blpop(String arg);
 
-    List<String> brpop(String arg);
+  List<String> blpop(int timeout, String key);
 
-    List<String> brpop(int timeout, String key);
+  /**
+   * @deprecated unusable command, this will be removed in 3.0.0.
+   */
+  @Deprecated
+  List<String> brpop(String arg);
 
-    Long del(String key);
+  List<String> brpop(int timeout, String key);
 
-    String echo(String string);
+  Long del(String key);
 
-    Long move(String key, int dbIndex);
+  String echo(String string);
 
-    Long bitcount(final String key);
+  Long move(String key, int dbIndex);
 
-    Long bitcount(final String key, long start, long end);
+  Long bitcount(final String key);
 
-    ScanResult<Map.Entry<String, String>> hscan(final String key,
-	    final String cursor);
+  Long bitcount(final String key, long start, long end);
 
-    ScanResult<String> sscan(final String key, final String cursor);
+  ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
 
-    ScanResult<Tuple> zscan(final String key, final String cursor);
+  ScanResult<String> sscan(final String key, final String cursor);
 
-    Long pfadd(final String key, final String... elements);
+  ScanResult<Tuple> zscan(final String key, final String cursor);
 
-    long pfcount(final String key);
+  Long pfadd(final String key, final String... elements);
+
+  long pfcount(final String key);
 
 }

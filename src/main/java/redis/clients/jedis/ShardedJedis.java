@@ -73,6 +73,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
   }
+  
+  public Long pexpireAt(String key, long millisecondsTimestamp) {
+      Jedis j = getShard(key);
+      return j.pexpireAt(key, millisecondsTimestamp);
+    }
 
   public Long ttl(String key) {
     Jedis j = getShard(key);

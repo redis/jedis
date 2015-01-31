@@ -25,6 +25,8 @@ public interface RedisPipeline {
   Response<Boolean> exists(String key);
 
   Response<Long> expire(String key, int seconds);
+  
+  Response<Long> pexpire(String key, long milliseconds);
 
   Response<Long> expireAt(String key, long unixTime);
 

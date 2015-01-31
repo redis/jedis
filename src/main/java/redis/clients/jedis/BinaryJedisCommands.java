@@ -20,6 +20,8 @@ public interface BinaryJedisCommands {
   String type(byte[] key);
 
   Long expire(byte[] key, int seconds);
+  
+  Long pexpire(final String key, final long milliseconds);
 
   Long expireAt(byte[] key, long unixTime);
 

@@ -323,7 +323,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * {@link #persist(byte[]) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+   * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param seconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -352,7 +352,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * {@link #persist(byte[]) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+   * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param unixTime
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -2525,8 +2525,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed
-   * information about the Redis Append Only File check the <a
-   * href="http://code.google.com/p/redis/wiki/AppendOnlyFileHowto">Append Only File Howto</a>.
+   * information about the Redis Append Only File check the <a href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
    * <p>
    * BGREWRITEAOF rewrites the Append Only File in background when it gets too big. The Redis Append
    * Only File is a Journal, so every operation modifying the dataset is logged in the Append Only

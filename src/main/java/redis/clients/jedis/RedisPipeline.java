@@ -27,6 +27,8 @@ public interface RedisPipeline {
   Response<Long> expire(String key, int seconds);
 
   Response<Long> expireAt(String key, long unixTime);
+  
+  Response<Long> pexpireAt(String key, long millisecondsTimestamp);
 
   Response<String> get(String key);
 

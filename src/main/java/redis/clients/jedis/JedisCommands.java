@@ -23,6 +23,8 @@ public interface JedisCommands {
   Long expire(String key, int seconds);
 
   Long expireAt(String key, long unixTime);
+  
+  Long pexpireAt(String key, long millisecondsTimestamp);
 
   Long ttl(String key);
 

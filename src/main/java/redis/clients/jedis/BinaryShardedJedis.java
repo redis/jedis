@@ -82,11 +82,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
   }
-  
+
   public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
-      Jedis j = getShard(key);
-      return j.pexpireAt(key, millisecondsTimestamp);
-    }
+    Jedis j = getShard(key);
+    return j.pexpireAt(key, millisecondsTimestamp);
+  }
 
   public Long ttl(byte[] key) {
     Jedis j = getShard(key);

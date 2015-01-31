@@ -22,7 +22,7 @@ public interface BinaryJedisCommands {
   Long expire(byte[] key, int seconds);
 
   Long expireAt(byte[] key, long unixTime);
-  
+
   Long pexpireAt(byte[] key, long millisecondsTimestamp);
 
   Long ttl(byte[] key);

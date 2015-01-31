@@ -136,6 +136,16 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       }
     }.run(key);
   }
+  
+  @Override
+  public Long pexpire(final String key, final long milliseconds) {
+    return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.pexpire(key, milliseconds);
+      }
+    }.run(key);
+  }
 
   @Override
   public Long expireAt(final String key, final long unixTime) {

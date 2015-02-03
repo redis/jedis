@@ -22,10 +22,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   protected Pool<Jedis> dataSource = null;
 
-  public Jedis() {
-    super();
-  }
-
   public Jedis(final String host) {
     super(host);
   }
@@ -38,10 +34,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host, port, timeout);
   }
 
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
-    super(host, port, connectionTimeout, soTimeout);
-  }
-
   public Jedis(JedisShardInfo shardInfo) {
     super(shardInfo);
   }
@@ -52,10 +44,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public Jedis(final URI uri, final int timeout) {
     super(uri, timeout);
-  }
-
-  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout) {
-    super(uri, connectionTimeout, soTimeout);
   }
 
   /**
@@ -2360,28 +2348,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int offset, final int count) {
     checkIsInMulti();
     client.zrangeByLex(key, min, max, offset, count);
-    final List<String> members = client.getMultiBulkReply();
-    if (members == null) {
-      return null;
-    }
-    return new LinkedHashSet<String>(members);
-  }
-
-  @Override
-  public Set<String> zrevrangeByLex(String key, String max, String min) {
-    checkIsInMulti();
-    client.zrevrangeByLex(key, max, min);
-    final List<String> members = client.getMultiBulkReply();
-    if (members == null) {
-      return null;
-    }
-    return new LinkedHashSet<String>(members);
-  }
-
-  @Override
-  public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-    checkIsInMulti();
-    client.zrevrangeByLex(key, max, min, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
       return null;

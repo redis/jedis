@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.set.SetParams;
 
 abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
@@ -497,6 +498,16 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
 
   public Response<String> set(byte[] key, byte[] value) {
     getClient(key).set(key, value);
+    return getResponse(BuilderFactory.STRING);
+  }
+  
+  public Response<String> set(String key, String value, SetParams params) {
+    getClient(key).set(key, value, params);
+    return getResponse(BuilderFactory.STRING);
+  }
+  
+  public Response<String> set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, byte[] time) {
+    getClient(key).set(key, value, nxxx, expx, time);
     return getResponse(BuilderFactory.STRING);
   }
 
@@ -1197,26 +1208,6 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
 
   public Response<String> psetex(byte[] key, int milliseconds, byte[] value) {
     getClient(key).psetex(key, milliseconds, value);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  public Response<String> set(String key, String value, String nxxx) {
-    getClient(key).set(key, value, nxxx);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  public Response<String> set(byte[] key, byte[] value, byte[] nxxx) {
-    getClient(key).set(key, value, nxxx);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  public Response<String> set(String key, String value, String nxxx, String expx, int time) {
-    getClient(key).set(key, value, nxxx, expx, time);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  public Response<String> set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, int time) {
-    getClient(key).set(key, value, nxxx, expx, time);
     return getResponse(BuilderFactory.STRING);
   }
 

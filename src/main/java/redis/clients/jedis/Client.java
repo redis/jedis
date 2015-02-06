@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -29,10 +30,23 @@ public class Client extends BinaryClient implements Commands {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));
   }
 
-  public void set(final String key, final String value, final String nxxx, final String expx,
-      final long time) {
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx),
-      SafeEncoder.encode(expx), time);
+  public void set(final String key, final String value, final SetParams params) {
+    
+    byte[] nxxxBytes = null;
+    String nxxx = params.getNxxx();
+    if(nxxx != null) {
+      nxxxBytes = SafeEncoder.encode(nxxx);
+    }
+    
+    byte[] expxBytes = null;
+    byte[] expxValue = null;
+    String expx = params.getExpx();
+    if(expx != null) {
+      expxBytes = SafeEncoder.encode(expx);
+      expxValue = SafeEncoder.encode(String.valueOf(params.getParam(expx)));
+    }
+    
+    set(SafeEncoder.encode(key), SafeEncoder.encode(value), nxxxBytes, expxBytes, expxValue);
   }
 
   public void get(final String key) {
@@ -791,16 +805,6 @@ public class Client extends BinaryClient implements Commands {
 
   public void psetex(final String key, final int milliseconds, final String value) {
     psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
-  }
-
-  public void set(final String key, final String value, final String nxxx) {
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx));
-  }
-
-  public void set(final String key, final String value, final String nxxx, final String expx,
-      final int time) {
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx),
-      SafeEncoder.encode(expx), time);
   }
 
   public void srandmember(final String key, final int count) {

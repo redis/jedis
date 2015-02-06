@@ -3,13 +3,13 @@ package redis.clients.jedis;
 import java.util.Map;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.set.SetParams;
 
 public interface Commands {
 
   public void set(final String key, final String value);
 
-  public void set(final String key, final String value, final String nxxx, final String expx,
-      final long time);
+  public void set(final String key, final String value, SetParams params);
 
   public void get(final String key);
 

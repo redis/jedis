@@ -1,14 +1,22 @@
 package redis.clients.jedis;
 
+import java.net.URI;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
-
-import java.net.URI;
-import java.util.*;
-import java.util.Map.Entry;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
@@ -71,16 +79,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * GB).
    * @param key
    * @param value
-   * @param nxxx NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
+   * @param params NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
    *          if it already exist.
-   * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
-   * @param time expire time in the units of {@param #expx}
+   *          EX|PX, expire time units: EX = seconds; PX = milliseconds
    * @return Status code reply
    */
-  public String set(final String key, final String value, final String nxxx, final String expx,
-      final long time) {
+  public String set(final String key, final String value, final SetParams params) {
     checkIsInMulti();
-    client.set(key, value, nxxx, expx, time);
+    client.set(key, value, params);
     return client.getStatusCodeReply();
   }
 
@@ -2903,19 +2909,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public String psetex(final String key, final int milliseconds, final String value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
-    return client.getStatusCodeReply();
-  }
-
-  public String set(final String key, final String value, final String nxxx) {
-    checkIsInMulti();
-    client.set(key, value, nxxx);
-    return client.getStatusCodeReply();
-  }
-
-  public String set(final String key, final String value, final String nxxx, final String expx,
-      final int time) {
-    checkIsInMulti();
-    client.set(key, value, nxxx, expx, time);
     return client.getStatusCodeReply();
   }
 

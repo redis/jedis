@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.set.SetParams;
 
 public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   public static final short HASHSLOTS = 16384;
@@ -77,12 +78,11 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
-  public String set(final String key, final String value, final String nxxx, final String expx,
-      final long time) {
+  public String set(final String key, final String value, final SetParams params) {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
       @Override
       public String execute(Jedis connection) {
-        return connection.set(key, value, nxxx, expx, time);
+        return connection.set(key, value, params);
       }
     }.run(key);
   }

@@ -14,6 +14,8 @@ import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -100,9 +102,10 @@ public class BinaryClient extends Connection {
     sendCommand(Command.SET, key, value);
   }
 
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final long time) {
-    sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
+  public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final byte[] time) {
+    List<byte[]> params = Arrays.asList(key, value, nxxx, expx, time);
+    
+    sendCommand(Command.SET, removeNulls(params));
   }
 
   public void get(final byte[] key) {
@@ -1092,15 +1095,6 @@ public class BinaryClient extends Connection {
     sendCommand(PSETEX, key, toByteArray(milliseconds), value);
   }
 
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx) {
-    sendCommand(Command.SET, key, value, nxxx);
-  }
-
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final int time) {
-    sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
-  }
-
   public void srandmember(final byte[] key, final int count) {
     sendCommand(SRANDMEMBER, key, toByteArray(count));
   }
@@ -1192,5 +1186,12 @@ public class BinaryClient extends Connection {
 
   public void pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
     sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
+  }
+  
+  private byte[][] removeNulls(List<byte[]> list) {
+    ArrayList<byte[]> noNullsList = new ArrayList<>(list);
+    noNullsList.removeAll(Collections.singleton(null));
+
+    return noNullsList.toArray(new byte[noNullsList.size()][]);
   }
 }

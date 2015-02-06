@@ -53,7 +53,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.set(key, value);
   }
 
-  public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
+  public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, byte[] time) {
     Jedis j = getShard(key);
     return j.set(key, value, nxxx, expx, time);
   }

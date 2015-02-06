@@ -136,7 +136,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Status code reply
    */
   public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final long time) {
+      final byte[] time) {
     checkIsInMulti();
     client.set(key, value, nxxx, expx, time);
     return client.getStatusCodeReply();
@@ -3063,19 +3063,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String psetex(final byte[] key, final int milliseconds, final byte[] value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
-    return client.getStatusCodeReply();
-  }
-
-  public String set(final byte[] key, final byte[] value, final byte[] nxxx) {
-    checkIsInMulti();
-    client.set(key, value, nxxx);
-    return client.getStatusCodeReply();
-  }
-
-  public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final int time) {
-    checkIsInMulti();
-    client.set(key, value, nxxx, expx, time);
     return client.getStatusCodeReply();
   }
 

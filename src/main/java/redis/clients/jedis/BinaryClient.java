@@ -1189,7 +1189,7 @@ public class BinaryClient extends Connection {
   }
   
   private byte[][] removeNulls(List<byte[]> list) {
-    ArrayList<byte[]> noNullsList = new ArrayList<>(list);
+    ArrayList<byte[]> noNullsList = new ArrayList<byte[]>(list);
     noNullsList.removeAll(Collections.singleton(null));
 
     return noNullsList.toArray(new byte[noNullsList.size()][]);

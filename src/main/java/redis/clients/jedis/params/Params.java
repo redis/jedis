@@ -22,14 +22,14 @@ public abstract class Params {
   
   protected void addParam(String name, Object value) {
     if(params == null) {
-      params = new HashMap<>();
+      params = new HashMap<String, Object>();
     }
     params.put(name, value);
   }
   
   protected void addParam(String name) {
     if(params == null) {
-      params = new HashMap<>();
+      params = new HashMap<String, Object>();
     }
     params.put(name, true);
   }

@@ -2343,7 +2343,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return new LinkedHashSet<String>(members);
   }
 
-   @Override
+  @Override
   public Set<String> zrangeByLex(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMulti();

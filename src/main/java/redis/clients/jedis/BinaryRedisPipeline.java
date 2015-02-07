@@ -25,7 +25,7 @@ public interface BinaryRedisPipeline {
   Response<Boolean> exists(byte[] key);
 
   Response<Long> expire(byte[] key, int seconds);
-  
+
   Response<Long> pexpire(byte[] key, long milliseconds);
 
   Response<Long> expireAt(byte[] key, long unixTime);

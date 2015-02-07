@@ -28,6 +28,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> expireAt(byte[] key, long unixTime);
 
+  Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp);
+
   Response<byte[]> get(byte[] key);
 
   Response<Boolean> getbit(byte[] key, long offset);

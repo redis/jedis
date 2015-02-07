@@ -24,6 +24,8 @@ public interface JedisCommands {
 
   Long expireAt(String key, long unixTime);
 
+  Long pexpireAt(String key, long millisecondsTimestamp);
+
   Long ttl(String key);
 
   Boolean setbit(String key, long offset, boolean value);

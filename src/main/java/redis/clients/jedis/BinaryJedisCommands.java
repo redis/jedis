@@ -25,6 +25,8 @@ public interface BinaryJedisCommands {
 
   Long expireAt(byte[] key, long unixTime);
 
+  Long pexpireAt(byte[] key, long millisecondsTimestamp);
+
   Long ttl(byte[] key);
 
   Boolean setbit(byte[] key, long offset, boolean value);

@@ -148,6 +148,16 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
+  public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+    return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.pexpireAt(key, millisecondsTimestamp);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long ttl(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
       @Override

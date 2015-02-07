@@ -68,7 +68,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
-  
+
   public Long pexpire(final String key, final long milliseconds) {
     Jedis j = getShard(key);
     return j.pexpire(key, milliseconds);

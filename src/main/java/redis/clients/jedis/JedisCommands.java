@@ -21,7 +21,7 @@ public interface JedisCommands {
   String type(String key);
 
   Long expire(String key, int seconds);
-  
+
   Long pexpire(String key, long milliseconds);
 
   Long expireAt(String key, long unixTime);

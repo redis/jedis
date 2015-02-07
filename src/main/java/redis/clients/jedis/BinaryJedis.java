@@ -2552,7 +2552,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed
-   * information about the Redis Append Only File check the <a href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
+   * information about the Redis Append Only File check the <a
+   * href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
    * <p>
    * BGREWRITEAOF rewrites the Append Only File in background when it gets too big. The Redis Append
    * Only File is a Journal, so every operation modifying the dataset is logged in the Append Only

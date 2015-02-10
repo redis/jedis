@@ -1,7 +1,11 @@
 package redis.clients.jedis.params;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import redis.clients.util.SafeEncoder;
 
 public abstract class Params {
 
@@ -12,6 +16,19 @@ public abstract class Params {
     if(params == null) return null;
     
     return (T) params.get(name);
+  }
+  
+  public byte[][] getByteParams() {
+    ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    
+    for(Entry<String, Object> param : params.entrySet()) {
+      byteParams.add(SafeEncoder.encode(param.getKey()));
+      if(param.getValue() != null) {
+          byteParams.add(SafeEncoder.encode(String.valueOf(param.getValue())));
+      }
+    }
+    
+    return byteParams.toArray(new byte[byteParams.size()][]);
   }
   
   public boolean contains(String name) {
@@ -31,7 +48,7 @@ public abstract class Params {
     if(params == null) {
       params = new HashMap<String, Object>();
     }
-    params.put(name, true);
+    params.put(name, null);
   }
   
 }

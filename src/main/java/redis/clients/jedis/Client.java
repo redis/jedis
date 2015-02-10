@@ -31,22 +31,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void set(final String key, final String value, final SetParams params) {
-    
-    byte[] nxxxBytes = null;
-    String nxxx = params.getNxxx();
-    if(nxxx != null) {
-      nxxxBytes = SafeEncoder.encode(nxxx);
-    }
-    
-    byte[] expxBytes = null;
-    byte[] expxValue = null;
-    String expx = params.getExpx();
-    if(expx != null) {
-      expxBytes = SafeEncoder.encode(expx);
-      expxValue = SafeEncoder.encode(String.valueOf(params.getParam(expx)));
-    }
-    
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), nxxxBytes, expxBytes, expxValue);
+    set(SafeEncoder.encode(key), SafeEncoder.encode(value), params);
   }
 
   public void get(final String key) {

@@ -607,12 +607,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     // binary
     byte[] bworld = { 0x77, 0x6F, 0x72, 0x6C, 0x64 };
     byte[] bhello = { 0x68, 0x65, 0x6C, 0x6C, 0x6F };
-    String bstatus = jedis.set(bworld, bhello, bnx, bex, SafeEncoder.encode(String.valueOf(expireSeconds)));
+    
+    String bstatus = jedis.set(bworld, bhello, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(bstatus));
     byte[] bvalue = jedis.get(bworld);
     assertTrue(Arrays.equals(bhello, bvalue));
 
-    jedis.set(bworld, bbar, bnx, bex, SafeEncoder.encode(String.valueOf(expireSeconds)));
+    jedis.set(bworld, bbar, setParams().nx().ex(expireSeconds));
     bvalue = jedis.get(bworld);
     assertTrue(Arrays.equals(bhello, bvalue));
 

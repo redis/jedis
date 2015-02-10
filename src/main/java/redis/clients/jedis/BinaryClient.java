@@ -14,14 +14,13 @@ import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -102,10 +101,8 @@ public class BinaryClient extends Connection {
     sendCommand(Command.SET, key, value);
   }
 
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final byte[] time) {
-    List<byte[]> params = Arrays.asList(key, value, nxxx, expx, time);
-    
-    sendCommand(Command.SET, removeNulls(params));
+  public void set(final byte[] key, final byte[] value, final SetParams params) {
+    sendCommand(Command.SET, params.getByteParams());
   }
 
   public void get(final byte[] key) {
@@ -1188,10 +1185,4 @@ public class BinaryClient extends Connection {
     sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
   }
   
-  private byte[][] removeNulls(List<byte[]> list) {
-    ArrayList<byte[]> noNullsList = new ArrayList<byte[]>(list);
-    noNullsList.removeAll(Collections.singleton(null));
-
-    return noNullsList.toArray(new byte[noNullsList.size()][]);
-  }
 }

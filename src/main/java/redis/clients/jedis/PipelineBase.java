@@ -506,8 +506,8 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.STRING);
   }
   
-  public Response<String> set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, byte[] time) {
-    getClient(key).set(key, value, nxxx, expx, time);
+  public Response<String> set(byte[] key, byte[] value, SetParams params) {
+    getClient(key).set(key, value, params);
     return getResponse(BuilderFactory.STRING);
   }
 

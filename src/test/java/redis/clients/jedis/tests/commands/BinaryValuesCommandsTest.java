@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import static redis.clients.jedis.params.set.SetParams.setParams;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,7 +11,6 @@ import org.junit.Test;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.util.SafeEncoder;
 
 public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -18,9 +19,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   byte[] bnx = { 0x6E, 0x78 };
   byte[] bex = { 0x65, 0x78 };
   byte[] bpx = { 0x70, 0x78 };
-  long expireSeconds = 2;
-  byte[] expireSecondsByte = SafeEncoder.encode(String.valueOf(expireSeconds));
-  byte[] expireMillisByte = SafeEncoder.encode(String.valueOf(expireSeconds * 1000));
+  int expireSeconds = 2;
+  long expireMillis = expireSeconds * 1000;
   byte[] binaryValue;
 
   @Before
@@ -47,7 +47,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setNxExAndGet() {
-    String status = jedis.set(bfoo, binaryValue, bnx, bex, expireSecondsByte);
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     byte[] value = jedis.get(bfoo);
     assertTrue(Arrays.equals(binaryValue, value));
@@ -60,7 +60,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     String status = jedis.set(bfoo, binaryValue);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     // nx should fail if value exists
-    String statusFail = jedis.set(bfoo, binaryValue, bnx, bex, expireSecondsByte);
+    String statusFail = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
     assertNull(statusFail);
 
     byte[] value = jedis.get(bfoo);
@@ -74,7 +74,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     String status = jedis.set(bfoo, binaryValue);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     // nx should fail if value exists
-    String statusSuccess = jedis.set(bfoo, binaryValue, bxx, bex, expireSecondsByte);
+    String statusSuccess = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(statusSuccess));
 
     byte[] value = jedis.get(bfoo);
@@ -86,13 +86,13 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void setFailIfNotExistAndGet() {
     // xx should fail if value does NOT exists
-    String statusFail = jedis.set(bfoo, binaryValue, bxx, bex, expireSecondsByte);
+    String statusFail = jedis.set(bfoo, binaryValue, setParams().xx().ex(expireSeconds));
     assertNull(statusFail);
   }
 
   @Test
   public void setAndExpireMillis() {
-    String status = jedis.set(bfoo, binaryValue, bnx, bpx, expireMillisByte);
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().px(expireMillis));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
@@ -100,7 +100,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setAndExpire() {
-    String status = jedis.set(bfoo, binaryValue, bnx, bex, expireSecondsByte);
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);

@@ -154,15 +154,6 @@ public class JedisClusterTest extends Assert {
     assertEquals("test", node2.get("test"));
   }
 
-  @Test
-  public void testBlpop() {
-    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisCluster jc = new JedisCluster(jedisClusterNode);
-    jc.lpush("foo", "bar");
-    assertEquals("bar", jc.blpop(0, "foo").get(1));
-  }
-  
   /**
    * slot->nodes 15363 node3 e
    */

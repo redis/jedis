@@ -1064,7 +1064,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public List<String> execute(Jedis connection) {
         return connection.blpop(arg);
       }
-    }.run(null);
+    }.run(arg);
   }
 
   @Override
@@ -1074,7 +1074,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public List<String> execute(Jedis connection) {
         return connection.brpop(arg);
       }
-    }.run(null);
+    }.run(arg);
   }
 
   @Override
@@ -1434,7 +1434,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public List<String> execute(Jedis connection) {
         return connection.blpop(timeout, key);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override
@@ -1444,6 +1444,6 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public List<String> execute(Jedis connection) {
         return connection.brpop(timeout, key);
       }
-    }.run(null);
+    }.run(key);
   }
 }

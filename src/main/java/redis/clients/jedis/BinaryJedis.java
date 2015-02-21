@@ -3276,6 +3276,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
     return new ScanResult<Tuple>(newcursor, results);
   }
+  @Override
+  public String readonly() {
+    client.readonly();
+    return client.getStatusCodeReply();
+  }
 
   /**
    * A decorator to implement Set from List. Assume that given List do not contains duplicated

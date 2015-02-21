@@ -1190,4 +1190,8 @@ public class BinaryClient extends Connection {
   public void pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
     sendCommand(PFMERGE, joinParameters(destkey, sourcekeys));
   }
+
+  public void readonly() {
+    sendCommand(READONLY);
+  }
 }

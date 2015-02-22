@@ -337,7 +337,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * @deprecated use BinaryJedis.pexpire(byte[], long) or Jedis.pexpire(String,long)
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
@@ -358,8 +357,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         the key already has an associated timeout (this may happen only in Redis versions <
    *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
    */
-  @Deprecated
-  public Long pexpire(String key, final long milliseconds) {
+  public Long pexpire(final byte[] key, final long milliseconds) {
     checkIsInMulti();
     client.pexpire(key, milliseconds);
     return client.getIntegerReply();
@@ -3070,12 +3068,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMulti();
     client.restore(key, ttl, serializedValue);
     return client.getStatusCodeReply();
-  }
-
-  public Long pexpire(final byte[] key, final long milliseconds) {
-    checkIsInMulti();
-    client.pexpire(key, milliseconds);
-    return client.getIntegerReply();
   }
 
   public Long pexpireAt(final byte[] key, final long millisecondsTimestamp) {

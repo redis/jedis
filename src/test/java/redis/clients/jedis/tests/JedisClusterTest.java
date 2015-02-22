@@ -33,6 +33,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
+import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.JedisClusterCRC16;
 
 public class JedisClusterTest extends Assert {
@@ -40,12 +41,14 @@ public class JedisClusterTest extends Assert {
   private static Jedis node2;
   private static Jedis node3;
   private static Jedis node4;
+  private static Jedis nodeSlave2;
   private String localHost = "127.0.0.1";
 
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
   private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
   private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
+  private HostAndPort nodeInfoSlave2 = HostAndPortUtil.getClusterServers().get(4);
   protected Logger log = Logger.getLogger(getClass().getName());
 
   @Before
@@ -66,6 +69,9 @@ public class JedisClusterTest extends Assert {
     node4.connect();
     node4.flushAll();
 
+    nodeSlave2 = new Jedis(nodeInfoSlave2.getHost(), nodeInfoSlave2.getPort());
+    nodeSlave2.connect();
+    nodeSlave2.flushAll();
     // ---- configure cluster
 
     // add nodes to cluster
@@ -153,6 +159,30 @@ public class JedisClusterTest extends Assert {
     jc.set("test", "test");
     assertEquals("bar", node3.get("foo"));
     assertEquals("test", node2.get("test"));
+  }
+
+  @Test
+  public void testReadonly() throws Exception {
+    node1.clusterMeet(localHost, nodeInfoSlave2.getPort());
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
+
+    ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
+    for (String nodeInfo : node2.clusterNodes().split("\n")) {
+      if(nodeInfo.contains("myself")){
+        nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
+        break;
+      }
+    }
+    try {
+      nodeSlave2.get("test");
+      fail();
+    }catch (JedisMovedDataException e){
+    }
+    nodeSlave2.readonly();
+    nodeSlave2.get("test");
+
+    nodeSlave2.clusterReset(Reset.SOFT);
+    nodeSlave2.flushDB();
   }
 
   /**

@@ -3090,7 +3090,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Deprecated
   public String psetex(final byte[] key, final int milliseconds, final byte[] value) {
+    return psetex(key, (long) milliseconds, value);
+  }
+
+  public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
     return client.getStatusCodeReply();

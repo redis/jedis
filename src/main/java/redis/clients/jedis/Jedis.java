@@ -2900,7 +2900,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Deprecated
   public String psetex(final String key, final int milliseconds, final String value) {
+    return psetex(key, (long) milliseconds, value);
+  }
+
+  public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
     return client.getStatusCodeReply();

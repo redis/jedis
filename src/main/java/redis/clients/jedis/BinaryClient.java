@@ -1088,11 +1088,6 @@ public class BinaryClient extends Connection {
     sendCommand(PTTL, key);
   }
 
-  @Deprecated
-  public void psetex(final byte[] key, final int milliseconds, final byte[] value) {
-    psetex(key, (long) milliseconds, value);
-  }
-
   public void psetex(final byte[] key, final long milliseconds, final byte[] value) {
     sendCommand(PSETEX, key, toByteArray(milliseconds), value);
   }

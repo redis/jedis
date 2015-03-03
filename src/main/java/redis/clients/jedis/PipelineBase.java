@@ -1190,16 +1190,6 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.DOUBLE);
   }
 
-  @Deprecated
-  public Response<String> psetex(String key, int milliseconds, String value) {
-    return psetex(key, (long) milliseconds, value);
-  }
-
-  @Deprecated
-  public Response<String> psetex(byte[] key, int milliseconds, byte[] value) {
-    return psetex(key, (long) milliseconds, value);
-  }
-
   public Response<String> psetex(String key, long milliseconds, String value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);

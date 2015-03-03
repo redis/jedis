@@ -789,11 +789,6 @@ public class Client extends BinaryClient implements Commands {
     incrByFloat(SafeEncoder.encode(key), increment);
   }
 
-  @Deprecated
-  public void psetex(final String key, final int milliseconds, final String value) {
-    psetex(key, (long) milliseconds, value);
-  }
-
   public void psetex(final String key, final long milliseconds, final String value) {
     psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
   }

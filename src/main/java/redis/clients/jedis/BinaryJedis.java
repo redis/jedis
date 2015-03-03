@@ -337,35 +337,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * @deprecated use BinaryJedis.pexpire(byte[], long) or Jedis.pexpire(String,long)
-   * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
-   * the server. A key with an associated timeout is said to be volatile in Redis terminology.
-   * <p>
-   * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
-   * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
-   * not stop the flow of time as Redis stores on disk the time when the key will no longer be
-   * available as Unix time, and not the remaining milliseconds.
-   * <p>
-   * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
-   * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link #persist(byte[]) PERSIST} command.
-   * <p>
-   * Time complexity: O(1)
-   * @see <ahref="http://redis.io/commands/pexpire">PEXPIRE Command</a>
-   * @param key
-   * @param milliseconds
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
-   *         the key already has an associated timeout (this may happen only in Redis versions <
-   *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
-   */
-  @Deprecated
-  public Long pexpire(String key, final long milliseconds) {
-    checkIsInMulti();
-    client.pexpire(key, milliseconds);
-    return client.getIntegerReply();
-  }
-
-  /**
    * EXPIREAT works exctly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
    * seconds representing the Time To Live of the key as a second argument (that is a relative way
    * of specifing the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
@@ -1936,22 +1907,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return brpop(getArgsAddTimeout(timeout, keys));
-  }
-
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Deprecated
-  public List<byte[]> blpop(byte[] arg) {
-    return blpop(new byte[][] { arg });
-  }
-
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Deprecated
-  public List<byte[]> brpop(byte[] arg) {
-    return brpop(new byte[][] { arg });
   }
 
   public List<byte[]> blpop(byte[]... args) {

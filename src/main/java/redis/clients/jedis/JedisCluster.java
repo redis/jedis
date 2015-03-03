@@ -1089,26 +1089,6 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
-  public List<String> blpop(final String arg) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.blpop(arg);
-      }
-    }.run(arg);
-  }
-
-  @Override
-  public List<String> brpop(final String arg) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.brpop(arg);
-      }
-    }.run(arg);
-  }
-
-  @Override
   public Long del(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
       @Override

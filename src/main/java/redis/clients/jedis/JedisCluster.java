@@ -1057,7 +1057,11 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(key);
   }
 
+  /**
+   * @deprecated unusable command, this command will be removed in 3.0.0.
+   */
   @Override
+  @Deprecated
   public List<String> blpop(final String arg) {
     return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
       @Override
@@ -1067,7 +1071,11 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(arg);
   }
 
+  /**
+   * @deprecated unusable command, this command will be removed in 3.0.0.
+   */
   @Override
+  @Deprecated
   public List<String> brpop(final String arg) {
     return new JedisClusterCommand<List<String>>(connectionHandler, timeout, maxRedirections) {
       @Override

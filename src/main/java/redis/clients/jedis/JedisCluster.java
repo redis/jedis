@@ -1495,7 +1495,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override
@@ -1505,7 +1505,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<String> execute(Jedis connection) {
         return connection.sscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override
@@ -1515,7 +1515,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override

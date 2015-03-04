@@ -1,25 +1,24 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 
 public interface AdvancedBinaryJedisCommands {
 
-    List<byte[]> configGet(byte[] pattern);
+  List<byte[]> configGet(byte[] pattern);
 
-    byte[] configSet(byte[] parameter, byte[] value);
+  byte[] configSet(byte[] parameter, byte[] value);
 
-    String slowlogReset();
+  String slowlogReset();
 
-    Long slowlogLen();
+  Long slowlogLen();
 
-    List<byte[]> slowlogGetBinary();
+  List<byte[]> slowlogGetBinary();
 
-    List<byte[]> slowlogGetBinary(long entries);
+  List<byte[]> slowlogGetBinary(long entries);
 
-    Long objectRefcount(byte[] key);
+  Long objectRefcount(byte[] key);
 
-    byte[] objectEncoding(byte[] key);
+  byte[] objectEncoding(byte[] key);
 
-    Long objectIdletime(byte[] key);
+  Long objectIdletime(byte[] key);
 }

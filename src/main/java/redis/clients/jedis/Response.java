@@ -3,41 +3,74 @@ package redis.clients.jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Response<T> {
-    protected T response = null;
-    private boolean built = false;
-    private boolean set = false;
-    private Builder<T> builder;
-    private Object data;
+  protected T response = null;
+  protected JedisDataException exception = null;
 
-    public Response(Builder<T> b) {
-        this.builder = b;
+  private boolean building = false;
+  private boolean built = false;
+  private boolean set = false;
+
+  private Builder<T> builder;
+  private Object data;
+  private Response<?> dependency = null;
+
+  public Response(Builder<T> b) {
+    this.builder = b;
+  }
+
+  public void set(Object data) {
+    this.data = data;
+    set = true;
+  }
+
+  public T get() {
+    // if response has dependency response and dependency is not built,
+    // build it first and no more!!
+    if (dependency != null && dependency.set && !dependency.built) {
+      dependency.build();
+    }
+    if (!set) {
+      throw new JedisDataException(
+          "Please close pipeline or multi block before calling this method.");
+    }
+    if (!built) {
+      build();
+    }
+    if (exception != null) {
+      throw exception;
+    }
+    return response;
+  }
+
+  public void setDependency(Response<?> dependency) {
+    this.dependency = dependency;
+  }
+
+  private void build() {
+    // check build state to prevent recursion
+    if (building) {
+      return;
     }
 
-    public void set(Object data) {
-        this.data = data;
-        set = true;
-    }
-
-    public T get() {
-        if (!set) {
-            throw new JedisDataException(
-                    "Please close pipeline or multi block before calling this method.");
+    building = true;
+    try {
+      if (data != null) {
+        if (data instanceof JedisDataException) {
+          exception = (JedisDataException) data;
+        } else {
+          response = builder.build(data);
         }
-        if (!built) {
-        	if(data != null ){
-	        	if (data instanceof JedisDataException){
-	        		throw new JedisDataException((JedisDataException)data);
-	        	}
-	            response = builder.build(data);
-        	}
-            this.data = null;
-            built = true;
-        }
-        return response;
-    }
+      }
 
-    public String toString() {
-        return "Response " + builder.toString();
+      data = null;
+    } finally {
+      building = false;
+      built = true;
     }
+  }
+
+  public String toString() {
+    return "Response " + builder.toString();
+  }
 
 }

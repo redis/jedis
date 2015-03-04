@@ -5,212 +5,245 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 /**
  * Common interface for sharded and non-sharded BinaryJedis
  */
 public interface BinaryJedisCommands {
-    String set(byte[] key, byte[] value);
+  String set(byte[] key, byte[] value);
 
-    byte[] get(byte[] key);
+  String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
 
-    Boolean exists(byte[] key);
+  byte[] get(byte[] key);
 
-    Long persist(byte[] key);
+  Boolean exists(byte[] key);
 
-    String type(byte[] key);
+  Long persist(byte[] key);
 
-    Long expire(byte[] key, int seconds);
+  String type(byte[] key);
 
-    Long expireAt(byte[] key, long unixTime);
+  Long expire(byte[] key, int seconds);
 
-    Long ttl(byte[] key);
+  /**
+   * @deprecated String key operation on BinaryCommand. Use byte[] or JedisCommands
+   */
+  @Deprecated
+  Long pexpire(final String key, final long milliseconds);
 
-    Boolean setbit(byte[] key, long offset, boolean value);
+  Long pexpire(byte[] key, final long milliseconds);
 
-    Boolean setbit(byte[] key, long offset, byte[] value);
+  Long expireAt(byte[] key, long unixTime);
 
-    Boolean getbit(byte[] key, long offset);
+  Long pexpireAt(byte[] key, long millisecondsTimestamp);
 
-    Long setrange(byte[] key, long offset, byte[] value);
+  Long ttl(byte[] key);
 
-    byte[] getrange(byte[] key, long startOffset, long endOffset);
+  Boolean setbit(byte[] key, long offset, boolean value);
 
-    byte[] getSet(byte[] key, byte[] value);
+  Boolean setbit(byte[] key, long offset, byte[] value);
 
-    Long setnx(byte[] key, byte[] value);
+  Boolean getbit(byte[] key, long offset);
 
-    String setex(byte[] key, int seconds, byte[] value);
+  Long setrange(byte[] key, long offset, byte[] value);
 
-    Long decrBy(byte[] key, long integer);
+  byte[] getrange(byte[] key, long startOffset, long endOffset);
 
-    Long decr(byte[] key);
+  byte[] getSet(byte[] key, byte[] value);
 
-    Long incrBy(byte[] key, long integer);
+  Long setnx(byte[] key, byte[] value);
 
-    Long incr(byte[] key);
+  String setex(byte[] key, int seconds, byte[] value);
 
-    Long append(byte[] key, byte[] value);
+  Long decrBy(byte[] key, long integer);
 
-    byte[] substr(byte[] key, int start, int end);
+  Long decr(byte[] key);
 
-    Long hset(byte[] key, byte[] field, byte[] value);
+  Long incrBy(byte[] key, long integer);
 
-    byte[] hget(byte[] key, byte[] field);
+  Double incrByFloat(byte[] key, double value);
 
-    Long hsetnx(byte[] key, byte[] field, byte[] value);
+  Long incr(byte[] key);
 
-    String hmset(byte[] key, Map<byte[], byte[]> hash);
+  Long append(byte[] key, byte[] value);
 
-    List<byte[]> hmget(byte[] key, byte[]... fields);
+  byte[] substr(byte[] key, int start, int end);
 
-    Long hincrBy(byte[] key, byte[] field, long value);
+  Long hset(byte[] key, byte[] field, byte[] value);
 
-    Boolean hexists(byte[] key, byte[] field);
+  byte[] hget(byte[] key, byte[] field);
 
-    Long hdel(byte[] key, byte[]... field);
+  Long hsetnx(byte[] key, byte[] field, byte[] value);
 
-    Long hlen(byte[] key);
+  String hmset(byte[] key, Map<byte[], byte[]> hash);
 
-    Set<byte[]> hkeys(byte[] key);
+  List<byte[]> hmget(byte[] key, byte[]... fields);
 
-    Collection<byte[]> hvals(byte[] key);
+  Long hincrBy(byte[] key, byte[] field, long value);
 
-    Map<byte[], byte[]> hgetAll(byte[] key);
+  Double hincrByFloat(byte[] key, byte[] field, double value);
 
-    Long rpush(byte[] key, byte[]... args);
+  Boolean hexists(byte[] key, byte[] field);
 
-    Long lpush(byte[] key, byte[]... args);
+  Long hdel(byte[] key, byte[]... field);
 
-    Long llen(byte[] key);
+  Long hlen(byte[] key);
 
-    List<byte[]> lrange(byte[] key, long start, long end);
+  Set<byte[]> hkeys(byte[] key);
 
-    String ltrim(byte[] key, long start, long end);
+  Collection<byte[]> hvals(byte[] key);
 
-    byte[] lindex(byte[] key, long index);
+  Map<byte[], byte[]> hgetAll(byte[] key);
 
-    String lset(byte[] key, long index, byte[] value);
+  Long rpush(byte[] key, byte[]... args);
 
-    Long lrem(byte[] key, long count, byte[] value);
+  Long lpush(byte[] key, byte[]... args);
 
-    byte[] lpop(byte[] key);
+  Long llen(byte[] key);
 
-    byte[] rpop(byte[] key);
+  List<byte[]> lrange(byte[] key, long start, long end);
 
-    Long sadd(byte[] key, byte[]... member);
+  String ltrim(byte[] key, long start, long end);
 
-    Set<byte[]> smembers(byte[] key);
+  byte[] lindex(byte[] key, long index);
 
-    Long srem(byte[] key, byte[]... member);
+  String lset(byte[] key, long index, byte[] value);
 
-    byte[] spop(byte[] key);
+  Long lrem(byte[] key, long count, byte[] value);
 
-    Long scard(byte[] key);
+  byte[] lpop(byte[] key);
 
-    Boolean sismember(byte[] key, byte[] member);
+  byte[] rpop(byte[] key);
 
-    byte[] srandmember(byte[] key);
+  Long sadd(byte[] key, byte[]... member);
 
-    Long strlen(byte[] key);
+  Set<byte[]> smembers(byte[] key);
 
-    Long zadd(byte[] key, double score, byte[] member);
-    
-    Long zadd(byte[] key, Map<Double, byte[]> scoreMembers);
+  Long srem(byte[] key, byte[]... member);
 
-    Set<byte[]> zrange(byte[] key, long start, long end);
+  byte[] spop(byte[] key);
 
-    Long zrem(byte[] key, byte[]... member);
+  Long scard(byte[] key);
 
-    Double zincrby(byte[] key, double score, byte[] member);
+  Boolean sismember(byte[] key, byte[] member);
 
-    Long zrank(byte[] key, byte[] member);
+  byte[] srandmember(byte[] key);
 
-    Long zrevrank(byte[] key, byte[] member);
+  List<byte[]> srandmember(final byte[] key, final int count);
 
-    Set<byte[]> zrevrange(byte[] key, long start, long end);
+  Long strlen(byte[] key);
 
-    Set<Tuple> zrangeWithScores(byte[] key, long start, long end);
+  Long zadd(byte[] key, double score, byte[] member);
 
-    Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end);
+  Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
-    Long zcard(byte[] key);
+  Set<byte[]> zrange(byte[] key, long start, long end);
 
-    Double zscore(byte[] key, byte[] member);
+  Long zrem(byte[] key, byte[]... member);
 
-    List<byte[]> sort(byte[] key);
+  Double zincrby(byte[] key, double score, byte[] member);
 
-    List<byte[]> sort(byte[] key, SortingParams sortingParameters);
+  Long zrank(byte[] key, byte[] member);
 
-    Long zcount(byte[] key, double min, double max);
+  Long zrevrank(byte[] key, byte[] member);
 
-    Long zcount(byte[] key, byte[] min, byte[] max);
+  Set<byte[]> zrevrange(byte[] key, long start, long end);
 
-    Set<byte[]> zrangeByScore(byte[] key, double min, double max);
+  Set<Tuple> zrangeWithScores(byte[] key, long start, long end);
 
-    Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
+  Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end);
 
-    Set<byte[]> zrevrangeByScore(byte[] key, double max, double min);
+  Long zcard(byte[] key);
 
-    Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset,
-	    int count);
+  Double zscore(byte[] key, byte[] member);
 
-    Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
+  List<byte[]> sort(byte[] key);
 
-    Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset,
-            int count);
+  List<byte[]> sort(byte[] key, SortingParams sortingParameters);
 
-    Set<byte[]> zrevrangeByScore(byte[] key, double max, double min,
-            int offset, int count);
+  Long zcount(byte[] key, double min, double max);
 
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
+  Long zcount(byte[] key, byte[] min, byte[] max);
 
-    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
+  Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max,
-            int offset, int count);
-    
-    Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min,
-            int offset, int count);
+  Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
 
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
-    
-    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
+  Set<byte[]> zrevrangeByScore(byte[] key, double max, double min);
 
-    Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max,
-            int offset, int count);
+  Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count);
 
-    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min,
-            int offset, int count);
-    
-    Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min,
-            int offset, int count);
+  Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
 
-    Long zremrangeByRank(byte[] key, long start, long end);
+  Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count);
 
-    Long zremrangeByScore(byte[] key, double start, double end);
-    
-    Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
+  Set<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count);
 
-    Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot,
-            byte[] value);
-    
-    Long lpushx(byte[] key, byte[]... arg);
-    
-    Long rpushx(byte[] key, byte[]... arg);
+  Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
-    List<byte[]> blpop(byte[] arg);
+  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
 
-    List<byte[]> brpop(byte[] arg);
+  Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count);
 
-    Long del(byte[] key);
+  Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-    byte[] echo(byte[] arg);
+  Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
 
-    Long move(byte[] key, int dbIndex);
+  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
-    Long bitcount(final byte[] key);
+  Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count);
 
-    Long bitcount(final byte[] key, long start, long end);
+  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count);
+
+  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
+
+  Long zremrangeByRank(byte[] key, long start, long end);
+
+  Long zremrangeByScore(byte[] key, double start, double end);
+
+  Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
+
+  Long zlexcount(final byte[] key, final byte[] min, final byte[] max);
+
+  Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+
+  Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max, int offset,
+      int count);
+
+  Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);
+
+  Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, int offset,
+      int count);
+
+  Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+
+  Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot, byte[] value);
+
+  Long lpushx(byte[] key, byte[]... arg);
+
+  Long rpushx(byte[] key, byte[]... arg);
+
+  /**
+   * @deprecated unusable command, this command will be removed in 3.0.0.
+   */
+  @Deprecated
+  List<byte[]> blpop(byte[] arg);
+
+  /**
+   * @deprecated unusable command, this command will be removed in 3.0.0.
+   */
+  @Deprecated
+  List<byte[]> brpop(byte[] arg);
+
+  Long del(byte[] key);
+
+  byte[] echo(byte[] arg);
+
+  Long move(byte[] key, int dbIndex);
+
+  Long bitcount(final byte[] key);
+
+  Long bitcount(final byte[] key, long start, long end);
+
+  Long pfadd(final byte[] key, final byte[]... elements);
+
+  long pfcount(final byte[] key);
 }

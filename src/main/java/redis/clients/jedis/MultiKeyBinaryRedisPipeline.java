@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-
 import java.util.List;
 import java.util.Set;
 
@@ -9,59 +8,63 @@ import java.util.Set;
  */
 public interface MultiKeyBinaryRedisPipeline {
 
-    Response<Long> del(byte[]... keys);
-    
-    Response<List<byte[]>> blpop(byte[]... args);
+  Response<Long> del(byte[]... keys);
 
-    Response<List<byte[]>> brpop(byte[]... args);
+  Response<List<byte[]>> blpop(byte[]... args);
 
-    Response<Set<byte[]>> keys(byte[] pattern);
+  Response<List<byte[]>> brpop(byte[]... args);
 
-    Response<List<byte[]>> mget(byte[]... keys);
+  Response<Set<byte[]>> keys(byte[] pattern);
 
-    Response<String> mset(byte[]... keysvalues);
+  Response<List<byte[]>> mget(byte[]... keys);
 
-    Response<Long> msetnx(byte[]... keysvalues);
+  Response<String> mset(byte[]... keysvalues);
 
-    Response<String> rename(byte[] oldkey, byte[] newkey);
+  Response<Long> msetnx(byte[]... keysvalues);
 
-    Response<Long> renamenx(byte[] oldkey, byte[] newkey);
+  Response<String> rename(byte[] oldkey, byte[] newkey);
 
-    Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey);
+  Response<Long> renamenx(byte[] oldkey, byte[] newkey);
 
-    Response<Set<byte[]>> sdiff(byte[]... keys);
+  Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey);
 
-    Response<Long> sdiffstore(byte[] dstkey, byte[]... keys);
+  Response<Set<byte[]>> sdiff(byte[]... keys);
 
-    Response<Set<byte[]>> sinter(byte[]... keys);
+  Response<Long> sdiffstore(byte[] dstkey, byte[]... keys);
 
-    Response<Long> sinterstore(byte[] dstkey, byte[]... keys);
+  Response<Set<byte[]>> sinter(byte[]... keys);
 
-    Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member);
+  Response<Long> sinterstore(byte[] dstkey, byte[]... keys);
 
-    Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
+  Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member);
 
-    Response<List<byte[]>> sort(byte[] key, byte[] dstkey);
+  Response<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
 
-    Response<Set<byte[]>> sunion(byte[]... keys);
+  Response<Long> sort(byte[] key, byte[] dstkey);
 
-    Response<Long> sunionstore(byte[] dstkey, byte[]... keys);
+  Response<Set<byte[]>> sunion(byte[]... keys);
 
-    Response<String> watch(byte[]... keys);
+  Response<Long> sunionstore(byte[] dstkey, byte[]... keys);
 
-    Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
+  Response<String> watch(byte[]... keys);
 
-    Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+  Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
 
-    Response<Long> zunionstore(byte[] dstkey, byte[]... sets);
+  Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
 
-    Response<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
+  Response<Long> zunionstore(byte[] dstkey, byte[]... sets);
 
-    Response<byte[]> brpoplpush(byte[] source, byte[] destination, int timeout);
+  Response<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
 
-    Response<Long> publish(byte[] channel, byte[] message);
+  Response<byte[]> brpoplpush(byte[] source, byte[] destination, int timeout);
 
-    Response<byte[]> randomKeyBinary();
+  Response<Long> publish(byte[] channel, byte[] message);
 
-    Response<Long> bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
+  Response<byte[]> randomKeyBinary();
+
+  Response<Long> bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
+
+  Response<String> pfmerge(final byte[] destkey, final byte[]... sourcekeys);
+
+  Response<Long> pfcount(final byte[]... keys);
 }

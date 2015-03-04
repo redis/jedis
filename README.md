@@ -1,18 +1,12 @@
+[![Build Status](https://travis-ci.org/xetorthio/jedis.png?branch=master)](https://travis-ci.org/xetorthio/jedis)
+
 # Jedis
 
 Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.
 
 Jedis was conceived to be EASY to use.
 
-Jedis is fully compatible with redis 2.0.0.
-
-## I want to persist my objects in Redis. How can I do it?
-You should definitely check [JOhm](http://github.com/xetorthio/johm "JOhm")!
-And of course, you can always serialize it and store it.
-
-## Is there a Groovy client?
-
-Yes. You can use Jedis if you want, but I recommend [Gedis](http://github.com/xetorthio/gedis "Gedis"), which is Jedis but with a nicer groovy-like interface :) 
+Jedis is fully compatible with redis 2.8.5.
 
 ## Community
 
@@ -37,14 +31,16 @@ All of the following redis features are supported:
 - Persistence control commands
 - Remote server control commands
 - Connection pooling
-- Sharding (MD5, MurmureHash)
+- Sharding (MD5, MurmurHash)
 - Key-tags for sharding
 - Sharding with pipelining
+- Scripting with pipelining
+- Redis Cluster
 
 ## How do I use it?
 
 You can download the latest build at: 
-    http://github.com/xetorthio/jedis/downloads
+    http://github.com/xetorthio/jedis/releases
 
 Or use it as a maven dependency:
 
@@ -52,7 +48,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>2.0.0</version>
+    <version>2.6.2</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -72,17 +68,35 @@ Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There ar
 
 And you are done!
 
+## Jedis Cluster
+
+Redis cluster [specification](http://redis.io/topics/cluster-spec) (still under development) is implemented
+
+```java
+Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
+//Jedis Cluster will attempt to discover cluster nodes automatically
+jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
+JedisCluster jc = new JedisCluster(jedisClusterNodes);
+jc.set("foo", "bar");
+String value = jc.get("foo");
+```
+
 ## I want to contribute!
 
-That is great! Just fork the project in github. Create a topic branch, write some code, and add some tests for your new code.
+That is great!
 
-To run the tests:
-
-- Use the latest redis master branch.
-
-- Run ```make test```. This will run 2 instances of redis. We use 2 redis servers, one on default port (6379) and the other one on (6380). Both have authentication enabled with default password (foobared). This way we can test both sharding and auth command.
+Please see CONTRIBUTING.md on project's root directory for follow up how to contribute to Jedis project.
 
 Thanks for helping!
+
+## Sponsorship
+
+YourKit supports open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
+and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
+innovative and intelligent tools for profiling Java and .NET applications.
+
+![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
 
 ## License
 

@@ -1,0 +1,8 @@
+language: java
+jdk:
+  - openjdk6
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
+install: make travis-install
+script: make test

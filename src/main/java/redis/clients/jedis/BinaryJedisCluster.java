@@ -1015,7 +1015,7 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
       public Long execute(Jedis connection) {
         return connection.move(key, dbIndex);
       }
-    }.runBinary(null);
+    }.runBinary(key);
   }
 
   @Override

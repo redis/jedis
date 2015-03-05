@@ -1164,12 +1164,13 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
 
   @Override
   public String echo(final String string) {
+    // note that it'll be run from arbitary node
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
       @Override
       public String execute(Jedis connection) {
         return connection.echo(string);
       }
-    }.run(null);
+    }.run(string);
   }
 
   @Override

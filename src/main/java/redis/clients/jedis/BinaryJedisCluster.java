@@ -999,12 +999,13 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
 
   @Override
   public byte[] echo(final byte[] arg) {
+    // note that it'll be run from arbitary node
     return new JedisClusterCommand<byte[]>(connectionHandler, timeout, maxRedirections) {
       @Override
       public byte[] execute(Jedis connection) {
         return connection.echo(arg);
       }
-    }.runBinary(null);
+    }.runBinary(arg);
   }
 
   @Override

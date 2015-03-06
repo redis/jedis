@@ -1135,6 +1135,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(key);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String ping() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1145,6 +1149,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String quit() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1155,6 +1163,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String flushDB() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1165,6 +1177,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public Long dbSize() {
     return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
@@ -1175,6 +1191,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String select(final int index) {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1185,6 +1205,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String flushAll() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1195,6 +1219,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String auth(final String password) {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1205,6 +1233,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String save() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1215,6 +1247,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String bgsave() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1225,6 +1261,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String bgrewriteaof() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1235,6 +1275,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public Long lastsave() {
     return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
@@ -1245,6 +1289,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String shutdown() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1255,6 +1303,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String info() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1265,6 +1317,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String info(final String section) {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1275,6 +1331,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String slaveof(final String host, final int port) {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1285,6 +1345,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String slaveofNoOne() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1295,6 +1359,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public Long getDB() {
     return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
@@ -1305,6 +1373,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String debug(final DebugParams params) {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1315,6 +1387,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(null);
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public String configResetStat() {
     return new JedisClusterCommand<String>(connectionHandler, timeout, maxRedirections) {
@@ -1329,6 +1405,10 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     return connectionHandler.getNodes();
   }
 
+  /**
+   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
+   */
+  @Deprecated
   @Override
   public Long waitReplicas(int replicas, long timeout) {
     // TODO Auto-generated method stub
@@ -1392,7 +1472,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override
@@ -1402,7 +1482,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<String> execute(Jedis connection) {
         return connection.sscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override
@@ -1412,7 +1492,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
       }
-    }.run(null);
+    }.run(key);
   }
 
   @Override

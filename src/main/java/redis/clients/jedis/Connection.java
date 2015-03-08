@@ -230,7 +230,7 @@ public class Connection implements Closeable {
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
     flush();
-    return (List<Long>) Protocol.read(inputStream);
+    return (List<Long>) readProtocolWithCheckingBroken();
   }
 
   public Object getOne() {

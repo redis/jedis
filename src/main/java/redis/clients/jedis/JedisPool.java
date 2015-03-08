@@ -88,6 +88,10 @@ public class JedisPool extends Pool<Jedis> {
     return jedis;
   }
 
+  /**
+   * Deprecated, this method will be removed. returnResource method must be used for return all resources(broken or not)
+   */
+  @Deprecated
   public void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);

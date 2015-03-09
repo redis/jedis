@@ -163,7 +163,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String quit() {
     checkIsInMulti();
     client.quit();
-    return client.getStatusCodeReply();
+    String quitReturn = client.getStatusCodeReply();
+    client.disconnect();
+    return quitReturn;
   }
 
   /**

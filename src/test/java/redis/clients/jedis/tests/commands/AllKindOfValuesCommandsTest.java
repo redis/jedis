@@ -210,6 +210,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void renameOldAndNewAreTheSame() {
+    jedis.set("foo", "bar");
+    jedis.rename("foo", "foo");
+
+    // Binary
+    jedis.set(bfoo, bbar);
+    jedis.rename(bfoo, bfoo);
+  }
+
+  @Test
   public void renamenx() {
     jedis.set("foo", "bar");
     long status = jedis.renamenx("foo", "bar");

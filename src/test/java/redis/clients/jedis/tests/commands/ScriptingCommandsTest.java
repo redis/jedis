@@ -4,7 +4,10 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
@@ -194,6 +197,27 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     assertEquals(2, results.size());
     assertNull(results.get(0));
     assertNull(results.get(1));
+  }
+
+  @Test
+  public void scriptExistsWithBrokenConnection() {
+    Jedis deadClient = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
+    deadClient.auth("foobared");
+
+    deadClient.clientSetname("DEAD");
+
+    ClientKillerUtil.killClient(deadClient, "DEAD");
+
+    // sure, script doesn't exist, but it's just for checking connection
+    try {
+      deadClient.scriptExists("abcdefg");
+    } catch (JedisConnectionException e) {
+      // ignore it
+    }
+
+    assertEquals(true, deadClient.getClient().isBroken());
+
+    deadClient.close();
   }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {

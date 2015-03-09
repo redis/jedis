@@ -13,6 +13,7 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
+import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.util.Hashing;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Sharded;
@@ -53,15 +54,7 @@ public class ShardedJedisTest extends Assert {
     Jedis deadClient = it.next();
     deadClient.clientSetname("DEAD");
 
-    for (String clientInfo : deadClient.clientList().split("\n")) {
-      if (clientInfo.contains("DEAD")) {
-        // Ugly, but cmon, it's a test.
-        String[] hostAndPort = clientInfo.split(" ")[1].split("=")[1].split(":");
-        // It would be better if we kill the client by Id as it's safer but jedis doesn't implement
-        // the command yet.
-        deadClient.clientKill(hostAndPort[0] + ":" + hostAndPort[1]);
-      }
-    }
+    ClientKillerUtil.killClient(deadClient, "DEAD");
 
     assertEquals(true, deadClient.isConnected());
     assertEquals(false, deadClient.getClient().getSocket().isClosed());

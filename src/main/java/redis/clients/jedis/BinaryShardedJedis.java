@@ -73,6 +73,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.expire(key, seconds);
   }
 
+  public Long pexpire(byte[] key, final long milliseconds) {
+    Jedis j = getShard(key);
+    return j.pexpire(key, milliseconds);
+  }
+
+  @Deprecated
   public Long pexpire(String key, final long milliseconds) {
     Jedis j = getShard(key);
     return j.pexpire(key, milliseconds);

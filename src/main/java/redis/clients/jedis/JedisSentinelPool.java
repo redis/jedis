@@ -13,7 +13,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.Pool;
 
-public class JedisSentinelPool extends Pool<Jedis> {
+public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected GenericObjectPoolConfig poolConfig;
 

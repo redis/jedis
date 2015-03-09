@@ -9,11 +9,10 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
-import redis.clients.util.Pool;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
-  protected Pool<ShardedJedis> dataSource = null;
+  protected ShardedJedisPool dataSource = null;
 
   public ShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
@@ -631,7 +630,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     }
   }
 
-  public void setDataSource(Pool<ShardedJedis> shardedJedisPool) {
+  public void setDataSource(ShardedJedisPool shardedJedisPool) {
     this.dataSource = shardedJedisPool;
   }
 

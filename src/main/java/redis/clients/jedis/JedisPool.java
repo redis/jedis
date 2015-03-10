@@ -93,7 +93,7 @@ public class JedisPool extends JedisPoolAbstract {
     }
   }
 
-   protected void returnResource(final Jedis resource) {
+  protected void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
         resource.resetState();

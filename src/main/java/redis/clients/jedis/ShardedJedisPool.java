@@ -40,7 +40,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
   /**
    * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   *             using @see {@link redis.clients.jedis.ShardedJedis#close()}
    */
   @Override
   public void returnBrokenResource(final ShardedJedis resource) {
@@ -51,7 +51,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
   /**
    * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   *             using @see {@link redis.clients.jedis.ShardedJedis#close()}
    */
   @Override
   public void returnResource(final ShardedJedis resource) {

@@ -194,12 +194,20 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
   }
 
+  /**
+   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
+   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   */
   public void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
+  /**
+   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
+   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   */
   public void returnResource(final Jedis resource) {
     if (resource != null) {
       resource.resetState();

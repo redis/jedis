@@ -39,14 +39,14 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
   }
 
   @Override
-  public void returnBrokenResource(final ShardedJedis resource) {
+  protected void returnBrokenResource(final ShardedJedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
   @Override
-  public void returnResource(final ShardedJedis resource) {
+  protected void returnResource(final ShardedJedis resource) {
     if (resource != null) {
       resource.resetState();
       returnResourceObject(resource);

@@ -1247,6 +1247,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryBulkReply();
   }
 
+  public Set<byte[]> spop(final byte[] key, final long count) {
+    checkIsInMulti();
+    client.spop(key, count);
+    final List<byte[]> members = client.getBinaryMultiBulkReply();
+    return new HashSet<byte[]>(members);
+  }
+
   /**
    * Move the specified member from the set at srckey to the set at dstkey. This operation is
    * atomic, in every given moment the element will appear to be in the source or destination set

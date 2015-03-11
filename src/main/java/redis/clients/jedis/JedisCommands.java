@@ -112,6 +112,8 @@ public interface JedisCommands {
 
   String spop(String key);
 
+  Set<String> spop(String key, long count);
+
   Long scard(String key);
 
   Boolean sismember(String key, String member);

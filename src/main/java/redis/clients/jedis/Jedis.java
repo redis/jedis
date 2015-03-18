@@ -3339,4 +3339,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return brpop(key, String.valueOf(timeout));
   }
 
+  // ============ Redis Geo ====================
+  public long geoadd(final String key, final double latitude, final double longitude, final String member ) {
+      checkIsInMulti();
+      client.geoadd(key, latitude, longitude, member) ;
+      return client.getIntegerReply();
+  }
+
+  public List<Object> georadius(final String key,  final double latitude,  final double longitude, int distance,
+                          Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
+      checkIsInMulti();
+      client.georadius(key, latitude, longitude, distance, unit, order) ;
+      return client.getObjectMultiBulkReply() ;
+  }
+
+  public List<Object> georadiusbymember(final String key,  final String member, int distance,
+                                  Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
+      checkIsInMulti();
+      client.georadiusbymember(key, member, distance, unit, order) ;
+      return client.getObjectMultiBulkReply() ;
+  }
 }

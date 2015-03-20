@@ -46,6 +46,8 @@ public class GeoParams {
 
   // georadius geoset latitude longitude radius units [withdistance] [withcoordinates] [withhash] [withgeojson] [withgeojsoncollection] [noproperties] [asc|desc]
   public static class GeoRadiusParams extends GeoParams {
+      protected GeoRadiusParams() {}
+
       public GeoRadiusParams(double latitude, double longitude, int distance, Protocol.Unit unit) {
           params.add(toByteArray(latitude));
           params.add(toByteArray(longitude));
@@ -83,6 +85,11 @@ public class GeoParams {
           return this;
       }
 
+      public GeoRadiusParams noproperties() {
+          params.add(SafeEncoder.encode(NO_PROPERTIES)) ;
+          return this ;
+      }
+
       public GeoRadiusParams ascending() {
           params.add(SafeEncoder.encode(ASC));
           return this;
@@ -96,50 +103,58 @@ public class GeoParams {
 
    // georadiusbymember geoset member radius units [withdistance] [withcoordinates] [withhash] [withgeojson] [withgeojsoncollection] [noproperties] [asc|desc]
    //
-   public static class GeoRadiusByMemeberParams extends GeoParams {
+   public static class GeoRadiusByMemeberParams extends GeoRadiusParams {
        public GeoRadiusByMemeberParams(String member, int distance, Protocol.Unit unit ) {
            params.add(SafeEncoder.encode(member));
            params.add(toByteArray(distance));
            params.add(SafeEncoder.encode(unit.name().toLowerCase()));
        }
 
+       @Override
        public GeoRadiusByMemeberParams withdistance() {
-           params.add(SafeEncoder.encode(WITH_DISTANCE));
+           super.withdistance();
            return this;
        }
 
+       @Override
        public GeoRadiusByMemeberParams withgeojson() {
-           params.add(SafeEncoder.encode(WITH_GEOJSON)) ;
+           super.withgeojson() ;
            return this ;
        }
 
+       @Override
        public GeoRadiusByMemeberParams withgeojsoncollection() {
-           params.add(SafeEncoder.encode(WITH_GEOJSON_COLLECTION)) ;
+           super.withgeojsoncollection() ;
            return this ;
        }
 
+       @Override
        public GeoRadiusByMemeberParams withcoordinates() {
-           params.add(SafeEncoder.encode(WITH_COORDINATE)) ;
+           super.withcoordinates() ;
            return this ;
        }
 
+       @Override
        public GeoRadiusByMemeberParams noproperties() {
-           params.add(SafeEncoder.encode(NO_PROPERTIES)) ;
+           super.noproperties() ;
            return this ;
        }
 
+       @Override
        public GeoRadiusByMemeberParams sort(Protocol.Sort sort) {
-           params.add(SafeEncoder.encode(sort.name().toLowerCase()));
+           super.sort(sort );
            return this;
        }
 
+       @Override
        public GeoRadiusByMemeberParams ascending() {
-           params.add(SafeEncoder.encode(ASC));
+           super.ascending();
            return this;
        }
 
+       @Override
        public GeoRadiusByMemeberParams descending() {
-           params.add(SafeEncoder.encode(DESC));
+           super.descending() ;
            return this;
        }
   }

@@ -1,10 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
+import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.GeoParams;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,6 +13,14 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
 public class GeoCommandsTest extends JedisCommandTestBase {
+
+    @Before
+   public void setUp() throws Exception {
+        jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+        jedis.connect();
+        jedis.configSet("timeout", "300");
+        jedis.flushAll();
+   }
 
   @Test
   public void geoadd() {

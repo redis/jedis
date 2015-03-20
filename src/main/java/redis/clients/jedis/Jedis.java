@@ -3341,22 +3341,37 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   // ============ Redis Geo ====================
   public long geoadd(final String key, final double latitude, final double longitude, final String member ) {
+      GeoParams.GeoAddParams params = new GeoParams.GeoAddParams(latitude, longitude, member ) ;
+      return geoadd(key, params ) ;
+  }
+
+  public long geoadd(final String key, GeoParams.GeoAddParams params) {
       checkIsInMulti();
-      client.geoadd(key, latitude, longitude, member) ;
+      client.geoadd(key, params ) ;
       return client.getIntegerReply();
   }
 
   public List<Object> georadius(final String key,  final double latitude,  final double longitude, int distance,
-                          Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
+                                Protocol.Unit unit, Protocol.Sort sort )  {
+      GeoParams.GeoRadiusParams params = new GeoParams.GeoRadiusParams(latitude, longitude, distance, unit).withdistance().sort(sort) ;
+      return georadius(key, params) ;
+  }
+
+  public List<Object> georadius(final String key, GeoParams.GeoRadiusParams params )  {
       checkIsInMulti();
-      client.georadius(key, latitude, longitude, distance, unit, order) ;
+      client.georadius(key, params) ;
       return client.getObjectMultiBulkReply() ;
   }
 
   public List<Object> georadiusbymember(final String key,  final String member, int distance,
-                                  Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
+                                          Protocol.Unit unit, Protocol.Sort sort )  {
+        GeoParams.GeoRadiusByMemeberParams params = new GeoParams.GeoRadiusByMemeberParams(member, distance, unit).withdistance().sort(sort) ;
+       return georadiusbymember(key,params) ;
+  }
+
+  public List<Object> georadiusbymember(final String key, GeoParams.GeoRadiusByMemeberParams param)  {
       checkIsInMulti();
-      client.georadiusbymember(key, member, distance, unit, order) ;
+      client.georadiusbymember(key, param) ;
       return client.getObjectMultiBulkReply() ;
   }
 }

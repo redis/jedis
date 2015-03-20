@@ -1266,30 +1266,29 @@ public class BinaryClient extends Connection {
   private final static String WITH_GEOJSON = "withgeojson" ;
   private final static String WITH_GEOJSON_COLLECTION = "withgeojsoncollection" ;
 
-    // geoadd nyc 40.747533 -73.9454966 "lic market"
-  // 1 if member is new or 0 if member is updated.
-  public void geoadd(final byte[] key, final double latitude,  final double longitude, final byte[] member) {
-      sendCommand(GEOADD, key, toByteArray(latitude), toByteArray(longitude), member);
+  public void geoadd(final byte[] key, GeoParams params ) {
+      final List<byte[]> args = new ArrayList<byte[]>();
+      args.add(key);
+      args.addAll(params.getParams());
+      sendCommand(GEOADD, args.toArray(new byte[args.size()][]));
   }
 
   // return nested multi-bulk reply with each member in a different top-level multi-bulk reply
   // georadius nyc 40.7598464 -73.9798091 3 km withdistance descending
-  public void georadius(final byte[] key,  final double latitude,  final double longitude, int distance,
-                        Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
-      sendCommand(GEORADIUS, key, toByteArray(latitude), toByteArray(longitude),
-              toByteArray(distance), SafeEncoder.encode(unit.name().toLowerCase()),
-              SafeEncoder.encode(WITH_DISTANCE.toLowerCase()), SafeEncoder.encode(order.name().toLowerCase()));
+  public void georadius(final byte[] key,  GeoParams.GeoRadiusParams params )  {
+      final List<byte[]> args = new ArrayList<byte[]>();
+      args.add(key);
+      args.addAll(params.getParams());
+      sendCommand(GEORADIUS, args.toArray(new byte[args.size()][]));
   }
 
   // georadiusbymember is exactly the same as georadius
   // georadiusbymember nyc "wtc one" 7 km withdistance desc
   // Search around existing member with distances returned
-  public void georadiusbymember (final byte[] key,  final byte[] member, int distance,
-                          Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
-        sendCommand(GEORADIUSBYMEMBER, key, member,
-                toByteArray(distance), SafeEncoder.encode(unit.name().toLowerCase()),
-                SafeEncoder.encode(WITH_DISTANCE.toLowerCase()),
-                SafeEncoder.encode(order.name().toLowerCase())) ;
+  public void georadiusbymember (final byte[] key,  GeoParams.GeoRadiusByMemeberParams params )  {
+      final List<byte[]> args = new ArrayList<byte[]>();
+      args.add(key);
+      args.addAll(params.getParams());
+      sendCommand(GEORADIUSBYMEMBER, args.toArray(new byte[args.size()][]));
   }
-
 }

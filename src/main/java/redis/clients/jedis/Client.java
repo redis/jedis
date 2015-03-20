@@ -1012,19 +1012,16 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
-    // ============ Redis Geo ====================
-  public void geoadd(final String key, final double latitude, final double longitude, final String member) {
-      geoadd(SafeEncoder.encode(key), latitude, longitude, SafeEncoder.encode(member));
+  // ============ Redis Geo ====================
+  public void geoadd(final String key, GeoParams params ) {
+      geoadd(SafeEncoder.encode(key), params);
   }
 
-  public void georadius(final String key,  final double latitude,  final double longitude, int distance,
-                          Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
-      georadius(SafeEncoder.encode(key), latitude, longitude, distance, unit, order ) ;
+  public void georadius(final String key,  GeoParams.GeoRadiusParams params )  {
+      georadius(SafeEncoder.encode(key), params ) ;
   }
 
-  public void georadiusbymember (final String key,  final String member, int distance,
-                                   Protocol.GEOUnit unit, Protocol.GEOOrder order )  {
-      georadiusbymember(SafeEncoder.encode(key), SafeEncoder.encode(member), distance, unit, order) ;
+  public void georadiusbymember (final String key,  GeoParams.GeoRadiusByMemeberParams param )  {
+      georadiusbymember(SafeEncoder.encode(key), param) ;
   }
-
 }

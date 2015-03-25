@@ -13,7 +13,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.Pool;
 
-public class JedisSentinelPool extends Pool<Jedis> {
+public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected GenericObjectPoolConfig poolConfig;
 
@@ -194,13 +194,13 @@ public class JedisSentinelPool extends Pool<Jedis> {
     }
   }
 
-  public void returnBrokenResource(final Jedis resource) {
+  protected void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  public void returnResource(final Jedis resource) {
+  protected void returnResource(final Jedis resource) {
     if (resource != null) {
       resource.resetState();
       returnResourceObject(resource);

@@ -1,19 +1,25 @@
 package redis.clients.jedis;
 
+import java.net.URI;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
-
-import java.net.URI;
-import java.util.*;
-import java.util.Map.Entry;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
 
-  protected Pool<Jedis> dataSource = null;
+  protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
@@ -3169,7 +3175,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
-  public void setDataSource(Pool<Jedis> jedisPool) {
+  public void setDataSource(JedisPoolAbstract jedisPool) {
     this.dataSource = jedisPool;
   }
 

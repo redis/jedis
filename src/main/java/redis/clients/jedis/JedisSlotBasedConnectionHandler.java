@@ -12,8 +12,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig) {
-    super(nodes, poolConfig);
+      final GenericObjectPoolConfig poolConfig, int timeout) {
+    super(nodes, poolConfig, timeout);
   }
 
   public Jedis getConnection() {

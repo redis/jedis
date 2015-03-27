@@ -143,12 +143,11 @@ public class JedisTest extends JedisCommandTestBase {
     bj.connect();
     bj.close();
   }
-  
+
   @Test
   public void checkDisconnectOnQuit() {
     jedis.quit();
     assertFalse(jedis.getClient().isConnected());
   }
-  
-  
+
 }

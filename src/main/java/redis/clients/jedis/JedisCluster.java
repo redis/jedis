@@ -588,7 +588,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
   @Override
   public Set<String> spop(final String key, final long count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, timeout, maxRedirections) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxRedirections) {
       @Override
       public Set<String> execute(Jedis connection) {
         return connection.spop(key, count);

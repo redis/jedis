@@ -1098,6 +1098,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  public Set<String> spop(final String key, final long count) {
+    checkIsInMulti();
+    client.spop(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new HashSet<String>(members);
+  }
+
   /**
    * Move the specifided member from the set at srckey to the set at dstkey. This operation is
    * atomic, in every given moment the element will appear to be in the source or destination set

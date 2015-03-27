@@ -121,6 +121,8 @@ public interface BinaryJedisCommands {
 
   byte[] spop(byte[] key);
 
+  Set<byte[]> spop(byte[] key, long count);
+
   Long scard(byte[] key);
 
   Boolean sismember(byte[] key, byte[] member);

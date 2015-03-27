@@ -271,7 +271,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
             try {
               Thread.sleep(subscribeRetryWaitTimeMillis);
             } catch (InterruptedException e1) {
-              e1.printStackTrace();
               log.log(Level.SEVERE, "Thread sleep InteruptedException", e1);
             }
           } else {

@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -272,7 +271,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
               Thread.sleep(subscribeRetryWaitTimeMillis);
             } catch (InterruptedException e1) {
               e1.printStackTrace();
-              log.log(Level.SEVERE, "Thread sleep InteruptedException", e1);
             }
           } else {
             log.fine("Unsubscribing from Sentinel at " + host + ":" + port);
@@ -288,7 +286,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         // This isn't good, the Jedis object is not thread safe
         j.disconnect();
       } catch (Exception e) {
-        log.log(Level.SEVERE, "Caught exception while shutting down:", e);
+        log.severe("Caught exception while shutting down: " + e.getMessage());
       }
     }
   }

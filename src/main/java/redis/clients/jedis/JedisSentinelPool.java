@@ -26,9 +26,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
 
   protected Logger log = Logger.getLogger(getClass().getName());
-  
-  private volatile JedisFactory factory;
-  private volatile HostAndPort currentHostMaster;
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig) {
@@ -72,6 +69,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     HostAndPort master = initSentinels(sentinels, masterName);
     initPool(master);
   }
+
+  private volatile JedisFactory factory;
+  private volatile HostAndPort currentHostMaster;
 
   public void destroy() {
     for (MasterListener m : masterListeners) {

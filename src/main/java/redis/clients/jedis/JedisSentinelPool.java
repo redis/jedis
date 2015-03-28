@@ -5,13 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.Pool;
 
 public class JedisSentinelPool extends JedisPoolAbstract {
 
@@ -26,6 +26,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
 
   protected Logger log = Logger.getLogger(getClass().getName());
+  private volatile JedisFactory factory;
+  private volatile HostAndPort currentHostMaster;
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig) {
@@ -70,8 +72,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     initPool(master);
   }
 
-  private volatile JedisFactory factory;
-  private volatile HostAndPort currentHostMaster;
 
   public void destroy() {
     for (MasterListener m : masterListeners) {
@@ -271,7 +271,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
             try {
               Thread.sleep(subscribeRetryWaitTimeMillis);
             } catch (InterruptedException e1) {
-              e1.printStackTrace();
+              log.log(Level.SEVERE, "InterruptedException of Thread sleep", e1);
             }
           } else {
             log.fine("Unsubscribing from Sentinel at " + host + ":" + port);
@@ -287,7 +287,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         // This isn't good, the Jedis object is not thread safe
         j.disconnect();
       } catch (Exception e) {
-        log.severe("Caught exception while shutting down: " + e.getMessage());
+        log.log(Level.SEVERE, "Caught exception while shutting down: ", e);
       }
     }
   }

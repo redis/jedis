@@ -125,6 +125,8 @@ public interface Commands {
 
   public void spop(final String key);
 
+  public void spop(final String key, final long count);
+
   public void smove(final String srckey, final String dstkey, final String member);
 
   public void scard(final String key);

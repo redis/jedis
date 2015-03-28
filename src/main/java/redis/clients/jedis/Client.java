@@ -259,6 +259,10 @@ public class Client extends BinaryClient implements Commands {
     spop(SafeEncoder.encode(key));
   }
 
+  public void spop(final String key, final long count) {
+    spop(SafeEncoder.encode(key), count);
+  }
+
   public void smove(final String srckey, final String dstkey, final String member) {
     smove(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey), SafeEncoder.encode(member));
   }

@@ -110,7 +110,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
         jedis2 = null;
       }
     } finally {
-    	jedis2.close();
+      jedis2.close();
 
       pool.destroy();
     }

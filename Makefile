@@ -296,7 +296,7 @@ release:
 	make start
 	mvn release:clean
 	mvn release:prepare
-	mvn release:perform
+	mvn release:perform -DskipTests
 	make stop
 
 travis-install:

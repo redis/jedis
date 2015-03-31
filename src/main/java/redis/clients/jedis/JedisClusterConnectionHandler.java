@@ -14,6 +14,8 @@ public abstract class JedisClusterConnectionHandler {
 
   abstract Jedis getConnection();
 
+  private int timeout;
+
   public void returnConnection(Jedis connection) {
     cache.getNode(getNodeKey(connection.getClient())).returnResource(connection);
   }
@@ -30,8 +32,8 @@ public abstract class JedisClusterConnectionHandler {
   }
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig) {
-    this.cache = new JedisClusterInfoCache(poolConfig);
+      final GenericObjectPoolConfig poolConfig, int timeout) {
+    this.cache = new JedisClusterInfoCache(poolConfig, timeout);
     initializeSlotsCache(nodes, poolConfig);
   }
 

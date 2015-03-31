@@ -212,21 +212,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void renameOldAndNewAreTheSame() {
-    try {
-      jedis.set("foo", "bar");
-      jedis.rename("foo", "foo");
-      fail("JedisDataException expected");
-    } catch (final JedisDataException e) {
-    }
+    jedis.set("foo", "bar");
+    jedis.rename("foo", "foo");
 
     // Binary
-    try {
-      jedis.set(bfoo, bbar);
-      jedis.rename(bfoo, bfoo);
-      fail("JedisDataException expected");
-    } catch (final JedisDataException e) {
-    }
-
+    jedis.set(bfoo, bbar);
+    jedis.rename(bfoo, bfoo);
   }
 
   @Test
@@ -518,6 +509,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.pexpire("foo", 20000);
     pttl = jedis.pttl("foo");
     assertTrue(pttl >= 0 && pttl <= 20000);
+  }
+
+  @Test
+  public void psetex() {
+    long pttl = jedis.pttl("foo");
+    assertEquals(-2, pttl);
+
+    String status = jedis.psetex("foo", 200000000000L, "bar");
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+
+    pttl = jedis.pttl("foo");
+    assertTrue(pttl > 100000000000L);
   }
 
   @Test

@@ -24,7 +24,11 @@ public interface JedisCommands {
 
   Long expire(String key, int seconds);
 
+  Long pexpire(String key, long milliseconds);
+
   Long expireAt(String key, long unixTime);
+
+  Long pexpireAt(String key, long millisecondsTimestamp);
 
   Long ttl(String key);
 
@@ -109,6 +113,8 @@ public interface JedisCommands {
   Long srem(String key, String... member);
 
   String spop(String key);
+
+  Set<String> spop(String key, long count);
 
   Long scard(String key);
 

@@ -26,7 +26,11 @@ public interface BinaryRedisPipeline {
 
   Response<Long> expire(byte[] key, int seconds);
 
+  Response<Long> pexpire(byte[] key, long milliseconds);
+
   Response<Long> expireAt(byte[] key, long unixTime);
+
+  Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp);
 
   Response<byte[]> get(byte[] key);
 
@@ -119,6 +123,8 @@ public interface BinaryRedisPipeline {
   Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters);
 
   Response<byte[]> spop(byte[] key);
+
+  Response<Set<byte[]>> spop(byte[] key, long count);
 
   Response<byte[]> srandmember(byte[] key);
 

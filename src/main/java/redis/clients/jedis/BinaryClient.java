@@ -344,6 +344,10 @@ public class BinaryClient extends Connection {
     sendCommand(SPOP, key);
   }
 
+  public void spop(final byte[] key, final long count) {
+    sendCommand(SPOP, key, toByteArray(count));
+  }
+
   public void smove(final byte[] srckey, final byte[] dstkey, final byte[] member) {
     sendCommand(SMOVE, srckey, dstkey, member);
   }
@@ -1088,7 +1092,7 @@ public class BinaryClient extends Connection {
     sendCommand(PTTL, key);
   }
 
-  public void psetex(final byte[] key, final int milliseconds, final byte[] value) {
+  public void psetex(final byte[] key, final long milliseconds, final byte[] value) {
     sendCommand(PSETEX, key, toByteArray(milliseconds), value);
   }
 

@@ -596,9 +596,19 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.STRING);
   }
 
+  public Response<Set<String>> spop(String key, long count) {
+    getClient(key).spop(key,count);
+    return getResponse(BuilderFactory.STRING_SET);
+  }
+
   public Response<byte[]> spop(byte[] key) {
     getClient(key).spop(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  public Response<Set<byte[]>> spop(byte[] key, long count) {
+    getClient(key).spop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   public Response<String> srandmember(String key) {
@@ -1201,12 +1211,12 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.DOUBLE);
   }
 
-  public Response<String> psetex(String key, int milliseconds, String value) {
+  public Response<String> psetex(String key, long milliseconds, String value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> psetex(byte[] key, int milliseconds, byte[] value) {
+  public Response<String> psetex(byte[] key, long milliseconds, byte[] value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);
   }

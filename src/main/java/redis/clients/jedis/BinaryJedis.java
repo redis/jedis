@@ -160,7 +160,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String quit() {
     checkIsInMulti();
     client.quit();
-    return client.getStatusCodeReply();
+    String quitReturn = client.getStatusCodeReply();
+    client.disconnect();
+    return quitReturn;
   }
 
   /**
@@ -330,6 +332,37 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Long expire(final byte[] key, final int seconds) {
     checkIsInMulti();
     client.expire(key, seconds);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * @deprecated use BinaryJedis.pexpire(byte[], long) or Jedis.pexpire(String,long) Set a timeout
+   *             on the specified key. After the timeout the key will be automatically deleted by
+   *             the server. A key with an associated timeout is said to be volatile in Redis
+   *             terminology.
+   *             <p>
+   *             Voltile keys are stored on disk like the other keys, the timeout is persistent too
+   *             like all the other aspects of the dataset. Saving a dataset containing expires and
+   *             stopping the server does not stop the flow of time as Redis stores on disk the time
+   *             when the key will no longer be available as Unix time, and not the remaining
+   *             milliseconds.
+   *             <p>
+   *             Since Redis 2.1.3 you can update the value of the timeout of a key already having
+   *             an expire set. It is also possible to undo the expire at all turning the key into a
+   *             normal key using the {@link #persist(byte[]) PERSIST} command.
+   *             <p>
+   *             Time complexity: O(1)
+   * @see <ahref="http://redis.io/commands/pexpire">PEXPIRE Command</a>
+   * @param key
+   * @param milliseconds
+   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+   *         the key already has an associated timeout (this may happen only in Redis versions <
+   *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
+   */
+  @Deprecated
+  public Long pexpire(String key, final long milliseconds) {
+    checkIsInMulti();
+    client.pexpire(key, milliseconds);
     return client.getIntegerReply();
   }
 
@@ -1211,6 +1244,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMulti();
     client.spop(key);
     return client.getBinaryBulkReply();
+  }
+
+  public Set<byte[]> spop(final byte[] key, final long count) {
+    checkIsInMulti();
+    client.spop(key, count);
+    final List<byte[]> members = client.getBinaryMultiBulkReply();
+    return new HashSet<byte[]>(members);
   }
 
   /**
@@ -2522,7 +2562,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed
-   * information about the Redis Append Only File check the <a href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
+   * information about the Redis Append Only File check the <a
+   * href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
    * <p>
    * BGREWRITEAOF rewrites the Append Only File in background when it gets too big. The Redis Append
    * Only File is a Journal, so every operation modifying the dataset is logged in the Append Only
@@ -3057,7 +3098,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
-  public String psetex(final byte[] key, final int milliseconds, final byte[] value) {
+  public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
     return client.getStatusCodeReply();

@@ -14,14 +14,13 @@ import java.util.Set;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.params.set.SetParams;
-import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
 
-  protected Pool<Jedis> dataSource = null;
+  protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
@@ -1096,6 +1095,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.spop(key);
     return client.getBulkReply();
+  }
+
+  public Set<String> spop(final String key, final long count) {
+    checkIsInMulti();
+    client.spop(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new HashSet<String>(members);
   }
 
   /**
@@ -2906,7 +2915,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
-  public String psetex(final String key, final int milliseconds, final String value) {
+  public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
     return client.getStatusCodeReply();
@@ -3162,7 +3171,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
-  public void setDataSource(Pool<Jedis> jedisPool) {
+  public void setDataSource(JedisPoolAbstract jedisPool) {
     this.dataSource = jedisPool;
   }
 

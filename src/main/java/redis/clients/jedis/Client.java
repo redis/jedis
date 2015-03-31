@@ -258,6 +258,10 @@ public class Client extends BinaryClient implements Commands {
     spop(SafeEncoder.encode(key));
   }
 
+  public void spop(final String key, final long count) {
+    spop(SafeEncoder.encode(key), count);
+  }
+
   public void smove(final String srckey, final String dstkey, final String member) {
     smove(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey), SafeEncoder.encode(member));
   }
@@ -788,7 +792,7 @@ public class Client extends BinaryClient implements Commands {
     incrByFloat(SafeEncoder.encode(key), increment);
   }
 
-  public void psetex(final String key, final int milliseconds, final String value) {
+  public void psetex(final String key, final long milliseconds, final String value) {
     psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
   }
 

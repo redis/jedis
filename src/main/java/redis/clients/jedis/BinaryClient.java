@@ -102,7 +102,7 @@ public class BinaryClient extends Connection {
   }
 
   public void set(final byte[] key, final byte[] value, final SetParams params) {
-    sendCommand(Command.SET, params.getByteParams());
+    sendCommand(Command.SET, params.getByteParams(key, value));
   }
 
   public void get(final byte[] key) {

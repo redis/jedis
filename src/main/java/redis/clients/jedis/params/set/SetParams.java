@@ -56,8 +56,11 @@ public class SetParams extends Params {
     return this;
   }
   
-  public byte[][] getByteParams() {
+  public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    for(byte[] arg : args) {
+      byteParams.add(arg);
+    }
     
     if(contains(NX)) {
       byteParams.add(SafeEncoder.encode(NX));

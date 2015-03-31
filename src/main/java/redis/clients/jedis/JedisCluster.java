@@ -108,7 +108,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
   @Override
   public Long persist(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, timeout, maxRedirections) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
         return connection.persist(key);

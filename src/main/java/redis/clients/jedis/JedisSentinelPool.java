@@ -12,6 +12,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {
 
@@ -189,7 +190,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
         // connected to the correct master
         return jedis;
       } else {
-        returnBrokenResource(jedis);
+        jedis.close();
       }
     }
   }

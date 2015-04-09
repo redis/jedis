@@ -72,6 +72,8 @@ public abstract class JedisClusterConnectionHandler {
         jedis = jp.getResource();
         cache.discoverClusterSlots(jedis);
         break;
+      } catch (JedisConnectionException e) {
+        // try next nodes
       } finally {
         if (jedis != null) {
           jedis.close();

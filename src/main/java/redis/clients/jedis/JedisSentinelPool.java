@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -26,6 +27,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
   protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
 
   protected Logger log = Logger.getLogger(getClass().getName());
+  
+  private volatile JedisFactory factory;
+  private volatile HostAndPort currentHostMaster;
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig) {
@@ -69,9 +73,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
     HostAndPort master = initSentinels(sentinels, masterName);
     initPool(master);
   }
-
-  private volatile JedisFactory factory;
-  private volatile HostAndPort currentHostMaster;
 
   public void destroy() {
     for (MasterListener m : masterListeners) {
@@ -189,7 +190,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
         // connected to the correct master
         return jedis;
       } else {
-        returnBrokenResource(jedis);
+        jedis.close();
       }
     }
   }
@@ -295,7 +296,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
         // This isn't good, the Jedis object is not thread safe
         j.disconnect();
       } catch (Exception e) {
-        log.severe("Caught exception while shutting down: " + e.getMessage());
+        log.log(Level.SEVERE,"Caught exception while shutting down: ",e);
       }
     }
   }

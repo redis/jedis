@@ -169,6 +169,12 @@ public class Connection implements Closeable {
       } catch (IOException ex) {
         broken = true;
         throw new JedisConnectionException(ex);
+      } finally {
+        closeIOResourceQuietly(inputStream);
+        if (!socket.isClosed()) {
+          closeIOResourceQuietly(outputStream);
+          closeIOResourceQuietly(socket);
+        }
       }
     }
   }
@@ -271,5 +277,16 @@ public class Connection implements Closeable {
       }
     }
     return responses;
+  }
+
+  private void closeIOResourceQuietly(Closeable resource) {
+    // It's same thing as Apache Commons - IOUtils.closeQuietly()
+    if (resource != null) {
+      try {
+        resource.close();
+      } catch (IOException e) {
+        // pass
+      }
+    }
   }
 }

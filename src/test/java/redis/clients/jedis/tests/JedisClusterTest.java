@@ -283,8 +283,11 @@ public class JedisClusterTest extends Assert {
     int gamma_slot = JedisClusterCRC16.getSlot("gamma");
     node3.clusterSetSlotImporting(gamma_slot, JedisClusterTestUtil.getNodeId(node1.clusterNodes()));
     node1.clusterSetSlotMigrating(gamma_slot, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
-    jc.get("gamma");
-    
+    try {
+        jc.get("gamma");
+	} catch (JedisConnectionException jce) {
+		fail("Shouldn't throw this exception");
+	}
   }
 
   @Test

@@ -135,6 +135,7 @@
       </plugin>
 			<plugin>
 			  <artifactId>maven-jar-plugin</artifactId>
+			  <version>2.6</version>
 			  <configuration>
 			    <archive>  
 			      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

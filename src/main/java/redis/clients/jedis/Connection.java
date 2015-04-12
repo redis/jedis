@@ -11,6 +11,7 @@ import java.util.List;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.IOUtils;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -173,10 +174,10 @@ public class Connection implements Closeable {
         broken = true;
         throw new JedisConnectionException(ex);
       } finally {
-        closeIOResourceQuietly(inputStream);
+        IOUtils.closeQuietly(inputStream);
         if (!socket.isClosed()) {
-          closeIOResourceQuietly(outputStream);
-          closeIOResourceQuietly(socket);
+          IOUtils.closeQuietly(outputStream);
+          IOUtils.closeQuietly(socket);
         }
       }
     }
@@ -295,17 +296,6 @@ public class Connection implements Closeable {
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
-    }
-  }
-
-  private void closeIOResourceQuietly(Closeable resource) {
-    // It's same thing as Apache Commons - IOUtils.closeQuietly()
-    if (resource != null) {
-      try {
-        resource.close();
-      } catch (IOException e) {
-        // pass
-      }
     }
   }
 }

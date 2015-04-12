@@ -273,7 +273,7 @@ public class JedisClusterTest extends Assert {
     jc.set("51", "foo");
     assertEquals("foo", jc.get("51"));
   }
-  
+
   @Test
   public void testAvoidConnectionExceptionOnRenewSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -284,10 +284,10 @@ public class JedisClusterTest extends Assert {
     node3.clusterSetSlotImporting(gamma_slot, JedisClusterTestUtil.getNodeId(node1.clusterNodes()));
     node1.clusterSetSlotMigrating(gamma_slot, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
     try {
-        jc.get("gamma");
-	} catch (JedisConnectionException jce) {
-		fail("Shouldn't throw this exception");
-	}
+      jc.get("gamma");
+    } catch (JedisConnectionException jce) {
+      fail("Shouldn't throw this exception");
+    }
   }
 
   @Test

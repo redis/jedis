@@ -288,7 +288,7 @@ public class JedisClusterTest extends Assert {
     try {
       jc.get("gamma");
     } catch (JedisConnectionException jce) {
-      fail("Shouldn't throw this exception");
+      fail("renewCacheSlots shouldn't throw JCE");
     }
   }
 

@@ -275,14 +275,16 @@ public class JedisClusterTest extends Assert {
   }
 
   @Test
-  public void testAvoidConnectionExceptionOnRenewSlot() {
+  public void testAvoidConnectionExceptionOnRenewSlot() throws InterruptedException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisCluster jc = new JedisCluster(jedisClusterNode);
     jc.getClusterNodes().get("127.0.0.1:7380").close();
     int gamma_slot = JedisClusterCRC16.getSlot("gamma");
-    node3.clusterSetSlotImporting(gamma_slot, JedisClusterTestUtil.getNodeId(node1.clusterNodes()));
-    node1.clusterSetSlotMigrating(gamma_slot, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
+    node1.clusterDelSlots(gamma_slot);
+    node3.clusterDelSlots(gamma_slot);
+    node3.clusterAddSlots(gamma_slot);
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
     try {
       jc.get("gamma");
     } catch (JedisConnectionException jce) {

@@ -279,6 +279,7 @@ public class JedisClusterTest extends Assert {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisCluster jc = new JedisCluster(jedisClusterNode);
+    //We close node2 connection so we force renewCacheSlots to throw a JedisConnectionException
     jc.getClusterNodes().get("127.0.0.1:7380").close();
     int gamma_slot = JedisClusterCRC16.getSlot("gamma");
     node1.clusterDelSlots(gamma_slot);

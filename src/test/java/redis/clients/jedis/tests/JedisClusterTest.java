@@ -3,8 +3,11 @@ package redis.clients.jedis.tests;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -159,7 +162,6 @@ public class JedisClusterTest extends Assert {
    */
   @Test
   public void testMigrate() {
-    log.info("test migrate slot");
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(nodeInfo1);
     JedisCluster jc = new JedisCluster(jedisClusterNode);
@@ -273,6 +275,33 @@ public class JedisClusterTest extends Assert {
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
     jc.set("51", "foo");
     assertEquals("foo", jc.get("51"));
+  }
+
+  @Test
+  public void testAvoidConnectionExceptionOnRenewSlot() throws InterruptedException {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    JedisCluster jc = new JedisCluster(jedisClusterNode);
+    Map<String, JedisPool> nodesMap = jc.getClusterNodes();
+    Map<String, JedisPool> orderedMap = new TreeMap<String, JedisPool>(nodesMap);
+    nodesMap.clear();
+    nodesMap.putAll(orderedMap);
+    //We close first node connection so we ensure it's the same that renewCacheSlots uses
+    JedisPool pool = nodesMap.values().iterator().next();
+    if (pool.getResource().getClient().getPort() != 7380) {
+    	fail("It should get node2 per test expectations");
+    }
+    pool.close();
+    int gamma_slot = JedisClusterCRC16.getSlot("gamma");
+    node1.clusterDelSlots(gamma_slot);
+    node3.clusterDelSlots(gamma_slot);
+    node3.clusterAddSlots(gamma_slot);
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
+    try {
+      jc.get("gamma");
+    } catch (JedisConnectionException jce) {
+      fail("renewCacheSlots shouldn't throw JCE");
+    }
   }
 
   @Test

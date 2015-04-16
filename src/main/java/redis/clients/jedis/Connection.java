@@ -165,18 +165,18 @@ public class Connection implements Closeable {
   public void disconnect() {
     if (isConnected()) {
       try {
-        inputStream.close();
+        outputStream.close();
         if (!socket.isClosed()) {
-          outputStream.close();
+          inputStream.close();
           socket.close();
         }
       } catch (IOException ex) {
         broken = true;
         throw new JedisConnectionException(ex);
       } finally {
-        IOUtils.closeQuietly(inputStream);
+        IOUtils.closeQuietly(outputStream);
         if (!socket.isClosed()) {
-          IOUtils.closeQuietly(outputStream);
+          IOUtils.closeQuietly(inputStream);
           IOUtils.closeQuietly(socket);
         }
       }

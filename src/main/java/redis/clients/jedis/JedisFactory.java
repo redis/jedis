@@ -15,33 +15,32 @@ import redis.clients.util.JedisURIHelper;
  */
 class JedisFactory implements PooledObjectFactory<Jedis> {
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
-  private final int timeout;
+  private final int connectionTimeout;
+  private final int soTimeout;
   private final String password;
   private final int database;
   private final String clientName;
 
-  public JedisFactory(final String host, final int port, final int timeout, final String password,
-      final int database) {
-    this(host, port, timeout, password, database, null);
-  }
-
-  public JedisFactory(final String host, final int port, final int timeout, final String password,
-      final int database, final String clientName) {
+  public JedisFactory(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final String password, final int database, final String clientName) {
     this.hostAndPort.set(new HostAndPort(host, port));
-    this.timeout = timeout;
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
     this.password = password;
     this.database = database;
     this.clientName = clientName;
   }
 
-  public JedisFactory(final URI uri, final int timeout, final String clientName) {
+  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+      final String clientName) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
 
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
-    this.timeout = timeout;
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
     this.password = JedisURIHelper.getPassword(uri);
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
@@ -80,7 +79,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hostAndPort = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), this.timeout);
+    final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
+        soTimeout);
 
     jedis.connect();
     if (null != this.password) {

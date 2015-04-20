@@ -8,197 +8,203 @@ import java.util.Set;
  * @author guy
  */
 public interface RedisPipeline {
-    Response<Long> append(String key, String value);
+  Response<Long> append(String key, String value);
 
-    Response<List<String>> blpop(String arg);
+  Response<List<String>> blpop(String arg);
 
-    Response<List<String>> brpop(String arg);
+  Response<List<String>> brpop(String arg);
 
-    Response<Long> decr(String key);
+  Response<Long> decr(String key);
 
-    Response<Long> decrBy(String key, long integer);
+  Response<Long> decrBy(String key, long integer);
 
-    Response<Long> del(String key);
+  Response<Long> del(String key);
 
-    Response<String> echo(String string);
+  Response<String> echo(String string);
 
-    Response<Boolean> exists(String key);
+  Response<Boolean> exists(String key);
 
-    Response<Long> expire(String key, int seconds);
+  Response<Long> expire(String key, int seconds);
 
-    Response<Long> expireAt(String key, long unixTime);
+  Response<Long> pexpire(String key, long milliseconds);
 
-    Response<String> get(String key);
+  Response<Long> expireAt(String key, long unixTime);
 
-    Response<Boolean> getbit(String key, long offset);
+  Response<Long> pexpireAt(String key, long millisecondsTimestamp);
 
-    Response<String> getrange(String key, long startOffset, long endOffset);
+  Response<String> get(String key);
 
-    Response<String> getSet(String key, String value);
+  Response<Boolean> getbit(String key, long offset);
 
-    Response<Long> hdel(String key, String... field);
+  Response<String> getrange(String key, long startOffset, long endOffset);
 
-    Response<Boolean> hexists(String key, String field);
+  Response<String> getSet(String key, String value);
 
-    Response<String> hget(String key, String field);
+  Response<Long> hdel(String key, String... field);
 
-    Response<Map<String, String>> hgetAll(String key);
+  Response<Boolean> hexists(String key, String field);
 
-    Response<Long> hincrBy(String key, String field, long value);
+  Response<String> hget(String key, String field);
 
-    Response<Set<String>> hkeys(String key);
+  Response<Map<String, String>> hgetAll(String key);
 
-    Response<Long> hlen(String key);
+  Response<Long> hincrBy(String key, String field, long value);
 
-    Response<List<String>> hmget(String key, String... fields);
+  Response<Set<String>> hkeys(String key);
 
-    Response<String> hmset(String key, Map<String, String> hash);
+  Response<Long> hlen(String key);
 
-    Response<Long> hset(String key, String field, String value);
+  Response<List<String>> hmget(String key, String... fields);
 
-    Response<Long> hsetnx(String key, String field, String value);
+  Response<String> hmset(String key, Map<String, String> hash);
 
-    Response<List<String>> hvals(String key);
+  Response<Long> hset(String key, String field, String value);
 
-    Response<Long> incr(String key);
+  Response<Long> hsetnx(String key, String field, String value);
 
-    Response<Long> incrBy(String key, long integer);
+  Response<List<String>> hvals(String key);
 
-    Response<String> lindex(String key, long index);
+  Response<Long> incr(String key);
 
-    Response<Long> linsert(String key, BinaryClient.LIST_POSITION where,
-	    String pivot, String value);
+  Response<Long> incrBy(String key, long integer);
 
-    Response<Long> llen(String key);
+  Response<String> lindex(String key, long index);
 
-    Response<String> lpop(String key);
+  Response<Long> linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value);
 
-    Response<Long> lpush(String key, String... string);
+  Response<Long> llen(String key);
 
-    Response<Long> lpushx(String key, String... string);
+  Response<String> lpop(String key);
 
-    Response<List<String>> lrange(String key, long start, long end);
+  Response<Long> lpush(String key, String... string);
 
-    Response<Long> lrem(String key, long count, String value);
+  Response<Long> lpushx(String key, String... string);
 
-    Response<String> lset(String key, long index, String value);
+  Response<List<String>> lrange(String key, long start, long end);
 
-    Response<String> ltrim(String key, long start, long end);
+  Response<Long> lrem(String key, long count, String value);
 
-    Response<Long> move(String key, int dbIndex);
+  Response<String> lset(String key, long index, String value);
 
-    Response<Long> persist(String key);
+  Response<String> ltrim(String key, long start, long end);
 
-    Response<String> rpop(String key);
+  Response<Long> move(String key, int dbIndex);
 
-    Response<Long> rpush(String key, String... string);
+  Response<Long> persist(String key);
 
-    Response<Long> rpushx(String key, String... string);
+  Response<String> rpop(String key);
 
-    Response<Long> sadd(String key, String... member);
+  Response<Long> rpush(String key, String... string);
 
-    Response<Long> scard(String key);
+  Response<Long> rpushx(String key, String... string);
 
-    Response<Boolean> sismember(String key, String member);
+  Response<Long> sadd(String key, String... member);
 
-    Response<String> set(String key, String value);
+  Response<Long> scard(String key);
 
-    Response<Boolean> setbit(String key, long offset, boolean value);
+  Response<Boolean> sismember(String key, String member);
 
-    Response<String> setex(String key, int seconds, String value);
+  Response<String> set(String key, String value);
 
-    Response<Long> setnx(String key, String value);
+  Response<Boolean> setbit(String key, long offset, boolean value);
 
-    Response<Long> setrange(String key, long offset, String value);
+  Response<String> setex(String key, int seconds, String value);
 
-    Response<Set<String>> smembers(String key);
+  Response<Long> setnx(String key, String value);
 
-    Response<List<String>> sort(String key);
+  Response<Long> setrange(String key, long offset, String value);
 
-    Response<List<String>> sort(String key, SortingParams sortingParameters);
+  Response<Set<String>> smembers(String key);
 
-    Response<String> spop(String key);
+  Response<List<String>> sort(String key);
 
-    Response<String> srandmember(String key);
+  Response<List<String>> sort(String key, SortingParams sortingParameters);
 
-    Response<Long> srem(String key, String... member);
+  Response<String> spop(String key);
 
-    Response<Long> strlen(String key);
+  Response<Set<String>> spop(String key, long count);
 
-    Response<String> substr(String key, int start, int end);
+  Response<String> srandmember(String key);
 
-    Response<Long> ttl(String key);
+  Response<Long> srem(String key, String... member);
 
-    Response<String> type(String key);
+  Response<Long> strlen(String key);
 
-    Response<Long> zadd(String key, double score, String member);
+  Response<String> substr(String key, int start, int end);
 
-    Response<Long> zcard(String key);
+  Response<Long> ttl(String key);
 
-    Response<Long> zcount(String key, double min, double max);
+  Response<String> type(String key);
 
-    Response<Double> zincrby(String key, double score, String member);
+  Response<Long> zadd(String key, double score, String member);
 
-    Response<Set<String>> zrange(String key, long start, long end);
+  Response<Long> zcard(String key);
 
-    Response<Set<String>> zrangeByScore(String key, double min, double max);
+  Response<Long> zcount(String key, double min, double max);
 
-    Response<Set<String>> zrangeByScore(String key, String min, String max);
+  Response<Double> zincrby(String key, double score, String member);
 
-    Response<Set<String>> zrangeByScore(String key, double min, double max,
-	    int offset, int count);
+  Response<Set<String>> zrange(String key, long start, long end);
 
-    Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min,
-	    double max);
+  Response<Set<String>> zrangeByScore(String key, double min, double max);
 
-    Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min,
-	    double max, int offset, int count);
+  Response<Set<String>> zrangeByScore(String key, String min, String max);
 
-    Response<Set<String>> zrevrangeByScore(String key, double max, double min);
+  Response<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count);
 
-    Response<Set<String>> zrevrangeByScore(String key, String max, String min);
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max);
 
-    Response<Set<String>> zrevrangeByScore(String key, double max, double min,
-	    int offset, int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset,
+      int count);
 
-    Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max,
-	    double min);
+  Response<Set<String>> zrevrangeByScore(String key, double max, double min);
 
-    Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max,
-	    double min, int offset, int count);
+  Response<Set<String>> zrevrangeByScore(String key, String max, String min);
 
-    Response<Set<Tuple>> zrangeWithScores(String key, long start, long end);
+  Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count);
 
-    Response<Long> zrank(String key, String member);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min);
 
-    Response<Long> zrem(String key, String... member);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset,
+      int count);
 
-    Response<Long> zremrangeByRank(String key, long start, long end);
+  Response<Set<Tuple>> zrangeWithScores(String key, long start, long end);
 
-    Response<Long> zremrangeByScore(String key, double start, double end);
+  Response<Long> zrank(String key, String member);
 
-    Response<Set<String>> zrevrange(String key, long start, long end);
+  Response<Long> zrem(String key, String... member);
 
-    Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long end);
+  Response<Long> zremrangeByRank(String key, long start, long end);
 
-    Response<Long> zrevrank(String key, String member);
+  Response<Long> zremrangeByScore(String key, double start, double end);
 
-    Response<Double> zscore(String key, String member);
-    
-    Response<Long> zlexcount(final String key, final String min, final String max);
-    
-    Response<Set<String>> zrangeByLex(final String key, final String max, final String min);
+  Response<Set<String>> zrevrange(String key, long start, long end);
 
-    Response<Set<String>> zrangeByLex(final String key, final String max, final String min,
-	    final int offset, final int count);
-    
-    Response<Long> zremrangeByLex(final String key, final String start, final String end);
+  Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long end);
 
-    Response<Long> bitcount(String key);
+  Response<Long> zrevrank(String key, String member);
 
-    Response<Long> bitcount(String key, long start, long end);
-    
-    Response<Long> pfadd(final String key, final String... elements);
-    
-    Response<Long> pfcount(final String key);
+  Response<Double> zscore(String key, String member);
+
+  Response<Long> zlexcount(final String key, final String min, final String max);
+
+  Response<Set<String>> zrangeByLex(final String key, final String min, final String max);
+
+  Response<Set<String>> zrangeByLex(final String key, final String min, final String max,
+      final int offset, final int count);
+
+  Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min);
+
+  Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min,
+      final int offset, final int count);
+
+  Response<Long> zremrangeByLex(final String key, final String start, final String end);
+
+  Response<Long> bitcount(String key);
+
+  Response<Long> bitcount(String key, long start, long end);
+
+  Response<Long> pfadd(final String key, final String... elements);
+
+  Response<Long> pfcount(final String key);
 }

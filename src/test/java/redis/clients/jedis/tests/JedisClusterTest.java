@@ -428,6 +428,22 @@ public class JedisClusterTest extends Assert {
   }
 
   @Test
+  public void testJedisClusterTimeout() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 4000);
+
+    for (JedisPool pool : jc.getClusterNodes().values()) {
+      Jedis jedis = pool.getResource();
+      assertEquals(jedis.getClient().getConnectionTimeout(), 4000);
+      assertEquals(jedis.getClient().getSoTimeout(), 4000);
+      jedis.close();
+    }
+
+  }
+
+  @Test
   public void testJedisClusterRunsWithMultithreaded() throws InterruptedException,
       ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();

@@ -36,7 +36,7 @@ public class BinaryClient extends Connection {
 
   private String password;
 
-  private long db;
+  private int db;
 
   private boolean isInWatch;
 
@@ -71,6 +71,10 @@ public class BinaryClient extends Connection {
 
   public void setPassword(final String password) {
     this.password = password;
+  }
+
+  public void setDb(int db) {
+    this.db = db;
   }
 
   @Override
@@ -159,7 +163,6 @@ public class BinaryClient extends Connection {
   }
 
   public void select(final int index) {
-    db = index;
     sendCommand(SELECT, toByteArray(index));
   }
 
@@ -339,6 +342,10 @@ public class BinaryClient extends Connection {
 
   public void spop(final byte[] key) {
     sendCommand(SPOP, key);
+  }
+
+  public void spop(final byte[] key, final long count) {
+    sendCommand(SPOP, key, toByteArray(count));
   }
 
   public void smove(final byte[] srckey, final byte[] dstkey, final byte[] member) {
@@ -927,7 +934,7 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
-  public Long getDB() {
+  public int getDB() {
     return db;
   }
 
@@ -1085,7 +1092,7 @@ public class BinaryClient extends Connection {
     sendCommand(PTTL, key);
   }
 
-  public void psetex(final byte[] key, final int milliseconds, final byte[] value) {
+  public void psetex(final byte[] key, final long milliseconds, final byte[] value) {
     sendCommand(PSETEX, key, toByteArray(milliseconds), value);
   }
 

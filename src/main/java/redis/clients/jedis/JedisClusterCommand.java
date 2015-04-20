@@ -12,14 +12,11 @@ import redis.clients.util.SafeEncoder;
 public abstract class JedisClusterCommand<T> {
 
   private JedisClusterConnectionHandler connectionHandler;
-  private int commandTimeout;
   private int redirections;
   private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
 
-  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int timeout,
-      int maxRedirections) {
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxRedirections) {
     this.connectionHandler = connectionHandler;
-    this.commandTimeout = timeout;
     this.redirections = maxRedirections;
   }
 

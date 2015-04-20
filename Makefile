@@ -289,11 +289,14 @@ deploy:
 	mvn clean deploy
 	make stop
 
+format:
+	mvn java-formatter:format
+
 release:
 	make start
 	mvn release:clean
 	mvn release:prepare
-	mvn release:perform
+	mvn release:perform -DskipTests
 	make stop
 
 travis-install:

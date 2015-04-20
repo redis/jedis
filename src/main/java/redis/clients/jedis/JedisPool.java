@@ -7,9 +7,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisURIHelper;
-import redis.clients.util.Pool;
 
-public class JedisPool extends Pool<Jedis> {
+public class JedisPool extends JedisPoolAbstract {
 
   public JedisPool() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -27,15 +26,11 @@ public class JedisPool extends Pool<Jedis> {
 
   public JedisPool(final String host) {
     URI uri = URI.create(host);
-    if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
+    if (JedisURIHelper.isValid(uri)) {
       String h = uri.getHost();
       int port = uri.getPort();
       String password = JedisURIHelper.getPassword(uri);
-      int database = 0;
-      Integer dbIndex = JedisURIHelper.getDBIndex(uri);
-      if (dbIndex != null) {
-        database = dbIndex.intValue();
-      }
+      int database = JedisURIHelper.getDBIndex(uri);
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h, port,
           Protocol.DEFAULT_TIMEOUT, password, database, null), new GenericObjectPoolConfig());
     } else {
@@ -82,9 +77,7 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri, final int timeout) {
-    super(poolConfig, new JedisFactory(uri.getHost(), uri.getPort(), timeout,
-        JedisURIHelper.getPassword(uri),
-        JedisURIHelper.getDBIndex(uri) != null ? JedisURIHelper.getDBIndex(uri) : 0, null));
+    super(poolConfig, new JedisFactory(uri, timeout, null));
   }
 
   @Override
@@ -94,13 +87,13 @@ public class JedisPool extends Pool<Jedis> {
     return jedis;
   }
 
-  public void returnBrokenResource(final Jedis resource) {
+  protected void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  public void returnResource(final Jedis resource) {
+  protected void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
         resource.resetState();
@@ -110,13 +103,5 @@ public class JedisPool extends Pool<Jedis> {
         throw new JedisException("Could not return the resource to the pool", e);
       }
     }
-  }
-
-  public int getNumActive() {
-    if (this.internalPool == null || this.internalPool.isClosed()) {
-      return -1;
-    }
-
-    return this.internalPool.getNumActive();
   }
 }

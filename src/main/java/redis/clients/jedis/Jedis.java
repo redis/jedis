@@ -13,14 +13,13 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
 
-  protected Pool<Jedis> dataSource = null;
+  protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
@@ -38,6 +37,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host, port, timeout);
   }
 
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
+    super(host, port, connectionTimeout, soTimeout);
+  }
+
   public Jedis(JedisShardInfo shardInfo) {
     super(shardInfo);
   }
@@ -48,6 +51,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public Jedis(final URI uri, final int timeout) {
     super(uri, timeout);
+  }
+
+  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout) {
+    super(uri, connectionTimeout, soTimeout);
   }
 
   /**
@@ -233,7 +240,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * {@link #persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+   * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param seconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -262,7 +269,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * {@link #persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+   * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param unixTime
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -1052,6 +1059,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.smembers(key);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
     return new HashSet<String>(members);
   }
 
@@ -1086,6 +1096,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.spop(key);
     return client.getBulkReply();
+  }
+
+  public Set<String> spop(final String key, final long count) {
+    checkIsInMulti();
+    client.spop(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new HashSet<String>(members);
   }
 
   /**
@@ -1160,6 +1180,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.sinter(keys);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
     return new HashSet<String>(members);
   }
 
@@ -1195,6 +1218,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.sunion(keys);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
     return new HashSet<String>(members);
   }
 
@@ -1307,6 +1333,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.zrange(key, start, end);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
     return new LinkedHashSet<String>(members);
   }
 
@@ -1400,6 +1429,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMulti();
     client.zrevrange(key, start, end);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
     return new LinkedHashSet<String>(members);
   }
 
@@ -1831,13 +1863,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Set<String> zrangeByScore(final String key, final double min, final double max) {
     checkIsInMulti();
     client.zrangeByScore(key, min, max);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   public Set<String> zrangeByScore(final String key, final String min, final String max) {
     checkIsInMulti();
     client.zrangeByScore(key, min, max);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   /**
@@ -1891,14 +1931,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int offset, final int count) {
     checkIsInMulti();
     client.zrangeByScore(key, min, max, offset, count);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   public Set<String> zrangeByScore(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMulti();
     client.zrangeByScore(key, min, max, offset, count);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   /**
@@ -2028,6 +2076,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   private Set<Tuple> getTupledSet() {
     checkIsInMulti();
     List<String> membersWithScores = client.getMultiBulkReply();
+    if (membersWithScores == null) {
+      return null;
+    }
     Set<Tuple> set = new LinkedHashSet<Tuple>();
     Iterator<String> iterator = membersWithScores.iterator();
     while (iterator.hasNext()) {
@@ -2039,20 +2090,32 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
     checkIsInMulti();
     client.zrevrangeByScore(key, max, min);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   public Set<String> zrevrangeByScore(final String key, final String max, final String min) {
     checkIsInMulti();
     client.zrevrangeByScore(key, max, min);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   public Set<String> zrevrangeByScore(final String key, final double max, final double min,
       final int offset, final int count) {
     checkIsInMulti();
     client.zrevrangeByScore(key, max, min, offset, count);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
@@ -2082,7 +2145,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int offset, final int count) {
     checkIsInMulti();
     client.zrevrangeByScore(key, max, min, offset, count);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
@@ -2290,7 +2357,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Set<String> zrangeByLex(final String key, final String min, final String max) {
     checkIsInMulti();
     client.zrangeByLex(key, min, max);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   @Override
@@ -2298,21 +2369,33 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int offset, final int count) {
     checkIsInMulti();
     client.zrangeByLex(key, min, max, offset, count);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   @Override
   public Set<String> zrevrangeByLex(String key, String max, String min) {
     checkIsInMulti();
     client.zrevrangeByLex(key, max, min);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   @Override
   public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
     checkIsInMulti();
     client.zrevrangeByLex(key, max, min, offset, count);
-    return new LinkedHashSet<String>(client.getMultiBulkReply());
+    final List<String> members = client.getMultiBulkReply();
+    if (members == null) {
+      return null;
+    }
+    return new LinkedHashSet<String>(members);
   }
 
   @Override
@@ -2833,7 +2916,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
-  public String psetex(final String key, final int milliseconds, final String value) {
+  public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);
     return client.getStatusCodeReply();
@@ -3102,7 +3185,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
-  public void setDataSource(Pool<Jedis> jedisPool) {
+  public void setDataSource(JedisPoolAbstract jedisPool) {
     this.dataSource = jedisPool;
   }
 

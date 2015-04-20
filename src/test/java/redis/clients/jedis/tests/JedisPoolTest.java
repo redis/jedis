@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +16,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class JedisPoolTest extends Assert {
@@ -29,7 +29,7 @@ public class JedisPoolTest extends Assert {
     jedis.auth("foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
     assertTrue(pool.isClosed());
   }
@@ -41,7 +41,7 @@ public class JedisPoolTest extends Assert {
     jedis.auth("foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.close();
     assertTrue(pool.isClosed());
   }
@@ -53,7 +53,7 @@ public class JedisPoolTest extends Assert {
     jedis.auth("foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
     assertTrue(pool.isClosed());
   }
@@ -65,12 +65,12 @@ public class JedisPoolTest extends Assert {
     Jedis jedis = pool.getResource();
     jedis.auth("foobared");
     jedis.set("foo", "0");
-    pool.returnResource(jedis);
+    jedis.close();
 
     jedis = pool.getResource();
     jedis.auth("foobared");
     jedis.incr("foo");
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
     assertTrue(pool.isClosed());
   }
@@ -81,12 +81,12 @@ public class JedisPoolTest extends Assert {
     Jedis jedis = pool.getResource();
     jedis.auth("foobared");
     jedis.quit();
-    pool.returnBrokenResource(jedis);
+    jedis.close();
 
     jedis = pool.getResource();
     jedis.auth("foobared");
     jedis.incr("foo");
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
     assertTrue(pool.isClosed());
   }
@@ -113,7 +113,7 @@ public class JedisPoolTest extends Assert {
     JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
     Jedis jedis = pool.getResource();
     jedis.set("foo", "bar");
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
     assertTrue(pool.isClosed());
   }
@@ -125,7 +125,7 @@ public class JedisPoolTest extends Assert {
     Jedis jedis0 = pool0.getResource();
     jedis0.set("foo", "bar");
     assertEquals("bar", jedis0.get("foo"));
-    pool0.returnResource(jedis0);
+    jedis0.close();
     pool0.destroy();
     assertTrue(pool0.isClosed());
 
@@ -133,7 +133,7 @@ public class JedisPoolTest extends Assert {
         "foobared", 1);
     Jedis jedis1 = pool1.getResource();
     assertNull(jedis1.get("foo"));
-    pool1.returnResource(jedis1);
+    jedis1.close();
     pool1.destroy();
     assertTrue(pool1.isClosed());
   }
@@ -162,6 +162,11 @@ public class JedisPoolTest extends Assert {
     assertEquals("bar", jedis.get("foo"));
   }
 
+  @Test(expected = InvalidURIException.class)
+  public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
+    JedisPool pool = new JedisPool(new URI("localhost:6380"));
+  }
+
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
     new JedisPool("redis://localhost:6380");
@@ -174,18 +179,18 @@ public class JedisPoolTest extends Assert {
         "foobared");
 
     Jedis jedis0 = pool.getResource();
-    assertEquals(0L, jedis0.getDB().longValue());
+    assertEquals(0, jedis0.getDB());
 
     jedis0.select(1);
-    assertEquals(1L, jedis0.getDB().longValue());
+    assertEquals(1, jedis0.getDB());
 
-    pool.returnResource(jedis0);
+    jedis0.close();
 
     Jedis jedis1 = pool.getResource();
     assertTrue("Jedis instance was not reused", jedis1 == jedis0);
-    assertEquals(0L, jedis1.getDB().longValue());
+    assertEquals(0, jedis1.getDB());
 
-    pool.returnResource(jedis1);
+    jedis1.close();
     pool.destroy();
     assertTrue(pool.isClosed());
   }
@@ -199,7 +204,7 @@ public class JedisPoolTest extends Assert {
 
     assertEquals("my_shiny_client_name", jedis.clientGetname());
 
-    pool0.returnResource(jedis);
+    jedis.close();
     pool0.destroy();
     assertTrue(pool0.isClosed());
   }
@@ -249,7 +254,7 @@ public class JedisPoolTest extends Assert {
     Jedis crashingJedis = pool.getResource();
 
     try {
-      pool.returnResource(crashingJedis);
+      crashingJedis.close();
     } catch (Exception ignored) {
     }
 
@@ -307,16 +312,6 @@ public class JedisPoolTest extends Assert {
   }
 
   @Test
-  public void returnNullObjectShouldNotFail() {
-    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared", 0, "my_shiny_client_name");
-
-    pool.returnBrokenResource(null);
-    pool.returnResource(null);
-    pool.returnResourceObject(null);
-  }
-
-  @Test
   public void getNumActiveIsNegativeWhenPoolIsClosed() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
         "foobared", 0, "my_shiny_client_name");
@@ -341,10 +336,10 @@ public class JedisPoolTest extends Assert {
 
     assertEquals(2, pool.getNumActive());
 
-    pool.returnResource(jedis);
+    jedis.close();
     assertEquals(1, pool.getNumActive());
 
-    pool.returnResource(jedis2);
+    jedis2.close();
 
     assertEquals(0, pool.getNumActive());
 

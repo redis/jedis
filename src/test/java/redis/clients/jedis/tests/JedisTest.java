@@ -12,8 +12,10 @@ import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.util.SafeEncoder;
 
@@ -69,6 +71,12 @@ public class JedisTest extends JedisCommandTestBase {
     jedis.set("foo", null);
   }
 
+  @Test(expected = InvalidURIException.class)
+  public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
+    Jedis j = new Jedis(new URI("localhost:6380"));
+    j.ping();
+  }
+
   @Test
   public void shouldReconnectToSameDB() throws IOException {
     jedis.select(1);
@@ -101,18 +109,31 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void shouldNotUpdateDbIndexIfSelectFails() throws URISyntaxException {
+    int currentDb = jedis.getDB();
+    try {
+      int invalidDb = -1;
+      jedis.select(invalidDb);
+
+      fail("Should throw an exception if tried to select invalid db");
+    } catch (JedisException e) {
+      assertEquals(currentDb, jedis.getDB());
+    }
+  }
+
+  @Test
   public void allowUrlWithNoDBAndNoPassword() {
     Jedis jedis = new Jedis("redis://localhost:6380");
     jedis.auth("foobared");
     assertEquals(jedis.getClient().getHost(), "localhost");
     assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), (Long) 0L);
+    assertEquals(jedis.getDB(), 0);
 
     jedis = new Jedis("redis://localhost:6380/");
     jedis.auth("foobared");
     assertEquals(jedis.getClient().getHost(), "localhost");
     assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), (Long) 0L);
+    assertEquals(jedis.getDB(), 0);
   }
 
   @Test
@@ -122,4 +143,11 @@ public class JedisTest extends JedisCommandTestBase {
     bj.connect();
     bj.close();
   }
+
+  @Test
+  public void checkDisconnectOnQuit() {
+    jedis.quit();
+    assertFalse(jedis.getClient().isConnected());
+  }
+
 }

@@ -11,7 +11,7 @@ public interface BasicRedisPipeline {
 
   Response<String> bgsave();
 
-  Response<String> configGet(String pattern);
+  Response<List<String>> configGet(String pattern);
 
   Response<String> configSet(String parameter, String value);
 

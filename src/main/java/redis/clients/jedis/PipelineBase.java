@@ -8,7 +8,7 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
+public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
   protected abstract Client getClient(String key);
 
@@ -585,9 +585,19 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.STRING);
   }
 
+  public Response<Set<String>> spop(String key, long count) {
+    getClient(key).spop(key,count);
+    return getResponse(BuilderFactory.STRING_SET);
+  }
+
   public Response<byte[]> spop(byte[] key) {
     getClient(key).spop(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  public Response<Set<byte[]>> spop(byte[] key, long count) {
+    getClient(key).spop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   public Response<String> srandmember(String key) {
@@ -1190,12 +1200,12 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.DOUBLE);
   }
 
-  public Response<String> psetex(String key, int milliseconds, String value) {
+  public Response<String> psetex(String key, long milliseconds, String value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> psetex(byte[] key, int milliseconds, byte[] value) {
+  public Response<String> psetex(byte[] key, long milliseconds, byte[] value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);
   }
@@ -1228,34 +1238,6 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
   public Response<Double> hincrByFloat(byte[] key, byte[] field, double increment) {
     getClient(key).hincrByFloat(key, field, increment);
     return getResponse(BuilderFactory.DOUBLE);
-  }
-
-  public Response<String> eval(String script) {
-    return this.eval(script, 0);
-  }
-
-  public Response<String> eval(String script, List<String> keys, List<String> args) {
-    String[] argv = Jedis.getParams(keys, args);
-    return this.eval(script, keys.size(), argv);
-  }
-
-  public Response<String> eval(String script, int numKeys, String... args) {
-    getClient(script).eval(script, numKeys, args);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  public Response<String> evalsha(String script) {
-    return this.evalsha(script, 0);
-  }
-
-  public Response<String> evalsha(String sha1, List<String> keys, List<String> args) {
-    String[] argv = Jedis.getParams(keys, args);
-    return this.evalsha(sha1, keys.size(), argv);
-  }
-
-  public Response<String> evalsha(String sha1, int numKeys, String... args) {
-    getClient(sha1).evalsha(sha1, numKeys, args);
-    return getResponse(BuilderFactory.STRING);
   }
 
   @Override

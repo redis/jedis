@@ -62,13 +62,13 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  public void returnBrokenResource(final T resource) {
+  protected void returnBrokenResource(final T resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  public void returnResource(final T resource) {
+  protected void returnResource(final T resource) {
     if (resource != null) {
       returnResourceObject(resource);
     }
@@ -92,5 +92,29 @@ public abstract class Pool<T> implements Closeable {
     } catch (Exception e) {
       throw new JedisException("Could not destroy the pool", e);
     }
+  }
+
+  public int getNumActive() {
+    if (this.internalPool == null || this.internalPool.isClosed()) {
+      return -1;
+    }
+
+    return this.internalPool.getNumActive();
+  }
+
+  public int getNumIdle() {
+    if (this.internalPool == null || this.internalPool.isClosed()) {
+      return -1;
+    }
+
+    return this.internalPool.getNumIdle();
+  }
+
+  public int getNumWaiters() {
+    if (this.internalPool == null || this.internalPool.isClosed()) {
+      return -1;
+    }
+
+    return this.internalPool.getNumWaiters();
   }
 }

@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPipeline,
-    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline {
+public abstract class MultiKeyPipelineBase extends PipelineBase implements MultiKeyBinaryRedisPipeline,
+    MultiKeyCommandsPipeline, ClusterPipeline, BinaryScriptingCommandsPipeline,
+    ScriptingCommandsPipeline {
 
   protected Client client = null;
 
@@ -289,9 +290,9 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> configGet(String pattern) {
+  public Response<List<String>> configGet(String pattern) {
     client.configGet(pattern);
-    return getResponse(BuilderFactory.STRING);
+    return getResponse(BuilderFactory.STRING_LIST);
   }
 
   public Response<String> configSet(String parameter, String value) {
@@ -359,9 +360,9 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<List<String>> time() {
-    client.time();
-    return getResponse(BuilderFactory.STRING_LIST);
+  public Response<String> info(final String section) {
+    client.info(section);
+    return getResponse(BuilderFactory.STRING);
   }
 
   public Response<Long> dbSize() {
@@ -381,7 +382,10 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
 
   public Response<String> select(int index) {
     client.select(index);
-    return getResponse(BuilderFactory.STRING);
+    Response<String> response = getResponse(BuilderFactory.STRING);
+    client.setDb(index);
+
+    return response;
   }
 
   public Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
@@ -439,16 +443,65 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
     return getResponse(BuilderFactory.STRING);
   }
 
-  @Override
-  public Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {
-    client.pfmerge(destkey, sourcekeys);
-    return getResponse(BuilderFactory.STRING);
+  public Response<Object> eval(String script) {
+    return this.eval(script, 0, new String[0]);
   }
 
-  @Override
-  public Response<String> pfmerge(String destkey, String... sourcekeys) {
-    client.pfmerge(destkey, sourcekeys);
-    return getResponse(BuilderFactory.STRING);
+  public Response<Object> eval(String script, List<String> keys, List<String> args) {
+    String[] argv = Jedis.getParams(keys, args);
+    return this.eval(script, keys.size(), argv);
+  }
+
+  public Response<Object> eval(String script, int keyCount, String... params) {
+    getClient(script).eval(script, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_RESULT);
+  }
+
+  public Response<Object> evalsha(String script) {
+    return this.evalsha(script, 0, new String[0]);
+  }
+
+  public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+    String[] argv = Jedis.getParams(keys, args);
+    return this.evalsha(sha1, keys.size(), argv);
+  }
+
+  public Response<Object> evalsha(String sha1, int keyCount, String... params) {
+    getClient(sha1).evalsha(sha1, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_RESULT);
+  }
+
+  public Response<Object> eval(byte[] script) {
+    return this.eval(script, 0);
+  }
+
+  public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
+    getClient(script).eval(script, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+  }
+
+  public Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    return this.eval(script, keys.size(), argv);
+  }
+
+  public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
+    getClient(script).eval(script, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+  }
+
+  public Response<Object> evalsha(byte[] sha1) {
+    return this.evalsha(sha1, 0);
+  }
+
+  public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    return this.evalsha(sha1, keys.size(), argv);
+  }
+
+  public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
+    getClient(sha1).evalsha(sha1, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
   }
 
   @Override
@@ -462,4 +515,17 @@ abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPi
     client.pfcount(keys);
     return getResponse(BuilderFactory.LONG);
   }
+
+  @Override
+  public Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {
+    client.pfmerge(destkey, sourcekeys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> pfmerge(String destkey, String... sourcekeys) {
+    client.pfmerge(destkey, sourcekeys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
 }

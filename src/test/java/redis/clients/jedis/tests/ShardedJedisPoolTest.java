@@ -48,7 +48,7 @@ public class ShardedJedisPoolTest extends Assert {
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
   }
 
@@ -58,7 +58,7 @@ public class ShardedJedisPoolTest extends Assert {
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.close();
     assertTrue(pool.isClosed());
   }
@@ -69,7 +69,7 @@ public class ShardedJedisPoolTest extends Assert {
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
   }
 
@@ -78,11 +78,11 @@ public class ShardedJedisPoolTest extends Assert {
     ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "0");
-    pool.returnResource(jedis);
+    jedis.close();
 
     jedis = pool.getResource();
     jedis.incr("foo");
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
   }
 
@@ -91,11 +91,11 @@ public class ShardedJedisPoolTest extends Assert {
     ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.disconnect();
-    pool.returnBrokenResource(jedis);
+    jedis.close();
 
     jedis = pool.getResource();
     jedis.incr("foo");
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
   }
 
@@ -132,7 +132,7 @@ public class ShardedJedisPoolTest extends Assert {
     ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.incr("foo");
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
   }
 
@@ -146,7 +146,7 @@ public class ShardedJedisPoolTest extends Assert {
     for (int i = 0; i < 1000; i++) {
       jedis.set("a-test-" + i, "0");
     }
-    pool.returnResource(jedis);
+    jedis.close();
     // check quantity for each shard
     Jedis j = new Jedis(shards.get(0));
     j.connect();
@@ -173,7 +173,7 @@ public class ShardedJedisPoolTest extends Assert {
         fails++;
       }
     }
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
     assertEquals(actual, c1);
     assertEquals(fails, c2);
@@ -264,7 +264,7 @@ public class ShardedJedisPoolTest extends Assert {
     List<Object> results = pipeline.syncAndReturnAll();
 
     assertEquals(2, results.size());
-    pool.returnResource(jedis);
+    jedis.close();
     pool.destroy();
   }
 

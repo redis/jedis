@@ -9,11 +9,10 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.util.Hashing;
-import redis.clients.util.Pool;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
-  protected Pool<ShardedJedis> dataSource = null;
+  protected ShardedJedisPool dataSource = null;
 
   public ShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
@@ -67,9 +66,19 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.expire(key, seconds);
   }
 
+  public Long pexpire(final String key, final long milliseconds) {
+    Jedis j = getShard(key);
+    return j.pexpire(key, milliseconds);
+  }
+
   public Long expireAt(String key, long unixTime) {
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
+  }
+
+  public Long pexpireAt(String key, long millisecondsTimestamp) {
+    Jedis j = getShard(key);
+    return j.pexpireAt(key, millisecondsTimestamp);
   }
 
   public Long ttl(String key) {
@@ -335,6 +344,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String spop(String key) {
     Jedis j = getShard(key);
     return j.spop(key);
+  }
+
+  public Set<String> spop(String key, long count) {
+    Jedis j = getShard(key);
+    return j.spop(key, count);
   }
 
   public Long scard(String key) {
@@ -606,13 +620,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       for (Jedis jedis : getAllShards()) {
         if (jedis.getClient().isBroken()) {
           broken = true;
+          break;
         }
       }
 
       if (broken) {
         dataSource.returnBrokenResource(this);
       } else {
-        this.resetState();
         dataSource.returnResource(this);
       }
 
@@ -621,7 +635,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     }
   }
 
-  public void setDataSource(Pool<ShardedJedis> shardedJedisPool) {
+  public void setDataSource(ShardedJedisPool shardedJedisPool) {
     this.dataSource = shardedJedisPool;
   }
 

@@ -4,12 +4,15 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Response<T> {
   protected T response = null;
+  protected JedisDataException exception = null;
+
+  private boolean building = false;
   private boolean built = false;
   private boolean set = false;
+
   private Builder<T> builder;
   private Object data;
   private Response<?> dependency = null;
-  private boolean requestDependencyBuild = false;
 
   public Response(Builder<T> b) {
     this.builder = b;
@@ -23,8 +26,7 @@ public class Response<T> {
   public T get() {
     // if response has dependency response and dependency is not built,
     // build it first and no more!!
-    if (!requestDependencyBuild && dependency != null && dependency.set && !dependency.built) {
-      requestDependencyBuild = true;
+    if (dependency != null && dependency.set && !dependency.built) {
       dependency.build();
     }
     if (!set) {
@@ -34,23 +36,37 @@ public class Response<T> {
     if (!built) {
       build();
     }
+    if (exception != null) {
+      throw exception;
+    }
     return response;
   }
 
   public void setDependency(Response<?> dependency) {
     this.dependency = dependency;
-    this.requestDependencyBuild = false;
   }
 
   private void build() {
-    if (data != null) {
-      if (data instanceof JedisDataException) {
-        throw new JedisDataException((JedisDataException) data);
-      }
-      response = builder.build(data);
+    // check build state to prevent recursion
+    if (building) {
+      return;
     }
-    data = null;
-    built = true;
+
+    building = true;
+    try {
+      if (data != null) {
+        if (data instanceof JedisDataException) {
+          exception = (JedisDataException) data;
+        } else {
+          response = builder.build(data);
+        }
+      }
+
+      data = null;
+    } finally {
+      building = false;
+      built = true;
+    }
   }
 
   public String toString() {

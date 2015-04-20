@@ -26,7 +26,11 @@ public interface RedisPipeline {
 
   Response<Long> expire(String key, int seconds);
 
+  Response<Long> pexpire(String key, long milliseconds);
+
   Response<Long> expireAt(String key, long unixTime);
+
+  Response<Long> pexpireAt(String key, long millisecondsTimestamp);
 
   Response<String> get(String key);
 
@@ -117,6 +121,8 @@ public interface RedisPipeline {
   Response<List<String>> sort(String key, SortingParams sortingParameters);
 
   Response<String> spop(String key);
+
+  Response<Set<String>> spop(String key, long count);
 
   Response<String> srandmember(String key);
 

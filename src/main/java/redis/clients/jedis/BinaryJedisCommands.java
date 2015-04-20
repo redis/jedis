@@ -11,6 +11,8 @@ import java.util.Set;
 public interface BinaryJedisCommands {
   String set(byte[] key, byte[] value);
 
+  String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
+
   byte[] get(byte[] key);
 
   Boolean exists(byte[] key);
@@ -21,7 +23,17 @@ public interface BinaryJedisCommands {
 
   Long expire(byte[] key, int seconds);
 
+  /**
+   * @deprecated String key operation on BinaryCommand. Use byte[] or JedisCommands
+   */
+  @Deprecated
+  Long pexpire(final String key, final long milliseconds);
+
+  Long pexpire(byte[] key, final long milliseconds);
+
   Long expireAt(byte[] key, long unixTime);
+
+  Long pexpireAt(byte[] key, long millisecondsTimestamp);
 
   Long ttl(byte[] key);
 
@@ -108,6 +120,8 @@ public interface BinaryJedisCommands {
   Long srem(byte[] key, byte[]... member);
 
   byte[] spop(byte[] key);
+
+  Set<byte[]> spop(byte[] key, long count);
 
   Long scard(byte[] key);
 

@@ -53,6 +53,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.set(key, value);
   }
 
+  public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
+    Jedis j = getShard(key);
+    return j.set(key, value, nxxx, expx, time);
+  }
+
   public byte[] get(byte[] key) {
     Jedis j = getShard(key);
     return j.get(key);
@@ -73,9 +78,25 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.expire(key, seconds);
   }
 
+  public Long pexpire(byte[] key, final long milliseconds) {
+    Jedis j = getShard(key);
+    return j.pexpire(key, milliseconds);
+  }
+
+  @Deprecated
+  public Long pexpire(String key, final long milliseconds) {
+    Jedis j = getShard(key);
+    return j.pexpire(key, milliseconds);
+  }
+
   public Long expireAt(byte[] key, long unixTime) {
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
+  }
+
+  public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
+    Jedis j = getShard(key);
+    return j.pexpireAt(key, millisecondsTimestamp);
   }
 
   public Long ttl(byte[] key) {
@@ -291,6 +312,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public byte[] spop(byte[] key) {
     Jedis j = getShard(key);
     return j.spop(key);
+  }
+
+  public Set<byte[]> spop(byte[] key, long count) {
+    Jedis j = getShard(key);
+    return j.spop(key, count);
   }
 
   public Long scard(byte[] key) {

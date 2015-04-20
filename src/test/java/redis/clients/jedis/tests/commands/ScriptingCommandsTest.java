@@ -10,7 +10,10 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.util.SafeEncoder;
 
 public class ScriptingCommandsTest extends JedisCommandTestBase {
@@ -62,6 +65,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     assertEquals("first", new String(responses.get(2)));
     assertEquals("second", new String(responses.get(3)));
     assertEquals("third", new String(responses.get(4)));
+
+    binaryJedis.close();
   }
 
   @Test
@@ -158,9 +163,9 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptLoadBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    List<Long> exists = jedis.scriptExists(SafeEncoder
-        .encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
-    assertEquals(new Long(1), exists.get(0));
+    Long exists = jedis
+        .scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    assertEquals((Long) 1L, exists);
   }
 
   @Test
@@ -174,23 +179,48 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void scriptEvalReturnNullValues() {
-    String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+    jedis.del("key1");
+    jedis.del("key2");
+
+    String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
     List<String> results = (List<String>) jedis.eval(script, 2, "key1", "key2", "1", "2");
-    assertEquals("key1", results.get(0));
-    assertEquals("key2", results.get(1));
-    assertEquals("1", results.get(2));
-    assertEquals("2", results.get(3));
+    assertEquals(2, results.size());
+    assertNull(results.get(0));
+    assertNull(results.get(1));
   }
 
   @Test
   public void scriptEvalShaReturnNullValues() {
-    String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}";
+    jedis.del("key1");
+    jedis.del("key2");
+
+    String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
     String sha = jedis.scriptLoad(script);
     List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1", "key2", "1", "2");
-    assertEquals("key1", results.get(0));
-    assertEquals("key2", results.get(1));
-    assertEquals("1", results.get(2));
-    assertEquals("2", results.get(3));
+    assertEquals(2, results.size());
+    assertNull(results.get(0));
+    assertNull(results.get(1));
+  }
+
+  @Test
+  public void scriptExistsWithBrokenConnection() {
+    Jedis deadClient = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
+    deadClient.auth("foobared");
+
+    deadClient.clientSetname("DEAD");
+
+    ClientKillerUtil.killClient(deadClient, "DEAD");
+
+    // sure, script doesn't exist, but it's just for checking connection
+    try {
+      deadClient.scriptExists("abcdefg");
+    } catch (JedisConnectionException e) {
+      // ignore it
+    }
+
+    assertEquals(true, deadClient.getClient().isBroken());
+
+    deadClient.close();
   }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {

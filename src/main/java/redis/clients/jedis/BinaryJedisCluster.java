@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class BinaryJedisCluster implements BinaryJedisCommands, MultiKeyBinaryJedisClusterCommands,
+public class BinaryJedisCluster implements BinaryJedisClusterCommands, MultiKeyBinaryJedisClusterCommands,
     JedisClusterBinaryScriptingCommands, Closeable {
 
   public static final short HASHSLOTS = 16384;
@@ -126,15 +126,6 @@ public class BinaryJedisCluster implements BinaryJedisCommands, MultiKeyBinaryJe
         return connection.expire(key, seconds);
       }
     }.runBinary(key);
-  }
-
-  /**
-   * @deprecated String key operation on BinaryCommand. It should be removed before releasing 3.0.0
-   */
-  @Deprecated
-  @Override
-  public Long pexpire(String key, long milliseconds) {
-    return null;
   }
 
   @Override
@@ -1037,26 +1028,6 @@ public class BinaryJedisCluster implements BinaryJedisCommands, MultiKeyBinaryJe
   }
 
   @Override
-  public List<byte[]> blpop(final byte[] arg) {
-    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxRedirections) {
-      @Override
-      public List<byte[]> execute(Jedis connection) {
-        return connection.blpop(arg);
-      }
-    }.runBinary(arg);
-  }
-
-  @Override
-  public List<byte[]> brpop(final byte[] arg) {
-    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxRedirections) {
-      @Override
-      public List<byte[]> execute(Jedis connection) {
-        return connection.brpop(arg);
-      }
-    }.runBinary(arg);
-  }
-
-  @Override
   public Long del(final byte[] key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
@@ -1075,16 +1046,6 @@ public class BinaryJedisCluster implements BinaryJedisCommands, MultiKeyBinaryJe
         return connection.echo(arg);
       }
     }.runBinary(arg);
-  }
-
-  @Override
-  public Long move(final byte[] key, final int dbIndex) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.move(key, dbIndex);
-      }
-    }.runBinary(key);
   }
 
   @Override

@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
+public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
   public static enum Reset {
     SOFT, HARD
@@ -1073,34 +1073,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     }.run(key);
   }
 
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Override
-  @Deprecated
-  public List<String> blpop(final String arg) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.blpop(arg);
-      }
-    }.run(arg);
-  }
-
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Override
-  @Deprecated
-  public List<String> brpop(final String arg) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.brpop(arg);
-      }
-    }.run(arg);
-  }
-
   @Override
   public Long del(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
@@ -1120,16 +1092,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         return connection.echo(string);
       }
     }.run(string);
-  }
-
-  @Override
-  public Long move(final String key, final int dbIndex) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.move(key, dbIndex);
-      }
-    }.run(key);
   }
 
   @Override

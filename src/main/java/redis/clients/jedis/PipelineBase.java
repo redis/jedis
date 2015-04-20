@@ -586,7 +586,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   public Response<Set<String>> spop(String key, long count) {
-    getClient(key).spop(key,count);
+    getClient(key).spop(key, count);
     return getResponse(BuilderFactory.STRING_SET);
   }
 

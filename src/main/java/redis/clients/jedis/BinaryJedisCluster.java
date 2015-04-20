@@ -32,7 +32,8 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections,
       final GenericObjectPoolConfig poolConfig) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig, timeout);
+    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
+        timeout);
     this.maxRedirections = maxRedirections;
   }
 
@@ -61,7 +62,9 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
     }.runBinary(key);
   }
 
-  @Override public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx, final long time) {
+  @Override
+  public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
+      final long time) {
     return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
       @Override
       public String execute(Jedis connection) {
@@ -124,11 +127,13 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
    * @deprecated String key operation on BinaryCommand. It should be removed before releasing 3.0.0
    */
   @Deprecated
-  @Override public Long pexpire(String key, long milliseconds) {
+  @Override
+  public Long pexpire(String key, long milliseconds) {
     return null;
   }
 
-  @Override public Long pexpire(final byte[] key, final long milliseconds) {
+  @Override
+  public Long pexpire(final byte[] key, final long milliseconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
@@ -147,7 +152,8 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
     }.runBinary(key);
   }
 
-  @Override public Long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
+  @Override
+  public Long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
@@ -586,7 +592,8 @@ public class BinaryJedisCluster implements BinaryJedisCommands,
     }.runBinary(key);
   }
 
-  @Override public Set<byte[]> spop(final byte[] key, final long count) {
+  @Override
+  public Set<byte[]> spop(final byte[] key, final long count) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxRedirections) {
       @Override
       public Set<byte[]> execute(Jedis connection) {

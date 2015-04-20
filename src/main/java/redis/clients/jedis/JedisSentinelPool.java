@@ -26,7 +26,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
 
   protected Logger log = Logger.getLogger(getClass().getName());
-  
+
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
 
@@ -287,7 +287,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         // This isn't good, the Jedis object is not thread safe
         j.disconnect();
       } catch (Exception e) {
-        log.log(Level.SEVERE,"Caught exception while shutting down: ",e);
+        log.log(Level.SEVERE, "Caught exception while shutting down: ", e);
       }
     }
   }

@@ -80,6 +80,19 @@ public abstract class JedisClusterCommand<T> {
     return runWithRetries(keys[0], this.redirections, false, false);
   }
 
+  public T runWithAnyNode() {
+    Jedis connection = null;
+    try {
+      connection = connectionHandler.getConnection();
+      return execute(connection);
+    } catch (JedisConnectionException e) {
+      releaseConnection(connection, true);
+      throw e;
+    } finally {
+      releaseConnection(connection, false);
+    }
+  }
+
   private T runWithRetries(byte[] key, int redirections, boolean tryRandomNode, boolean asking) {
     if (redirections <= 0) {
       throw new JedisClusterMaxRedirectionsException("Too many Cluster redirections?");

@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
-import java.io.Closeable;
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.util.KeyMergeUtil;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,27 +10,18 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
-public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
-  public static final short HASHSLOTS = 16384;
-  private static final int DEFAULT_TIMEOUT = 2000;
-  private static final int DEFAULT_MAX_REDIRECTIONS = 5;
-
+public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
+    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
   public static enum Reset {
     SOFT, HARD
   }
 
-  private int maxRedirections;
-
-  private JedisClusterConnectionHandler connectionHandler;
+  public JedisCluster(Set<HostAndPort> nodes) {
+    this(nodes, DEFAULT_TIMEOUT);
+  }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout) {
     this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS);
-  }
-
-  public JedisCluster(Set<HostAndPort> nodes) {
-    this(nodes, DEFAULT_TIMEOUT);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxRedirections) {
@@ -45,24 +38,7 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections,
       final GenericObjectPoolConfig poolConfig) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        timeout);
-    this.maxRedirections = maxRedirections;
-  }
-
-  @Override
-  public void close() {
-    if (connectionHandler != null) {
-      for (JedisPool pool : connectionHandler.getNodes().values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (Exception e) {
-          // pass
-        }
-      }
-    }
+    super(jedisClusterNode, timeout, maxRedirections, poolConfig);
   }
 
   @Override
@@ -1097,34 +1073,6 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(key);
   }
 
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Override
-  @Deprecated
-  public List<String> blpop(final String arg) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.blpop(arg);
-      }
-    }.run(arg);
-  }
-
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Override
-  @Deprecated
-  public List<String> brpop(final String arg) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.brpop(arg);
-      }
-    }.run(arg);
-  }
-
   @Override
   public Long del(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
@@ -1137,22 +1085,13 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
   @Override
   public String echo(final String string) {
+    // note that it'll be run from arbitary node
     return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
       @Override
       public String execute(Jedis connection) {
         return connection.echo(string);
       }
-    }.run(null);
-  }
-
-  @Override
-  public Long move(final String key, final int dbIndex) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.move(key, dbIndex);
-      }
-    }.run(key);
+    }.run(string);
   }
 
   @Override
@@ -1173,286 +1112,6 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
         return connection.bitcount(key, start, end);
       }
     }.run(key);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String ping() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.ping();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String quit() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.quit();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String flushDB() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.flushDB();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public Long dbSize() {
-    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.dbSize();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String select(final int index) {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.select(index);
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String flushAll() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.flushAll();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String auth(final String password) {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.auth(password);
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String save() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.save();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String bgsave() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.bgsave();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String bgrewriteaof() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.bgrewriteaof();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public Long lastsave() {
-    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.lastsave();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String shutdown() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.shutdown();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String info() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.info();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String info(final String section) {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.info(section);
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String slaveof(final String host, final int port) {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.slaveof(host, port);
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String slaveofNoOne() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.slaveofNoOne();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public int getDB() {
-    return new JedisClusterCommand<Integer>(connectionHandler, maxRedirections) {
-      @Override
-      public Integer execute(Jedis connection) {
-        return connection.getDB();
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String debug(final DebugParams params) {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.debug(params);
-      }
-    }.run(null);
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public String configResetStat() {
-    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.configResetStat();
-      }
-    }.run(null);
-  }
-
-  public Map<String, JedisPool> getClusterNodes() {
-    return connectionHandler.getNodes();
-  }
-
-  /**
-   * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
-   */
-  @Deprecated
-  @Override
-  public Long waitReplicas(int replicas, long timeout) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   @Override
@@ -1526,4 +1185,416 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(key);
   }
 
+  @Override
+  public Long del(final String... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.del(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public List<String> blpop(final int timeout, final String... keys) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.blpop(timeout, keys);
+      }
+    }.run(keys.length, keys);
+
+  }
+
+  @Override
+  public List<String> brpop(final int timeout, final String... keys) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.brpop(timeout, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public List<String> mget(final String... keys) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.mget(keys);
+      }
+    }.run(keys.length - 1, keys);
+  }
+
+  @Override
+  public String mset(final String... keysvalues) {
+    String[] keys = new String[keysvalues.length / 2];
+
+    for (int keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+      keys[keyIdx] = keysvalues[keyIdx * 2];
+    }
+
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.mset(keysvalues);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Long msetnx(final String... keysvalues) {
+    String[] keys = new String[keysvalues.length / 2];
+
+    for (int keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+      keys[keyIdx] = keysvalues[keyIdx * 2];
+    }
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.msetnx(keysvalues);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public String rename(final String oldkey, final String newkey) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.rename(oldkey, newkey);
+      }
+    }.run(2, oldkey, newkey);
+  }
+
+  @Override
+  public Long renamenx(final String oldkey, final String newkey) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.renamenx(oldkey, newkey);
+      }
+    }.run(2, oldkey, newkey);
+  }
+
+  @Override
+  public String rpoplpush(final String srckey, final String dstkey) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.rpoplpush(srckey, dstkey);
+      }
+    }.run(2, srckey, dstkey);
+  }
+
+  @Override
+  public Set<String> sdiff(final String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.sdiff(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Long sdiffstore(final String dstkey, final String... keys) {
+    String[] mergedKeys = KeyMergeUtil.merge(dstkey, keys);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.sdiffstore(dstkey, keys);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public Set<String> sinter(final String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.sinter(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Long sinterstore(final String dstkey, final String... keys) {
+    String[] mergedKeys = KeyMergeUtil.merge(dstkey, keys);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.sinterstore(dstkey, keys);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public Long smove(final String srckey, final String dstkey, final String member) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.smove(srckey, dstkey, member);
+      }
+    }.run(2, srckey, dstkey);
+  }
+
+  @Override
+  public Long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.sort(key, sortingParameters, dstkey);
+      }
+    }.run(2, key, dstkey);
+  }
+
+  @Override
+  public Long sort(final String key, final String dstkey) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.sort(key, dstkey);
+      }
+    }.run(2, key, dstkey);
+  }
+
+  @Override
+  public Set<String> sunion(final String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.sunion(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Long sunionstore(final String dstkey, final String... keys) {
+    String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.sunionstore(dstkey, keys);
+      }
+    }.run(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
+  public Long zinterstore(final String dstkey, final String... sets) {
+    String[] wholeKeys = KeyMergeUtil.merge(dstkey, sets);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zinterstore(dstkey, sets);
+      }
+    }.run(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
+  public Long zinterstore(final String dstkey, final ZParams params, final String... sets) {
+    String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zinterstore(dstkey, params, sets);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public Long zunionstore(final String dstkey, final String... sets) {
+    String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zunionstore(dstkey, sets);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public Long zunionstore(final String dstkey, final ZParams params, final String... sets) {
+    String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zunionstore(dstkey, params, sets);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public String brpoplpush(final String source, final String destination, final int timeout) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.brpoplpush(source, destination, timeout);
+      }
+    }.run(2, source, destination);
+  }
+
+  @Override
+  public Long publish(final String channel, final String message) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.publish(channel, message);
+      }
+    }.runWithAnyNode();
+  }
+
+  @Override
+  public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
+    new JedisClusterCommand<Integer>(connectionHandler, maxRedirections) {
+      @Override
+      public Integer execute(Jedis connection) {
+        connection.subscribe(jedisPubSub, channels);
+        return 0;
+      }
+    }.runWithAnyNode();
+  }
+
+  @Override
+  public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
+    new JedisClusterCommand<Integer>(connectionHandler, maxRedirections) {
+      @Override
+      public Integer execute(Jedis connection) {
+        connection.subscribe(jedisPubSub, patterns);
+        return 0;
+      }
+    }.runWithAnyNode();
+  }
+
+  @Override
+  public Long bitop(final BitOP op, final String destKey, final String... srcKeys) {
+    String[] mergedKeys = KeyMergeUtil.merge(destKey, srcKeys);
+
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitop(op, destKey, srcKeys);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public String pfmerge(final String destkey, final String... sourcekeys) {
+    String[] mergedKeys = KeyMergeUtil.merge(destkey, sourcekeys);
+
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.pfmerge(destkey, sourcekeys);
+      }
+    }.run(mergedKeys.length, mergedKeys);
+  }
+
+  @Override
+  public long pfcount(final String... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.pfcount(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Object eval(final String script, final int keyCount, final String... params) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxRedirections) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.eval(script, keyCount, params);
+      }
+    }.run(keyCount, params);
+  }
+
+  @Override
+  public Object eval(final String script, final String key) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxRedirections) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.eval(script);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Object eval(final String script, final List<String> keys, final List<String> args) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxRedirections) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.eval(script, keys, args);
+      }
+    }.run(keys.size(), keys.toArray(new String[keys.size()]));
+  }
+
+  @Override
+  public Object evalsha(final String sha1, final int keyCount, final String... params) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxRedirections) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.evalsha(sha1, keyCount, params);
+      }
+    }.run(keyCount, params);
+  }
+
+  @Override
+  public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxRedirections) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.evalsha(sha1, keys, args);
+      }
+    }.run(keys.size(), keys.toArray(new String[keys.size()]));
+  }
+
+  @Override
+  public Object evalsha(final String script, final String key) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxRedirections) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.evalsha(script);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Boolean scriptExists(final String sha1, final String key) {
+    return new JedisClusterCommand<Boolean>(connectionHandler, maxRedirections) {
+      @Override
+      public Boolean execute(Jedis connection) {
+        return connection.scriptExists(sha1);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Boolean> scriptExists(final String key, final String... sha1) {
+    return new JedisClusterCommand<List<Boolean>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<Boolean> execute(Jedis connection) {
+        return connection.scriptExists(sha1);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String scriptLoad(final String script, final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.scriptLoad(script);
+      }
+    }.run(key);
+  }
 }

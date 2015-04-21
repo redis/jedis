@@ -16,7 +16,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands, MultiKeyB
     JedisClusterBinaryScriptingCommands, Closeable {
 
   public static final short HASHSLOTS = 16384;
-  protected static final int DEFAULT_TIMEOUT = 1;
+  protected static final int DEFAULT_TIMEOUT = 2000;
   protected static final int DEFAULT_MAX_REDIRECTIONS = 5;
 
   protected int maxRedirections;

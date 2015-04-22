@@ -23,12 +23,6 @@ public interface BinaryJedisCommands {
 
   Long expire(byte[] key, int seconds);
 
-  /**
-   * @deprecated String key operation on BinaryCommand. Use byte[] or JedisCommands
-   */
-  @Deprecated
-  Long pexpire(final String key, final long milliseconds);
-
   Long pexpire(byte[] key, final long milliseconds);
 
   Long expireAt(byte[] key, long unixTime);
@@ -222,18 +216,6 @@ public interface BinaryJedisCommands {
   Long lpushx(byte[] key, byte[]... arg);
 
   Long rpushx(byte[] key, byte[]... arg);
-
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Deprecated
-  List<byte[]> blpop(byte[] arg);
-
-  /**
-   * @deprecated unusable command, this command will be removed in 3.0.0.
-   */
-  @Deprecated
-  List<byte[]> brpop(byte[] arg);
 
   Long del(byte[] key);
 

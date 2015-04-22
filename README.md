@@ -81,6 +81,15 @@ jc.set("foo", "bar");
 String value = jc.get("foo");
 ```
 
+## FAQ
+
+- Do you have strange stack traces?
+- You're getting errors when running jedis in multi-threaded environments?
+- Do you need further instructions about pipelining, transactions or sentinel?
+
+Please check the [WIKI](https://github.com/xetorthio/jedis/wiki) for more useful information.
+
+
 ## I want to contribute!
 
 That is great!

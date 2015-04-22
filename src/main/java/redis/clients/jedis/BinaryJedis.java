@@ -163,7 +163,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String quit() {
     checkIsInMulti();
     client.quit();
-    return client.getStatusCodeReply();
+    String quitReturn = client.getStatusCodeReply();
+    client.disconnect();
+    return quitReturn;
   }
 
   /**
@@ -1214,6 +1216,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMulti();
     client.spop(key);
     return client.getBinaryBulkReply();
+  }
+
+  public Set<byte[]> spop(final byte[] key, final long count) {
+    checkIsInMulti();
+    client.spop(key, count);
+    final List<byte[]> members = client.getBinaryMultiBulkReply();
+    return new HashSet<byte[]>(members);
   }
 
   /**

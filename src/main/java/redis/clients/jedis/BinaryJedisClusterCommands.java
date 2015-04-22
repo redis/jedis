@@ -5,10 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Common interface for sharded and non-sharded BinaryJedis
- */
-public interface BinaryJedisCommands {
+public interface BinaryJedisClusterCommands {
   String set(byte[] key, byte[] value);
 
   String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
@@ -220,8 +217,6 @@ public interface BinaryJedisCommands {
   Long del(byte[] key);
 
   byte[] echo(byte[] arg);
-
-  Long move(byte[] key, int dbIndex);
 
   Long bitcount(final byte[] key);
 

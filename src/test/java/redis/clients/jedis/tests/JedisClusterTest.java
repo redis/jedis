@@ -1,38 +1,20 @@
 package redis.clients.jedis.tests;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.*;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class JedisClusterTest extends Assert {
   private static Jedis node1;
@@ -287,14 +269,6 @@ public class JedisClusterTest extends Assert {
     assertEquals("foo", jc.get("51"));
   }
 
-  @Test(expected = JedisClusterException.class)
-  public void testThrowExceptionWithoutKey() {
-    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisCluster jc = new JedisCluster(jedisClusterNode);
-    jc.ping();
-  }
-
   @Test(expected = JedisClusterMaxRedirectionsException.class)
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -427,7 +401,7 @@ public class JedisClusterTest extends Assert {
   }
 
   @Test
-  public void testCloseable() {
+  public void testCloseable() throws IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
@@ -454,8 +428,24 @@ public class JedisClusterTest extends Assert {
   }
 
   @Test
+  public void testJedisClusterTimeout() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 4000);
+
+    for (JedisPool pool : jc.getClusterNodes().values()) {
+      Jedis jedis = pool.getResource();
+      assertEquals(jedis.getClient().getConnectionTimeout(), 4000);
+      assertEquals(jedis.getClient().getSoTimeout(), 4000);
+      jedis.close();
+    }
+
+  }
+
+  @Test
   public void testJedisClusterRunsWithMultithreaded() throws InterruptedException,
-      ExecutionException {
+      ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     final JedisCluster jc = new JedisCluster(jedisClusterNode);

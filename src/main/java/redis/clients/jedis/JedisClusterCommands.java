@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Common interface for sharded and non-sharded Jedis
- */
-public interface JedisCommands {
+public interface JedisClusterCommands {
   String set(String key, String value);
 
   String set(String key, String value, String nxxx, String expx, long time);
@@ -221,8 +218,6 @@ public interface JedisCommands {
   Long del(String key);
 
   String echo(String string);
-
-  Long move(String key, int dbIndex);
 
   Long bitcount(final String key);
 

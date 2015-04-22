@@ -43,6 +43,26 @@ public class JedisClusterCRC16 {
     return getCRC16(key) & (16384 - 1);
   }
 
+  public static int getSlot(byte[] key) {
+    int s = -1;
+    int e = -1;
+    boolean sFound = false;
+    for (int i = 0; i < key.length; i++) {
+      if (key[i] == '{' && !sFound) {
+        s = i;
+        sFound = true;
+      }
+      if (key[i] == '}' && sFound) {
+        e = i;
+        break;
+      }
+    }
+    if (s > -1 && e > -1 && e != s + 1) {
+      return getCRC16(key, s + 1, e) & (16384 - 1);
+    }
+    return getCRC16(key) & (16384 - 1);
+  }
+
   /**
    * Create a CRC16 checksum from the bytes. implementation is from mp911de/lettuce, modified with
    * some more optimizations
@@ -50,17 +70,21 @@ public class JedisClusterCRC16 {
    * @return CRC16 as integer value
    * @see https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331
    */
-  public static int getCRC16(byte[] bytes) {
+  public static int getCRC16(byte[] bytes, int s, int e) {
     int crc = 0x0000;
 
-    for (byte b : bytes) {
-      crc = ((crc << 8) ^ LOOKUP_TABLE[((crc >>> 8) ^ (b & 0xFF)) & 0xFF]);
+    for (int i = s; i < e; i++) {
+      crc = ((crc << 8) ^ LOOKUP_TABLE[((crc >>> 8) ^ (bytes[i] & 0xFF)) & 0xFF]);
     }
     return crc & 0xFFFF;
   }
 
-  public static int getCRC16(String key) {
-    return getCRC16(SafeEncoder.encode(key));
+  public static int getCRC16(byte[] bytes) {
+    return getCRC16(bytes, 0, bytes.length);
   }
 
+  public static int getCRC16(String key) {
+    byte[] bytesKey = SafeEncoder.encode(key);
+    return getCRC16(bytesKey, 0, bytesKey.length);
+  }
 }

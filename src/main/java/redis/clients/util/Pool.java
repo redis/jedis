@@ -62,13 +62,13 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  public void returnBrokenResource(final T resource) {
+  protected void returnBrokenResource(final T resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  public void returnResource(final T resource) {
+  protected void returnResource(final T resource) {
     if (resource != null) {
       returnResourceObject(resource);
     }

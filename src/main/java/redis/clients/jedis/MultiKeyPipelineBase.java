@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-abstract class MultiKeyPipelineBase extends PipelineBase implements MultiKeyBinaryRedisPipeline,
-    MultiKeyCommandsPipeline, ClusterPipeline, BinaryScriptingCommandsPipeline,
-    ScriptingCommandsPipeline {
+public abstract class MultiKeyPipelineBase extends PipelineBase implements
+    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
+    BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline {
 
   protected Client client = null;
 

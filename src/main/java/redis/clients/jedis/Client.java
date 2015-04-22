@@ -259,6 +259,10 @@ public class Client extends BinaryClient implements Commands {
     spop(SafeEncoder.encode(key));
   }
 
+  public void spop(final String key, final long count) {
+    spop(SafeEncoder.encode(key), count);
+  }
+
   public void smove(final String srckey, final String dstkey, final String member) {
     smove(SafeEncoder.encode(srckey), SafeEncoder.encode(dstkey), SafeEncoder.encode(member));
   }
@@ -392,12 +396,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void blpop(final int timeout, final String... keys) {
-    List<String> args = new ArrayList<String>();
+    final int size = keys.length + 1;
+    List<String> args = new ArrayList<String>(size);
     for (String arg : keys) {
       args.add(arg);
     }
     args.add(String.valueOf(timeout));
-    blpop(args.toArray(new String[args.size()]));
+    blpop(args.toArray(new String[size]));
   }
 
   public void sort(final String key, final SortingParams sortingParameters, final String dstkey) {
@@ -417,12 +422,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void brpop(final int timeout, final String... keys) {
-    List<String> args = new ArrayList<String>();
+    final int size = keys.length + 1;
+    List<String> args = new ArrayList<String>(size);
     for (String arg : keys) {
       args.add(arg);
     }
     args.add(String.valueOf(timeout));
-    brpop(args.toArray(new String[args.size()]));
+    brpop(args.toArray(new String[size]));
   }
 
   public void zcount(final String key, final double min, final double max) {

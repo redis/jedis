@@ -44,7 +44,7 @@ public class PoolBenchmark {
               final String key = "foo" + i;
               j.set(key, key);
               j.get(key);
-              pool.returnResource(j);
+              j.close();
             } catch (Exception e) {
               e.printStackTrace();
             }

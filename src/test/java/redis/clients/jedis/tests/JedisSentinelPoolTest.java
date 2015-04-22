@@ -65,7 +65,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     jedis.auth("foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
-    pool.returnResource(jedis);
+    jedis.close();
     pool.close();
     assertTrue(pool.isClosed());
   }
@@ -99,7 +99,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
       jedis.set("hello", "jedis");
       Transaction t = jedis.multi();
       t.set("hello", "world");
-      pool.returnResource(jedis);
+      jedis.close();
 
       jedis2 = pool.getResource();
 
@@ -107,11 +107,10 @@ public class JedisSentinelPoolTest extends JedisTestBase {
       assertEquals("jedis", jedis2.get("hello"));
     } catch (JedisConnectionException e) {
       if (jedis2 != null) {
-        pool.returnBrokenResource(jedis2);
         jedis2 = null;
       }
     } finally {
-      if (jedis2 != null) pool.returnResource(jedis2);
+      jedis2.close();
 
       pool.destroy();
     }
@@ -138,32 +137,6 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     } finally {
       jedis2.close();
     }
-  }
-
-  @Test
-  public void returnResourceWithNullResource() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
-
-    Jedis nullJedis = null;
-    pool.returnResource(nullJedis);
-    pool.destroy();
-  }
-
-  @Test
-  public void returnBrokenResourceWithNullResource() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
-
-    Jedis nullJedis = null;
-    pool.returnBrokenResource(nullJedis);
-    pool.destroy();
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {

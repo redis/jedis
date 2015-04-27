@@ -12,8 +12,8 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class BinaryJedisCluster implements BinaryJedisClusterCommands, MultiKeyBinaryJedisClusterCommands,
-    JedisClusterBinaryScriptingCommands, Closeable {
+public class BinaryJedisCluster implements BinaryJedisClusterCommands,
+    MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
   public static final short HASHSLOTS = 16384;
   protected static final int DEFAULT_TIMEOUT = 2000;

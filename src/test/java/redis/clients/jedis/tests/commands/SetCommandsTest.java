@@ -140,12 +140,12 @@ public class SetCommandsTest extends JedisCommandTestBase {
     expected.add("a");
     expected.add("b");
 
-    Set<String> members = jedis.spop("foo",2);
+    Set<String> members = jedis.spop("foo", 2);
 
     assertEquals(2, members.size());
     assertEquals(members, expected);
 
-    members = jedis.spop("foo",2);
+    members = jedis.spop("foo", 2);
     assertTrue(members.isEmpty());
 
     // Binary
@@ -161,7 +161,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     assertEquals(2, bmembers.size());
     assertEquals(bexpected, bmembers);
 
-    bmembers = jedis.spop(bfoo,2);
+    bmembers = jedis.spop(bfoo, 2);
     assertTrue(bmembers.isEmpty());
 
   }

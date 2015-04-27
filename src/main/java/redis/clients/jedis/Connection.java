@@ -89,7 +89,7 @@ public class Connection implements Closeable {
     return sendCommand(cmd, bargs);
   }
 
-  protected Connection sendCommand(final Command cmd, final byte[]... args) {
+  protected Connection sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
       connect();
       Protocol.sendCommand(outputStream, cmd, args);

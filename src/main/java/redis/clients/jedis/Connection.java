@@ -80,7 +80,7 @@ public class Connection implements Closeable {
     }
   }
 
-  protected Connection sendCommand(final Command cmd, final String... args) {
+  protected Connection sendCommand(final ProtocolCommand cmd, final String... args) {
     final byte[][] bargs = new byte[args.length][];
     for (int i = 0; i < args.length; i++) {
       bargs[i] = SafeEncoder.encode(args[i]);
@@ -100,7 +100,7 @@ public class Connection implements Closeable {
     }
   }
 
-  protected Connection sendCommand(final Command cmd) {
+  protected Connection sendCommand(final ProtocolCommand cmd) {
     try {
       connect();
       Protocol.sendCommand(outputStream, cmd, new byte[0][]);

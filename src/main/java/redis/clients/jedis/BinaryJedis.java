@@ -132,7 +132,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param nxxx NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
    *          if it already exist.
    * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
-   * @param time expire time in the units of {@param #expx}
+   * @param time expire time in the units of <code>expx</code>
    * @return Status code reply
    */
   public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
@@ -329,8 +329,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @param seconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
-   *         the key already has an associated timeout (this may happen only in Redis versions <
-   *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
+   *         the key already has an associated timeout (this may happen only in Redis versions &lt;
+   *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   public Long expire(final byte[] key, final int seconds) {
     checkIsInMulti();
@@ -358,8 +358,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @param unixTime
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
-   *         the key already has an associated timeout (this may happen only in Redis versions <
-   *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
+   *         the key already has an associated timeout (this may happen only in Redis versions &lt;
+   *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   public Long expireAt(final byte[] key, final long unixTime) {
     checkIsInMulti();
@@ -980,7 +980,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <b>Out-of-range indexes</b>
    * <p>
    * Indexes out of range will not produce an error: if start is over the end of the list, or start
-   * > end, an empty list is returned. If end is over the end of the list Redis will threat it just
+   * &gt; end, an empty list is returned. If end is over the end of the list Redis will threat it just
    * like the last element of the list.
    * <p>
    * Time complexity: O(start+n) (with n being the length of the range and start being the start
@@ -1008,7 +1008,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * example -1 is the last element of the list, -2 the penultimate element and so on.
    * <p>
    * Indexes out of range will not produce an error: if start is over the end of the list, or start
-   * > end, an empty list is left as value. If end over the end of the list Redis will threat it
+   * &gt; end, an empty list is left as value. If end over the end of the list Redis will threat it
    * just like the last element of the list.
    * <p>
    * Hint: the obvious use of LTRIM is together with LPUSH/RPUSH. For example:
@@ -1359,7 +1359,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * key1 = [x, a, b, c]
    * key2 = [c]
    * key3 = [a, d]
-   * SDIFF key1,key2,key3 => [x, b]
+   * SDIFF key1,key2,key3 =&gt; [x, b]
    * </pre>
    * 
    * Non existing keys are considered like empty sets.
@@ -1685,49 +1685,49 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * 
    * <pre>
    * sort(x) or sort(x, sp.asc())
-   * -> [1, 2, 3]
+   * -&gt; [1, 2, 3]
    * 
    * sort(x, sp.desc())
-   * -> [3, 2, 1]
+   * -&gt; [3, 2, 1]
    * 
    * sort(y)
-   * -> [c, a, b]
+   * -&gt; [c, a, b]
    * 
    * sort(y, sp.alpha())
-   * -> [a, b, c]
+   * -&gt; [a, b, c]
    * 
    * sort(y, sp.alpha().desc())
-   * -> [c, a, b]
+   * -&gt; [c, a, b]
    * </pre>
    * 
    * Limit (e.g. for Pagination):
    * 
    * <pre>
    * sort(x, sp.limit(0, 2))
-   * -> [1, 2]
+   * -&gt; [1, 2]
    * 
    * sort(y, sp.alpha().desc().limit(1, 2))
-   * -> [b, a]
+   * -&gt; [b, a]
    * </pre>
    * 
    * Sorting by external keys:
    * 
    * <pre>
    * sort(x, sb.by(w*))
-   * -> [3, 2, 1]
+   * -&gt; [3, 2, 1]
    * 
    * sort(x, sb.by(w*).desc())
-   * -> [1, 2, 3]
+   * -&gt; [1, 2, 3]
    * </pre>
    * 
    * Getting external keys:
    * 
    * <pre>
    * sort(x, sp.by(w*).get(k*))
-   * -> [x, y, z]
+   * -&gt; [x, y, z]
    * 
    * sort(x, sp.by(w*).get(#).get(k*))
-   * -> [3, x, 2, y, 1, z]
+   * -&gt; [3, x, 2, y, 1, z]
    * </pre>
    * @see #sort(byte[])
    * @see #sort(byte[], SortingParams, byte[])
@@ -2000,11 +2000,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
    * <p>
-   * Will return all the values with score > 1.3 and <= 5, while for instance:
+   * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (5 (10}
    * <p>
-   * Will return all the values with score > 5 and < 10 (5 and 10 excluded).
+   * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
    * <p>
    * <b>Time complexity:</b>
    * <p>
@@ -2057,11 +2057,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
    * <p>
-   * Will return all the values with score > 1.3 and <= 5, while for instance:
+   * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (5 (10}
    * <p>
-   * Will return all the values with score > 5 and < 10 (5 and 10 excluded).
+   * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
    * <p>
    * <b>Time complexity:</b>
    * <p>
@@ -2116,11 +2116,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
    * <p>
-   * Will return all the values with score > 1.3 and <= 5, while for instance:
+   * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (5 (10}
    * <p>
-   * Will return all the values with score > 5 and < 10 (5 and 10 excluded).
+   * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
    * <p>
    * <b>Time complexity:</b>
    * <p>
@@ -2173,11 +2173,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
    * <p>
-   * Will return all the values with score > 1.3 and <= 5, while for instance:
+   * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (5 (10}
    * <p>
-   * Will return all the values with score > 5 and < 10 (5 and 10 excluded).
+   * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
    * <p>
    * <b>Time complexity:</b>
    * <p>

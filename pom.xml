@@ -104,6 +104,14 @@
 				<configuration>
 					<attach>true</attach>
 				</configuration>
+                                <executions>
+                                    <execution>
+                                        <id>attach-sources</id>
+                                        <goals>
+                                            <goal>jar</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -112,6 +120,14 @@
 				<configuration>
 					<aggregate>true</aggregate>
 				</configuration>
+                                <executions>
+                                    <execution>
+                                        <id>attach-javadoc</id>
+                                        <goals>
+                                            <goal>jar</goal>
+                                        </goals>
+                                    </execution>
+                                </executions>
 			</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

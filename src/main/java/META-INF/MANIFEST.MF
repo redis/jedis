@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Export-Package: redis.clients.jedis;version="3.0.0";uses:="org.apache.
+ commons.pool2.impl,redis.clients.jedis.exceptions,redis.clients.util"
+ ,redis.clients.jedis.exceptions;version="3.0.0";uses:="redis.clients.
+ jedis",redis.clients.util;version="3.0.0"; uses:="org.apache.commons.
+ pool2,  org.apache.commons.pool2.impl,  redis.clients.jedis,  redis.c
+ lients.jedis.exceptions"
+Built-By: zhouhuabin
+Tool: Bnd-2.3.0.201405100607
+Bundle-Name: Jedis
+Created-By: Apache Maven Bundle Plugin
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.6))"
+Bundle-Vendor: palmgo
+Build-Jdk: 1.6.0_43
+Bundle-Version: 3.0.0
+Bnd-LastModified: 1427659280749
+Bundle-ManifestVersion: 3
+Bundle-License: http://github.com/xetorthio/jedis/raw/master/LICENSE.t
+ xt
+Bundle-Description: Jedis-3.0.0-palmgo add password parameter in Jedis
+ Cluster class.
+Bundle-SymbolicName: redis.clients.jedis
+Import-Package: org.apache.commons.pool2;version="[2.3,3)",org.apache.
+ commons.pool2.impl;version="[2.3,3)"
+Archiver-Version: Plexus Archiver
+

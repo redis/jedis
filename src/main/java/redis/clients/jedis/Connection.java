@@ -11,6 +11,7 @@ import java.util.List;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.IOUtils;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -80,7 +81,7 @@ public class Connection implements Closeable {
     }
   }
 
-  protected Connection sendCommand(final Command cmd, final String... args) {
+  protected Connection sendCommand(final ProtocolCommand cmd, final String... args) {
     final byte[][] bargs = new byte[args.length][];
     for (int i = 0; i < args.length; i++) {
       bargs[i] = SafeEncoder.encode(args[i]);
@@ -88,7 +89,7 @@ public class Connection implements Closeable {
     return sendCommand(cmd, bargs);
   }
 
-  protected Connection sendCommand(final Command cmd, final byte[]... args) {
+  protected Connection sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
       connect();
       Protocol.sendCommand(outputStream, cmd, args);
@@ -101,7 +102,7 @@ public class Connection implements Closeable {
     }
   }
 
-  protected Connection sendCommand(final Command cmd) {
+  protected Connection sendCommand(final ProtocolCommand cmd) {
     try {
       connect();
       Protocol.sendCommand(outputStream, cmd, new byte[0][]);
@@ -164,14 +165,13 @@ public class Connection implements Closeable {
   public void disconnect() {
     if (isConnected()) {
       try {
-        inputStream.close();
-        if (!socket.isClosed()) {
-          outputStream.close();
-          socket.close();
-        }
+        outputStream.flush();
+        socket.close();
       } catch (IOException ex) {
         broken = true;
         throw new JedisConnectionException(ex);
+      } finally {
+        IOUtils.closeQuietly(socket);
       }
     }
   }

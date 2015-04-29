@@ -314,6 +314,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.spop(key);
   }
 
+  public Set<byte[]> spop(byte[] key, long count) {
+    Jedis j = getShard(key);
+    return j.spop(key, count);
+  }
+
   public Long scard(byte[] key) {
     Jedis j = getShard(key);
     return j.scard(key);

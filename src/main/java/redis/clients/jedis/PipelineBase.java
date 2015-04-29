@@ -8,7 +8,7 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
-abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
+public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
   protected abstract Client getClient(String key);
 
@@ -585,9 +585,19 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
     return getResponse(BuilderFactory.STRING);
   }
 
+  public Response<Set<String>> spop(String key, long count) {
+    getClient(key).spop(key, count);
+    return getResponse(BuilderFactory.STRING_SET);
+  }
+
   public Response<byte[]> spop(byte[] key) {
     getClient(key).spop(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  public Response<Set<byte[]>> spop(byte[] key, long count) {
+    getClient(key).spop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   public Response<String> srandmember(String key) {
@@ -697,6 +707,11 @@ abstract class PipelineBase extends Queable implements BinaryRedisPipeline, Redi
 
   public Response<Long> zcount(byte[] key, double min, double max) {
     getClient(key).zcount(key, toByteArray(min), toByteArray(max));
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  public Response<Long> zcount(byte[] key, byte[] min, byte[] max) {
+    getClient(key).zcount(key, min, max);
     return getResponse(BuilderFactory.LONG);
   }
 

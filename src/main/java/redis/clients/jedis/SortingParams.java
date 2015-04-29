@@ -29,7 +29,7 @@ public class SortingParams {
    * value of the elements on the list.
    * <p>
    * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*->fieldname".
+   * "keyname*-&gt;fieldname".
    * @param pattern
    * @return the SortingParams Object
    */
@@ -45,7 +45,7 @@ public class SortingParams {
    * value of the elements on the list.
    * <p>
    * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*->fieldname".
+   * "keyname*-&gt;fieldname".
    * @param pattern
    * @return the SortingParams Object
    */
@@ -121,7 +121,7 @@ public class SortingParams {
    * elements on the list.
    * <p>
    * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*->fieldname".
+   * "keyname*-&gt;fieldname".
    * <p>
    * To get the list itself use the char # as pattern.
    * @param patterns
@@ -143,7 +143,7 @@ public class SortingParams {
    * elements on the list.
    * <p>
    * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*->fieldname".
+   * "keyname*-&gt;fieldname".
    * <p>
    * To get the list itself use the char # as pattern.
    * @param patterns

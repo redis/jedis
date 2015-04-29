@@ -24,7 +24,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands, MultiKeyB
   protected JedisClusterConnectionHandler connectionHandler;
 
   public BinaryJedisCluster(Set<HostAndPort> nodes, int timeout) {
-    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, new GenericObjectPoolConfig());
+    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, new GenericObjectPoolConfig(),null);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> nodes) {
@@ -32,9 +32,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands, MultiKeyB
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections,
-      final GenericObjectPoolConfig poolConfig) {
+      final GenericObjectPoolConfig poolConfig,String password) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        timeout);
+        timeout,password);
     this.maxRedirections = maxRedirections;
   }
 

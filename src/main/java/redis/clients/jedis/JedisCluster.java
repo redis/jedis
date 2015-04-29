@@ -25,20 +25,20 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxRedirections) {
-    this(nodes, timeout, maxRedirections, new GenericObjectPoolConfig());
+    this(nodes, timeout, maxRedirections, new GenericObjectPoolConfig(),null);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig) {
-    this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+    this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig,null);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, final GenericObjectPoolConfig poolConfig) {
-    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig,null);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections,
-      final GenericObjectPoolConfig poolConfig) {
-    super(jedisClusterNode, timeout, maxRedirections, poolConfig);
+      final GenericObjectPoolConfig poolConfig,String password) {
+    super(jedisClusterNode, timeout, maxRedirections, poolConfig,password);
   }
 
   @Override

@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT-palmgo</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
   <url>https://github.com/xetorthio/jedis</url>
@@ -69,11 +69,15 @@
 	</dependencies>
 
   <distributionManagement>
-      <repository>
+      <!--repository>
           <id>github</id>
           <name>GitHub ${project.artifactId} Repository</name>
           <url>https://raw.github.com/xetorthio/${project.artifactId}/mvn-repo</url>
-      </repository>
+      </repository-->
+      <repository>
+			<id>ctfonexus-releases</id>
+			<url>http://local.nexus.com/nexus/content/repositories/Ctfo-repository/</url>
+		</repository>
   </distributionManagement>
 
 	<build>
@@ -81,7 +85,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.0</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -137,9 +141,9 @@
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
         <version>2.8.1</version>
-        <configuration>
+        <!--configuration>
           <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
-        </configuration>
+        </configuration-->
       </plugin>
       <plugin>
 	      <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
@@ -154,11 +158,11 @@
 			  <version>2.6</version>
 			  <configuration>
 			    <archive>  
-			      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+			      <manifestFile>${project.build.sourceDirectory}/META-INF/MANIFEST.MF</manifestFile>
 			    </archive> 
 			  </configuration>
 			</plugin> 
-      		<plugin>
+      		<!--plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>2.5.3</version>		
@@ -171,7 +175,7 @@
 				      </goals>   
 				    </execution>
 				</executions>		
-			</plugin>
+			</plugin-->
 		</plugins>
 	</build>
 </project>

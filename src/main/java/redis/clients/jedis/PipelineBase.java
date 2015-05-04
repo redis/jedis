@@ -709,10 +709,10 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).zcount(key, toByteArray(min), toByteArray(max));
     return getResponse(BuilderFactory.LONG);
   }
-  
+
   public Response<Long> zcount(byte[] key, byte[] min, byte[] max) {
-	    getClient(key).zcount(key, min, max);
-	    return getResponse(BuilderFactory.LONG);
+    getClient(key).zcount(key, min, max);
+    return getResponse(BuilderFactory.LONG);
   }
 
   public Response<Double> zincrby(String key, double score, String member) {

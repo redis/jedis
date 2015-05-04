@@ -18,6 +18,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisPoolTest extends Assert {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -287,6 +288,21 @@ public class JedisPoolTest extends Assert {
 
     pool.destroy();
     assertTrue(pool.isClosed());
+  }
+
+  @Test(expected = JedisException.class)
+  public void returnResourceObjectShouldnotReturnTwice() {
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(false);
+    int timeout = 2000;
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), timeout, "foobared");
+
+    Jedis jedis = pool.getResource();
+    pool.returnResourceObject(jedis);
+
+    // Returning it one more time which is not valid.
+    pool.returnResourceObject(jedis);
   }
 
   @Test

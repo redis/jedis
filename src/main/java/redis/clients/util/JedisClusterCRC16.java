@@ -1,8 +1,9 @@
 package redis.clients.util;
 
 /**
- * CRC16 Implementation according to CCITT standard Polynomial : 1021 (x^16 + x^12 + x^5 + 1)
- * See <a href="http://redis.io/topics/cluster-spec">Appendix A. CRC16 reference implementation in ANSI C</a>
+ * CRC16 Implementation according to CCITT standard Polynomial : 1021 (x^16 + x^12 + x^5 + 1) See <a
+ * href="http://redis.io/topics/cluster-spec">Appendix A. CRC16 reference implementation in ANSI
+ * C</a>
  */
 public class JedisClusterCRC16 {
   private static final int LOOKUP_TABLE[] = { 0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5,
@@ -67,8 +68,8 @@ public class JedisClusterCRC16 {
    * Create a CRC16 checksum from the bytes. implementation is from mp911de/lettuce, modified with
    * some more optimizations
    * @param bytes
-   * @return CRC16 as integer value
-   * See <a href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">Issue 733</a>
+   * @return CRC16 as integer value See <a
+   *         href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">Issue 733</a>
    */
   public static int getCRC16(byte[] bytes, int s, int e) {
     int crc = 0x0000;

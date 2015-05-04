@@ -51,12 +51,7 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  /**
-   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
-   */
-  @Deprecated
-  public void returnResourceObject(final T resource) {
+  protected void returnResourceObject(final T resource) {
     if (resource == null) {
       return;
     }

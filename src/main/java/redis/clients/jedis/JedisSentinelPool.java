@@ -17,7 +17,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected GenericObjectPoolConfig poolConfig;
 
-  protected int timeout = Protocol.DEFAULT_TIMEOUT;
+  protected int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
+  protected int soTimeout = Protocol.DEFAULT_TIMEOUT;
 
   protected String password;
 
@@ -63,9 +64,15 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database);
+  }
 
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      final String password, final int database) {
     this.poolConfig = poolConfig;
-    this.timeout = timeout;
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
     this.password = password;
     this.database = database;
 
@@ -89,7 +96,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     if (!master.equals(currentHostMaster)) {
       currentHostMaster = master;
       if (factory == null) {
-        factory = new JedisFactory(master.getHost(), master.getPort(), timeout, password, database);
+        factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
+            soTimeout, password, database, null);
         initPool(poolConfig, factory);
       } else {
         factory.setHostAndPort(currentHostMaster);

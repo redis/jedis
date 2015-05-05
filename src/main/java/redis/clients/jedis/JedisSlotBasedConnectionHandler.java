@@ -13,7 +13,12 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       final GenericObjectPoolConfig poolConfig, int timeout) {
-    super(nodes, poolConfig, timeout);
+    this(nodes, poolConfig, timeout, timeout);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout);
   }
 
   public Jedis getConnection() {

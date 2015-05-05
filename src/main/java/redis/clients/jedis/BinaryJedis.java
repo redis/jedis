@@ -1009,8 +1009,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <b>Out-of-range indexes</b>
    * <p>
    * Indexes out of range will not produce an error: if start is over the end of the list, or start
-   * &gt; end, an empty list is returned. If end is over the end of the list Redis will threat it just
-   * like the last element of the list.
+   * &gt; end, an empty list is returned. If end is over the end of the list Redis will threat it
+   * just like the last element of the list.
    * <p>
    * Time complexity: O(start+n) (with n being the length of the range and start being the start
    * offset)

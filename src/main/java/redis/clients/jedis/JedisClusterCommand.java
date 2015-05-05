@@ -83,11 +83,7 @@ public abstract class JedisClusterCommand<T> {
 
   private void releaseConnection(Jedis connection) {
     if (connection != null) {
-      if (connection.getClient().isBroken()) {
-        connectionHandler.returnBrokenConnection(connection);
-      } else {
-        connectionHandler.returnConnection(connection);
-      }
+      connection.close();
       connection = null;
     }
   }

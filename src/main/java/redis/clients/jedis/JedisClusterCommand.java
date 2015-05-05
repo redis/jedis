@@ -119,14 +119,16 @@ public abstract class JedisClusterCommand<T> {
 
       return execute(connection);
     } catch (JedisConnectionException jce) {
-      if (tryRandomNode) {
-        // maybe all connection is down
-        throw jce;
-      }
-
+      
+      //release connection before throw exception
       releaseConnection(connection, true);
       connection = null;
-
+      
+      if (tryRandomNode) {
+      // maybe all connection is down
+        throw jce;
+      }
+      
       // retry with random connection
       return runWithRetries(key, redirections - 1, true, asking);
     } catch (JedisRedirectionException jre) {

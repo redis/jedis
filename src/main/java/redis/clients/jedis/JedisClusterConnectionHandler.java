@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -14,26 +12,11 @@ public abstract class JedisClusterConnectionHandler {
 
   abstract Jedis getConnection();
 
-  private int timeout;
-
-  public void returnConnection(Jedis connection) {
-    cache.getNode(getNodeKey(connection.getClient())).returnResource(connection);
-  }
-
-  public void returnBrokenConnection(Jedis connection) {
-    cache.getNode(getNodeKey(connection.getClient())).returnBrokenResource(connection);
-  }
-
   abstract Jedis getConnectionFromSlot(int slot);
 
   public Jedis getConnectionFromNode(HostAndPort node) {
     cache.setNodeIfNotExist(node);
     return cache.getNode(JedisClusterInfoCache.getNodeKey(node)).getResource();
-  }
-
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int timeout) {
-    this(nodes, poolConfig, timeout, timeout);
   }
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
@@ -44,10 +27,6 @@ public abstract class JedisClusterConnectionHandler {
 
   public Map<String, JedisPool> getNodes() {
     return cache.getNodes();
-  }
-
-  public void assignSlotToNode(int slot, HostAndPort targetNode) {
-    cache.assignSlotToNode(slot, targetNode);
   }
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig) {

@@ -38,8 +38,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this.maxRedirections = maxRedirections;
   }
 
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int maxRedirections, final GenericObjectPoolConfig poolConfig) {
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+      int soTimeout, int maxRedirections, final GenericObjectPoolConfig poolConfig) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout);
     this.maxRedirections = maxRedirections;

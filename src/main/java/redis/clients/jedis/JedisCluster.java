@@ -41,6 +41,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     super(jedisClusterNode, timeout, maxRedirections, poolConfig);
   }
 
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+      int maxRedirections, final GenericObjectPoolConfig poolConfig) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxRedirections, poolConfig);
+  }
+
   @Override
   public String set(final String key, final String value) {
     return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {

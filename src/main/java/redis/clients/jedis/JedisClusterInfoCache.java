@@ -24,11 +24,18 @@ public class JedisClusterInfoCache {
   private final Lock w = rwl.writeLock();
   private final GenericObjectPoolConfig poolConfig;
 
-  private int timeout;
+  private int connectionTimeout;
+  private int soTimeout;
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
-    this.timeout = timeout;
+    this(poolConfig, timeout, timeout);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+      final int connectionTimeout, final int soTimeout) {
     this.poolConfig = poolConfig;
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -97,7 +104,8 @@ public class JedisClusterInfoCache {
       String nodeKey = getNodeKey(node);
       if (nodes.containsKey(nodeKey)) return;
 
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(), timeout);
+      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
+          connectionTimeout, soTimeout, null, 0, null);
       nodes.put(nodeKey, nodePool);
     } finally {
       w.unlock();

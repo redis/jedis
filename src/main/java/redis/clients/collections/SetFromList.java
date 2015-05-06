@@ -8,8 +8,7 @@ import java.util.List;
 /**
  * A decorator to implement Set from List. Assume that given List do not contains duplicated values.
  * The resulting set displays the same ordering, concurrency, and performance characteristics as the
- * backing list.
- * This class is used for Redis commands which return Set result.
+ * backing list. This class should be used only for Redis commands which return Set result.
  * @param <E>
  */
 public class SetFromList<E> extends AbstractSet<E> {
@@ -71,17 +70,16 @@ public class SetFromList<E> extends AbstractSet<E> {
       return true;
     }
 
+    if (o == null) {
+      return false;
+    }
+
     Collection c = (Collection) o;
     if (c.size() != size()) {
       return false;
     }
-    try {
-      return containsAll(c);
-    } catch (ClassCastException unused) {
-      return false;
-    } catch (NullPointerException unused) {
-      return false;
-    }
+
+    return containsAll(c);
   }
 
   public boolean containsAll(Collection<?> c) {

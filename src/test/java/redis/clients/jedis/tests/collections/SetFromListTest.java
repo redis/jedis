@@ -40,7 +40,7 @@ public class SetFromListTest {
     cut.add("D");
 
     // containsAll
-    cut.containsAll(cut);
+    assertTrue(cut.containsAll(cut));
 
     // retainAll
     cut.retainAll(Arrays.asList("C", "D"));
@@ -87,7 +87,10 @@ public class SetFromListTest {
 
     SetFromList<String> setFromList = SetFromList.of(new ArrayList<String>(hashSet));
 
-    assertEquals(hashSet, setFromList);
-    assertEquals(setFromList, hashSet);
+    assertTrue(hashSet.equals(setFromList));
+    assertTrue(setFromList.equals(hashSet));
+
+    // equals with null
+    assertFalse(setFromList.equals(null));
   }
 }

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.collections.CollectionUtils;
 import redis.clients.collections.SetFromList;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -2206,8 +2205,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     if (membersWithScores.size() == 0) {
       return Collections.emptySet();
     }
-    Set<Tuple> set = new LinkedHashSet<Tuple>(
-        CollectionUtils.mapCapacity(membersWithScores.size() / 2));
+    Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);
     Iterator<byte[]> iterator = membersWithScores.iterator();
     while (iterator.hasNext()) {
       set.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder.encode(iterator.next()))));

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import redis.clients.collections.CollectionUtils;
 import redis.clients.collections.SetFromList;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
@@ -1440,15 +1439,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Set<Tuple> zrangeWithScores(final String key, final long start, final long end) {
     checkIsInMulti();
     client.zrangeWithScores(key, start, end);
-    Set<Tuple> set = getTupledSet();
-    return set;
+    return getTupledSet();
   }
 
   public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long end) {
     checkIsInMulti();
     client.zrevrangeWithScores(key, start, end);
-    Set<Tuple> set = getTupledSet();
-    return set;
+    return getTupledSet();
   }
 
   /**
@@ -2064,8 +2061,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     if (membersWithScores.size() == 0) {
       return Collections.emptySet();
     }
-    Set<Tuple> set = new LinkedHashSet<Tuple>(
-        CollectionUtils.mapCapacity(membersWithScores.size() / 2));
+    Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);
     Iterator<String> iterator = membersWithScores.iterator();
     while (iterator.hasNext()) {
       set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));

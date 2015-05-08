@@ -2,23 +2,41 @@ package redis.clients.jedis.tests.collections;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.collections.SetFromList;
-
 public class SetFromListTest {
+
+  private static Method method;
+
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    Class<?> clazz = Class.forName("redis.clients.jedis.BinaryJedis$SetFromList");
+    method = clazz.getDeclaredMethod("of", List.class);
+    method.setAccessible(true);
+  }
+
+  /**
+   * Instantiate SetFromList class by reflection because it is protected static inner class of
+   * BinaryJedis.
+   */
+  @SuppressWarnings("unchecked")
+  private <E> Set<E> setFromList(List<E> list) throws Exception {
+    return (Set<E>) method.invoke(null, list);
+  }
 
   @Test
   public void setOperations() throws Exception {
 
     // add
-    SetFromList<String> cut = SetFromList.of(new ArrayList<String>());
+    Set<String> cut = setFromList(new ArrayList<String>());
     cut.add("A");
     cut.add("B");
     cut.add("A");
@@ -67,7 +85,7 @@ public class SetFromListTest {
       list.add(String.valueOf((char) i));
     }
 
-    SetFromList<String> cut = SetFromList.of(list);
+    Set<String> cut = setFromList(list);
 
     // ordering guarantee
     int i = 0;
@@ -85,7 +103,7 @@ public class SetFromListTest {
       hashSet.add(String.valueOf((char) i));
     }
 
-    SetFromList<String> setFromList = SetFromList.of(new ArrayList<String>(hashSet));
+    Set<String> setFromList = setFromList(new ArrayList<String>(hashSet));
 
     assertTrue(hashSet.equals(setFromList));
     assertTrue(setFromList.equals(hashSet));

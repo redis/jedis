@@ -103,12 +103,15 @@ public class SetFromListTest {
       hashSet.add(String.valueOf((char) i));
     }
 
-    Set<String> setFromList = setFromList(new ArrayList<String>(hashSet));
+    Set<String> cut = setFromList(new ArrayList<String>(hashSet));
 
-    assertTrue(hashSet.equals(setFromList));
-    assertTrue(setFromList.equals(hashSet));
+    assertTrue(hashSet.equals(cut));
+    assertTrue(cut.equals(hashSet));
 
     // equals with null
-    assertFalse(setFromList.equals(null));
+    assertFalse(cut.equals(null));
+
+    // equals with other types
+    assertFalse(cut.equals(new ArrayList<String>()));
   }
 }

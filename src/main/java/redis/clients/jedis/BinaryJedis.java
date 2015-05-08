@@ -3275,11 +3275,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         return true;
       }
 
-      if (o == null) {
+      if (!(o instanceof Set)) {
         return false;
       }
 
-      Collection c = (Collection) o;
+      Collection<?> c = (Collection<?>) o;
       if (c.size() != size()) {
         return false;
       }

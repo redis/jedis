@@ -8,7 +8,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.IOUtils;
@@ -17,6 +16,8 @@ import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
+
+  private static final byte[][] EMPTY_ARGS = new byte[0][];
 
   private String host = Protocol.DEFAULT_HOST;
   private int port = Protocol.DEFAULT_PORT;
@@ -88,24 +89,26 @@ public class Connection implements Closeable {
     return sendCommand(cmd, bargs);
   }
 
+  protected Connection sendCommand(final ProtocolCommand cmd) {
+    return sendCommand(cmd, EMPTY_ARGS);
+  }
+
   protected Connection sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
       connect();
       Protocol.sendCommand(outputStream, cmd, args);
       return this;
     } catch (JedisConnectionException ex) {
-      // Any other exceptions related to connection?
-      broken = true;
-      throw ex;
-    }
-  }
-
-  protected Connection sendCommand(final ProtocolCommand cmd) {
-    try {
-      connect();
-      Protocol.sendCommand(outputStream, cmd, new byte[0][]);
-      return this;
-    } catch (JedisConnectionException ex) {
+      try {
+        // Try to read single line for error message from Redis
+        String errorMessage = Protocol.readLine(inputStream);
+        if (errorMessage != null && errorMessage.length() > 0) {
+          // if possible replace exception
+          ex = new JedisConnectionException(errorMessage, ex.getCause());
+        }
+      } catch (Exception e) {
+        // Ignore
+      }
       // Any other exceptions related to connection?
       broken = true;
       throw ex;

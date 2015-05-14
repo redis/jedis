@@ -18,6 +18,8 @@ import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
 
+  private static final byte[][] EMPTY_ARGS = new byte[0][];
+
   private String host = Protocol.DEFAULT_HOST;
   private int port = Protocol.DEFAULT_PORT;
   private Socket socket;
@@ -89,6 +91,10 @@ public class Connection implements Closeable {
     return sendCommand(cmd, bargs);
   }
 
+  protected Connection sendCommand(final ProtocolCommand cmd) {
+    return sendCommand(cmd, EMPTY_ARGS);
+  }
+
   protected Connection sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
       connect();
@@ -96,6 +102,16 @@ public class Connection implements Closeable {
       pipelinedCommands++;
       return this;
     } catch (JedisConnectionException ex) {
+      try {
+        // Try to read single line for error message from Redis
+        String errorMessage = Protocol.readLine(inputStream);
+        if (errorMessage != null && errorMessage.length() > 0) {
+          // if possible replace exception
+          ex = new JedisConnectionException(errorMessage, ex.getCause());
+        }
+      } catch (Exception e) {
+        // Ignore
+      }
       // Any other exceptions related to connection?
       broken = true;
       throw ex;

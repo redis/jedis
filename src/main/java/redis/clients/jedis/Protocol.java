@@ -196,6 +196,10 @@ public final class Protocol {
     return process(is);
   }
 
+  public static String readLine(RedisInputStream inputStream) {
+    return inputStream.readLine();
+  }
+
   public static final byte[] toByteArray(final boolean value) {
     return value ? BYTES_TRUE : BYTES_FALSE;
   }

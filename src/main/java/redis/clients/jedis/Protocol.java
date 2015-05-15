@@ -117,6 +117,15 @@ public final class Protocol {
     throw new JedisDataException(message);
   }
 
+  public static String readErrorLineIfPossible(RedisInputStream is) {
+    final byte b = is.readByte();
+    // if buffer contains other type of response, just ignore.
+    if (b != MINUS_BYTE) {
+      return null;
+    }
+    return is.readLine();
+  }
+
   private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
     String[] response = new String[3];
     String[] messageInfo = clusterRedirectResponse.split(" ");
@@ -194,10 +203,6 @@ public final class Protocol {
 
   public static Object read(final RedisInputStream is) {
     return process(is);
-  }
-
-  public static String readLine(RedisInputStream inputStream) {
-    return inputStream.readLine();
   }
 
   public static final byte[] toByteArray(final boolean value) {

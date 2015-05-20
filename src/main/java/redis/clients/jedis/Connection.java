@@ -104,8 +104,6 @@ public class Connection implements Closeable {
        * before close connection. We try to read it to provide reason of failure.
        */
       try {
-        // Set soTimeout 100ms to avoid long blocking
-        socket.setSoTimeout(100);
         String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
         if (errorMessage != null && errorMessage.length() > 0) {
           ex = new JedisConnectionException(errorMessage, ex.getCause());

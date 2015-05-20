@@ -143,7 +143,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     Set<String> members = jedis.spop("foo", 2);
 
     assertEquals(2, members.size());
-    assertEquals(members, expected);
+    assertEquals(expected, members);
 
     members = jedis.spop("foo", 2);
     assertTrue(members.isEmpty());
@@ -163,7 +163,6 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     bmembers = jedis.spop(bfoo, 2);
     assertTrue(bmembers.isEmpty());
-
   }
 
   @Test

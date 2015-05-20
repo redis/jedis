@@ -60,9 +60,6 @@ public abstract class JedisClusterCommand<T> {
         throw jce;
       }
 
-      releaseConnection(connection, true);
-      connection = null;
-
       // retry with random connection
       return runWithRetries(key, redirections - 1, true, asking);
     } catch (JedisRedirectionException jre) {
@@ -77,23 +74,17 @@ public abstract class JedisClusterCommand<T> {
         throw new JedisClusterException(jre);
       }
 
-      releaseConnection(connection, false);
-      connection = null;
-
       return runWithRetries(key, redirections - 1, false, asking);
     } finally {
-      releaseConnection(connection, false);
+      releaseConnection(connection);
     }
 
   }
 
-  private void releaseConnection(Jedis connection, boolean broken) {
+  private void releaseConnection(Jedis connection) {
     if (connection != null) {
-      if (broken) {
-        connectionHandler.returnBrokenConnection(connection);
-      } else {
-        connectionHandler.returnConnection(connection);
-      }
+      connection.close();
+      connection = null;
     }
   }
 

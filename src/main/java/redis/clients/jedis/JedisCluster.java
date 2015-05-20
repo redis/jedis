@@ -45,8 +45,13 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections,
       final GenericObjectPoolConfig poolConfig) {
+    this(jedisClusterNode, timeout, timeout, maxRedirections, poolConfig);
+  }
+
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+      int maxRedirections, final GenericObjectPoolConfig poolConfig) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        timeout);
+        connectionTimeout, soTimeout);
     this.maxRedirections = maxRedirections;
   }
 

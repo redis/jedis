@@ -44,4 +44,6 @@ public interface ClusterCommands {
   List<Object> clusterSlots();
 
   String clusterReset(Reset resetType);
+
+  String readonly();
 }

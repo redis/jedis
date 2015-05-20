@@ -345,4 +345,12 @@ public class JedisPoolTest extends Assert {
 
     pool.destroy();
   }
+  
+  @Test
+  public void idempotentClose() {
+	  JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
+	  Jedis jedis = pool.getResource();
+	  jedis.close();
+	  jedis.close();
+  }
 }

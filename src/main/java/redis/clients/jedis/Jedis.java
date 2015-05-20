@@ -3158,6 +3158,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  @Override
+  public String readonly() {
+    client.readonly();
+    return client.getStatusCodeReply();
+  }
+
   public String clusterMeet(final String ip, final int port) {
     checkIsInMulti();
     client.clusterMeet(ip, port);

@@ -3271,10 +3271,5 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
     return new ScanResult<Tuple>(newcursor, results);
   }
-  @Override
-  public String readonly() {
-    client.readonly();
-    return client.getStatusCodeReply();
-  }
 
 }

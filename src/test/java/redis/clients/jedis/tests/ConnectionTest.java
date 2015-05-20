@@ -53,11 +53,6 @@ public class ConnectionTest extends Assert {
 
   @Test
   public void getErrorAfterConnectionReset() throws Exception {
-    brokenReason(new byte[1024 * 1024 + 1][0], "ERR Protocol error: invalid multibulk length");
-    brokenReason(new byte[1][512 * 1024 * 1024 + 1], "ERR Protocol error: invalid bulk length");
-  }
-
-  private void brokenReason(byte[][] params, String expectedMessage) throws Exception {
     class TestConnection extends Connection {
       public TestConnection() {
         super("localhost", 6379);
@@ -72,10 +67,10 @@ public class ConnectionTest extends Assert {
     TestConnection conn = new TestConnection();
 
     try {
-      conn.sendCommand(Command.HMSET, params);
+      conn.sendCommand(Command.HMSET, new byte[1024 * 1024 + 1][0]);
       fail("Should throw exception");
     } catch (JedisConnectionException jce) {
-      assertEquals(expectedMessage, jce.getMessage());
+      assertEquals("ERR Protocol error: invalid multibulk length", jce.getMessage());
     }
   }
 }

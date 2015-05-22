@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class ConnectionTest extends Assert {
@@ -47,5 +49,28 @@ public class ConnectionTest extends Assert {
     client.setPort(6379);
     client.connect();
     client.close();
+  }
+
+  @Test
+  public void getErrorAfterConnectionReset() throws Exception {
+    class TestConnection extends Connection {
+      public TestConnection() {
+        super("localhost", 6379);
+      }
+
+      @Override
+      protected Connection sendCommand(ProtocolCommand cmd, byte[]... args) {
+        return super.sendCommand(cmd, args);
+      }
+    }
+
+    TestConnection conn = new TestConnection();
+
+    try {
+      conn.sendCommand(Command.HMSET, new byte[1024 * 1024 + 1][0]);
+      fail("Should throw exception");
+    } catch (JedisConnectionException jce) {
+      assertEquals("ERR Protocol error: invalid multibulk length", jce.getMessage());
+    }
   }
 }

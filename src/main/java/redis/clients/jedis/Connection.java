@@ -124,19 +124,6 @@ public class Connection implements Closeable {
     }
   }
 
-  protected Connection sendCommand(final ProtocolCommand cmd) {
-    try {
-      connect();
-      Protocol.sendCommand(outputStream, cmd, new byte[0][]);
-      pipelinedCommands++;
-      return this;
-    } catch (JedisConnectionException ex) {
-      // Any other exceptions related to connection?
-      broken = true;
-      throw ex;
-    }
-  }
-
   public String getHost() {
     return host;
   }

@@ -71,12 +71,14 @@ public abstract class BinaryJedisPubSub {
   public void proceedWithPatterns(Client client, byte[]... patterns) {
     this.client = client;
     client.psubscribe(patterns);
+    client.flush();
     process(client);
   }
 
   public void proceed(Client client, byte[]... channels) {
     this.client = client;
     client.subscribe(channels);
+	client.flush();
     process(client);
   }
 

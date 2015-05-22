@@ -78,7 +78,7 @@ public abstract class BinaryJedisPubSub {
   public void proceed(Client client, byte[]... channels) {
     this.client = client;
     client.subscribe(channels);
-	client.flush();
+    client.flush();
     process(client);
   }
 

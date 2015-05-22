@@ -82,7 +82,7 @@ public abstract class BinaryJedisPubSub {
 
   private void process(Client client) {
     do {
-      List<Object> reply = client.getObjectMultiBulkReply();
+      List<Object> reply = client.getRawObjectMultiBulkReply();
       final Object firstObj = reply.get(0);
       if (!(firstObj instanceof byte[])) {
         throw new JedisException("Unknown message type: " + firstObj);

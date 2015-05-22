@@ -60,9 +60,17 @@ public abstract class JedisClusterCommand<T> {
         throw jce;
       }
 
+      // release current connection before recursion
+      releaseConnection(connection);
+      connection = null;
+
       // retry with random connection
       return runWithRetries(key, redirections - 1, true, asking);
     } catch (JedisRedirectionException jre) {
+      // release current connection before recursion or renewing
+      releaseConnection(connection);
+      connection = null;
+
       if (jre instanceof JedisAskDataException) {
         asking = true;
         askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
@@ -84,7 +92,6 @@ public abstract class JedisClusterCommand<T> {
   private void releaseConnection(Jedis connection) {
     if (connection != null) {
       connection.close();
-      connection = null;
     }
   }
 

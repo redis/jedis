@@ -11,6 +11,8 @@ import java.util.Set;
 public interface BinaryJedisCommands {
   String set(byte[] key, byte[] value);
 
+  String set(byte[] key, byte[] value, byte[] nxxx);
+
   String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
 
   byte[] get(byte[] key);

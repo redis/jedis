@@ -14,6 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -21,17 +22,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.*;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.JedisClusterCRC16;
@@ -529,6 +528,34 @@ public class JedisClusterTest extends Assert {
 
     jc.close();
   }
+
+
+    @Test
+    public void testRetryRaceCondition() throws InterruptedException {
+        Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+        jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setMaxTotal(1);
+        JedisCluster jc = new JedisCluster(jedisClusterNode, config);
+
+        Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource();
+        ClientKillerUtil.tagClient(j, "DEAD");
+        ClientKillerUtil.killClient(j, "DEAD");
+        j.close();
+
+        node3.clusterSetSlotMigrating(15363,JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
+        node2.clusterSetSlotImporting(15363,JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
+
+        try {
+            //This connection has been killed
+            System.out.println(JedisClusterCRC16.getSlot("test"));
+            jc.get("test");
+        }catch (JedisConnectionException jce) {
+            System.out.println("Here");
+            //Will trigger a move to previous node
+            jc.get("51");
+        }
+    }
 
   private static String getNodeServingSlotRange(String infoOutput) {
     // f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0

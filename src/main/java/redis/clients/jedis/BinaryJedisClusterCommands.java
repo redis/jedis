@@ -10,6 +10,8 @@ public interface BinaryJedisClusterCommands {
 
   String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
 
+  String set(byte[] key, byte[] value, byte[] nxxx);
+
   byte[] get(byte[] key);
 
   Boolean exists(byte[] key);

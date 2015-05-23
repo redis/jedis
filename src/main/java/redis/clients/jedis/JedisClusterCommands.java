@@ -9,6 +9,8 @@ public interface JedisClusterCommands {
 
   String set(String key, String value, String nxxx, String expx, long time);
 
+  String set(String key, String value, String nxxx);
+
   String get(String key);
 
   Boolean exists(String key);

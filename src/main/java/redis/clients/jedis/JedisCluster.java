@@ -68,6 +68,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String set(final String key, final String value, final String nxxx) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.set(key, value, nxxx);
+      }
+    }.run(key);
+  }
+
+  @Override
   public String get(final String key) {
     return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
       @Override

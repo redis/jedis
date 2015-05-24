@@ -2,12 +2,10 @@ package redis.clients.jedis.tests;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.*;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.*;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.*;
+import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.JedisClusterCRC16;
@@ -501,6 +499,35 @@ public class JedisClusterTest extends Assert {
     }
 
     jc.close();
+  }
+
+  @Test(timeout = 2000)
+  public void testReturnConnectionOnJedisConnectionException() throws InterruptedException {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setMaxTotal(1);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, config);
+
+    Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource();
+    ClientKillerUtil.tagClient(j, "DEAD");
+    ClientKillerUtil.killClient(j, "DEAD");
+    j.close();
+
+    jc.get("test");
+  }
+
+  @Test(expected = JedisClusterMaxRedirectionsException.class, timeout = 2000)
+  public void testReturnConnectionOnRedirection() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setMaxTotal(1);
+    JedisCluster jc = new JedisCluster(jedisClusterNode,0, 2, config);
+
+    //This will cause an infinite redirection between node 2 and 3
+    node3.clusterSetSlotMigrating(15363, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
+    jc.get("e");
   }
 
   private static String getNodeServingSlotRange(String infoOutput) {

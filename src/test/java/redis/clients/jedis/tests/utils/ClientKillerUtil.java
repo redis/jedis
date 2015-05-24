@@ -14,4 +14,8 @@ public class ClientKillerUtil {
       }
     }
   }
+
+  public static void tagClient(Jedis j, String name) {
+    j.clientSetname(name);
+  }
 }

@@ -3051,6 +3051,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+
+  /**
+   * PSETEX works exactly like {@link #setex(byte[], int, byte[])}  }with the sole difference that the expire time is specified in milliseconds instead of seconds.
+   * Time complexity: O(1)
+   * @param key
+   * @param milliseconds
+   * @param value
+   * @return Status code reply
+   */
   public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);

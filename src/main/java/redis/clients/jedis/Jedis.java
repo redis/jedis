@@ -2920,6 +2920,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return psetex(key, (long) milliseconds, value);
   }
 
+ /**
+   * PSETEX works exactly like {@link #setex(String, int, String)} }with the sole difference that the expire time is specified in milliseconds instead of seconds.
+   * Time complexity: O(1)
+   * @param key
+   * @param milliseconds
+   * @param value
+   * @return Status code reply
+   */
   public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMulti();
     client.psetex(key, milliseconds, value);

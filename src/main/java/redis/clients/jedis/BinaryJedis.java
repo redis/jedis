@@ -3112,7 +3112,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * PSETEX works exactly like {@link #setex(String, int, String)} }with the sole difference that the expire time is specified in milliseconds instead of seconds.
+   * PSETEX works exactly like {@link #setex(byte[], int, byte[])}  }with the sole difference that the expire time is specified in milliseconds instead of seconds.
    * Time complexity: O(1)
    * @param key
    * @param milliseconds

@@ -62,11 +62,15 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
+
+    // sleep enough time to let MasterListener initialized!
+    Thread.sleep(100);
+
     pool.close();
     assertTrue(pool.isClosed());
 
     // sleep enough time to let shutdown work!
-    Thread.sleep(1 * 1000);
+    Thread.sleep(500);
 
     Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
     for (Thread t : threadSet) {

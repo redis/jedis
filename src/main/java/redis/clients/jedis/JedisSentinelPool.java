@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -221,7 +222,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     protected String host;
     protected int port;
     protected long subscribeRetryWaitTimeMillis = 5000;
-    protected Jedis j;
+    protected volatile Jedis j;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
     protected MasterListener() {
@@ -249,6 +250,11 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         j = new Jedis(host, port);
 
         try {
+          // double check that it is not being shutdown
+          if (!running.get()) {
+            break;
+          }
+
           j.subscribe(new JedisPubSub() {
             @Override
             public void onMessage(String channel, String message) {
@@ -294,7 +300,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         log.fine("Shutting down listener on " + host + ":" + port);
         running.set(false);
         // This isn't good, the Jedis object is not thread safe
-        j.disconnect();
+        if (j != null) {
+          j.disconnect();
+        }
       } catch (Exception e) {
         log.log(Level.SEVERE, "Caught exception while shutting down: ", e);
       }

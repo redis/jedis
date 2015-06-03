@@ -71,8 +71,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
     // sleep enough time to let shutdown work!
     boolean masterListenerAlive = true;
-    // sleep maximum 10 sec
-    for (int i = 0 ; i < 50 ; i++) {
+    // sleep maximum 20 sec
+    for (int i = 0 ; i < 100 ; i++) {
       masterListenerAlive = false;
 
       Thread.sleep(200);

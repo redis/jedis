@@ -82,12 +82,14 @@ public class JedisSentinelPoolTest extends JedisTestBase {
         // Not cleaner, but easy way
         if (t.getName().startsWith("MasterListener")) {
           masterListenerAlive = true;
-        }
-
-        if (!masterListenerAlive) {
           break;
         }
       }
+
+      if (!masterListenerAlive) {
+        break;
+      }
+
     }
 
     assertFalse("MasterListener thread is still alive!", masterListenerAlive);

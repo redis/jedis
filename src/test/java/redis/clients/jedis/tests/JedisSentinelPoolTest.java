@@ -70,13 +70,28 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     assertTrue(pool.isClosed());
 
     // sleep enough time to let shutdown work!
-    Thread.sleep(500);
+    boolean masterListenerAlive = true;
+    // sleep maximum 2 sec
+    for (int i = 0 ; i < 10 ; i++) {
+      masterListenerAlive = false;
 
-    Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-    for (Thread t : threadSet) {
-      // Not cleaner, but easy way
-      assertFalse("MasterListener thread is still alive!", t.getName().startsWith("MasterListener"));
+      Thread.sleep(200);
+
+      Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+      for (Thread t : threadSet) {
+        // Not cleaner, but easy way
+        if (t.getName().startsWith("MasterListener")) {
+          masterListenerAlive = true;
+        }
+
+        if (!masterListenerAlive) {
+          break;
+        }
+      }
     }
+
+    assertFalse("MasterListener thread is still alive!", masterListenerAlive);
+
   }
 
   @Test

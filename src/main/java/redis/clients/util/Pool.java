@@ -20,7 +20,7 @@ public abstract class Pool<T> implements Closeable {
 
   @Override
   public void close() {
-    closeInternalPool();
+    destroy();
   }
 
   public boolean isClosed() {

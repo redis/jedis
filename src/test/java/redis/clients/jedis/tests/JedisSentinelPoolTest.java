@@ -18,9 +18,6 @@ import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 public class JedisSentinelPoolTest extends JedisTestBase {
   private static final String MASTER_NAME = "mymaster";
 
-  protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(2);
-  protected static HostAndPort slave1 = HostAndPortUtil.getRedisServers().get(3);
-
   protected static HostAndPort sentinel1 = HostAndPortUtil.getSentinelServers().get(1);
   protected static HostAndPort sentinel2 = HostAndPortUtil.getSentinelServers().get(3);
 
@@ -68,6 +65,12 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     jedis.close();
     pool.close();
     assertTrue(pool.isClosed());
+
+    Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+    for (Thread t : threadSet) {
+      // Not cleaner, but easy way
+      assertFalse("MasterListener thread is still alive!", t.getName().startsWith("MasterListener"));
+    }
   }
 
   @Test
@@ -82,6 +85,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     forceFailover(pool);
 
     // you can test failover as much as possible
+
+    pool.close();
   }
 
   @Test
@@ -112,7 +117,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     } finally {
       jedis2.close();
 
-      pool.destroy();
+      pool.close();
     }
   }
 
@@ -137,6 +142,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     } finally {
       jedis2.close();
     }
+
+    pool.close();
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {

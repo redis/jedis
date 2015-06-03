@@ -228,6 +228,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     }
 
     public MasterListener(String masterName, String host, int port) {
+      super(String.format("MasterListener-%s-[%s:%d]", masterName, host, port));
       this.masterName = masterName;
       this.host = host;
       this.port = port;

@@ -18,7 +18,7 @@ public interface Hashing {
           md5Holder.set(MessageDigest.getInstance("MD5"));
         }
       } catch (NoSuchAlgorithmException e) {
-        throw new IllegalStateException("++++ no md5 algorythm found");
+        throw new IllegalStateException("++++ no md5 algorithm found");
       }
       MessageDigest md5 = md5Holder.get();
 

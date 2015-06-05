@@ -291,6 +291,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
           } else {
             log.fine("Unsubscribing from Sentinel at " + host + ":" + port);
           }
+        } finally {
+          j.close();
         }
       }
     }
@@ -301,7 +303,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         running.set(false);
         // This isn't good, the Jedis object is not thread safe
         if (j != null) {
-          j.getClient().getSocket().close();
+          j.disconnect();
         }
       } catch (Exception e) {
         log.log(Level.SEVERE, "Caught exception while shutting down: ", e);

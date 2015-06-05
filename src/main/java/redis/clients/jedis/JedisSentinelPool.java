@@ -301,7 +301,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         running.set(false);
         // This isn't good, the Jedis object is not thread safe
         if (j != null) {
-          j.disconnect();
+          j.getClient().getSocket().close();
         }
       } catch (Exception e) {
         log.log(Level.SEVERE, "Caught exception while shutting down: ", e);

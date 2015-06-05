@@ -35,20 +35,24 @@ public class JedisSentinelPoolTest extends JedisTestBase {
   }
 
   @Test(expected = JedisConnectionException.class)
-  public void initializeWithNotAvailableSentinelsShouldThrowException() {
+  public void initializeWithNotAvailableSentinelsShouldThrowException()
+      throws InterruptedException {
     Set<String> wrongSentinels = new HashSet<String>();
     wrongSentinels.add(new HostAndPort("localhost", 65432).toString());
     wrongSentinels.add(new HostAndPort("localhost", 65431).toString());
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels);
-    pool.destroy();
+    pool.close();
+    assertTrue("MasterListener thread is still alive!", waitForMasterListerThreadShutdown());
   }
 
   @Test(expected = JedisException.class)
-  public void initializeWithNotMonitoredMasterNameShouldThrowException() {
+  public void initializeWithNotMonitoredMasterNameShouldThrowException()
+      throws InterruptedException {
     final String wrongMasterName = "wrongMasterName";
     JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName, sentinels);
-    pool.destroy();
+    pool.close();
+    assertTrue("MasterListener thread is still alive!", waitForMasterListerThreadShutdown());
   }
 
   @Test
@@ -70,30 +74,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     assertTrue(pool.isClosed());
 
     // sleep enough time to let shutdown work!
-    boolean masterListenerAlive = true;
-    // sleep maximum 20 sec
-    for (int i = 0 ; i < 100 ; i++) {
-      masterListenerAlive = false;
-
-      Thread.sleep(200);
-
-      Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-      for (Thread t : threadSet) {
-        // Not cleaner, but easy way
-        if (t.getName().startsWith("MasterListener")) {
-          masterListenerAlive = true;
-          break;
-        }
-      }
-
-      if (!masterListenerAlive) {
-        break;
-      }
-
-    }
-
-    assertFalse("MasterListener thread is still alive!", masterListenerAlive);
-
+    assertTrue("MasterListener thread is still alive!", waitForMasterListerThreadShutdown());
   }
 
   @Test
@@ -110,20 +91,21 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     // you can test failover as much as possible
 
     pool.close();
+    assertTrue("MasterListener thread is still alive!", waitForMasterListerThreadShutdown());
   }
 
   @Test
-  public void returnResourceShouldResetState() {
+  public void returnResourceShouldResetState() throws InterruptedException {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
         "foobared", 2);
 
-    Jedis jedis = pool.getResource();
     Jedis jedis2 = null;
-
     try {
+      Jedis jedis = pool.getResource();
+
       jedis.set("hello", "jedis");
       Transaction t = jedis.multi();
       t.set("hello", "world");
@@ -138,35 +120,42 @@ public class JedisSentinelPoolTest extends JedisTestBase {
         jedis2 = null;
       }
     } finally {
-      jedis2.close();
+      if (jedis2 != null) {
+        jedis2.close();
+      }
 
       pool.close();
+      assertTrue("MasterListener thread is still alive!", waitForMasterListerThreadShutdown());
     }
   }
 
   @Test
-  public void checkResourceIsCloseable() {
+  public void checkResourceIsCloseable() throws InterruptedException {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
         "foobared", 2);
 
-    Jedis jedis = pool.getResource();
     try {
-      jedis.set("hello", "jedis");
-    } finally {
-      jedis.close();
-    }
+      Jedis jedis = pool.getResource();
+      try {
+        jedis.set("hello", "jedis");
+      } finally {
+        jedis.close();
+      }
 
-    Jedis jedis2 = pool.getResource();
-    try {
-      assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
-    }
+      Jedis jedis2 = pool.getResource();
+      try {
+        assertEquals(jedis, jedis2);
+      } finally {
+        jedis2.close();
+      }
 
-    pool.close();
+    } finally {
+      pool.close();
+      assertTrue("MasterListener thread is still alive!", waitForMasterListerThreadShutdown());
+    }
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
@@ -208,6 +197,31 @@ public class JedisSentinelPoolTest extends JedisTestBase {
 
       Thread.sleep(100);
     }
+  }
+
+  private boolean waitForMasterListerThreadShutdown() throws InterruptedException {
+    boolean masterListenerAlive = true;
+    // sleep maximum 20 sec
+    for (int i = 0 ; i < 200 ; i++) {
+      masterListenerAlive = false;
+
+      Thread.sleep(100);
+
+      Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+      for (Thread t : threadSet) {
+        // Not cleaner, but easy way
+        if (t.getName().startsWith("MasterListener")) {
+          masterListenerAlive = true;
+          break;
+        }
+      }
+
+      if (!masterListenerAlive) {
+        break;
+      }
+
+    }
+    return !masterListenerAlive;
   }
 
 }

@@ -10,6 +10,7 @@ import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.JedisClusterCRC16;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -296,14 +297,6 @@ public class JedisClusterTest extends Assert {
     assertEquals("foo", jc.get("51"));
   }
 
-  @Test(expected = JedisClusterException.class)
-  public void testThrowExceptionWithoutKey() {
-    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisCluster jc = new JedisCluster(jedisClusterNode);
-    jc.ping();
-  }
-
   @Test(expected = JedisClusterMaxRedirectionsException.class)
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -436,7 +429,7 @@ public class JedisClusterTest extends Assert {
   }
 
   @Test
-  public void testCloseable() {
+  public void testCloseable() throws IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
@@ -480,7 +473,7 @@ public class JedisClusterTest extends Assert {
 
   @Test
   public void testJedisClusterRunsWithMultithreaded() throws InterruptedException,
-      ExecutionException {
+      ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     final JedisCluster jc = new JedisCluster(jedisClusterNode);

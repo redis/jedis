@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.util.KeyMergeUtil;
 
 import java.util.List;
@@ -10,8 +11,9 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
-    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+public class JedisCluster extends BinaryJedisCluster implements
+    JedisCommands, MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+
   public static enum Reset {
     SOFT, HARD
   }
@@ -1602,4 +1604,104 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+
+  /*
+   * below methods will be removed at 3.0
+   */
+
+  /**
+   * @deprecated SetOption is scheduled to be introduced at next major release
+   * Please use setnx instead for now
+   * @see https://github.com/xetorthio/jedis/pull/878
+   */
+  @Deprecated
+  @Override public String set(String key, String value, String nxxx) {
+    return setnx(key, value) == 1 ? "OK" : null;
+  }
+
+  /**
+   * @deprecated unusable command, this will be removed at next major release.
+   */
+  @Deprecated
+  @Override public List<String> blpop(final String arg) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.blpop(arg);
+      }
+    }.run(arg);
+  }
+
+  /**
+   * @deprecated unusable command, this will be removed at next major release.
+   */
+  @Deprecated
+  @Override public List<String> brpop(final String arg) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.brpop(arg);
+      }
+    }.run(arg);
+  }
+
+  /**
+   * @deprecated Redis Cluster uses only db index 0, so it doesn't make sense.
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public Long move(final String key, final int dbIndex) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.move(key, dbIndex);
+      }
+    }.run(key);
+  }
+
+  /**
+   * This method is deprecated due to bug (scan cursor should be unsigned long)
+   * And will be removed on next major release
+   * @see https://github.com/xetorthio/jedis/issues/531
+   */
+  @Deprecated
+  @Override public ScanResult<Entry<String, String>> hscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
+        maxRedirections) {
+      @Override public ScanResult<Entry<String, String>> execute(Jedis connection) {
+        return connection.hscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  /**
+   * This method is deprecated due to bug (scan cursor should be unsigned long)
+   * And will be removed on next major release
+   * @see https://github.com/xetorthio/jedis/issues/531
+   */
+  @Deprecated
+  @Override public ScanResult<String> sscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler,
+        maxRedirections) {
+      @Override public ScanResult<String> execute(Jedis connection) {
+        return connection.sscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  /**
+   * This method is deprecated due to bug (scan cursor should be unsigned long)
+   * And will be removed on next major release
+   * @see https://github.com/xetorthio/jedis/issues/531
+   */
+  @Deprecated
+  @Override public ScanResult<Tuple> zscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler,
+        maxRedirections) {
+      @Override public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor);
+      }
+    }.run(key);
+  }
+
 }

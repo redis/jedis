@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
 
@@ -12,7 +13,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class BinaryJedisCluster implements BinaryJedisClusterCommands,
+public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
   public static final short HASHSLOTS = 16384;
@@ -1597,6 +1598,194 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.pfcount(keys);
       }
     }.runBinary(keys.length, keys);
+  }
+
+  /*
+   * below methods will be removed at 3.0
+   */
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String ping() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String quit() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String flushDB() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * and Redis Cluster only uses db index 0
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public Long dbSize() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * and Redis Cluster only uses db index 0
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String select(int index) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String flushAll() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * and Redis Cluster doesn't support authorization
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String auth(String password) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String save() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String bgsave() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String bgrewriteaof() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public Long lastsave() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String shutdown() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String info() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String info(String section) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String slaveof(String host, int port) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String slaveofNoOne() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * and Redis Cluster only uses db index 0
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public Long getDB() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String debug(DebugParams params) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public String configResetStat() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster
+   * scheduled to be removed on next major release
+   */
+  @Deprecated
+  @Override public Long waitReplicas(int replicas, long timeout) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
   }
 
 }

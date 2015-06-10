@@ -602,6 +602,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.hscan(key, cursor);
   }
 
+  public ScanResult<Entry<String, String>> hscan(String key, final String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.hscan(key, cursor, params);
+  }
+
   public ScanResult<String> sscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.sscan(key, cursor);

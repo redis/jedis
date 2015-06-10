@@ -1610,7 +1610,7 @@ public class JedisCluster extends BinaryJedisCluster implements
    */
 
   /**
-   * @deprecated SetOption is scheduled to be introduced at next major release
+   * @deprecated SetParams is scheduled to be introduced at next major release
    * Please use setnx instead for now
    * @see https://github.com/xetorthio/jedis/pull/878
    */

@@ -184,6 +184,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
     for (String sentinel : sentinels) {
       final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel.split(":")));
       MasterListener masterListener = new MasterListener(masterName, hap.getHost(), hap.getPort());
+      // whether MasterListener threads are alive or not, process can be stopped
+      masterListener.setDaemon(true);
       masterListeners.add(masterListener);
       masterListener.start();
     }
@@ -245,13 +247,14 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected String host;
     protected int port;
     protected long subscribeRetryWaitTimeMillis = 5000;
-    protected Jedis j;
+    protected volatile Jedis j;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
     protected MasterListener() {
     }
 
     public MasterListener(String masterName, String host, int port) {
+      super(String.format("MasterListener-%s-[%s:%d]", masterName, host, port));
       this.masterName = masterName;
       this.host = host;
       this.port = port;
@@ -272,6 +275,11 @@ public class JedisSentinelPool extends Pool<Jedis> {
         j = new Jedis(host, port);
 
         try {
+          // double check that it is not being shutdown
+          if (!running.get()) {
+            break;
+          }
+
           j.subscribe(new JedisPubSub() {
             @Override
             public void onMessage(String channel, String message) {
@@ -308,6 +316,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
           } else {
             log.fine("Unsubscribing from Sentinel at " + host + ":" + port);
           }
+        } finally {
+          j.close();
         }
       }
     }
@@ -317,7 +327,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
         log.fine("Shutting down listener on " + host + ":" + port);
         running.set(false);
         // This isn't good, the Jedis object is not thread safe
-        j.disconnect();
+        if (j != null) {
+          j.disconnect();
+        }
       } catch (Exception e) {
         log.log(Level.SEVERE, "Caught exception while shutting down: ", e);
       }

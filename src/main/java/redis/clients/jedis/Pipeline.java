@@ -2,10 +2,12 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Pipeline extends MultiKeyPipelineBase {
+public class Pipeline extends MultiKeyPipelineBase implements Closeable {
 
   private MultiResponseBuilder currentMulti;
 
@@ -75,6 +77,18 @@ public class Pipeline extends MultiKeyPipelineBase {
     return client;
   }
 
+  public void clear() {
+    if (isInMulti()) {
+      discard();
+    }
+
+    sync();
+  }
+
+  public boolean isInMulti() {
+    return currentMulti != null;
+  }
+
   /**
    * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
    * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
@@ -141,4 +155,8 @@ public class Pipeline extends MultiKeyPipelineBase {
     return response;
   }
 
+  @Override
+  public void close() throws IOException {
+    clear();
+  }
 }

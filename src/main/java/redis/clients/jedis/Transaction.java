@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 /**
  * Transaction is nearly identical to Pipeline, only differences are the multi/discard behaviors
  */
-public class Transaction extends MultiKeyPipelineBase {
+public class Transaction extends MultiKeyPipelineBase implements Closeable {
 
   protected boolean inTransaction = true;
 
@@ -28,6 +30,12 @@ public class Transaction extends MultiKeyPipelineBase {
   @Override
   protected Client getClient(byte[] key) {
     return client;
+  }
+
+  public void clear() {
+    if (inTransaction) {
+      discard();
+    }
   }
 
   public List<Object> exec() {
@@ -74,4 +82,8 @@ public class Transaction extends MultiKeyPipelineBase {
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public void close() throws IOException {
+    clear();
+  }
 }

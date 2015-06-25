@@ -1,11 +1,13 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class Pipeline extends MultiKeyPipelineBase {
+public class Pipeline extends MultiKeyPipelineBase implements Closeable {
 
   private MultiResponseBuilder currentMulti;
 
@@ -149,6 +151,11 @@ public class Pipeline extends MultiKeyPipelineBase {
     // OK
     currentMulti = new MultiResponseBuilder();
     return response;
+  }
+
+  @Override
+  public void close() throws IOException {
+    clear();
   }
 
 }

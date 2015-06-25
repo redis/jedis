@@ -320,4 +320,26 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     jedis2.resetState();
     jedis2.close();
   }
+
+  @Test
+  public void testCloseable() throws IOException {
+    // we need to test with fresh instance of Jedis
+    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis2.auth("foobared");
+
+    Transaction transaction = jedis2.multi();
+    transaction.set("a", "1");
+    transaction.set("b", "2");
+
+    transaction.close();
+
+    try {
+      transaction.exec();
+      fail("close should discard transaction");
+    } catch (JedisDataException e) {
+      assertTrue(e.getMessage().contains("EXEC without MULTI"));
+      // pass
+    }
+  }
+
 }

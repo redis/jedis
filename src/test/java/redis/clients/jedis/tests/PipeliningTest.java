@@ -314,6 +314,23 @@ public class PipeliningTest extends Assert {
     pipeline.multi();
   }
 
+  @Test(expected = JedisDataException.class)
+  public void testJedisThowExceptionWhenInPipeline() {
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.set("foo", "3");
+    jedis.get("somekey");
+    fail("Can't use jedis instance when in Pipeline");
+  }
+
+  @Test
+  public void testResetStateWhenInPipeline() {
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.set("foo", "3");
+    jedis.resetState();
+    String result = jedis.get("foo");
+    assertEquals(result, "3");
+  }
+
   @Test
   public void testDiscardInPipeline() {
     Pipeline pipeline = jedis.pipelined();

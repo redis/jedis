@@ -1627,9 +1627,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   protected void checkIsInMultiOrPipeline() {
-    if (client.isInMulti() || pipeline != null) {
+    if (client.isInMulti()) {
       throw new JedisDataException(
-          "Cannot use Jedis when in Multi or Pipeline. Please use Transation o Pipeline instead.");
+          "Cannot use Jedis when in Multi. Please use Transation or reset jedis state.");
+    } else if (pipeline != null) {
+      throw new JedisDataException(
+              "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state .");
     }
   }
 

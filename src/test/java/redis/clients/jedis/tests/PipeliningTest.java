@@ -305,6 +305,15 @@ public class PipeliningTest extends Assert {
   }
 
   @Test
+  public void testReuseJedisWhenPipelineIsEmpty() {
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.set("foo", "3");
+    pipeline.sync();
+    String result = jedis.get("foo");
+    assertEquals(result, "3");
+  }
+
+  @Test
   public void testResetStateWhenInPipeline() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.set("foo", "3");

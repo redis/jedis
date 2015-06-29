@@ -2983,7 +2983,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see https://github.com/xetorthio/jedis/issues/531 
    */
   public ScanResult<String> scan(int cursor, final ScanParams params) {
-    checkIsInMulti();
+    checkIsInMultiOrPipeline();
     client.scan(cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
@@ -3013,7 +3013,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   public ScanResult<Map.Entry<String, String>> hscan(final String key, int cursor,
       final ScanParams params) {
-    checkIsInMulti();
+    checkIsInMultiOrPipeline();
     client.hscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
@@ -3044,7 +3044,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see https://github.com/xetorthio/jedis/issues/531 
    */
   public ScanResult<String> sscan(final String key, int cursor, final ScanParams params) {
-    checkIsInMulti();
+    checkIsInMultiOrPipeline();
     client.sscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));
@@ -3073,7 +3073,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see https://github.com/xetorthio/jedis/issues/531 
    */
   public ScanResult<Tuple> zscan(final String key, int cursor, final ScanParams params) {
-    checkIsInMulti();
+    checkIsInMultiOrPipeline();
     client.zscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     int newcursor = Integer.parseInt(new String((byte[]) result.get(0)));

@@ -364,7 +364,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Deprecated
   public Long pexpire(String key, final long milliseconds) {
-    checkIsInMulti();
+    checkIsInMultiOrPipeline();
     client.pexpire(key, milliseconds);
     return client.getIntegerReply();
   }
@@ -1609,7 +1609,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public Transaction multi() {
     client.multi();
-    return new Transaction(client);
+    transaction = new Transaction(client);
+    return transaction;
   }
 
   @Deprecated
@@ -1646,9 +1647,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public void resetState() {
     if (client.isConnected()) {
+      if (transaction != null) {
+        transaction.clear();
+      }
+
+      if (pipeline != null) {
+        pipeline.clear();
+      }
+
+      if (client.isInWatch()) {
+        unwatch();
+      }
+
       client.resetState();
-      client.getAll();
     }
+
+    transaction = null;
+    pipeline = null;
   }
 
   public String watch(final byte[]... keys) {
@@ -2012,7 +2027,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public Pipeline pipelined() {
-    Pipeline pipeline = new Pipeline();
+    pipeline = new Pipeline();
     pipeline.setClient(client);
     return pipeline;
   }

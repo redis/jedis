@@ -8,6 +8,7 @@ public class Slowlog {
   private final long timeStamp;
   private final long executionTime;
   private final List<String> args;
+  private static final String COMMA = ",";
 
   @SuppressWarnings("unchecked")
   public static List<Slowlog> from(List<Object> nestedMultiBulkReply) {
@@ -49,5 +50,11 @@ public class Slowlog {
 
   public List<String> getArgs() {
     return args;
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder().append(id).append(COMMA).append(timeStamp).append(COMMA).
+        append(executionTime).append(COMMA).append(args).toString();
   }
 }

@@ -139,6 +139,26 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     }
   }
 
+  @Test
+  public void customClientName() {
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(false);
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "foobared", 0, "my_shiny_client_name");
+
+    Jedis jedis = pool.getResource();
+
+    try {
+      assertEquals("my_shiny_client_name", jedis.clientGetname());
+    } finally {
+      jedis.close();
+      pool.destroy();
+    }
+
+    assertTrue(pool.isClosed());
+  }
+
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
     HostAndPort oldMaster = pool.getCurrentHostMaster();
 

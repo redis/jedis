@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/xetorthio/jedis.png?branch=master)](https://travis-ci.org/xetorthio/jedis)
+[![Build Status](https://travis-ci.org/ApesRise/jedis.svg?branch=master)](https://github.com/ApesRise/jedis)
 
 # Jedis
 

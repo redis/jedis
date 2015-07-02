@@ -41,4 +41,5 @@ public interface BasicCommands {
   String configResetStat();
 
   Long waitReplicas(int replicas, long timeout);
+  
 }

@@ -293,4 +293,6 @@ public interface Commands {
   public void zscan(final String key, final String cursor, final ScanParams params);
 
   public void waitReplicas(int replicas, long timeout);
+  
+  String execute(final String command);
 }

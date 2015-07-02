@@ -230,4 +230,6 @@ public interface BinaryJedisCommands {
   Long pfadd(final byte[] key, final byte[]... elements);
 
   long pfcount(final byte[] key);
+  
+  String execute(final String command);
 }

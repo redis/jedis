@@ -351,6 +351,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.spop(key, count);
   }
 
+  /**
+   * execut command just like u operate operate in redis-cli;
+   * this function is provide for someone want use jedis like shell;  
+   * @param command
+   * @return
+   */
+  @Override
+  public String execute(String command) {
+    Jedis j = getShard(command);
+    return j.execute(command);
+  }
+  
   public Long scard(String key) {
     Jedis j = getShard(key);
     return j.scard(key);

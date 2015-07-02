@@ -78,20 +78,21 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new
     // failover
-    Thread.sleep(100);
+    //add sleep time
+    Thread.sleep(1000*2);
     forceFailover(pool);
 
     // you can test failover as much as possible
   }
 
   @Test
-  public void returnResourceShouldResetState() {
+  public void returnResourceShouldResetState() throws InterruptedException {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
         "foobared", 2);
-
+    
     Jedis jedis = pool.getResource();
     Jedis jedis2 = null;
 
@@ -117,13 +118,13 @@ public class JedisSentinelPoolTest extends JedisTestBase {
   }
 
   @Test
-  public void checkResourceIsCloseable() {
+  public void checkResourceIsCloseable() throws InterruptedException {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
         "foobared", 2);
-
+    
     Jedis jedis = pool.getResource();
     try {
       jedis.set("hello", "jedis");
@@ -175,8 +176,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
       if (newMaster.equals(currentHostMaster)) break;
 
       System.out.println("JedisSentinelPool's master is not yet changed, sleep...");
-
-      Thread.sleep(100);
+      //add sleep time
+      Thread.sleep(1000*2);
     }
   }
 

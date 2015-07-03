@@ -262,6 +262,7 @@ public class SetCommandTest extends JedisCommandTestBase {
    jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
   
    String result = jedis.execute("sscan foo "+ SCAN_POINTER_START+" count 2");
+   
    assertTrue(result.split("\n").length>1);
    }
 }

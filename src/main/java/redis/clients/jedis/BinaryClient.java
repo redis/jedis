@@ -279,6 +279,10 @@ public class BinaryClient extends Connection {
     sendCommand(HVALS, key);
   }
 
+  public String execute(final String command){
+    return sendCommand(command);
+  }
+  
   public void hgetAll(final byte[] key) {
     sendCommand(HGETALL, key);
   }

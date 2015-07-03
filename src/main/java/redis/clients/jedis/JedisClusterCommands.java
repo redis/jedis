@@ -232,5 +232,7 @@ public interface JedisClusterCommands {
   Long pfadd(final String key, final String... elements);
 
   long pfcount(final String key);
+  
+  String execute(final String command);
 
 }

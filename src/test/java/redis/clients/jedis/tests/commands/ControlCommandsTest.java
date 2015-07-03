@@ -42,6 +42,17 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void bgrewriteaof2() {
+    String scheduled = "Background append only file rewriting scheduled";
+    String started = "Background append only file rewriting started";
+
+    String status = jedis.execute("bgrewriteaof");
+
+    boolean ok = status.equals(scheduled) || status.equals(started);
+    assertTrue(ok);
+  }
+  
+  @Test
   public void lastsave() throws InterruptedException {
     long saved = jedis.lastsave();
     assertTrue(saved > 0);

@@ -645,6 +645,17 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(key);
   }
 
+
+  @Override
+  public String execute(final String command) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.execute(command);
+      }
+    }.runBinary(command.getBytes());
+  }
+  
   @Override
   public Long zadd(final byte[] key, final double score, final byte[] member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
@@ -1598,5 +1609,6 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(keys.length, keys);
   }
+
 
 }

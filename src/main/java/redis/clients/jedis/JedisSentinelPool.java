@@ -24,6 +24,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected int database = Protocol.DEFAULT_DATABASE;
 
+  protected String clientName;
+
   protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
 
   protected Logger log = Logger.getLogger(getClass().getName());
@@ -68,13 +70,26 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      final GenericObjectPoolConfig poolConfig, int timeout, final String password,
+      final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
       final String password, final int database) {
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      final String password, final int database, final String clientName) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.password = password;
     this.database = database;
+    this.clientName = clientName;
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initPool(master);
@@ -97,7 +112,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       currentHostMaster = master;
       if (factory == null) {
         factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-            soTimeout, password, database, null);
+            soTimeout, password, database, clientName);
         initPool(poolConfig, factory);
       } else {
         factory.setHostAndPort(currentHostMaster);

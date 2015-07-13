@@ -4,7 +4,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
  * @author Antonio Tomac <antonio.tomac@mediatoolkit.com>
  */
 public class TupleTest {

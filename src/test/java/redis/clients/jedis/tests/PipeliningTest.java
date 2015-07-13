@@ -27,7 +27,7 @@ public class PipeliningTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 2000);
     jedis.connect();
     jedis.auth("foobared");
     jedis.flushAll();

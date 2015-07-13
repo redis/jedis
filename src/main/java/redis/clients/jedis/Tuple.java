@@ -35,7 +35,7 @@ public class Tuple implements Comparable<Tuple> {
   }
 
   public int compareTo(Tuple other) {
-    if (Arrays.equals(this.element, other.element)) return 0;
+    if (this.score == other.getScore() || Arrays.equals(this.element, other.element)) return 0;
     else return this.score < other.getScore() ? -1 : 1;
   }
 

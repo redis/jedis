@@ -1,5 +1,16 @@
 package redis.clients.jedis;
 
+import java.net.URI;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.util.Pool;
@@ -7,10 +18,6 @@ import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
-
-import java.net.URI;
-import java.util.*;
-import java.util.Map.Entry;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
@@ -121,13 +128,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return Boolean reply, true if the key exists, otherwise false
    */
   @Deprecated
-    public Boolean exists(final String key) {
-      checkIsInMultiOrPipeline();
-      client.exists(key);
-      return client.getIntegerReply() == 1;
-    }
+  public Boolean exists(final String key) {
+    checkIsInMultiOrPipeline();
+    client.exists(key);
+    return client.getIntegerReply() == 1;
+  }
 
-	/**
+  /**
    * Remove the specified keys. If a given key does not exist no operation is performed for this
    * key. The command returns the number of keys removed. Time complexity: O(1)
    * @param keys

@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +10,8 @@ import java.util.Map.Entry;
 
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import static redis.clients.jedis.Protocol.toByteArray;
+import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
 
@@ -41,13 +41,15 @@ public class Client extends BinaryClient implements Commands {
     get(SafeEncoder.encode(key));
   }
 
+  @Deprecated
+  public void exists(final String key) {
+    exists(SafeEncoder.encode(key));
+  }
+
   public void exists(final String... keys) {
-		final byte[][] bkeys = new byte[keys.length][];
-		for (int i = 0; i < keys.length; i++) {
-			bkeys[i] = SafeEncoder.encode(keys[i]);
-		}
-		exists(bkeys);
-	}
+    final byte[][] bkeys = SafeEncoder.encodeMany(keys);
+    exists(bkeys);
+  }
 
   public void del(final String... keys) {
     final byte[][] bkeys = new byte[keys.length][];

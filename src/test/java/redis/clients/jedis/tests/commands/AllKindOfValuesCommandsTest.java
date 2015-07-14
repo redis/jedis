@@ -1,17 +1,19 @@
 package redis.clients.jedis.tests.commands;
 
-import org.junit.Test;
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import org.junit.Test;
+
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -82,7 +84,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(1, reply);
   }
 
-	@Test
+  @Test
   public void del() {
     jedis.set("foo1", "bar1");
     jedis.set("foo2", "bar2");

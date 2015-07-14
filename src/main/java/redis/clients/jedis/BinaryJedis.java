@@ -188,7 +188,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * returned. Note that even keys set with an empty string as value will return "1". Time
    * complexity: O(1)
    * @param key
-   * @return Boolean reply, "1" if the key exists, otherwise "0"
+   * @return Boolean reply, true if the key exists, otherwise false
    */
   @Deprecated
   public Boolean exists(final byte[] key) {
@@ -197,7 +197,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply() == 1;
   }
 
-	/**
+  /**
    * Remove the specified keys. If a given key does not exist no operation is performed for this
    * key. The command returns the number of keys removed. Time complexity: O(1)
    * @param keys

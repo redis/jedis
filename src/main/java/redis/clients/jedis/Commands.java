@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-
 import java.util.Map;
+
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
 
 public interface Commands {
 
@@ -12,6 +12,9 @@ public interface Commands {
       final long time);
 
   public void get(final String key);
+
+  @Deprecated
+  public void exists(final String key);
 
   public void exists(final String... keys);
 

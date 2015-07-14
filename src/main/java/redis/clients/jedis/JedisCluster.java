@@ -88,6 +88,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long exists(final String... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.exists(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public Long persist(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override

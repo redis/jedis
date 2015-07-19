@@ -1228,7 +1228,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public List<String> execute(Jedis connection) {
         return connection.mget(keys);
       }
-    }.run(keys.length - 1, keys);
+    }.run(keys.length, keys);
   }
 
   @Override

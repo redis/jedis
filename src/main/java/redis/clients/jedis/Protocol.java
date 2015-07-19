@@ -230,10 +230,6 @@ public final class Protocol {
       raw = SafeEncoder.encode(this.name());
     }
 
-    @Override
-    public byte[] getRaw() {
-      return raw;
-    }
   }
 
   public static enum Keyword {

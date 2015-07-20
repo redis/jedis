@@ -4,10 +4,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class ConnectionTest extends Assert {
@@ -59,7 +57,7 @@ public class ConnectionTest extends Assert {
       }
 
       @Override
-      protected Connection sendCommand(ProtocolCommand cmd, byte[]... args) {
+      protected Connection sendCommand(Command cmd, byte[]... args) {
         return super.sendCommand(cmd, args);
       }
     }

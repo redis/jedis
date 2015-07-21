@@ -121,6 +121,60 @@ public class Connection implements Closeable {
     }
   }
 
+  /**
+   * execute redis command and return String just like redis-cli output; But if command is not vaild
+   * command return null;
+   * <p>
+   * @param command need execute command
+   * @return
+   */
+  protected String sendCommand(String command) {
+    try {
+      connect();
+
+      String[] keys = command.split("\\s+");
+      // not through vaild
+      if (keys.length == 0) {
+        return null;
+      }
+      ProtocolCommand key = new SimpleProtocolCommand(keys[0]);
+      // not through vaild
+      if (key.getRaw() == null) {
+        return null;
+      }
+
+      final byte[][] values = new byte[keys.length - 1][];
+      for (int i = 1; i < keys.length; i++) {
+        values[i - 1] = SafeEncoder.encode(keys[i]);
+      }
+
+      Protocol.sendCommand(outputStream, key, values);
+      flush();
+      Object obj = readProtocolWithCheckingBroken();
+      return caseResultToString(obj);
+    } catch (JedisConnectionException ex) {
+      /*
+       * When client send request which formed by invalid protocol, Redis send back error message
+       * before close connection. We try to read it to provide reason of failure.
+       */
+      try {
+        String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
+        if (errorMessage != null && errorMessage.length() > 0) {
+          ex = new JedisConnectionException(errorMessage, ex.getCause());
+        }
+      } catch (Exception e) {
+        /*
+         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
+         * ignore. This approach is safe because reading error message is optional and connection
+         * will eventually be closed.
+         */
+      }
+      // Any other exceptions related to connection?
+      broken = true;
+      throw ex;
+    }
+  }
+
   public String getHost() {
     return host;
   }
@@ -280,5 +334,57 @@ public class Connection implements Closeable {
       }
     }
     return responses;
+  }
+
+  /**
+   * case result to String just like u look at in terminal
+   * @param obj
+   * @return
+   */
+  private String caseResultToString(Object obj) {
+    if (obj instanceof byte[]) {
+      return new String((byte[]) obj);
+    } else if (obj instanceof Long) {
+      return ((Long) obj).toString();
+    } else if (obj instanceof List) {
+      List temp = (List) obj;
+      if (temp.size() == 0) {
+        return "";
+      }
+
+      StringBuilder sb = new StringBuilder();
+
+      String className = temp.get(0).getClass().getName();
+      String className2 = null;
+      if (temp.size() > 1) {
+        className2 = temp.get(1).getClass().getName();
+      }
+      List build = null;
+      if (className2 == null || className2.equals(className)) {
+        if (className.equals("[B")) {
+          build = BuilderFactory.STRING_LIST.build((List<byte[]>) temp);
+        } else if (className.equals("java.lang.Long")) {
+          build = BuilderFactory.STRING_LIST.build((List<Long>) temp);
+        } else if (className.equals("java.lang.Object")) {
+          build = BuilderFactory.STRING_LIST.build((List<Long>) temp);
+        }
+        // fix for sscan
+      } else {
+        sb.append(new String((byte[]) temp.get(0)));
+        sb.append("\n");
+        build = BuilderFactory.STRING_LIST.build(((List) (temp.subList(1, temp.size()))).get(0));
+      }
+
+      if (build == null) {
+        return "";
+      }
+
+      for (Object cur : build) {
+        sb.append(cur);
+        sb.append("\n");
+      }
+      return sb.toString().trim();
+    }
+    return "";
   }
 }

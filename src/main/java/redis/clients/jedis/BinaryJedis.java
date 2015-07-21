@@ -926,6 +926,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  
+  /**
+   * execut command just like u operate operate in redis-cli;
+   * @param command
+   * @return
+   */
+  @Override
+  public String execute(final String command){
+    return client.sendCommand(command);
+  }
+  
+  
   /**
    * Add the string value to the head (LPUSH) or tail (RPUSH) of the list stored at key. If the key
    * does not exist an empty list is created just before the append operation. If the key exists but

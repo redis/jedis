@@ -96,6 +96,17 @@ public class JedisTest extends JedisCommandTestBase {
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
   }
+  
+  @Test
+  public void startWithUrlString2() {
+    Jedis j = new Jedis("localhost", 6380);
+    j.execute("auth foobared");
+    j.select(2);
+    j.set("foo", "bar");
+    Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2");
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+  }
 
   @Test
   public void startWithUrl() throws URISyntaxException {

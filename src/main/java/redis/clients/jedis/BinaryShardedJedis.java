@@ -643,4 +643,10 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.pfcount(key);
   }
 
+  @Override
+  public String execute(String command) {
+    Jedis j = getShard(command);
+    return j.execute(command);
+  }
+
 }

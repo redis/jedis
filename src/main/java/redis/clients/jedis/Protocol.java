@@ -1,24 +1,20 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Protocol {
 
   private static final String ASK_RESPONSE = "ASK";
   private static final String MOVED_RESPONSE = "MOVED";
   private static final String CLUSTERDOWN_RESPONSE = "CLUSTERDOWN";
-  public static final String DEFAULT_HOST = "localhost";
+  public static final String DEFAULT_HOST = HostAndPort.LOCALHOST_STR;
   public static final int DEFAULT_PORT = 6379;
   public static final int DEFAULT_SENTINEL_PORT = 26379;
   public static final int DEFAULT_TIMEOUT = 2000;

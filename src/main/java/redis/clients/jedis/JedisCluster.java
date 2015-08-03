@@ -392,6 +392,16 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
+  public Double hincrByFloat(final String key, final String field, final double value) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.hincrByFloat(key, field, value);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Boolean hexists(final String key, final String field) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxRedirections) {
       @Override

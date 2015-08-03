@@ -24,6 +24,8 @@ public class ClusterBinaryJedisCommandsTest extends JedisTestBase {
   private final Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
   JedisCluster jedisCluster;
 
+  private String localHost = HostAndPort.convertHost("127.0.0.1");
+
   @Before
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
@@ -41,8 +43,8 @@ public class ClusterBinaryJedisCommandsTest extends JedisTestBase {
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
+    node1.clusterMeet(localHost, nodeInfo2.getPort());
+    node1.clusterMeet(localHost, nodeInfo3.getPort());
 
     // split available slots across the three nodes
     int slotsPerNode = JedisCluster.HASHSLOTS / 3;
@@ -65,7 +67,7 @@ public class ClusterBinaryJedisCommandsTest extends JedisTestBase {
 
     waitForClusterReady();
 
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(new HostAndPort(localHost, 7379));
     jedisCluster = new JedisCluster(jedisClusterNode);
 
   }

@@ -52,7 +52,7 @@ public class HostAndPort {
         return host + ":" + port;
     }
 
-    private String convertHost(String host) {
+    public static String convertHost(String host) {
         if (host.equals("127.0.0.1") || host.startsWith("localhost") || host.equals("0.0.0.0") || host.startsWith("169.254")) {
             return LOCALHOST_STR;
         }

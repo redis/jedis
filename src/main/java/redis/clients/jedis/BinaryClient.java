@@ -937,6 +937,7 @@ public class BinaryClient extends Connection {
     return db;
   }
 
+  @Override
   public void disconnect() {
     db = 0;
     super.disconnect();

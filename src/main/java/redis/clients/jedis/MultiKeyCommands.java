@@ -72,6 +72,8 @@ public interface MultiKeyCommands {
 
   ScanResult<String> scan(final String cursor);
 
+  ScanResult<String> scan(final String cursor, final ScanParams params);
+
   String pfmerge(final String destkey, final String... sourcekeys);
 
   long pfcount(final String... keys);

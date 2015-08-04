@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
@@ -37,15 +38,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String set(String key, String value, String nxxx, String expx, long time) {
+  public String set(String key, String value, SetParams params) {
     Jedis j = getShard(key);
-    return j.set(key, value, nxxx, expx, time);
-  }
-
-  @Override
-  public String set(String key, String value, String nxxx) {
-    Jedis j = getShard(key);
-    return j.set(key, value, nxxx);
+    return j.set(key, value, params);
   }
 
   @Override

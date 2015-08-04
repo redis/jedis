@@ -13,6 +13,7 @@ import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
@@ -78,17 +79,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * GB).
    * @param key
    * @param value
-   * @param nxxx NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
-   *          if it already exist.
-   * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
-   * @param time expire time in the units of <code>expx</code>
+   * @param params NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the
+   *          key if it already exist. EX|PX, expire time units: EX = seconds; PX = milliseconds
    * @return Status code reply
    */
-  @Override
-  public String set(final String key, final String value, final String nxxx, final String expx,
-      final long time) {
+  public String set(final String key, final String value, final SetParams params) {
     checkIsInMultiOrPipeline();
-    client.set(key, value, nxxx, expx, time);
+    client.set(key, value, params);
     return client.getStatusCodeReply();
   }
 
@@ -3067,13 +3064,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMultiOrPipeline();
     client.psetex(key, milliseconds, value);
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public String set(final String key, final String value, final String nxxx) {
-    checkIsInMultiOrPipeline();
-    client.set(key, value, nxxx);
     return client.getStatusCodeReply();
   }
 

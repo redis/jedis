@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -98,9 +99,8 @@ public class BinaryClient extends Connection {
     sendCommand(Command.SET, key, value);
   }
 
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final long time) {
-    sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
+  public void set(final byte[] key, final byte[] value, final SetParams params) {
+    sendCommand(Command.SET, params.getByteParams(key, value));
   }
 
   public void get(final byte[] key) {
@@ -1093,15 +1093,6 @@ public class BinaryClient extends Connection {
 
   public void psetex(final byte[] key, final long milliseconds, final byte[] value) {
     sendCommand(PSETEX, key, toByteArray(milliseconds), value);
-  }
-
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx) {
-    sendCommand(Command.SET, key, value, nxxx);
-  }
-
-  public void set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final int time) {
-    sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
   }
 
   public void srandmember(final byte[] key, final int count) {

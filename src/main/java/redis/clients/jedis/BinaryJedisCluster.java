@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
 
@@ -75,12 +76,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final long time) {
+  public String set(final byte[] key, final byte[] value, final SetParams params) {
     return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
       @Override
       public String execute(Jedis connection) {
-        return connection.set(key, value, nxxx, expx, time);
+        return connection.set(key, value, params);
       }
     }.runBinary(key);
   }

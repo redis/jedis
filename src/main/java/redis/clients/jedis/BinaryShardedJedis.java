@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
@@ -55,9 +56,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
+  public String set(byte[] key, byte[] value, SetParams params) {
     Jedis j = getShard(key);
-    return j.set(key, value, nxxx, expx, time);
+    return j.set(key, value, params);
   }
 
   @Override

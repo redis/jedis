@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -31,10 +32,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void set(final String key, final String value, final String nxxx, final String expx,
-      final long time) {
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx),
-      SafeEncoder.encode(expx), time);
+  public void set(final String key, final String value, final SetParams params) {
+    set(SafeEncoder.encode(key), SafeEncoder.encode(value), params);
   }
 
   @Override
@@ -923,16 +922,6 @@ public class Client extends BinaryClient implements Commands {
 
   public void psetex(final String key, final long milliseconds, final String value) {
     psetex(SafeEncoder.encode(key), milliseconds, SafeEncoder.encode(value));
-  }
-
-  public void set(final String key, final String value, final String nxxx) {
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx));
-  }
-
-  public void set(final String key, final String value, final String nxxx, final String expx,
-      final int time) {
-    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(nxxx),
-      SafeEncoder.encode(expx), time);
   }
 
   public void srandmember(final String key, final int count) {

@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.params.set.SetParams;
+
 /**
  * Common interface for sharded and non-sharded BinaryJedis
  */
 public interface BinaryJedisCommands {
   String set(byte[] key, byte[] value);
 
-  String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
+  String set(byte[] key, byte[] value, SetParams params);
 
   byte[] get(byte[] key);
 

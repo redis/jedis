@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.params.set.SetParams.setParams;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -9,9 +10,9 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
@@ -31,7 +32,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   final byte[] bnx = { 0x6E, 0x78 };
   final byte[] bex = { 0x65, 0x78 };
-  final long expireSeconds = 2;
+  final int expireSeconds = 2;
 
   @Test
   public void ping() {
@@ -594,12 +595,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setNxExAndGet() {
-    String status = jedis.set("hello", "world", "NX", "EX", expireSeconds);
+    String status = jedis.set("hello", "world", setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     String value = jedis.get("hello");
     assertEquals("world", value);
 
-    jedis.set("hello", "bar", "NX", "EX", expireSeconds);
+    jedis.set("hello", "bar", setParams().nx().ex(expireSeconds));
     value = jedis.get("hello");
     assertEquals("world", value);
 
@@ -609,12 +610,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     // binary
     byte[] bworld = { 0x77, 0x6F, 0x72, 0x6C, 0x64 };
     byte[] bhello = { 0x68, 0x65, 0x6C, 0x6C, 0x6F };
-    String bstatus = jedis.set(bworld, bhello, bnx, bex, expireSeconds);
+
+    String bstatus = jedis.set(bworld, bhello, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(bstatus));
     byte[] bvalue = jedis.get(bworld);
     assertTrue(Arrays.equals(bhello, bvalue));
 
-    jedis.set(bworld, bbar, bnx, bex, expireSeconds);
+    jedis.set(bworld, bbar, setParams().nx().ex(expireSeconds));
     bvalue = jedis.get(bworld);
     assertTrue(Arrays.equals(bhello, bvalue));
 

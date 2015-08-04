@@ -4,15 +4,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.params.set.SetParams;
+
 /**
  * Common interface for sharded and non-sharded Jedis
  */
 public interface JedisCommands {
   String set(String key, String value);
 
-  String set(String key, String value, String nxxx, String expx, long time);
-
-  String set(final String key, final String value, final String nxxx);
+  String set(String key, String value, SetParams params);
 
   String get(String key);
 

@@ -19,6 +19,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
@@ -133,17 +134,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * GB).
    * @param key
    * @param value
-   * @param nxxx NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
-   *          if it already exist.
-   * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
-   * @param time expire time in the units of <code>expx</code>
+   * @param params
    * @return Status code reply
    */
-  @Override
-  public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final long time) {
+  public String set(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
-    client.set(key, value, nxxx, expx, time);
+    client.set(key, value, params);
     return client.getStatusCodeReply();
   }
 
@@ -3239,19 +3235,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.psetex(key, milliseconds, value);
-    return client.getStatusCodeReply();
-  }
-
-  public String set(final byte[] key, final byte[] value, final byte[] nxxx) {
-    checkIsInMultiOrPipeline();
-    client.set(key, value, nxxx);
-    return client.getStatusCodeReply();
-  }
-
-  public String set(final byte[] key, final byte[] value, final byte[] nxxx, final byte[] expx,
-      final int time) {
-    checkIsInMultiOrPipeline();
-    client.set(key, value, nxxx, expx, time);
     return client.getStatusCodeReply();
   }
 

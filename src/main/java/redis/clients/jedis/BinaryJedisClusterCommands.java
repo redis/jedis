@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.set.SetParams;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +10,7 @@ import java.util.Set;
 public interface BinaryJedisClusterCommands {
   String set(byte[] key, byte[] value);
 
-  String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time);
+  String set(byte[] key, byte[] value, SetParams params);
 
   byte[] get(byte[] key);
 

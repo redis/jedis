@@ -95,6 +95,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.ttl(key);
   }
 
+  @Override
+  public Long pttl(String key) {
+    Jedis j = getShard(key);
+    return j.pttl(key);
+  }
+
   public Boolean setbit(String key, long offset, boolean value) {
     Jedis j = getShard(key);
     return j.setbit(key, offset, value);
@@ -133,6 +139,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String setex(String key, int seconds, String value) {
     Jedis j = getShard(key);
     return j.setex(key, seconds, value);
+  }
+
+  @Override
+  public String psetex(String key, long milliseconds, String value) {
+    Jedis j = getShard(key);
+    return j.psetex(key, milliseconds, value);
   }
 
   public List<String> blpop(String arg) {
@@ -606,6 +618,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.bitcount(key, start, end);
   }
 
+  @Override
+  public Long bitpos(String key, boolean value) {
+    Jedis j = getShard(key);
+    return j.bitpos(key, value);
+  }
+
+  @Override
+  public Long bitpos(String key, boolean value, BitPosParams params) {
+    Jedis j = getShard(key);
+    return j.bitpos(key, value, params);
+  }
+
   @Deprecated
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long)
@@ -644,14 +668,32 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.hscan(key, cursor);
   }
 
+  @Override
+  public ScanResult<Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.hscan(key, cursor, params);
+  }
+
   public ScanResult<String> sscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.sscan(key, cursor);
   }
 
+  @Override
+  public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.sscan(key, cursor, params);
+  }
+
   public ScanResult<Tuple> zscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.zscan(key, cursor);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.zscan(key, cursor, params);
   }
 
   @Override

@@ -192,6 +192,16 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
+  public Long pttl(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.pttl(key);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Boolean setbit(final String key, final long offset, final boolean value) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxRedirections) {
       @Override
@@ -267,6 +277,16 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
       @Override
       public String execute(Jedis connection) {
         return connection.setex(key, seconds, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String psetex(final String key, final long milliseconds, final String value) {
+    return new JedisClusterCommand<String>(connectionHandler, maxRedirections) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.psetex(key, milliseconds, value);
       }
     }.run(key);
   }
@@ -1200,6 +1220,26 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
     }.run(key);
   }
 
+  @Override
+  public Long bitpos(final String key, final boolean value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value, params);
+      }
+    }.run(key);
+  }
+
   /**
    * Deprecated, BasicCommands is not fit to JedisCluster, so it'll be removed
    */
@@ -1541,6 +1581,17 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
+  public ScanResult<Entry<String, String>> hscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
+        maxRedirections) {
+      @Override
+      public ScanResult<Entry<String, String>> execute(Jedis connection) {
+        return connection.hscan(key, cursor, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public ScanResult<String> sscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxRedirections) {
       @Override
@@ -1551,11 +1602,31 @@ public class JedisCluster implements JedisCommands, BasicCommands, Closeable {
   }
 
   @Override
+  public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
+        return connection.sscan(key, cursor, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public ScanResult<Tuple> zscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxRedirections) {
       @Override
       public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor, params);
       }
     }.run(key);
   }

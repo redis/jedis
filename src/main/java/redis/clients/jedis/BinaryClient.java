@@ -67,7 +67,6 @@ public class BinaryClient extends Connection {
     return result;
   }
 
-
   public void setPassword(final String password) {
     this.password = password;
   }
@@ -937,6 +936,7 @@ public class BinaryClient extends Connection {
     return db;
   }
 
+  @Override
   public void disconnect() {
     db = 0;
     super.disconnect();

@@ -3,7 +3,7 @@ package redis.clients.jedis;
 import java.net.InetAddress;
 
 public class HostAndPort {
-    public static final String LOCALHOST_STR;
+    public static final String LOCALHOST_STR ;
 
     static {
         String localAddress = null;

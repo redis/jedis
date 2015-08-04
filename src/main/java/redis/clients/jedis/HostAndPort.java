@@ -11,7 +11,7 @@ public class HostAndPort {
             localAddress = InetAddress.getLocalHost().getHostAddress();
         }
         catch (Exception e) {
-            localAddress = "localhost";
+            localAddress = "127.0.0.1";
         }
         LOCALHOST_STR = localAddress;
     }

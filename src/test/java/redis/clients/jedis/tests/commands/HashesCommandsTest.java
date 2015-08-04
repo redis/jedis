@@ -333,7 +333,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bcar, bhash.get(bbar));
     assertArrayEquals(bbar, bhash.get(bcar));
   }
-  
+
   @Test
   public void hscan() {
     jedis.hset("foo", "b", "b");
@@ -405,7 +405,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     jedis.hset(bfoo, bbar3, bcar);
 
     ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-        params);
+      params);
 
     assertFalse(bResult.getResult().isEmpty());
   }

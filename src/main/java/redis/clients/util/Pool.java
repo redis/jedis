@@ -125,7 +125,7 @@ public abstract class Pool<T> implements Closeable {
 
   public void addObjects(int count) {
     try {
-      for (int i = 0; i < count ; i++) {
+      for (int i = 0; i < count; i++) {
         this.internalPool.addObject();
       }
     } catch (Exception e) {

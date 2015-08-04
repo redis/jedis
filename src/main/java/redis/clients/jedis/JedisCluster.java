@@ -11,8 +11,8 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class JedisCluster extends BinaryJedisCluster implements
-    JedisCommands, MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
+    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
 
   public static enum Reset {
     SOFT, HARD
@@ -1610,12 +1610,13 @@ public class JedisCluster extends BinaryJedisCluster implements
    */
 
   /**
-   * @deprecated SetParams is scheduled to be introduced at next major release
-   * Please use setnx instead for now
+   * @deprecated SetParams is scheduled to be introduced at next major release Please use setnx
+   *             instead for now
    * @see https://github.com/xetorthio/jedis/pull/878
    */
   @Deprecated
-  @Override public String set(String key, String value, String nxxx) {
+  @Override
+  public String set(String key, String value, String nxxx) {
     return setnx(key, value) == 1 ? "OK" : null;
   }
 
@@ -1623,7 +1624,8 @@ public class JedisCluster extends BinaryJedisCluster implements
    * @deprecated unusable command, this will be removed at next major release.
    */
   @Deprecated
-  @Override public List<String> blpop(final String arg) {
+  @Override
+  public List<String> blpop(final String arg) {
     return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
       @Override
       public List<String> execute(Jedis connection) {
@@ -1636,7 +1638,8 @@ public class JedisCluster extends BinaryJedisCluster implements
    * @deprecated unusable command, this will be removed at next major release.
    */
   @Deprecated
-  @Override public List<String> brpop(final String arg) {
+  @Override
+  public List<String> brpop(final String arg) {
     return new JedisClusterCommand<List<String>>(connectionHandler, maxRedirections) {
       @Override
       public List<String> execute(Jedis connection) {
@@ -1646,11 +1649,12 @@ public class JedisCluster extends BinaryJedisCluster implements
   }
 
   /**
-   * @deprecated Redis Cluster uses only db index 0, so it doesn't make sense.
-   * scheduled to be removed on next major release
+   * @deprecated Redis Cluster uses only db index 0, so it doesn't make sense. scheduled to be
+   *             removed on next major release
    */
   @Deprecated
-  @Override public Long move(final String key, final int dbIndex) {
+  @Override
+  public Long move(final String key, final int dbIndex) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
@@ -1660,45 +1664,49 @@ public class JedisCluster extends BinaryJedisCluster implements
   }
 
   /**
-   * This method is deprecated due to bug (scan cursor should be unsigned long)
-   * And will be removed on next major release
+   * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
+   * on next major release
    * @see https://github.com/xetorthio/jedis/issues/531
    */
   @Deprecated
-  @Override public ScanResult<Entry<String, String>> hscan(final String key, final int cursor) {
+  @Override
+  public ScanResult<Entry<String, String>> hscan(final String key, final int cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
         maxRedirections) {
-      @Override public ScanResult<Entry<String, String>> execute(Jedis connection) {
+      @Override
+      public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
       }
     }.run(key);
   }
 
   /**
-   * This method is deprecated due to bug (scan cursor should be unsigned long)
-   * And will be removed on next major release
+   * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
+   * on next major release
    * @see https://github.com/xetorthio/jedis/issues/531
    */
   @Deprecated
-  @Override public ScanResult<String> sscan(final String key, final int cursor) {
-    return new JedisClusterCommand<ScanResult<String>>(connectionHandler,
-        maxRedirections) {
-      @Override public ScanResult<String> execute(Jedis connection) {
+  @Override
+  public ScanResult<String> sscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
         return connection.sscan(key, cursor);
       }
     }.run(key);
   }
 
   /**
-   * This method is deprecated due to bug (scan cursor should be unsigned long)
-   * And will be removed on next major release
+   * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
+   * on next major release
    * @see https://github.com/xetorthio/jedis/issues/531
    */
   @Deprecated
-  @Override public ScanResult<Tuple> zscan(final String key, final int cursor) {
-    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler,
-        maxRedirections) {
-      @Override public ScanResult<Tuple> execute(Jedis connection) {
+  @Override
+  public ScanResult<Tuple> zscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
       }
     }.run(key);

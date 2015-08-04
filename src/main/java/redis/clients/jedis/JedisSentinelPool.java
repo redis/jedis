@@ -158,8 +158,11 @@ public class JedisSentinelPool extends Pool<Jedis> {
         master = toHostAndPort(masterAddr);
         log.fine("Found Redis master at " + master);
         break;
-      } catch (JedisConnectionException e) {
-        log.warning("Cannot connect to sentinel running @ " + hap + ". Trying next one.");
+      } catch (JedisException e) {
+        // resolves #1036, it should handle JedisException there's another chance
+        // of raising JedisDataException
+        log.warning("Cannot get master address from sentinel running @ " + hap
+            + ". Reason: " + e + ". Trying next one.");
       } finally {
         if (jedis != null) {
           jedis.close();

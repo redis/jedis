@@ -147,7 +147,7 @@ public class JedisClusterTest extends Assert {
 
     ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
     for (String nodeInfo : node2.clusterNodes().split("\n")) {
-      if(nodeInfo.contains("myself")){
+      if (nodeInfo.contains("myself")) {
         nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
         break;
       }
@@ -155,7 +155,7 @@ public class JedisClusterTest extends Assert {
     try {
       nodeSlave2.get("test");
       fail();
-    }catch (JedisMovedDataException e){
+    } catch (JedisMovedDataException e) {
     }
     nodeSlave2.readonly();
     nodeSlave2.get("test");
@@ -523,9 +523,9 @@ public class JedisClusterTest extends Assert {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    JedisCluster jc = new JedisCluster(jedisClusterNode,0, 2, config);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, config);
 
-    //This will cause an infinite redirection between node 2 and 3
+    // This will cause an infinite redirection between node 2 and 3
     node3.clusterSetSlotMigrating(15363, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
     jc.get("e");
   }

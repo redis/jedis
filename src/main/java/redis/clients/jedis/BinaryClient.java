@@ -67,7 +67,6 @@ public class BinaryClient extends Connection {
     return result;
   }
 
-
   public void setPassword(final String password) {
     this.password = password;
   }

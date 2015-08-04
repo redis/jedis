@@ -243,7 +243,7 @@ public interface JedisCommands {
   ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
 
   ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor,
-                                              final ScanParams params);
+      final ScanParams params);
 
   ScanResult<String> sscan(final String key, final String cursor);
 

@@ -59,7 +59,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   public void readonly() {
     try {
       jedis.readonly();
-    }catch (JedisDataException e){
+    } catch (JedisDataException e) {
       assertTrue("ERR This instance has cluster support disabled".equalsIgnoreCase(e.getMessage()));
     }
   }

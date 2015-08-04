@@ -54,7 +54,7 @@ public class Slowlog {
 
   @Override
   public String toString() {
-    return new StringBuilder().append(id).append(COMMA).append(timeStamp).append(COMMA).
-        append(executionTime).append(COMMA).append(args).toString();
+    return new StringBuilder().append(id).append(COMMA).append(timeStamp).append(COMMA)
+        .append(executionTime).append(COMMA).append(args).toString();
   }
 }

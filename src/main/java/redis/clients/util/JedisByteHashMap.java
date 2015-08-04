@@ -13,19 +13,23 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
   private static final long serialVersionUID = -6971431362627219416L;
   private transient Map<ByteArrayWrapper, byte[]> internalMap = new HashMap<ByteArrayWrapper, byte[]>();
 
+  @Override
   public void clear() {
     internalMap.clear();
   }
 
+  @Override
   public boolean containsKey(Object key) {
     if (key instanceof byte[]) return internalMap.containsKey(new ByteArrayWrapper((byte[]) key));
     return internalMap.containsKey(key);
   }
 
+  @Override
   public boolean containsValue(Object value) {
     return internalMap.containsValue(value);
   }
 
+  @Override
   public Set<java.util.Map.Entry<byte[], byte[]>> entrySet() {
     Iterator<java.util.Map.Entry<ByteArrayWrapper, byte[]>> iterator = internalMap.entrySet()
         .iterator();
@@ -37,15 +41,18 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
     return hashSet;
   }
 
+  @Override
   public byte[] get(Object key) {
     if (key instanceof byte[]) return internalMap.get(new ByteArrayWrapper((byte[]) key));
     return internalMap.get(key);
   }
 
+  @Override
   public boolean isEmpty() {
     return internalMap.isEmpty();
   }
 
+  @Override
   public Set<byte[]> keySet() {
     Set<byte[]> keySet = new HashSet<byte[]>();
     Iterator<ByteArrayWrapper> iterator = internalMap.keySet().iterator();
@@ -55,10 +62,12 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
     return keySet;
   }
 
+  @Override
   public byte[] put(byte[] key, byte[] value) {
     return internalMap.put(new ByteArrayWrapper(key), value);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public void putAll(Map<? extends byte[], ? extends byte[]> m) {
     Iterator<?> iterator = m.entrySet().iterator();
@@ -69,15 +78,18 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
     }
   }
 
+  @Override
   public byte[] remove(Object key) {
     if (key instanceof byte[]) return internalMap.remove(new ByteArrayWrapper((byte[]) key));
     return internalMap.remove(key);
   }
 
+  @Override
   public int size() {
     return internalMap.size();
   }
 
+  @Override
   public Collection<byte[]> values() {
     return internalMap.values();
   }
@@ -115,14 +127,17 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
       this.value = value;
     }
 
+    @Override
     public byte[] getKey() {
       return this.key;
     }
 
+    @Override
     public byte[] getValue() {
       return this.value;
     }
 
+    @Override
     public byte[] setValue(byte[] value) {
       this.value = value;
       return value;

@@ -71,6 +71,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
   public void monitor() {
     new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           // sleep 100ms to make sure that monitor thread runs first
@@ -89,6 +90,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     jedis.monitor(new JedisMonitor() {
       private int count = 0;
 
+      @Override
       public void onCommand(String command) {
         if (command.contains("INCR")) {
           count++;

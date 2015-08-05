@@ -3,6 +3,8 @@ package redis.clients.jedis;
 import java.util.Map;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
 public interface Commands {
 
@@ -149,13 +151,21 @@ public interface Commands {
 
   public void zadd(final String key, final double score, final String member);
 
+  public void zadd(final String key, final double score, final String member,
+      final ZAddParams params);
+
   public void zadd(final String key, final Map<String, Double> scoreMembers);
+
+  public void zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params);
 
   public void zrange(final String key, final long start, final long end);
 
   public void zrem(final String key, final String... members);
 
   public void zincrby(final String key, final double score, final String member);
+
+  public void zincrby(final String key, final double score, final String member,
+      final ZIncrByParams params);
 
   public void zrank(final String key, final String member);
 

@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
 /**
  * Common interface for sharded and non-sharded Jedis
  */
@@ -134,13 +137,19 @@ public interface JedisCommands {
 
   Long zadd(String key, double score, String member);
 
+  Long zadd(String key, double score, String member, ZAddParams params);
+
   Long zadd(String key, Map<String, Double> scoreMembers);
+
+  Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
   Set<String> zrange(String key, long start, long end);
 
   Long zrem(String key, String... member);
 
   Double zincrby(String key, double score, String member);
+
+  Double zincrby(String key, double score, String member, ZIncrByParams params);
 
   Long zrank(String key, String member);
 

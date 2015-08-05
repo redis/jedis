@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
@@ -398,9 +400,21 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zadd(key, score, member, params);
+  }
+
+  @Override
   public Long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers);
+  }
+
+  @Override
+  public Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zadd(key, scoreMembers, params);
   }
 
   @Override
@@ -419,6 +433,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Double zincrby(byte[] key, double score, byte[] member) {
     Jedis j = getShard(key);
     return j.zincrby(key, score, member);
+  }
+
+  @Override
+  public Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params) {
+    Jedis j = getShard(key);
+    return j.zincrby(key, score, member, params);
   }
 
   @Override

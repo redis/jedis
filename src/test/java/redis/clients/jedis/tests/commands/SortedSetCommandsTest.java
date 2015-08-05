@@ -3,7 +3,9 @@ package redis.clients.jedis.tests.commands;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -12,6 +14,8 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
@@ -58,6 +62,48 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bstatus = jedis.zadd(bfoo, 2d, ba);
     assertEquals(0, bstatus);
 
+  }
+
+  @Test
+  public void zaddWithParams() {
+    jedis.del("foo");
+
+    // xx: never add new member
+    long status = jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().xx());
+    assertEquals(0L, status);
+
+    jedis.zadd("foo", 1d, "a");
+    // nx: never update current member
+    status = jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
+    assertEquals(0L, status);
+    assertEquals(Double.valueOf(1d), jedis.zscore("foo", "a"));
+
+    Map<String, Double> scoreMembers = new HashMap<String, Double>();
+    scoreMembers.put("a", 2d);
+    scoreMembers.put("b", 1d);
+    // ch: return count of members not only added, but also updated
+    status = jedis.zadd("foo", scoreMembers, ZAddParams.zAddParams().ch());
+    assertEquals(2L, status);
+
+    // binary
+    jedis.del(bfoo);
+
+    // xx: never add new member
+    status = jedis.zadd(bfoo, 1d, ba, ZAddParams.zAddParams().xx());
+    assertEquals(0L, status);
+
+    jedis.zadd(bfoo, 1d, ba);
+    // nx: never update current member
+    status = jedis.zadd(bfoo, 2d, ba, ZAddParams.zAddParams().nx());
+    assertEquals(0L, status);
+    assertEquals(Double.valueOf(1d), jedis.zscore(bfoo, ba));
+
+    Map<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
+    binaryScoreMembers.put(ba, 2d);
+    binaryScoreMembers.put(bb, 1d);
+    // ch: return count of members not only added, but also updated
+    status = jedis.zadd(bfoo, binaryScoreMembers, ZAddParams.zAddParams().ch());
+    assertEquals(2L, status);
   }
 
   @Test
@@ -280,6 +326,37 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(3d, bscore, 0);
     assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
+  }
+
+  @Test
+  public void zincrbyWithParams() {
+    jedis.del("foo");
+
+    // xx: never add new member
+    Double score = jedis.zincrby("foo", 2d, "a", ZIncrByParams.zIncrByParams().xx());
+    assertNull(score);
+
+    jedis.zadd("foo", 2d, "a");
+
+    // nx: never update current member
+    score = jedis.zincrby("foo", 1d, "a", ZIncrByParams.zIncrByParams().nx());
+    assertNull(score);
+    assertEquals(Double.valueOf(2d), jedis.zscore("foo", "a"));
+
+    // Binary
+
+    jedis.del(bfoo);
+
+    // xx: never add new member
+    score = jedis.zincrby(bfoo, 2d, ba, ZIncrByParams.zIncrByParams().xx());
+    assertNull(score);
+
+    jedis.zadd(bfoo, 2d, ba);
+
+    // nx: never update current member
+    score = jedis.zincrby(bfoo, 1d, ba, ZIncrByParams.zIncrByParams().nx());
+    assertNull(score);
+    assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, ba));
   }
 
   @Test

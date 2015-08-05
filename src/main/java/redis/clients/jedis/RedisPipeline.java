@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * @author guy
- */
 public interface RedisPipeline {
   Response<Long> append(String key, String value);
 
@@ -138,11 +138,19 @@ public interface RedisPipeline {
 
   Response<Long> zadd(String key, double score, String member);
 
+  Response<Long> zadd(String key, double score, String member, ZAddParams params);
+
+  Response<Long> zadd(String key, Map<String, Double> scoreMembers);
+
+  Response<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
+
   Response<Long> zcard(String key);
 
   Response<Long> zcount(String key, double min, double max);
 
   Response<Double> zincrby(String key, double score, String member);
+
+  Response<Double> zincrby(String key, double score, String member, ZIncrByParams params);
 
   Response<Set<String>> zrange(String key, long start, long end);
 

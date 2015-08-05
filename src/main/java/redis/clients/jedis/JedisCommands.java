@@ -12,6 +12,8 @@ public interface JedisCommands {
 
   String set(String key, String value, String nxxx, String expx, long time);
 
+  String set(final String key, final String value, final String nxxx);
+
   String get(String key);
 
   Boolean exists(String key);
@@ -30,6 +32,8 @@ public interface JedisCommands {
 
   Long ttl(String key);
 
+  Long pttl(final String key);
+
   Boolean setbit(String key, long offset, boolean value);
 
   Boolean setbit(String key, long offset, String value);
@@ -45,6 +49,8 @@ public interface JedisCommands {
   Long setnx(String key, String value);
 
   String setex(String key, int seconds, String value);
+
+  String psetex(final String key, final long milliseconds, final String value);
 
   Long decrBy(String key, long integer);
 
@@ -242,6 +248,10 @@ public interface JedisCommands {
 
   Long bitcount(final String key, long start, long end);
 
+  Long bitpos(final String key, final boolean value);
+
+  Long bitpos(final String key, final boolean value, final BitPosParams params);
+
   @Deprecated
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long)
@@ -268,9 +278,15 @@ public interface JedisCommands {
 
   ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
 
+  ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor, final ScanParams params);
+
   ScanResult<String> sscan(final String key, final String cursor);
 
+  ScanResult<String> sscan(final String key, final String cursor, final ScanParams params);
+
   ScanResult<Tuple> zscan(final String key, final String cursor);
+
+  ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams params);
 
   Long pfadd(final String key, final String... elements);
 

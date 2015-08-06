@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.commands.JedisClusterCommands;
+import redis.clients.jedis.commands.JedisClusterScriptingCommands;
+import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.util.KeyMergeUtil;
 
 import java.util.List;
@@ -13,7 +16,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.params.set.SetParams;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
-    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+        MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
   public static enum Reset {
     SOFT, HARD
   }

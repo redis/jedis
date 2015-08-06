@@ -405,13 +405,13 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zadd(String key, Map<String, Double> scoreMembers) {
     HashMap<byte[], Double> binaryScoreMembers = convertScoreMembersToBinary(scoreMembers);
-    zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
+    zadd(SafeEncoder.encode(key), binaryScoreMembers);
   }
 
   @Override
   public void zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
     HashMap<byte[], Double> binaryScoreMembers = convertScoreMembersToBinary(scoreMembers);
-    zaddBinary(SafeEncoder.encode(key), binaryScoreMembers, params);
+    zadd(SafeEncoder.encode(key), binaryScoreMembers, params);
   }
 
   @Override

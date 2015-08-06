@@ -1514,14 +1514,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
     checkIsInMultiOrPipeline();
-    client.zaddBinary(key, scoreMembers);
+    client.zadd(key, scoreMembers);
     return client.getIntegerReply();
   }
 
   @Override
   public Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
     checkIsInMultiOrPipeline();
-    client.zaddBinary(key, scoreMembers, params);
+    client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
   }
 

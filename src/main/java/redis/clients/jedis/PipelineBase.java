@@ -844,13 +844,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
   @Override
   public Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers) {
-    getClient(key).zaddBinary(key, scoreMembers);
+    getClient(key).zadd(key, scoreMembers);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
   public Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
-    getClient(key).zaddBinary(key, scoreMembers, params);
+    getClient(key).zadd(key, scoreMembers, params);
     return getResponse(BuilderFactory.LONG);
   }
 

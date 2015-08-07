@@ -190,7 +190,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false
    */
-  @Deprecated
   public Boolean exists(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.exists(key);

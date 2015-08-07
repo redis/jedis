@@ -1,4 +1,6 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
+
+import redis.clients.jedis.DebugParams;
 
 public interface BasicCommands {
 

@@ -1,20 +1,19 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
+
+import redis.clients.jedis.BinaryJedisPubSub;
+import redis.clients.jedis.BitOP;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.ZParams;
 
 import java.util.List;
 import java.util.Set;
 
-public interface MultiKeyBinaryCommands {
+public interface MultiKeyBinaryJedisClusterCommands {
   Long del(byte[]... keys);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 
   List<byte[]> brpop(int timeout, byte[]... keys);
-
-  List<byte[]> blpop(byte[]... args);
-
-  List<byte[]> brpop(byte[]... args);
-
-  Set<byte[]> keys(byte[] pattern);
 
   List<byte[]> mget(byte[]... keys);
 
@@ -46,10 +45,6 @@ public interface MultiKeyBinaryCommands {
 
   Long sunionstore(byte[] dstkey, byte[]... keys);
 
-  String watch(byte[]... keys);
-
-  String unwatch();
-
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
@@ -65,8 +60,6 @@ public interface MultiKeyBinaryCommands {
   void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels);
 
   void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns);
-
-  byte[] randomBinaryKey();
 
   Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
 

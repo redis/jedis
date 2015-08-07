@@ -1,5 +1,9 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
 
+import redis.clients.jedis.BinaryClient;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.set.SetParams;
 
 import java.util.List;
@@ -207,7 +211,7 @@ public interface JedisClusterCommands {
 
   Long zremrangeByLex(final String key, final String min, final String max);
 
-  Long linsert(String key, Client.LIST_POSITION where, String pivot, String value);
+  Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value);
 
   Long lpushx(String key, String... string);
 

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.SafeEncoder;
 

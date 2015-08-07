@@ -1,4 +1,6 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
+
+import redis.clients.jedis.Response;
 
 import java.util.List;
 

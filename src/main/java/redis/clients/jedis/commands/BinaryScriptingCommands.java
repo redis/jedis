@@ -1,27 +1,29 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
 
 import java.util.List;
 
-public interface JedisClusterBinaryScriptingCommands {
+public interface BinaryScriptingCommands {
+
   Object eval(byte[] script, byte[] keyCount, byte[]... params);
 
   Object eval(byte[] script, int keyCount, byte[]... params);
 
   Object eval(byte[] script, List<byte[]> keys, List<byte[]> args);
 
-  Object eval(byte[] script, byte[] key);
+  Object eval(byte[] script);
 
-  Object evalsha(byte[] script, byte[] key);
+  Object evalsha(byte[] script);
 
   Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args);
 
   Object evalsha(byte[] sha1, int keyCount, byte[]... params);
 
-  List<Long> scriptExists(byte[] key, byte[][] sha1);
+  // TODO: should be Boolean, add singular version
+  List<Long> scriptExists(byte[]... sha1);
 
-  byte[] scriptLoad(byte[] script, byte[] key);
+  byte[] scriptLoad(byte[] script);
 
-  String scriptFlush(byte[] key);
+  String scriptFlush();
 
-  String scriptKill(byte[] key);
+  String scriptKill();
 }

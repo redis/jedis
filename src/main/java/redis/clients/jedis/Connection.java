@@ -8,6 +8,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.IOUtils;

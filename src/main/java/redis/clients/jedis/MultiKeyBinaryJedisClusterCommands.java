@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
+  Long exists(byte[]... keys);
+
   Long del(byte[]... keys);
 
   List<byte[]> blpop(int timeout, byte[]... keys);

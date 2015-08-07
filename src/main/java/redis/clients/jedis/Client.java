@@ -45,7 +45,6 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  @Deprecated
   public void exists(final String key) {
     exists(SafeEncoder.encode(key));
   }

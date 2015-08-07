@@ -83,7 +83,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
-  @Deprecated
   @Override
   public Boolean exists(final String key) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxRedirections) {

@@ -19,7 +19,6 @@ public interface Commands {
 
   public void get(final String key);
 
-  @Deprecated
   public void exists(final String key);
 
   public void exists(final String... keys);

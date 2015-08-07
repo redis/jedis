@@ -118,7 +118,6 @@ public class BinaryClient extends Connection {
     sendCommand(EXISTS, keys);
   }
 
-  @Deprecated
   public void exists(final byte[] key) {
     sendCommand(EXISTS, key);
   }

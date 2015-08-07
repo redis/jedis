@@ -72,6 +72,16 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.LONG);
   }
 
+  public Response<Long> exists(String... keys) {
+    client.exists(keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  public Response<Long> exists(byte[]... keys) {
+    client.exists(keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
   public Response<Set<String>> keys(String pattern) {
     getClient(pattern).keys(pattern);
     return getResponse(BuilderFactory.STRING_SET);

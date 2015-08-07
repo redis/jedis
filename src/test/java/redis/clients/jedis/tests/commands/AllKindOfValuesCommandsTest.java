@@ -68,6 +68,24 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void existsMany() {
+    String status = jedis.set("foo1", "bar1");
+    assertEquals("OK", status);
+
+    status = jedis.set("foo2", "bar2");
+    assertEquals("OK", status);
+
+    long reply = jedis.exists("foo1", "foo2");
+    assertEquals(2, reply);
+
+    long lreply = jedis.del("foo1");
+    assertEquals(1, lreply);
+
+    reply = jedis.exists("foo1", "foo2");
+    assertEquals(1, reply);
+  }
+
+  @Test
   public void del() {
     jedis.set("foo1", "bar1");
     jedis.set("foo2", "bar2");

@@ -108,6 +108,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Test if the specified key exists. The command returns the number of keys existed
+   * Time complexity: O(N)
+   * @param keys
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
+   *         0 if none of the specified key existed
+   */
+  public Long exists(final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.exists(keys);
+    return client.getIntegerReply();
+  }
+
+  /**
    * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
    * returned. Note that even keys set with an empty string as value will return "1". Time
    * complexity: O(1)
@@ -115,6 +128,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return Boolean reply, true if the key exists, otherwise false
    */
   @Override
+  @Deprecated
   public Boolean exists(final String key) {
     checkIsInMultiOrPipeline();
     client.exists(key);

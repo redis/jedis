@@ -11,6 +11,8 @@ import java.util.Set;
 public interface MultiKeyJedisClusterCommands {
   Long del(String... keys);
 
+  Long exists(String... keys);
+
   List<String> blpop(int timeout, String... keys);
 
   List<String> brpop(int timeout, String... keys);

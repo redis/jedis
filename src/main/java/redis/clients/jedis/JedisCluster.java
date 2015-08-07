@@ -83,6 +83,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+  @Deprecated
   @Override
   public Boolean exists(final String key) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxRedirections) {
@@ -91,6 +92,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         return connection.exists(key);
       }
     }.run(key);
+  }
+
+  @Override
+  public Long exists(final String... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.exists(keys);
+      }
+    }.run(keys.length, keys);
   }
 
   @Override

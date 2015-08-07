@@ -14,6 +14,8 @@ import java.util.Set;
 public interface MultiKeyCommandsPipeline {
   Response<Long> del(String... keys);
 
+  Response<Long> exists(String... keys);
+
   Response<List<String>> blpop(String... args);
 
   Response<List<String>> brpop(String... args);

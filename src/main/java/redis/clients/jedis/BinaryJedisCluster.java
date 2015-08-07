@@ -100,6 +100,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Long exists(final byte[]... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.exists(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public Boolean exists(final byte[] key) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxRedirections) {
       @Override

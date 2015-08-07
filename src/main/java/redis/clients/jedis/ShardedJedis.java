@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;

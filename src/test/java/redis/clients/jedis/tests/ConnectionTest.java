@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.ProtocolCommand;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class ConnectionTest extends Assert {

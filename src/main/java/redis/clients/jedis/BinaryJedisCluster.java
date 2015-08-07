@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.commands.BinaryJedisClusterCommands;
+import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
+import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -7,7 +10,6 @@ import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +18,7 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class BinaryJedisCluster implements BinaryJedisClusterCommands,
-    MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
+        MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
   public static final short HASHSLOTS = 16384;
   protected static final int DEFAULT_TIMEOUT = 2000;
@@ -49,7 +51,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     if (connectionHandler != null) {
       for (JedisPool pool : connectionHandler.getNodes().values()) {
         try {

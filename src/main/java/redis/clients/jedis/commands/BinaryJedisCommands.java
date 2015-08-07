@@ -1,15 +1,21 @@
-package redis.clients.jedis;
-
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+package redis.clients.jedis.commands;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface BinaryJedisClusterCommands {
+import redis.clients.jedis.BinaryClient;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
+/**
+ * Common interface for sharded and non-sharded BinaryJedis
+ */
+public interface BinaryJedisCommands {
   String set(byte[] key, byte[] value);
 
   String set(byte[] key, byte[] value, SetParams params);
@@ -218,7 +224,7 @@ public interface BinaryJedisClusterCommands {
 
   Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
-  Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot, byte[] value);
+  Long linsert(byte[] key, BinaryClient.LIST_POSITION where, byte[] pivot, byte[] value);
 
   Long lpushx(byte[] key, byte[]... arg);
 
@@ -227,6 +233,8 @@ public interface BinaryJedisClusterCommands {
   Long del(byte[] key);
 
   byte[] echo(byte[] arg);
+
+  Long move(byte[] key, int dbIndex);
 
   Long bitcount(final byte[] key);
 

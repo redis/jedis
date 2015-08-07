@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +88,7 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     clear();
   }
 }

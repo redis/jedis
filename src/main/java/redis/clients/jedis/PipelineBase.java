@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;

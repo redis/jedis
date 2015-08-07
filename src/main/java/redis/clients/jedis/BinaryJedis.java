@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -27,7 +28,7 @@ import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
-    AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
+        AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
   protected Client client = null;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;

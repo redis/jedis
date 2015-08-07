@@ -1,4 +1,9 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
+
+import redis.clients.jedis.BinaryClient;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;

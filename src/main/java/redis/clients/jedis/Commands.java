@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
-import java.util.Map;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
+import java.util.Map;
 
 public interface Commands {
 
@@ -16,6 +16,8 @@ public interface Commands {
   public void get(final String key);
 
   public void exists(final String key);
+
+  public void exists(final String... keys);
 
   public void del(final String... keys);
 

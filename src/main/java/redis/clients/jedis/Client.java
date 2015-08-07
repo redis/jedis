@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -43,6 +43,11 @@ public class Client extends BinaryClient implements Commands {
 
   public void exists(final String key) {
     exists(SafeEncoder.encode(key));
+  }
+
+  public void exists(final String... keys) {
+    final byte[][] bkeys = SafeEncoder.encodeMany(keys);
+    exists(bkeys);
   }
 
   public void del(final String... keys) {

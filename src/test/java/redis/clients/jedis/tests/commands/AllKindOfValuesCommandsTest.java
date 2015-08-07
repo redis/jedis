@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,8 +14,6 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -63,6 +64,24 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     reply = jedis.exists(bfoo);
     assertFalse(reply);
+  }
+
+  @Test
+  public void existsMany() {
+    String status = jedis.set("foo1", "bar1");
+    assertEquals("OK", status);
+
+    status = jedis.set("foo2", "bar2");
+    assertEquals("OK", status);
+
+    long reply = jedis.exists("foo1", "foo2");
+    assertEquals(2, reply);
+
+    long lreply = jedis.del("foo1");
+    assertEquals(1, lreply);
+
+    reply = jedis.exists("foo1", "foo2");
+    assertEquals(1, reply);
   }
 
   @Test

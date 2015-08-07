@@ -142,29 +142,23 @@ public class JedisSentinelPoolTest extends JedisTestBase {
   }
 
   @Test
-  public void returnResourceWithNullResource() {
+  public void customClientName() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+        "foobared", 0, "my_shiny_client_name");
 
-    Jedis nullJedis = null;
-    pool.returnResource(nullJedis);
-    pool.destroy();
-  }
+    Jedis jedis = pool.getResource();
 
-  @Test
-  public void returnBrokenResourceWithNullResource() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+    try {
+      assertEquals("my_shiny_client_name", jedis.clientGetname());
+    } finally {
+      jedis.close();
+      pool.destroy();
+    }
 
-    Jedis nullJedis = null;
-    pool.returnBrokenResource(nullJedis);
-    pool.destroy();
+    assertTrue(pool.isClosed());
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {

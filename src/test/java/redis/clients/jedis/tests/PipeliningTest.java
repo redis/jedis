@@ -6,6 +6,7 @@ import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -16,7 +17,7 @@ public class PipeliningTest extends Assert {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 2000);
     jedis.connect();
     jedis.auth("foobared");
     jedis.flushAll();
@@ -295,6 +296,32 @@ public class PipeliningTest extends Assert {
     pipeline.multi();
   }
 
+  @Test(expected = JedisDataException.class)
+  public void testJedisThowExceptionWhenInPipeline() {
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.set("foo", "3");
+    jedis.get("somekey");
+    fail("Can't use jedis instance when in Pipeline");
+  }
+
+  @Test
+  public void testReuseJedisWhenPipelineIsEmpty() {
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.set("foo", "3");
+    pipeline.sync();
+    String result = jedis.get("foo");
+    assertEquals(result, "3");
+  }
+
+  @Test
+  public void testResetStateWhenInPipeline() {
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.set("foo", "3");
+    jedis.resetState();
+    String result = jedis.get("foo");
+    assertEquals(result, "3");
+  }
+
   @Test
   public void testDiscardInPipeline() {
     Pipeline pipeline = jedis.pipelined();
@@ -456,6 +483,53 @@ public class PipeliningTest extends Assert {
     assertTrue(resp.isEmpty());
 
     jedis2.close();
+  }
+
+  @Test
+  public void testCloseable() throws IOException {
+    // we need to test with fresh instance of Jedis
+    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis2.auth("foobared");
+
+    Pipeline pipeline = jedis2.pipelined();
+    Response<String> retFuture1 = pipeline.set("a", "1");
+    Response<String> retFuture2 = pipeline.set("b", "2");
+
+    pipeline.close();
+
+    // it shouldn't meet any exception
+    retFuture1.get();
+    retFuture2.get();
+  }
+
+  @Test
+  public void testCloseableWithMulti() throws IOException {
+    // we need to test with fresh instance of Jedis
+    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis2.auth("foobared");
+
+    Pipeline pipeline = jedis2.pipelined();
+    Response<String> retFuture1 = pipeline.set("a", "1");
+    Response<String> retFuture2 = pipeline.set("b", "2");
+
+    pipeline.multi();
+
+    pipeline.set("a", "a");
+    pipeline.set("b", "b");
+
+    pipeline.close();
+
+    try {
+      pipeline.exec();
+      fail("close should discard transaction");
+    } catch (JedisDataException e) {
+      assertTrue(e.getMessage().contains("EXEC without MULTI"));
+      // pass
+    }
+
+    // it shouldn't meet any exception
+    retFuture1.get();
+    retFuture2.get();
   }
 
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {

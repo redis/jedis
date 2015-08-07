@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.exceptions.JedisClusterException;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
 
@@ -667,6 +669,26 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
+  public Long zadd(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zadd(key, score, member, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zadd(key, scoreMembers, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long end) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxRedirections) {
       @Override
@@ -692,6 +714,16 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
       @Override
       public Double execute(Jedis connection) {
         return connection.zincrby(key, score, member);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Double zincrby(final byte[] key, final double score, final byte[] member, final ZIncrByParams params) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.zincrby(key, score, member, params);
       }
     }.runBinary(key);
   }

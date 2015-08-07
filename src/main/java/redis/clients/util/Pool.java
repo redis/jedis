@@ -20,7 +20,7 @@ public abstract class Pool<T> implements Closeable {
 
   @Override
   public void close() {
-    closeInternalPool();
+    destroy();
   }
 
   public boolean isClosed() {
@@ -100,7 +100,7 @@ public abstract class Pool<T> implements Closeable {
   }
 
   public int getNumActive() {
-    if (this.internalPool == null || this.internalPool.isClosed()) {
+    if (poolInactive()) {
       return -1;
     }
 
@@ -108,7 +108,7 @@ public abstract class Pool<T> implements Closeable {
   }
 
   public int getNumIdle() {
-    if (this.internalPool == null || this.internalPool.isClosed()) {
+    if (poolInactive()) {
       return -1;
     }
 
@@ -116,11 +116,31 @@ public abstract class Pool<T> implements Closeable {
   }
 
   public int getNumWaiters() {
-    if (this.internalPool == null || this.internalPool.isClosed()) {
+    if (poolInactive()) {
       return -1;
     }
 
     return this.internalPool.getNumWaiters();
+  }
+
+  public long getMeanBorrowWaitTimeMillis() {
+    if (poolInactive()) {
+      return -1;
+    }
+
+    return this.internalPool.getMeanBorrowWaitTimeMillis();
+  }
+
+  public long getMaxBorrowWaitTimeMillis() {
+    if (poolInactive()) {
+      return -1;
+    }
+
+    return this.internalPool.getMaxBorrowWaitTimeMillis();
+  }
+
+  private boolean poolInactive() {
+    return this.internalPool == null || this.internalPool.isClosed();
   }
 
   public void addObjects(int count) {

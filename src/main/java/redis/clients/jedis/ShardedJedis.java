@@ -12,6 +12,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.util.Pool;
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
@@ -95,6 +99,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.ttl(key);
   }
 
+  @Override
+  public Long pttl(String key) {
+    Jedis j = getShard(key);
+    return j.pttl(key);
+  }
+
   public Boolean setbit(String key, long offset, boolean value) {
     Jedis j = getShard(key);
     return j.setbit(key, offset, value);
@@ -133,6 +143,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String setex(String key, int seconds, String value) {
     Jedis j = getShard(key);
     return j.setex(key, seconds, value);
+  }
+
+  @Override
+  public String psetex(String key, long milliseconds, String value) {
+    Jedis j = getShard(key);
+    return j.psetex(key, milliseconds, value);
   }
 
   public List<String> blpop(String arg) {
@@ -386,11 +402,25 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.zadd(key, score, member);
   }
 
+  @Override
+  public Long zadd(String key, double score, String member, ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zadd(key, score, member, params);
+  }
+
+  @Override
   public Long zadd(String key, Map<String, Double> scoreMembers) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers);
   }
 
+  @Override
+  public Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zadd(key, scoreMembers, params);
+  }
+
+  @Override
   public Set<String> zrange(String key, long start, long end) {
     Jedis j = getShard(key);
     return j.zrange(key, start, end);
@@ -406,6 +436,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.zincrby(key, score, member);
   }
 
+  @Override
+  public Double zincrby(String key, double score, String member, ZIncrByParams params) {
+    Jedis j = getShard(key);
+    return j.zincrby(key, score, member, params);
+  }
+
+  @Override
   public Long zrank(String key, String member) {
     Jedis j = getShard(key);
     return j.zrank(key, member);
@@ -606,6 +643,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.bitcount(key, start, end);
   }
 
+  @Override
+  public Long bitpos(String key, boolean value) {
+    Jedis j = getShard(key);
+    return j.bitpos(key, value);
+  }
+
+  @Override
+  public Long bitpos(String key, boolean value, BitPosParams params) {
+    Jedis j = getShard(key);
+    return j.bitpos(key, value, params);
+  }
+
   @Deprecated
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long)
@@ -644,14 +693,32 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.hscan(key, cursor);
   }
 
+  @Override
+  public ScanResult<Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.hscan(key, cursor, params);
+  }
+
   public ScanResult<String> sscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.sscan(key, cursor);
   }
 
+  @Override
+  public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.sscan(key, cursor, params);
+  }
+
   public ScanResult<Tuple> zscan(String key, final String cursor) {
     Jedis j = getShard(key);
     return j.zscan(key, cursor);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.zscan(key, cursor, params);
   }
 
   @Override

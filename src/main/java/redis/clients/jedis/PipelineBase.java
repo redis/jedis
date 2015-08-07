@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
@@ -675,16 +677,48 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
+  public Response<Long> zadd(String key, double score, String member, ZAddParams params) {
+    getClient(key).zadd(key, score, member, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
   public Response<Long> zadd(String key, Map<String, Double> scoreMembers) {
     getClient(key).zadd(key, scoreMembers);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
+  public Response<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
+    getClient(key).zadd(key, scoreMembers, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> zadd(byte[] key, double score, byte[] member) {
     getClient(key).zadd(key, score, member);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
+  public Response<Long> zadd(byte[] key, double score, byte[] member, ZAddParams params) {
+    getClient(key).zadd(key, score, member);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers) {
+    getClient(key).zaddBinary(key, scoreMembers);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
+    getClient(key).zaddBinary(key, scoreMembers, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> zcard(String key) {
     getClient(key).zcard(key);
     return getResponse(BuilderFactory.LONG);
@@ -720,11 +754,25 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.DOUBLE);
   }
 
+  @Override
+  public Response<Double> zincrby(String key, double score, String member, ZIncrByParams params) {
+    getClient(key).zincrby(key, score, member, params);
+    return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
   public Response<Double> zincrby(byte[] key, double score, byte[] member) {
     getClient(key).zincrby(key, score, member);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
+  @Override
+  public Response<Double> zincrby(byte[] key, double score, byte[] member, ZIncrByParams params) {
+    getClient(key).zincrby(key, score, member);
+    return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
   public Response<Set<String>> zrange(String key, long start, long end) {
     getClient(key).zrange(key, start, end);
     return getResponse(BuilderFactory.STRING_ZSET);

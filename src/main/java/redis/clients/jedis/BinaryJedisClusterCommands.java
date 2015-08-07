@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -128,11 +131,17 @@ public interface BinaryJedisClusterCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
+  Long zadd(byte[] key, double score, byte[] member, ZAddParams params);
+
+  Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
+
   Set<byte[]> zrange(byte[] key, long start, long end);
 
   Long zrem(byte[] key, byte[]... member);
 
   Double zincrby(byte[] key, double score, byte[] member);
+
+  Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params);
 
   Long zrank(byte[] key, byte[] member);
 

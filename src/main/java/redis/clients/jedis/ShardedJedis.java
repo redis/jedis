@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
@@ -457,9 +459,21 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Long zadd(String key, double score, String member, ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zadd(key, score, member, params);
+  }
+
+  @Override
   public Long zadd(String key, Map<String, Double> scoreMembers) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers);
+  }
+
+  @Override
+  public Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zadd(key, scoreMembers, params);
   }
 
   @Override
@@ -478,6 +492,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Double zincrby(String key, double score, String member) {
     Jedis j = getShard(key);
     return j.zincrby(key, score, member);
+  }
+
+  @Override
+  public Double zincrby(String key, double score, String member, ZIncrByParams params) {
+    Jedis j = getShard(key);
+    return j.zincrby(key, score, member, params);
   }
 
   @Override

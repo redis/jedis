@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -396,6 +398,24 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zadd(final String key, final double score, final String member,
+      final ZAddParams params) {
+    zadd(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
+  }
+
+  @Override
+  public void zadd(String key, Map<String, Double> scoreMembers) {
+    HashMap<byte[], Double> binaryScoreMembers = convertScoreMembersToBinary(scoreMembers);
+    zadd(SafeEncoder.encode(key), binaryScoreMembers);
+  }
+
+  @Override
+  public void zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+    HashMap<byte[], Double> binaryScoreMembers = convertScoreMembersToBinary(scoreMembers);
+    zadd(SafeEncoder.encode(key), binaryScoreMembers, params);
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long end) {
     zrange(SafeEncoder.encode(key), start, end);
   }
@@ -408,6 +428,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zincrby(final String key, final double score, final String member) {
     zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
+  }
+
+  @Override
+  public void zincrby(String key, double score, String member, ZIncrByParams params) {
+    zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
   }
 
   @Override
@@ -817,14 +842,6 @@ public class Client extends BinaryClient implements Commands {
     configGet(SafeEncoder.encode(pattern));
   }
 
-  private byte[][] getByteParams(String... params) {
-    byte[][] p = new byte[params.length][];
-    for (int i = 0; i < params.length; i++)
-      p[i] = SafeEncoder.encode(params[i]);
-
-    return p;
-  }
-
   public void eval(String script, int keyCount, String... params) {
     eval(SafeEncoder.encode(script), toByteArray(keyCount), getByteParams(params));
   }
@@ -843,19 +860,6 @@ public class Client extends BinaryClient implements Commands {
 
   public void scriptLoad(String script) {
     scriptLoad(SafeEncoder.encode(script));
-  }
-
-  @Override
-  public void zadd(String key, Map<String, Double> scoreMembers) {
-
-    HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
-
-    for (Map.Entry<String, Double> entry : scoreMembers.entrySet()) {
-
-      binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
-    }
-
-    zaddBinary(SafeEncoder.encode(key), binaryScoreMembers);
   }
 
   @Override
@@ -1099,4 +1103,20 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
+  private byte[][] getByteParams(String... params) {
+    byte[][] p = new byte[params.length][];
+    for (int i = 0; i < params.length; i++)
+      p[i] = SafeEncoder.encode(params[i]);
+
+    return p;
+  }
+
+  private HashMap<byte[], Double> convertScoreMembersToBinary(Map<String, Double> scoreMembers) {
+    HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
+
+    for (Entry<String, Double> entry : scoreMembers.entrySet()) {
+      binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
+    }
+    return binaryScoreMembers;
+  }
 }

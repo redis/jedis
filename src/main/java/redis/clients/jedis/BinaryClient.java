@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -399,20 +401,29 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, key, toByteArray(score), member);
   }
 
-  public void zaddBinary(final byte[] key, final Map<byte[], Double> scoreMembers) {
+  public void zadd(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
+    sendCommand(ZADD, params.getByteParams(key, toByteArray(score), member));
+  }
 
+  public void zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
     ArrayList<byte[]> args = new ArrayList<byte[]>(scoreMembers.size() * 2 + 1);
     args.add(key);
-
-    for (Map.Entry<byte[], Double> entry : scoreMembers.entrySet()) {
-      args.add(toByteArray(entry.getValue()));
-      args.add(entry.getKey());
-    }
+    args.addAll(convertScoreMembersToByteArrays(scoreMembers));
 
     byte[][] argsArray = new byte[args.size()][];
     args.toArray(argsArray);
 
     sendCommand(ZADD, argsArray);
+  }
+
+  public void zadd(final byte[] key, final Map<byte[], Double> scoreMembers,
+      final ZAddParams params) {
+    ArrayList<byte[]> args = convertScoreMembersToByteArrays(scoreMembers);
+    byte[][] argsArray = new byte[args.size()][];
+    args.toArray(argsArray);
+
+    sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
   public void zrange(final byte[] key, final long start, final long end) {
@@ -425,6 +436,12 @@ public class BinaryClient extends Connection {
 
   public void zincrby(final byte[] key, final double score, final byte[] member) {
     sendCommand(ZINCRBY, key, toByteArray(score), member);
+  }
+
+  public void zincrby(final byte[] key, final double score, final byte[] member,
+      final ZIncrByParams params) {
+    // Note that it actually calls ZADD with INCR option, so it requires Redis 3.0.2 or upper.
+    sendCommand(ZADD, params.getByteParams(key, toByteArray(score), member));
   }
 
   public void zrank(final byte[] key, final byte[] member) {
@@ -1190,5 +1207,16 @@ public class BinaryClient extends Connection {
 
   public void readonly() {
     sendCommand(READONLY);
+  }
+
+  private ArrayList<byte[]> convertScoreMembersToByteArrays(final Map<byte[], Double> scoreMembers) {
+    ArrayList<byte[]> args = new ArrayList<byte[]>(scoreMembers.size() * 2);
+
+    for (Map.Entry<byte[], Double> entry : scoreMembers.entrySet()) {
+      args.add(toByteArray(entry.getValue()));
+      args.add(entry.getKey());
+    }
+
+    return args;
   }
 }

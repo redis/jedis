@@ -5,13 +5,13 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * @author guy
- */
 public interface BinaryRedisPipeline {
   Response<Long> append(byte[] key, byte[] value);
 
@@ -145,11 +145,19 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zadd(byte[] key, double score, byte[] member);
 
+  Response<Long> zadd(byte[] key, double score, byte[] member, ZAddParams params);
+
+  Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers);
+
+  Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
+
   Response<Long> zcard(byte[] key);
 
   Response<Long> zcount(byte[] key, double min, double max);
 
   Response<Double> zincrby(byte[] key, double score, byte[] member);
+
+  Response<Double> zincrby(byte[] key, double score, byte[] member, ZIncrByParams params);
 
   Response<Set<byte[]>> zrange(byte[] key, long start, long end);
 

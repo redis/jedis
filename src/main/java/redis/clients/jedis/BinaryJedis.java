@@ -21,6 +21,8 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
@@ -1504,9 +1506,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zadd(key, score, member, params);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
     checkIsInMultiOrPipeline();
-    client.zaddBinary(key, scoreMembers);
+    client.zadd(key, scoreMembers);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
   }
 
@@ -1558,6 +1574,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zincrby(key, score, member);
     String newscore = client.getBulkReply();
+    return Double.valueOf(newscore);
+  }
+
+  @Override
+  public Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params) {
+    checkIsInMultiOrPipeline();
+    client.zincrby(key, score, member, params);
+    String newscore = client.getBulkReply();
+
+    // with nx / xx options it could return null now
+    if (newscore == null) return null;
+
     return Double.valueOf(newscore);
   }
 

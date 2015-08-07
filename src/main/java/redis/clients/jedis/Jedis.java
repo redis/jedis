@@ -15,6 +15,8 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
@@ -1391,9 +1393,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Long zadd(final String key, final double score, final String member,
+      final ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zadd(key, score, member, params);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public Long zadd(final String key, final Map<String, Double> scoreMembers) {
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
   }
 
@@ -1449,6 +1466,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zincrby(key, score, member);
     String newscore = client.getBulkReply();
+    return Double.valueOf(newscore);
+  }
+
+  @Override
+  public Double zincrby(String key, double score, String member, ZIncrByParams params) {
+    checkIsInMultiOrPipeline();
+    client.zincrby(key, score, member, params);
+    String newscore = client.getBulkReply();
+
+    // with nx / xx options it could return null now
+    if (newscore == null) return null;
+
     return Double.valueOf(newscore);
   }
 

@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
@@ -642,11 +644,32 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long zadd(final String key, final double score, final String member,
+      final ZAddParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zadd(key, score, member, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long zadd(final String key, final Map<String, Double> scoreMembers) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
         return connection.zadd(key, scoreMembers);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zadd(key, scoreMembers, params);
       }
     }.run(key);
   }
@@ -677,6 +700,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Double execute(Jedis connection) {
         return connection.zincrby(key, score, member);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Double zincrby(final String key, final double score, final String member,
+      final ZIncrByParams params) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.zincrby(key, score, member, params);
       }
     }.run(key);
   }

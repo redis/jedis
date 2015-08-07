@@ -8,6 +8,8 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
 public interface Commands {
 
@@ -153,13 +155,21 @@ public interface Commands {
 
   public void zadd(final String key, final double score, final String member);
 
+  public void zadd(final String key, final double score, final String member,
+      final ZAddParams params);
+
   public void zadd(final String key, final Map<String, Double> scoreMembers);
+
+  public void zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params);
 
   public void zrange(final String key, final long start, final long end);
 
   public void zrem(final String key, final String... members);
 
   public void zincrby(final String key, final double score, final String member);
+
+  public void zincrby(final String key, final double score, final String member,
+      final ZIncrByParams params);
 
   public void zrank(final String key, final String member);
 

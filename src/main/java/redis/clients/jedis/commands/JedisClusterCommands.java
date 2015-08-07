@@ -5,6 +5,8 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
 import java.util.List;
 import java.util.Map;
@@ -129,13 +131,19 @@ public interface JedisClusterCommands {
 
   Long zadd(String key, double score, String member);
 
+  Long zadd(String key, double score, String member, ZAddParams params);
+
   Long zadd(String key, Map<String, Double> scoreMembers);
+
+  Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
   Set<String> zrange(String key, long start, long end);
 
   Long zrem(String key, String... member);
 
   Double zincrby(String key, double score, String member);
+
+  Double zincrby(String key, double score, String member, ZIncrByParams params);
 
   Long zrank(String key, String member);
 

@@ -4,10 +4,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public interface Hashing {
-  public static final Hashing MURMUR_HASH = new MurmurHash();
-  public ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();
+  Hashing MURMUR_HASH = new MurmurHash();
+  ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();
 
-  public static final Hashing MD5 = new Hashing() {
+  Hashing MD5 = new Hashing() {
     public long hash(String key) {
       return hash(SafeEncoder.encode(key));
     }
@@ -31,7 +31,7 @@ public interface Hashing {
     }
   };
 
-  public long hash(String key);
+  long hash(String key);
 
-  public long hash(byte[] key);
+  long hash(byte[] key);
 }

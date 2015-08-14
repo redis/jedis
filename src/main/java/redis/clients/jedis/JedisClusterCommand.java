@@ -67,6 +67,13 @@ public abstract class JedisClusterCommand<T> {
       // retry with random connection
       return runWithRetries(key, redirections - 1, true, asking);
     } catch (JedisRedirectionException jre) {
+      // if MOVED redirection occurred,
+      if (jre instanceof JedisMovedDataException) {
+        // it rebuilds cluster's slot cache
+        // recommended by Redis cluster specification
+        this.connectionHandler.renewSlotCache(connection);
+      }
+
       // release current connection before recursion or renewing
       releaseConnection(connection);
       connection = null;
@@ -75,9 +82,6 @@ public abstract class JedisClusterCommand<T> {
         asking = true;
         askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
       } else if (jre instanceof JedisMovedDataException) {
-        // it rebuilds cluster's slot cache
-        // recommended by Redis cluster specification
-        this.connectionHandler.renewSlotCache();
       } else {
         throw new JedisClusterException(jre);
       }

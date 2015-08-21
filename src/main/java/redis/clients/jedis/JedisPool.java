@@ -102,9 +102,10 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   /**
-   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   * @deprecated starting from Jedis 3.0 this method will not be exposed.
+   * Resource cleanup should be done using @see {@link redis.clients.jedis.Jedis#close()}
    */
+  @Override
   @Deprecated
   public void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
@@ -113,9 +114,10 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   /**
-   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   * @deprecated starting from Jedis 3.0 this method will not be exposed.
+   * Resource cleanup should be done using @see {@link redis.clients.jedis.Jedis#close()}
    */
+  @Override
   @Deprecated
   public void returnResource(final Jedis resource) {
     if (resource != null) {

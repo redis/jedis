@@ -19,7 +19,7 @@ public final class Protocol {
   private static final String ASK_RESPONSE = "ASK";
   private static final String MOVED_RESPONSE = "MOVED";
   private static final String CLUSTERDOWN_RESPONSE = "CLUSTERDOWN";
-  public static final String DEFAULT_HOST = "localhost";
+  public static final String DEFAULT_HOST = HostAndPort.LOCALHOST_STR;
   public static final int DEFAULT_PORT = 6379;
   public static final int DEFAULT_SENTINEL_PORT = 26379;
   public static final int DEFAULT_TIMEOUT = 2000;

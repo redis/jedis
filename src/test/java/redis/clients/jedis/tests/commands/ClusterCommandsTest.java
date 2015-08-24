@@ -1,12 +1,9 @@
 package redis.clients.jedis.tests.commands;
 
-import java.util.List;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster.Reset;
@@ -14,12 +11,16 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 
+import java.util.List;
+
 public class ClusterCommandsTest extends JedisTestBase {
   private static Jedis node1;
   private static Jedis node2;
 
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
+
+  private String localHost = HostAndPort.convertHost("127.0.0.1");
 
   @Before
   public void setUp() throws Exception {
@@ -47,7 +48,7 @@ public class ClusterCommandsTest extends JedisTestBase {
 
   @Test
   public void testClusterSoftReset() {
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+    node1.clusterMeet(localHost, nodeInfo2.getPort());
     assertTrue(node1.clusterNodes().split("\n").length > 1);
     node1.clusterReset(Reset.SOFT);
     assertEquals(1, node1.clusterNodes().split("\n").length);
@@ -78,7 +79,7 @@ public class ClusterCommandsTest extends JedisTestBase {
 
   @Test
   public void clusterMeet() {
-    String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+    String status = node1.clusterMeet(localHost, nodeInfo2.getPort());
     assertEquals("OK", status);
   }
 

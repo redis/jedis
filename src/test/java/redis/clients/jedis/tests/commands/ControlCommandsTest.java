@@ -1,13 +1,13 @@
 package redis.clients.jedis.tests.commands;
 
-import java.util.List;
-
 import org.junit.Test;
-
 import redis.clients.jedis.DebugParams;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import java.util.List;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
@@ -74,7 +74,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
           Thread.sleep(100);
         } catch (InterruptedException e) {
         }
-        Jedis j = new Jedis("localhost");
+        Jedis j = new Jedis(HostAndPort.LOCALHOST_STR);
         j.auth("foobared");
         for (int i = 0; i < 5; i++) {
           j.incr("foobared");

@@ -19,7 +19,7 @@ public class JedisClusterNodeInformationParserTest extends Assert {
   @Test
   public void testParseNodeMyself() {
     String nodeInfo = "9b0d2ab38ee31482c95fdb2c7847a0d40e88d518 :7379 myself,master - 0 0 1 connected 0-5460";
-    HostAndPort current = new HostAndPort("localhost", 7379);
+    HostAndPort current = new HostAndPort(HostAndPort.LOCALHOST_STR, 7379);
     ClusterNodeInformation clusterNodeInfo = parser.parse(nodeInfo, current);
     assertEquals(clusterNodeInfo.getNode(), current);
   }
@@ -27,7 +27,7 @@ public class JedisClusterNodeInformationParserTest extends Assert {
   @Test
   public void testParseNormalState() {
     String nodeInfo = "5f4a2236d00008fba7ac0dd24b95762b446767bd 192.168.0.3:7380 master - 0 1400598804016 2 connected 5461-10922";
-    HostAndPort current = new HostAndPort("localhost", 7379);
+    HostAndPort current = new HostAndPort(HostAndPort.LOCALHOST_STR, 7379);
     ClusterNodeInformation clusterNodeInfo = parser.parse(nodeInfo, current);
     assertNotEquals(clusterNodeInfo.getNode(), current);
     assertEquals(clusterNodeInfo.getNode(), new HostAndPort("192.168.0.3", 7380));
@@ -43,7 +43,7 @@ public class JedisClusterNodeInformationParserTest extends Assert {
   @Test
   public void testParseSlotBeingMigrated() {
     String nodeInfo = "5f4a2236d00008fba7ac0dd24b95762b446767bd :7379 myself,master - 0 0 1 connected 0-5459 [5460->-5f4a2236d00008fba7ac0dd24b95762b446767bd] [5461-<-5f4a2236d00008fba7ac0dd24b95762b446767bd]";
-    HostAndPort current = new HostAndPort("localhost", 7379);
+    HostAndPort current = new HostAndPort(HostAndPort.LOCALHOST_STR, 7379);
     ClusterNodeInformation clusterNodeInfo = parser.parse(nodeInfo, current);
     assertEquals(clusterNodeInfo.getNode(), current);
 

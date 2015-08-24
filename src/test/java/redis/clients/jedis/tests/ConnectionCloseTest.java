@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class ConnectionCloseTest extends Assert {
@@ -30,14 +31,14 @@ public class ConnectionCloseTest extends Assert {
 
   @Test(expected = JedisConnectionException.class)
   public void checkWrongPort() {
-    client.setHost("localhost");
+    client.setHost(HostAndPort.LOCALHOST_STR);
     client.setPort(55665);
     client.connect();
   }
 
   @Test
   public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
-    client.setHost("localhost");
+    client.setHost(HostAndPort.LOCALHOST_STR);
     client.setPort(6379);
     client.setTimeoutInfinite();
   }

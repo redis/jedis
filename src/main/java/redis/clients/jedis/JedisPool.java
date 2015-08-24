@@ -224,9 +224,7 @@ public class JedisPool extends JedisPoolAbstract {
 
   @Override
   public Jedis getResource() {
-    Jedis jedis = super.getResource();
-    jedis.setDataSource(this);
-    return jedis;
+    return super.getResource();
   }
 
   @Override

@@ -37,6 +37,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private ConnectionBrokenDeterminer connBrokenDeterminer = new ConnectionBrokenDeterminer();
 
   public Connection() {
   }
@@ -65,6 +66,10 @@ public class Connection implements Closeable {
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
+  }
+
+  public void setConnectionBrokenDeterminer(final ConnectionBrokenDeterminer determiner) {
+    this.connBrokenDeterminer = determiner;
   }
 
   public Socket getSocket() {
@@ -308,9 +313,17 @@ public class Connection implements Closeable {
   protected Object readProtocolWithCheckingBroken() {
     try {
       return Protocol.read(inputStream);
-    } catch (JedisConnectionException exc) {
-      broken = true;
-      throw exc;
+    } catch (RuntimeException e) {
+      if (connBrokenDeterminer.determine(e)) {
+        broken = true;
+        if (e instanceof JedisConnectionException) {
+          throw e;
+        } else {
+          throw new JedisConnectionException(e);
+        }
+      } else {
+        throw e;
+      }
     }
   }
 

@@ -204,6 +204,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
+  public void setConnectionBrokenDeterminer(final ConnectionBrokenDeterminer determiner) {
+    client.setConnectionBrokenDeterminer(determiner);
+  }
+
   @Override
   public String ping() {
     checkIsInMultiOrPipeline();

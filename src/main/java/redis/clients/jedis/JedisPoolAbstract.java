@@ -6,6 +6,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.util.Pool;
 
 public class JedisPoolAbstract extends Pool<Jedis> {
+  public ConnectionBrokenDeterminer connBrokenDeterminer;
 
   public JedisPoolAbstract() {
     super();
@@ -13,6 +14,20 @@ public class JedisPoolAbstract extends Pool<Jedis> {
 
   public JedisPoolAbstract(GenericObjectPoolConfig poolConfig, PooledObjectFactory<Jedis> factory) {
     super(poolConfig, factory);
+  }
+
+  public void setConnectionBrokenDeterminer(final ConnectionBrokenDeterminer determiner) {
+    this.connBrokenDeterminer = determiner;
+  }
+
+  @Override
+  public Jedis getResource() {
+    Jedis jedis = super.getResource();
+    jedis.setDataSource(this);
+    if (connBrokenDeterminer != null) {
+      jedis.setConnectionBrokenDeterminer(connBrokenDeterminer);
+    }
+    return jedis;
   }
 
   @Override

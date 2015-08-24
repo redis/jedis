@@ -28,6 +28,7 @@ public class Connection implements Closeable {
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean broken = false;
+  private ConnectionBrokenDeterminer connBrokenDeterminer = new ConnectionBrokenDeterminer();
 
   public Connection() {
   }
@@ -39,6 +40,10 @@ public class Connection implements Closeable {
   public Connection(final String host, final int port) {
     this.host = host;
     this.port = port;
+  }
+
+  public void setConnectionBrokenDeterminer(final ConnectionBrokenDeterminer determiner) {
+    this.connBrokenDeterminer = determiner;
   }
 
   public Socket getSocket() {
@@ -264,9 +269,13 @@ public class Connection implements Closeable {
   protected Object readProtocolWithCheckingBroken() {
     try {
       return Protocol.read(inputStream);
-    } catch (JedisConnectionException exc) {
-      broken = true;
-      throw exc;
+    } catch (RuntimeException e) {
+      if (connBrokenDeterminer.determine(e)) {
+        broken = true;
+        throw new JedisConnectionException(e);
+      } else {
+        throw e;
+      }
     }
   }
 

@@ -206,7 +206,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public Jedis getResource() {
     while (true) {
       Jedis jedis = super.getResource();
-      jedis.setDataSource(this);
 
       // get a reference because it can change concurrently
       final HostAndPort master = currentHostMaster;

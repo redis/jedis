@@ -276,8 +276,10 @@ public class ShardedJedisTest extends Assert {
   public void testMasterSlaveShardingConsistencyWithShardNaming() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
     shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT, "HOST1:1234"));
-    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 1, "HOST2:1234"));
-    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 2, "HOST3:1234"));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 1,
+        "HOST2:1234"));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 2,
+        "HOST3:1234"));
     Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
         Hashing.MURMUR_HASH);
 

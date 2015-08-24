@@ -18,7 +18,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.params.set.SetParams;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
-        MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
   public static enum Reset {
     SOFT, HARD
   }

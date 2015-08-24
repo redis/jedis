@@ -16,7 +16,7 @@ import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
-        BinaryJedisCommands {
+    BinaryJedisCommands {
   public BinaryShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
   }

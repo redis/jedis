@@ -20,10 +20,14 @@ public class HostAndPortUtil {
     redisHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 5));
     redisHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 6));
 
-    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_SENTINEL_PORT));
-    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_SENTINEL_PORT + 1));
-    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_SENTINEL_PORT + 2));
-    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_SENTINEL_PORT + 3));
+    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR,
+        Protocol.DEFAULT_SENTINEL_PORT));
+    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR,
+        Protocol.DEFAULT_SENTINEL_PORT + 1));
+    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR,
+        Protocol.DEFAULT_SENTINEL_PORT + 2));
+    sentinelHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR,
+        Protocol.DEFAULT_SENTINEL_PORT + 3));
 
     clusterHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, 7379));
     clusterHostAndPortList.add(new HostAndPort(HostAndPort.LOCALHOST_STR, 7380));

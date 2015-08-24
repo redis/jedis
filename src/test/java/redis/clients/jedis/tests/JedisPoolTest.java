@@ -151,7 +151,8 @@ public class JedisPoolTest extends Assert {
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
-    JedisPool pool = new JedisPool(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6380/2"));
+    JedisPool pool = new JedisPool(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6380/2"));
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));

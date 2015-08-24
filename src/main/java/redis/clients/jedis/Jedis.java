@@ -21,7 +21,7 @@ import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-        AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
+    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
@@ -108,8 +108,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns the number of keys existed
-   * Time complexity: O(N)
+   * Test if the specified key exists. The command returns the number of keys existed Time
+   * complexity: O(N)
    * @param keys
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
    *         0 if none of the specified key existed

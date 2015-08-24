@@ -212,8 +212,10 @@ public class ShardedJedisPoolTest extends Assert {
     j.set("foo", "bar");
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6379")));
+    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6380")));
+    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6379")));
 
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
     ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
@@ -236,8 +238,10 @@ public class ShardedJedisPoolTest extends Assert {
     config.setBlockWhenExhausted(false);
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6379")));
+    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6380")));
+    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6379")));
 
     ShardedJedisPool pool = new ShardedJedisPool(config, shards);
 
@@ -269,8 +273,10 @@ public class ShardedJedisPoolTest extends Assert {
     config.setBlockWhenExhausted(false);
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6379")));
+    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6380")));
+    shards.add(new JedisShardInfo(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6379")));
 
     ShardedJedisPool pool = new ShardedJedisPool(config, shards);
 

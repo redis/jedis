@@ -356,4 +356,24 @@ public class JedisPoolTest extends Assert {
 
   }
 
+  @Test
+  public void testCloseConnectionOnMakeObject() {
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setTestOnBorrow(true);
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "wrong pass");
+    Jedis jedis = new Jedis("redis://:foobared@localhost:6379/");
+    int currentClientCount = getClientCount(jedis.clientList());
+    try {
+      pool.getResource();
+      fail("Should throw exception as password is incorrect.");
+    } catch (Exception e) {
+      assertEquals(currentClientCount, getClientCount(jedis.clientList()));
+    }
+
+  }
+
+  private int getClientCount(final String clientList) {
+    return clientList.split("\n").length;
+  }
+
 }

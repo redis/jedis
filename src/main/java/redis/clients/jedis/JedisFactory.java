@@ -8,6 +8,7 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisURIHelper;
 
 /**
@@ -82,18 +83,24 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
         soTimeout);
 
-    jedis.connect();
-    if (null != this.password) {
-      jedis.auth(this.password);
-    }
-    if (database != 0) {
-      jedis.select(database);
-    }
-    if (clientName != null) {
-      jedis.clientSetname(clientName);
+    try {
+      jedis.connect();
+      if (null != this.password) {
+        jedis.auth(this.password);
+      }
+      if (database != 0) {
+        jedis.select(database);
+      }
+      if (clientName != null) {
+        jedis.clientSetname(clientName);
+      }
+    } catch (JedisException je) {
+      jedis.close();
+      throw je;
     }
 
     return new DefaultPooledObject<Jedis>(jedis);
+
   }
 
   @Override

@@ -3338,6 +3338,82 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return new ScanResult<Tuple>(newcursor, results);
   }
 
+  @Override
+  public Long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
+    checkIsInMultiOrPipeline();
+    client.geoadd(key, longitude, latitude, member);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    checkIsInMultiOrPipeline();
+    client.geoadd(key, memberCoordinateMap);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Double geodist(byte[] key, byte[] member1, byte[] member2) {
+    checkIsInMultiOrPipeline();
+    client.geodist(key, member1, member2);
+    String dval = client.getBulkReply();
+    return (dval != null ? new Double(dval) : null);
+  }
+
+  @Override
+  public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.geodist(key, member1, member2, unit);
+    String dval = client.getBulkReply();
+    return (dval != null ? new Double(dval) : null);
+  }
+
+  @Override
+  public List<byte[]> geohash(byte[] key, byte[]... members) {
+    checkIsInMultiOrPipeline();
+    client.geohash(key, members);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
+    checkIsInMultiOrPipeline();
+    client.geopos(key, members);
+    return BuilderFactory.GEO_COORDINATE_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadius(key, longitude, latitude, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadius(key, longitude, latitude, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member,
+      double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMember(key, member, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member,
+      double radius, GeoUnit unit, GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMember(key, member, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
   /**
    * A decorator to implement Set from List. Assume that given List do not contains duplicated
    * values. The resulting set displays the same ordering, concurrency, and performance

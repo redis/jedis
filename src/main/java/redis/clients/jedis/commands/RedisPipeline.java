@@ -1,5 +1,7 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands;
 
+import redis.clients.jedis.*;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
@@ -215,4 +217,26 @@ public interface RedisPipeline {
   Response<Long> pfadd(final String key, final String... elements);
 
   Response<Long> pfcount(final String key);
+
+  // Geo Commands
+
+  Response<Long> geoadd(String key, double longitude, double latitude, String member);
+
+  Response<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
+
+  Response<Double> geodist(String key, String member1, String member2);
+
+  Response<Double> geodist(String key, String member1, String member2, GeoUnit unit);
+
+  Response<List<String>> geohash(String key, String...members);
+
+  Response<List<GeoCoordinate>> geopos(String key, String...members);
+
+  Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit);
+
+  Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit);
+
+  Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param);
 }

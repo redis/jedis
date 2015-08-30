@@ -1,9 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.BinaryClient;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -247,4 +245,25 @@ public interface JedisClusterCommands {
 
   long pfcount(final String key);
 
+  // Geo Commands
+
+  Long geoadd(String key, double longitude, double latitude, String member);
+
+  Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
+
+  Double geodist(String key, String member1, String member2);
+
+  Double geodist(String key, String member1, String member2, GeoUnit unit);
+
+  List<String> geohash(String key, String...members);
+
+  List<GeoCoordinate> geopos(String key, String...members);
+
+  List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit);
+
+  List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
+
+  List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param);
 }

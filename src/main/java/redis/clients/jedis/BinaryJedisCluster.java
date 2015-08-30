@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -1645,4 +1646,107 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(keys.length, keys);
   }
 
+  @Override
+  public Long geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, longitude, latitude, member);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, memberCoordinateMap);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.geodist(key, member1, member2);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.geodist(key, member1, member2, unit);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> geohash(final byte[] key, final byte[]... members) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.geohash(key, members);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<GeoCoordinate> geopos(final byte[] key, final byte[]... members) {
+    return new JedisClusterCommand<List<GeoCoordinate>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<GeoCoordinate> execute(Jedis connection) {
+        return connection.geopos(key, members);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
+    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<GeoRadiusResponse> execute(Jedis connection) {
+        return connection.georadius(key, longitude, latitude, radius, unit);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<GeoRadiusResponse> execute(Jedis connection) {
+        return connection.georadius(key, longitude, latitude, radius, unit, param);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit) {
+    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<GeoRadiusResponse> execute(Jedis connection) {
+        return connection.georadiusByMember(key, member, radius, unit);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<GeoRadiusResponse> execute(Jedis connection) {
+        return connection.georadiusByMember(key, member, radius, unit, param);
+      }
+    }.runBinary(key);
+  }
 }

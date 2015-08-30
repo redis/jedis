@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.GEORADIUS;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -577,7 +579,7 @@ public class Client extends BinaryClient implements Commands {
   public void zrangeByScoreWithScores(final String key, final double min, final double max,
       final int offset, final int count) {
     zrangeByScoreWithScores(SafeEncoder.encode(key), toByteArray(min), toByteArray(max), offset,
-      count);
+        count);
   }
 
   @Override
@@ -588,20 +590,20 @@ public class Client extends BinaryClient implements Commands {
   public void zrangeByScore(final String key, final String min, final String max, final int offset,
       int count) {
     zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max),
-      offset, count);
+        offset, count);
   }
 
   @Override
   public void zrangeByScoreWithScores(final String key, final String min, final String max) {
     zrangeByScoreWithScores(SafeEncoder.encode(key), SafeEncoder.encode(min),
-      SafeEncoder.encode(max));
+        SafeEncoder.encode(max));
   }
 
   @Override
   public void zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
     zrangeByScoreWithScores(SafeEncoder.encode(key), SafeEncoder.encode(min),
-      SafeEncoder.encode(max), offset, count);
+        SafeEncoder.encode(max), offset, count);
   }
 
   @Override
@@ -629,7 +631,7 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zrevrangeByScoreWithScores(final String key, final String max, final String min) {
     zrevrangeByScoreWithScores(SafeEncoder.encode(key), SafeEncoder.encode(max),
-      SafeEncoder.encode(min));
+        SafeEncoder.encode(min));
   }
 
   @Override
@@ -708,7 +710,7 @@ public class Client extends BinaryClient implements Commands {
   public void zrangeByLex(final String key, final String min, final String max, final int offset,
       final int count) {
     zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max), offset,
-      count);
+        count);
   }
 
   public void zrevrangeByLex(String key, String max, String min) {
@@ -717,7 +719,7 @@ public class Client extends BinaryClient implements Commands {
 
   public void zrevrangeByLex(String key, String max, String min, int offset, int count) {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
-      offset, count);
+        offset, count);
   }
 
   public void zremrangeByLex(final String key, final String min, final String max) {
@@ -1108,6 +1110,48 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
+  public void geoadd(String key, double longitude, double latitude, String member) {
+    geoadd(SafeEncoder.encode(key), longitude, latitude, SafeEncoder.encode(member));
+  }
+
+  public void geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+    geoadd(SafeEncoder.encode(key), convertMemberCoordinateMapToBinary(memberCoordinateMap));
+  }
+
+  public void geodist(String key, String member1, String member2) {
+    geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2));
+  }
+
+  public void geodist(String key, String member1, String member2, GeoUnit unit) {
+    geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
+  }
+
+  public void geohash(String key, String...members) {
+    geohash(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  public void geopos(String key, String[] members) {
+    geopos(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  public void georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
+  }
+
+  public void georadius(String key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param) {
+    georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
+  }
+
+  public void georadiusByMember(String key, String member, double radius, GeoUnit unit) {
+    georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
+  }
+
+  public void georadiusByMember(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param) {
+    georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
+  }
+
   private byte[][] getByteParams(String... params) {
     byte[][] p = new byte[params.length][];
     for (int i = 0; i < params.length; i++)
@@ -1124,4 +1168,14 @@ public class Client extends BinaryClient implements Commands {
     }
     return binaryScoreMembers;
   }
+
+  private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(Map<String, GeoCoordinate> memberCoordinateMap) {
+    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
+
+    for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {
+      binaryMemberCoordinateMap.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
+    }
+    return binaryMemberCoordinateMap;
+  }
+
 }

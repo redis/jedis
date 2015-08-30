@@ -160,8 +160,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       } catch (JedisException e) {
         // resolves #1036, it should handle JedisException there's another chance
         // of raising JedisDataException
-        log.warning("Cannot get master address from sentinel running @ " + hap
-            + ". Reason: " + e + ". Trying next one.");
+        log.warning("Cannot get master address from sentinel running @ " + hap + ". Reason: " + e
+            + ". Trying next one.");
       } finally {
         if (jedis != null) {
           jedis.close();

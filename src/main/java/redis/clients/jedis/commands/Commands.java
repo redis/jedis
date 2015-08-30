@@ -157,8 +157,7 @@ public interface Commands {
 
   void zadd(final String key, final double score, final String member);
 
-  void zadd(final String key, final double score, final String member,
-            final ZAddParams params);
+  void zadd(final String key, final double score, final String member, final ZAddParams params);
 
   void zadd(final String key, final Map<String, Double> scoreMembers);
 
@@ -170,8 +169,7 @@ public interface Commands {
 
   void zincrby(final String key, final double score, final String member);
 
-  void zincrby(final String key, final double score, final String member,
-               final ZIncrByParams params);
+  void zincrby(final String key, final double score, final String member, final ZIncrByParams params);
 
   void zrank(final String key, final String member);
 
@@ -212,34 +210,34 @@ public interface Commands {
   void zrangeByScore(final String key, final String min, final String max);
 
   void zrangeByScore(final String key, final double min, final double max, final int offset,
-                     int count);
+      int count);
 
   void zrangeByScoreWithScores(final String key, final double min, final double max);
 
   void zrangeByScoreWithScores(final String key, final double min, final double max,
-                               final int offset, final int count);
+      final int offset, final int count);
 
   void zrangeByScoreWithScores(final String key, final String min, final String max);
 
   void zrangeByScoreWithScores(final String key, final String min, final String max,
-                               final int offset, final int count);
+      final int offset, final int count);
 
   void zrevrangeByScore(final String key, final double max, final double min);
 
   void zrevrangeByScore(final String key, final String max, final String min);
 
-  void zrevrangeByScore(final String key, final double max, final double min,
-                        final int offset, int count);
+  void zrevrangeByScore(final String key, final double max, final double min, final int offset,
+      int count);
 
   void zrevrangeByScoreWithScores(final String key, final double max, final double min);
 
   void zrevrangeByScoreWithScores(final String key, final double max, final double min,
-                                  final int offset, final int count);
+      final int offset, final int count);
 
   void zrevrangeByScoreWithScores(final String key, final String max, final String min);
 
   void zrevrangeByScoreWithScores(final String key, final String max, final String min,
-                                  final int offset, final int count);
+      final int offset, final int count);
 
   void zremrangeByRank(final String key, final long start, final long end);
 
@@ -265,8 +263,7 @@ public interface Commands {
 
   void echo(final String string);
 
-  void linsert(final String key, final LIST_POSITION where, final String pivot,
-               final String value);
+  void linsert(final String key, final LIST_POSITION where, final String pivot, final String value);
 
   void bgrewriteaof();
 

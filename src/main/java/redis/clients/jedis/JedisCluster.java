@@ -19,7 +19,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.params.set.SetParams;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
-        MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
   public static enum Reset {
     SOFT, HARD
   }
@@ -1653,7 +1653,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long geoadd(final String key, final double longitude, final double latitude, final String member) {
+  public Long geoadd(final String key, final double longitude, final double latitude,
+      final String member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
@@ -1683,7 +1684,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Double geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
+  public Double geodist(final String key, final String member1, final String member2,
+      final GeoUnit unit) {
     return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
       @Override
       public Double execute(Jedis connection) {
@@ -1713,8 +1715,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadius(final String key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -1724,8 +1726,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(final String key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {

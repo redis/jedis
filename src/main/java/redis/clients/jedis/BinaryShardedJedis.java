@@ -17,7 +17,7 @@ import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
-        BinaryJedisCommands {
+    BinaryJedisCommands {
   public BinaryShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
   }
@@ -818,15 +818,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member,
-      double radius, GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member,
-      double radius, GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit, param);
   }

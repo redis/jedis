@@ -364,10 +364,9 @@ public class BuilderFactory {
           responseCoordinate.add(null);
         } else {
           List<Object> respList = (List<Object>) response;
-          GeoCoordinate coord = new GeoCoordinate(
-              Double.parseDouble(SafeEncoder.encode((byte[]) respList.get(0))),
-              Double.parseDouble(SafeEncoder.encode((byte[]) respList.get(1)))
-          );
+          GeoCoordinate coord = new GeoCoordinate(Double.parseDouble(SafeEncoder
+              .encode((byte[]) respList.get(0))), Double.parseDouble(SafeEncoder
+              .encode((byte[]) respList.get(1))));
           responseCoordinate.add(coord);
         }
       }
@@ -397,18 +396,14 @@ public class BuilderFactory {
             resp = new GeoRadiusResponse((byte[]) informations.get(0));
 
             int size = informations.size();
-            for (int idx = 1 ; idx < size ; idx++) {
+            for (int idx = 1; idx < size; idx++) {
               Object info = informations.get(idx);
               if (info instanceof List<?>) {
                 // coordinate
                 List<Object> coord = (List<Object>) info;
 
-                resp.setCoordinate(
-                    new GeoCoordinate(
-                        convertByteArrayToDouble(coord.get(0)),
-                        convertByteArrayToDouble(coord.get(1))
-                    )
-                );
+                resp.setCoordinate(new GeoCoordinate(convertByteArrayToDouble(coord.get(0)),
+                    convertByteArrayToDouble(coord.get(1))));
               } else {
                 // distance
                 resp.setDistance(convertByteArrayToDouble(info));

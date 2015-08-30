@@ -579,7 +579,7 @@ public class Client extends BinaryClient implements Commands {
   public void zrangeByScoreWithScores(final String key, final double min, final double max,
       final int offset, final int count) {
     zrangeByScoreWithScores(SafeEncoder.encode(key), toByteArray(min), toByteArray(max), offset,
-        count);
+      count);
   }
 
   @Override
@@ -590,20 +590,20 @@ public class Client extends BinaryClient implements Commands {
   public void zrangeByScore(final String key, final String min, final String max, final int offset,
       int count) {
     zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max),
-        offset, count);
+      offset, count);
   }
 
   @Override
   public void zrangeByScoreWithScores(final String key, final String min, final String max) {
     zrangeByScoreWithScores(SafeEncoder.encode(key), SafeEncoder.encode(min),
-        SafeEncoder.encode(max));
+      SafeEncoder.encode(max));
   }
 
   @Override
   public void zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
     zrangeByScoreWithScores(SafeEncoder.encode(key), SafeEncoder.encode(min),
-        SafeEncoder.encode(max), offset, count);
+      SafeEncoder.encode(max), offset, count);
   }
 
   @Override
@@ -631,7 +631,7 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zrevrangeByScoreWithScores(final String key, final String max, final String min) {
     zrevrangeByScoreWithScores(SafeEncoder.encode(key), SafeEncoder.encode(max),
-        SafeEncoder.encode(min));
+      SafeEncoder.encode(min));
   }
 
   @Override
@@ -710,7 +710,7 @@ public class Client extends BinaryClient implements Commands {
   public void zrangeByLex(final String key, final String min, final String max, final int offset,
       final int count) {
     zrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max), offset,
-        count);
+      count);
   }
 
   public void zrevrangeByLex(String key, String max, String min) {
@@ -719,7 +719,7 @@ public class Client extends BinaryClient implements Commands {
 
   public void zrevrangeByLex(String key, String max, String min, int offset, int count) {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
-        offset, count);
+      offset, count);
   }
 
   public void zremrangeByLex(final String key, final String min, final String max) {
@@ -1126,7 +1126,7 @@ public class Client extends BinaryClient implements Commands {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
   }
 
-  public void geohash(String key, String...members) {
+  public void geohash(String key, String... members) {
     geohash(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
@@ -1169,7 +1169,8 @@ public class Client extends BinaryClient implements Commands {
     return binaryScoreMembers;
   }
 
-  private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(Map<String, GeoCoordinate> memberCoordinateMap) {
+  private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(
+      Map<String, GeoCoordinate> memberCoordinateMap) {
     HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
 
     for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {

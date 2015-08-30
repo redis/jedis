@@ -228,15 +228,19 @@ public interface RedisPipeline {
 
   Response<Double> geodist(String key, String member1, String member2, GeoUnit unit);
 
-  Response<List<String>> geohash(String key, String...members);
+  Response<List<String>> geohash(String key, String... members);
 
-  Response<List<GeoCoordinate>> geopos(String key, String...members);
+  Response<List<GeoCoordinate>> geopos(String key, String... members);
 
-  Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit);
+  Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param);
+  Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit);
+  Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param);
+  Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 }

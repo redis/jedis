@@ -3,6 +3,7 @@ package redis.clients.jedis.tests;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
@@ -74,7 +75,7 @@ public class JedisSentinelPoolTest extends JedisTestBase {
   @Test
   public void ensureSafeTwiceFailover() throws InterruptedException {
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-        new GenericObjectPoolConfig(), 1000, "foobared", 2);
+        new GenericObjectPoolConfig(), 2000, "foobared", 2);
 
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new
@@ -83,6 +84,36 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     forceFailover(pool);
 
     // you can test failover as much as possible
+  }
+
+  @Test
+  public void returningBorrowedInstanceBeforeFailoverShouldNotAffectBorrowing()
+      throws InterruptedException {
+    final JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+        new GenericObjectPoolConfig(), 2000, "foobared", 2);
+
+    Jedis borrowed = pool.getResource();
+    forceFailover(pool);
+
+    Thread.sleep(1000);
+
+    // returns instance which was borrowed before failover
+    borrowed.close();
+
+    final AtomicBoolean isBorrowed = new AtomicBoolean(false);
+
+    Thread t = new Thread(new Runnable() {
+      @Override public void run() {
+        pool.getResource();
+        isBorrowed.set(true);
+      }
+    });
+    t.start();
+
+    // wait for 5 secs
+    t.join(5000);
+
+    assertTrue(isBorrowed.get());
   }
 
   @Test

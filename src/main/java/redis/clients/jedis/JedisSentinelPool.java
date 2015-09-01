@@ -158,8 +158,11 @@ public class JedisSentinelPool extends Pool<Jedis> {
         master = toHostAndPort(masterAddr);
         log.fine("Found Redis master at " + master);
         break;
-      } catch (JedisConnectionException e) {
-        log.warning("Cannot connect to sentinel running @ " + hap + ". Trying next one.");
+      } catch (JedisException e) {
+        // resolves #1036, it should handle JedisException there's another chance
+        // of raising JedisDataException
+        log.warning("Cannot get master address from sentinel running @ " + hap
+            + ". Reason: " + e + ". Trying next one.");
       } finally {
         if (jedis != null) {
           jedis.close();
@@ -215,15 +218,17 @@ public class JedisSentinelPool extends Pool<Jedis> {
         // connected to the correct master
         return jedis;
       } else {
-        jedis.close();
+        returnBrokenResource(jedis);
       }
     }
   }
 
   /**
-   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   * @deprecated starting from Jedis 3.0 this method will not be exposed.
+   * Resource cleanup should be done using @see {@link redis.clients.jedis.Jedis#close()}
    */
+  @Override
+  @Deprecated
   public void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
@@ -231,9 +236,11 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   /**
-   * @deprecated starting from Jedis 3.0 this method won't exist. Resouce cleanup should be done
-   *             using @see {@link redis.clients.jedis.Jedis#close()}
+   * @deprecated starting from Jedis 3.0 this method will not be exposed.
+   * Resource cleanup should be done using @see {@link redis.clients.jedis.Jedis#close()}
    */
+  @Override
+  @Deprecated
   public void returnResource(final Jedis resource) {
     if (resource != null) {
       resource.resetState();

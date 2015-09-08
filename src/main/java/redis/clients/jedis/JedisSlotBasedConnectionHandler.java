@@ -21,6 +21,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
     super(nodes, poolConfig, connectionTimeout, soTimeout);
   }
 
+  @Override
   public Jedis getConnection() {
     // In antirez's redis-rb-cluster implementation,
     // getRandomConnection always return valid connection (able to

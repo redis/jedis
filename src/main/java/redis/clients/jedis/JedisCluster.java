@@ -8,6 +8,7 @@ import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.util.KeyMergeUtil;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,6 +24,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     SOFT, HARD
   }
 
+  public JedisCluster(HostAndPort node) {
+	this(Collections.singleton(node), DEFAULT_TIMEOUT);
+  }
+
+  public JedisCluster(HostAndPort node, int timeout) {
+    this(Collections.singleton(node), timeout, DEFAULT_MAX_REDIRECTIONS);
+  }
+
+  public JedisCluster(HostAndPort node, int timeout, int maxRedirections) {
+    this(Collections.singleton(node), timeout, maxRedirections, new GenericObjectPoolConfig());
+  }
+
+  public JedisCluster(HostAndPort node, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+  }
+
+  public JedisCluster(HostAndPort node, int timeout, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+  }
+
+  public JedisCluster(HostAndPort node, int timeout, int maxRedirections,
+      final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), timeout, maxRedirections, poolConfig);
+  }
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
+      int maxRedirections, final GenericObjectPoolConfig poolConfig) {
+    super(Collections.singleton(node), connectionTimeout, soTimeout, maxRedirections, poolConfig);
+  }
+  
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
   }

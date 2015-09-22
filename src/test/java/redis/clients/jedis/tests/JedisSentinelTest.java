@@ -64,6 +64,9 @@ public class JedisSentinelTest extends JedisTestBase {
       assertTrue(slaves.size() > 0);
       assertEquals(master.getPort(), Integer.parseInt(slaves.get(0).get("master-port")));
 
+      List<Map<String, String>> sentinels = j.sentinelSentinels(MASTER_NAME);
+      assertTrue(sentinels.size() > 0);
+
       // DO NOT RE-RUN TEST TOO FAST, RESET TAKES SOME TIME TO... RESET
       assertEquals(Long.valueOf(1), j.sentinelReset(MASTER_NAME));
       assertEquals(Long.valueOf(0), j.sentinelReset("woof" + MASTER_NAME));

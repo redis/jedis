@@ -12,6 +12,8 @@ public interface SentinelCommands {
 
   List<Map<String, String>> sentinelSlaves(String masterName);
 
+  List<Map<String, String>> sentinelSentinels(String masterName);
+
   String sentinelFailover(String masterName);
 
   String sentinelMonitor(String masterName, String ip, int port, int quorum);

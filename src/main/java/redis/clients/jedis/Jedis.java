@@ -3025,6 +3025,52 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return slaves;
   }
 
+  /**
+   * <pre>
+   *    127.0.0.1:5005> sentinel sentinels mymaster
+   *    1)  1) "name"
+   *    2) "127.0.0.1:5025"
+   *    3) "ip"
+   *    4) "127.0.0.1"
+   *    5) "port"
+   *    6) "5025"
+   *    7) "runid"
+   *    8) "374d0cc289f64ee218aac90ecb7ba087c6ed3a92"
+   *    9) "flags"
+   *    10) "sentinel"
+   *    11) "pending-commands"
+   *    12) "0"
+   *    13) "last-ping-sent"
+   *    14) "0"
+   *    15) "last-ok-ping-reply"
+   *    16) "159"
+   *    17) "last-ping-reply"
+   *    18) "159"
+   *    19) "down-after-milliseconds"
+   *    20) "5000"
+   *    21) "last-hello-message"
+   *    22) "413"
+   *    23) "voted-leader"
+   *    24) "?"
+   *    25) "voted-leader-epoch"
+   *    26) "0"
+   * </pre>
+   * @param masterName
+   * @return
+   */
+  @Override
+  @SuppressWarnings("rawtypes")
+  public List<Map<String, String>> sentinelSentinels(String masterName) {
+    client.sentinel(Protocol.SENTINEL_SENTINELS, masterName);
+    final List<Object> reply = client.getObjectMultiBulkReply();
+
+    final List<Map<String, String>> sentinels = new ArrayList<Map<String, String>>();
+    for (Object obj : reply) {
+      sentinels.add(BuilderFactory.STRING_MAP.build((List) obj));
+    }
+    return sentinels;
+  }
+
   @Override
   public String sentinelFailover(String masterName) {
     client.sentinel(Protocol.SENTINEL_FAILOVER, masterName);

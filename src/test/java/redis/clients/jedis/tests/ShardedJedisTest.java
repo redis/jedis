@@ -1,20 +1,15 @@
 package redis.clients.jedis.tests;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ShardedJedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class ShardedJedisTest extends Assert {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
@@ -191,9 +186,9 @@ public class ShardedJedisTest extends Assert {
   @Test
   public void testMD5Sharding() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 1));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 2));
     Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MD5);
     int shard_6379 = 0;
     int shard_6380 = 0;
@@ -223,9 +218,9 @@ public class ShardedJedisTest extends Assert {
   @Test
   public void testMurmurSharding() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 1));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 2));
     Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
         Hashing.MURMUR_HASH);
     int shard_6379 = 0;
@@ -256,9 +251,9 @@ public class ShardedJedisTest extends Assert {
   @Test
   public void testMasterSlaveShardingConsistency() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 1));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 2));
     Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
         Hashing.MURMUR_HASH);
 
@@ -280,9 +275,11 @@ public class ShardedJedisTest extends Assert {
   @Test
   public void testMasterSlaveShardingConsistencyWithShardNaming() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(3);
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT, "HOST1:1234"));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1, "HOST2:1234"));
-    shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2, "HOST3:1234"));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT, "HOST1:1234"));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 1,
+        "HOST2:1234"));
+    shards.add(new JedisShardInfo(HostAndPort.LOCALHOST_STR, Protocol.DEFAULT_PORT + 2,
+        "HOST3:1234"));
     Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
         Hashing.MURMUR_HASH);
 

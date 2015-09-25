@@ -28,7 +28,7 @@ import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
-        AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
+    AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
   protected Client client = null;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
@@ -175,11 +175,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys existed
-   * Time complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys existed Time
+   * complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed
-   *         0 if none of the specified keys existed
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
+   *         none of the specified keys existed
    */
   public Long exists(final byte[]... keys) {
     checkIsInMultiOrPipeline();

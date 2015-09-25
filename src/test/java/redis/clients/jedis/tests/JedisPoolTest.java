@@ -1,24 +1,18 @@
 package redis.clients.jedis.tests;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Assert;
 import org.junit.Test;
-
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class JedisPoolTest extends Assert {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
@@ -141,11 +135,11 @@ public class JedisPoolTest extends Assert {
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
+    Jedis j = new Jedis(HostAndPort.LOCALHOST_STR, 6380);
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
-    JedisPool pool = new JedisPool("redis://:foobared@localhost:6380/2");
+    JedisPool pool = new JedisPool("redis://:foobared@" + HostAndPort.LOCALHOST_STR + ":6380/2");
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
@@ -153,25 +147,26 @@ public class JedisPoolTest extends Assert {
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
+    Jedis j = new Jedis(HostAndPort.LOCALHOST_STR, 6380);
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
-    JedisPool pool = new JedisPool(new URI("redis://:foobared@localhost:6380/2"));
+    JedisPool pool = new JedisPool(new URI("redis://:foobared@" + HostAndPort.LOCALHOST_STR
+        + ":6380/2"));
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
   }
 
-  @Test(expected = InvalidURIException.class)
+  @Test(expected = java.net.URISyntaxException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    JedisPool pool = new JedisPool(new URI("localhost:6380"));
+    JedisPool pool = new JedisPool(new URI(HostAndPort.LOCALHOST_STR + ":6380"));
   }
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
-    new JedisPool("redis://localhost:6380");
-    new JedisPool(new URI("redis://localhost:6380"));
+    new JedisPool("redis://" + HostAndPort.LOCALHOST_STR + ":6380");
+    new JedisPool(new URI("redis://" + HostAndPort.LOCALHOST_STR + ":6380"));
   }
 
   @Test

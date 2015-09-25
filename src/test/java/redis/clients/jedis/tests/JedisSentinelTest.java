@@ -1,24 +1,23 @@
 package redis.clients.jedis.tests;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class JedisSentinelTest extends JedisTestBase {
   private static final String MASTER_NAME = "mymaster";
   private static final String MONITOR_MASTER_NAME = "mymastermonitor";
   private static final String REMOVE_MASTER_NAME = "mymasterremove";
   private static final String FAILOVER_MASTER_NAME = "mymasterfailover";
-  private static final String MASTER_IP = "127.0.0.1";
+  private static final String MASTER_IP = HostAndPort.convertHost("127.0.0.1");
 
   protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(0);
   protected static HostAndPort slave = HostAndPortUtil.getRedisServers().get(4);

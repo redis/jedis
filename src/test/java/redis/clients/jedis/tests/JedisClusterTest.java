@@ -10,6 +10,7 @@ import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.JedisClusterCRC16;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -146,7 +147,7 @@ public class JedisClusterTest extends Assert {
 
     ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
     for (String nodeInfo : node2.clusterNodes().split("\n")) {
-      if(nodeInfo.contains("myself")){
+      if (nodeInfo.contains("myself")) {
         nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
         break;
       }
@@ -154,7 +155,7 @@ public class JedisClusterTest extends Assert {
     try {
       nodeSlave2.get("test");
       fail();
-    }catch (JedisMovedDataException e){
+    } catch (JedisMovedDataException e) {
     }
     nodeSlave2.readonly();
     nodeSlave2.get("test");
@@ -296,14 +297,6 @@ public class JedisClusterTest extends Assert {
     assertEquals("foo", jc.get("51"));
   }
 
-  @Test(expected = JedisClusterException.class)
-  public void testThrowExceptionWithoutKey() {
-    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisCluster jc = new JedisCluster(jedisClusterNode);
-    jc.ping();
-  }
-
   @Test(expected = JedisClusterMaxRedirectionsException.class)
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -436,7 +429,7 @@ public class JedisClusterTest extends Assert {
   }
 
   @Test
-  public void testCloseable() {
+  public void testCloseable() throws IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
@@ -480,7 +473,7 @@ public class JedisClusterTest extends Assert {
 
   @Test
   public void testJedisClusterRunsWithMultithreaded() throws InterruptedException,
-      ExecutionException {
+      ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     final JedisCluster jc = new JedisCluster(jedisClusterNode);
@@ -530,9 +523,9 @@ public class JedisClusterTest extends Assert {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    JedisCluster jc = new JedisCluster(jedisClusterNode,0, 2, config);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, config);
 
-    //This will cause an infinite redirection between node 2 and 3
+    // This will cause an infinite redirection between node 2 and 3
     node3.clusterSetSlotMigrating(15363, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
     jc.get("e");
   }

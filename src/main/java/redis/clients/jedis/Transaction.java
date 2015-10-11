@@ -9,9 +9,10 @@ import redis.clients.jedis.exceptions.JedisDataException;
 /**
  * Transaction is nearly identical to Pipeline, only differences are the multi/discard behaviors
  */
-public class Transaction extends MultiKeyPipelineBase implements Closeable {
+public class Transaction extends PipelineBase implements Closeable {
 
   protected boolean inTransaction = true;
+  protected Client client = null;
 
   protected Transaction() {
     // client will be set later in transaction block
@@ -22,12 +23,7 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   }
 
   @Override
-  protected Client getClient(String key) {
-    return client;
-  }
-
-  @Override
-  protected Client getClient(byte[] key) {
+  protected Client getClient() {
     return client;
   }
 

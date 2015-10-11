@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 
@@ -73,10 +72,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setPassword("foobared");
-
-    Jedis jedis = new Jedis(shardInfo);
+    Jedis jedis = new Jedis(uri, sslSocketFactory, sslParameters, null);
+    jedis.auth("foobared");
     jedis.get("foo");
     jedis.disconnect();
     jedis.close();
@@ -102,10 +99,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setPassword("foobared");
-
-    Jedis jedis = new Jedis(shardInfo);
+    Jedis jedis = new Jedis(uri, sslSocketFactory, sslParameters, null);
+    jedis.auth("foobared");
     try {
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
@@ -134,10 +129,9 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setPassword("foobared");
 
-    Jedis jedis = new Jedis(shardInfo);
+    Jedis jedis = new Jedis(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    jedis.auth("foobared");
     jedis.get("foo");
     jedis.disconnect();
     jedis.close();
@@ -153,10 +147,9 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setPassword("foobared");
 
-    Jedis jedis = new Jedis(shardInfo);
+    Jedis jedis = new Jedis(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    jedis.auth("foobared");
     jedis.get("foo");
     jedis.disconnect();
     jedis.close();
@@ -175,10 +168,9 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setPassword("foobared");
 
-    Jedis jedis = new Jedis(shardInfo);
+    Jedis jedis = new Jedis(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    jedis.auth("foobared");
     try {
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
@@ -207,10 +199,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final URI uri = URI.create("rediss://localhost:6390");
     final SSLSocketFactory sslSocketFactory = createTrustNoOneSslSocketFactory();
 
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
-    shardInfo.setPassword("foobared");
-
-    Jedis jedis = new Jedis(shardInfo);
+    Jedis jedis = new Jedis(uri, sslSocketFactory, null, null);
+    jedis.auth("foobared");
     try {
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");

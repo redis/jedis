@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -39,14 +38,6 @@ public class JedisTest extends JedisCommandTestBase {
     String status = jedis.hmset("foo", hash);
     assertEquals("OK", status);
     assertEquals(hash, jedis.hgetAll("foo"));
-  }
-
-  @Test
-  public void connectWithShardInfo() {
-    JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
-    shardInfo.setPassword("foobared");
-    Jedis jedis = new Jedis(shardInfo);
-    jedis.get("foo");
   }
 
   @Test(expected = JedisConnectionException.class)

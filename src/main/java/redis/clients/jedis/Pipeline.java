@@ -6,8 +6,9 @@ import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class Pipeline extends MultiKeyPipelineBase implements Closeable {
+public class Pipeline extends PipelineBase implements Closeable {
 
+  protected Client client = null;
   private MultiResponseBuilder currentMulti;
 
   private class MultiResponseBuilder extends Builder<List<Object>> {
@@ -67,12 +68,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
   }
 
   @Override
-  protected Client getClient(byte[] key) {
-    return client;
-  }
-
-  @Override
-  protected Client getClient(String key) {
+  protected Client getClient() {
     return client;
   }
 

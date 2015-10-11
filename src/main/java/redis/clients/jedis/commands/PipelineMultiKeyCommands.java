@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Multikey related commands (these are split out because they are non-shardable)
  */
-public interface MultiKeyCommandsPipeline {
+public interface PipelineMultiKeyCommands {
   Response<Long> del(String... keys);
 
   Response<Long> exists(String... keys);

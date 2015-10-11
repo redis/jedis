@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface BinaryRedisPipeline {
+public interface PipelineBinaryJedisCommands {
   Response<Long> append(byte[] key, byte[] value);
 
   Response<List<byte[]>> blpop(byte[] arg);

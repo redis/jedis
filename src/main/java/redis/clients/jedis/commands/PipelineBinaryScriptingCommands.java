@@ -4,7 +4,7 @@ import redis.clients.jedis.Response;
 
 import java.util.List;
 
-public interface BinaryScriptingCommandsPipeline {
+public interface PipelineBinaryScriptingCommands {
 
   Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params);
 

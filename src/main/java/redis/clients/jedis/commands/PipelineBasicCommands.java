@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Pipelined responses for all of the low level, non key related commands
  */
-public interface BasicRedisPipeline {
+public interface PipelineBasicCommands {
 
   Response<String> bgrewriteaof();
 

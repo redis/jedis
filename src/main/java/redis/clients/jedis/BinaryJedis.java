@@ -1,29 +1,21 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-
-import java.io.Closeable;
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
+
+import java.io.Closeable;
+import java.net.URI;
+import java.util.*;
+
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {

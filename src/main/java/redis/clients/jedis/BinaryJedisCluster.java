@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.exceptions.JedisClusterException;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.KeyMergeUtil;
@@ -12,8 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {

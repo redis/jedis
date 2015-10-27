@@ -1,35 +1,25 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.sendCommand;
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.util.SafeEncoder;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Command.EXISTS;
 import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
 import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryClient extends Connection {
   public enum LIST_POSITION {

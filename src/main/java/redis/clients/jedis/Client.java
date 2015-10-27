@@ -1,7 +1,10 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.Protocol.Command.GEORADIUS;
+import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,11 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class Client extends BinaryClient implements Commands {
 
@@ -1091,4 +1090,15 @@ public class Client extends BinaryClient implements Commands {
     }
     return binaryScoreMembers;
   }
+
+  private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(
+      Map<String, GeoCoordinate> memberCoordinateMap) {
+    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
+
+    for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {
+      binaryMemberCoordinateMap.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
+    }
+    return binaryMemberCoordinateMap;
+  }
+
 }

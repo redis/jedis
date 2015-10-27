@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.GEORADIUS;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Map.Entry;
 
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -1108,6 +1110,48 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
+  public void geoadd(String key, double longitude, double latitude, String member) {
+    geoadd(SafeEncoder.encode(key), longitude, latitude, SafeEncoder.encode(member));
+  }
+
+  public void geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+    geoadd(SafeEncoder.encode(key), convertMemberCoordinateMapToBinary(memberCoordinateMap));
+  }
+
+  public void geodist(String key, String member1, String member2) {
+    geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2));
+  }
+
+  public void geodist(String key, String member1, String member2, GeoUnit unit) {
+    geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
+  }
+
+  public void geohash(String key, String... members) {
+    geohash(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  public void geopos(String key, String[] members) {
+    geopos(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  public void georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
+  }
+
+  public void georadius(String key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param) {
+    georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
+  }
+
+  public void georadiusByMember(String key, String member, double radius, GeoUnit unit) {
+    georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
+  }
+
+  public void georadiusByMember(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param) {
+    georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
+  }
+
   private byte[][] getByteParams(String... params) {
     byte[][] p = new byte[params.length][];
     for (int i = 0; i < params.length; i++)
@@ -1124,4 +1168,15 @@ public class Client extends BinaryClient implements Commands {
     }
     return binaryScoreMembers;
   }
+
+  private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(
+      Map<String, GeoCoordinate> memberCoordinateMap) {
+    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
+
+    for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {
+      binaryMemberCoordinateMap.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
+    }
+    return binaryMemberCoordinateMap;
+  }
+
 }

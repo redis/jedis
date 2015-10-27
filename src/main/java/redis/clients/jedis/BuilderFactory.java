@@ -344,4 +344,91 @@ public class BuilderFactory {
 
   };
 
+  public static final Builder<List<GeoCoordinate>> GEO_COORDINATE_LIST = new Builder<List<GeoCoordinate>>() {
+    @Override
+    public List<GeoCoordinate> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return interpretGeoposResult((List<Object>) data);
+    }
+
+    public String toString() {
+      return "List<GeoCoordinate>";
+    }
+
+    private List<GeoCoordinate> interpretGeoposResult(List<Object> responses) {
+      List<GeoCoordinate> responseCoordinate = new ArrayList<GeoCoordinate>(responses.size());
+      for (Object response : responses) {
+        if (response == null) {
+          responseCoordinate.add(null);
+        } else {
+          List<Object> respList = (List<Object>) response;
+          GeoCoordinate coord = new GeoCoordinate(Double.parseDouble(SafeEncoder
+              .encode((byte[]) respList.get(0))), Double.parseDouble(SafeEncoder
+              .encode((byte[]) respList.get(1))));
+          responseCoordinate.add(coord);
+        }
+      }
+      return responseCoordinate;
+    }
+  };
+
+  public static final Builder<List<GeoRadiusResponse>> GEORADIUS_WITH_PARAMS_RESULT = new Builder<List<GeoRadiusResponse>>() {
+    @Override
+    public List<GeoRadiusResponse> build(Object data) {
+      if (data == null) {
+        return null;
+      } else {
+        List<Object> objectList = (List<Object>) data;
+
+        if (objectList.size() == 0) {
+          return new ArrayList<GeoRadiusResponse>();
+        }
+
+        List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
+        if (objectList.get(0) instanceof List<?>) {
+          // list of members with additional informations
+          GeoRadiusResponse resp;
+          for (Object obj : objectList) {
+            List<Object> informations = (List<Object>) obj;
+
+            resp = new GeoRadiusResponse((byte[]) informations.get(0));
+
+            int size = informations.size();
+            for (int idx = 1; idx < size; idx++) {
+              Object info = informations.get(idx);
+              if (info instanceof List<?>) {
+                // coordinate
+                List<Object> coord = (List<Object>) info;
+
+                resp.setCoordinate(new GeoCoordinate(convertByteArrayToDouble(coord.get(0)),
+                    convertByteArrayToDouble(coord.get(1))));
+              } else {
+                // distance
+                resp.setDistance(convertByteArrayToDouble(info));
+              }
+            }
+
+            responses.add(resp);
+          }
+        } else {
+          // list of members
+          for (Object obj : objectList) {
+            responses.add(new GeoRadiusResponse((byte[]) obj));
+          }
+        }
+
+        return responses;
+      }
+    }
+
+    private Double convertByteArrayToDouble(Object obj) {
+      return Double.valueOf(SafeEncoder.encode((byte[]) obj));
+    }
+
+    public String toString() {
+      return "GeoRadiusWithParamsResult";
+    }
+  };
 }

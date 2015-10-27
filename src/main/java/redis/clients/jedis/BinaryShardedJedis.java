@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -16,7 +17,7 @@ import redis.clients.util.Hashing;
 import redis.clients.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
-        BinaryJedisCommands {
+    BinaryJedisCommands {
   public BinaryShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
   }
@@ -766,4 +767,67 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.pfcount(key);
   }
 
+  @Override
+  public Long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, longitude, latitude, member);
+  }
+
+  @Override
+  public Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, memberCoordinateMap);
+  }
+
+  @Override
+  public Double geodist(byte[] key, byte[] member1, byte[] member2) {
+    Jedis j = getShard(key);
+    return j.geodist(key, member1, member2);
+  }
+
+  @Override
+  public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.geodist(key, member1, member2, unit);
+  }
+
+  @Override
+  public List<byte[]> geohash(byte[] key, byte[]... members) {
+    Jedis j = getShard(key);
+    return j.geohash(key, members);
+  }
+
+  @Override
+  public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
+    Jedis j = getShard(key);
+    return j.geopos(key, members);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.georadius(key, longitude, latitude, radius, unit);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param) {
+    Jedis j = getShard(key);
+    return j.georadius(key, longitude, latitude, radius, unit, param);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.georadiusByMember(key, member, radius, unit);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param) {
+    Jedis j = getShard(key);
+    return j.georadiusByMember(key, member, radius, unit, param);
+  }
 }

@@ -1,8 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.BinaryClient;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -238,4 +237,29 @@ public interface BinaryJedisClusterCommands {
   Long pfadd(final byte[] key, final byte[]... elements);
 
   long pfcount(final byte[] key);
+
+  // Geo Commands
+
+  Long geoadd(byte[] key, double longitude, double latitude, byte[] member);
+
+  Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
+  Double geodist(byte[] key, byte[] member1, byte[] member2);
+
+  Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit);
+
+  List<byte[]> geohash(byte[] key, byte[]... members);
+
+  List<GeoCoordinate> geopos(byte[] key, byte[]... members);
+
+  List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
+      GeoUnit unit);
+
+  List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
+
+  List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
+      GeoRadiusParam param);
 }

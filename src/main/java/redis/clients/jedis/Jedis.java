@@ -14,6 +14,7 @@ import java.util.Set;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -21,7 +22,7 @@ import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-        AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
+    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
@@ -108,8 +109,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns the number of keys existed
-   * Time complexity: O(N)
+   * Test if the specified key exists. The command returns the number of keys existed Time
+   * complexity: O(N)
    * @param keys
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
    *         0 if none of the specified key existed
@@ -3435,4 +3436,79 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return brpop(key, String.valueOf(timeout));
   }
 
+  @Override
+  public Long geoadd(String key, double longitude, double latitude, String member) {
+    checkIsInMultiOrPipeline();
+    client.geoadd(key, longitude, latitude, member);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+    checkIsInMultiOrPipeline();
+    client.geoadd(key, memberCoordinateMap);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Double geodist(String key, String member1, String member2) {
+    checkIsInMultiOrPipeline();
+    client.geodist(key, member1, member2);
+    String dval = client.getBulkReply();
+    return (dval != null ? new Double(dval) : null);
+  }
+
+  @Override
+  public Double geodist(String key, String member1, String member2, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.geodist(key, member1, member2, unit);
+    String dval = client.getBulkReply();
+    return (dval != null ? new Double(dval) : null);
+  }
+
+  @Override
+  public List<String> geohash(String key, String... members) {
+    checkIsInMultiOrPipeline();
+    client.geohash(key, members);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public List<GeoCoordinate> geopos(String key, String... members) {
+    checkIsInMultiOrPipeline();
+    client.geopos(key, members);
+    return BuilderFactory.GEO_COORDINATE_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude,
+      double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadius(key, longitude, latitude, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadius(key, longitude, latitude, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMember(key, member, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMember(key, member, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
 }

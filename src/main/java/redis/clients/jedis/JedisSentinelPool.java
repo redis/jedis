@@ -300,12 +300,12 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         } catch (JedisConnectionException e) {
 
           if (running.get()) {
-            log.severe("Lost connection to Sentinel at " + host + ":" + port
-                + ". Sleeping 5000ms and retrying.");
+            log.log(Level.SEVERE, "Lost connection to Sentinel at " + host + ":" + port
+                + ". Sleeping 5000ms and retrying.", e);
             try {
               Thread.sleep(subscribeRetryWaitTimeMillis);
             } catch (InterruptedException e1) {
-              e1.printStackTrace();
+              log.log(Level.SEVERE, "Sleep interrupted: ", e1);
             }
           } else {
             log.fine("Unsubscribing from Sentinel at " + host + ":" + port);

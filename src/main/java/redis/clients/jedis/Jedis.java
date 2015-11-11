@@ -2731,12 +2731,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Object eval(String script, int keyCount, String... params) {
-    client.setTimeoutInfinite();
-    try {
+    return eval(0, script, keyCount, params);
+  }
+
+  @Override
+  public Object eval(int timeout, String script) {
+    return eval(timeout, script, 0);
+  }
+
+  @Override
+  public Object eval(int timeout, String script, int keyCount, String... params) {
+    if (timeout == client.getSoTimeout()) {
       client.eval(script, keyCount, params);
       return getEvalResult();
-    } finally {
-      client.rollbackTimeout();
+    } else {
+      client.setTimeout(timeout);
+      try {
+        client.eval(script, keyCount, params);
+        return getEvalResult();
+      } finally {
+        client.rollbackTimeout();
+      }
     }
   }
 

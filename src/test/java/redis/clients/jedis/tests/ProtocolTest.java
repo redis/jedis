@@ -119,4 +119,18 @@ public class ProtocolTest extends JedisTestBase {
     List<String> response = (List<String>) Protocol.read(new RedisInputStream(is));
     assertNull(response);
   }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void toByteArrayBoolean() {
+    byte[] trueResult = Protocol.toByteArray(true);
+    assertArrayEquals(trueResult, Protocol.BYTES_TRUE);
+    assertNotEquals(trueResult, Protocol.BYTES_TRUE);
+
+    byte[] falseResult = Protocol.toByteArray(false);
+    assertArrayEquals(falseResult, Protocol.BYTES_FALSE);
+    assertNotEquals(falseResult, Protocol.BYTES_FALSE);
+  }
+
+
 }

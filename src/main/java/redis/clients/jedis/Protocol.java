@@ -207,7 +207,7 @@ public final class Protocol {
   }
 
   public static final byte[] toByteArray(final boolean value) {
-    return value ? BYTES_TRUE : BYTES_FALSE;
+    return value ? BYTES_TRUE.clone() : BYTES_FALSE.clone();
   }
 
   public static final byte[] toByteArray(final int value) {

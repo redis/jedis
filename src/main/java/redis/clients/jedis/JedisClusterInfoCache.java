@@ -77,7 +77,6 @@ public class JedisClusterInfoCache {
               ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(
                       nodeInfo, new HostAndPort(jedis.getClient().getHost(),
                               jedis.getClient().getPort()));
-
               HostAndPort failNode = clusterNodeInfo.getNode();
               String nodeKey = getNodeKey(failNode);
               failNodeSet.add(nodeKey);

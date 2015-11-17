@@ -2,8 +2,10 @@ package redis.clients.jedis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -18,7 +20,8 @@ public class JedisClusterInfoCache {
 
   private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
   private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
-
+  private Set<String> failNodeSet = new HashSet<String>();
+  
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
   private final Lock w = rwl.writeLock();
@@ -44,6 +47,7 @@ public class JedisClusterInfoCache {
     try {
       this.nodes.clear();
       this.slots.clear();
+      this.failNodeSet.clear();
 
       String localNodes = jedis.clusterNodes();
       for (String nodeInfo : localNodes.split("\n")) {
@@ -64,7 +68,27 @@ public class JedisClusterInfoCache {
 
     try {
       this.slots.clear();
+      this.failNodeSet.clear();
 
+      //close the jedis pool of the fail node and update the failNodeSet
+      String localNodes = jedis.clusterNodes();
+      for (String nodeInfo: localNodes.split("\n")) {
+          if(nodeInfo.contains("fail")){
+              ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(
+                      nodeInfo, new HostAndPort(jedis.getClient().getHost(),
+                              jedis.getClient().getPort()));
+
+              HostAndPort failNode = clusterNodeInfo.getNode();
+              String nodeKey = getNodeKey(failNode);
+              failNodeSet.add(nodeKey);
+              JedisPool jedisPool=nodes.get(nodeKey);
+              if(jedisPool!=null){
+                  jedisPool.close();
+                  nodes.remove(nodeKey);                    
+              }
+          }
+      }
+      
       List<Object> slots = jedis.clusterSlots();
 
       for (Object slotInfoObj : slots) {
@@ -102,7 +126,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       String nodeKey = getNodeKey(node);
-      if (nodes.containsKey(nodeKey)) return;
+      if (nodes.containsKey(nodeKey)||failNodeSet.contains(nodeKey)) return;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
           connectionTimeout, soTimeout, null, 0, null);

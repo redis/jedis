@@ -49,7 +49,7 @@ public class JedisClusterCRC16 {
    * some more optimizations
    * @param bytes
    * @return CRC16 as integer value
-   * @see https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331
+   * @see <a href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">issuecomment-55840331</a>
    */
   public static int getCRC16(byte[] bytes) {
     int crc = 0x0000;

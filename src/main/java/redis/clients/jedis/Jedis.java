@@ -250,7 +250,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * {@link #persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+   * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
    * @param key
    * @param seconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -279,7 +279,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * {@link #persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+   * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
    * @param key
    * @param unixTime
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since

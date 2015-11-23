@@ -86,8 +86,6 @@ public class Sharded<R, S extends ShardInfo<R>> {
   /**
    * A key tag is a special pattern inside a key that, if preset, is the only part of the key hashed
    * in order to select the server for this key.
-   * @see http://code.google.com/p/redis/wiki/FAQ#I
-   *      'm_using_some_form_of_key_hashing_for_partitioning,_but_wh
    * @param key
    * @return The tag if it exists, or the original key
    */

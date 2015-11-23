@@ -1735,7 +1735,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   /**
    * @deprecated SetParams is scheduled to be introduced at next major release Please use setnx
    *             instead for now
-   * @see https://github.com/xetorthio/jedis/pull/878
+   * @see <a href="https://github.com/xetorthio/jedis/pull/878">issue#878</a>
    */
   @Deprecated
   @Override
@@ -1789,7 +1789,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
    * on next major release
-   * @see https://github.com/xetorthio/jedis/issues/531
+   * @see <a href="https://github.com/xetorthio/jedis/issues/531">issue#531</a>
    */
   @Deprecated
   @Override
@@ -1806,7 +1806,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
    * on next major release
-   * @see https://github.com/xetorthio/jedis/issues/531
+   * @see <a href="https://github.com/xetorthio/jedis/issues/531">issue#531</a>
    */
   @Deprecated
   @Override
@@ -1822,7 +1822,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
    * on next major release
-   * @see https://github.com/xetorthio/jedis/issues/531
+   * @see <a href="https://github.com/xetorthio/jedis/issues/531">issue#531</a>
    */
   @Deprecated
   @Override

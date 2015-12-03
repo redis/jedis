@@ -1338,6 +1338,36 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return this.evalsha(sha1, keys.size(), argv);
   }
 
+  public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return this.evalsha(sha1, keys.size(), BinaryJedis.concatAsByteArrays(keys, args));
+  }
+
+  public Response<Object> evalsha(byte[] sha1, int numKeys, byte[]... params) {
+    getClient(sha1).evalsha(sha1, numKeys, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+  }
+
+  public Response<Object> evalsha(byte[] script) {
+    return this.evalsha(script, 0);
+  }
+
+  public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
+    getClient(script).eval(script, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+  }
+
+  public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
+    return this.eval(script, Protocol.toByteArray(keyCount), params);
+  }
+
+  public Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return this.eval(script, keys.size(), BinaryJedis.concatAsByteArrays(keys, args));
+  }
+
+  public Response<Object> eval(byte[] script) {
+    return this.evalsha(script, 0);
+  }
+
   public Response<String> evalsha(String sha1, int numKeys, String... args) {
     getClient(sha1).evalsha(sha1, numKeys, args);
     return getResponse(BuilderFactory.STRING);

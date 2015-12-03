@@ -3001,10 +3001,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Script result
    */
   public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-    return eval(script, toByteArray(keys.size()), getParams(keys, args));
+    return eval(script, toByteArray(keys.size()), concatAsByteArrays(keys, args));
   }
 
-  private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+  static byte[][] concatAsByteArrays(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
     byte[][] params = new byte[keyCount + argCount][];
@@ -3041,7 +3041,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-    return evalsha(sha1, keys.size(), getParams(keys, args));
+    return evalsha(sha1, keys.size(), concatAsByteArrays(keys, args));
   }
 
   public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {

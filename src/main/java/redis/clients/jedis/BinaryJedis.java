@@ -163,11 +163,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys existed
-   * Time complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys existed Time
+   * complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed
-   *         0 if none of the specified keys existed
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
+   *         none of the specified keys existed
    */
   public Long exists(final byte[]... keys) {
     checkIsInMultiOrPipeline();
@@ -1668,7 +1668,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
           "Cannot use Jedis when in Multi. Please use Transation or reset jedis state.");
     } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
       throw new JedisDataException(
-              "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state .");
+          "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state .");
     }
   }
 
@@ -3001,10 +3001,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Script result
    */
   public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-    return eval(script, toByteArray(keys.size()), getParams(keys, args));
+    return eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
   }
 
-  private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+  protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
     byte[][] params = new byte[keyCount + argCount][];
@@ -3041,7 +3041,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-    return evalsha(sha1, keys.size(), getParams(keys, args));
+    return evalsha(sha1, keys.size(), getParamsWithBinary(keys, args));
   }
 
   public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
@@ -3057,6 +3057,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String scriptFlush() {
     client.scriptFlush();
     return client.getStatusCodeReply();
+  }
+
+  public Long scriptExists(byte[] sha1) {
+    byte[][] a = new byte[1][];
+    a[0] = sha1;
+    return scriptExists(a).get(0);
   }
 
   public List<Long> scriptExists(byte[]... sha1) {
@@ -3391,16 +3397,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member,
-      double radius, GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member,
-      double radius, GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());

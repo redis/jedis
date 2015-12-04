@@ -817,15 +817,15 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member,
-      double radius, GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member,
-      double radius, GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit, param);
   }

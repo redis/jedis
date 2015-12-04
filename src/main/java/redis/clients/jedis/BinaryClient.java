@@ -1304,7 +1304,7 @@ public class BinaryClient extends Connection {
     sendCommand(GEODIST, key, member1, member2, unit.raw);
   }
 
-  public void geohash(byte[] key, byte[]...members) {
+  public void geohash(byte[] key, byte[]... members) {
     sendCommand(GEOHASH, joinParameters(key, members));
   }
 
@@ -1313,13 +1313,14 @@ public class BinaryClient extends Connection {
   }
 
   public void georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
-    sendCommand(GEORADIUS, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius), unit.raw);
+    sendCommand(GEORADIUS, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
+      unit.raw);
   }
 
   public void georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param) {
     sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
-        toByteArray(radius), unit.raw));
+      toByteArray(radius), unit.raw));
   }
 
   public void georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
@@ -1342,7 +1343,8 @@ public class BinaryClient extends Connection {
     return args;
   }
 
-  private List<byte[]> convertGeoCoordinateMapToByteArrays(Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  private List<byte[]> convertGeoCoordinateMapToByteArrays(
+      Map<byte[], GeoCoordinate> memberCoordinateMap) {
     List<byte[]> args = new ArrayList<byte[]>(memberCoordinateMap.size() * 3);
 
     for (Entry<byte[], GeoCoordinate> entry : memberCoordinateMap.entrySet()) {

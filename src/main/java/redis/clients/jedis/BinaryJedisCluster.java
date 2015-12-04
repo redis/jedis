@@ -679,7 +679,8 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Long zadd(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public Long zadd(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
@@ -729,7 +730,8 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member, final ZIncrByParams params) {
+  public Double zincrby(final byte[] key, final double score, final byte[] member,
+      final ZIncrByParams params) {
     return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
       @Override
       public Double execute(Jedis connection) {
@@ -1847,7 +1849,8 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Long geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+  public Long geoadd(final byte[] key, final double longitude, final double latitude,
+      final byte[] member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxRedirections) {
       @Override
       public Long execute(Jedis connection) {
@@ -1877,7 +1880,8 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2,
+      final GeoUnit unit) {
     return new JedisClusterCommand<Double>(connectionHandler, maxRedirections) {
       @Override
       public Double execute(Jedis connection) {
@@ -1907,8 +1911,8 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -1918,8 +1922,8 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxRedirections) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {

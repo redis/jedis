@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPipeline,
-    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline {
+    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
+    BinaryScriptingCommandsPipeline {
 
   protected Client client = null;
 
@@ -455,6 +456,39 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements Basic
   public Response<String> clusterSetSlotImporting(final int slot, final String nodeId) {
     client.clusterSetSlotImporting(slot, nodeId);
     return getResponse(BuilderFactory.STRING);
+  }
+
+  public Response<Object> eval(byte[] script) {
+    return this.eval(script, 0);
+  }
+
+  public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
+    getClient(script).eval(script, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+  }
+
+  public Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    return this.eval(script, keys.size(), argv);
+  }
+
+  public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
+    getClient(script).eval(script, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+  }
+
+  public Response<Object> evalsha(byte[] sha1) {
+    return this.evalsha(sha1, 0);
+  }
+
+  public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    return this.evalsha(sha1, keys.size(), argv);
+  }
+
+  public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
+    getClient(sha1).evalsha(sha1, keyCount, params);
+    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
   }
 
   @Override

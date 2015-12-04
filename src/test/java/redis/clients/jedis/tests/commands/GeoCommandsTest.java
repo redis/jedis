@@ -130,19 +130,20 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertEquals(2, members.size());
 
     // sort
-    members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending());
     assertEquals(2, members.size());
     assertEquals("Catania", members.get(0).getMemberByString());
     assertEquals("Palermo", members.get(1).getMemberByString());
 
     // sort, count 1
-    members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1));
+    members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending().count(1));
     assertEquals(1, members.size());
 
     // sort, count 1, withdist, withcoord
-    members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
     assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
@@ -162,19 +163,20 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertEquals(2, members.size());
 
     // sort
-    members = jedis.georadius(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadius(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bB, members.get(0).getMember());
     assertArrayEquals(bA, members.get(1).getMember());
 
     // sort, count 1
-    members = jedis.georadius(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1));
+    members = jedis.georadius(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending().count(1));
     assertEquals(1, members.size());
 
     // sort, count 1, withdist, withcoord
-    members = jedis.georadius(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadius(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
     assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
@@ -189,17 +191,17 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     jedis.geoadd("Sicily", 15.087269, 37.502669, "Catania");
 
     List<GeoRadiusResponse> members = jedis.georadiusByMember("Sicily", "Agrigento", 100,
-        GeoUnit.KM);
+      GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMember("Sicily", "Agrigento", 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadiusByMember("Sicily", "Agrigento", 100, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertEquals("Agrigento", members.get(0).getMemberByString());
     assertEquals("Palermo", members.get(1).getMemberByString());
 
-    members = jedis.georadiusByMember("Sicily", "Agrigento", 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMember("Sicily", "Agrigento", 100, GeoUnit.KM, GeoRadiusParam
+        .geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);
@@ -218,12 +220,14 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     List<GeoRadiusResponse> members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam().sortAscending());
+    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bA, members.get(0).getMember());
     assertArrayEquals(bB, members.get(1).getMember());
 
-    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
+        .sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);

@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPipeline,
-    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline {
+    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
+    BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline {
 
   protected Client client = null;
 
@@ -456,6 +457,69 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements Basic
     client.clusterSetSlotImporting(slot, nodeId);
     return getResponse(BuilderFactory.STRING);
   }
+
+    
+    public Response<Object> eval(String script) {
+	return this.eval(script, 0, new String[0]);
+    }
+
+    public Response<Object> eval(String script, List<String> keys,
+	    List<String> args) {
+	String[] argv = Jedis.getParams(keys, args);
+	return this.eval(script, keys.size(), argv);
+    }
+    
+    public Response<Object> eval(String script, int keyCount, String... params) {
+	getClient(script).eval(script, keyCount, params);
+	return getResponse(BuilderFactory.EVAL_RESULT);
+    }
+
+    public Response<Object> evalsha(String script) {
+	return this.evalsha(script, 0, new String[0]);
+    }
+
+    public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+	String[] argv = Jedis.getParams(keys, args);
+	return this.evalsha(sha1, keys.size(), argv);
+    }
+
+    public Response<Object> evalsha(String sha1, int keyCount, String... params) {
+	getClient(sha1).evalsha(sha1, keyCount, params);
+	return getResponse(BuilderFactory.EVAL_RESULT);
+    }
+
+    public Response<Object> eval(byte[] script) {
+	return this.eval(script, 0);
+    }
+    
+    public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
+	getClient(script).eval(script, keyCount, params);
+	return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    }
+    
+    public Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+	byte[][] argv = BinaryJedis.getParams(keys, args);
+	return this.eval(script, keys.size(), argv);
+    }
+    
+    public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
+	getClient(script).eval(script, keyCount, params);
+	return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    }
+    
+    public Response<Object> evalsha(byte[] sha1) {
+	return this.evalsha(sha1, 0);
+    }
+    
+    public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+	byte[][] argv = BinaryJedis.getParams(keys, args);
+	return this.evalsha(sha1, keys.size(), argv);
+    }
+    
+    public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
+	getClient(sha1).evalsha(sha1, keyCount, params);
+	return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    }
 
   @Override
   public Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {

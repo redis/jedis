@@ -8,7 +8,6 @@ import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.JedisByteHashMap;
-import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
 
 import java.io.Closeable;
@@ -3004,7 +3003,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return eval(script, toByteArray(keys.size()), getParams(keys, args));
   }
 
-  private byte[][] getParams(List<byte[]> keys, List<byte[]> args) {
+  protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
     byte[][] params = new byte[keyCount + argCount][];
@@ -3057,6 +3056,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String scriptFlush() {
     client.scriptFlush();
     return client.getStatusCodeReply();
+  }
+
+  public Long scriptExists(byte[] sha1) {
+    byte[][] a = new byte[1][];
+    a[0] = sha1;
+    return scriptExists(a).get(0);
   }
 
   public List<Long> scriptExists(byte[]... sha1) {

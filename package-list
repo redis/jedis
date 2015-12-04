@@ -1,0 +1,5 @@
+redis.clients.jedis
+redis.clients.jedis.exceptions
+redis.clients.jedis.params
+redis.clients.jedis.params.set
+redis.clients.util

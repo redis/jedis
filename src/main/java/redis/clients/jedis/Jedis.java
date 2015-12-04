@@ -102,8 +102,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns the number of keys existed
-   * Time complexity: O(N)
+   * Test if the specified key exists. The command returns the number of keys existed Time
+   * complexity: O(N)
    * @param keys
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
    *         0 if none of the specified key existed
@@ -3461,16 +3461,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member,
-      double radius, GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member,
-      double radius, GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());

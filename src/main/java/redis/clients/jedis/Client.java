@@ -1048,7 +1048,7 @@ public class Client extends BinaryClient implements Commands {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
   }
 
-  public void geohash(String key, String...members) {
+  public void geohash(String key, String... members) {
     geohash(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 

@@ -245,15 +245,19 @@ public interface BinaryRedisPipeline {
 
   Response<Double> geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit);
 
-  Response<List<byte[]>> geohash(byte[] key, byte[]...members);
+  Response<List<byte[]>> geohash(byte[] key, byte[]... members);
 
-  Response<List<GeoCoordinate>> geopos(byte[] key, byte[]...members);
+  Response<List<GeoCoordinate>> geopos(byte[] key, byte[]... members);
 
-  Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit);
+  Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param);
+  Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
+  Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param);
+  Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 }

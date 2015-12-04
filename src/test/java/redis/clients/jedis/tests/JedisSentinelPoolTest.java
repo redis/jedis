@@ -103,7 +103,8 @@ public class JedisSentinelPoolTest extends JedisTestBase {
     final AtomicBoolean isBorrowed = new AtomicBoolean(false);
 
     Thread t = new Thread(new Runnable() {
-      @Override public void run() {
+      @Override
+      public void run() {
         pool.getResource();
         isBorrowed.set(true);
       }

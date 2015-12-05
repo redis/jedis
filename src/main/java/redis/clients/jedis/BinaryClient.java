@@ -21,6 +21,10 @@ import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.*;
 import static redis.clients.jedis.Protocol.toByteArray;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 public class BinaryClient extends Connection {
   public enum LIST_POSITION {
     BEFORE, AFTER;
@@ -57,6 +61,16 @@ public class BinaryClient extends Connection {
 
   public BinaryClient(final String host, final int port) {
     super(host, port);
+  }
+
+  public BinaryClient(final String host, final int port, final boolean ssl) {
+    super(host, port, ssl);
+  }
+
+  public BinaryClient(final String host, final int port, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   private byte[][] joinParameters(byte[] first, byte[][] rest) {

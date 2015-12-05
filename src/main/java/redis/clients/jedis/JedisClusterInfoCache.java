@@ -11,6 +11,10 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisClusterInfoCache {
@@ -105,7 +109,37 @@ public class JedisClusterInfoCache {
       if (nodes.containsKey(nodeKey)) return;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, null, 0, null);
+          connectionTimeout, soTimeout, null, 0, null, false, null, null, null);
+      nodes.put(nodeKey, nodePool);
+    } finally {
+      w.unlock();
+    }
+  }
+
+  public void setNodeIfNotExist(HostAndPort node, boolean ssl) {
+    w.lock();
+    try {
+      String nodeKey = getNodeKey(node);
+      if (nodes.containsKey(nodeKey)) return;
+
+      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
+          connectionTimeout, soTimeout, null, 0, null, ssl, null, null, null);
+      nodes.put(nodeKey, nodePool);
+    } finally {
+      w.unlock();
+    }
+  }
+
+  public void setNodeIfNotExist(HostAndPort node, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+    w.lock();
+    try {
+      String nodeKey = getNodeKey(node);
+      if (nodes.containsKey(nodeKey)) return;
+
+      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
+          connectionTimeout, soTimeout, null, 0, null, ssl, sslSocketFactory, sslParameters,
+          hostnameVerifier);
       nodes.put(nodeKey, nodePool);
     } finally {
       w.unlock();

@@ -8,6 +8,11 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -29,6 +34,10 @@ public class Connection implements Closeable {
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean broken = false;
+  private boolean ssl;
+  private SSLSocketFactory sslSocketFactory;
+  private SSLParameters sslParameters;
+  private HostnameVerifier hostnameVerifier;
 
   public Connection() {
   }
@@ -40,6 +49,23 @@ public class Connection implements Closeable {
   public Connection(final String host, final int port) {
     this.host = host;
     this.port = port;
+  }
+
+  public Connection(final String host, final int port, final boolean ssl) {
+    this.host = host;
+    this.port = port;
+    this.ssl = ssl;
+  }
+
+  public Connection(final String host, final int port, final boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier) {
+    this.host = host;
+    this.port = port;
+    this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
   }
 
   public Socket getSocket() {
@@ -157,6 +183,23 @@ public class Connection implements Closeable {
 
         socket.connect(new InetSocketAddress(host, port), connectionTimeout);
         socket.setSoTimeout(soTimeout);
+
+        if (ssl) {
+          if (null == sslSocketFactory) {
+            sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+          }
+          socket = (SSLSocket) sslSocketFactory.createSocket(socket, host, port, true);
+          if (null != sslParameters) {
+            ((SSLSocket) socket).setSSLParameters(sslParameters);
+          }
+          if ((null != hostnameVerifier) &&
+              (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
+            String message = String.format(
+                "The connection to '%s' failed ssl/tls hostname verification.", host);
+            throw new JedisConnectionException(message);
+          }
+        }
+
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {

@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 import static redis.clients.jedis.Protocol.toByteArray;
 
 public class Client extends BinaryClient implements Commands {
@@ -28,6 +32,17 @@ public class Client extends BinaryClient implements Commands {
     super(host, port);
   }
 
+  public Client(final String host, final int port, final boolean ssl) {
+    super(host, port, ssl);
+  }
+
+  public Client(final String host, final int port, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));
   }

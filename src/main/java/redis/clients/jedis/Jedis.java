@@ -13,6 +13,10 @@ import java.net.URI;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
 
@@ -30,12 +34,44 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host, port);
   }
 
+  public Jedis(final String host, final int port, final boolean ssl) {
+    super(host, port, ssl);
+  }
+
+  public Jedis(final String host, final int port, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
   public Jedis(final String host, final int port, final int timeout) {
     super(host, port, timeout);
   }
 
+  public Jedis(final String host, final int port, final int timeout, final boolean ssl) {
+    super(host, port, timeout, ssl);
+  }
+
+  public Jedis(final String host, final int port, final int timeout, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, timeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
     super(host, port, connectionTimeout, soTimeout);
+  }
+
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final boolean ssl) {
+    super(host, port, connectionTimeout, soTimeout, ssl);
+  }
+
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
+        hostnameVerifier);
   }
 
   public Jedis(JedisShardInfo shardInfo) {
@@ -46,12 +82,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(uri);
   }
 
+  public Jedis(URI uri, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
   public Jedis(final URI uri, final int timeout) {
     super(uri, timeout);
   }
 
+  public Jedis(final URI uri, final int timeout, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    super(uri, timeout, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
   public Jedis(final URI uri, final int connectionTimeout, final int soTimeout) {
     super(uri, connectionTimeout, soTimeout);
+  }
+
+  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(uri, connectionTimeout, soTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   /**

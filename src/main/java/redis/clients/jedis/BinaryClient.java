@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
@@ -64,6 +68,16 @@ public class BinaryClient extends Connection {
 
   public BinaryClient(final String host, final int port) {
     super(host, port);
+  }
+
+  public BinaryClient(final String host, final int port, final boolean ssl) {
+    super(host, port, ssl);
+  }
+
+  public BinaryClient(final String host, final int port, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   private byte[][] joinParameters(byte[] first, byte[][] rest) {

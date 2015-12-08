@@ -44,9 +44,12 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
         if (result.equalsIgnoreCase("pong")) return jedis;
 
         pool.returnBrokenResource(jedis);
-      } catch (JedisConnectionException ex) {
+      } catch (JedisException ex) {
         if (jedis != null) {
-          pool.returnBrokenResource(jedis);
+          try {
+            pool.returnBrokenResource(jedis);
+          } catch (JedisException silent) {
+          }
         }
       }
     }

@@ -1,13 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import java.util.Set;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
 
@@ -44,9 +43,12 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
         if (result.equalsIgnoreCase("pong")) return jedis;
 
         pool.returnBrokenResource(jedis);
-      } catch (JedisConnectionException ex) {
+      } catch (JedisException ex) {
         if (jedis != null) {
-          pool.returnBrokenResource(jedis);
+          try {
+            pool.returnBrokenResource(jedis);
+          } catch (JedisException silent) {
+          }
         }
       }
     }

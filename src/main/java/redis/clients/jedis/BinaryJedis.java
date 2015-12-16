@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.io.Closeable;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -3525,7 +3526,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * return Set result.
    * @param <E>
    */
-  protected static class SetFromList<E> extends AbstractSet<E> {
+  protected static class SetFromList<E> extends AbstractSet<E> implements Serializable {
+    private static final long serialVersionUID = -2850347066962734052L;
     private final List<E> list;
 
     private SetFromList(List<E> list) {

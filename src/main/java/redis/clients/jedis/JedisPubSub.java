@@ -35,6 +35,10 @@ public abstract class JedisPubSub {
 
   public void onPSubscribe(String pattern, int subscribedChannels) {
   }
+  
+  public void onProcess() {
+	  
+  }
 
   public void unsubscribe() {
     if (client == null) {
@@ -148,6 +152,7 @@ public abstract class JedisPubSub {
       } else {
         throw new JedisException("Unknown message type: " + firstObj);
       }
+      onProcess();
     } while (isSubscribed());
 
     /* Invalidate instance since this thread is no longer listening */

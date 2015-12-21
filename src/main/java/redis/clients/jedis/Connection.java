@@ -10,6 +10,7 @@ import java.util.List;
 
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisConnectionTimeOutException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.IOUtils;
 import redis.clients.util.RedisInputStream;
@@ -264,6 +265,8 @@ public class Connection implements Closeable {
   protected Object readProtocolWithCheckingBroken() {
     try {
       return Protocol.read(inputStream);
+    } catch (JedisConnectionTimeOutException exc) {
+    	return null;
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;

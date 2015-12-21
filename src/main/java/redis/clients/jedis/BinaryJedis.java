@@ -3057,7 +3057,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
-    client.setTimeoutInfinite();
+    client.setSoTimeout(Protocol.DEFAULT_TIMEOUT);
     try {
       jedisPubSub.proceed(client, channels);
     } finally {

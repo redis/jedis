@@ -1186,7 +1186,7 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxRedirections) {
       @Override
       public Set<byte[]> execute(Jedis connection) {
-        return connection.zrangeByLex(key, max, min);
+        return connection.zrevrangeByLex(key, max, min);
       }
     }.runBinary(key);
   }

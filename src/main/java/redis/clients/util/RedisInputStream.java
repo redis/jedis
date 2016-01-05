@@ -9,7 +9,10 @@
 
 package redis.clients.util;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -29,11 +32,11 @@ public class RedisInputStream extends FilterInputStream {
     if (size <= 0) {
       throw new IllegalArgumentException("Buffer size <= 0");
     }
-    buf = new byte[size];
+    buf = BufferPool.obtainBuffer(size);
   }
 
   public RedisInputStream(InputStream in) {
-    this(in, 8192);
+    this(in, IOUtils.DEFAULT_BUFFER_SIZE);
   }
 
   public byte readByte() throws JedisConnectionException {
@@ -183,6 +186,12 @@ public class RedisInputStream extends FilterInputStream {
     System.arraycopy(buf, count, b, off, length);
     count += length;
     return length;
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    BufferPool.returnBuffer(buf);
+    super.finalize();
   }
 
   /**

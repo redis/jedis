@@ -15,7 +15,7 @@ public final class RedisOutputStream extends FilterOutputStream {
   protected int count;
 
   public RedisOutputStream(final OutputStream out) {
-    this(out, 8192);
+    this(out, IOUtils.DEFAULT_BUFFER_SIZE);
   }
 
   public RedisOutputStream(final OutputStream out, final int size) {
@@ -23,7 +23,7 @@ public final class RedisOutputStream extends FilterOutputStream {
     if (size <= 0) {
       throw new IllegalArgumentException("Buffer size <= 0");
     }
-    buf = new byte[size];
+    buf = BufferPool.obtainBuffer(size);
   }
 
   private void flushBuffer() throws IOException {
@@ -212,5 +212,11 @@ public final class RedisOutputStream extends FilterOutputStream {
   public void flush() throws IOException {
     flushBuffer();
     out.flush();
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    BufferPool.returnBuffer(buf);
+    super.finalize();
   }
 }

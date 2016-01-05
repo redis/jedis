@@ -13,6 +13,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.util.IOUtils;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -50,7 +51,7 @@ public class ProtocolTest extends JedisTestBase {
       }
     });
 
-    ros.write(new byte[8191]);
+    ros.write(new byte[IOUtils.DEFAULT_BUFFER_SIZE - 1]);
 
     try {
       ros.write((byte) '*');

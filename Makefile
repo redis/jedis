@@ -1,4 +1,5 @@
 PATH := ./redis-git/src:${PATH}
+STUNNEL_BIN := $(shell which stunnel)
 
 define REDIS1_CONF
 daemonize yes
@@ -201,6 +202,15 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node6.conf
 endef
 
+#STUNNEL
+define STUNNEL_CONF
+cert = src/test/resources/private.pem
+pid = /tmp/stunnel.pid
+[redis]
+accept = 127.0.0.1:6390
+connect = 127.0.0.1:6379
+endef
+
 export REDIS1_CONF
 export REDIS2_CONF
 export REDIS3_CONF
@@ -218,8 +228,16 @@ export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
 export REDIS_CLUSTER_NODE6_CONF
+export STUNNEL_CONF
+export STUNNEL_BIN
 
-start: cleanup
+
+ifndef STUNNEL_BIN
+    SKIP_SSL := !SSL*,
+endif
+export SKIP_SSL
+
+start: stunnel cleanup
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -245,6 +263,10 @@ cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
 	- rm dump.rdb appendonly.aof - 2>/dev/null
 
+stunnel:
+	@if [ -e "$$STUNNEL_BIN" ]; then\
+	    echo "$$STUNNEL_CONF" | stunnel -fd 0;\
+	fi
 stop:
 	kill `cat /tmp/redis1.pid`
 	kill `cat /tmp/redis2.pid`
@@ -263,6 +285,7 @@ stop:
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
 	kill `cat /tmp/redis_cluster_node6.pid` || true
+	kill `cat /tmp/stunnel.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
@@ -276,7 +299,7 @@ stop:
 test:
 	make start
 	sleep 2
-	mvn -Dtest=${TEST} clean compile test
+	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
 	make stop
 
 package:

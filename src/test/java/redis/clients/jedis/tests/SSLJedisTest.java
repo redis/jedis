@@ -7,13 +7,11 @@ import java.net.URI;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -46,8 +44,24 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis.
+   * Tests opening a default SSL/TLS connection to redis.
    */
+  @Test
+  public void connectWithoutShardInfo() {
+    // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
+    Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"));
+    jedis.auth("foobared");
+    jedis.get("foo");
+    jedis.close();
+  }
+
+  /**
+   * Tests opening an SSL/TLS connection to redis.
+   * NOTE: This test relies on a feature that is only available as of Java 7 and later.
+   * It is commented out but not removed in case support for Java 6 is dropped or
+   * we find a way to have the CI run a specific set of tests on Java 7 and above.
+   */
+  /*
   @Test
   public void connectWithShardInfo() throws Exception {
     final URI uri = URI.create("rediss://localhost:6390");
@@ -67,21 +81,19 @@ public class SSLJedisTest extends JedisCommandTestBase {
     jedis.disconnect();
     jedis.close();
   }
-
-  @Test
-  public void connectWithoutShardInfo() {
-    Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"));
-    jedis.auth("foobared");
-    jedis.get("foo");
-    jedis.close();
-  }
+  */
 
   /**
    * Tests opening an SSL/TLS connection to redis using the loopback address of
    * 127.0.0.1. This test should fail because "127.0.0.1" does not match the
    * certificate subject common name and there are no subject alternative names
    * in the certificate.
+   * 
+   * NOTE: This test relies on a feature that is only available as of Java 7 and later.
+   * It is commented out but not removed in case support for Java 6 is dropped or
+   * we find a way to have the CI run a specific set of tests on Java 7 and above.
    */
+  /*
   @Test
   public void connectWithShardInfoByIpAddress() throws Exception {
     final URI uri = URI.create("rediss://127.0.0.1:6390");
@@ -112,6 +124,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
       // Expected.
     }
   }
+  */
 
   /**
    * Tests opening an SSL/TLS connection to redis with a custom hostname
@@ -121,6 +134,25 @@ public class SSLJedisTest extends JedisCommandTestBase {
   public void connectWithShardInfoAndCustomHostnameVerifier() {
     final URI uri = URI.create("rediss://localhost:6390");
     final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+    final SSLParameters sslParameters = new SSLParameters();
+
+    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    shardInfo.setPassword("foobared");
+
+    Jedis jedis = new Jedis(shardInfo);
+    jedis.get("foo");
+    jedis.disconnect();
+    jedis.close();
+  }
+
+  /**
+   * Tests opening an SSL/TLS connection to redis with a custom socket factory.
+   */
+  @Test
+  public void connectWithShardInfoAndCustomSocketFactory() throws Exception {
+    final URI uri = URI.create("rediss://localhost:6390");
+    final SSLSocketFactory sslSocketFactory = createTrustStoreSslSocketFactory();
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
@@ -178,13 +210,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final URI uri = URI.create("rediss://localhost:6390");
     final SSLSocketFactory sslSocketFactory = createTrustNoOneSslSocketFactory();
 
-    // These SSL parameters ensure that we use the same hostname verifier used
-    // for HTTPS.
-    // Note: this options is only available in Java 7.
-    final SSLParameters sslParameters = new SSLParameters();
-    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
     shardInfo.setPassword("foobared");
 
     Jedis jedis = new Jedis(shardInfo);

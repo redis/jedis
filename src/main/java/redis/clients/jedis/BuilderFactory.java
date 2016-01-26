@@ -382,7 +382,7 @@ public class BuilderFactory {
       } else {
         List<Object> objectList = (List<Object>) data;
 
-        if (objectList.size() == 0) {
+        if (objectList.isEmpty()) {
           return new ArrayList<GeoRadiusResponse>();
         }
 

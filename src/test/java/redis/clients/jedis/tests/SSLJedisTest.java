@@ -7,11 +7,13 @@ import java.net.URI;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -61,12 +63,10 @@ public class SSLJedisTest extends JedisCommandTestBase {
    * It is commented out but not removed in case support for Java 6 is dropped or
    * we find a way to have the CI run a specific set of tests on Java 7 and above.
    */
-  /*
   @Test
   public void connectWithShardInfo() throws Exception {
     final URI uri = URI.create("rediss://localhost:6390");
     final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    //final SSLSocketFactory sslSocketFactory = createTrustStoreSslSocketFactory();
     // These SSL parameters ensure that we use the same hostname verifier used
     // for HTTPS.
     // Note: this options is only available in Java 7.
@@ -81,7 +81,6 @@ public class SSLJedisTest extends JedisCommandTestBase {
     jedis.disconnect();
     jedis.close();
   }
-  */
 
   /**
    * Tests opening an SSL/TLS connection to redis using the loopback address of
@@ -93,7 +92,6 @@ public class SSLJedisTest extends JedisCommandTestBase {
    * It is commented out but not removed in case support for Java 6 is dropped or
    * we find a way to have the CI run a specific set of tests on Java 7 and above.
    */
-  /*
   @Test
   public void connectWithShardInfoByIpAddress() throws Exception {
     final URI uri = URI.create("rediss://127.0.0.1:6390");
@@ -124,7 +122,6 @@ public class SSLJedisTest extends JedisCommandTestBase {
       // Expected.
     }
   }
-  */
 
   /**
    * Tests opening an SSL/TLS connection to redis with a custom hostname

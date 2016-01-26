@@ -2163,7 +2163,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     if (membersWithScores == null) {
       return null;
     }
-    if (membersWithScores.size() == 0) {
+    if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
     }
     Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);

@@ -137,7 +137,7 @@ public class ClusterCommandsTest extends JedisTestBase {
 
     List<Object> slots = node1.clusterSlots();
     assertNotNull(slots);
-    assertTrue(slots.size() > 0);
+    assertTrue(!slots.isEmpty());
 
     for (Object slotInfoObj : slots) {
       List<Object> slotInfo = (List<Object>) slotInfoObj;

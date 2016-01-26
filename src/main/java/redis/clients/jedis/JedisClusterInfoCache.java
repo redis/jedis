@@ -78,7 +78,7 @@ public class JedisClusterInfoCache {
 
         // hostInfos
         List<Object> hostInfos = (List<Object>) slotInfo.get(2);
-        if (hostInfos.size() <= 0) {
+        if (hostInfos.isEmpty()) {
           continue;
         }
 

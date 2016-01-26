@@ -2313,7 +2313,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   private Set<Tuple> getBinaryTupledSet() {
     checkIsInMultiOrPipeline();
     List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
-    if (membersWithScores.size() == 0) {
+    if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
     }
     Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);

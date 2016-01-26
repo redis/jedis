@@ -10,7 +10,7 @@ import java.io.OutputStream;
  * used outside Jedis
  */
 public final class RedisOutputStream extends FilterOutputStream {
-  protected final byte buf[];
+  protected final byte[] buf;
 
   protected int count;
 
@@ -44,7 +44,7 @@ public final class RedisOutputStream extends FilterOutputStream {
     write(b, 0, b.length);
   }
 
-  public void write(final byte b[], final int off, final int len) throws IOException {
+  public void write(final byte[] b, final int off, final int len) throws IOException {
     if (len >= buf.length) {
       flushBuffer();
       out.write(b, off, len);

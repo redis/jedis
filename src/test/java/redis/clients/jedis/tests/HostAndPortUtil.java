@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import redis.clients.jedis.HostAndPort;
@@ -10,6 +11,7 @@ public class HostAndPortUtil {
   private static List<HostAndPort> redisHostAndPortList = new ArrayList<HostAndPort>();
   private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<HostAndPort>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<HostAndPort>();
+  private static List<String> redisUDSList = new ArrayList<String>();
 
   static {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT));
@@ -32,13 +34,17 @@ public class HostAndPortUtil {
     clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
 
+    redisUDSList.add(new String("/tmp/redis_6379.sock"));
+
     String envRedisHosts = System.getProperty("redis-hosts");
     String envSentinelHosts = System.getProperty("sentinel-hosts");
     String envClusterHosts = System.getProperty("cluster-hosts");
+    String envUDSHosts = System.getProperty("uds-hosts");
 
     redisHostAndPortList = parseHosts(envRedisHosts, redisHostAndPortList);
     sentinelHostAndPortList = parseHosts(envSentinelHosts, sentinelHostAndPortList);
     clusterHostAndPortList = parseHosts(envClusterHosts, clusterHostAndPortList);
+    redisUDSList = parseUDSHosts(envUDSHosts, redisUDSList);
   }
 
   public static List<HostAndPort> parseHosts(String envHosts,
@@ -76,6 +82,18 @@ public class HostAndPortUtil {
     return existingHostsAndPorts;
   }
 
+  public static List<String> parseUDSHosts(String envHosts, List<String> existingUDSHosts) {
+    if (null != envHosts && 0 < envHosts.length()) {
+
+      String[] hostDefs = envHosts.split(",");
+
+      if (null != hostDefs) {
+        return Arrays.asList(hostDefs);
+      }
+    }
+    return existingUDSHosts;
+  }
+
   public static List<HostAndPort> getRedisServers() {
     return redisHostAndPortList;
   }
@@ -86,5 +104,9 @@ public class HostAndPortUtil {
 
   public static List<HostAndPort> getClusterServers() {
     return clusterHostAndPortList;
+  }
+
+  public static List<String> getUDSServers() {
+    return redisUDSList;
   }
 }

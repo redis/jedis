@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.io.File;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -7,6 +8,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -37,6 +41,11 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+
+  private boolean isUDSConnection(String host) {
+    File udsFile = new File(host);
+    return udsFile.isAbsolute() && udsFile.exists();
+  }
 
   public Connection() {
   }
@@ -167,19 +176,24 @@ public class Connection implements Closeable {
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = new Socket();
-        // ->@wjw_add
-        socket.setReuseAddress(true);
+        if (isUDSConnection(host)) {
+          socket = AFUNIXSocket.newStrictInstance();
+          socket.connect(new AFUNIXSocketAddress(new File(host)), connectionTimeout);
+        } else {
+          socket = new Socket();
+          socket.connect(new InetSocketAddress(host, port), connectionTimeout);
+          // ->@wjw_add
+          socket.setReuseAddress(true);
+          socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
+          // ensure timely delivery of data
+        }
         socket.setKeepAlive(true); // Will monitor the TCP connection is
         // valid
-        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
-        // ensure timely delivery of data
         socket.setSoLinger(true, 0); // Control calls close () method,
         // the underlying socket is closed
         // immediately
         // <-@wjw_add
 
-        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
         socket.setSoTimeout(soTimeout);
 
         if (ssl) {
@@ -227,8 +241,9 @@ public class Connection implements Closeable {
   }
 
   public boolean isConnected() {
-    return socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected()
-        && !socket.isInputShutdown() && !socket.isOutputShutdown();
+    return socket != null && (socket instanceof AFUNIXSocket ? true : socket.isBound()) &&
+            !socket.isClosed() && socket.isConnected() && !socket.isInputShutdown() &&
+            !socket.isOutputShutdown();
   }
 
   public String getStatusCodeReply() {

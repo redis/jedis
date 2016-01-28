@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.util.ClusterNodeInformation;
-import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
@@ -14,8 +12,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisClusterInfoCache {
-  public static final ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
-
   private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
   private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
@@ -26,6 +22,8 @@ public class JedisClusterInfoCache {
 
   private int connectionTimeout;
   private int soTimeout;
+
+  private static final int MASTER_NODE_INDEX = 2;
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
     this(poolConfig, timeout, timeout);
@@ -45,14 +43,31 @@ public class JedisClusterInfoCache {
       this.nodes.clear();
       this.slots.clear();
 
-      String localNodes = jedis.clusterNodes();
-      for (String nodeInfo : localNodes.split("\n")) {
-        ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(nodeInfo, new HostAndPort(
-            jedis.getClient().getHost(), jedis.getClient().getPort()));
+      List<Object> slots = jedis.clusterSlots();
 
-        HostAndPort targetNode = clusterNodeInfo.getNode();
-        setNodeIfNotExist(targetNode);
-        assignSlotsToNode(clusterNodeInfo.getAvailableSlots(), targetNode);
+      for (Object slotInfoObj : slots) {
+        List<Object> slotInfo = (List<Object>) slotInfoObj;
+
+        if (slotInfo.size() <= MASTER_NODE_INDEX) {
+          continue;
+        }
+
+        List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+
+        // hostInfos
+        int size = slotInfo.size();
+        for (int i = MASTER_NODE_INDEX; i < size; i++) {
+          List<Object> hostInfos = (List<Object>) slotInfo.get(i);
+          if (hostInfos.size() <= 0) {
+            continue;
+          }
+
+          HostAndPort targetNode = generateHostAndPort(hostInfos);
+          setNodeIfNotExist(targetNode);
+          if (i == MASTER_NODE_INDEX) {
+            assignSlotsToNode(slotNums, targetNode);
+          }
+        }
       }
     } finally {
       w.unlock();
@@ -78,7 +93,7 @@ public class JedisClusterInfoCache {
 
         // hostInfos
         List<Object> hostInfos = (List<Object>) slotInfo.get(2);
-        if (hostInfos.isEmpty()) {
+        if (hostInfos.size() <= 0) {
           continue;
         }
 
@@ -105,7 +120,7 @@ public class JedisClusterInfoCache {
       if (nodes.containsKey(nodeKey)) return;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, null, 0, null);
+              connectionTimeout, soTimeout, null, 0, null);
       nodes.put(nodeKey, nodePool);
     } finally {
       w.unlock();

@@ -18,6 +18,10 @@ public abstract class Pool<T> implements Closeable {
   public Pool() {
   }
 
+  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+    initPool(poolConfig, factory);
+  }
+
   @Override
   public void close() {
     destroy();
@@ -26,11 +30,7 @@ public abstract class Pool<T> implements Closeable {
   public boolean isClosed() {
     return this.internalPool.isClosed();
   }
-
-  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
-    initPool(poolConfig, factory);
-  }
-
+  
   public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {

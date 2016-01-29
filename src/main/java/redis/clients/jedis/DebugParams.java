@@ -3,14 +3,14 @@ package redis.clients.jedis;
 public class DebugParams {
   private String[] command;
 
-  public String[] getCommand() {
-    return command;
-  }
-
   private DebugParams() {
 
   }
 
+  public String[] getCommand() {
+    return command;
+  }
+  
   public static DebugParams SEGFAULT() {
     DebugParams debugParams = new DebugParams();
     debugParams.command = new String[] { "SEGFAULT" };

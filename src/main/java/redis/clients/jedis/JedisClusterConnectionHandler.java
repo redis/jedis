@@ -13,6 +13,12 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public abstract class JedisClusterConnectionHandler {
   protected final JedisClusterInfoCache cache;
 
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
+                                       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
+    this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout);
+    initializeSlotsCache(nodes, poolConfig);
+  }
+
   abstract Jedis getConnection();
 
   abstract Jedis getConnectionFromSlot(int slot);
@@ -21,13 +27,7 @@ public abstract class JedisClusterConnectionHandler {
     cache.setNodeIfNotExist(node);
     return cache.getNode(JedisClusterInfoCache.getNodeKey(node)).getResource();
   }
-
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
-    this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout);
-    initializeSlotsCache(nodes, poolConfig);
-  }
-
+  
   public Map<String, JedisPool> getNodes() {
     return cache.getNodes();
   }

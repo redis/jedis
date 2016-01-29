@@ -43,14 +43,6 @@ public class BinaryClient extends Connection {
 
   private boolean isInWatch;
 
-  public boolean isInMulti() {
-    return isInMulti;
-  }
-
-  public boolean isInWatch() {
-    return isInWatch;
-  }
-
   public BinaryClient() {
     super();
   }
@@ -73,6 +65,14 @@ public class BinaryClient extends Connection {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public boolean isInMulti() {
+    return isInMulti;
+  }
+
+  public boolean isInWatch() {
+    return isInWatch;
+  }
+  
   private byte[][] joinParameters(byte[] first, byte[][] rest) {
     byte[][] result = new byte[rest.length + 1][];
     result[0] = first;

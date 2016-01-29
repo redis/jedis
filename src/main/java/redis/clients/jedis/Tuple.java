@@ -8,6 +8,18 @@ public class Tuple implements Comparable<Tuple> {
   private byte[] element;
   private Double score;
 
+  public Tuple(String element, Double score) {
+    super();
+    this.element = SafeEncoder.encode(element);
+    this.score = score;
+  }
+
+  public Tuple(byte[] element, Double score) {
+    super();
+    this.element = element;
+    this.score = score;
+  }
+
   public int hashCode() {
     final int prime = 31;
     int result = 1;
@@ -38,19 +50,7 @@ public class Tuple implements Comparable<Tuple> {
     if (this.score == other.getScore() || Arrays.equals(this.element, other.element)) return 0;
     else return this.score < other.getScore() ? -1 : 1;
   }
-
-  public Tuple(String element, Double score) {
-    super();
-    this.element = SafeEncoder.encode(element);
-    this.score = score;
-  }
-
-  public Tuple(byte[] element, Double score) {
-    super();
-    this.element = element;
-    this.score = score;
-  }
-
+  
   public String getElement() {
     if (null != element) {
       return SafeEncoder.encode(element);

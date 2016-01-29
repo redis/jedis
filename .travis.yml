@@ -5,7 +5,7 @@ jdk:
   - oraclejdk7
   - oraclejdk8
 before_install:
-    - wget -O stunnel.tar.gz https://www.stunnel.org/downloads/stunnel-5.29.tar.gz
+    - wget -O stunnel.tar.gz ftp://ftp.stunnel.org/stunnel/archive/5.x/stunnel-5.29.tar.gz
     - tar -xvzf stunnel.tar.gz
     - cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
 install:

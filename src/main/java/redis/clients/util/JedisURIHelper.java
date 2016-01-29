@@ -2,9 +2,13 @@ package redis.clients.util;
 
 import java.net.URI;
 
-public class JedisURIHelper {
+public final class JedisURIHelper {
 
   private static final int DEFAULT_DB = 0;
+
+  private JedisURIHelper(){
+    throw new InstantiationError( "Must not instantiate this class" );
+  }
 
   public static String getPassword(URI uri) {
     String userInfo = uri.getUserInfo();

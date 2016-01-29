@@ -6,10 +6,14 @@ import java.util.List;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 
-public class HostAndPortUtil {
+public final class HostAndPortUtil {
   private static List<HostAndPort> redisHostAndPortList = new ArrayList<HostAndPort>();
   private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<HostAndPort>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<HostAndPort>();
+
+  private HostAndPortUtil(){
+    throw new InstantiationError( "Must not instantiate this class" );
+  }
 
   static {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT));

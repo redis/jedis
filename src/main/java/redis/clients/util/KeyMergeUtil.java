@@ -1,6 +1,10 @@
 package redis.clients.util;
 
-public class KeyMergeUtil {
+public final class KeyMergeUtil {
+  private KeyMergeUtil(){
+    throw new InstantiationError( "Must not instantiate this class" );
+  }
+
   public static String[] merge(String destKey, String[] keys) {
     String[] mergedKeys = new String[keys.length + 1];
     mergedKeys[0] = destKey;

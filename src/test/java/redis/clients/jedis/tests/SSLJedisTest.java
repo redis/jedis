@@ -247,7 +247,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
 
     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
     trustManagerFactory.init(trustStore);
-    TrustManager trustManagers[] = trustManagerFactory.getTrustManagers();
+    TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
 
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, trustManagers, new SecureRandom());

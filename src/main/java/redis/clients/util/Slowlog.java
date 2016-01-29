@@ -11,17 +11,6 @@ public class Slowlog {
   private static final String COMMA = ",";
 
   @SuppressWarnings("unchecked")
-  public static List<Slowlog> from(List<Object> nestedMultiBulkReply) {
-    List<Slowlog> logs = new ArrayList<Slowlog>(nestedMultiBulkReply.size());
-    for (Object obj : nestedMultiBulkReply) {
-      List<Object> properties = (List<Object>) obj;
-      logs.add(new Slowlog(properties));
-    }
-
-    return logs;
-  }
-
-  @SuppressWarnings("unchecked")
   private Slowlog(List<Object> properties) {
     super();
     this.id = (Long) properties.get(0);
@@ -36,6 +25,17 @@ public class Slowlog {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  public static List<Slowlog> from(List<Object> nestedMultiBulkReply) {
+    List<Slowlog> logs = new ArrayList<Slowlog>(nestedMultiBulkReply.size());
+    for (Object obj : nestedMultiBulkReply) {
+      List<Object> properties = (List<Object>) obj;
+      logs.add(new Slowlog(properties));
+    }
+
+    return logs;
+  }
+  
   public long getId() {
     return id;
   }

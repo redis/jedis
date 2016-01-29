@@ -12,11 +12,7 @@ import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
-
-  public String toString() {
-    return host + ":" + port + "*" + getWeight();
-  }
-
+  
   private int connectionTimeout;
   private int soTimeout;
   private String host;
@@ -29,15 +25,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
-
-  public String getHost() {
-    return host;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
+  
   public JedisShardInfo(String host) {
     super(Sharded.DEFAULT_WEIGHT);
     URI uri = URI.create(host);
@@ -240,6 +228,18 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
+  public String toString() {
+    return host + ":" + port + "*" + getWeight();
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
   public String getPassword() {
     return password;
   }
@@ -293,5 +293,5 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public Jedis createResource() {
     return new Jedis(this);
   }
-
+  
 }

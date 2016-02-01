@@ -75,7 +75,7 @@ public class JedisClusterCRC16 {
     int crc = 0x0000;
 
     for (int i = s; i < e; i++) {
-      crc = ((crc << 8) ^ LOOKUP_TABLE[((crc >>> 8) ^ (bytes[i] & 0xFF)) & 0xFF]);
+      crc = (crc << 8) ^ LOOKUP_TABLE[((crc >>> 8) ^ (bytes[i] & 0xFF)) & 0xFF];
     }
     return crc & 0xFFFF;
   }

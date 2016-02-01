@@ -216,7 +216,7 @@ public class JedisPool extends JedisPoolAbstract {
       final int connectionTimeout, final int soTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout, null,
-        (uri.getScheme() !=null && uri.getScheme().equals("rediss")), sslSocketFactory,
+        uri.getScheme() !=null && uri.getScheme().equals("rediss"), sslSocketFactory,
         sslParameters, hostnameVerifier));
   }
 

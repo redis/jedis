@@ -133,17 +133,17 @@ public final class RedisOutputStream extends FilterOutputStream {
           flushBuffer();
         }
         int uc = Character.toCodePoint(c, str.charAt(i++));
-        buf[count++] = ((byte) (0xf0 | ((uc >> 18))));
-        buf[count++] = ((byte) (0x80 | ((uc >> 12) & 0x3f)));
-        buf[count++] = ((byte) (0x80 | ((uc >> 6) & 0x3f)));
-        buf[count++] = ((byte) (0x80 | (uc & 0x3f)));
+        buf[count++] = (byte) (0xf0 | (uc >> 18));
+        buf[count++] = (byte) (0x80 | ((uc >> 12) & 0x3f));
+        buf[count++] = (byte) (0x80 | ((uc >> 6) & 0x3f));
+        buf[count++] = (byte) (0x80 | (uc & 0x3f));
       } else {
         if (3 >= buf.length - count) {
           flushBuffer();
         }
-        buf[count++] = ((byte) (0xe0 | ((c >> 12))));
-        buf[count++] = ((byte) (0x80 | ((c >> 6) & 0x3f)));
-        buf[count++] = ((byte) (0x80 | (c & 0x3f)));
+        buf[count++] = (byte) (0xe0 | (c >> 12));
+        buf[count++] = (byte) (0x80 | ((c >> 6) & 0x3f));
+        buf[count++] = (byte) (0x80 | (c & 0x3f));
       }
     }
 

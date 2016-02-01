@@ -20,7 +20,7 @@ public class ProtocolBenchmark {
     long total = 0;
     for (int at = 0; at != 10; ++at) {
       long elapsed = measureInputMulti();
-      long ops = ((1000 * 2 * TOTAL_OPERATIONS) / TimeUnit.NANOSECONDS.toMillis(elapsed));
+      long ops = (1000 * 2 * TOTAL_OPERATIONS) / TimeUnit.NANOSECONDS.toMillis(elapsed);
       if (at >= 5) {
         total += ops;
       }
@@ -30,7 +30,7 @@ public class ProtocolBenchmark {
     total = 0;
     for (int at = 0; at != 10; ++at) {
       long elapsed = measureInputStatus();
-      long ops = ((1000 * 2 * TOTAL_OPERATIONS) / TimeUnit.NANOSECONDS.toMillis(elapsed));
+      long ops = (1000 * 2 * TOTAL_OPERATIONS) / TimeUnit.NANOSECONDS.toMillis(elapsed);
       if (at >= 5) {
         total += ops;
       }
@@ -41,7 +41,7 @@ public class ProtocolBenchmark {
     total = 0;
     for (int at = 0; at != 10; ++at) {
       long elapsed = measureCommand();
-      long ops = ((1000 * 2 * TOTAL_OPERATIONS) / TimeUnit.NANOSECONDS.toMillis(elapsed));
+      long ops = (1000 * 2 * TOTAL_OPERATIONS) / TimeUnit.NANOSECONDS.toMillis(elapsed);
       if (at >= 5) {
         total += ops;
       }

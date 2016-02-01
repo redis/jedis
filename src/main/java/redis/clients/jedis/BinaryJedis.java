@@ -762,7 +762,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.incrByFloat(key, integer);
     String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return dval != null ? new Double(dval) : null;
   }
 
   /**
@@ -961,7 +961,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.hincrByFloat(key, field, value);
     final String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return dval != null ? new Double(dval) : null;
   }
 
   /**
@@ -1790,7 +1790,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zscore(key, member);
     final String score = client.getBulkReply();
-    return (score != null ? new Double(score) : null);
+    return score != null ? new Double(score) : null;
   }
 
   public Transaction multi() {
@@ -3551,7 +3551,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2);
     String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return dval != null ? new Double(dval) : null;
   }
 
   @Override
@@ -3559,7 +3559,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2, unit);
     String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return dval != null ? new Double(dval) : null;
   }
 
   @Override

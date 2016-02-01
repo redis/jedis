@@ -173,7 +173,7 @@ public class RedisInputStream extends FilterInputStream {
       }
     }
 
-    return (isNeg ? -value : value);
+    return isNeg ? -value : value;
   }
 
   public int read(byte[] b, int off, int len) throws JedisConnectionException {

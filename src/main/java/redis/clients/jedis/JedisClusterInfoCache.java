@@ -49,10 +49,9 @@ public class JedisClusterInfoCache {
       this.nodes.clear();
       this.slots.clear();
 
-      String localNodes = jedis.clusterNodes();
-      for (String nodeInfo : localNodes.split("\n")) {
-        ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(nodeInfo, new HostAndPort(
-            jedis.getClient().getHost(), jedis.getClient().getPort()));
+      List<Object> localNodes = jedis.clusterSlots();
+      for (Object nodeInfo : localNodes) {
+        ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse((List<Object>) nodeInfo);
 
         HostAndPort targetNode = clusterNodeInfo.getNode();
         setNodeIfNotExist(targetNode);

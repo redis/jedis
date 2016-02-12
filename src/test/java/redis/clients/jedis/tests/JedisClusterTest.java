@@ -7,8 +7,8 @@ import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
-import redis.clients.util.ClusterNodeInformationParser;
 import redis.clients.util.JedisClusterCRC16;
+import redis.clients.util.SafeEncoder;
 
 import java.io.IOException;
 import java.util.*;
@@ -154,7 +154,6 @@ public class JedisClusterTest extends Assert {
     node1.clusterMeet(localHost, nodeInfoSlave2.getPort());
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
 
-    ClusterNodeInformationParser nodeInfoParser = new ClusterNodeInformationParser();
     for (String nodeInfo : node2.clusterNodes().split("\n")) {
       if (nodeInfo.contains("myself")) {
         nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
@@ -578,5 +577,4 @@ public class JedisClusterTest extends Assert {
     }
     return false;
   }
-
 }

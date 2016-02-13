@@ -12,7 +12,7 @@ import java.util.Set;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 
-public class BuilderFactory {
+public final class BuilderFactory {
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
@@ -431,4 +431,9 @@ public class BuilderFactory {
       return "GeoRadiusWithParamsResult";
     }
   };
+
+  private BuilderFactory() {
+    throw new InstantiationError( "Must not instantiate this class" );
+  }
+
 }

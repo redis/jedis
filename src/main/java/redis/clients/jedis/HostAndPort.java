@@ -25,7 +25,7 @@ public static final String LOCALHOST_STR = "localhost";
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof HostAndPort) {
+    if (this.getClass() == obj.getClass()) {
       HostAndPort hp = (HostAndPort) obj;
 
       String thisHost = convertHost(host);

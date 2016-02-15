@@ -164,9 +164,7 @@ public class BuilderFactory {
       if (null == data) {
         return null;
       }
-      List<byte[]> l = (List<byte[]>) data;
-
-      return l;
+      return (List<byte[]>) data;
     }
 
     public String toString() {

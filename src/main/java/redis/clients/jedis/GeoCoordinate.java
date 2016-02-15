@@ -20,7 +20,7 @@ public class GeoCoordinate {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof GeoCoordinate)) return false;
+    if (this.getClass() != o.getClass()) return false;
 
     GeoCoordinate that = (GeoCoordinate) o;
 

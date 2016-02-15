@@ -7,8 +7,8 @@ private static final long serialVersionUID = -519876229978427751L;
 
 public static final String LOCALHOST_STR = "localhost";
 
-  private String host;
-  private int port;
+  private final String host;
+  private final int port;
 
   public HostAndPort(String host, int port) {
     this.host = host;

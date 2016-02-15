@@ -16,8 +16,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
-  private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-  private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
+  private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();

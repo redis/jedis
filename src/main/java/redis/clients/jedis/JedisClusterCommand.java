@@ -11,9 +11,9 @@ import redis.clients.util.SafeEncoder;
 
 public abstract class JedisClusterCommand<T> {
 
-  private JedisClusterConnectionHandler connectionHandler;
-  private int redirections;
-  private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
+  private final JedisClusterConnectionHandler connectionHandler;
+  private final int redirections;
+  private final ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxRedirections) {
     this.connectionHandler = connectionHandler;

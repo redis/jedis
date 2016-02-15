@@ -3,7 +3,7 @@ package redis.clients.jedis;
 import redis.clients.util.SafeEncoder;
 
 public class GeoRadiusResponse {
-  private byte[] member;
+  private final byte[] member;
   private double distance;
   private GeoCoordinate coordinate;
 

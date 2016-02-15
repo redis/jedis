@@ -11,7 +11,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
   private MultiResponseBuilder currentMulti;
 
   private class MultiResponseBuilder extends Builder<List<Object>> {
-    private List<Response<?>> responses = new ArrayList<Response<?>>();
+    private final List<Response<?>> responses = new ArrayList<Response<?>>();
 
     @Override
     public List<Object> build(Object data) {

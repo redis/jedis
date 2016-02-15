@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Queable {
-  private Queue<Response<?>> pipelinedResponses = new LinkedList<Response<?>>();
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<Response<?>>();
 
   protected void clean() {
     pipelinedResponses.clear();

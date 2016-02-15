@@ -27,8 +27,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final String clientName;
   private final boolean ssl;
   private final SSLSocketFactory sslSocketFactory;
-  private SSLParameters sslParameters;
-  private HostnameVerifier hostnameVerifier;
+  private final SSLParameters sslParameters;
+  private final HostnameVerifier hostnameVerifier;
 
   public JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,

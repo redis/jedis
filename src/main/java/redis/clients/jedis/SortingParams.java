@@ -19,7 +19,7 @@ import redis.clients.util.SafeEncoder;
  * Builder Class for {@link Jedis#sort(String, SortingParams) SORT} Parameters.
  */
 public class SortingParams {
-  private List<byte[]> params = new ArrayList<byte[]>();
+  private final List<byte[]> params = new ArrayList<byte[]>();
 
   /**
    * Sort by weight in keys.

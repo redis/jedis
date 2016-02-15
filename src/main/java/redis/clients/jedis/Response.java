@@ -10,7 +10,7 @@ public class Response<T> {
   private boolean built = false;
   private boolean set = false;
 
-  private Builder<T> builder;
+  private final Builder<T> builder;
   private Object data;
   private Response<?> dependency = null;
 

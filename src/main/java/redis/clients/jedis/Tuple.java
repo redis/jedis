@@ -5,8 +5,8 @@ import java.util.Arrays;
 import redis.clients.util.SafeEncoder;
 
 public class Tuple implements Comparable<Tuple> {
-  private byte[] element;
-  private Double score;
+  private final byte[] element;
+  private final Double score;
 
   public Tuple(String element, Double score) {
     super();

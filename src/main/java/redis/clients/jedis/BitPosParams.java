@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class BitPosParams {
-  private List<byte[]> params = new ArrayList<byte[]>();
+  private final List<byte[]> params = new ArrayList<byte[]>();
 
   protected BitPosParams() {
   }

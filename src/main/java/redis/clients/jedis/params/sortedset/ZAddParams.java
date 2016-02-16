@@ -5,7 +5,7 @@ import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 
-public class ZAddParams extends Params {
+public final class ZAddParams extends Params {
 
   private static final String XX = "xx";
   private static final String NX = "nx";

@@ -3,7 +3,7 @@ package redis.clients.util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Slowlog {
+public final class Slowlog {
   private final long id;
   private final long timeStamp;
   private final long executionTime;

@@ -3,7 +3,7 @@ package redis.clients.util;
 import java.io.IOException;
 import java.net.Socket;
 
-public class IOUtils {
+public final class IOUtils {
   private IOUtils() {
   }
 

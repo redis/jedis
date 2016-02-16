@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-public class DebugParams {
+public final class DebugParams {
   private String[] command;
 
   private DebugParams() {

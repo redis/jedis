@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * <br/>
  * Works with Redis 3.0.2 and onwards.
  */
-public class ZIncrByParams extends Params {
+public final class ZIncrByParams extends Params {
 
   private static final String XX = "xx";
   private static final String NX = "nx";

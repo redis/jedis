@@ -6,7 +6,7 @@ import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
 
-public class GeoRadiusParam extends Params {
+public final class GeoRadiusParam extends Params {
   private static final String WITHCOORD = "withcoord";
   private static final String WITHDIST = "withdist";
 

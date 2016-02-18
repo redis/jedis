@@ -17,13 +17,13 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     public List<Object> build(Object data) {
       @SuppressWarnings("unchecked")
       List<Object> list = (List<Object>) data;
-      List<Object> values = new ArrayList<Object>();
 
       if (list.size() != responses.size()) {
         throw new JedisDataException("Expected data size " + responses.size() + " but was "
             + list.size());
       }
 
+      List<Object> values = new ArrayList<Object>();
       for (int i = 0; i < list.size(); i++) {
         Response<?> response = responses.get(i);
         response.set(list.get(i));

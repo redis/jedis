@@ -489,7 +489,6 @@ public class JedisClusterTest extends Assert {
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 100, 0, TimeUnit.SECONDS,
         new ArrayBlockingQueue<Runnable>(10));
-    List<Future<String>> futures = new ArrayList<Future<String>>();
     for (int i = 0; i < 50; i++) {
       executor.submit(new Callable<String>() {
         @Override
@@ -501,6 +500,7 @@ public class JedisClusterTest extends Assert {
       });
     }
 
+    List<Future<String>> futures = new ArrayList<Future<String>>();
     for (Future<String> future : futures) {
       String value = future.get();
       assertEquals("bar", value);

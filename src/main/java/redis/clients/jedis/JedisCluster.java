@@ -21,7 +21,7 @@ import redis.clients.jedis.params.set.SetParams;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
-  public static enum Reset {
+  public enum Reset {
     SOFT, HARD
   }
 

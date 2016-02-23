@@ -1,38 +1,44 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisException;
 
-public class JedisElasticachePool extends JedisPoolAbstract {
+public class JedisElasticachePool implements Closeable {
+  // extends JedisPoolAbstract
+  private static Logger log = Logger.getLogger(JedisElasticachePool.class.getSimpleName());
+  private static final int MAX_RETRIES_GETTING_RESOURCE = 5;
 
   protected GenericObjectPoolConfig poolConfig;
-
+  protected GenericObjectPoolConfig poolConfigSlaves;
   protected int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   protected int soTimeout = Protocol.DEFAULT_TIMEOUT;
-
   protected String password;
-
   protected int database = Protocol.DEFAULT_DATABASE;
-
   protected String clientName;
-
   protected MasterListener masterListeners = null;
 
-  private static Logger log = Logger.getLogger(JedisElasticachePool.class.getSimpleName());
+  private volatile JedisPool masterPool;
+  private volatile List<JedisPool> slavesPools = new ArrayList<JedisPool>();
 
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
 
   private static final String ROLE_KEY = "role:";
+
+  protected boolean useSlaves = false;
 
   private enum Role {
     master, slave
@@ -70,17 +76,25 @@ public class JedisElasticachePool extends JedisPoolAbstract {
 
   public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
       final String password, final int database, final String clientName) {
-    this(nodes, poolConfig, timeout, timeout, password, database, clientName);
+    this(nodes, poolConfig, poolConfig, timeout, timeout, password, database, clientName);
   }
 
   public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final int timeout,
       final int soTimeout, final String password, final int database) {
-    this(nodes, poolConfig, timeout, soTimeout, password, database, null);
+    this(nodes, poolConfig, poolConfig, timeout, soTimeout, password, database, null);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
-      final int soTimeout, final String password, final int database, final String clientName) {
+  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig,
+      final GenericObjectPoolConfig poolConfigSlaves, final int timeout, final int soTimeout, final String password,
+      final int database) {
+    this(nodes, poolConfig, poolConfigSlaves, timeout, soTimeout, password, database, null);
+  }
+
+  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig,
+      final GenericObjectPoolConfig poolConfigSlaves, final int connectionTimeout, final int soTimeout,
+      final String password, final int database, final String clientName) {
     this.poolConfig = poolConfig;
+    this.poolConfigSlaves = poolConfigSlaves;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.password = password;
@@ -90,59 +104,73 @@ public class JedisElasticachePool extends JedisPoolAbstract {
     initElasticache(nodes);
   }
 
-  public void destroy() {
+  @Override
+  public void close() throws IOException {
     masterListeners.shutdown();
-    super.destroy();
+    masterPool.destroy();
+    for (JedisPool slave : slavesPools) {
+      slave.destroy();
+    }
   }
 
   public HostAndPort getCurrentHostMaster() {
     return currentHostMaster;
   }
 
-  private void initPool(HostAndPort master) {
-    if (!master.equals(currentHostMaster)) {
-      currentHostMaster = master;
-      if (factory == null) {
-        factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout, soTimeout, password,
-            database, clientName, false, null, null, null);
-        initPool(poolConfig, factory);
-      } else {
-        factory.setHostAndPort(currentHostMaster);
-        // although we clear the pool, we still have to check the
-        // returned object
-        // in getResource, this call only clears idle instances, not
-        // borrowed instances
-        internalPool.clear();
+  private void initPool(HostAndPort master, List<HostAndPort> slaves) {
+    currentHostMaster = master;
+    if (factory == null) {
+      if (masterPool != null)
+        masterPool.close();
+      masterPool = new JedisPool(poolConfig, master.getHost(), master.getPort(), connectionTimeout, soTimeout,
+          password, database, clientName, false, null, null, null);
+      for (JedisPool slavePool : slavesPools) {
+        slavePool.close();
       }
-
-      log.info("Created JedisPool to master at " + master);
+      slavesPools.clear();
+      for (HostAndPort slave : slaves) {
+        slavesPools.add(new JedisPool(poolConfig, slave.getHost(), slave.getPort(), connectionTimeout, soTimeout,
+            password, database, clientName, false, null, null, null));
+      }
     }
+    log.fine("Created JedisPool to master at " + master);
   }
 
   private void initElasticache(String[] nodes) {
-
-    log.info("Trying to find master from available nodes...");
-
+    log.fine("Trying to find master from available nodes...");
+    HostAndPort master = null;
+    List<HostAndPort> slaves = new ArrayList<HostAndPort>();
     for (String node : nodes) {
       final HostAndPort hap = toHostAndPort(Arrays.asList(node.split(":")));
       log.fine("Connecting to Redis " + hap);
-      try (Jedis jedis = new Jedis(hap.getHost(), hap.getPort())) {
-        Role role = determineRole(jedis.info("replication"));
-        if (Role.master.equals(role)) {
-          log.fine("Found Redis master at " + hap.toString());
-          initPool(hap);
-          break;
+      Jedis jedis = null;
+      try {
+        jedis = new Jedis(hap.getHost(), hap.getPort());
+        if (master == null) {
+          Role role = determineRole(jedis.info("replication"));
+          if (Role.master.equals(role)) {
+            log.fine("Found Redis master at " + hap.toString());
+            master = hap;
+          }
+        } else {
+          useSlaves = true;
+          slaves.add(hap);
         }
       } catch (JedisException e) {
         log.warning("Cannot connect to elasticache node running @ " + node + ". Reason: " + e + ". Trying next one.");
+        if (jedis != null)
+          jedis.close();
       }
     }
+    initPool(master, slaves);
     if (currentHostMaster == null) {
       throw new JedisException("Master not found in the list of provided nodes");
     }
-    log.info("Redis master running at " + currentHostMaster + ", starting Master listeners...");
-    Set<HostAndPort> nodesHP = Arrays.asList(nodes).stream().map(node -> toHostAndPort(Arrays.asList(node.split(":"))))
-        .collect(Collectors.toSet());
+    log.fine("Redis master running at " + currentHostMaster + ", starting Master listeners...");
+    Set<HostAndPort> nodesHP = new HashSet<HostAndPort>();
+    for (String node : nodes) {
+      nodesHP.add(toHostAndPort(Arrays.asList(node.split(":"))));
+    }
     masterListeners = new MasterListener(nodesHP);
     masterListeners.run();
   }
@@ -156,18 +184,18 @@ public class JedisElasticachePool extends JedisPoolAbstract {
     throw new JedisException("Cannot determine node role from provided 'INFO replication' data" + data);
   }
 
-  private HostAndPort toHostAndPort(List<String> getMasterAddrByNameResult) {
-    String host = getMasterAddrByNameResult.get(0);
-    int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
+  private HostAndPort toHostAndPort(List<String> node) {
+    String host = node.get(0);
+    int port = Integer.parseInt(node.get(1));
 
     return new HostAndPort(host, port);
   }
 
-  @Override
   public Jedis getResource() {
-    while (true) {
-      Jedis jedis = super.getResource();
-      jedis.setDataSource(this);
+    int retries = 0;
+    while (retries++ < MAX_RETRIES_GETTING_RESOURCE) {
+      Jedis jedis = masterPool.getResource();
+      jedis.setDataSource(masterPool);
 
       // get a reference because it can change concurrently
       final HostAndPort master = currentHostMaster;
@@ -176,53 +204,52 @@ public class JedisElasticachePool extends JedisPoolAbstract {
       if (master.equals(connection)) {
         // connected to the correct master
         return jedis;
-      } else {
-        returnBrokenResource(jedis);
       }
     }
+    throw new JedisException("Failed to get a resource from the master");
   }
-  
+
   /**
    * Return a slave redis, may return the master if called during the election of a new master
-   * @return 
+   * 
+   * @return
    */
-  public Jedis getReadResource() {
-    return null;
-//    while (true) {
-//      Jedis jedis = getNextSlavePool().getResource();
-//      jedis.setDataSource(this);
-//      
-//      // get a reference because it can change concurrently
-//      final HostAndPort master = currentHostMaster;
-//      final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(), jedis.getClient().getPort());
-//      
-//      if (!master.equals(connection)) {
-//        // connected to the correct master
-//        return jedis;
-//      } else {
-//        returnBrokenResource(jedis);
-//      }
-//    }
-  }
+  public Jedis getReadOnlyResource() {
+    if (useSlaves) {
+      int retries = 0;
+      while (retries++ < MAX_RETRIES_GETTING_RESOURCE) {
+        // RoundRobin to get Slave resource
+        JedisPool slaveRoudRobin = getSlaveRoudRobin(slavesPools);
+        Jedis jedis = slaveRoudRobin.getResource();
+        jedis.setDataSource(slaveRoudRobin);
 
-  protected void returnBrokenResource(final Jedis resource) {
-    if (resource != null) {
-      returnBrokenResourceObject(resource);
+        // get a reference because it can change concurrently
+        final HostAndPort master = currentHostMaster;
+        final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(), jedis.getClient().getPort());
+
+        if (!master.equals(connection)) {
+          // connected to the correct master
+          return jedis;
+        }
+      }
+      throw new JedisException("Failed to get a resource from the slaves");
+    } else {
+      return getResource();
     }
   }
 
-  protected void returnResource(final Jedis resource) {
-    if (resource != null) {
-      resource.resetState();
-      returnResourceObject(resource);
-    }
+  private final AtomicInteger index = new AtomicInteger(-1);
+
+  public JedisPool getSlaveRoudRobin(List<JedisPool> slaves) {
+    int ind = Math.abs(index.incrementAndGet() % slaves.size());
+    return slaves.get(ind);
   }
 
   protected class MasterListener extends Thread {
 
     protected String masterName = "";
     protected Set<HostAndPort> nodes;
-    protected long subscribeRetryWaitTimeMillis = 1000;
+    protected long waitBetweenScan = 1000;
     protected volatile Jedis j;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
@@ -235,36 +262,40 @@ public class JedisElasticachePool extends JedisPoolAbstract {
 
     public MasterListener(Set<HostAndPort> nodes, long subscribeRetryWaitTimeMillis) {
       this(nodes);
-      this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
+      this.waitBetweenScan = subscribeRetryWaitTimeMillis;
     }
 
     public void run() {
       running.set(true);
       while (running.get()) {
-        log.info("Scanning for master");
+        HostAndPort master = null;
+        List<HostAndPort> slavesPools = new ArrayList<HostAndPort>();
+        log.fine("Scanning for master");
         for (HostAndPort node : nodes) {
-          log.info("Connecting to Redis " + node);
+          log.finer("Connecting to Redis " + node);
           try (Jedis jedis = new Jedis(node.getHost(), node.getPort())) {
             Role role = determineRole(jedis.info("replication"));
             if (Role.master.equals(role)) {
-              log.info("Found Redis master at " + node);
+              log.fine("Found Redis master at " + node);
               if (masterName.equals(node)) {
                 break;
               } else {
-                initPool(node);
+                master = node;
                 masterName = node.toString();
-                //FIXME
-//                initSlavePools(nodes);
-                break;
               }
+            } else {
+              slavesPools.add(node);
             }
           } catch (JedisException e) {
             log.warning("Cannot connect to elasticache node running @ " + node + ". Reason: " + e
                 + ". Trying next one.");
           }
         }
+        // A new master was found
+        if (master != null)
+          initPool(master, slavesPools);
         try {
-          Thread.sleep(subscribeRetryWaitTimeMillis);
+          Thread.sleep(waitBetweenScan);
         } catch (InterruptedException e1) {
           log.log(Level.SEVERE, "Sleep interrupted: ", e1);
         }
@@ -281,4 +312,5 @@ public class JedisElasticachePool extends JedisPoolAbstract {
       }
     }
   }
+
 }

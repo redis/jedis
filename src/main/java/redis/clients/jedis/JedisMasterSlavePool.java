@@ -107,7 +107,8 @@ public class JedisMasterSlavePool implements Closeable {
 
   @Override
   public void close() throws IOException {
-    if (masterListeners != null) masterListeners.shutdown();
+    if (masterListeners != null)
+      masterListeners.shutdown();
     masterPool.destroy();
     for (JedisPool slave : slavesPools) {
       slave.destroy();
@@ -281,7 +282,9 @@ public class JedisMasterSlavePool implements Closeable {
         log.fine("Scanning for master");
         for (HostAndPort node : nodes) {
           log.finer("Connecting to Redis " + node);
-          try (Jedis jedis = new Jedis(node.getHost(), node.getPort())) {
+          Jedis jedis = null;
+          try {
+            jedis = new Jedis(node.getHost(), node.getPort());
             Role role = determineRole(jedis.info("replication"));
             if (Role.master.equals(role)) {
               log.fine("Found Redis master at " + node);
@@ -297,6 +300,8 @@ public class JedisMasterSlavePool implements Closeable {
           } catch (JedisException e) {
             log.warning("Cannot connect to elasticache node running @ " + node + ". Reason: " + e
                 + ". Trying next one.");
+            if (jedis != null)
+              jedis.close();
           }
         }
         // A new master was found

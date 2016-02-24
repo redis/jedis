@@ -16,9 +16,9 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisException;
 
-public class JedisElasticachePool implements Closeable {
+public class JedisMasterSlavePool implements Closeable {
   // extends JedisPoolAbstract
-  private static Logger log = Logger.getLogger(JedisElasticachePool.class.getSimpleName());
+  private static Logger log = Logger.getLogger(JedisMasterSlavePool.class.getSimpleName());
   private static final int MAX_RETRIES_GETTING_RESOURCE = 5;
 
   protected GenericObjectPoolConfig poolConfig;
@@ -39,58 +39,59 @@ public class JedisElasticachePool implements Closeable {
   private static final String ROLE_KEY = "role:";
 
   protected boolean useSlaves = false;
+  protected boolean singleNode = false;
 
   private enum Role {
     master, slave
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig) {
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig) {
     this(nodes, poolConfig, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
   }
 
-  public JedisElasticachePool(String[] nodes) {
+  public JedisMasterSlavePool(String[] nodes) {
     this(nodes, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE);
   }
 
-  public JedisElasticachePool(String[] nodes, String password) {
+  public JedisMasterSlavePool(String[] nodes, String password) {
     this(nodes, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, password);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
       final String password) {
     this(nodes, poolConfig, timeout, password, Protocol.DEFAULT_DATABASE);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final int timeout) {
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final int timeout) {
     this(nodes, poolConfig, timeout, null, Protocol.DEFAULT_DATABASE);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final String password) {
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final String password) {
     this(nodes, poolConfig, Protocol.DEFAULT_TIMEOUT, password);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
       final String password, final int database) {
     this(nodes, poolConfig, timeout, timeout, password, database);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig, int timeout,
       final String password, final int database, final String clientName) {
     this(nodes, poolConfig, poolConfig, timeout, timeout, password, database, clientName);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final int timeout,
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig, final int timeout,
       final int soTimeout, final String password, final int database) {
     this(nodes, poolConfig, poolConfig, timeout, soTimeout, password, database, null);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig,
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig,
       final GenericObjectPoolConfig poolConfigSlaves, final int timeout, final int soTimeout, final String password,
       final int database) {
     this(nodes, poolConfig, poolConfigSlaves, timeout, soTimeout, password, database, null);
   }
 
-  public JedisElasticachePool(String[] nodes, final GenericObjectPoolConfig poolConfig,
+  public JedisMasterSlavePool(String[] nodes, final GenericObjectPoolConfig poolConfig,
       final GenericObjectPoolConfig poolConfigSlaves, final int connectionTimeout, final int soTimeout,
       final String password, final int database, final String clientName) {
     this.poolConfig = poolConfig;
@@ -106,7 +107,7 @@ public class JedisElasticachePool implements Closeable {
 
   @Override
   public void close() throws IOException {
-    masterListeners.shutdown();
+    if (masterListeners != null) masterListeners.shutdown();
     masterPool.destroy();
     for (JedisPool slave : slavesPools) {
       slave.destroy();
@@ -140,26 +141,31 @@ public class JedisElasticachePool implements Closeable {
     log.fine("Trying to find master from available nodes...");
     HostAndPort master = null;
     List<HostAndPort> slaves = new ArrayList<HostAndPort>();
-    for (String node : nodes) {
-      final HostAndPort hap = toHostAndPort(Arrays.asList(node.split(":")));
-      log.fine("Connecting to Redis " + hap);
-      Jedis jedis = null;
-      try {
-        jedis = new Jedis(hap.getHost(), hap.getPort());
-        if (master == null) {
-          Role role = determineRole(jedis.info("replication"));
-          if (Role.master.equals(role)) {
-            log.fine("Found Redis master at " + hap.toString());
-            master = hap;
+    if (nodes.length == 1) {
+      singleNode = true;
+      master = toHostAndPort(Arrays.asList(nodes[0].split(":")));
+    } else {
+      for (String node : nodes) {
+        final HostAndPort hap = toHostAndPort(Arrays.asList(node.split(":")));
+        log.fine("Connecting to Redis " + hap);
+        Jedis jedis = null;
+        try {
+          jedis = new Jedis(hap.getHost(), hap.getPort());
+          if (master == null) {
+            Role role = determineRole(jedis.info("replication"));
+            if (Role.master.equals(role)) {
+              log.fine("Found Redis master at " + hap.toString());
+              master = hap;
+            }
+          } else {
+            useSlaves = true;
+            slaves.add(hap);
           }
-        } else {
-          useSlaves = true;
-          slaves.add(hap);
+        } catch (JedisException e) {
+          log.warning("Cannot connect to elasticache node running @ " + node + ". Reason: " + e + ". Trying next one.");
+          if (jedis != null)
+            jedis.close();
         }
-      } catch (JedisException e) {
-        log.warning("Cannot connect to elasticache node running @ " + node + ". Reason: " + e + ". Trying next one.");
-        if (jedis != null)
-          jedis.close();
       }
     }
     initPool(master, slaves);
@@ -167,12 +173,14 @@ public class JedisElasticachePool implements Closeable {
       throw new JedisException("Master not found in the list of provided nodes");
     }
     log.fine("Redis master running at " + currentHostMaster + ", starting Master listeners...");
-    Set<HostAndPort> nodesHP = new HashSet<HostAndPort>();
-    for (String node : nodes) {
-      nodesHP.add(toHostAndPort(Arrays.asList(node.split(":"))));
+    if (!singleNode) {
+      Set<HostAndPort> nodesHP = new HashSet<HostAndPort>();
+      for (String node : nodes) {
+        nodesHP.add(toHostAndPort(Arrays.asList(node.split(":"))));
+      }
+      masterListeners = new MasterListener(nodesHP);
+      masterListeners.run();
     }
-    masterListeners = new MasterListener(nodesHP);
-    masterListeners.run();
   }
 
   private Role determineRole(String data) {

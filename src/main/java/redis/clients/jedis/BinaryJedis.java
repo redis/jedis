@@ -3377,10 +3377,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return new ScanResult<byte[]>(newcursor, rawResults);
   }
 
+  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
     return hscan(key, cursor, new ScanParams());
   }
 
+  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
@@ -3396,10 +3398,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return new ScanResult<Map.Entry<byte[], byte[]>>(newcursor, results);
   }
 
+  @Override
   public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor) {
     return sscan(key, cursor, new ScanParams());
   }
 
+  @Override
   public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.sscan(key, cursor, params);
@@ -3409,10 +3413,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return new ScanResult<byte[]>(newcursor, rawResults);
   }
 
+  @Override
   public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor) {
     return zscan(key, cursor, new ScanParams());
   }
 
+  @Override
   public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.zscan(key, cursor, params);

@@ -830,4 +830,40 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit, param);
   }
+
+  @Override
+  public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
+    Jedis j = getShard(key);
+    return j.hscan(key, cursor);
+  }
+
+  @Override
+  public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.hscan(key, cursor, params);
+  }
+
+  @Override
+  public ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
+    Jedis j = getShard(key);
+    return j.sscan(key, cursor);
+  }
+
+  @Override
+  public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.sscan(key, cursor, params);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
+    Jedis j = getShard(key);
+    return j.zscan(key, cursor);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params) {
+    Jedis j = getShard(key);
+    return j.zscan(key, cursor, params);
+  }
 }

@@ -1751,4 +1751,67 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+
+  @Override
+  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
+    return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,
+        maxRedirections) {
+      @Override
+      public ScanResult<Map.Entry<byte[], byte[]>> execute(Jedis connection) {
+        return connection.hscan(key, cursor);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
+      final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,
+        maxRedirections) {
+      @Override
+      public ScanResult<Map.Entry<byte[], byte[]>> execute(Jedis connection) {
+        return connection.hscan(key, cursor, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor) {
+    return new JedisClusterCommand<ScanResult<byte[]>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<byte[]> execute(Jedis connection) {
+        return connection.sscan(key, cursor);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<byte[]>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<byte[]> execute(Jedis connection) {
+        return connection.sscan(key, cursor, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxRedirections) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor, params);
+      }
+    }.runBinary(key);
+  }
 }

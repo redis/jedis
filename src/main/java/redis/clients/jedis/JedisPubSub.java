@@ -18,7 +18,7 @@ import redis.clients.util.SafeEncoder;
 public abstract class JedisPubSub {
 
   private static final String JEDIS_SUBSCRIPTION_MESSAGE = "JedisPubSub is not subscribed to a Jedis instance.";
-  private int subscribedChannels = 0;
+  private int subscribedChannels;
   private volatile Client client;
 
   public void onMessage(String channel, String message) {

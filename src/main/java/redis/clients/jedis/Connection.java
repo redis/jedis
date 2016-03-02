@@ -32,7 +32,7 @@ public class Connection implements Closeable {
   private RedisInputStream inputStream;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int soTimeout = Protocol.DEFAULT_TIMEOUT;
-  private boolean broken = false;
+  private boolean broken;
   private boolean ssl;
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;

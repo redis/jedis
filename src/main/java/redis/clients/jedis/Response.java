@@ -3,16 +3,16 @@ package redis.clients.jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Response<T> {
-  protected T response = null;
-  protected JedisDataException exception = null;
+  protected T response;
+  protected JedisDataException exception;
 
-  private boolean building = false;
-  private boolean built = false;
-  private boolean set = false;
-
+  private boolean building;
+  private boolean built;
+  private boolean set;
+  
   private Builder<T> builder;
   private Object data;
-  private Response<?> dependency = null;
+  private Response<?> dependency;
 
   public Response(Builder<T> b) {
     this.builder = b;

@@ -35,9 +35,9 @@ import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
-  protected Client client = null;
-  protected Transaction transaction = null;
-  protected Pipeline pipeline = null;
+  protected Client client;
+  protected Transaction transaction;
+  protected Pipeline pipeline;
 
   public BinaryJedis() {
     client = new Client();

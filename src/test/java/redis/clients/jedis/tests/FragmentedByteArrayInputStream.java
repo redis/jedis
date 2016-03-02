@@ -6,7 +6,7 @@ import java.io.ByteArrayInputStream;
  * Test class the fragment a byte array for testing purpose.
  */
 public class FragmentedByteArrayInputStream extends ByteArrayInputStream {
-  private int readMethodCallCount = 0;
+  private int readMethodCallCount;
 
   public FragmentedByteArrayInputStream(final byte[] buf) {
     super(buf);

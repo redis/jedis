@@ -13,7 +13,7 @@ import java.util.List;
 import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class BinaryJedisPubSub {
-  private int subscribedChannels = 0;
+  private int subscribedChannels;
   private Client client;
 
   public void onMessage(byte[] channel, byte[] message) {

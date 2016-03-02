@@ -22,7 +22,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
    * parenthesis), which delimits the tag to be hashed. A null pattern avoids applying the regular
    * expression for each lookup, improving performance a little bit is key tags aren't being used.
    */
-  private Pattern tagPattern = null;
+  private Pattern tagPattern;
   // the tag is anything between {}
   public static final Pattern DEFAULT_KEY_TAG_PATTERN = Pattern.compile("\\{(.+?)\\}");
 

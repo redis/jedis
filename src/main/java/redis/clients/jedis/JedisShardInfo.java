@@ -18,10 +18,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private int soTimeout;
   private String host;
   private int port;
-  private String password = null;
-  private String name = null;
+  private String password;
+  private String name;
   // Default Redis DB
-  private int db = 0;
+  private int db;
   private boolean ssl;
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;

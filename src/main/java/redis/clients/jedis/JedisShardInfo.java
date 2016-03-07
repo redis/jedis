@@ -1,15 +1,14 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+import java.net.URI;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
   
@@ -212,17 +211,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
   public JedisShardInfo(URI uri, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    super(Sharded.DEFAULT_WEIGHT);
-    if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
-    }
-
-    this.host = uri.getHost();
-    this.port = uri.getPort();
-    this.password = JedisURIHelper.getPassword(uri);
-    this.db = JedisURIHelper.getDBIndex(uri);
-    this.ssl = uri.getScheme().equals("rediss");
+    this(uri);
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;

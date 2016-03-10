@@ -17,6 +17,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class ShardedJedisPoolTest extends Assert {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
@@ -99,7 +100,7 @@ public class ShardedJedisPoolTest extends Assert {
     pool.destroy();
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);

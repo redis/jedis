@@ -92,7 +92,7 @@ public class JedisPoolTest extends Assert {
     assertTrue(pool.isClosed());
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);

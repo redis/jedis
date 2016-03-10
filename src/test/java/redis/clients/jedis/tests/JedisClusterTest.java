@@ -425,7 +425,7 @@ public class JedisClusterTest extends Assert {
     assertEquals("foo", jc.get("51"));
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void testIfPoolConfigAppliesToClusterPools() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(0);

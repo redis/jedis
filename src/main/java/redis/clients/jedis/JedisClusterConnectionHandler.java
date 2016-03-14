@@ -47,10 +47,6 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
         }
       }
     }
-
-    for (HostAndPort node : startNodes) {
-      cache.setNodeIfNotExist(node);
-    }
   }
 
   public void renewSlotCache() {

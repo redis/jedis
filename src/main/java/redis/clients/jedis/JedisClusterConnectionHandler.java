@@ -46,10 +46,6 @@ public abstract class JedisClusterConnectionHandler {
         }
       }
     }
-
-    for (HostAndPort node : startNodes) {
-      cache.setNodeIfNotExist(node);
-    }
   }
 
   public void renewSlotCache() {

@@ -538,6 +538,35 @@ public class JedisClusterTest extends Assert {
     jc.get("e");
   }
 
+  @Test
+  public void testLocalhostNodeNotAddedWhen127Present() {
+    HostAndPort localhost = new HostAndPort("localhost", 7379);
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    // cluster node is defined as 127.0.0.1; adding localhost should work,
+    // but shouldn't show up.
+    jedisClusterNode.add(localhost);
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setMaxTotal(1);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, config);
+    Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
+    assertEquals(3, clusterNodes.size());
+    assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
+  }
+
+  @Test
+  public void testInvalidStartNodeNotAdded() {
+    HostAndPort invalidHost = new HostAndPort("not-a-real-host", 7379);
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(invalidHost);
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setMaxTotal(1);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, config);
+    Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
+    assertEquals(3, clusterNodes.size());
+    assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
+  }
+
   private static String getNodeServingSlotRange(String infoOutput) {
     // f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0
     // 1394372400827 0 connected 5461-10922

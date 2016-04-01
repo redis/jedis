@@ -20,6 +20,8 @@ public final class Protocol {
   private static final String ASK_RESPONSE = "ASK";
   private static final String MOVED_RESPONSE = "MOVED";
   private static final String CLUSTERDOWN_RESPONSE = "CLUSTERDOWN";
+  private static final String BUSY_RESPONSE = "BUSY";
+
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 6379;
   public static final int DEFAULT_SENTINEL_PORT = 26379;
@@ -33,8 +35,6 @@ public final class Protocol {
   public static final byte PLUS_BYTE = '+';
   public static final byte MINUS_BYTE = '-';
   public static final byte COLON_BYTE = ':';
-
-  public static final String ERR_REDIS_BUSY = "BUSY";
 
   public static final String SENTINEL_MASTERS = "masters";
   public static final String SENTINEL_GET_MASTER_ADDR_BY_NAME = "get-master-addr-by-name";
@@ -117,7 +117,7 @@ public final class Protocol {
           Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
       throw new JedisClusterException(message);
-    } else if (message.startsWith(ERR_REDIS_BUSY)) {
+    } else if (message.startsWith(BUSY_RESPONSE)) {
       throw new JedisRedisBusyException(message);
     }
     throw new JedisDataException(message);

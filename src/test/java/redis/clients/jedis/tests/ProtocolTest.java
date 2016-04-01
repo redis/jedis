@@ -13,6 +13,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisRedisBusyException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -118,5 +119,18 @@ public class ProtocolTest extends JedisTestBase {
     InputStream is = new ByteArrayInputStream("*-1\r\n".getBytes());
     List<String> response = (List<String>) Protocol.read(new RedisInputStream(is));
     assertNull(response);
+  }
+
+  @Test
+  public void busyReply() {
+    final String busyMessage = "BUSY Redis is busy running a script.";
+    final InputStream is = new ByteArrayInputStream(('-' + busyMessage + "\r\n").getBytes());
+    try {
+      Protocol.read(new RedisInputStream(is));
+    } catch (final JedisRedisBusyException e) {
+      assertEquals(busyMessage, e.getMessage());
+      return;
+    }
+    fail("Expected a JedisRedisBusyException to be thrown.");
   }
 }

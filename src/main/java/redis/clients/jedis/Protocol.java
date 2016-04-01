@@ -118,8 +118,8 @@ public final class Protocol {
     } else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(ERR_REDIS_BUSY)) {
-	    throw new JedisRedisBusyException(message);
-	  }
+      throw new JedisRedisBusyException(message);
+    }
     throw new JedisDataException(message);
   }
 

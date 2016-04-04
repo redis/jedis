@@ -22,6 +22,7 @@ public class JedisClusterInfoCache {
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
   private final Lock w = rwl.writeLock();
+  private volatile boolean rediscovering;
   private final GenericObjectPoolConfig poolConfig;
 
   private int connectionTimeout;
@@ -79,36 +80,41 @@ public class JedisClusterInfoCache {
   }
 
   public void discoverClusterSlots(Jedis jedis) {
-    w.lock();
+    //If rediscovering is already in process - no need to start one more same rediscovering, just return
+    if (!rediscovering) {
+      w.lock();
+      rediscovering = true;
 
-    try {
-      this.slots.clear();
+      try {
+        this.slots.clear();
 
-      List<Object> slots = jedis.clusterSlots();
+        List<Object> slots = jedis.clusterSlots();
 
-      for (Object slotInfoObj : slots) {
-        List<Object> slotInfo = (List<Object>) slotInfoObj;
+        for (Object slotInfoObj : slots) {
+          List<Object> slotInfo = (List<Object>) slotInfoObj;
 
-        if (slotInfo.size() <= 2) {
-          continue;
+          if (slotInfo.size() <= 2) {
+            continue;
+          }
+
+          List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+
+          // hostInfos
+          List<Object> hostInfos = (List<Object>) slotInfo.get(2);
+          if (hostInfos.isEmpty()) {
+            continue;
+          }
+
+          // at this time, we just use master, discard slave information
+          HostAndPort targetNode = generateHostAndPort(hostInfos);
+
+          setNodeIfNotExist(targetNode);
+          assignSlotsToNode(slotNums, targetNode);
         }
-
-        List<Integer> slotNums = getAssignedSlotArray(slotInfo);
-
-        // hostInfos
-        List<Object> hostInfos = (List<Object>) slotInfo.get(2);
-        if (hostInfos.size() <= 0) {
-          continue;
-        }
-
-        // at this time, we just use master, discard slave information
-        HostAndPort targetNode = generateHostAndPort(hostInfos);
-
-        setNodeIfNotExist(targetNode);
-        assignSlotsToNode(slotNums, targetNode);
+      } finally {
+        rediscovering = false;
+        w.unlock();
       }
-    } finally {
-      w.unlock();
     }
   }
 

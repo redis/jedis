@@ -54,15 +54,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   @Override
   public void close() {
     if (connectionHandler != null) {
-      for (JedisPool pool : connectionHandler.getNodes().values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (Exception e) {
-          // pass
-        }
-      }
+      connectionHandler.close();
     }
   }
 

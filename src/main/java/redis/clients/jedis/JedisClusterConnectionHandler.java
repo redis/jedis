@@ -25,8 +25,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   abstract Jedis getConnectionFromSlot(int slot);
 
   public Jedis getConnectionFromNode(HostAndPort node) {
-    cache.setNodeIfNotExist(node);
-    return cache.getNode(JedisClusterInfoCache.getNodeKey(node)).getResource();
+    return cache.setupNodeIfNotExist(node).getResource();
   }
   
   public Map<String, JedisPool> getNodes() {

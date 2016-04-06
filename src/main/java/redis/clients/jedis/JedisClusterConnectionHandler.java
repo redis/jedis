@@ -1,9 +1,6 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,39 +46,15 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   public void renewSlotCache() {
-    for (JedisPool jp : getShuffledNodesPool()) {
-      Jedis jedis = null;
-      try {
-        jedis = jp.getResource();
-        cache.discoverClusterSlots(jedis);
-        break;
-      } catch (JedisConnectionException e) {
-        // try next nodes
-      } finally {
-        if (jedis != null) {
-          jedis.close();
-        }
-      }
-    }
+    cache.renewClusterSlots(null);
   }
 
   public void renewSlotCache(Jedis jedis) {
-    try {
-      cache.discoverClusterSlots(jedis);
-    } catch (JedisConnectionException e) {
-      renewSlotCache();
-    }
+    cache.renewClusterSlots(jedis);
   }
 
   @Override
   public void close() {
     cache.reset();
-  }
-
-  protected List<JedisPool> getShuffledNodesPool() {
-    List<JedisPool> pools = new ArrayList<JedisPool>();
-    pools.addAll(cache.getNodes().values());
-    Collections.shuffle(pools);
-    return pools;
   }
 }

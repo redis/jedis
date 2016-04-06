@@ -27,7 +27,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
     // ping-pong)
     // or exception if all connections are invalid
 
-    List<JedisPool> pools = getShuffledNodesPool();
+    List<JedisPool> pools = cache.getShuffledNodesPool();
 
     for (JedisPool pool : pools) {
       Jedis jedis = null;

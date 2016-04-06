@@ -12,8 +12,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisClusterInfoCache {
-  private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-  private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
+  private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -41,9 +41,7 @@ public class JedisClusterInfoCache {
     w.lock();
 
     try {
-      this.nodes.clear();
-      this.slots.clear();
-
+      reset();
       List<Object> slots = jedis.clusterSlots();
 
       for (Object slotInfoObj : slots) {
@@ -190,6 +188,28 @@ public class JedisClusterInfoCache {
       return new HashMap<String, JedisPool>(nodes);
     } finally {
       r.unlock();
+    }
+  }
+
+  /**
+   * Clear discovered nodes collections and gently release allocated resources
+   */
+  public void reset() {
+    w.lock();
+    try {
+      for (JedisPool pool : nodes.values()) {
+        try {
+          if (pool != null) {
+            pool.destroy();
+          }
+        } catch (Exception e) {
+          // pass
+        }
+      }
+      nodes.clear();
+      slots.clear();
+    } finally {
+      w.unlock();
     }
   }
 

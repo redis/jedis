@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +11,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
-public abstract class JedisClusterConnectionHandler {
+public abstract class JedisClusterConnectionHandler implements Closeable {
   protected final JedisClusterInfoCache cache;
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
@@ -75,6 +76,11 @@ public abstract class JedisClusterConnectionHandler {
     } catch (JedisConnectionException e) {
       renewSlotCache();
     }
+  }
+
+  @Override
+  public void close() {
+    cache.reset();
   }
 
   protected List<JedisPool> getShuffledNodesPool() {

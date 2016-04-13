@@ -5,6 +5,7 @@ import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.util.JedisClusterCRC16;
 import redis.clients.util.SafeEncoder;
@@ -119,18 +120,27 @@ public abstract class JedisClusterCommand<T> {
       }
 
       return execute(connection);
-    } catch (JedisConnectionException jce) {
-      if (tryRandomNode) {
-        // maybe all connection is down
-        throw jce;
-      }
 
+    } catch (JedisNoReachableClusterNodeException jnrcne) {
+      throw jnrcne;
+    } catch (JedisConnectionException jce) {
       // release current connection before recursion
       releaseConnection(connection);
       connection = null;
 
-      // retry with random connection
-      return runWithRetries(key, redirections - 1, true, asking);
+      if (redirections <= 1) {
+        //We need this because if node is not reachable anymore - we need to finally initiate slots renewing,
+        //or we can stuck with cluster state without one node in opposite case.
+        //But now if maxRedirections = 1 or 2 we will do it too often. For each time-outed request.
+        //TODO make tracking of successful/unsuccessful operations for node - do renewing only
+        //if there were no successful responses from this node last few seconds
+        this.connectionHandler.renewSlotCache();
+
+        //no more redirections left, throw original exception, not JedisClusterMaxRedirectionsException, because it's not MOVED situation
+        throw jce;
+      }
+
+      return runWithRetries(key, redirections - 1, tryRandomNode, asking);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {

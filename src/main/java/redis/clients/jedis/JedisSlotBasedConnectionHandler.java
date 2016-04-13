@@ -5,8 +5,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import java.util.Set;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
 
@@ -54,7 +54,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
       }
     }
 
-    throw new JedisConnectionException("no reachable node in cluster");
+    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
   }
 
   @Override

@@ -1596,7 +1596,7 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
     new JedisClusterCommand<Integer>(connectionHandler, maxRedirections) {
       @Override
       public Integer execute(Jedis connection) {
-        connection.subscribe(jedisPubSub, patterns);
+        connection.psubscribe(jedisPubSub, patterns);
         return 0;
       }
     }.runWithAnyNode();

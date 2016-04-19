@@ -51,9 +51,9 @@ public class JedisClusterTest {
   private static Jedis nodeSlave2;
   private String localHost = "127.0.0.1";
 
-  private static final int DEFAULT_TIMEOUT = 2000;
-  private static final int DEFAULT_REDIRECTIONS = 5;
-  private static final JedisPoolConfig DEFAULT_CONFIG = new JedisPoolConfig();
+  public static final int DEFAULT_TIMEOUT = 2000;
+  public static final int DEFAULT_REDIRECTIONS = 5;
+  public static final JedisPoolConfig DEFAULT_CONFIG = new JedisPoolConfig();
 
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);

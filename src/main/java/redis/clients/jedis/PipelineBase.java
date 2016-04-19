@@ -947,7 +947,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
   @Override
   public Response<Double> zincrby(final byte[] key, final double increment, final byte[] member, ZIncrByParams params) {
-    getClient(key).zincrby(key, increment, member);
+    getClient(key).zincrby(key, increment, member, params);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
@@ -1581,7 +1581,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
   @Override
   public Response<Double> geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
-    getClient(key).geodist(key, member1, member2);
+    getClient(key).geodist(key, member1, member2, unit);
     return getResponse(BuilderFactory.DOUBLE);
   }
 

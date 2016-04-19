@@ -886,8 +886,26 @@ public class Client extends BinaryClient implements Commands {
     configGet(SafeEncoder.encode(pattern));
   }
 
+  public void eval(final String script) {
+    eval(SafeEncoder.encode(script), 0);
+  }
+
+  public void eval(final String script, List<String> keys, List<String> args) {
+    String[] argv = Jedis.getParams(keys, args);
+    eval(script, keys.size(), argv);
+  }
+
   public void eval(final String script, final int keyCount, final String... params) {
     eval(SafeEncoder.encode(script), toByteArray(keyCount), getByteParams(params));
+  }
+
+  public void evalsha(final String sha1) {
+    evalsha(SafeEncoder.encode(sha1), 0);
+  }
+
+  public void evalsha(final String sha1, final List<String> keys, final List<String> args) {
+    String[] argv = Jedis.getParams(keys, args);
+    evalsha(sha1, keys.size(), argv);
   }
 
   public void evalsha(final String sha1, final int keyCount, final String... params) {

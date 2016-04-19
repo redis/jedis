@@ -152,6 +152,10 @@ public class BinaryClient extends Connection {
     sendCommand(RANDOMKEY);
   }
 
+  public void randomKeyBinary() {
+    sendCommand(RANDOMKEY);
+  }
+
   public void rename(final byte[] oldkey, final byte[] newkey) {
     sendCommand(RENAME, oldkey, newkey);
   }
@@ -931,12 +935,30 @@ public class BinaryClient extends Connection {
     sendCommand(command, allArgs);
   }
 
+  public void eval(final byte[] script) {
+    eval(script, 0);
+  }
+
+  public void eval(final byte[] script, final List<byte[]> keys, final List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    eval(script, keys.size(), argv);
+  }
+
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
     sendEvalCommand(EVAL, script, keyCount, params);
   }
 
   public void eval(final byte[] script, final int keyCount, final byte[]... params) {
     eval(script, toByteArray(keyCount), params);
+  }
+
+  public void evalsha(final byte[] sha1) {
+    evalsha(sha1, 0);
+  }
+
+  public void evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    evalsha(sha1, keys.size(), argv);
   }
 
   public void evalsha(final byte[] sha1, final byte[] keyCount, final byte[]... params) {

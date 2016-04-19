@@ -159,6 +159,10 @@ public class BinaryClient extends Connection {
     sendCommand(RANDOMKEY);
   }
 
+  public void randomKeyBinary() {
+    sendCommand(RANDOMKEY);
+  }
+
   public void rename(final byte[] oldkey, final byte[] newkey) {
     sendCommand(RENAME, oldkey, newkey);
   }
@@ -780,6 +784,13 @@ public class BinaryClient extends Connection {
     sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
   }
 
+  public void zremrangeByScore(final byte[] key, final double start, final double end) {
+    byte[] byteArrayStart = (start == Double.NEGATIVE_INFINITY) ? "-inf".getBytes() : toByteArray(start);
+    byte[] byteArrayEnd = (end == Double.POSITIVE_INFINITY) ? "+inf".getBytes() : toByteArray(end);
+
+    sendCommand(ZREMRANGEBYSCORE, key, byteArrayStart, byteArrayEnd);
+  }
+
   public void zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
     sendCommand(ZREMRANGEBYSCORE, key, start, end);
   }
@@ -1002,16 +1013,34 @@ public class BinaryClient extends Connection {
     sendCommand(command, allArgs);
   }
 
+  public void eval(byte[] script) {
+    eval(script, 0);
+  }
+
   public void eval(byte[] script, byte[] keyCount, byte[][] params) {
     sendEvalCommand(EVAL, script, keyCount, params);
+  }
+
+  public void eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    this.eval(script, keys.size(), argv);
   }
 
   public void eval(byte[] script, int keyCount, byte[]... params) {
     eval(script, toByteArray(keyCount), params);
   }
 
+  public void evalsha(byte[] sha1) {
+    evalsha(sha1, 0);
+  }
+
   public void evalsha(byte[] sha1, byte[] keyCount, byte[]... params) {
     sendEvalCommand(EVALSHA, sha1, keyCount, params);
+  }
+
+  public void evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
+    this.evalsha(sha1, keys.size(), argv);
   }
 
   public void evalsha(byte[] sha1, int keyCount, byte[]... params) {

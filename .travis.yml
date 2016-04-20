@@ -15,3 +15,5 @@ script: make test
 cache:
   directories:
     - $HOME/.m2
+addons:
+  hostname: jedis

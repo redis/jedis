@@ -49,6 +49,8 @@
 		<sentinel-hosts>localhost:26379,localhost:26380,localhost:26381</sentinel-hosts>
 		<cluster-hosts>localhost:7379,localhost:7380,localhost:7381,localhost:7382,localhost:7383,localhost:7384,localhost:7385</cluster-hosts>
     	<github.global.server>github</github.global.server>
+		<powermock.version>1.6.1</powermock.version>
+		<mockito.version>1.9.5</mockito.version>
 	</properties>
 
 	<dependencies>
@@ -57,12 +59,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -83,6 +79,24 @@
 			<version>2.4.2</version>
 			<type>jar</type>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito</artifactId>
+			<version>${powermock.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

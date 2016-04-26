@@ -27,18 +27,20 @@ public class JedisClusterInfoCache {
 
   private int connectionTimeout;
   private int soTimeout;
+  private String password;
 
   private static final int MASTER_NODE_INDEX = 2;
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
-    this(poolConfig, timeout, timeout);
+    this(poolConfig, timeout, timeout, null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout) {
+      final int connectionTimeout, final int soTimeout, final String password) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.password = password;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -128,7 +130,7 @@ public class JedisClusterInfoCache {
       if (nodes.containsKey(nodeKey)) return;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, null, 0, null, false, null, null, null);
+          connectionTimeout, soTimeout, password, 0, null, false, null, null, null);
       nodes.put(nodeKey, nodePool);
     } finally {
       w.unlock();
@@ -142,7 +144,7 @@ public class JedisClusterInfoCache {
       if (nodes.containsKey(nodeKey)) return;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, null, 0, null, ssl, null, null, null);
+          connectionTimeout, soTimeout, password, 0, null, ssl, null, null, null);
       nodes.put(nodeKey, nodePool);
     } finally {
       w.unlock();
@@ -157,7 +159,7 @@ public class JedisClusterInfoCache {
       if (nodes.containsKey(nodeKey)) return;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, null, 0, null, ssl, sslSocketFactory, sslParameters,
+          connectionTimeout, soTimeout, password, 0, null, ssl, sslSocketFactory, sslParameters,
           hostnameVerifier);
       nodes.put(nodeKey, nodePool);
     } finally {

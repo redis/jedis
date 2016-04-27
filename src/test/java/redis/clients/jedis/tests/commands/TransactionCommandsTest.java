@@ -2,10 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +12,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
@@ -339,6 +337,116 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     } catch (JedisDataException e) {
       assertTrue(e.getMessage().contains("EXEC without MULTI"));
       // pass
+    }
+  }
+
+
+  @Test
+  public void testInfinities() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 10d, "b");
+    jedis.zadd("foo", 0.1d, "c");
+    jedis.zadd("foo", 2d, "a");
+
+    // zcount
+    {
+      Transaction transaction = jedis.multi();
+      Response<Long> result = transaction.zcount("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      transaction.exec();
+      assertEquals(new Long(3L), result.get());
+    }
+
+    // zrangeByScore
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<String>> range = transaction.zrangeByScore("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("c");
+      expected.add("a");
+      expected.add("b");
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+    // zrangeByScore with offset and count
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<String>> range = transaction.zrangeByScore("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, 1);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("a");
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+
+    // zrevrangeByScore
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<String>> range = transaction.zrevrangeByScore("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("b");
+      expected.add("a");
+      expected.add("c");
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+    // zrevrangeByScore with offset and count
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<String>> range = transaction.zrevrangeByScore("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 1, 1);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("a");
+      transaction.exec();
+      assertEquals(expected, range.get());
+
+    }
+
+    // zrangeByScoreWithScores
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<Tuple>> range = transaction.zrangeByScoreWithScores("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("c", 0.1d));
+      expected.add(new Tuple("a", 2d));
+      expected.add(new Tuple("b", 10d));
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+    // zrangeByScoreWithScores with offset and count
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<Tuple>> range = transaction.zrangeByScoreWithScores("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, 1);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("a", 2d));
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+
+    // zrevrangeByScoreWithScores
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<Tuple>> range = transaction.zrevrangeByScoreWithScores("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("b", 10d));
+      expected.add(new Tuple("a", 2d));
+      expected.add(new Tuple("c", 0.1d));
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+    // zrevrangeByScoreWithScores with offset and count
+    {
+      Transaction transaction = jedis.multi();
+      Response<Set<Tuple>> range = transaction.zrevrangeByScoreWithScores("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 1, 1);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("a", 2d));
+      transaction.exec();
+      assertEquals(expected, range.get());
+    }
+
+    // zremrangeByScore
+    {
+      Transaction transaction = jedis.multi();
+      Response<Long> result = transaction.zremrangeByScore("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      transaction.exec();
+      assertEquals(new Long(3L), result.get());
     }
   }
 

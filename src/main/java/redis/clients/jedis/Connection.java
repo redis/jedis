@@ -92,16 +92,12 @@ public class Connection implements Closeable {
     this.subscribeSoTimeout = subscribeSoTimeout;
   }
 
-  public void connectAndSetSubscribeSoTimeout() {
-    connectAndSetSoTimeout(subscribeSoTimeout);
-  }
-
-  private void connectAndSetSoTimeout(int soTimeout) {
+  public void connectAndUseSubscribeSoTimeout() {
     try {
       if (!isConnected()) {
         connect();
       }
-      socket.setSoTimeout(soTimeout);
+      socket.setSoTimeout(subscribeSoTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);

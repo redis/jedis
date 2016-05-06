@@ -119,6 +119,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setConnectionTimeout(connectionConfig.getConnectTimeout());
     client.setSoTimeout(connectionConfig.getSoTimeout());
     client.setSubscribeSoTimeout(connectionConfig.getSubscribeSoTimeout());
+
+    final String password = connectionConfig.getPassword();
+    if (password != null) {
+      client.auth(password);
+      client.getStatusCodeReply();
+    }
+
+    final int dbIndex = connectionConfig.getDbIndex();
+    if (dbIndex > 0) {
+      client.select(dbIndex);
+      client.getStatusCodeReply();
+      client.setDb(dbIndex);
+    }
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
@@ -2149,7 +2162,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public List<byte[]> blpop(byte[]... args) {
     checkIsInMultiOrPipeline();
     client.blpop(args);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       return client.getBinaryMultiBulkReply();
     } finally {
@@ -2161,7 +2174,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public List<byte[]> brpop(byte[]... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       return client.getBinaryMultiBulkReply();
     } finally {
@@ -3085,7 +3098,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
     client.brpoplpush(source, destination, timeout);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       return client.getBinaryBulkReply();
     } finally {
@@ -3153,7 +3166,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       jedisPubSub.proceed(client, channels);
     } finally {
@@ -3163,7 +3176,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       jedisPubSub.proceedWithPatterns(client, patterns);
     } finally {
@@ -3202,7 +3215,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       client.eval(script, keyCount, params);
       return client.getOne();
@@ -3233,7 +3246,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       client.evalsha(sha1, keyCount, params);
       return client.getOne();

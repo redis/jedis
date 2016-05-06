@@ -1850,7 +1850,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> blpop(String... args) {
     checkIsInMultiOrPipeline();
     client.blpop(args);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       return client.getMultiBulkReply();
     } finally {
@@ -1862,7 +1862,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> brpop(String... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       return client.getMultiBulkReply();
     } finally {
@@ -2654,7 +2654,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String brpoplpush(String source, String destination, int timeout) {
     client.brpoplpush(source, destination, timeout);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       return client.getBulkReply();
     } finally {
@@ -2793,7 +2793,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Object eval(String script, int keyCount, String... params) {
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       client.eval(script, keyCount, params);
       return getEvalResult();
@@ -2804,7 +2804,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       jedisPubSub.proceed(client, channels);
     } finally {
@@ -2823,7 +2823,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
     checkIsInMultiOrPipeline();
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
     try {
       jedisPubSub.proceedWithPatterns(client, patterns);
     } finally {

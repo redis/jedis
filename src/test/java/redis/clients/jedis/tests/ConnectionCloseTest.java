@@ -39,6 +39,6 @@ public class ConnectionCloseTest extends Assert {
   public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
     client.setHost("localhost");
     client.setPort(6379);
-    client.connectAndSetSubscribeSoTimeout();
+    client.connectAndUseSubscribeSoTimeout();
   }
 }

@@ -1,11 +1,12 @@
 package redis.clients.jedis;
 
-import redis.clients.util.JedisURIHelper;
+import java.net.URI;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-import java.net.URI;
+
+import redis.clients.util.JedisURIHelper;
 
 public class JedisConnectionConfigBuilder {
     private String clientName;

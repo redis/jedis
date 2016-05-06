@@ -1,14 +1,15 @@
 package redis.clients.jedis;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.JedisURIHelper;
+import java.net.URI;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-import java.net.URI;
+
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.JedisURIHelper;
 
 public class JedisPool extends JedisPoolAbstract {
 

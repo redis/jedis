@@ -1,5 +1,25 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.toByteArray;
+
+import java.io.Closeable;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
@@ -16,25 +36,6 @@ import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-import java.io.Closeable;
-import java.io.Serializable;
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {

@@ -1,17 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.util.IOUtils;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,6 +7,19 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
+import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.util.IOUtils;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
 
 public class Connection implements Closeable {
 

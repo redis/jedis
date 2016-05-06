@@ -145,6 +145,8 @@ public abstract class JedisPubSub {
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPUnsubscribe(strpattern, subscribedChannels);
+      } else if (Arrays.equals(SafeEncoder.encode("pong"), resp)) {
+        continue;
       } else {
         throw new JedisException("Unknown message type: " + firstObj);
       }

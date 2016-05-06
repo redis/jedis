@@ -29,6 +29,21 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
 
+  public JedisFactory(final JedisConnectionConfig connectionConfig) {
+    this(connectionConfig.getHost(),
+         connectionConfig.getPort(),
+         connectionConfig.getConnectTimeout(),
+         connectionConfig.getSoTimeout(),
+         connectionConfig.getSubscribeSoTimeout(),
+         connectionConfig.getPassword(),
+         connectionConfig.getDbIndex(),
+         connectionConfig.getClientName(),
+         connectionConfig.isSsl(),
+         connectionConfig.getSslSocketFactory(),
+         connectionConfig.getSslParameters(),
+         connectionConfig.getHostnameVerifier());
+  }
+
   public JedisFactory(final String host, final int port, final int connectionTimeout,
                       final int soTimeout, final int subscribeSoTimeout, final String password, final int database,
                       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
@@ -101,8 +116,22 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hostAndPort = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
-        soTimeout, subscribeSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    final JedisConnectionConfig connectionConfig = new JedisConnectionConfigBuilder()
+            .withHost(hostAndPort.getHost())
+            .withPort(hostAndPort.getPort())
+            .withPassword(password)
+            .withDbIndex(database)
+            .withSsl(ssl)
+            .withConnectTimeout(connectionTimeout)
+            .withSoTimeout(soTimeout)
+            .withSubscribeSoTimeout(subscribeSoTimeout)
+            .withSslSocketFactory(sslSocketFactory)
+            .withSslParameters(sslParameters)
+            .withClientName(clientName)
+            .withHostnameVerifier(hostnameVerifier)
+            .build();
+
+    final Jedis jedis = new Jedis(connectionConfig);
 
     try {
       jedis.connect();

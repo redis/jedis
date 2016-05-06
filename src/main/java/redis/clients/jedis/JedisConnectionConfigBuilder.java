@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import redis.clients.util.JedisURIHelper;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
@@ -8,6 +10,11 @@ import java.net.URI;
 public class JedisConnectionConfigBuilder {
     private String clientName;
     private URI uri;
+    private String host;
+    private int port = Protocol.DEFAULT_PORT;
+    private String password;
+    private int dbIndex = JedisURIHelper.DEFAULT_DB;
+    private boolean ssl = false;
     private HostnameVerifier hostnameVerifier = null;
     private int connectTimeout = Protocol.DEFAULT_TIMEOUT;
     private int soTimeout = Protocol.DEFAULT_TIMEOUT;
@@ -49,11 +56,63 @@ public class JedisConnectionConfigBuilder {
         return this;
     }
 
-    public void withClientName(String clientName) {
+    public JedisConnectionConfigBuilder withClientName(String clientName) {
         this.clientName = clientName;
+        return this;
+    }
+
+    public JedisConnectionConfigBuilder withHost(final String host) {
+        this.host = host;
+        return this;
+    }
+
+    public JedisConnectionConfigBuilder withPort(final int port) {
+        this.port = port;
+        return this;
+    }
+
+    public JedisConnectionConfigBuilder withPassword(final String password) {
+        this.password = password;
+        return this;
+    }
+
+    public JedisConnectionConfigBuilder withDbIndex(final int dbIndex) {
+        this.dbIndex = dbIndex;
+        return this;
+    }
+
+    public JedisConnectionConfigBuilder withSsl(final boolean ssl) {
+        this.ssl = ssl;
+        return this;
     }
 
     public JedisConnectionConfig build() {
-        return new JedisConnectionConfig(uri, connectTimeout, soTimeout, subscribeSoTimeout, sslSocketFactory, sslParameters, clientName, hostnameVerifier);
+        if (uri != null) {
+            return new JedisConnectionConfig(uri.getHost(),
+                                             uri.getPort(),
+                                             JedisURIHelper.getPassword(uri),
+                                             JedisURIHelper.getDBIndex(uri),
+                                             "rediss".equals(uri.getScheme()),
+                                             connectTimeout,
+                                             soTimeout,
+                                             subscribeSoTimeout,
+                                             sslSocketFactory,
+                                             sslParameters,
+                                             clientName,
+                                             hostnameVerifier);
+        } else {
+            return new JedisConnectionConfig(host,
+                                             port,
+                                             password,
+                                             dbIndex,
+                                             ssl,
+                                             connectTimeout,
+                                             soTimeout,
+                                             subscribeSoTimeout,
+                                             sslSocketFactory,
+                                             sslParameters,
+                                             clientName,
+                                             hostnameVerifier);
+        }
     }
 }

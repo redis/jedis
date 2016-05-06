@@ -90,44 +90,37 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
-                     final int soTimeout) {
-    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT);
-  }
-
-  public BinaryJedis(final String host, final int port, final int connectionTimeout,
-                     final int soTimeout, int subscribeSoTimeout) {
+      final int soTimeout) {
     client = new Client(host, port);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
-    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
-                     final int soTimeout, final boolean ssl) {
-    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl);
-  }
-
-  public BinaryJedis(final String host, final int port, final int connectionTimeout,
-                     final int soTimeout, int subscribeSoTimeout, final boolean ssl) {
+      final int soTimeout, final boolean ssl) {
     client = new Client(host, port, ssl);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
-    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
-                     final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
-                     final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public BinaryJedis(final String host, final int port, final int connectionTimeout,
-                     final int soTimeout, int subscribeSoTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
-                     final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
-    client.setSubscribeSoTimeout(subscribeSoTimeout);
+  }
+
+  public BinaryJedis(final JedisConnectionConfig connectionConfig) {
+    client = new Client(connectionConfig.getHost(),
+                        connectionConfig.getPort(),
+                        connectionConfig.isSsl(),
+                        connectionConfig.getSslSocketFactory(),
+                        connectionConfig.getSslParameters(),
+                        connectionConfig.getHostnameVerifier());
+    client.setConnectionTimeout(connectionConfig.getConnectTimeout());
+    client.setSoTimeout(connectionConfig.getSoTimeout());
+    client.setSubscribeSoTimeout(connectionConfig.getSubscribeSoTimeout());
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
@@ -136,7 +129,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         shardInfo.getHostnameVerifier());
     client.setConnectionTimeout(shardInfo.getConnectionTimeout());
     client.setSoTimeout(shardInfo.getSoTimeout());
-    client.setSubscribeSoTimeout(shardInfo.getSubscribeSoTimeout());
     client.setPassword(shardInfo.getPassword());
     client.setDb(shardInfo.getDb());
   }
@@ -170,18 +162,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
-                     final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-                     final HostnameVerifier hostnameVerifier) {
-    this(uri, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
-                     int subscribeSoTimeout, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-                     final HostnameVerifier hostnameVerifier) {
+      final SSLSocketFactory sslSocketFactory,final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
     initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
-    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   private void initializeClientFromURI(URI uri) {

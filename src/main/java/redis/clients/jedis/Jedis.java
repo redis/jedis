@@ -76,26 +76,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-               final boolean ssl) {
-    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl);
-  }
-
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-               int subscribeSoTimeout, final boolean ssl) {
+      final boolean ssl) {
     super(host, port, connectionTimeout, soTimeout, ssl);
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-               final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-               final HostnameVerifier hostnameVerifier) {
-    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
+        hostnameVerifier);
   }
 
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-               int subscribeSoTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-               final HostnameVerifier hostnameVerifier) {
-    super(host, port, connectionTimeout, soTimeout, subscribeSoTimeout, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+  public Jedis(final JedisConnectionConfig connectionConfig) {
+    super(connectionConfig);
   }
 
   public Jedis(JedisShardInfo shardInfo) {

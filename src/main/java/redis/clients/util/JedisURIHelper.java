@@ -4,7 +4,7 @@ import java.net.URI;
 
 public final class JedisURIHelper {
 
-  private static final int DEFAULT_DB = 0;
+  public static final int DEFAULT_DB = 0;
 
   private JedisURIHelper(){
     throw new InstantiationError( "Must not instantiate this class" );

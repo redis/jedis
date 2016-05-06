@@ -3,10 +3,13 @@ package redis.clients.jedis;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-import java.net.URI;
 
 public class JedisConnectionConfig {
-    private final URI uri;
+    private String host;
+    private int port;
+    private String password;
+    private int dbIndex;
+    private boolean ssl;
     private final int connectTimeout;
     private final int soTimeout;
     private final int subscribeSoTimeout;
@@ -15,8 +18,12 @@ public class JedisConnectionConfig {
     private final String clientName;
     private final HostnameVerifier hostnameVerifier;
 
-    public JedisConnectionConfig(URI uri, int connectTimeout, int soTimeout, int subscribeSoTimeout, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, String clientName, HostnameVerifier hostnameVerifier) {
-        this.uri = uri;
+    public JedisConnectionConfig(String host, int port, String password, int dbIndex, boolean ssl, int connectTimeout, int soTimeout, int subscribeSoTimeout, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, String clientName, HostnameVerifier hostnameVerifier) {
+        this.host = host;
+        this.port = port;
+        this.password = password;
+        this.dbIndex = dbIndex;
+        this.ssl = ssl;
         this.connectTimeout = connectTimeout;
         this.soTimeout = soTimeout;
         this.subscribeSoTimeout = subscribeSoTimeout;
@@ -24,10 +31,6 @@ public class JedisConnectionConfig {
         this.sslParameters = sslParameters;
         this.clientName = clientName;
         this.hostnameVerifier = hostnameVerifier;
-    }
-
-    public URI getUri() {
-        return uri;
     }
 
     public int getConnectTimeout() {
@@ -56,5 +59,25 @@ public class JedisConnectionConfig {
 
     public String getClientName() {
         return clientName;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public int getDbIndex() {
+        return dbIndex;
+    }
+
+    public boolean isSsl() {
+        return ssl;
     }
 }

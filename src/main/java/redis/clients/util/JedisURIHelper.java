@@ -6,8 +6,8 @@ public final class JedisURIHelper {
 
   public static final int DEFAULT_DB = 0;
 
-  private JedisURIHelper(){
-    throw new InstantiationError( "Must not instantiate this class" );
+  private JedisURIHelper() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   public static String getPassword(URI uri) {

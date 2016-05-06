@@ -360,7 +360,8 @@ public class JedisPoolTest extends Assert {
   public void testCloseConnectionOnMakeObject() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
-    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "wrong pass");
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+        "wrong pass");
     Jedis jedis = new Jedis("redis://:foobared@localhost:6379/");
     int currentClientCount = getClientCount(jedis.clientList());
     try {

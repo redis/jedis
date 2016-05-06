@@ -72,18 +72,20 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, password, database, clientName);
+    this(masterName, sentinels, poolConfig, timeout, timeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT,
+        password, database, clientName);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
       final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, password, database, null);
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT,
+        password, database, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-                           final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
-                           int subscribeSoTimeout, final String password, final int database, final String clientName) {
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      int subscribeSoTimeout, final String password, final int database, final String clientName) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -113,7 +115,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       currentHostMaster = master;
       if (factory == null) {
         factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-                                   soTimeout, subscribeSoTimeout, password, database, clientName, false, null, null, null);
+            soTimeout, subscribeSoTimeout, password, database, clientName, false, null, null, null);
         initPool(poolConfig, factory);
       } else {
         factory.setHostAndPort(currentHostMaster);

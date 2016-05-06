@@ -113,12 +113,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final JedisConnectionConfig connectionConfig) {
-    client = new Client(connectionConfig.getHost(),
-                        connectionConfig.getPort(),
-                        connectionConfig.isSsl(),
-                        connectionConfig.getSslSocketFactory(),
-                        connectionConfig.getSslParameters(),
-                        connectionConfig.getHostnameVerifier());
+    client = new Client(connectionConfig.getHost(), connectionConfig.getPort(),
+        connectionConfig.isSsl(), connectionConfig.getSslSocketFactory(),
+        connectionConfig.getSslParameters(), connectionConfig.getHostnameVerifier());
     client.setConnectionTimeout(connectionConfig.getConnectTimeout());
     client.setSoTimeout(connectionConfig.getSoTimeout());
     client.setSubscribeSoTimeout(connectionConfig.getSubscribeSoTimeout());
@@ -163,7 +160,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
-      final SSLSocketFactory sslSocketFactory,final SSLParameters sslParameters,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
@@ -200,7 +197,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
 
     client = new Client(uri.getHost(), uri.getPort(), uri.getScheme().equals("rediss"),
-      sslSocketFactory, sslParameters, hostnameVerifier);
+        sslSocketFactory, sslParameters, hostnameVerifier);
 
     String password = JedisURIHelper.getPassword(uri);
     if (password != null) {

@@ -31,7 +31,7 @@ public abstract class Pool<T> implements Closeable {
   public boolean isClosed() {
     return this.internalPool.isClosed();
   }
-  
+
   public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {

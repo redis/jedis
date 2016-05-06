@@ -82,8 +82,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
+      final boolean ssl, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
   }

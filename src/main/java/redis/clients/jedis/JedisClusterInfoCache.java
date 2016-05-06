@@ -78,7 +78,8 @@ public class JedisClusterInfoCache {
   }
 
   public void discoverClusterSlots(Jedis jedis) {
-    //If rediscovering is already in process - no need to start one more same rediscovering, just return
+    // If rediscovering is already in process - no need to start one more same rediscovering, just
+    // return
     if (!rediscovering) {
       w.lock();
       rediscovering = true;

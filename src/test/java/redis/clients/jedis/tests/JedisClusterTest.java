@@ -127,11 +127,11 @@ public class JedisClusterTest extends Assert {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisCluster jc = new JedisCluster(jedisClusterNode);
     assertEquals(3, jc.getClusterNodes().size());
-    
+
     JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379));
     assertEquals(3, jc2.getClusterNodes().size());
   }
-  
+
   @Test
   public void testCalculateConnectionPerSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -141,7 +141,7 @@ public class JedisClusterTest extends Assert {
     jc.set("test", "test");
     assertEquals("bar", node3.get("foo"));
     assertEquals("test", node2.get("test"));
-    
+
     JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379));
     jc2.set("foo", "bar");
     jc2.set("test", "test");

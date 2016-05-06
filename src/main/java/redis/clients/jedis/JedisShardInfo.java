@@ -12,7 +12,7 @@ import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
-  
+
   private int connectionTimeout;
   private int soTimeout;
   private int subscribeSoTimeout;
@@ -75,8 +75,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
   public JedisShardInfo(String host, int port, boolean ssl, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    this(host, port, 2000, 2000, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, Sharded.DEFAULT_WEIGHT, ssl, sslSocketFactory, sslParameters,
-         hostnameVerifier);
+    this(host, port, 2000, 2000, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, Sharded.DEFAULT_WEIGHT, ssl,
+        sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public JedisShardInfo(String host, int port, String name) {
@@ -87,10 +87,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this(host, port, 2000, name, ssl);
   }
 
-  public JedisShardInfo(String host, int port, String name, boolean ssl, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    this(host, port, 2000, name, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+  public JedisShardInfo(String host, int port, String name, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier) {
+    this(host, port, 2000, name, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public JedisShardInfo(String host, int port, int timeout) {
@@ -106,10 +106,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisShardInfo(String host, int port, int timeout, boolean ssl,
-                        SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-                        HostnameVerifier hostnameVerifier, int subscribeSoTimeout) {
-    this(host, port, timeout, timeout, subscribeSoTimeout, Sharded.DEFAULT_WEIGHT, ssl, sslSocketFactory,
-         sslParameters, hostnameVerifier);
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, int subscribeSoTimeout) {
+    this(host, port, timeout, timeout, subscribeSoTimeout, Sharded.DEFAULT_WEIGHT, ssl,
+        sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name) {
@@ -125,21 +125,23 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this(host, port, timeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, name, ssl);
   }
 
-  public JedisShardInfo(String host, int port, int timeout, int subscribeSoTimeout, String name, boolean ssl) {
+  public JedisShardInfo(String host, int port, int timeout, int subscribeSoTimeout, String name,
+      boolean ssl) {
     this(host, port, timeout, timeout, subscribeSoTimeout, Sharded.DEFAULT_WEIGHT);
     this.name = name;
     this.ssl = ssl;
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name, boolean ssl,
-                        SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-                        HostnameVerifier hostnameVerifier) {
-    this(host, port, timeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, name, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier) {
+    this(host, port, timeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, name, ssl, sslSocketFactory,
+        sslParameters, hostnameVerifier);
   }
 
-  public JedisShardInfo(String host, int port, int timeout, int subscribeSoTimeout, String name, boolean ssl,
-                        SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-                        HostnameVerifier hostnameVerifier) {
+  public JedisShardInfo(String host, int port, int timeout, int subscribeSoTimeout, String name,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier) {
     this(host, port, timeout, timeout, subscribeSoTimeout, Sharded.DEFAULT_WEIGHT);
     this.name = name;
     this.ssl = ssl;
@@ -148,7 +150,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
-  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int subscribeSoTimeout, int weight) {
+  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout,
+      int subscribeSoTimeout, int weight) {
     super(weight);
     this.host = host;
     this.port = port;
@@ -157,8 +160,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.subscribeSoTimeout = subscribeSoTimeout;
   }
 
-  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int subscribeSoTimeout, int weight,
-                        boolean ssl) {
+  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout,
+      int subscribeSoTimeout, int weight, boolean ssl) {
     super(weight);
     this.host = host;
     this.port = port;
@@ -168,9 +171,9 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.ssl = ssl;
   }
 
-  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int subscribeSoTimeout, int weight,
-                        boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-                        HostnameVerifier hostnameVerifier) {
+  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout,
+      int subscribeSoTimeout, int weight, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     super(weight);
     this.host = host;
     this.port = port;
@@ -183,7 +186,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
-  public JedisShardInfo(String host, String name, int port, int timeout, int weight, int subscribeSoTimeout) {
+  public JedisShardInfo(String host, String name, int port, int timeout, int weight,
+      int subscribeSoTimeout) {
     super(weight);
     this.host = host;
     this.name = name;
@@ -194,7 +198,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisShardInfo(String host, String name, int port, int timeout, int weight,
-                        int subscribeSoTimeout, boolean ssl) {
+      int subscribeSoTimeout, boolean ssl) {
     super(weight);
     this.host = host;
     this.name = name;
@@ -206,8 +210,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisShardInfo(String host, String name, int port, int timeout, int weight,
-                        int subscribeSoTimeout, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-                        HostnameVerifier hostnameVerifier) {
+      int subscribeSoTimeout, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     super(weight);
     this.host = host;
     this.name = name;
@@ -299,7 +303,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public boolean getSsl() {
-      return ssl;
+    return ssl;
   }
 
   public SSLSocketFactory getSslSocketFactory() {

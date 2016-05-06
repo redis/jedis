@@ -10,8 +10,8 @@ import redis.clients.jedis.exceptions.JedisException;
  * The only reason to have this is to be able to compatible with java 1.5 :(
  */
 public final class SafeEncoder {
-  private SafeEncoder(){
-    throw new InstantiationError( "Must not instantiate this class" );
+  private SafeEncoder() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   public static byte[][] encodeMany(final String... strs) {

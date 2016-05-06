@@ -40,38 +40,31 @@ public class JedisPool extends JedisPoolAbstract {
 
   public JedisPool(final String host) {
     URI uri = URI.create(host);
+    final JedisConnectionConfig connectionConfig;
     if (JedisURIHelper.isValid(uri)) {
-      final JedisConnectionConfig connectionConfig = new JedisConnectionConfigBuilder()
-          .withUri(uri).build();
-      this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(connectionConfig),
-          new GenericObjectPoolConfig());
+      connectionConfig = new JedisConnectionConfigBuilder().withUri(uri).build();
     } else {
-      final JedisConnectionConfig connectionConfig = new JedisConnectionConfigBuilder().withHost(
-        host).build();
-      this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(connectionConfig),
-          new GenericObjectPoolConfig());
+      connectionConfig = new JedisConnectionConfigBuilder().withHost(host).build();
     }
+    this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(connectionConfig),
+        new GenericObjectPoolConfig());
   }
 
   public JedisPool(final String host, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     URI uri = URI.create(host);
+    final JedisConnectionConfig connectionConfig;
     if (JedisURIHelper.isValid(uri)) {
-      String h = uri.getHost();
-      int port = uri.getPort();
-      String password = JedisURIHelper.getPassword(uri);
-      int database = JedisURIHelper.getDBIndex(uri);
-      boolean ssl = uri.getScheme().equals("rediss");
-      this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h, port,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT,
-          password, database, null, ssl, sslSocketFactory, sslParameters, hostnameVerifier),
-          new GenericObjectPoolConfig());
+      connectionConfig = new JedisConnectionConfigBuilder().withUri(uri)
+          .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+          .withHostnameVerifier(hostnameVerifier).build();
     } else {
-      this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(host,
-          Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT,
-          Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null, false, null,
-          null, null), new GenericObjectPoolConfig());
+      connectionConfig = new JedisConnectionConfigBuilder().withHost(host)
+          .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+          .withHostnameVerifier(hostnameVerifier).build();
     }
+    this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(connectionConfig),
+        new GenericObjectPoolConfig());
   }
 
   public JedisPool(final URI uri) {
@@ -189,18 +182,11 @@ public class JedisPool extends JedisPoolAbstract {
       final int connectionTimeout, final int soTimeout, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    this(poolConfig, host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT,
-        password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, int port,
-      final int connectionTimeout, final int soTimeout, int subscribeSoTimeout,
-      final String password, final int database, final String clientName, final boolean ssl,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout,
-        subscribeSoTimeout, password, database, clientName, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier));
+    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withHost(host)
+        .withPort(port).withConnectTimeout(connectionTimeout).withSoTimeout(soTimeout)
+        .withPassword(password).withDbIndex(database).withClientName(clientName).withSsl(ssl)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build()));
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri) {
@@ -226,16 +212,17 @@ public class JedisPool extends JedisPoolAbstract {
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri,
       final int connectionTimeout, final int soTimeout) {
-    super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout,
-        Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, null, false, null, null, null));
+    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withUri(uri)
+        .withConnectTimeout(connectionTimeout).withSoTimeout(soTimeout).build()));
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri,
       final int connectionTimeout, final int soTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout,
-        Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, null, (uri.getScheme() != null && uri.getScheme()
-            .equals("rediss")), sslSocketFactory, sslParameters, hostnameVerifier));
+    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withUri(uri)
+        .withConnectTimeout(connectionTimeout).withSoTimeout(soTimeout)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build()));
   }
 
   @Override

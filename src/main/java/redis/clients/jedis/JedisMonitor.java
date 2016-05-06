@@ -5,7 +5,7 @@ public abstract class JedisMonitor {
 
   public void proceed(Client client) {
     this.client = client;
-    this.client.setTimeoutInfinite();
+    this.client.connectAndSetSubscribeSoTimeout();
     do {
       String command = client.getBulkReply();
       onCommand(command);

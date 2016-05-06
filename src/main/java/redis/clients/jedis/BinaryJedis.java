@@ -1,7 +1,25 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
+import redis.clients.jedis.commands.BasicCommands;
+import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.BinaryScriptingCommands;
+import redis.clients.jedis.commands.MultiKeyBinaryCommands;
+import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.util.JedisByteHashMap;
+import redis.clients.util.JedisURIHelper;
+import redis.clients.util.SafeEncoder;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.Closeable;
 import java.io.Serializable;
 import java.net.URI;
@@ -16,22 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.jedis.commands.*;
-import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.util.JedisByteHashMap;
-import redis.clients.util.JedisURIHelper;
-import redis.clients.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
@@ -87,25 +90,44 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
-      final int soTimeout) {
+                     final int soTimeout) {
+    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
+                     final int soTimeout, int subscribeSoTimeout) {
     client = new Client(host, port);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
+    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
-      final int soTimeout, final boolean ssl) {
+                     final int soTimeout, final boolean ssl) {
+    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
+                     final int soTimeout, int subscribeSoTimeout, final boolean ssl) {
     client = new Client(host, port, ssl);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
+    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
-      final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+                     final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+                     final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
+                     final int soTimeout, int subscribeSoTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+                     final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
+    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
@@ -114,6 +136,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         shardInfo.getHostnameVerifier());
     client.setConnectionTimeout(shardInfo.getConnectionTimeout());
     client.setSoTimeout(shardInfo.getSoTimeout());
+    client.setSubscribeSoTimeout(shardInfo.getSubscribeSoTimeout());
     client.setPassword(shardInfo.getPassword());
     client.setDb(shardInfo.getDb());
   }
@@ -147,11 +170,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
-      final SSLSocketFactory sslSocketFactory,final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
+                     final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+                     final HostnameVerifier hostnameVerifier) {
+    this(uri, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
+                     int subscribeSoTimeout, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+                     final HostnameVerifier hostnameVerifier) {
     initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
+    client.setSubscribeSoTimeout(subscribeSoTimeout);
   }
 
   private void initializeClientFromURI(URI uri) {
@@ -2142,7 +2172,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public List<byte[]> blpop(byte[]... args) {
     checkIsInMultiOrPipeline();
     client.blpop(args);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       return client.getBinaryMultiBulkReply();
     } finally {
@@ -2154,7 +2184,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public List<byte[]> brpop(byte[]... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       return client.getBinaryMultiBulkReply();
     } finally {
@@ -3078,7 +3108,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
     client.brpoplpush(source, destination, timeout);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       return client.getBinaryBulkReply();
     } finally {
@@ -3146,7 +3176,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       jedisPubSub.proceed(client, channels);
     } finally {
@@ -3156,7 +3186,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       jedisPubSub.proceedWithPatterns(client, patterns);
     } finally {
@@ -3195,7 +3225,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       client.eval(script, keyCount, params);
       return client.getOne();
@@ -3226,7 +3256,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       client.evalsha(sha1, keyCount, params);
       return client.getOne();

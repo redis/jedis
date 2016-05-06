@@ -1,9 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisBusyException;
@@ -14,6 +10,10 @@ import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Protocol {
 
@@ -26,6 +26,7 @@ public final class Protocol {
   public static final int DEFAULT_PORT = 6379;
   public static final int DEFAULT_SENTINEL_PORT = 26379;
   public static final int DEFAULT_TIMEOUT = 2000;
+  public static final int DEFAULT_SUBSCRIBE_TIMEOUT = 0;
   public static final int DEFAULT_DATABASE = 0;
 
   public static final String CHARSET = "UTF-8";

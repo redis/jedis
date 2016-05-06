@@ -1,5 +1,24 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.commands.AdvancedJedisCommands;
+import redis.clients.jedis.commands.BasicCommands;
+import redis.clients.jedis.commands.ClusterCommands;
+import redis.clients.jedis.commands.JedisCommands;
+import redis.clients.jedis.commands.MultiKeyCommands;
+import redis.clients.jedis.commands.ScriptingCommands;
+import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.set.SetParams;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.util.SafeEncoder;
+import redis.clients.util.Slowlog;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -10,20 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.commands.*;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.util.SafeEncoder;
-import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
@@ -71,14 +76,25 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final boolean ssl) {
+               final boolean ssl) {
+    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl);
+  }
+
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
+               int subscribeSoTimeout, final boolean ssl) {
     super(host, port, connectionTimeout, soTimeout, ssl);
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
+               final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+               final HostnameVerifier hostnameVerifier) {
+    this(host, port, connectionTimeout, soTimeout, Protocol.DEFAULT_SUBSCRIBE_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
+               int subscribeSoTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+               final HostnameVerifier hostnameVerifier) {
+    super(host, port, connectionTimeout, soTimeout, subscribeSoTimeout, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
   }
 
@@ -1840,7 +1856,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> blpop(String... args) {
     checkIsInMultiOrPipeline();
     client.blpop(args);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       return client.getMultiBulkReply();
     } finally {
@@ -1852,7 +1868,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> brpop(String... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       return client.getMultiBulkReply();
     } finally {
@@ -2644,7 +2660,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String brpoplpush(String source, String destination, int timeout) {
     client.brpoplpush(source, destination, timeout);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       return client.getBulkReply();
     } finally {
@@ -2783,7 +2799,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Object eval(String script, int keyCount, String... params) {
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       client.eval(script, keyCount, params);
       return getEvalResult();
@@ -2794,7 +2810,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       jedisPubSub.proceed(client, channels);
     } finally {
@@ -2813,7 +2829,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
     checkIsInMultiOrPipeline();
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
     try {
       jedisPubSub.proceedWithPatterns(client, patterns);
     } finally {

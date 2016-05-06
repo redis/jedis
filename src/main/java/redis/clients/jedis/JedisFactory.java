@@ -1,19 +1,17 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.JedisURIHelper;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-
-import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.JedisURIHelper;
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * PoolableObjectFactory custom impl.
@@ -22,6 +20,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
   private final int connectionTimeout;
   private final int soTimeout;
+  private final int subscribeSoTimeout;
   private final String password;
   private final int database;
   private final String clientName;
@@ -31,12 +30,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private HostnameVerifier hostnameVerifier;
 
   public JedisFactory(final String host, final int port, final int connectionTimeout,
-      final int soTimeout, final String password, final int database, final String clientName,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
+                      final int soTimeout, final int subscribeSoTimeout, final String password, final int database,
+                      final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+                      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this.hostAndPort.set(new HostAndPort(host, port));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.subscribeSoTimeout = subscribeSoTimeout;
     this.password = password;
     this.database = database;
     this.clientName = clientName;
@@ -47,8 +47,9 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
-      final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+                      final int subscribeSoTimeout, final String clientName, final boolean ssl,
+                      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+                      final HostnameVerifier hostnameVerifier) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI. %s", uri.toString()));
@@ -57,6 +58,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.subscribeSoTimeout = subscribeSoTimeout;
     this.password = JedisURIHelper.getPassword(uri);
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
@@ -100,7 +102,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hostAndPort = this.hostAndPort.get();
     final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
-        soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+        soTimeout, subscribeSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
 
     try {
       jedis.connect();

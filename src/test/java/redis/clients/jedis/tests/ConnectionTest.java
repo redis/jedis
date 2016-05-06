@@ -40,7 +40,7 @@ public class ConnectionTest extends Assert {
   public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
     client.setHost("localhost");
     client.setPort(6379);
-    client.setTimeoutInfinite();
+    client.connectAndSetSubscribeSoTimeout();
   }
 
   @Test

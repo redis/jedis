@@ -79,7 +79,7 @@ public class BinaryClient extends Connection {
   public boolean isInWatch() {
     return isInWatch;
   }
-
+  
   private byte[][] joinParameters(byte[] first, byte[][] rest) {
     byte[][] result = new byte[rest.length + 1][];
     result[0] = first;

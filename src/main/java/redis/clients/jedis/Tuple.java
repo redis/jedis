@@ -50,7 +50,7 @@ public class Tuple implements Comparable<Tuple> {
     if (this.score == other.getScore() || Arrays.equals(this.element, other.element)) return 0;
     else return this.score < other.getScore() ? -1 : 1;
   }
-
+  
   public String getElement() {
     if (null != element) {
       return SafeEncoder.encode(element);

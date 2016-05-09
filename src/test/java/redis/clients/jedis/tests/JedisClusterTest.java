@@ -1,41 +1,19 @@
 package redis.clients.jedis.tests;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
+import org.junit.*;
+import redis.clients.jedis.*;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.JedisClusterInfoCache;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
+import redis.clients.util.SafeEncoder;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 public class JedisClusterTest extends Assert {
   private static Jedis node1;
@@ -149,11 +127,11 @@ public class JedisClusterTest extends Assert {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisCluster jc = new JedisCluster(jedisClusterNode);
     assertEquals(3, jc.getClusterNodes().size());
-
+    
     JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379));
     assertEquals(3, jc2.getClusterNodes().size());
   }
-
+  
   @Test
   public void testCalculateConnectionPerSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
@@ -163,7 +141,7 @@ public class JedisClusterTest extends Assert {
     jc.set("test", "test");
     assertEquals("bar", node3.get("foo"));
     assertEquals("test", node2.get("test"));
-
+    
     JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379));
     jc2.set("foo", "bar");
     jc2.set("test", "test");

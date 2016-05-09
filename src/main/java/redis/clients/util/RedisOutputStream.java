@@ -170,7 +170,7 @@ public final class RedisOutputStream extends FilterOutputStream {
 
     writeCrLf();
   }
-
+  
   public void writeIntCrLf(int value) throws IOException {
     if (value < 0) {
       write((byte) '-');

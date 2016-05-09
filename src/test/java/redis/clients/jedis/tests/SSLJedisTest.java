@@ -87,7 +87,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
    * 127.0.0.1. This test should fail because "127.0.0.1" does not match the
    * certificate subject common name and there are no subject alternative names
    * in the certificate.
-   *
+   * 
    * NOTE: This test relies on a feature that is only available as of Java 7 and later.
    * It is commented out but not removed in case support for Java 6 is dropped or
    * we find a way to have the CI run a specific set of tests on Java 7 and above.
@@ -198,7 +198,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
    * Tests opening an SSL/TLS connection to redis with an empty certificate
    * trust store. This test should fail because there is no trust anchor for the
    * redis server certificate.
-   *
+   * 
    * @throws Exception
    */
   @Test
@@ -264,11 +264,11 @@ public class SSLJedisTest extends JedisCommandTestBase {
         public X509Certificate[] getAcceptedIssuers() {
           return new X509Certificate[0];
         }
-
+  
         public void checkClientTrusted(X509Certificate[] chain, String authType) {
           throw new RuntimeException(new InvalidAlgorithmParameterException());
         }
-
+  
         public void checkServerTrusted(X509Certificate[] chain, String authType) {
           throw new RuntimeException(new InvalidAlgorithmParameterException());
         }
@@ -282,7 +282,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
   /**
    * Very basic hostname verifier implementation for testing. NOT recommended
    * for production.
-   *
+   * 
    */
   private static class BasicHostnameVerifier implements HostnameVerifier {
 

@@ -35,7 +35,7 @@ public class Slowlog {
 
     return logs;
   }
-
+  
   public long getId() {
     return id;
   }

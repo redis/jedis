@@ -13,9 +13,9 @@ import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
 
-  private int connectionTimeout;
-  private int soTimeout;
-  private int subscribeSoTimeout;
+  private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int subscribeSoTimeout = Protocol.DEFAULT_SUBSCRIBE_TIMEOUT;
   private String host;
   private int port;
   private String password = null;
@@ -314,11 +314,20 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisConnectionConfig getConnectionConfig() {
-    return new JedisConnectionConfigBuilder().withHost(host).withPort(port).withPassword(password)
-        .withClientName(name).withDbIndex(db).withSsl(ssl).withSslParameters(sslParameters)
-        .withSslSocketFactory(sslSocketFactory).withHostnameVerifier(hostnameVerifier)
-        .withConnectTimeout(connectionTimeout).withSoTimeout(soTimeout)
-        .withSubscribeSoTimeout(subscribeSoTimeout).build();
+    return new JedisConnectionConfigBuilder()
+            .withHost(host)
+            .withPort(port)
+            .withPassword(password)
+            .withClientName(name)
+            .withDbIndex(db)
+            .withSsl(ssl)
+            .withSslParameters(sslParameters)
+            .withSslSocketFactory(sslSocketFactory)
+            .withHostnameVerifier(hostnameVerifier)
+            .withConnectTimeout(connectionTimeout)
+            .withSoTimeout(soTimeout)
+            .withSubscribeSoTimeout(subscribeSoTimeout)
+            .build();
   }
 
   @Override

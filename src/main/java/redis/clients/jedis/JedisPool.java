@@ -212,7 +212,7 @@ public class JedisPool extends JedisPoolAbstract {
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri,
       final int connectionTimeout, final int soTimeout) {
-    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withUri(uri)
+    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withCheckedUri(uri)
         .withConnectTimeout(connectionTimeout).withSoTimeout(soTimeout).build()));
   }
 

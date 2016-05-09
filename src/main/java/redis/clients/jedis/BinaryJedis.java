@@ -120,17 +120,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setSoTimeout(connectionConfig.getSoTimeout());
     client.setSubscribeSoTimeout(connectionConfig.getSubscribeSoTimeout());
 
-    final String password = connectionConfig.getPassword();
-    if (password != null) {
-      client.auth(password);
-      client.getStatusCodeReply();
-    }
+    try {
+      final String password = connectionConfig.getPassword();
+      if (password != null) {
+        client.auth(password);
+        client.getStatusCodeReply();
+      }
 
-    final int dbIndex = connectionConfig.getDbIndex();
-    if (dbIndex > 0) {
-      client.select(dbIndex);
-      client.getStatusCodeReply();
-      client.setDb(dbIndex);
+      final int dbIndex = connectionConfig.getDbIndex();
+      if (dbIndex > 0) {
+        client.select(dbIndex);
+        client.getStatusCodeReply();
+        client.setDb(dbIndex);
+      }
+    } catch (JedisException je) {
+      close();
+      throw je;
     }
   }
 

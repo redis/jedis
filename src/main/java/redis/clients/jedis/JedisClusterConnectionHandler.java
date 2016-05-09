@@ -15,7 +15,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   protected final JedisClusterInfoCache cache;
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
+                                       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
     this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout);
     initializeSlotsCache(nodes, poolConfig);
   }
@@ -28,7 +28,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     cache.setNodeIfNotExist(node);
     return cache.getNode(JedisClusterInfoCache.getNodeKey(node)).getResource();
   }
-
+  
   public Map<String, JedisPool> getNodes() {
     return cache.getNodes();
   }

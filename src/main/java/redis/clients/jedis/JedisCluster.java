@@ -26,7 +26,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(HostAndPort node) {
-    this(Collections.singleton(node), DEFAULT_TIMEOUT);
+	this(Collections.singleton(node), DEFAULT_TIMEOUT);
   }
 
   public JedisCluster(HostAndPort node, int timeout) {
@@ -50,11 +50,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     this(Collections.singleton(node), timeout, maxRedirections, poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxRedirections,
-      final GenericObjectPoolConfig poolConfig) {
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
+      int maxRedirections, final GenericObjectPoolConfig poolConfig) {
     super(Collections.singleton(node), connectionTimeout, soTimeout, maxRedirections, poolConfig);
   }
-
+  
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
   }

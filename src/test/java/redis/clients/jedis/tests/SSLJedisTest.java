@@ -105,8 +105,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
     shardInfo.setPassword("foobared");
 
-    Jedis jedis = new Jedis(shardInfo);
     try {
+      Jedis jedis = new Jedis(shardInfo);
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
@@ -178,8 +178,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     shardInfo.setPassword("foobared");
 
-    Jedis jedis = new Jedis(shardInfo);
     try {
+      Jedis jedis = new Jedis(shardInfo);
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
@@ -210,8 +210,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
     shardInfo.setPassword("foobared");
 
-    Jedis jedis = new Jedis(shardInfo);
     try {
+      Jedis jedis = new Jedis(shardInfo);
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {

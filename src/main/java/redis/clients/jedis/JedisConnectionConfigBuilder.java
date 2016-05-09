@@ -98,14 +98,33 @@ public class JedisConnectionConfigBuilder {
 
   public JedisConnectionConfig build() {
     if (uri != null) {
-      return new JedisConnectionConfig(uri.getHost(), uri.getPort(),
-          JedisURIHelper.getPassword(uri), JedisURIHelper.getDBIndex(uri), "rediss".equals(uri
-              .getScheme()), connectTimeout, soTimeout, subscribeSoTimeout, sslSocketFactory,
-          sslParameters, clientName, hostnameVerifier);
+      return new JedisConnectionConfig(
+              uri.getHost(),
+              uri.getPort(),
+              JedisURIHelper.getPassword(uri),
+              JedisURIHelper.getDBIndex(uri),
+              "rediss".equals(uri.getScheme()),
+              connectTimeout,
+              soTimeout,
+              subscribeSoTimeout,
+              sslSocketFactory,
+              sslParameters,
+              clientName,
+              hostnameVerifier);
     } else {
-      return new JedisConnectionConfig(host, port, password, dbIndex, ssl, connectTimeout,
-          soTimeout, subscribeSoTimeout, sslSocketFactory, sslParameters, clientName,
-          hostnameVerifier);
+      return new JedisConnectionConfig(
+              host,
+              port,
+              password,
+              dbIndex,
+              ssl,
+              connectTimeout,
+              soTimeout,
+              subscribeSoTimeout,
+              sslSocketFactory,
+              sslParameters,
+              clientName,
+              hostnameVerifier);
     }
   }
 }

@@ -134,7 +134,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         client.setDb(dbIndex);
       }
     } catch (JedisException je) {
-      close();
+      try {
+        close();
+      } catch (Exception e) {
+        // best effort
+      }
       throw je;
     }
   }

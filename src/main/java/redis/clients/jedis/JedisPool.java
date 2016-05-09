@@ -219,7 +219,7 @@ public class JedisPool extends JedisPoolAbstract {
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri,
       final int connectionTimeout, final int soTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withUri(uri)
+    super(poolConfig, new JedisFactory(new JedisConnectionConfigBuilder().withCheckedUri(uri)
         .withConnectTimeout(connectionTimeout).withSoTimeout(soTimeout)
         .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
         .withHostnameVerifier(hostnameVerifier).build()));

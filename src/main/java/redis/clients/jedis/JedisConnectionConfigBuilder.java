@@ -6,6 +6,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.util.JedisURIHelper;
 
 public class JedisConnectionConfigBuilder {
@@ -22,6 +23,13 @@ public class JedisConnectionConfigBuilder {
   private int subscribeSoTimeout = Protocol.DEFAULT_SUBSCRIBE_TIMEOUT;
   private SSLParameters sslParameters = null;
   private SSLSocketFactory sslSocketFactory = null;
+
+  public JedisConnectionConfigBuilder withCheckedUri(final URI uri) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(uri.toString() + " is not a valid redis URI");
+    }
+    return withUri(uri);
+  }
 
   public JedisConnectionConfigBuilder withUri(URI uri) {
     this.uri = uri;

@@ -40,7 +40,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
 
   private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
     Assert.assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-      new File(trustStoreFilePath).exists());
+        new File(trustStoreFilePath).exists());
     System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
     System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
   }
@@ -58,9 +58,10 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis. NOTE: This test relies on a feature that is only
-   * available as of Java 7 and later. It is commented out but not removed in case support for Java
-   * 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and above.
+   * Tests opening an SSL/TLS connection to redis.
+   * NOTE: This test relies on a feature that is only available as of Java 7 and later.
+   * It is commented out but not removed in case support for Java 6 is dropped or
+   * we find a way to have the CI run a specific set of tests on Java 7 and above.
    */
   @Test
   public void connectWithShardInfo() throws Exception {
@@ -82,12 +83,14 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis using the loopback address of 127.0.0.1. This test
-   * should fail because "127.0.0.1" does not match the certificate subject common name and there
-   * are no subject alternative names in the certificate. NOTE: This test relies on a feature that
-   * is only available as of Java 7 and later. It is commented out but not removed in case support
-   * for Java 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and
-   * above.
+   * Tests opening an SSL/TLS connection to redis using the loopback address of
+   * 127.0.0.1. This test should fail because "127.0.0.1" does not match the
+   * certificate subject common name and there are no subject alternative names
+   * in the certificate.
+   *
+   * NOTE: This test relies on a feature that is only available as of Java 7 and later.
+   * It is commented out but not removed in case support for Java 6 is dropped or
+   * we find a way to have the CI run a specific set of tests on Java 7 and above.
    */
   @Test
   public void connectWithShardInfoByIpAddress() throws Exception {
@@ -107,10 +110,10 @@ public class SSLJedisTest extends JedisCommandTestBase {
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals("Unexpected first inner exception.", SSLHandshakeException.class, e
-          .getCause().getClass());
-      Assert.assertEquals("Unexpected second inner exception.", CertificateException.class, e
-          .getCause().getCause().getClass());
+      Assert.assertEquals("Unexpected first inner exception.",
+          SSLHandshakeException.class, e.getCause().getClass());
+      Assert.assertEquals("Unexpected second inner exception.",
+          CertificateException.class, e.getCause().getCause().getClass());
     }
 
     try {
@@ -121,7 +124,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier.
+   * Tests opening an SSL/TLS connection to redis with a custom hostname
+   * verifier.
    */
   @Test
   public void connectWithShardInfoAndCustomHostnameVerifier() {
@@ -130,8 +134,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     shardInfo.setPassword("foobared");
 
     Jedis jedis = new Jedis(shardInfo);
@@ -150,8 +153,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     shardInfo.setPassword("foobared");
 
     Jedis jedis = new Jedis(shardInfo);
@@ -161,9 +163,10 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier. This test should
-   * fail because "127.0.0.1" does not match the certificate subject common name and there are no
-   * subject alternative names in the certificate.
+   * Tests opening an SSL/TLS connection to redis with a custom hostname
+   * verifier. This test should fail because "127.0.0.1" does not match the
+   * certificate subject common name and there are no subject alternative names
+   * in the certificate.
    */
   @Test
   public void connectWithShardInfoAndCustomHostnameVerifierByIpAddress() {
@@ -172,8 +175,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     shardInfo.setPassword("foobared");
 
     Jedis jedis = new Jedis(shardInfo);
@@ -182,7 +184,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
       Assert.assertEquals("The JedisConnectionException does not contain the expected message.",
-        "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
+          "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
     }
 
     try {
@@ -193,8 +195,10 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis with an empty certificate trust store. This test
-   * should fail because there is no trust anchor for the redis server certificate.
+   * Tests opening an SSL/TLS connection to redis with an empty certificate
+   * trust store. This test should fail because there is no trust anchor for the
+   * redis server certificate.
+   *
    * @throws Exception
    */
   @Test
@@ -211,12 +215,12 @@ public class SSLJedisTest extends JedisCommandTestBase {
       jedis.get("foo");
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals("Unexpected first inner exception.", SSLException.class, e.getCause()
-          .getClass());
-      Assert.assertEquals("Unexpected second inner exception.", RuntimeException.class, e
-          .getCause().getCause().getClass());
+      Assert.assertEquals("Unexpected first inner exception.",
+          SSLException.class, e.getCause().getClass());
+      Assert.assertEquals("Unexpected second inner exception.",
+          RuntimeException.class, e.getCause().getCause().getClass());
       Assert.assertEquals("Unexpected third inner exception.",
-        InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getClass());
+          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getClass());
     }
 
     try {
@@ -227,7 +231,8 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Creates an SSLSocketFactory that trusts all certificates in truststore.jceks.
+   * Creates an SSLSocketFactory that trusts all certificates in
+   * truststore.jceks.
    */
   private static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
 
@@ -250,29 +255,34 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
-   * Creates an SSLSocketFactory with a trust manager that does not trust any certificates.
+   * Creates an SSLSocketFactory with a trust manager that does not trust any
+   * certificates.
    */
   private static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
-    TrustManager[] unTrustManagers = new TrustManager[] { new X509TrustManager() {
-      public X509Certificate[] getAcceptedIssuers() {
-        return new X509Certificate[0];
-      }
+    TrustManager[] unTrustManagers = new TrustManager[] {
+      new X509TrustManager() {
+        public X509Certificate[] getAcceptedIssuers() {
+          return new X509Certificate[0];
+        }
 
-      public void checkClientTrusted(X509Certificate[] chain, String authType) {
-        throw new RuntimeException(new InvalidAlgorithmParameterException());
-      }
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+          throw new RuntimeException(new InvalidAlgorithmParameterException());
+        }
 
-      public void checkServerTrusted(X509Certificate[] chain, String authType) {
-        throw new RuntimeException(new InvalidAlgorithmParameterException());
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+          throw new RuntimeException(new InvalidAlgorithmParameterException());
+        }
       }
-    } };
+    };
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, unTrustManagers, new SecureRandom());
     return sslContext.getSocketFactory();
   }
 
   /**
-   * Very basic hostname verifier implementation for testing. NOT recommended for production.
+   * Very basic hostname verifier implementation for testing. NOT recommended
+   * for production.
+   *
    */
   private static class BasicHostnameVerifier implements HostnameVerifier {
 

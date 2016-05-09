@@ -433,7 +433,7 @@ public final class BuilderFactory {
   };
 
   private BuilderFactory() {
-    throw new InstantiationError("Must not instantiate this class");
+    throw new InstantiationError( "Must not instantiate this class" );
   }
 
 }

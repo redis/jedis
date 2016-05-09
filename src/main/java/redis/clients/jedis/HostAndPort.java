@@ -3,9 +3,9 @@ package redis.clients.jedis;
 import java.io.Serializable;
 
 public class HostAndPort implements Serializable {
-  private static final long serialVersionUID = -519876229978427751L;
+private static final long serialVersionUID = -519876229978427751L;
 
-  public static final String LOCALHOST_STR = "localhost";
+public static final String LOCALHOST_STR = "localhost";
 
   private String host;
   private int port;

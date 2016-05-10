@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisConnectionConfigBuilder;
+import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -148,6 +150,21 @@ public class JedisTest extends JedisCommandTestBase {
   public void checkDisconnectOnQuit() {
     jedis.quit();
     assertFalse(jedis.getClient().isConnected());
+  }
+
+  @Test
+  public void testSubsciptionTimeout() throws Exception {
+    final Jedis jedis = new Jedis(new JedisConnectionConfigBuilder()
+            .withUri(new URI("redis://localhost:6380"))
+            .withSubscribeSoTimeout(10)
+            .build());
+    try {
+      jedis.subscribe(new JedisPubSub() {}, "channel-that-nobody-will-write-to");
+      fail("should have hit exception waiting for channel events");
+    } catch (JedisException ex) {
+      // expected, we're supposed to time out on the above call.
+    }
+    jedis.close();
   }
 
 }

@@ -296,19 +296,16 @@ stop:
 	rm -f /tmp/redis_cluster_node5.conf
 	rm -f /tmp/redis_cluster_node6.conf
 
-test:
-	make start
+test: compile-module start
 	sleep 2
 	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
 	make stop
 
-package:
-	make start
+package: start
 	mvn clean package
 	make stop
 
-deploy:
-	make start
+deploy: start
 	mvn clean deploy
 	make stop
 

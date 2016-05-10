@@ -1280,6 +1280,19 @@ public class BinaryClient extends Connection {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 
+  public void moduleLoad(byte[] path) {
+    sendCommand(MODULE, Keyword.LOAD.raw, path);
+  }
+
+  public void moduleList() {
+    sendCommand(MODULE, Keyword.LIST.raw);
+  }
+
+  public void moduleUnload(byte[] name) {
+    sendCommand(MODULE, Keyword.UNLOAD.raw, name);
+  }
+
+
   private ArrayList<byte[]> convertScoreMembersToByteArrays(final Map<byte[], Double> scoreMembers) {
     ArrayList<byte[]> args = new ArrayList<byte[]>(scoreMembers.size() * 2);
 

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.commands.BasicRedisPipeline;
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.RedisPipeline;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
@@ -19,6 +20,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   protected abstract Client getClient(String key);
 
   protected abstract Client getClient(byte[] key);
+
 
   @Override
   public Response<Long> append(String key, String value) {
@@ -1621,4 +1623,5 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).georadiusByMember(key, member, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
+
 }

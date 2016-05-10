@@ -59,7 +59,7 @@ public class ConnectionTest extends Assert {
       }
 
       @Override
-      protected Connection sendCommand(ProtocolCommand cmd, byte[]... args) {
+      public Connection sendCommand(ProtocolCommand cmd, byte[]... args) {
         return super.sendCommand(cmd, args);
       }
     }

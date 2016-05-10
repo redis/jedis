@@ -36,6 +36,10 @@ public abstract class JedisPubSub {
   public void onPSubscribe(String pattern, int subscribedChannels) {
   }
 
+  public void onPong(String pattern) {
+
+  }
+
   public void unsubscribe() {
     if (client == null) {
       throw new JedisConnectionException("JedisPubSub was not subscribed to a Jedis instance.");
@@ -82,6 +86,13 @@ public abstract class JedisPubSub {
     }
     client.punsubscribe(patterns);
     client.flush();
+  }
+
+  public void ping() {
+    if (client == null) {
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
+    }
+    client.ping();
   }
 
   public boolean isSubscribed() {
@@ -146,7 +157,9 @@ public abstract class JedisPubSub {
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPUnsubscribe(strpattern, subscribedChannels);
       } else if (Arrays.equals(SafeEncoder.encode("pong"), resp)) {
-        continue;
+        final byte[] bpattern = (byte[]) reply.get(1);
+        final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
+        onPong(strpattern);
       } else {
         throw new JedisException("Unknown message type: " + firstObj);
       }

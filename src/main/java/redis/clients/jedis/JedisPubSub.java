@@ -94,6 +94,7 @@ public abstract class JedisPubSub {
       throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.ping();
+    client.flush();
   }
 
   public boolean isSubscribed() {

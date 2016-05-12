@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -72,6 +73,37 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         }
       }
     }, "testchan1", "testchan2", "testchan3");
+  }
+
+  @Test
+  public void pubSubChannelWithPingPong() throws InterruptedException {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+    jedis.subscribe(new JedisPubSub() {
+
+      @Override
+      public void onSubscribe(String channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(String channel, String message) {
+        this.ping();
+      }
+
+      @Override
+      public void onPong(String pattern) {
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(String channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, "testchan1");
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
   }
 
   @Test

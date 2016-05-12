@@ -10,8 +10,10 @@
 package redis.clients.util;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisConnectionTimeOutException;
 
 /**
  * This class assumes (to some degree) that we are reading a RESP stream. As such it assumes certain
@@ -36,7 +38,7 @@ public class RedisInputStream extends FilterInputStream {
     this(in, 8192);
   }
 
-  public byte readByte() throws JedisConnectionException {
+  public byte readByte() throws JedisConnectionException, JedisConnectionTimeOutException {
     ensureFill();
     return buf[count++];
   }
@@ -197,6 +199,8 @@ public class RedisInputStream extends FilterInputStream {
         if (limit == -1) {
           throw new JedisConnectionException("Unexpected end of stream.");
         }
+      } catch (SocketTimeoutException e) {
+    	  throw new JedisConnectionTimeOutException(e);
       } catch (IOException e) {
         throw new JedisConnectionException(e);
       }

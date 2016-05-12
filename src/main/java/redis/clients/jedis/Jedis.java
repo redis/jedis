@@ -2794,7 +2794,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    client.setTimeoutInfinite();
+    client.setSoTimeout(Protocol.DEFAULT_TIMEOUT);
     try {
       jedisPubSub.proceed(client, channels);
     } finally {

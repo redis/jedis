@@ -6,6 +6,7 @@ import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.PONG;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,10 @@ public abstract class JedisPubSub {
   }
 
   public void onPSubscribe(String pattern, int subscribedChannels) {
+  }
+
+  public void onPong(String pattern) {
+
   }
 
   public void unsubscribe() {
@@ -81,6 +86,14 @@ public abstract class JedisPubSub {
       throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.punsubscribe(patterns);
+    client.flush();
+  }
+
+  public void ping() {
+    if (client == null) {
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
+    }
+    client.ping();
     client.flush();
   }
 
@@ -145,6 +158,10 @@ public abstract class JedisPubSub {
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPUnsubscribe(strpattern, subscribedChannels);
+      } else if (Arrays.equals(PONG.raw, resp)) {
+        final byte[] bpattern = (byte[]) reply.get(1);
+        final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
+        onPong(strpattern);
       } else {
         throw new JedisException("Unknown message type: " + firstObj);
       }

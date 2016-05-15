@@ -223,6 +223,9 @@ public final class Protocol {
   }
 
   public static final byte[] toByteArray(final double value) {
+    if (Double.isInfinite(value)) {
+      return value == Double.POSITIVE_INFINITY ? "+inf".getBytes() : "-inf".getBytes();
+    }
     return SafeEncoder.encode(String.valueOf(value));
   }
 

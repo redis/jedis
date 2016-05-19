@@ -26,7 +26,7 @@ import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands {
+    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
@@ -3563,4 +3563,23 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
+
+  @Override
+  public String moduleLoad(String path) {
+    client.moduleLoad(path);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String moduleUnload(String name) {
+    client.moduleUnload(name);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public List<Module> moduleList() {
+    client.moduleList();
+    return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
+  }
+
 }

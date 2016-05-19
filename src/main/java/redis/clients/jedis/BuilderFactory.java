@@ -432,6 +432,38 @@ public final class BuilderFactory {
     }
   };
 
+
+
+  public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
+    @Override
+    public List<Module> build(Object data) {
+      if (data == null) {
+        return null;
+      } else {
+        List<List<Object>> objectList = (List<List<Object>>) data;
+
+        if (objectList.isEmpty()) {
+          return new ArrayList<Module>();
+        }
+
+        List<Module> responses = new ArrayList<Module>(objectList.size());
+
+        for (List<Object> moduleResp: objectList) {
+          Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());
+          responses.add(m);
+        }
+
+        return responses;
+      }
+    }
+
+    public String toString() {
+      return "List<Module>";
+    }
+
+  };
+
+
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );
   }

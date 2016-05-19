@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.Module;
 import redis.clients.jedis.Response;
 
 import java.util.List;
@@ -38,4 +39,11 @@ public interface BasicRedisPipeline {
   Response<String> ping();
 
   Response<String> select(int index);
+
+  Response<String> moduleLoad(String path);
+
+  Response<List<Module>> moduleList();
+
+  Response<String> moduleUnload(String name);
+
 }

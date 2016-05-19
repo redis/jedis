@@ -1174,6 +1174,16 @@ public class Client extends BinaryClient implements Commands {
     return p;
   }
 
+  public void moduleLoad(String path) {
+    moduleLoad(SafeEncoder.encode(path));
+  }
+  public void moduleLoad() {
+    moduleList();
+  }
+
+  public void moduleUnload(String name) {
+    moduleUnload(SafeEncoder.encode(name));
+  }
   private HashMap<byte[], Double> convertScoreMembersToBinary(Map<String, Double> scoreMembers) {
     HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
 
@@ -1192,5 +1202,6 @@ public class Client extends BinaryClient implements Commands {
     }
     return binaryMemberCoordinateMap;
   }
+
 
 }

@@ -8,7 +8,7 @@ import java.util.Set;
 
 public abstract class MultiKeyPipelineBase extends PipelineBase implements
     MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
-    BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline {
+    BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline, BasicRedisPipeline {
 
   protected Client client = null;
 
@@ -540,4 +540,27 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
+  public Response<List<String>> time() {
+    client.time();
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<String> moduleUnload(String name) {
+    client.moduleUnload(name);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<List<Module>> moduleList() {
+    client.moduleList();
+    return getResponse(BuilderFactory.MODULE_LIST);
+  }
+
+  @Override
+  public Response<String> moduleLoad(String path) {
+    client.moduleLoad(path);
+    return getResponse(BuilderFactory.STRING);
+  }
 }

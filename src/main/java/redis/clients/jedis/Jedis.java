@@ -17,7 +17,14 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.commands.*;
+import redis.clients.jedis.commands.AdvancedJedisCommands;
+import redis.clients.jedis.commands.BasicCommands;
+import redis.clients.jedis.commands.ClusterCommands;
+import redis.clients.jedis.commands.JedisCommands;
+import redis.clients.jedis.commands.ModuleCommands;
+import redis.clients.jedis.commands.MultiKeyCommands;
+import redis.clients.jedis.commands.ScriptingCommands;
+import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
@@ -3580,6 +3587,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<Module> moduleList() {
     client.moduleList();
     return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  public List<Long> bitfield(String key, String...arguments) {
+    checkIsInMultiOrPipeline();
+    client.bitfield(key, arguments);
+    return client.getIntegerMultiBulkReply();
   }
 
 }

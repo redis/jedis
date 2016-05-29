@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -148,6 +149,20 @@ public class JedisTest extends JedisCommandTestBase {
   public void checkDisconnectOnQuit() {
     jedis.quit();
     assertFalse(jedis.getClient().isConnected());
+  }
+
+  @Test
+  public void testBitfield() {
+    Jedis jedis = new Jedis("redis://localhost:6380");
+    jedis.auth("foobared");
+    jedis.del("mykey");
+    try {
+      List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+      assertEquals(1l, responses.get(0).longValue());
+      assertEquals(0l, responses.get(1).longValue());
+    } finally {
+      jedis.del("mykey");
+    }
   }
 
 }

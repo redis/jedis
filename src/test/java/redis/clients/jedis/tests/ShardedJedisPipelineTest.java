@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +20,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
@@ -151,6 +151,16 @@ public class ShardedJedisPipelineTest {
     assertTrue(resp.isEmpty());
 
     jedis2.close();
+  }
+
+  @Test
+  public void testBitField() throws UnsupportedEncodingException {
+    ShardedJedisPipeline p = jedis.pipelined();
+    p.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    p.get("mykey");
+    List<Object> results = p.syncAndReturnAll();
+    List<Long> expectedResults = Arrays.asList(1l, 0l);
+    assertEquals(expectedResults, results.get(0));
   }
 
 }

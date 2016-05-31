@@ -1,19 +1,42 @@
 package redis.clients.jedis.tests;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.*;
-import redis.clients.jedis.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.exceptions.*;
+import redis.clients.jedis.JedisClusterInfoCache;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.util.JedisClusterCRC16;
-import redis.clients.util.SafeEncoder;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Logger;
 
 public class JedisClusterTest extends Assert {
   private static Jedis node1;
@@ -610,4 +633,22 @@ public class JedisClusterTest extends Assert {
     }
     return false;
   }
+
+  @Test
+  public void testBitfield() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    JedisCluster jc = new JedisCluster(jedisClusterNode);
+    try {
+    	List<Long> responses = jc.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+      	assertEquals(1l, responses.get(0).longValue());
+      	assertEquals(0l, responses.get(1).longValue());
+    	assertNotNull(node3.get("mykey"));
+    } finally {
+	    if(jc != null) {
+		jc.close();
+	    }
+    }
+  }
+
 }

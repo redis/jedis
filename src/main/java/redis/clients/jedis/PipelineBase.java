@@ -1621,4 +1621,12 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).georadiusByMember(key, member, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
+
+  @Override
+  public Response<List<Long>> bitfield(String key, String... arguments) {
+    getClient(key).bitfield(key, arguments);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+
 }

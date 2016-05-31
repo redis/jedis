@@ -320,4 +320,45 @@ public class ShardedJedisTest extends Assert {
     }
   }
 
+  @Test
+  public void testBitfield() {
+    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    JedisShardInfo si = new JedisShardInfo(redis1.getHost(), redis1.getPort());
+    si.setPassword("foobared");
+    shards.add(si);
+    si = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+    si.setPassword("foobared");
+    shards.add(si);
+    ShardedJedis jedis = new ShardedJedis(shards);
+    jedis.del("key1");
+    jedis.del("key2");
+    Jedis jedis1 = null, jedis2 = null;
+    try {
+      List<Long> responses1 = jedis.bitfield("key1", "INCRBY","i5","100","1", "GET", "u4", "0");
+      assertEquals(1l, responses1.get(0).longValue());
+      assertEquals(0l, responses1.get(1).longValue());
+      JedisShardInfo s1 = jedis.getShardInfo("key1");
+      List<Long> responses2 = jedis.bitfield("key2", "INCRBY","i5","100","1", "GET", "u4", "0");
+      assertEquals(1l, responses2.get(0).longValue());
+      assertEquals(0l, responses2.get(1).longValue());
+      JedisShardInfo s2 = jedis.getShardInfo("key2");
+
+      jedis1 = new Jedis(s1.getHost(), s1.getPort());
+      jedis1.auth("foobared");
+      assertNotNull(jedis1.get("key1"));
+
+      jedis2 = new Jedis(s2.getHost(), s2.getPort());
+      jedis2.auth("foobared");
+      assertNotNull(jedis2.get("key2"));
+    } finally {
+      jedis.close();
+      if (jedis1 != null) {
+        jedis1.close();
+      }
+      if (jedis2 != null) {
+        jedis2.close();
+      }
+    }
+  }
+
 }

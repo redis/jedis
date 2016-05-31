@@ -3589,6 +3589,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
   }
 
+  @Override
   public List<Long> bitfield(String key, String...arguments) {
     checkIsInMultiOrPipeline();
     client.bitfield(key, arguments);

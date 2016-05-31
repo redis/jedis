@@ -7,6 +7,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.util.JedisClusterCRC16;
@@ -27,15 +28,15 @@ public class ClusterBinaryJedisCommandsTest extends JedisTestBase {
   @Before
   public void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
-    node1.connect();
+    node1.auth("cluster");
     node1.flushAll();
 
     node2 = new Jedis(nodeInfo2.getHost(), nodeInfo2.getPort());
-    node2.connect();
+    node2.auth("cluster");
     node2.flushAll();
 
     node3 = new Jedis(nodeInfo3.getHost(), nodeInfo3.getPort());
-    node3.connect();
+    node3.auth("cluster");
     node3.flushAll();
 
     // ---- configure cluster
@@ -66,7 +67,7 @@ public class ClusterBinaryJedisCommandsTest extends JedisTestBase {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    jedisCluster = new JedisCluster(jedisClusterNode);
+    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
 
   }
 

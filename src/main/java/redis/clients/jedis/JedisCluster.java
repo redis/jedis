@@ -50,6 +50,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
       int maxRedirections, final GenericObjectPoolConfig poolConfig) {
     super(Collections.singleton(node), connectionTimeout, soTimeout, maxRedirections, poolConfig);
   }
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
+                      int maxRedirections, String password, final GenericObjectPoolConfig poolConfig) {
+    super(Collections.singleton(node), connectionTimeout, soTimeout, maxRedirections, password, poolConfig);
+  }
   
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
@@ -79,6 +84,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int maxRedirections, final GenericObjectPoolConfig poolConfig) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxRedirections, poolConfig);
+  }
+
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+                      int maxRedirections, String password, final GenericObjectPoolConfig poolConfig) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxRedirections, password, poolConfig);
   }
 
   @Override

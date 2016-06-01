@@ -66,7 +66,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public List<String> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptyList();
       }
       List<byte[]> l = (List<byte[]>) data;
       final ArrayList<String> result = new ArrayList<String>(l.size());
@@ -128,7 +128,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<String> result = new HashSet<String>(l.size());
@@ -152,7 +152,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public List<byte[]> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptyList();
       }
       List<byte[]> l = (List<byte[]>) data;
 
@@ -168,7 +168,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<byte[]> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<byte[]> result = new LinkedHashSet<byte[]>(l);
@@ -209,7 +209,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<String> result = new LinkedHashSet<String>(l.size());
@@ -233,7 +233,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<Tuple> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
@@ -255,7 +255,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<Tuple> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
@@ -333,7 +333,7 @@ public final class BuilderFactory {
     @Override
     public List<GeoCoordinate> build(Object data) {
       if (null == data) {
-        return null;
+        return Collections.emptyList();
       }
       return interpretGeoposResult((List<Object>) data);
     }
@@ -363,7 +363,7 @@ public final class BuilderFactory {
     @Override
     public List<GeoRadiusResponse> build(Object data) {
       if (data == null) {
-        return null;
+        return Collections.emptyList();
       } else {
         List<Object> objectList = (List<Object>) data;
 

@@ -14,6 +14,8 @@ import redis.clients.util.JedisURIHelper;
 
 public class JedisPool extends JedisPoolAbstract {
 
+  private static final String REDISS = "rediss";
+
   public JedisPool() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -35,7 +37,7 @@ public class JedisPool extends JedisPoolAbstract {
       int port = uri.getPort();
       String password = JedisURIHelper.getPassword(uri);
       int database = JedisURIHelper.getDBIndex(uri);
-      boolean ssl = uri.getScheme().equals("rediss");
+      boolean ssl = uri.getScheme().equals(REDISS);
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h, port,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, password, database, null,
             ssl, null, null, null), new GenericObjectPoolConfig());
@@ -54,7 +56,7 @@ public class JedisPool extends JedisPoolAbstract {
       int port = uri.getPort();
       String password = JedisURIHelper.getPassword(uri);
       int database = JedisURIHelper.getDBIndex(uri);
-      boolean ssl = uri.getScheme().equals("rediss");
+      boolean ssl = uri.getScheme().equals(REDISS);
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h, port,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, password, database, null, ssl,
             sslSocketFactory, sslParameters, hostnameVerifier),
@@ -216,7 +218,7 @@ public class JedisPool extends JedisPoolAbstract {
       final int connectionTimeout, final int soTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout, null,
-        (uri.getScheme() !=null && uri.getScheme().equals("rediss")), sslSocketFactory,
+        (uri.getScheme() !=null && uri.getScheme().equals(REDISS)), sslSocketFactory,
         sslParameters, hostnameVerifier));
   }
 

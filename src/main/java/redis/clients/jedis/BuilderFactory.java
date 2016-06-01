@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

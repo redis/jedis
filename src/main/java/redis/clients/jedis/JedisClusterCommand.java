@@ -11,6 +11,8 @@ import redis.clients.util.SafeEncoder;
 
 public abstract class JedisClusterCommand<T> {
 
+  private static final String NO_DISPATCH_MESSAGE = "No way to dispatch this command to Redis Cluster.";
+
   private JedisClusterConnectionHandler connectionHandler;
   private int redirections;
   private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
@@ -24,7 +26,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T run(String key) {
     if (key == null) {
-      throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
     }
 
     return runWithRetries(SafeEncoder.encode(key), this.redirections, false, false);
@@ -32,7 +34,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T run(int keyCount, String... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
     }
 
     // For multiple keys, only execute if they all share the
@@ -53,7 +55,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T runBinary(byte[] key) {
     if (key == null) {
-      throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
     }
 
     return runWithRetries(key, this.redirections, false, false);
@@ -61,7 +63,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T runBinary(int keyCount, byte[]... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
     }
 
     // For multiple keys, only execute if they all share the

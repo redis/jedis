@@ -395,23 +395,7 @@ public final class BuilderFactory {
             List<Object> informations = (List<Object>) obj;
 
             resp = new GeoRadiusResponse((byte[]) informations.get(0));
-
-            int size = informations.size();
-            for (int idx = 1; idx < size; idx++) {
-              Object info = informations.get(idx);
-              if (info instanceof List<?>) {
-                // coordinate
-                List<Object> coord = (List<Object>) info;
-
-                resp.setCoordinate(new GeoCoordinate(convertByteArrayToDouble(coord.get(0)),
-                    convertByteArrayToDouble(coord.get(1))));
-              } else {
-                // distance
-                resp.setDistance(convertByteArrayToDouble(info));
-              }
-            }
-
-            responses.add(resp);
+            responses.add(setDistanceAndRadius(resp, informations));
           }
         } else {
           // list of members
@@ -419,9 +403,26 @@ public final class BuilderFactory {
             responses.add(new GeoRadiusResponse((byte[]) obj));
           }
         }
-
         return responses;
       }
+    }
+
+    private GeoRadiusResponse setDistanceAndRadius(GeoRadiusResponse resp, List<Object> informations) {
+      int size = informations.size();
+      for (int idx = 1; idx < size; idx++) {
+        Object info = informations.get(idx);
+        if (info instanceof List<?>) {
+          // coordinate
+          List<Object> coord = (List<Object>) info;
+
+          resp.setCoordinate(new GeoCoordinate(convertByteArrayToDouble(coord.get(0)),
+                  convertByteArrayToDouble(coord.get(1))));
+        } else {
+          // distance
+          resp.setDistance(convertByteArrayToDouble(info));
+        }
+      }
+      return resp;
     }
 
     private Double convertByteArrayToDouble(Object obj) {

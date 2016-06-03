@@ -61,10 +61,12 @@ public final class RedisOutputStream extends FilterOutputStream {
     buf[count++] = b;
   }
 
+  @Override
   public void write(final byte[] b) throws IOException {
     write(b, 0, b.length);
   }
 
+  @Override
   public void write(final byte[] b, final int off, final int len) throws IOException {
     if (len >= buf.length) {
       flushBuffer();
@@ -209,6 +211,7 @@ public final class RedisOutputStream extends FilterOutputStream {
     writeCrLf();
   }
 
+  @Override
   public void flush() throws IOException {
     flushBuffer();
     out.flush();

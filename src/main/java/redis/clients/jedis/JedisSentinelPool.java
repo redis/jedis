@@ -260,6 +260,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
     }
 
+    @Override
     public void run() {
 
       running.set(true);

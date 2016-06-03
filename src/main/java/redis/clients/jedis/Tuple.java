@@ -20,6 +20,7 @@ public class Tuple implements Comparable<Tuple> {
     this.score = score;
   }
 
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
@@ -35,6 +36,7 @@ public class Tuple implements Comparable<Tuple> {
     return result;
   }
 
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
     if (obj == null) return false;
@@ -46,11 +48,12 @@ public class Tuple implements Comparable<Tuple> {
     return true;
   }
 
+  @Override
   public int compareTo(Tuple other) {
     if (this.score == other.getScore() || Arrays.equals(this.element, other.element)) return 0;
     else return this.score < other.getScore() ? -1 : 1;
   }
-  
+
   public String getElement() {
     if (null != element) {
       return SafeEncoder.encode(element);
@@ -67,6 +70,7 @@ public class Tuple implements Comparable<Tuple> {
     return score;
   }
 
+  @Override
   public String toString() {
     return '[' + Arrays.toString(element) + ',' + score + ']';
   }

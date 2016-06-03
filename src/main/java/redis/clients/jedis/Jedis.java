@@ -2021,7 +2021,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrangeByScore(key, min, max, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2032,7 +2032,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrangeByScore(key, min, max, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2161,7 +2161,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     List<String> membersWithScores = client.getMultiBulkReply();
     if (membersWithScores == null) {
-      return null;
+      return Collections.emptySet();
     }
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
@@ -2179,7 +2179,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrevrangeByScore(key, max, min);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }

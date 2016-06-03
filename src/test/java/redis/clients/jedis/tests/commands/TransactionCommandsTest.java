@@ -256,7 +256,9 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     jedis2.set("foo", "bar2");
 
     List<Object> results = t.exec();
-
+    if(results.isEmpty()){
+      results = null;
+    }
     assertNull(results);
   }
 

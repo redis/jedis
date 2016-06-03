@@ -165,6 +165,7 @@ public class Connection implements Closeable {
   }
 
   public void connect() {
+    //just a trial
     if (!isConnected()) {
       try {
         socket = new Socket();

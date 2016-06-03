@@ -92,6 +92,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
       this.data = data;
     }
 
+    @Override
     public boolean equals(Object other) {
       if (!(other instanceof ByteArrayWrapper)) {
         return false;
@@ -99,6 +100,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
       return Arrays.equals(data, ((ByteArrayWrapper) other).data);
     }
 
+    @Override
     public int hashCode() {
       return Arrays.hashCode(data);
     }

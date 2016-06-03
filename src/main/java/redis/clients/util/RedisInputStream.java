@@ -176,6 +176,7 @@ public class RedisInputStream extends FilterInputStream {
     return (isNeg ? -value : value);
   }
 
+  @Override
   public int read(byte[] b, int off, int len) throws JedisConnectionException {
     ensureFill();
 

@@ -3563,14 +3563,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       return list.toArray(a);
     }
 
+    @Override
     public String toString() {
       return list.toString();
     }
 
+    @Override
     public int hashCode() {
       return list.hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
       if (o == this) {
         return true;

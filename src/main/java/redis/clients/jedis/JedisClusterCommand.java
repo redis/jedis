@@ -100,6 +100,7 @@ public abstract class JedisClusterCommand<T> {
     }
 
     Jedis connection = null;
+    boolean  askingLocal = asking;
     try {
 
       if (asking) {
@@ -109,7 +110,7 @@ public abstract class JedisClusterCommand<T> {
         connection.asking();
 
         // if asking success, reset asking flag
-        asking = false;
+      askingLocal = false;
       } else {
         if (tryRandomNode) {
           connection = connectionHandler.getConnection();
@@ -130,7 +131,7 @@ public abstract class JedisClusterCommand<T> {
       connection = null;
 
       // retry with random connection
-      return runWithRetries(key, redirections - 1, true, asking);
+      return runWithRetries(key, redirections - 1, true, askingLocal);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
@@ -144,14 +145,14 @@ public abstract class JedisClusterCommand<T> {
       connection = null;
 
       if (jre instanceof JedisAskDataException) {
-        asking = true;
+        askingLocal = true;
         askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
       } else if (jre instanceof JedisMovedDataException) {
       } else {
         throw new JedisClusterException(jre);
       }
 
-      return runWithRetries(key, redirections - 1, false, asking);
+      return runWithRetries(key, redirections - 1, false, askingLocal);
     } finally {
       releaseConnection(connection);
     }

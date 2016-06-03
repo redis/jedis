@@ -172,13 +172,14 @@ public final class RedisOutputStream extends FilterOutputStream {
   }
   
   public void writeIntCrLf(int value) throws IOException {
+    int valueLocal = value;
     if (value < 0) {
       write((byte) '-');
-      value = -value;
+      valueLocal = -value;
     }
 
     int size = 0;
-    while (value > sizeTable[size])
+    while (valueLocal > sizeTable[size])
       size++;
 
     size++;
@@ -189,20 +190,20 @@ public final class RedisOutputStream extends FilterOutputStream {
     int q, r;
     int charPos = count + size;
 
-    while (value >= 65536) {
-      q = value / 100;
-      r = value - ((q << 6) + (q << 5) + (q << 2));
-      value = q;
+    while (valueLocal >= 65536) {
+      q = valueLocal / 100;
+      r = valueLocal - ((q << 6) + (q << 5) + (q << 2));
+      valueLocal = q;
       buf[--charPos] = DigitOnes[r];
       buf[--charPos] = DigitTens[r];
     }
 
     for (;;) {
-      q = (value * 52429) >>> (16 + 3);
-      r = value - ((q << 3) + (q << 1));
+      q = (valueLocal * 52429) >>> (16 + 3);
+      r = valueLocal - ((q << 3) + (q << 1));
       buf[--charPos] = digits[r];
       value = q;
-      if (value == 0) break;
+      if (valueLocal == 0) break;
     }
     count += size;
 

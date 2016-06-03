@@ -2189,7 +2189,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrevrangeByScore(key, max, min);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2200,7 +2200,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrevrangeByScore(key, max, min, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2231,7 +2231,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrevrangeByScore(key, max, min, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2442,7 +2442,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrangeByLex(key, min, max);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2454,7 +2454,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrangeByLex(key, min, max, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2465,7 +2465,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrevrangeByLex(key, max, min);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }
@@ -2476,7 +2476,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zrevrangeByLex(key, max, min, offset, count);
     final List<String> members = client.getMultiBulkReply();
     if (members == null) {
-      return null;
+      return Collections.emptySet();
     }
     return SetFromList.of(members);
   }

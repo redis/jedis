@@ -45,9 +45,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       } catch (JedisConnectionException e) {
         // try next nodes
       } finally {
-        if (jedis != null) {
           jedis.close();
-        }
       }
     }
   }
@@ -62,9 +60,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       } catch (JedisConnectionException e) {
         // try next nodes
       } finally {
-        if (jedis != null) {
           jedis.close();
-        }
       }
     }
   }

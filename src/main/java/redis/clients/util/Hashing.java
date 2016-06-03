@@ -8,10 +8,12 @@ public interface Hashing {
   ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();
 
   Hashing MD5 = new Hashing() {
+    @Override
     public long hash(String key) {
       return hash(SafeEncoder.encode(key));
     }
 
+    @Override
     public long hash(byte[] key) {
       try {
         if (md5Holder.get() == null) {

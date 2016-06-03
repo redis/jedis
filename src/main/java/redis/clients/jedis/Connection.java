@@ -188,7 +188,6 @@ public class Connection implements Closeable {
           setSocketParams(socket);
           connectionFailMessage(socket);
         }
-
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {

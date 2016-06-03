@@ -37,15 +37,16 @@ public final class JedisClusterCRC16 {
 
   public static int getSlot(String key) {
     int s = key.indexOf("{");
+    String keyLocal = key;
     if (s > -1) {
       int e = key.indexOf("}", s + 1);
       if (e > -1 && e != s + 1) {
-        key = key.substring(s + 1, e);
+        keyLocal = key.substring(s + 1, e);
       }
     }
     // optimization with modulo operator with power of 2
     // equivalent to getCRC16(key) % 16384
-    return getCRC16(key) & (16384 - 1);
+    return getCRC16(keyLocal) & (16384 - 1);
   }
 
   public static int getSlot(byte[] key) {

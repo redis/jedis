@@ -133,7 +133,7 @@ public class Connection implements Closeable {
       try {
         String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
         if (errorMessage != null && errorMessage.length() > 0) {
-          JedisConnectionException  exLocal = new JedisConnectionException(errorMessage, ex.getCause());
+            ex = new JedisConnectionException(errorMessage, ex.getCause());
         }
       } catch (Exception e) {
         /*

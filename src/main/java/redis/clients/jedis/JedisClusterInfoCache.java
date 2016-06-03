@@ -53,29 +53,28 @@ public class JedisClusterInfoCache {
       for (Object slotInfoObj : slots) {
         List<Object> slotInfo = (List<Object>) slotInfoObj;
 
-        if (slotInfo.size() <= MASTER_NODE_INDEX) {
-          continue;
-        }
-
-        List<Integer> slotNums = getAssignedSlotArray(slotInfo);
-
-        // hostInfos
-        int size = slotInfo.size();
-        for (int i = MASTER_NODE_INDEX; i < size; i++) {
-          List<Object> hostInfos = (List<Object>) slotInfo.get(i);
-          if (hostInfos.size() <= 0) {
-            continue;
-          }
-
-          HostAndPort targetNode = generateHostAndPort(hostInfos);
-          setNodeIfNotExist(targetNode);
-          if (i == MASTER_NODE_INDEX) {
-            assignSlotsToNode(slotNums, targetNode);
-          }
+        if (slotInfo.size() > MASTER_NODE_INDEX) {
+          List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+          // hostInfos
+          hostInfoSetup(slotInfo, slotNums);
         }
       }
     } finally {
       w.unlock();
+    }
+  }
+
+  private void hostInfoSetup(List<Object> slotInfo, List<Integer> slotNums){
+    int size = slotInfo.size();
+    for (int i = MASTER_NODE_INDEX; i < size; i++) {
+      List<Object> hostInfos = (List<Object>) slotInfo.get(i);
+      if (hostInfos.size() > 0) {
+        HostAndPort targetNode = generateHostAndPort(hostInfos);
+        setNodeIfNotExist(targetNode);
+        if (i == MASTER_NODE_INDEX) {
+          assignSlotsToNode(slotNums, targetNode);
+        }
+      }
     }
   }
 
@@ -93,23 +92,12 @@ public class JedisClusterInfoCache {
         for (Object slotInfoObj : slots) {
           List<Object> slotInfo = (List<Object>) slotInfoObj;
 
-          if (slotInfo.size() <= 2) {
-            continue;
+          if (slotInfo.size() > 2) {
+             List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+            // hostInfos
+            List<Object> hostInfos = (List<Object>) slotInfo.get(2);
+            setMasterHostAndPort(hostInfos, slotNums);
           }
-
-          List<Integer> slotNums = getAssignedSlotArray(slotInfo);
-
-          // hostInfos
-          List<Object> hostInfos = (List<Object>) slotInfo.get(2);
-          if (hostInfos.isEmpty()) {
-            continue;
-          }
-
-          // at this time, we just use master, discard slave information
-          HostAndPort targetNode = generateHostAndPort(hostInfos);
-
-          setNodeIfNotExist(targetNode);
-          assignSlotsToNode(slotNums, targetNode);
         }
       } finally {
         rediscovering = false;
@@ -117,7 +105,14 @@ public class JedisClusterInfoCache {
       }
     }
   }
-
+  private void setMasterHostAndPort(List<Object> hostInfos, List<Integer> slotNums){
+    if (!hostInfos.isEmpty()) {
+      // at this time, we just use master, discard slave information
+      HostAndPort targetNode = generateHostAndPort(hostInfos);
+      setNodeIfNotExist(targetNode);
+      assignSlotsToNode(slotNums, targetNode);
+    }
+  }
   private HostAndPort generateHostAndPort(List<Object> hostInfos) {
     return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)),
         ((Long) hostInfos.get(1)).intValue());
@@ -234,13 +229,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       for (JedisPool pool : nodes.values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (Exception e) {
-          // pass
-        }
+        poolDestroy(pool);
       }
       nodes.clear();
       slots.clear();
@@ -248,7 +237,15 @@ public class JedisClusterInfoCache {
       w.unlock();
     }
   }
-
+  private void poolDestroy(JedisPool pool){
+    try {
+      if (pool != null) {
+        pool.destroy();
+      }
+    } catch (Exception e) {
+      // pass
+    }
+  }
   public static String getNodeKey(HostAndPort hnp) {
     return hnp.getHost() + ":" + hnp.getPort();
   }

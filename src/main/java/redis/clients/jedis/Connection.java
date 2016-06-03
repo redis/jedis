@@ -183,19 +183,10 @@ public class Connection implements Closeable {
         socket.setSoTimeout(soTimeout);
 
         if (ssl) {
-          if (null == sslSocketFactory) {
-            sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-          }
+          sslSocketFactory = getSocketFactory(sslSocketFactory);
           socket = (SSLSocket) sslSocketFactory.createSocket(socket, host, port, true);
-          if (null != sslParameters) {
-            ((SSLSocket) socket).setSSLParameters(sslParameters);
-          }
-          if ((null != hostnameVerifier) &&
-              (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
-            String message = String.format(
-                "The connection to '%s' failed ssl/tls hostname verification.", host);
-            throw new JedisConnectionException(message);
-          }
+          setSocketParams(socket);
+          connectionFailMessage(socket);
         }
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
@@ -204,6 +195,29 @@ public class Connection implements Closeable {
         broken = true;
         throw new JedisConnectionException(ex);
       }
+    }
+  }
+
+  private SSLSocketFactory getSocketFactory(SSLSocketFactory socketFactory){
+    SSLSocketFactory socketFactoryLocal = socketFactory;
+    if (null == sslSocketFactory) {
+      socketFactoryLocal = (SSLSocketFactory)SSLSocketFactory.getDefault();
+    }
+    return socketFactoryLocal;
+  }
+
+  private void setSocketParams(Socket socket){
+    if (null != sslParameters) {
+      ((SSLSocket) socket).setSSLParameters(sslParameters);
+    }
+  }
+
+  private void connectionFailMessage(Socket socket){
+    if ((null != hostnameVerifier) &&
+            (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
+      String message = String.format(
+              "The connection to '%s' failed ssl/tls hostname verification.", host);
+      throw new JedisConnectionException(message);
     }
   }
 

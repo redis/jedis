@@ -634,21 +634,4 @@ public class JedisClusterTest extends Assert {
     return false;
   }
 
-  @Test
-  public void testBitfield() {
-    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisCluster jc = new JedisCluster(jedisClusterNode);
-    try {
-    	List<Long> responses = jc.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
-      	assertEquals(1l, responses.get(0).longValue());
-      	assertEquals(0l, responses.get(1).longValue());
-    	assertNotNull(node3.get("mykey"));
-    } finally {
-	    if(jc != null) {
-		jc.close();
-	    }
-    }
-  }
-
 }

@@ -10,7 +10,7 @@ before_install:
     - cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
 install:
   - make travis-install
-script: make test
+script: TEST="\!ModuleTest" make test
 cache:
   directories:
     - $HOME/.m2

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisBusyException;
@@ -245,7 +246,7 @@ public final class Protocol {
     public final byte[] raw;
 
     Keyword() {
-      raw = SafeEncoder.encode(this.name().toLowerCase());
+      raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));
     }
   }
 }

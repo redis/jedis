@@ -3724,4 +3724,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       return new SetFromList<E>(list);
     }
   }
+
+  @Override
+  public List<byte[]> bitfield(byte[] key, byte[]... arguments) {
+    checkIsInMultiOrPipeline();
+    client.bitfield(key, arguments);
+    return client.getBinaryMultiBulkReply();
+  }
 }

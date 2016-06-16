@@ -164,5 +164,24 @@ public class JedisTest extends JedisCommandTestBase {
       jedis.del("mykey");
     }
   }
+  
+  @Test
+  /**
+   * Binary Jedis tests should be in their own class
+   */
+  public void testBinaryBitfield() {
+    jedis.close();
+    BinaryJedis binaryJedis = new BinaryJedis("localhost");
+    binaryJedis.auth("foobared");
+    binaryJedis.del("mykey".getBytes());
+    try {
+      List<byte[]> responses = binaryJedis.bitfield("mykey".getBytes(), "INCRBY".getBytes(),"i5".getBytes(),"100".getBytes(),"1".getBytes(), "GET".getBytes(), "u4".getBytes(), "0".getBytes());
+      assertEquals(1l, responses.get(0));
+      assertEquals(0l, responses.get(1));
+    } finally {
+      binaryJedis.del("mykey".getBytes());
+      binaryJedis.close();
+    }
+  }
 
 }

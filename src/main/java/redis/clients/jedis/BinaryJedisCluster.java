@@ -1812,4 +1812,14 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+
+  @Override
+  public List<byte[]> bitfield(final byte[] key, final byte[]... arguments) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.bitfield(key, arguments);
+      }
+    }.runBinary(key);
+  }
 }

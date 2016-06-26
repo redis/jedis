@@ -1,5 +1,5 @@
 package redis.clients.jedis;
 
-public interface HighLevelJedisClusterBinaryCommands {
+public interface HighLevelBinaryJedisClusterCommands {
     public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) ;
 }

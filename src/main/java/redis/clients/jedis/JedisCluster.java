@@ -15,7 +15,7 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
-    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+    MultiKeyJedisClusterCommands , HighLevelJedisClusterCommands, JedisClusterScriptingCommands {
 
   public static enum Reset {
     SOFT, HARD
@@ -1246,6 +1246,30 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     }.run(key);
   }
 
+  
+  @Override
+  public ScanResult<String> scan(final String cursor, final ScanParams params) {
+
+    String matchPattern = null;
+
+    if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with non-empty match patterns");
+    }
+
+    if (SCAN_VALID_MATCH_REGEX_PATTERN.matcher(matchPattern).matches()) {
+
+      return new JedisClusterCommand< ScanResult<String>>(connectionHandler,
+              maxRedirections) {
+        @Override
+        public ScanResult<String> execute(Jedis connection) {
+          return connection.scan(cursor, params);
+        }
+      }.run(matchPattern);
+    } else {
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with match patterns of the following format : '{<HASH_TAG>}*' where <HASH_TAG> is a tag string of your choice");
+    }
+  }    
+  
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,

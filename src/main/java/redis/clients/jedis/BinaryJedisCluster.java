@@ -14,14 +14,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterCommands,
-    MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
+    MultiKeyBinaryJedisClusterCommands , HighLevelBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
   public static final short HASHSLOTS = 16384;
   protected static final int DEFAULT_TIMEOUT = 2000;
   protected static final int DEFAULT_MAX_REDIRECTIONS = 5;
-
+  protected static final Pattern SCAN_VALID_MATCH_REGEX_PATTERN = Pattern.compile("\\{[^\\{^\\}]+\\}\\*");
+  
   protected int maxRedirections;
 
   protected JedisClusterConnectionHandler connectionHandler;
@@ -1946,6 +1948,29 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
     }.runBinary(key);
   }
 
+  @Override
+  public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
+
+    String matchPattern = null;
+
+    if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with non-empty match patterns");
+    }
+
+    if (SCAN_VALID_MATCH_REGEX_PATTERN.matcher(matchPattern).matches()) {
+
+      return new JedisClusterCommand< ScanResult<byte[]>>(connectionHandler,
+              maxRedirections) {
+        @Override
+        public ScanResult<byte[]> execute(Jedis connection) {
+          return connection.scan(cursor, params);
+        }
+      }.runBinary(SafeEncoder.encode(matchPattern));
+    } else {
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with match patterns of the following format : '{<HASH_TAG>}*' where <HASH_TAG> is a tag string of your choice");
+    }
+  }
+  
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
     return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,

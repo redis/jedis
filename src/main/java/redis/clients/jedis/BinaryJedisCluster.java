@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterCommands,
-        MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands , JedisClusterBinaryCustomizedCommands , Closeable {
+        MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands , HighLevelJedisClusterBinaryCommands , Closeable {
 
     protected static final Pattern SCAN_VALID_MATCH_REGEX_PATTERN = Pattern.compile("\\{[^\\{^\\}]+\\}\\*");
 

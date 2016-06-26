@@ -15,7 +15,7 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
-        MultiKeyJedisClusterCommands, JedisClusterScriptingCommands, JedisClusterCustomizedCommands {
+        MultiKeyJedisClusterCommands, JedisClusterScriptingCommands, HighLevelJedisClusterCommands {
 
     public static enum Reset {
         SOFT, HARD

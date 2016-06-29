@@ -1623,8 +1623,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<Long>> bitfield(String key, String... arguments) {
-    getClient(key).bitfield(key, arguments);
+  public Response<List<Long>> bitfield(final String key, final String... elements) {
+    getClient(key).bitfield(key, elements);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> bitfield(final byte[] key, final byte[]... elements) {
+    getClient(key).bitfield(key, elements);
     return getResponse(BuilderFactory.LONG_LIST);
   }
 

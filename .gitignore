@@ -2,6 +2,7 @@
 *.iml
 *.ipr
 *.iws
+nb*
 .project
 .settings/
 .gradle/

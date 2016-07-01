@@ -562,32 +562,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<String> moduleLoad(String path) {
     client.moduleLoad(path);
     return getResponse(BuilderFactory.STRING);
-  }
-
-  @Override
-  public Response<List<Long>> bitfield(String key, String... arguments) {
-    client.bitfield(key, arguments);
-    return getResponse(BuilderFactory.LONG_LIST);
-  }
-
-  @Override
-  protected Client getClient(String key) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  protected Client getClient(byte[] key) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Response<List<Long>> bitfield(byte[] key, byte[]... arguments) {
-    client.bitfield(key, arguments);
-    return getResponse(BuilderFactory.LONG_LIST);
-  }
-  
+  }  
   
   
 }

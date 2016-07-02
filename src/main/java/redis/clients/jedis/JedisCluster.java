@@ -1220,7 +1220,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with non-empty match patterns");
     }
 
-    if (JedisClusterHashTagUtil.isTaggedMatchPattern(matchPattern)) {
+    if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
 
       return new JedisClusterCommand< ScanResult<String>>(connectionHandler,
               maxRedirections) {

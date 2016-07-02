@@ -18,6 +18,8 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.params.set.SetParams;
+import redis.clients.util.JedisClusterHashTagUtil;
+import redis.clients.util.SafeEncoder;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
@@ -1209,6 +1211,29 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+    @Override
+  public ScanResult<String> scan(final String cursor, final ScanParams params) {
+
+    String matchPattern = null;
+
+    if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with non-empty match patterns");
+    }
+
+    if (JedisClusterHashTagUtil.isTaggedMatchPattern(matchPattern)) {
+
+      return new JedisClusterCommand< ScanResult<String>>(connectionHandler,
+              maxRedirections) {
+        @Override
+        public ScanResult<String> execute(Jedis connection) {
+          return connection.scan(cursor, params);
+        }
+      }.runBinary(SafeEncoder.encode(matchPattern));
+    } else {
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with match patterns of the following format : '{<HASH_TAG>}*' where <HASH_TAG> is a tag string of your choice");
+    }
+  }
+  
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,

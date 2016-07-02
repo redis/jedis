@@ -1116,4 +1116,14 @@ public class Client extends BinaryClient implements Commands {
     return binaryMemberCoordinateMap;
   }
 
+  @Override
+  public void bitfield(final String key, final String... arguments) {
+    byte[][] argumentArray = new byte[arguments.length][];
+    int index = 0;
+    for(String argument : arguments) {
+      argumentArray[index++] = SafeEncoder.encode(argument);
+    }
+    bitfield(SafeEncoder.encode(key), argumentArray);
+  }
+
 }

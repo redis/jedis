@@ -3527,4 +3527,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
+
+  @Override
+  public List<Long> bitfield(String key, String...arguments) {
+    checkIsInMultiOrPipeline();
+    client.bitfield(key, arguments);
+    return client.getIntegerMultiBulkReply();
+  }
+
 }

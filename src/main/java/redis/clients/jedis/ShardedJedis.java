@@ -829,4 +829,10 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit, param);
   }
+
+  @Override
+  public List<Long> bitfield(String key, String... arguments) {
+    Jedis j = getShard(key);
+    return j.bitfield(key, arguments);
+  }
 }

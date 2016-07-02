@@ -327,4 +327,11 @@ public interface JedisCommands {
 
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param);
+
+  /**
+   * Executes BITFIELD Redis command
+   * @param key
+   * @param arguments
+   */
+  List<Long> bitfield(String key, String...arguments);
 }

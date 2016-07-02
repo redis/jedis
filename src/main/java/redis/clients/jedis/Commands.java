@@ -337,4 +337,11 @@ public interface Commands {
   public void zscan(final String key, final String cursor, final ScanParams params);
 
   public void waitReplicas(int replicas, long timeout);
+
+  /**
+   * Used for BITFIELD Redis command
+   * @param key
+   * @param args
+   */
+  void bitfield(final String key, final String...arguments);
 }

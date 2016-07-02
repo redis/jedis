@@ -418,6 +418,22 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Long> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return (List<Long>) data;
+    }
+
+    public String toString() {
+      return "List<Long>";
+    }
+
+  };
+
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );
   }

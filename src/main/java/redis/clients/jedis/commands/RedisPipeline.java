@@ -217,6 +217,8 @@ public interface RedisPipeline {
   Response<Long> pfadd(final String key, final String... elements);
 
   Response<Long> pfcount(final String key);
+  
+  Response<List<Long>> bitfield(String key, String... arguments);
 
   // Geo Commands
 

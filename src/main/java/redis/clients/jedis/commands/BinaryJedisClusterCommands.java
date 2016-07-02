@@ -275,4 +275,11 @@ public interface BinaryJedisClusterCommands {
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
 
+  /**
+   * Executes BITFIELD Redis command
+   * @param key
+   * @param arguments
+   */
+  List<byte[]> bitfield(final byte[] key, final byte[]... arguments);
+
 }

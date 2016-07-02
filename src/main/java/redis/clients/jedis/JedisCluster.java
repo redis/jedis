@@ -1798,4 +1798,14 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+
+  @Override
+  public List<Long> bitfield(final String key, final String... arguments) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxRedirections) {
+      @Override
+      public List<Long> execute(Jedis connection) {
+        return connection.bitfield(key, arguments);
+      }
+    }.run(key);
+  }
 }

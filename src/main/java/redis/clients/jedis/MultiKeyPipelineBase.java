@@ -562,5 +562,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<String> moduleLoad(String path) {
     client.moduleLoad(path);
     return getResponse(BuilderFactory.STRING);
-  }
+  }  
+  
+  
 }

@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.sendCommand;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.ENCODING;
@@ -14,7 +13,6 @@ import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1289,5 +1287,13 @@ public class BinaryClient extends Connection {
     }
 
     return args;
+  }
+
+  public void bitfield(final byte[] key, final byte[]... value) {
+    int argsLength = value.length;
+    byte[][] bitfieldArgs = new byte[argsLength + 1][];
+    bitfieldArgs[0] = key;
+    System.arraycopy(value, 0, bitfieldArgs, 1, argsLength);
+    sendCommand(Command.BITFIELD, bitfieldArgs);
   }
 }

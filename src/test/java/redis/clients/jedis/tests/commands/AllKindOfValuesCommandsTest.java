@@ -1,5 +1,9 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.set.SetParams.setParams;
@@ -13,7 +17,6 @@ import org.junit.Test;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {

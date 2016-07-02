@@ -1,5 +1,10 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +18,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
-public class JedisSentinelTest extends JedisTestBase {
+public class JedisSentinelTest {
   private static final String MASTER_NAME = "mymaster";
   private static final String MONITOR_MASTER_NAME = "mymastermonitor";
   private static final String REMOVE_MASTER_NAME = "mymasterremove";

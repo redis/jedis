@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +52,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b2);
     bexpected.add(b3);
 
-    assertEquals(bexpected, bresult);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test
@@ -94,7 +96,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b2);
     bexpected.add(b1);
 
-    assertEquals(bexpected, bresult);
+    assertByteArrayListEquals(bexpected, bresult);
 
   }
 
@@ -131,7 +133,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b2);
     bexpected.add(b1);
 
-    assertEquals(bexpected, bresult);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test
@@ -168,7 +170,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b2);
     bexpected.add(b3);
 
-    assertEquals(bexpected, bresult);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test
@@ -204,7 +206,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b10);
     bexpected.add(b2);
 
-    assertEquals(bexpected, bresult);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test
@@ -262,7 +264,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(bcar10);
     bexpected.add(bbar10);
 
-    assertEquals(bexpected, bresult);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test
@@ -295,7 +297,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b10);
 
     assertEquals(3, bresult);
-    assertEquals(bexpected, jedis.lrange(bkresult, 0, 1000));
+    assertByteArrayListEquals(bexpected, jedis.lrange(bkresult, 0, 1000));
   }
 
 }

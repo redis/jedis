@@ -1,12 +1,16 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
 import org.junit.Test;
+
 import redis.clients.jedis.Module;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.util.SafeEncoder;
-
-import java.util.List;
 
 public class ModuleTest extends JedisCommandTestBase {
 

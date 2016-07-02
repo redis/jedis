@@ -1,5 +1,10 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.junit.After;
@@ -11,10 +16,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 
-public class ClusterCommandsTest extends JedisTestBase {
+public class ClusterCommandsTest {
   private static Jedis node1;
   private static Jedis node2;
 

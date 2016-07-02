@@ -1,20 +1,28 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.jedis.tests.JedisTestBase;
 import redis.clients.util.JedisClusterCRC16;
 
-import java.util.*;
-
-public class ClusterBinaryJedisCommandsTest extends JedisTestBase {
+public class ClusterBinaryJedisCommandsTest {
   private Jedis node1;
   private static Jedis node2;
   private static Jedis node3;

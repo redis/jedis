@@ -1,5 +1,12 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -135,21 +142,21 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(bC);
 
     List<byte[]> brange = jedis.lrange(bfoo, 0, 2);
-    assertEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
     brange = jedis.lrange(bfoo, 0, 20);
-    assertEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
     bexpected = new ArrayList<byte[]>();
     bexpected.add(bB);
     bexpected.add(bC);
 
     brange = jedis.lrange(bfoo, 1, 2);
-    assertEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
     bexpected = new ArrayList<byte[]>();
     brange = jedis.lrange(bfoo, 2, 1);
-    assertEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
   }
 
@@ -180,7 +187,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
     assertEquals("OK", bstatus);
     assertEquals(2, jedis.llen(bfoo).intValue());
-    assertEquals(bexpected, jedis.lrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 100));
 
   }
 
@@ -213,7 +220,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     String bstatus = jedis.lset(bfoo, 1, bbar);
 
     assertEquals("OK", bstatus);
-    assertEquals(bexpected, jedis.lrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 100));
   }
 
   @Test
@@ -277,7 +284,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(bx);
 
     assertEquals(2, bcount);
-    assertEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
+    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
     assertEquals(0, jedis.lrem(bbar, 100, bfoo).intValue());
 
   }
@@ -314,7 +321,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(bB);
     bexpected.add(bC);
 
-    assertEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
+    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
     jedis.lpop(bfoo);
     jedis.lpop(bfoo);
 
@@ -355,7 +362,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(bA);
     bexpected.add(bB);
 
-    assertEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
+    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
     jedis.rpop(bfoo);
     jedis.rpop(bfoo);
 
@@ -410,8 +417,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bdstExpected.add(bfoo);
     bdstExpected.add(bbar);
 
-    assertEquals(bsrcExpected, jedis.lrange(bfoo, 0, 1000));
-    assertEquals(bdstExpected, jedis.lrange(bdst, 0, 1000));
+    assertByteArrayListEquals(bsrcExpected, jedis.lrange(bfoo, 0, 1000));
+    assertByteArrayListEquals(bdstExpected, jedis.lrange(bdst, 0, 1000));
 
   }
 
@@ -537,7 +544,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(bA);
     bexpected.add(bB);
 
-    assertEquals(bexpected, bactual);
+    assertByteArrayListEquals(bexpected, bactual);
 
     bstatus = jedis.linsert(bfoo, Client.LIST_POSITION.BEFORE, bbar, bcar);
     assertEquals(-1, bstatus);

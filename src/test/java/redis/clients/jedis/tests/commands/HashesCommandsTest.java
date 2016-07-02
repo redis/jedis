@@ -1,5 +1,9 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
@@ -134,7 +138,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     bexpected.add(bbar);
     bexpected.add(null);
 
-    assertEquals(bexpected, bvalues);
+    assertByteArrayListEquals(bexpected, bvalues);
   }
 
   @Test
@@ -267,7 +271,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bbar);
     bexpected.add(bcar);
-    assertEquals(bexpected, bkeys);
+    assertByteArraySetEquals(bexpected, bkeys);
   }
 
   @Test

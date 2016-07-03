@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +20,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
-public class JedisSentinelPoolTest extends JedisTestBase {
+public class JedisSentinelPoolTest {
   private static final String MASTER_NAME = "mymaster";
 
   protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(2);

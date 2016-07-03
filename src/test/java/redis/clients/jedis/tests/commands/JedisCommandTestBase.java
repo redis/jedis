@@ -47,30 +47,6 @@ public abstract class JedisCommandTestBase {
     return j;
   }
 
-  protected void assertByteArrayListEquals(List<byte[]> expected, List<byte[]> actual) {
-    assertEquals(expected.size(), actual.size());
-    for (int n = 0; n < expected.size(); n++) {
-      assertArrayEquals(expected.get(n), actual.get(n));
-    }
-  }
-
-  protected void assertByteArraySetEquals(Set<byte[]> expected, Set<byte[]> actual) {
-    assertEquals(expected.size(), actual.size());
-    Iterator<byte[]> e = expected.iterator();
-    while (e.hasNext()) {
-      byte[] next = e.next();
-      boolean contained = false;
-      for (byte[] element : expected) {
-        if (Arrays.equals(next, element)) {
-          contained = true;
-        }
-      }
-      if (!contained) {
-        throw new ComparisonFailure("element is missing", Arrays.toString(next), actual.toString());
-      }
-    }
-  }
-
   protected boolean arrayContains(List<byte[]> array, byte[] expected) {
     for (byte[] a : array) {
       try {

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -114,11 +115,7 @@ public class ProtocolTest {
     expected.add(SafeEncoder.encode("bar"));
     expected.add(SafeEncoder.encode("Hello"));
     expected.add(SafeEncoder.encode("World"));
-
-    assertEquals(expected.size(), response.size());
-    for (int n = 0; n < expected.size(); n++) {
-      assertArrayEquals(expected.get(n), response.get(n));
-    }
+    assertByteArrayListEquals(expected, response);
   }
 
   @SuppressWarnings("unchecked")

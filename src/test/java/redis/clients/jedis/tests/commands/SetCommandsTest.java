@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.Arrays;
 import java.util.HashSet;

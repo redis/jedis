@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import java.nio.ByteBuffer;
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
-import static redis.clients.jedis.Protocol.toByteArray;
 import redis.clients.jedis.Protocol.Keyword;
 
 import java.util.ArrayList;
@@ -19,8 +18,6 @@ public class ScanParams {
 
     private final Map<Keyword, ByteBuffer> params = new EnumMap<Keyword, ByteBuffer>(Keyword.class);
 
-    // Default COUNT parameter value according to Redis documentation - http://redis.io/commands/scan
-    private final static ByteBuffer SCAN_COUNT_DEFAULT = ByteBuffer.wrap(toByteArray(10));
 
     public final static String SCAN_POINTER_START = String.valueOf(0);
     public final static byte[] SCAN_POINTER_START_BINARY = SafeEncoder.encode(SCAN_POINTER_START);
@@ -61,7 +58,7 @@ public class ScanParams {
         if (params.containsKey(COUNT)) {
             return params.get(COUNT).getInt();
         } else {
-            return SCAN_COUNT_DEFAULT.getInt();
+            return 0;
         }
     }       
 }

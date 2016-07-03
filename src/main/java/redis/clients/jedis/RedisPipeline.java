@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands;
+package redis.clients.jedis;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.params.geo.GeoRadiusParam;

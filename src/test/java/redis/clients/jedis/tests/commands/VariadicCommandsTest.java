@@ -1,5 +1,9 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -64,7 +68,7 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     bexpected.add(bfoo);
 
     List<byte[]> bvalues = jedis.lrange(bfoo, 0, -1);
-    assertEquals(bexpected, bvalues);
+    assertByteArrayListEquals(bexpected, bvalues);
 
   }
 
@@ -89,7 +93,7 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     bexpected.add(bbar);
 
     List<byte[]> bvalues = jedis.lrange(bfoo, 0, -1);
-    assertEquals(bexpected, bvalues);
+    assertByteArrayListEquals(bexpected, bvalues);
 
   }
 
@@ -178,7 +182,7 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     bexpected.add(bfoo);
 
     assertEquals(2, status);
-    assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
     status = jedis.zrem(bfoo, bbar, bcar);
     assertEquals(0, status);

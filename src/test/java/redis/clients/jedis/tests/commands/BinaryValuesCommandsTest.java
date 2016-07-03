@@ -1,6 +1,10 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.params.set.SetParams.setParams;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +125,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     expected.add(null);
     expected.add(null);
 
-    assertEquals(expected, values);
+    assertByteArrayListEquals(expected, values);
 
     jedis.set(bfoo, binaryValue);
 
@@ -130,7 +134,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     expected.add(null);
     values = jedis.mget(bfoo, bbar);
 
-    assertEquals(expected, values);
+    assertByteArrayListEquals(expected, values);
 
     jedis.set(bbar, bfoo);
 
@@ -139,7 +143,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     expected.add(bfoo);
     values = jedis.mget(bfoo, bbar);
 
-    assertEquals(expected, values);
+    assertByteArrayListEquals(expected, values);
   }
 
   @Test

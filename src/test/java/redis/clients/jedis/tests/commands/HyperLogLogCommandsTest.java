@@ -1,5 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import redis.clients.util.SafeEncoder;

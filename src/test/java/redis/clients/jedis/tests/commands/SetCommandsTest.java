@@ -1,7 +1,13 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,7 +72,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     Set<byte[]> bmembers = jedis.smembers(bfoo);
 
-    assertEquals(bexpected, bmembers);
+    assertByteArraySetEquals(bexpected, bmembers);
   }
 
   @Test
@@ -97,7 +103,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bb);
 
     assertEquals(1, bstatus);
-    assertEquals(bexpected, jedis.smembers(bfoo));
+    assertByteArraySetEquals(bexpected, jedis.smembers(bfoo));
 
     bstatus = jedis.srem(bfoo, bbar);
 
@@ -160,7 +166,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bmembers = jedis.spop(bfoo, 2);
 
     assertEquals(2, bmembers.size());
-    assertEquals(bexpected, bmembers);
+    assertByteArraySetEquals(bexpected, bmembers);
 
     bmembers = jedis.spop(bfoo, 2);
     assertTrue(bmembers.isEmpty());
@@ -206,8 +212,8 @@ public class SetCommandsTest extends JedisCommandTestBase {
     bexpectedDst.add(ba);
 
     assertEquals(bstatus, 1);
-    assertEquals(bexpectedSrc, jedis.smembers(bfoo));
-    assertEquals(bexpectedDst, jedis.smembers(bbar));
+    assertByteArraySetEquals(bexpectedSrc, jedis.smembers(bfoo));
+    assertByteArraySetEquals(bexpectedDst, jedis.smembers(bbar));
 
     bstatus = jedis.smove(bfoo, bbar, ba);
     assertEquals(bstatus, 0);
@@ -283,7 +289,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bb);
 
     Set<byte[]> bintersection = jedis.sinter(bfoo, bbar);
-    assertEquals(bexpected, bintersection);
+    assertByteArraySetEquals(bexpected, bintersection);
   }
 
   @Test
@@ -315,7 +321,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     long bstatus = jedis.sinterstore(bcar, bfoo, bbar);
     assertEquals(1, bstatus);
 
-    assertEquals(bexpected, jedis.smembers(bcar));
+    assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
 
   }
 
@@ -348,7 +354,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     bexpected.add(ba);
 
     Set<byte[]> bunion = jedis.sunion(bfoo, bbar);
-    assertEquals(bexpected, bunion);
+    assertByteArraySetEquals(bexpected, bunion);
 
   }
 
@@ -385,7 +391,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     long bstatus = jedis.sunionstore(bcar, bfoo, bbar);
     assertEquals(3, bstatus);
 
-    assertEquals(bexpected, jedis.smembers(bcar));
+    assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
 
   }
 
@@ -424,7 +430,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bx);
 
     Set<byte[]> bdiff = jedis.sdiff(bfoo, bbar, bcar);
-    assertEquals(bexpected, bdiff);
+    assertByteArraySetEquals(bexpected, bdiff);
 
   }
 
@@ -465,7 +471,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     long bstatus = jedis.sdiffstore("tar".getBytes(), bfoo, bbar, bcar);
     assertEquals(2, bstatus);
-    assertEquals(bexpected, jedis.smembers(bcar));
+    assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
 
   }
 

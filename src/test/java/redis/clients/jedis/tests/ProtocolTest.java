@@ -1,5 +1,11 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,7 +24,7 @@ import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
-public class ProtocolTest extends JedisTestBase {
+public class ProtocolTest {
   @Test
   public void buildACommand() throws IOException {
     PipedInputStream pis = new PipedInputStream();
@@ -109,8 +115,7 @@ public class ProtocolTest extends JedisTestBase {
     expected.add(SafeEncoder.encode("bar"));
     expected.add(SafeEncoder.encode("Hello"));
     expected.add(SafeEncoder.encode("World"));
-
-    assertEquals(expected, response);
+    assertByteArrayListEquals(expected, response);
   }
 
   @SuppressWarnings("unchecked")

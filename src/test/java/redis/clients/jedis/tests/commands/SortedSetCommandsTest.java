@@ -1,7 +1,12 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -135,11 +140,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(ba);
 
     Set<byte[]> brange = jedis.zrange(bfoo, 0, 1);
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
     bexpected.add(bb);
     brange = jedis.zrange(bfoo, 0, 100);
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
   }
 
@@ -175,14 +180,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
     bExpected.add(bb);
 
-    assertEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
+    assertByteArraySetEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
 
     bExpected.clear();
     bExpected.add(ba);
     bExpected.add(bb);
 
     // with LIMIT
-    assertEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
+    assertByteArraySetEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
   }
 
   @Test
@@ -217,14 +222,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
     bExpected.add(bb);
 
-    assertEquals(bExpected, jedis.zrevrangeByLex(bfoo, bExclusiveC, bInclusiveB));
+    assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bExclusiveC, bInclusiveB));
 
     bExpected.clear();
     bExpected.add(bb);
     bExpected.add(ba);
 
     // with LIMIT
-    assertEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
+    assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
   }
 
   @Test
@@ -256,11 +261,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(ba);
 
     Set<byte[]> brange = jedis.zrevrange(bfoo, 0, 1);
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
     bexpected.add(bc);
     brange = jedis.zrevrange(bfoo, 0, 100);
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
   }
 
@@ -291,7 +296,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bb);
 
     assertEquals(1, bstatus);
-    assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
     bstatus = jedis.zrem(bfoo, bbar);
 
@@ -324,7 +329,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(ba);
 
     assertEquals(3d, bscore, 0);
-    assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
   }
 
@@ -644,24 +649,24 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bc);
     bexpected.add(ba);
 
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
     brange = jedis.zrangeByScore(bfoo, 0d, 2d, 0, 1);
 
     bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bc);
 
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
     brange = jedis.zrangeByScore(bfoo, 0d, 2d, 1, 1);
     Set<byte[]> brange2 = jedis.zrangeByScore(bfoo, SafeEncoder.encode("-inf"),
       SafeEncoder.encode("(2"));
-    assertEquals(bexpected, brange2);
+    assertByteArraySetEquals(bexpected, brange2);
 
     bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(ba);
 
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
   }
 
@@ -718,14 +723,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bc);
     bexpected.add(ba);
 
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
     brange = jedis.zrevrangeByScore(bfoo, 2d, 0d, 0, 1);
 
     bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(ba);
 
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
 
     Set<byte[]> brange2 = jedis.zrevrangeByScore(bfoo, SafeEncoder.encode("+inf"),
       SafeEncoder.encode("(2"));
@@ -733,13 +738,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bb);
 
-    assertEquals(bexpected, brange2);
+    assertByteArraySetEquals(bexpected, brange2);
 
     brange = jedis.zrevrangeByScore(bfoo, 2d, 0d, 1, 1);
     bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bc);
 
-    assertEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected, brange);
   }
 
   @Test
@@ -897,7 +902,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(ba);
     bexpected.add(bb);
 
-    assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
   }
 
@@ -930,7 +935,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bb);
 
-    assertEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
   }
 
   @Test
@@ -965,7 +970,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(ba);
     bexpected.add(bc);
 
-    assertEquals(bexpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
+    assertByteArraySetEquals(bexpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
   }
 
   @Test

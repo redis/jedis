@@ -17,11 +17,7 @@ public final class JedisClusterHashTagUtil {
 
   public static boolean isClusterCompliantMatchPattern(String matchPattern) {
     String tag = extractHashTag(matchPattern, true, true);
-    if (tag != null && !tag.isEmpty() && matchPattern.startsWith(tag)) {
-      return matchPattern.substring(tag.length()).equals("*");
-    } else {
-      return false;
-    }
+    return tag != null && !tag.isEmpty() ;
   }
 
   private static String extractHashTag(String key, boolean includeBrackets, boolean returnNullWhenTagNotFound) {

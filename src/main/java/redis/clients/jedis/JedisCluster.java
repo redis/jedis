@@ -1217,7 +1217,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     String matchPattern = null;
 
     if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
-      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with non-empty match patterns");
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
     if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
@@ -1230,7 +1230,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         }
       }.runBinary(SafeEncoder.encode(matchPattern));
     } else {
-      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports scan requests with match patterns of the following format : '{<HASH_TAG>}*' where <HASH_TAG> is a tag string of your choice");
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
   }
   

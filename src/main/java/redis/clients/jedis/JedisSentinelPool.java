@@ -163,9 +163,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         log.warning("Cannot get master address from sentinel running @ " + hap + ". Reason: " + e
             + ". Trying next one.");
       } finally {
-        if (jedis != null) {
           jedis.close();
-        }
       }
     }
 

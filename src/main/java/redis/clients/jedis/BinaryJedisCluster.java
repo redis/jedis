@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.util.JedisClusterHashTagUtil;
 
 public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
@@ -1749,7 +1750,30 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+  
+  @Override
+  public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
 
+    String matchPattern = null;
+
+    if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
+      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName() + " only supports SCAN commands with non-empty MATCH patterns");
+    }
+
+    if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
+
+      return new JedisClusterCommand< ScanResult<byte[]>>(connectionHandler,
+              maxRedirections) {
+        @Override
+        public ScanResult<byte[]> execute(Jedis connection) {
+          return connection.scan(cursor, params);
+        }
+      }.runBinary(SafeEncoder.encode(matchPattern));
+    } else {
+      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName() + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
+    }
+  }
+  
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
     return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,

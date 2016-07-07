@@ -2,6 +2,8 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 
@@ -68,4 +70,6 @@ public interface MultiKeyJedisClusterCommands {
   String pfmerge(final String destkey, final String... sourcekeys);
 
   long pfcount(final String... keys);
+
+  ScanResult<String> scan(final String cursor, final ScanParams params);
 }

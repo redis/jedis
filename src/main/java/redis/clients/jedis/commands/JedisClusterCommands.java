@@ -235,8 +235,6 @@ public interface JedisClusterCommands {
 
   Long bitcount(final String key, long start, long end);
 
-  ScanResult<String> scan(final String cursor, final ScanParams params);
-  
   ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
 
   ScanResult<String> sscan(final String key, final String cursor);

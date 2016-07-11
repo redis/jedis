@@ -602,48 +602,50 @@ public class PipeliningTest {
   @Test
   public void testCloseable() throws IOException {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis2.auth("foobared");
-
-    Pipeline pipeline = jedis2.pipelined();
-    Response<String> retFuture1 = pipeline.set("a", "1");
-    Response<String> retFuture2 = pipeline.set("b", "2");
-
-    pipeline.close();
-
-    // it shouldn't meet any exception
-    retFuture1.get();
-    retFuture2.get();
+    try(Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+          jedis2.auth("foobared");
+      
+          Pipeline pipeline = jedis2.pipelined();
+          Response<String> retFuture1 = pipeline.set("a", "1");
+          Response<String> retFuture2 = pipeline.set("b", "2");
+      
+          pipeline.close();
+      
+          // it shouldn't meet any exception
+          retFuture1.get();
+          retFuture2.get();
+    }
   }
 
   @Test
   public void testCloseableWithMulti() throws IOException {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis2.auth("foobared");
-
-    Pipeline pipeline = jedis2.pipelined();
-    Response<String> retFuture1 = pipeline.set("a", "1");
-    Response<String> retFuture2 = pipeline.set("b", "2");
-
-    pipeline.multi();
-
-    pipeline.set("a", "a");
-    pipeline.set("b", "b");
-
-    pipeline.close();
-
-    try {
-      pipeline.exec();
-      fail("close should discard transaction");
-    } catch (JedisDataException e) {
-      assertTrue(e.getMessage().contains("EXEC without MULTI"));
-      // pass
+    try(Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+          jedis2.auth("foobared");
+      
+          Pipeline pipeline = jedis2.pipelined();
+          Response<String> retFuture1 = pipeline.set("a", "1");
+          Response<String> retFuture2 = pipeline.set("b", "2");
+      
+          pipeline.multi();
+      
+          pipeline.set("a", "a");
+          pipeline.set("b", "b");
+      
+          pipeline.close();
+      
+          try {
+            pipeline.exec();
+            fail("close should discard transaction");
+          } catch (JedisDataException e) {
+            assertTrue(e.getMessage().contains("EXEC without MULTI"));
+            // pass
+          }
+      
+          // it shouldn't meet any exception
+          retFuture1.get();
+          retFuture2.get();
     }
-
-    // it shouldn't meet any exception
-    retFuture1.get();
-    retFuture2.get();
   }
 
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {

@@ -18,7 +18,8 @@ public class ConnectionHandlingCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void binary_quit() {
-    BinaryJedis bj = new BinaryJedis(hnp.getHost());
-    assertEquals("OK", bj.quit());
+    try(BinaryJedis bj = new BinaryJedis(hnp.getHost())) {
+      assertEquals("OK", bj.quit());
+    }
   }
 }

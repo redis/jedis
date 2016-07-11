@@ -17,10 +17,8 @@ public class ModuleTest extends JedisCommandTestBase {
   static enum ModuleCommand implements ProtocolCommand {
     SIMPLE("testmodule.simple")  ;
 
-    private final byte[] raw;
-
     ModuleCommand(String alt) {
-      raw = SafeEncoder.encode(alt);
+      SafeEncoder.encode(alt);
     }
 
     @Override

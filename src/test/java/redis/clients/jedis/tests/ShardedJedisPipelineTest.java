@@ -19,7 +19,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
@@ -35,15 +34,16 @@ public class ShardedJedisPipelineTest {
 
   @Before
   public void setUp() throws Exception {
-    Jedis jedis = new Jedis(redis1.getHost(), redis1.getPort());
-    jedis.auth("foobared");
-    jedis.flushAll();
-    jedis.disconnect();
-    jedis = new Jedis(redis2.getHost(), redis2.getPort());
-    jedis.auth("foobared");
-    jedis.flushAll();
-    jedis.disconnect();
-
+    try(Jedis jedis = new Jedis(redis1.getHost(), redis1.getPort())) {
+              jedis.auth("foobared");
+              jedis.flushAll();
+              jedis.disconnect();
+    }
+    try(Jedis jedis = new Jedis(redis2.getHost(), redis2.getPort())) {
+          jedis.auth("foobared");
+          jedis.flushAll();
+          jedis.disconnect();
+    }
     JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());
     JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.getHost(), redis2.getPort());
     shardInfo1.setPassword("foobared");

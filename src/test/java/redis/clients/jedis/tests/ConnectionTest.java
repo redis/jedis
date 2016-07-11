@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class ConnectionTest {
@@ -55,20 +54,7 @@ public class ConnectionTest {
 
   @Test
   public void getErrorAfterConnectionReset() throws Exception {
-    class TestConnection extends Connection {
-      public TestConnection() {
-        super("localhost", 6379);
-      }
-
-      @Override
-      public Connection sendCommand(ProtocolCommand cmd, byte[]... args) {
-        return super.sendCommand(cmd, args);
-      }
-    }
-
-    TestConnection conn = new TestConnection();
-
-    try {
+    try(Connection conn = new Connection("localhost", 6379)) {
       conn.sendCommand(Command.HMSET, new byte[1024 * 1024 + 1][0]);
       fail("Should throw exception");
     } catch (JedisConnectionException jce) {

@@ -47,15 +47,17 @@ public class JedisSentinelPoolTest {
     wrongSentinels.add(new HostAndPort("localhost", 65432).toString());
     wrongSentinels.add(new HostAndPort("localhost", 65431).toString());
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels);
-    pool.destroy();
+    try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels)) {
+          pool.destroy();
+    }
   }
 
   @Test(expected = JedisException.class)
   public void initializeWithNotMonitoredMasterNameShouldThrowException() {
     final String wrongMasterName = "wrongMasterName";
-    JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName, sentinels);
-    pool.destroy();
+    try(JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName, sentinels)) {
+          pool.destroy();
+    }
   }
 
   @Test
@@ -92,30 +94,28 @@ public class JedisSentinelPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+    try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "foobared", 2)) {
 
-    Jedis jedis = pool.getResource();
-    Jedis jedis2 = null;
-
-    try {
-      jedis.set("hello", "jedis");
-      Transaction t = jedis.multi();
-      t.set("hello", "world");
-      jedis.close();
-
-      jedis2 = pool.getResource();
-
-      assertTrue(jedis == jedis2);
-      assertEquals("jedis", jedis2.get("hello"));
-    } catch (JedisConnectionException e) {
-      if (jedis2 != null) {
-        jedis2 = null;
-      }
-    } finally {
-      jedis2.close();
-
-      pool.destroy();
+          Jedis jedis = pool.getResource();
+          Jedis jedis2 = null;
+      
+          try {
+            jedis.set("hello", "jedis");
+            Transaction t = jedis.multi();
+            t.set("hello", "world");
+            jedis.close();
+      
+            jedis2 = pool.getResource();
+      
+            assertTrue(jedis == jedis2);
+            assertEquals("jedis", jedis2.get("hello"));
+          } catch (JedisConnectionException e) {
+            e.printStackTrace();
+          } finally {
+            jedis2.close();      
+            pool.destroy();
+          }
     }
   }
 
@@ -124,21 +124,22 @@ public class JedisSentinelPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+    try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "foobared", 2)) {
 
-    Jedis jedis = pool.getResource();
-    try {
-      jedis.set("hello", "jedis");
-    } finally {
-      jedis.close();
-    }
-
-    Jedis jedis2 = pool.getResource();
-    try {
-      assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
+          Jedis jedis = pool.getResource();
+          try {
+            jedis.set("hello", "jedis");
+          } finally {
+            jedis.close();
+          }
+      
+          Jedis jedis2 = pool.getResource();
+          try {
+            assertEquals(jedis, jedis2);
+          } finally {
+            jedis2.close();
+          }
     }
   }
 
@@ -147,19 +148,20 @@ public class JedisSentinelPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 0, "my_shiny_client_name");
+    try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "foobared", 0, "my_shiny_client_name")) {
 
-    Jedis jedis = pool.getResource();
-
-    try {
-      assertEquals("my_shiny_client_name", jedis.clientGetname());
-    } finally {
-      jedis.close();
-      pool.destroy();
+          Jedis jedis = pool.getResource();
+      
+          try {
+            assertEquals("my_shiny_client_name", jedis.clientGetname());
+          } finally {
+            jedis.close();
+            pool.destroy();
+          }
+      
+          assertTrue(pool.isClosed());
     }
-
-    assertTrue(pool.isClosed());
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {

@@ -90,7 +90,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<String, String> hash = new HashMap<String, String>();
+      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
@@ -109,7 +109,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<Object> flatHash = (List<Object>) data;
-      final Map<String, String> hash = new HashMap<String, String>();
+      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),

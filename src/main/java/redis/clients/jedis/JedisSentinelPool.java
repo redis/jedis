@@ -136,7 +136,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     log.info("Trying to find master from available Sentinels...");
 
     for (String sentinel : sentinels) {
-      final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel.split(":")));
+      final HostAndPort hap = HostAndPort.parseString(sentinel);
 
       log.fine("Connecting to Sentinel " + hap);
 
@@ -185,7 +185,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     log.info("Redis master running at " + master + ", starting Sentinel listeners...");
 
     for (String sentinel : sentinels) {
-      final HostAndPort hap = toHostAndPort(Arrays.asList(sentinel.split(":")));
+      final HostAndPort hap = HostAndPort.parseString(sentinel);
       MasterListener masterListener = new MasterListener(masterName, hap.getHost(), hap.getPort());
       // whether MasterListener threads are alive or not, process can be stopped
       masterListener.setDaemon(true);

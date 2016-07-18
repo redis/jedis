@@ -58,14 +58,14 @@ public final class HostAndPortUtil {
 
         for (String hostDef : hostDefs) {
 
-          String[] hostAndPort = hostDef.split(":");
+          String[] hostAndPortParts = HostAndPort.extractParts(hostDef);
 
-          if (null != hostAndPort && 2 == hostAndPort.length) {
-            String host = hostAndPort[0];
+          if (null != hostAndPortParts && 2 == hostAndPortParts.length) {
+            String host = hostAndPortParts[0];
             int port = Protocol.DEFAULT_PORT;
 
             try {
-              port = Integer.parseInt(hostAndPort[1]);
+              port = Integer.parseInt(hostAndPortParts[1]);
             } catch (final NumberFormatException nfe) {
             }
 

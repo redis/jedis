@@ -136,7 +136,7 @@ public final class Protocol {
   private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
     String[] response = new String[3];
     String[] messageInfo = clusterRedirectResponse.split(" ");
-    String[] targetHostAndPort = messageInfo[2].split(":");
+    String[] targetHostAndPort = HostAndPort.extractParts(messageInfo[2]);
     response[0] = messageInfo[1];
     response[1] = targetHostAndPort[0];
     response[2] = targetHostAndPort[1];

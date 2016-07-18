@@ -66,6 +66,8 @@ For more usage examples check the tests.
 
 Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
+Master branch javadocs can be found here: http://xetorthio.github.io/jedis/
+
 And you are done!
 
 ## Jedis Cluster

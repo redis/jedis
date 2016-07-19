@@ -5,6 +5,7 @@ import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.util.JedisClusterCRC16;
 import redis.clients.util.SafeEncoder;
@@ -14,12 +15,12 @@ public abstract class JedisClusterCommand<T> {
   private static final String NO_DISPATCH_MESSAGE = "No way to dispatch this command to Redis Cluster.";
 
   private JedisClusterConnectionHandler connectionHandler;
-  private int redirections;
+  private int maxAttempts;
   private ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
 
-  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxRedirections) {
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
     this.connectionHandler = connectionHandler;
-    this.redirections = maxRedirections;
+    this.maxAttempts = maxAttempts;
   }
 
   public abstract T execute(Jedis connection);
@@ -29,7 +30,7 @@ public abstract class JedisClusterCommand<T> {
       throw new JedisClusterException(NO_DISPATCH_MESSAGE);
     }
 
-    return runWithRetries(SafeEncoder.encode(key), this.redirections, false, false);
+    return runWithRetries(SafeEncoder.encode(key), this.maxAttempts, false, false);
   }
 
   public T run(int keyCount, String... keys) {
@@ -50,7 +51,7 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    return runWithRetries(SafeEncoder.encode(keys[0]), this.redirections, false, false);
+    return runWithRetries(SafeEncoder.encode(keys[0]), this.maxAttempts, false, false);
   }
 
   public T runBinary(byte[] key) {
@@ -58,7 +59,7 @@ public abstract class JedisClusterCommand<T> {
       throw new JedisClusterException(NO_DISPATCH_MESSAGE);
     }
 
-    return runWithRetries(key, this.redirections, false, false);
+    return runWithRetries(key, this.maxAttempts, false, false);
   }
 
   public T runBinary(int keyCount, byte[]... keys) {
@@ -79,7 +80,7 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    return runWithRetries(keys[0], this.redirections, false, false);
+    return runWithRetries(keys[0], this.maxAttempts, false, false);
   }
 
   public T runWithAnyNode() {
@@ -94,8 +95,8 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
-  private T runWithRetries(byte[] key, int redirections, boolean tryRandomNode, boolean asking) {
-    if (redirections <= 0) {
+  private T runWithRetries(byte[] key, int attempts, boolean tryRandomNode, boolean asking) {
+    if (attempts <= 0) {
       throw new JedisClusterMaxRedirectionsException("Too many Cluster redirections?");
     }
 
@@ -119,18 +120,27 @@ public abstract class JedisClusterCommand<T> {
       }
 
       return execute(connection);
-    } catch (JedisConnectionException jce) {
-      if (tryRandomNode) {
-        // maybe all connection is down
-        throw jce;
-      }
 
+    } catch (JedisNoReachableClusterNodeException jnrcne) {
+      throw jnrcne;
+    } catch (JedisConnectionException jce) {
       // release current connection before recursion
       releaseConnection(connection);
       connection = null;
 
-      // retry with random connection
-      return runWithRetries(key, redirections - 1, true, asking);
+      if (attempts <= 1) {
+        //We need this because if node is not reachable anymore - we need to finally initiate slots renewing,
+        //or we can stuck with cluster state without one node in opposite case.
+        //But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
+        //TODO make tracking of successful/unsuccessful operations for node - do renewing only
+        //if there were no successful responses from this node last few seconds
+        this.connectionHandler.renewSlotCache();
+
+        //no more redirections left, throw original exception, not JedisClusterMaxRedirectionsException, because it's not MOVED situation
+        throw jce;
+      }
+
+      return runWithRetries(key, attempts - 1, tryRandomNode, asking);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
@@ -151,7 +161,7 @@ public abstract class JedisClusterCommand<T> {
         throw new JedisClusterException(jre);
       }
 
-      return runWithRetries(key, redirections - 1, false, asking);
+      return runWithRetries(key, attempts - 1, false, asking);
     } finally {
       releaseConnection(connection);
     }

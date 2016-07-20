@@ -12,6 +12,7 @@ import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
@@ -22,6 +23,7 @@ public final class Protocol {
   private static final String MOVED_RESPONSE = "MOVED";
   private static final String CLUSTERDOWN_RESPONSE = "CLUSTERDOWN";
   private static final String BUSY_RESPONSE = "BUSY";
+  private static final String NOSCRIPT_RESPONSE = "NOSCRIPT";
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 6379;
@@ -120,6 +122,8 @@ public final class Protocol {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_RESPONSE)) {
       throw new JedisBusyException(message);
+    } else if (message.startsWith(NOSCRIPT_RESPONSE) ) {
+      throw new JedisNoScriptException(message);
     }
     throw new JedisDataException(message);
   }

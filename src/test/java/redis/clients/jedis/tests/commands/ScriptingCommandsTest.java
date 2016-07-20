@@ -17,6 +17,7 @@ import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.util.SafeEncoder;
 
@@ -127,7 +128,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     assertEquals("bar", result);
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisNoScriptException.class)
   public void evalshaShaNotFound() {
     jedis.evalsha("ffffffffffffffffffffffffffffffffffffffff");
   }

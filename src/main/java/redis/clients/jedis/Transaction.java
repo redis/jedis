@@ -46,7 +46,7 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
 
     List<Object> unformatted = client.getObjectMultiBulkReply();
     if (unformatted == null) {
-      return Collections.emptyList();
+      return null;
     }
     List<Object> formatted = new ArrayList<Object>();
     for (Object o : unformatted) {
@@ -66,7 +66,7 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
 
     List<Object> unformatted = client.getObjectMultiBulkReply();
     if (unformatted == null) {
-      return Collections.emptyList();
+      return null;
     }
     List<Response<?>> response = new ArrayList<Response<?>>();
     for (Object o : unformatted) {

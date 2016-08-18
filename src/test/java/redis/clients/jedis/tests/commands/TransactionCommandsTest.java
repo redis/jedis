@@ -89,9 +89,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     t.set("mykey", "foo");
     List<Object> resp = t.exec();
-    if(resp.isEmpty()){
-      resp = null;
-    }
     assertEquals(null, resp);
     assertEquals("bar", jedis.get("mykey"));
 
@@ -106,9 +103,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     t.set(bmykey, bfoo);
     resp = t.exec();
-    if(resp.isEmpty()){
-      resp = null;
-    }
     assertEquals(null, resp);
     assertTrue(Arrays.equals(bbar, jedis.get(bmykey)));
   }
@@ -269,9 +263,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     jedis2.set("foo", "bar2");
 
     List<Object> results = t.exec();
-    if(results.isEmpty()){
-      results = null;
-    }
     assertNull(results);
   }
 

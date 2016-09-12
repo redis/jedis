@@ -46,6 +46,8 @@ public class BinaryClient extends Connection {
 
   private int db;
 
+  private String clientName;
+
   private boolean isInWatch;
 
   public BinaryClient() {
@@ -92,6 +94,10 @@ public class BinaryClient extends Connection {
   public void setDb(int db) {
     this.db = db;
   }
+  
+  public void setClientName(String clientName) {
+    this.clientName = clientName;
+  }
 
   @Override
   public void connect() {
@@ -103,6 +109,10 @@ public class BinaryClient extends Connection {
       }
       if (db > 0) {
         select(Long.valueOf(db).intValue());
+        getStatusCodeReply();
+      }
+      if (clientName != null) {
+        clientSetname(SafeEncoder.encode(clientName));
         getStatusCodeReply();
       }
     }

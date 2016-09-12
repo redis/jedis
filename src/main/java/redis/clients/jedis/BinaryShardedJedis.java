@@ -33,6 +33,10 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
     super(shards, algo, keyTagPattern);
   }
+  
+  public BinaryShardedJedis(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern, String clientName) {
+    super(shards, algo, keyTagPattern, clientName);
+  }
 
   public void disconnect() {
     for (Jedis jedis : getAllShards()) {

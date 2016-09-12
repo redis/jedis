@@ -16,6 +16,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
   private TreeMap<Long, S> nodes;
   private final Hashing algo;
   private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
+  private String clientName;
 
   /**
    * The default pattern used for extracting a key tag. The pattern must have a group (between
@@ -41,10 +42,15 @@ public class Sharded<R, S extends ShardInfo<R>> {
     // as we works with
     // 64-bits not 128
   }
-
+  
   public Sharded(List<S> shards, Hashing algo, Pattern tagPattern) {
+    this(shards, Hashing.MURMUR_HASH, tagPattern, null);
+  }
+
+  public Sharded(List<S> shards, Hashing algo, Pattern tagPattern, String clientName) {
     this.algo = algo;
     this.tagPattern = tagPattern;
+    this.clientName = clientName;
     initialize(shards);
   }
 
@@ -59,7 +65,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
       else for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
         nodes.put(this.algo.hash(shardInfo.getName() + "*" + shardInfo.getWeight() + n), shardInfo);
       }
-      resources.put(shardInfo, shardInfo.createResource());
+      resources.put(shardInfo, shardInfo.createResource(clientName));
     }
   }
 

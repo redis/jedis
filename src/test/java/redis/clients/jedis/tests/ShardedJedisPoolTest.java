@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -20,6 +21,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Hashing;
 
 public class ShardedJedisPoolTest {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
@@ -54,8 +56,39 @@ public class ShardedJedisPoolTest {
     jedis.close();
     pool.destroy();
   }
-
+  
   @Test
+  public void checkConnectionsWithClientName() {
+    String clientName = "myAppName";
+	ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards, Hashing.MURMUR_HASH, null, clientName);
+	try{
+		ShardedJedis shardedJedis = pool.getResource();
+		    shardedJedis.set("foo", "bar");
+		
+		Collection<Jedis> allShards = shardedJedis.getAllShards();
+		boolean isExistConnection = false;
+		for(Jedis jedis: allShards){
+		    if(jedis.isConnected()){
+		    	isExistConnection = true;
+		        String acturalClientName = jedis.clientGetname();
+		        System.out.println("clientName is: " + acturalClientName);
+				assertEquals(clientName, acturalClientName);
+		 	}
+		}
+		
+		assertTrue(isExistConnection);
+		shardedJedis.close();
+	}finally{
+		if(pool!=null)
+			pool.destroy();
+	}
+  
+  }
+  
+ 
+ 
+
+@Test
   public void checkCloseableConnections() throws Exception {
     ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
     ShardedJedis jedis = pool.getResource();

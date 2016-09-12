@@ -295,4 +295,9 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     return new Jedis(this);
   }
   
+  @Override
+  public Jedis createResource(String clientName) {
+    return new Jedis(this, clientName);
+  }
+  
 }

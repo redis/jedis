@@ -90,7 +90,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(JedisShardInfo shardInfo) {
-    super(shardInfo);
+    super(shardInfo, null);
+  }
+  
+  public Jedis(JedisShardInfo shardInfo, String clientName) {
+    super(shardInfo, clientName);
   }
 
   public Jedis(URI uri) {

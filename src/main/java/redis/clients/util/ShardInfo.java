@@ -16,5 +16,7 @@ public abstract class ShardInfo<T> {
 
   protected abstract T createResource();
 
+  protected abstract T createResource(String clientName);
+
   public abstract String getName();
 }

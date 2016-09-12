@@ -2,6 +2,7 @@ PATH := ./redis-git/src:${PATH}
 
 define REDIS1_CONF
 daemonize yes
+protected-mode no
 port 6379
 requirepass foobared
 pidfile /tmp/redis1.pid
@@ -13,6 +14,7 @@ endef
 
 define REDIS2_CONF
 daemonize yes
+protected-mode no
 port 6380
 requirepass foobared
 pidfile /tmp/redis2.pid
@@ -23,6 +25,7 @@ endef
 
 define REDIS3_CONF
 daemonize yes
+protected-mode no
 port 6381
 requirepass foobared
 masterauth foobared
@@ -34,6 +37,7 @@ endef
 
 define REDIS4_CONF
 daemonize yes
+protected-mode no
 port 6382
 requirepass foobared
 masterauth foobared
@@ -46,6 +50,7 @@ endef
 
 define REDIS5_CONF
 daemonize yes
+protected-mode no
 port 6383
 requirepass foobared
 masterauth foobared
@@ -58,6 +63,7 @@ endef
 
 define REDIS6_CONF
 daemonize yes
+protected-mode no
 port 6384
 requirepass foobared
 masterauth foobared
@@ -69,6 +75,7 @@ endef
 
 define REDIS7_CONF
 daemonize yes
+protected-mode no
 port 6385
 requirepass foobared
 masterauth foobared
@@ -83,6 +90,7 @@ endef
 define REDIS_SENTINEL1
 port 26379
 daemonize yes
+protected-mode no
 sentinel monitor mymaster 127.0.0.1 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
@@ -95,6 +103,7 @@ endef
 define REDIS_SENTINEL2
 port 26380
 daemonize yes
+protected-mode no
 sentinel monitor mymaster 127.0.0.1 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
@@ -107,6 +116,7 @@ endef
 define REDIS_SENTINEL3
 port 26381
 daemonize yes
+protected-mode no
 sentinel monitor mymasterfailover 127.0.0.1 6384 1
 sentinel auth-pass mymasterfailover foobared
 sentinel down-after-milliseconds mymasterfailover 2000
@@ -119,6 +129,7 @@ endef
 define REDIS_SENTINEL4
 port 26382
 daemonize yes
+protected-mode no
 sentinel monitor mymaster 127.0.0.1 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
@@ -131,6 +142,7 @@ endef
 # CLUSTER REDIS NODES
 define REDIS_CLUSTER_NODE1_CONF
 daemonize yes
+protected-mode no
 port 7379
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node1.pid
@@ -143,6 +155,7 @@ endef
 
 define REDIS_CLUSTER_NODE2_CONF
 daemonize yes
+protected-mode no
 port 7380
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node2.pid
@@ -155,6 +168,7 @@ endef
 
 define REDIS_CLUSTER_NODE3_CONF
 daemonize yes
+protected-mode no
 port 7381
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node3.pid
@@ -167,6 +181,7 @@ endef
 
 define REDIS_CLUSTER_NODE4_CONF
 daemonize yes
+protected-mode no
 port 7382
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node4.pid
@@ -179,6 +194,7 @@ endef
 
 define REDIS_CLUSTER_NODE5_CONF
 daemonize yes
+protected-mode no
 port 7383
 cluster-node-timeout 5000
 pidfile /tmp/redis_cluster_node5.pid

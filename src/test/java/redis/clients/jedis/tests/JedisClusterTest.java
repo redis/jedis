@@ -164,7 +164,23 @@ public class JedisClusterTest {
     JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
     assertEquals(3, jc2.getClusterNodes().size());
   }
-  
+
+  @Test
+  public void testSelectDatabase() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    int database = 1;
+    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", database, DEFAULT_CONFIG);
+    jc.set("foo", "bar");
+    assertNotEquals("bar", node3.get("foo"));
+    node3.select(database);
+    try{
+        assertEquals("bar", node3.get("foo"));
+    }finally{
+        node3.select(0);
+    }
+  }
+
   @Test
   public void testCalculateConnectionPerSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();

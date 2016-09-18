@@ -61,7 +61,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
                       int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
     super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
-  
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
+          int maxAttempts, String password, int database, final GenericObjectPoolConfig poolConfig) {
+    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, database, poolConfig);
+  }
+
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
   }
@@ -96,6 +101,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
                       int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
+
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+          int maxAttempts, String password, int database, final GenericObjectPoolConfig poolConfig) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, database, poolConfig);
+}
 
   @Override
   public String set(final String key, final String value) {

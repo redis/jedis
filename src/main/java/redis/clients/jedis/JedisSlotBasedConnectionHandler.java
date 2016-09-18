@@ -24,6 +24,10 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
     super(nodes, poolConfig, connectionTimeout, soTimeout, password);
   }
 
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, int database) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password, database);
+  }
+
   @Override
   public Jedis getConnection() {
     // In antirez's redis-rb-cluster implementation,

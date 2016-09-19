@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -165,6 +166,24 @@ public class JedisClusterTest {
     assertEquals(3, jc2.getClusterNodes().size());
   }
   
+  @Test
+  public void testSetClientName() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    String clientName = "myAppName";
+    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_CONFIG);
+    Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
+    Collection<JedisPool> values = clusterNodes.values();
+    for(JedisPool jedisPool: values){
+        Jedis jedis = jedisPool.getResource();
+        try{
+            assertEquals(clientName, jedis.clientGetname());
+        }finally{
+            jedis.close();
+        }
+    }
+  }
+
   @Test
   public void testCalculateConnectionPerSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();

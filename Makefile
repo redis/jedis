@@ -306,6 +306,11 @@ test: compile-module start
 	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
 	make stop
 
+deploy: compile-module start
+	sleep 2
+	mvn -Dtest=${SKIP_SSL}${TEST} -DaltDeploymentRepository=sonatype-nexus-snapshots::default::https://oss.sonatype.org/content/repositories/snapshots/ --settings settings.xml clean compile deploy
+	make stop
+
 package: start
 	mvn clean package
 	make stop

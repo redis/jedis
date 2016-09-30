@@ -10,9 +10,18 @@ before_install:
     - cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
 install:
   - make travis-install
-script: TEST="\!ModuleTest" make test
+script:
+  -
+    VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version|grep -Ev '(^\[|Download\w+:)')
+  - echo "Project Version ${VERSION}"
+  - |
+    if [[ ${TRAVIS_PULL_REQUEST} == "false" && ${TRAVIS_SECURE_ENV_VARS} && $VERSION =~ ^.*-SNAPSHOT$ ]] ; then
+      TEST="\!ModuleTest" make deploy
+    else
+      TEST="\!ModuleTest" make test
+    fi
 cache:
   directories:
-    - $HOME/.m2
+  - "$HOME/.m2"
 addons:
   hostname: jedis

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -611,6 +612,20 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     jedisClusterNode.add(invalidHost);
+    JedisPoolConfig config = DEFAULT_CONFIG;
+    config.setMaxTotal(1);
+    JedisCluster jc = new JedisCluster(jedisClusterNode,  0, 2, DEFAULT_REDIRECTIONS, "cluster", config);
+    Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
+    assertEquals(3, clusterNodes.size());
+    assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
+  }
+
+  @Test
+  public void testInvalidStartNodeAddedAsFirstOne() {
+    HostAndPort invalidHost = new HostAndPort("not-a-real-host", 7379);
+    Set<HostAndPort> jedisClusterNode = new LinkedHashSet<HostAndPort>();
+    jedisClusterNode.add(invalidHost);
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = DEFAULT_CONFIG;
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode,  0, 2, DEFAULT_REDIRECTIONS, "cluster", config);

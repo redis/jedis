@@ -132,7 +132,7 @@ public final class BuilderFactory {
         return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new HashSet<String>(l.size());
+      final Set<String> result = new HashSet<String>(l.size(), 1);
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -213,7 +213,7 @@ public final class BuilderFactory {
         return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new LinkedHashSet<String>(l.size());
+      final Set<String> result = new LinkedHashSet<String>(l.size(), 1);
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -237,7 +237,7 @@ public final class BuilderFactory {
         return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
+      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
         result.add(new Tuple(SafeEncoder.encode(iterator.next()), Double.valueOf(SafeEncoder
@@ -259,7 +259,7 @@ public final class BuilderFactory {
         return Collections.emptySet();
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size());
+      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
         result.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder.encode(iterator.next()))));

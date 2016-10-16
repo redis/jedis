@@ -1212,4 +1212,9 @@ public class Client extends BinaryClient implements Commands {
     bitfield(SafeEncoder.encode(key), argumentArray);
   }
 
+  @Override
+  public void hstrlen(final String hashName, final String keyName) {
+    hstrlen(SafeEncoder.encode(hashName), SafeEncoder.encode(keyName));
+  }
+
 }

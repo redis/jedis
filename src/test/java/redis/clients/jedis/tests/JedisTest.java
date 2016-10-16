@@ -27,8 +27,8 @@ import redis.clients.util.SafeEncoder;
 public class JedisTest extends JedisCommandTestBase {
   @Test
   public void useWithoutConnecting() {
-    Jedis jedis = new Jedis("localhost");
     jedis.auth("foobared");
+    Jedis jedis = new Jedis("localhost");
     jedis.dbSize();
   }
 
@@ -185,6 +185,58 @@ public class JedisTest extends JedisCommandTestBase {
     } finally {
       binaryJedis.del("mykey".getBytes());
       binaryJedis.close();
+    }
+  }
+
+  @Test
+  public void testHstrLen_EmptyHash() {
+    Jedis jedis = null;
+    try {
+      jedis = new Jedis("redis://localhost:6380");
+      jedis.auth("foobared");
+      Long response = jedis.hstrlen("myhash", "k1");
+      assertEquals(0l, response.longValue());
+    } finally {
+      if (jedis != null) {
+        jedis.close();
+      }
+    }
+  }
+
+  @Test
+  public void testHstrLen() {
+    Jedis jedis = null;
+    try {
+      jedis = new Jedis("redis://localhost:6380");
+      jedis.auth("foobared");
+      jedis.del("myhash");
+      Map<String, String> values = new HashMap<String,String>();
+      values.put("key", "value");
+      jedis.hmset("myhash", values);
+      Long response = jedis.hstrlen("myhash", "key");
+      assertEquals(5l, response.longValue());
+    } finally {
+      if (jedis != null) {
+        jedis.del("myhash");
+        jedis.close();
+      }
+    }
+  }
+
+  @Test
+  public void testBinaryHstrLen() {
+    Jedis jedis = null;
+    try {
+      jedis = new Jedis("redis://localhost:6380");
+      jedis.auth("foobared");
+      jedis.del("myhash");
+      Long response = jedis.hstrlen("myhash".getBytes(), "k1".getBytes());
+      assertEquals(0l, response.longValue());
+    } finally {
+      if (jedis != null) {
+        jedis.del("myhash");
+        jedis.close();
+      }
     }
   }
 

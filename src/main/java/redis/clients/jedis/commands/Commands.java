@@ -313,4 +313,11 @@ public interface Commands {
    * @param args
    */
   void bitfield(final String key, final String...arguments);
+  
+  /**
+   * Used for HSTRLEN Redis command
+   * @param hashName 
+   * @param keyName
+   */
+  void hstrlen(final String hashName, final String keyName);
 }

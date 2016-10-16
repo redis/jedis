@@ -3731,4 +3731,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.bitfield(key, arguments);
     return client.getBinaryMultiBulkReply();
   }
+
+  @Override
+  public Long hstrlen(byte[] hashName, byte[] keyname) {
+    checkIsInMultiOrPipeline();
+    client.hstrlen(hashName, keyname);
+    return client.getIntegerReply();
+  }
 }

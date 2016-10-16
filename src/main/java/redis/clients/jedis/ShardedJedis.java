@@ -896,4 +896,10 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.bitfield(key, arguments);
   }
+
+  @Override
+  public Long hstrlen(String hashName, String keyName) {
+    Jedis j = getShard(hashName);
+    return j.hstrlen(hashName, keyName);
+  }
 }

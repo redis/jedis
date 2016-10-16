@@ -1852,4 +1852,14 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+
+  @Override
+  public Long hstrlen(final byte[] hashName, final byte[] keyName) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.hstrlen(hashName, keyName);
+      }
+    }.runBinary(hashName);
+  }
 }

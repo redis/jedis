@@ -298,4 +298,12 @@ public interface JedisCommands {
    * @param arguments
    */
   List<Long> bitfield(String key, String...arguments);
+  
+  /**
+   * Used for HSTRLEN Redis command
+   * @param hashName 
+   * @param keyName
+   * @return lenth of the value for key
+   */
+  Long hstrlen(final String hashName, final String keyName);
 }

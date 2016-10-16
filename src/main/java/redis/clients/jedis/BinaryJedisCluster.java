@@ -1854,12 +1854,12 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long hstrlen(final byte[] hashName, final byte[] keyName) {
+  public Long hstrlen(final byte[] key, final byte[] field) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.hstrlen(hashName, keyName);
+        return connection.hstrlen(key, field);
       }
-    }.runBinary(hashName);
+    }.runBinary(key);
   }
 }

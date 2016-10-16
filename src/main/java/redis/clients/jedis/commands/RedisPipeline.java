@@ -220,7 +220,7 @@ public interface RedisPipeline {
   
   Response<List<Long>> bitfield(String key, String... arguments);
   
-  Response<Long> hstrlen(String hashName, String keyName);
+  Response<Long> hstrlen(String key, String field);
 
   // Geo Commands
 

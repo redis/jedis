@@ -289,10 +289,10 @@ public interface BinaryJedisCommands {
   
   /**
    * Used for HSTRLEN Redis command
-   * @param hashName 
-   * @param keyName
+   * @param key 
+   * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(final byte[] hashName, final byte[] keyName);
+  Long hstrlen(final byte[] key, final byte[] field);
 
 }

@@ -1213,8 +1213,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void hstrlen(final String hashName, final String keyName) {
-    hstrlen(SafeEncoder.encode(hashName), SafeEncoder.encode(keyName));
+  public void hstrlen(final String key, final String field) {
+    hstrlen(SafeEncoder.encode(key), SafeEncoder.encode(field));
   }
 
 }

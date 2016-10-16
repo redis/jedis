@@ -316,8 +316,8 @@ public interface Commands {
   
   /**
    * Used for HSTRLEN Redis command
-   * @param hashName 
-   * @param keyName
+   * @param key 
+   * @param field
    */
-  void hstrlen(final String hashName, final String keyName);
+  void hstrlen(final String key, final String field);
 }

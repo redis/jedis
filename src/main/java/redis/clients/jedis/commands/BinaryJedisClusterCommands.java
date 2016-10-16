@@ -286,9 +286,9 @@ public interface BinaryJedisClusterCommands {
   
   /**
    * Used for HSTRLEN Redis command
-   * @param hashName 
-   * @param keyName
+   * @param key 
+   * @param field
    */
-  Long hstrlen(final byte[] hashName, final byte[] keyName);
+  Long hstrlen(final byte[] key, final byte[] field);
 
 }

@@ -874,9 +874,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
  }
 
   @Override
-  public Long hstrlen(byte[] hashName, byte[] keyName) {
-    Jedis j = getShard(hashName);
-    return j.hstrlen(hashName, keyName);
+  public Long hstrlen(byte[] key, byte[] field) {
+    Jedis j = getShard(key);
+    return j.hstrlen(key, field);
   }
   
 }

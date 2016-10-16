@@ -265,5 +265,5 @@ public interface BinaryRedisPipeline {
 
   Response<List<Long>> bitfield(final byte[] key, final byte[]... elements);
 
-  Response<Long> hstrlen(final byte[] hashName, final byte[] keyName);
+  Response<Long> hstrlen(final byte[] key, final byte[] field);
 }

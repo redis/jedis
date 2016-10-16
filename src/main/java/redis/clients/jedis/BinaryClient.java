@@ -1297,7 +1297,7 @@ public class BinaryClient extends Connection {
     sendCommand(Command.BITFIELD, bitfieldArgs);
   }
 
-  public void hstrlen(final byte[] hashName, final byte[] keyName) {
-    sendCommand(Command.HSTRLEN, hashName, keyName);
+  public void hstrlen(final byte[] key, final byte[] field) {
+    sendCommand(Command.HSTRLEN, key, field);
   }
 }

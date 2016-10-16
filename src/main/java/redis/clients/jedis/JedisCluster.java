@@ -1845,12 +1845,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hstrlen(final String hashName, final String keyName) {
+  public Long hstrlen(final String key, final String field) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.hstrlen(hashName, keyName);
+        return connection.hstrlen(key, field);
       }
-    }.run(hashName);
+    }.run(key);
   }
 }

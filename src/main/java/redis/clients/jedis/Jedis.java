@@ -3597,9 +3597,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long hstrlen(String hashName, String keyName) {
+  public Long hstrlen(String key, String field) {
     checkIsInMultiOrPipeline();
-    client.hstrlen(hashName, keyName);
+    client.hstrlen(key, field);
     return client.getIntegerReply();
   }
 

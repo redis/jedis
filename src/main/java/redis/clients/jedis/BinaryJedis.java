@@ -3733,9 +3733,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long hstrlen(byte[] hashName, byte[] keyname) {
+  public Long hstrlen(byte[] key, byte[] field) {
     checkIsInMultiOrPipeline();
-    client.hstrlen(hashName, keyname);
+    client.hstrlen(key, field);
     return client.getIntegerReply();
   }
 }

@@ -279,9 +279,9 @@ public interface JedisClusterCommands {
   
   /**
    * Used for HSTRLEN Redis command
-   * @param hashName 
-   * @param keyName
+   * @param key 
+   * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(final String hashName, final String keyName);
+  Long hstrlen(final String key, final String field);
 }

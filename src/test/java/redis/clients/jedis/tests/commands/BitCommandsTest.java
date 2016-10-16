@@ -10,6 +10,8 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Protocol;
 
+import java.util.List;
+
 public class BitCommandsTest extends JedisCommandTestBase {
   @Test
   public void setAndgetbit() {
@@ -141,8 +143,6 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void bitCount() {
-    jedis.del("foo");
-
     jedis.setbit("foo", 16, true);
     jedis.setbit("foo", 24, true);
     jedis.setbit("foo", 40, true);
@@ -153,8 +153,6 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
     long c3 = jedis.bitcount("foo", 2L, 5L);
     assertEquals(3, c3);
-
-    jedis.del("foo");
   }
 
   @Test
@@ -173,17 +171,10 @@ public class BitCommandsTest extends JedisCommandTestBase {
     jedis.bitop(BitOP.XOR, "resultXor", "key1", "key2");
     String resultXor = jedis.get("resultXor");
     assertEquals("\u0024", resultXor);
-
-    jedis.del("resultAnd");
-    jedis.del("resultOr");
-    jedis.del("resultXor");
-    jedis.del("key1");
-    jedis.del("key2");
   }
 
   @Test
   public void bitOpNot() {
-    jedis.del("key");
     jedis.setbit("key", 0, true);
     jedis.setbit("key", 4, true);
 
@@ -191,8 +182,21 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
     String resultNot = jedis.get("resultNot");
     assertEquals("\u0077", resultNot);
-
-    jedis.del("key");
-    jedis.del("resultNot");
   }
+
+  @Test
+  public void testBitfield() {
+    List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    assertEquals(1L, responses.get(0).longValue());
+    assertEquals(0L, responses.get(1).longValue());
+  }
+
+  @Test
+  public void testBinaryBitfield() {
+    List<byte[]> responses = jedis.bitfield("mykey".getBytes(), "INCRBY".getBytes(),"i5".getBytes(),
+        "100".getBytes(),"1".getBytes(), "GET".getBytes(), "u4".getBytes(), "0".getBytes());
+    assertEquals(1L, responses.get(0));
+    assertEquals(0L, responses.get(1));
+  }
+
 }

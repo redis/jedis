@@ -155,37 +155,4 @@ public class JedisTest extends JedisCommandTestBase {
     assertFalse(jedis.getClient().isConnected());
   }
 
-  @Test
-  public void testBitfield() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
-    jedis.auth("foobared");
-    jedis.del("mykey");
-    try {
-      List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
-      assertEquals(1l, responses.get(0).longValue());
-      assertEquals(0l, responses.get(1).longValue());
-    } finally {
-      jedis.del("mykey");
-    }
-  }
-  
-  @Test
-  /**
-   * Binary Jedis tests should be in their own class
-   */
-  public void testBinaryBitfield() {
-    jedis.close();
-    BinaryJedis binaryJedis = new BinaryJedis("localhost");
-    binaryJedis.auth("foobared");
-    binaryJedis.del("mykey".getBytes());
-    try {
-      List<byte[]> responses = binaryJedis.bitfield("mykey".getBytes(), "INCRBY".getBytes(),"i5".getBytes(),"100".getBytes(),"1".getBytes(), "GET".getBytes(), "u4".getBytes(), "0".getBytes());
-      assertEquals(1l, responses.get(0));
-      assertEquals(0l, responses.get(1));
-    } finally {
-      binaryJedis.del("mykey".getBytes());
-      binaryJedis.close();
-    }
-  }
-
 }

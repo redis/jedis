@@ -101,7 +101,6 @@ public class ClusterScriptingCommandsTest {
     node3.clusterDelSlots(slotsToDelete);
   }
 
-  @SuppressWarnings("unchecked")
   @Test(expected = JedisClusterException.class)
   public void testJedisClusterException() {
     String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
@@ -115,7 +114,6 @@ public class ClusterScriptingCommandsTest {
     jedisCluster.eval(script, keys, args);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testEval2() {
     String script = "return redis.call('set',KEYS[1],'bar')";
@@ -125,14 +123,12 @@ public class ClusterScriptingCommandsTest {
     assertEquals(jedisCluster.get("foo"), "bar");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testScriptLoadAndScriptExists() {
     String sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')", "key1");
     assertTrue(jedisCluster.scriptExists(sha1, "key1"));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testEvalsha() {
     String sha1 = jedisCluster.scriptLoad("return 10", "key1");
@@ -140,7 +136,6 @@ public class ClusterScriptingCommandsTest {
     assertEquals("10", o.toString());
   }
 
-  @SuppressWarnings("unchecked")
   @Test(expected = JedisClusterException.class)
   public void testJedisClusterException2() {
     byte[] script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}".getBytes();
@@ -154,7 +149,6 @@ public class ClusterScriptingCommandsTest {
     jedisCluster.eval(script, keys, args);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testBinaryEval() {
     byte[] script = "return redis.call('set',KEYS[1],'bar')".getBytes();
@@ -163,29 +157,25 @@ public class ClusterScriptingCommandsTest {
     assertEquals(jedisCluster.get("foo"), "bar");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testBinaryScriptFlush() {
     byte[] byteKey = "key1".getBytes();
-    byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     assertEquals("OK", jedisCluster.scriptFlush(byteKey));
   }
 
-  @SuppressWarnings("unchecked")
   @Test(expected = JedisDataException.class)
   public void testBinaryScriptKill() {
     byte[] byteKey = "key1".getBytes();
     jedisCluster.scriptKill(byteKey);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testBinaryScriptExists() {
     byte[] byteKey = "key1".getBytes();
     byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     byte[][] arraySha1 = { sha1 };
     Long result = 1L;
-    List<Long> listResult = new ArrayList();
+    List<Long> listResult = new ArrayList<>();
     listResult.add(result);
     assertEquals(listResult, jedisCluster.scriptExists(byteKey, arraySha1));
   }

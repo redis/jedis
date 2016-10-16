@@ -27,9 +27,10 @@ import redis.clients.util.SafeEncoder;
 public class JedisTest extends JedisCommandTestBase {
   @Test
   public void useWithoutConnecting() {
-    Jedis jedis = new Jedis("localhost");
-    jedis.auth("foobared");
-    jedis.dbSize();
+    try(Jedis jedis = new Jedis("localhost")) {
+        jedis.auth("foobared");
+        jedis.dbSize();
+    }
   }
 
   @Test
@@ -50,8 +51,9 @@ public class JedisTest extends JedisCommandTestBase {
   public void connectWithShardInfo() {
     JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
     shardInfo.setPassword("foobared");
-    Jedis jedis = new Jedis(shardInfo);
-    jedis.get("foo");
+    try(Jedis jedis = new Jedis(shardInfo)) {
+      jedis.get("foo");
+    }
   }
 
   @Test(expected = JedisConnectionException.class)
@@ -78,8 +80,9 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    Jedis j = new Jedis(new URI("localhost:6380"));
-    j.ping();
+    try(Jedis j = new Jedis(new URI("localhost:6380"))) {
+        j.ping();
+    }
   }
 
   @Test
@@ -93,24 +96,28 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2");
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+    try(Jedis j = new Jedis("localhost", 6380)) {
+        j.auth("foobared");
+        j.select(2);
+        j.set("foo", "bar");
+    }
+    try(Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2")) {
+        assertEquals("PONG", jedis.ping());
+        assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+    try(Jedis j = new Jedis("localhost", 6380)) {
+        j.auth("foobared");
+        j.select(2);
+        j.set("foo", "bar");
+    }
+    try(Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"))) {
+        assertEquals("PONG", jedis.ping());
+        assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
@@ -128,17 +135,19 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
-    jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), 0);
+    try(Jedis jedis = new Jedis("redis://localhost:6380")) {
+        jedis.auth("foobared");
+        assertEquals(jedis.getClient().getHost(), "localhost");
+        assertEquals(jedis.getClient().getPort(), 6380);
+        assertEquals(jedis.getDB(), 0);
+    }
 
-    jedis = new Jedis("redis://localhost:6380/");
-    jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), 0);
+    try(Jedis jedis = new Jedis("redis://localhost:6380/")) {
+        jedis.auth("foobared");
+        assertEquals(jedis.getClient().getHost(), "localhost");
+        assertEquals(jedis.getClient().getPort(), 6380);
+        assertEquals(jedis.getDB(), 0);
+    }
   }
 
   @Test
@@ -157,16 +166,13 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void testBitfield() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
-    jedis.auth("foobared");
-    jedis.del("mykey");
-    try {
+    try(Jedis jedis = new Jedis("redis://localhost:6380")){
+      jedis.auth("foobared");    
       List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
       assertEquals(1l, responses.get(0).longValue());
       assertEquals(0l, responses.get(1).longValue());
-    } finally {
       jedis.del("mykey");
-    }
+    } 
   }
   
   @Test

@@ -101,7 +101,6 @@ public class ClusterBinaryJedisCommandsTest {
     node3.clusterDelSlots(slotsToDelete);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testBinaryGetAndSet() {
     byte[] byteKey = "foo".getBytes();
@@ -110,7 +109,6 @@ public class ClusterBinaryJedisCommandsTest {
     assertEquals(new String(jedisCluster.get(byteKey)), "2");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testIncr() {
     byte[] byteKey = "foo".getBytes();
@@ -120,7 +118,6 @@ public class ClusterBinaryJedisCommandsTest {
     assertEquals(new String(jedisCluster.get(byteKey)), "3");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testSadd() {
     byte[] byteKey = "languages".getBytes();
@@ -137,12 +134,11 @@ public class ClusterBinaryJedisCommandsTest {
     assertTrue(languages.contains("python"));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testHmset() {
     byte[] byteKey = "language".getBytes();
     byte[] language = "java".getBytes();
-    HashMap<byte[], byte[]> map = new HashMap();
+    HashMap<byte[], byte[]> map = new HashMap<>();
     map.put(byteKey, language);
     jedisCluster.hmset(byteKey, map);
     List<byte[]> listResults = jedisCluster.hmget(byteKey, byteKey);
@@ -152,7 +148,6 @@ public class ClusterBinaryJedisCommandsTest {
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testRpush() {
     byte[] value1 = "value1".getBytes();
@@ -161,7 +156,6 @@ public class ClusterBinaryJedisCommandsTest {
     jedisCluster.del(key);
     jedisCluster.rpush(key, value1);
     jedisCluster.rpush(key, value2);
-    long num = 2L;
     assertEquals(2, (long) jedisCluster.llen(key));
   }
 

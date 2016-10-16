@@ -34,25 +34,27 @@ public class ShardedJedisPoolTest {
     shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
     shards.get(0).setPassword("foobared");
     shards.get(1).setPassword("foobared");
-    Jedis j = new Jedis(shards.get(0));
-    j.connect();
-    j.flushAll();
-    j.disconnect();
-    j = new Jedis(shards.get(1));
-    j.connect();
-    j.flushAll();
-    j.disconnect();
-
+    try(Jedis j = new Jedis(shards.get(0))) {
+          j.connect();
+          j.flushAll();
+          j.disconnect();
+    }
+    try(Jedis j = new Jedis(shards.get(1))) {
+          j.connect();
+          j.flushAll();
+          j.disconnect();
+    }
   }
 
   @Test
   public void checkConnections() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("foo", "bar");
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
-    pool.destroy();
+    try(ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards)) {
+          ShardedJedis jedis = pool.getResource();
+          jedis.set("foo", "bar");
+          assertEquals("bar", jedis.get("foo"));
+          jedis.close();
+          pool.destroy();
+    }
   }
 
   @Test
@@ -68,38 +70,41 @@ public class ShardedJedisPoolTest {
 
   @Test
   public void checkConnectionWithDefaultPort() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("foo", "bar");
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
-    pool.destroy();
+    try(ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards)) {
+          ShardedJedis jedis = pool.getResource();
+          jedis.set("foo", "bar");
+          assertEquals("bar", jedis.get("foo"));
+          jedis.close();
+          pool.destroy();
+    }
   }
 
   @Test
   public void checkJedisIsReusedWhenReturned() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("foo", "0");
-    jedis.close();
-
-    jedis = pool.getResource();
-    jedis.incr("foo");
-    jedis.close();
-    pool.destroy();
+    try(ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards)) {
+          ShardedJedis jedis = pool.getResource();
+          jedis.set("foo", "0");
+          jedis.close();
+      
+          jedis = pool.getResource();
+          jedis.incr("foo");
+          jedis.close();
+          pool.destroy();
+    }
   }
 
   @Test
   public void checkPoolRepairedWhenJedisIsBroken() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
-    ShardedJedis jedis = pool.getResource();
-    jedis.disconnect();
-    jedis.close();
-
-    jedis = pool.getResource();
-    jedis.incr("foo");
-    jedis.close();
-    pool.destroy();
+    try(ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards)) {
+          ShardedJedis jedis = pool.getResource();
+          jedis.disconnect();
+          jedis.close();
+      
+          jedis = pool.getResource();
+          jedis.incr("foo");
+          jedis.close();
+          pool.destroy();
+    }
   }
 
   @Test(expected = JedisException.class)
@@ -108,13 +113,14 @@ public class ShardedJedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
-    ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+    try(ShardedJedisPool pool = new ShardedJedisPool(config, shards)) {
 
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("foo", "0");
-
-    ShardedJedis newJedis = pool.getResource();
-    newJedis.incr("foo");
+          ShardedJedis jedis = pool.getResource();
+          jedis.set("foo", "0");
+      
+          ShardedJedis newJedis = pool.getResource();
+          newJedis.incr("foo");
+    }
   }
 
   @Test
@@ -122,120 +128,130 @@ public class ShardedJedisPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(2);
 
-    ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+    try(ShardedJedisPool pool = new ShardedJedisPool(config, shards)) {
 
-    ShardedJedis j1 = pool.getResource();
-    ShardedJedis j2 = pool.getResource();
-
-    assertNotSame(j1.getShard("foo"), j2.getShard("foo"));
+          ShardedJedis j1 = pool.getResource();
+          ShardedJedis j2 = pool.getResource();
+      
+          assertNotSame(j1.getShard("foo"), j2.getShard("foo"));
+    }
   }
 
   @Test
   public void checkFailedJedisServer() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
-    ShardedJedis jedis = pool.getResource();
-    jedis.incr("foo");
-    jedis.close();
-    pool.destroy();
+    try(ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards)) {
+          ShardedJedis jedis = pool.getResource();
+          jedis.incr("foo");
+          jedis.close();
+          pool.destroy();
+    }
   }
 
   @Test
   public void shouldReturnActiveShardsWhenOneGoesOffline() {
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
     redisConfig.setTestOnBorrow(false);
-    ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
-    ShardedJedis jedis = pool.getResource();
-    // fill the shards
-    for (int i = 0; i < 1000; i++) {
-      jedis.set("a-test-" + i, "0");
+    Long c1,c2;
+    try(ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards)) {
+          ShardedJedis jedis = pool.getResource();
+          // fill the shards
+          for (int i = 0; i < 1000; i++) {
+            jedis.set("a-test-" + i, "0");
+          }
+          jedis.close();
+          // check quantity for each shard
+          try(Jedis j = new Jedis(shards.get(0))) {
+              j.connect();
+              c1 = j.dbSize();
+              j.disconnect();
+          }
+          try(Jedis j = new Jedis(shards.get(1))) {
+              j.connect();
+              c2 = j.dbSize();
+              j.disconnect();
+          }
+          // shutdown shard 2 and check thay the pool returns an instance with c1
+          // items on one shard
+          // alter shard 1 and recreate pool
+          pool.destroy();
+          shards.set(1, new JedisShardInfo("localhost", 1234));
     }
-    jedis.close();
-    // check quantity for each shard
-    Jedis j = new Jedis(shards.get(0));
-    j.connect();
-    Long c1 = j.dbSize();
-    j.disconnect();
-    j = new Jedis(shards.get(1));
-    j.connect();
-    Long c2 = j.dbSize();
-    j.disconnect();
-    // shutdown shard 2 and check thay the pool returns an instance with c1
-    // items on one shard
-    // alter shard 1 and recreate pool
-    pool.destroy();
-    shards.set(1, new JedisShardInfo("localhost", 1234));
-    pool = new ShardedJedisPool(redisConfig, shards);
-    jedis = pool.getResource();
-    Long actual = Long.valueOf(0);
-    Long fails = Long.valueOf(0);
-    for (int i = 0; i < 1000; i++) {
-      try {
-        jedis.get("a-test-" + i);
-        actual++;
-      } catch (RuntimeException e) {
-        fails++;
-      }
+    try(ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards)) {
+      ShardedJedis jedis = pool.getResource();
+          Long actual = Long.valueOf(0);
+          Long fails = Long.valueOf(0);
+          for (int i = 0; i < 1000; i++) {
+            try {
+              jedis.get("a-test-" + i);
+              actual++;
+            } catch (RuntimeException e) {
+              fails++;
+            }
+          }
+          jedis.close();
+          pool.destroy();
+          assertEquals(actual, c1);
+          assertEquals(fails, c2);
     }
-    jedis.close();
-    pool.destroy();
-    assertEquals(actual, c1);
-    assertEquals(fails, c2);
   }
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.set("foo", "bar");
-
-    j = new Jedis("localhost", 6379);
-    j.auth("foobared");
-    j.set("foo", "bar");
-
+    try(Jedis j = new Jedis("localhost", 6380)) {
+          j.auth("foobared");
+          j.set("foo", "bar");
+    }
+    try(Jedis j = new Jedis("localhost", 6379)) {
+          j.auth("foobared");
+          j.set("foo", "bar");
+    }
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo("redis://:foobared@localhost:6380"));
     shards.add(new JedisShardInfo("redis://:foobared@localhost:6379"));
 
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
-    ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+    try(ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards)) {
 
-    Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
-
-    Jedis jedis = jedises[0];
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
-
-    jedis = jedises[1];
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+          Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
+      
+          Jedis jedis = jedises[0];
+          assertEquals("PONG", jedis.ping());
+          assertEquals("bar", jedis.get("foo"));
+      
+          jedis = jedises[1];
+          assertEquals("PONG", jedis.ping());
+          assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.set("foo", "bar");
-
-    j = new Jedis("localhost", 6379);
-    j.auth("foobared");
-    j.set("foo", "bar");
+    try(Jedis j = new Jedis("localhost", 6380)) {
+          j.auth("foobared");
+          j.set("foo", "bar");
+    }
+    try(Jedis j = new Jedis("localhost", 6379)) {
+          j.auth("foobared");
+          j.set("foo", "bar");
+    }
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
 
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
-    ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+    try(ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards)) {
 
-    Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
-
-    Jedis jedis = jedises[0];
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
-
-    jedis = jedises[1];
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+          Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
+      
+          Jedis jedis = jedises[0];
+          assertEquals("PONG", jedis.ping());
+          assertEquals("bar", jedis.get("foo"));
+      
+          jedis = jedises[1];
+          assertEquals("PONG", jedis.ping());
+          assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
@@ -248,27 +264,28 @@ public class ShardedJedisPoolTest {
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
 
-    ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+    try(ShardedJedisPool pool = new ShardedJedisPool(config, shards)) {
 
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("pipelined", String.valueOf(0));
-    jedis.set("pipelined2", String.valueOf(0));
-
-    ShardedJedisPipeline pipeline = jedis.pipelined();
-
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
-
-    jedis.resetState();
-
-    pipeline = jedis.pipelined();
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
-    List<Object> results = pipeline.syncAndReturnAll();
-
-    assertEquals(2, results.size());
-    jedis.close();
-    pool.destroy();
+          ShardedJedis jedis = pool.getResource();
+          jedis.set("pipelined", String.valueOf(0));
+          jedis.set("pipelined2", String.valueOf(0));
+      
+          ShardedJedisPipeline pipeline = jedis.pipelined();
+      
+          pipeline.incr("pipelined");
+          pipeline.incr("pipelined2");
+      
+          jedis.resetState();
+      
+          pipeline = jedis.pipelined();
+          pipeline.incr("pipelined");
+          pipeline.incr("pipelined2");
+          List<Object> results = pipeline.syncAndReturnAll();
+      
+          assertEquals(2, results.size());
+          jedis.close();
+          pool.destroy();
+    }
   }
 
   @Test
@@ -281,20 +298,21 @@ public class ShardedJedisPoolTest {
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
 
-    ShardedJedisPool pool = new ShardedJedisPool(config, shards);
+    try(ShardedJedisPool pool = new ShardedJedisPool(config, shards)) {
 
-    ShardedJedis jedis = pool.getResource();
-    try {
-      jedis.set("hello", "jedis");
-    } finally {
-      jedis.close();
-    }
-
-    ShardedJedis jedis2 = pool.getResource();
-    try {
-      assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
+          ShardedJedis jedis = pool.getResource();
+          try {
+            jedis.set("hello", "jedis");
+          } finally {
+            jedis.close();
+          }
+      
+          ShardedJedis jedis2 = pool.getResource();
+          try {
+            assertEquals(jedis, jedis2);
+          } finally {
+            jedis2.close();
+          }
     }
   }
 

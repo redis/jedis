@@ -48,24 +48,24 @@ public class ProtocolTest {
 
   @Test(expected = IOException.class)
   public void writeOverflow() throws IOException {
-    RedisOutputStream ros = new RedisOutputStream(new OutputStream() {
+    try(RedisOutputStream ros = new RedisOutputStream(new OutputStream() {
 
       @Override
       public void write(int b) throws IOException {
         throw new IOException("thrown exception");
 
       }
-    });
+    })) {
 
-    ros.write(new byte[8191]);
-
-    try {
-      ros.write((byte) '*');
-    } catch (IOException ioe) {
+          ros.write(new byte[8191]);
+      
+          try {
+            ros.write((byte) '*');
+          } catch (IOException ioe) {
+          }
+      
+          ros.write((byte) '*');
     }
-
-    ros.write((byte) '*');
-
   }
 
   @Test

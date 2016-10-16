@@ -26,24 +26,25 @@ public class HashingBenchmark {
     shard = new JedisShardInfo(hnp2.getHost(), hnp2.getPort());
     shard.setPassword("foobared");
     shards.add(shard);
-    ShardedJedis jedis = new ShardedJedis(shards);
-    Collection<Jedis> allShards = jedis.getAllShards();
-    for (Jedis j : allShards) {
-      j.flushAll();
+    try(ShardedJedis jedis = new ShardedJedis(shards)) {
+          Collection<Jedis> allShards = jedis.getAllShards();
+          for (Jedis j : allShards) {
+            j.flushAll();
+          }
+      
+          long begin = Calendar.getInstance().getTimeInMillis();
+      
+          for (int n = 0; n <= TOTAL_OPERATIONS; n++) {
+            String key = "foo" + n;
+            jedis.set(key, "bar" + n);
+            jedis.get(key);
+          }
+      
+          long elapsed = Calendar.getInstance().getTimeInMillis() - begin;
+      
+          jedis.disconnect();
+      
+          System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
     }
-
-    long begin = Calendar.getInstance().getTimeInMillis();
-
-    for (int n = 0; n <= TOTAL_OPERATIONS; n++) {
-      String key = "foo" + n;
-      jedis.set(key, "bar" + n);
-      jedis.get(key);
-    }
-
-    long elapsed = Calendar.getInstance().getTimeInMillis() - begin;
-
-    jedis.disconnect();
-
-    System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
   }
 }

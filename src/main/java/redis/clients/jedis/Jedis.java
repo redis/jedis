@@ -2029,8 +2029,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see #zrangeByScoreWithScores(String, double, double, int, int)
    * @see #zcount(String, double, double)
    * @param key
-   * @param min a double or Double.MIN_VALUE for "-inf"
-   * @param max a double or Double.MAX_VALUE for "+inf"
+   * @param min a double or Double.NEGATIVE_INFINITY for "-inf"
+   * @param max a double or Double.POSITIVE_INFINITY for "+inf"
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override

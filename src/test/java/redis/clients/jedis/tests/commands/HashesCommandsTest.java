@@ -416,4 +416,30 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 
     assertFalse(bResult.getResult().isEmpty());
   }
+
+  @Test
+  public void testHstrLen_EmptyHash() {
+    Long response = jedis.hstrlen("myhash", "k1");
+    assertEquals(0l, response.longValue());
+  }
+
+  @Test
+  public void testHstrLen() {
+    Map<String, String> values = new HashMap<>();
+    values.put("key", "value");
+    jedis.hmset("myhash", values);
+    Long response = jedis.hstrlen("myhash", "key");
+    assertEquals(5l, response.longValue());
+
+  }
+
+  @Test
+  public void testBinaryHstrLen() {
+    Map<byte[], byte[]> values = new HashMap<>();
+    values.put(bbar, bcar);
+    jedis.hmset(bfoo, values);
+    Long response = jedis.hstrlen(bfoo, bbar);
+    assertEquals(4l, response.longValue());
+  }
+
 }

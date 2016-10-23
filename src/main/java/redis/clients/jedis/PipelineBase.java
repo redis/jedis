@@ -1634,5 +1634,17 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG_LIST);
   }
 
+  @Override
+  public Response<Long> hstrlen(final String key, final String field) {
+    getClient(key).hstrlen(key, field);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> hstrlen(final byte[] key, final byte[] field) {
+    getClient(key).hstrlen(key, field);
+    return getResponse(BuilderFactory.LONG);
+  }
+
 
 }

@@ -1843,4 +1843,14 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+
+  @Override
+  public Long hstrlen(final String key, final String field) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.hstrlen(key, field);
+      }
+    }.run(key);
+  }
 }

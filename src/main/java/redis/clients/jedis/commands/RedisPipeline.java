@@ -219,6 +219,8 @@ public interface RedisPipeline {
   Response<Long> pfcount(final String key);
   
   Response<List<Long>> bitfield(String key, String... arguments);
+  
+  Response<Long> hstrlen(String key, String field);
 
   // Geo Commands
 

@@ -276,4 +276,12 @@ public interface JedisClusterCommands {
    * @param arguments
    */
   List<Long> bitfield(String key, String...arguments);
+  
+  /**
+   * Used for HSTRLEN Redis command
+   * @param key 
+   * @param field
+   * @return lenth of the value for key
+   */
+  Long hstrlen(final String key, final String field);
 }

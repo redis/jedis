@@ -262,4 +262,6 @@ public interface BinaryRedisPipeline {
       GeoUnit unit, GeoRadiusParam param);
 
   Response<List<Long>> bitfield(final byte[] key, final byte[]... elements);
+
+  Response<Long> hstrlen(final byte[] key, final byte[] field);
 }

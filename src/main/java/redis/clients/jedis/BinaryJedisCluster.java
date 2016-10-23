@@ -2054,4 +2054,14 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
       }
     }.runBinary(key);
   }
+
+  @Override
+  public Long hstrlen(final byte[] key, final byte[] field) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.hstrlen(key, field);
+      }
+    }.runBinary(key);
+  }
 }

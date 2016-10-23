@@ -28,8 +28,8 @@ public class SortingParams {
    * sorting. Weight key names are obtained substituting the first occurrence of * with the actual
    * value of the elements on the list.
    * <p>
-   * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*-&gt;fieldname".
+   * The pattern for a normal key/value pair is "field*" and for a value in a hash
+   * "field*-&gt;fieldname".
    * @param pattern
    * @return the SortingParams Object
    */
@@ -44,8 +44,8 @@ public class SortingParams {
    * sorting. Weight key names are obtained substituting the first occurrence of * with the actual
    * value of the elements on the list.
    * <p>
-   * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*-&gt;fieldname".
+   * The pattern for a normal key/value pair is "field*" and for a value in a hash
+   * "field*-&gt;fieldname".
    * @param pattern
    * @return the SortingParams Object
    */
@@ -120,8 +120,8 @@ public class SortingParams {
    * key names are obtained substituting the first occurrence of * with the actual value of the
    * elements on the list.
    * <p>
-   * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*-&gt;fieldname".
+   * The pattern for a normal key/value pair is "field*" and for a value in a hash
+   * "field*-&gt;fieldname".
    * <p>
    * To get the list itself use the char # as pattern.
    * @param patterns
@@ -142,8 +142,8 @@ public class SortingParams {
    * key names are obtained substituting the first occurrence of * with the actual value of the
    * elements on the list.
    * <p>
-   * The pattern for a normal key/value pair is "keyname*" and for a value in a hash
-   * "keyname*-&gt;fieldname".
+   * The pattern for a normal key/value pair is "field*" and for a value in a hash
+   * "field*-&gt;fieldname".
    * <p>
    * To get the list itself use the char # as pattern.
    * @param patterns

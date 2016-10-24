@@ -3726,10 +3726,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> bitfield(byte[] key, byte[]... arguments) {
+  public List<Long> bitfield(byte[] key, byte[]... arguments) {
     checkIsInMultiOrPipeline();
     client.bitfield(key, arguments);
-    return client.getBinaryMultiBulkReply();
+    return client.getIntegerMultiBulkReply();
   }
 
   @Override

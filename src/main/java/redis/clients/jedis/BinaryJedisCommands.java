@@ -303,7 +303,7 @@ public interface BinaryJedisCommands {
    * @param key
    * @param arguments
    */
-  List<byte[]> bitfield(final byte[] key, final byte[]... arguments);
+  List<Long> bitfield(final byte[] key, final byte[]... arguments);
   
   /**
    * Used for HSTRLEN Redis command

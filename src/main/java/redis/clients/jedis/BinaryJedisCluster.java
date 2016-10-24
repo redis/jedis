@@ -1844,10 +1844,10 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<byte[]> bitfield(final byte[] key, final byte[]... arguments) {
-    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+  public List<Long> bitfield(final byte[] key, final byte[]... arguments) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
       @Override
-      public List<byte[]> execute(Jedis connection) {
+      public List<Long> execute(Jedis connection) {
         return connection.bitfield(key, arguments);
       }
     }.runBinary(key);

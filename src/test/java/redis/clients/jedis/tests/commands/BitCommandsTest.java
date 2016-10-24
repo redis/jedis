@@ -9,6 +9,7 @@ import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Protocol;
+import redis.clients.util.SafeEncoder;
 
 import java.util.List;
 
@@ -193,10 +194,12 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void testBinaryBitfield() {
-    List<byte[]> responses = jedis.bitfield("mykey".getBytes(), "INCRBY".getBytes(),"i5".getBytes(),
-        "100".getBytes(),"1".getBytes(), "GET".getBytes(), "u4".getBytes(), "0".getBytes());
-    assertEquals(1L, responses.get(0));
-    assertEquals(0L, responses.get(1));
+    List<Long> responses = jedis.bitfield(SafeEncoder.encode("mykey"), SafeEncoder.encode("INCRBY"),
+            SafeEncoder.encode("i5"), SafeEncoder.encode("100"), SafeEncoder.encode("1"),
+            SafeEncoder.encode("GET"), SafeEncoder.encode("u4"), SafeEncoder.encode("0")
+    );
+    assertEquals(1L, responses.get(0).longValue());
+    assertEquals(0L, responses.get(1).longValue());
   }
 
 }

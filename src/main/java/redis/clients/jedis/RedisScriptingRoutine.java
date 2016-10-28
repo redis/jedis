@@ -52,6 +52,6 @@ public class RedisScriptingRoutine {
 
   @Override
   public String toString() {
-    return "RedisScriptingRoutine{sha1Digest='" + sha1Digest + "\', name='" + name + "\'}";
+    return RedisScriptingRoutine.class.getSimpleName() + "{sha1Digest='" + sha1Digest + "\', name='" + name + "\'}";
   }
 }

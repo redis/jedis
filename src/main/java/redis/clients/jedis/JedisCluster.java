@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
+import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -1696,6 +1697,30 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         return connection.evalsha(script);
       }
     }.run(key);
+  }
+
+  public Object smartEval(RedisScriptingRoutine script, String key) {
+    try {
+      return evalsha(script.getDigest(), key);
+    } catch (JedisNoScriptException ex) {
+      return eval(script.getRoutineBody(), key);
+    }
+  }
+
+  public Object smartEval(RedisScriptingRoutine script, List<String> keys, List<String> args) {
+    try {
+      return evalsha(script.getDigest(), keys, args);
+    } catch (JedisNoScriptException ex) {
+      return eval(script.getRoutineBody(), keys, args);
+    }
+  }
+
+  public Object smartEval(RedisScriptingRoutine script, int keyCount, String... params) {
+    try {
+      return evalsha(script.getDigest(), keyCount, params);
+    } catch (JedisNoScriptException ex) {
+      return eval(script.getRoutineBody(), keyCount, params);
+    }
   }
 
   @Override

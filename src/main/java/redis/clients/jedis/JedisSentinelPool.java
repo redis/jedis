@@ -311,7 +311,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
             }
           }, "+switch-master");
 
-        } catch (JedisConnectionException e) {
+        } catch (JedisException e) {
 
           if (running.get()) {
             log.log(Level.SEVERE, "Lost connection to Sentinel at " + host + ":" + port

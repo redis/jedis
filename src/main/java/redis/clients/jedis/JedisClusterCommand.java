@@ -128,15 +128,15 @@ public abstract class JedisClusterCommand<T> {
       releaseConnection(connection);
       connection = null;
 
-      if (attempts <= 1) {
-        //We need this because if node is not reachable anymore - we need to finally initiate slots renewing,
-        //or we can stuck with cluster state without one node in opposite case.
-        //But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
+      int attemptsRemaining = attempts - 1;
+      if (attemptsRemaining == 1 && maxAttempts > 2) {
+        // May be that the node is not reachable anymore, try calling cluster slots before our final retry
+        // Only do this if maxAttempts > 2 to avoid calling cluster slots on any connection error
         //TODO make tracking of successful/unsuccessful operations for node - do renewing only
         //if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
-
-        //no more redirections left, throw original exception, not JedisClusterMaxRedirectionsException, because it's not MOVED situation
+      } else if (attemptsRemaining <= 0) {
+        // No more redirections left, throw original exception, not JedisClusterMaxRedirectionsException, because it's not MOVED situation
         throw jce;
       }
 

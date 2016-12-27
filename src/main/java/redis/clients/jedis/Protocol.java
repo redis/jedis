@@ -73,6 +73,8 @@ public final class Protocol {
   public static final String PUBSUB_NUMSUB = "numsub";
   public static final String PUBSUB_NUM_PAT = "numpat";
 
+  public static final String DATA_REPLACE = "replace";
+
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
 

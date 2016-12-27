@@ -3331,9 +3331,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryBulkReply();
   }
 
-  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restore(final byte[] key, final int ttl, final byte[] serializedValue, final String... replaceArgs) {
     checkIsInMultiOrPipeline();
-    client.restore(key, ttl, serializedValue);
+    client.restore(key, ttl, serializedValue, replaceArgs);
     return client.getStatusCodeReply();
   }
 

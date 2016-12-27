@@ -291,4 +291,8 @@ public interface BinaryJedisClusterCommands {
    */
   Long hstrlen(final byte[] key, final byte[] field);
 
+  byte[] dump(final byte[] key);
+
+  String restore(final byte[] key, final int ttl, final byte[] serializedValue, final String... replaceArgs);
+
 }

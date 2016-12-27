@@ -284,4 +284,9 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(final String key, final String field);
+
+  byte[] dump(final String key);
+
+  String restore(final String key, final int ttl, final byte[] serializedValue, final String... replaceArgs);
+
 }

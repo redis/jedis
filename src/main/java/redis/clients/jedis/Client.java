@@ -924,8 +924,8 @@ public class Client extends BinaryClient implements Commands {
     dump(SafeEncoder.encode(key));
   }
 
-  public void restore(final String key, final int ttl, final byte[] serializedValue) {
-    restore(SafeEncoder.encode(key), ttl, serializedValue);
+  public void restore(final String key, final int ttl, final byte[] serializedValue, final String... replaceArgs) {
+    restore(SafeEncoder.encode(key), ttl, serializedValue, replaceArgs);
   }
 
   public void pexpire(final String key, final long milliseconds) {

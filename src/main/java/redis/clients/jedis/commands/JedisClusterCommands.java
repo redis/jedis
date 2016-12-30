@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -284,4 +285,10 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(final String key, final String field);
+
+  byte[] dump(final String key);
+
+  String restore(final String key, final int ttl, final byte[] serializedValue, final MigrateParams migrateParams);
+
+  String restore(final String key, final int ttl, final byte[] serializedValue);
 }

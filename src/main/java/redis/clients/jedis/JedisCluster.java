@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
@@ -1853,4 +1854,37 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+
+
+  @Override
+  public byte[] dump(final String key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.dump(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String restore(final String key, final int ttl, final byte[] serializedValue, final MigrateParams migrateParams) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue, migrateParams);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue);
+      }
+    }.run(key);
+  }
+
+
 }

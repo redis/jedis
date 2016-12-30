@@ -18,6 +18,8 @@ import org.junit.Test;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.exceptions.JedisBusyException;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
@@ -487,6 +489,25 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     byte[] sv = jedis.dump("foo1");
     jedis.restore("foo2", 0, sv);
     assertTrue(jedis.exists("foo2"));
+  }
+
+  @Test(expected = JedisBusyException.class)
+  public void dumpAndRestoreDup() {
+    jedis.set("foo1", "bar1");
+    byte[] sv = jedis.dump("foo1");
+    jedis.restore("foo1", 0, sv);
+    assertTrue(jedis.exists("foo1"));
+  }
+
+  @Test
+  public void dumpAndRestoreReplace() {
+    jedis.set("foo1", "bar1");
+    byte[] sv = jedis.dump("foo1");
+    assertTrue(jedis.exists("foo1"));
+
+    MigrateParams migrateParams = MigrateParams.migrateParms().replace();
+    jedis.restore("foo1", 0, sv, migrateParams);
+    assertTrue(jedis.exists("foo1"));
   }
 
   @Test

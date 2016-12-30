@@ -26,6 +26,7 @@ import redis.clients.jedis.commands.MultiKeyCommands;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -3105,6 +3106,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  public String restore(final String key, final int ttl, final byte[] serializedValue, MigrateParams migrateParams) {
+    checkIsInMultiOrPipeline();
+    client.restore(key, ttl, serializedValue, migrateParams);
+    return client.getStatusCodeReply();
+  }
+
   @Override
   public Long pexpire(final String key, final long milliseconds) {
     checkIsInMultiOrPipeline();
@@ -3158,6 +3165,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
     client.migrate(host, port, key, destinationDb, timeout);
+    return client.getStatusCodeReply();
+  }
+
+  public String migrate(final String host, final int port, final int destinationDb, final int timeout,
+                        final MigrateParams migrateParams, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.migrate(host, port, destinationDb, timeout, migrateParams, keys);
     return client.getStatusCodeReply();
   }
 

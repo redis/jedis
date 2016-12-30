@@ -26,6 +26,7 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -3337,6 +3338,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  public String restore(final byte[] key, final int ttl, final byte[] serializedValue, MigrateParams migrateParams) {
+    checkIsInMultiOrPipeline();
+    client.restore(key, ttl, serializedValue, migrateParams);
+    return client.getStatusCodeReply();
+  }
+
   /**
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
@@ -3426,6 +3433,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
     client.migrate(host, port, key, destinationDb, timeout);
+    return client.getStatusCodeReply();
+  }
+
+  public String migrate(final byte[] host, final int port,
+      final int destinationDb, final int timeout, final MigrateParams migrateParams, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.migrate(host, port, destinationDb, timeout, migrateParams, keys);
     return client.getStatusCodeReply();
   }
 

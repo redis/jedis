@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.MIGRATE;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -928,6 +930,10 @@ public class Client extends BinaryClient implements Commands {
     restore(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
+  public void restore(final String key, final int ttl, final byte[] serializedValue, MigrateParams migrateParams) {
+    restore(SafeEncoder.encode(key), ttl, serializedValue, migrateParams);
+  }
+
   public void pexpire(final String key, final long milliseconds) {
     pexpire(SafeEncoder.encode(key), milliseconds);
   }
@@ -964,6 +970,16 @@ public class Client extends BinaryClient implements Commands {
   public void migrate(final String host, final int port, final String key, final int destinationDb,
       final int timeout) {
     migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key), destinationDb, timeout);
+  }
+
+  public void migrate(final String host, final int port, final int destinationDb,
+                      final int timeout,final MigrateParams migrateParams, final String... keys) {
+    final byte[][] bkeys = new byte[keys.length][];
+    for (int i = 0; i < keys.length; i++) {
+      bkeys[0] = SafeEncoder.encode(keys[i]);
+    }
+    sendCommand(MIGRATE, migrateParams.getMigrateByteParams(SafeEncoder.encode(host), toByteArray(port),
+            toByteArray(destinationDb), toByteArray(timeout), bkeys));
   }
 
   @Override

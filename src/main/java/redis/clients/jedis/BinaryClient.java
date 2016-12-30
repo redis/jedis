@@ -24,6 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
@@ -1087,6 +1088,10 @@ public class BinaryClient extends Connection {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
   }
 
+  public void restore(final byte[] key, final int ttl, final byte[] serializedValue, MigrateParams migrateParams) {
+    sendCommand(RESTORE, migrateParams.getRestoreByteParams(key, toByteArray(ttl), serializedValue));
+  }
+
   public void pexpire(final byte[] key, final long milliseconds) {
     sendCommand(PEXPIRE, key, toByteArray(milliseconds));
   }
@@ -1131,6 +1136,12 @@ public class BinaryClient extends Connection {
       final int timeout) {
     sendCommand(MIGRATE, host, toByteArray(port), key, toByteArray(destinationDb),
       toByteArray(timeout));
+  }
+
+  public void migrate(final byte[] host, final int port, final int destinationDb,
+      final int timeout,final MigrateParams migrateParams, final byte[]... keys) {
+    sendCommand(MIGRATE, migrateParams.getMigrateByteParams(host, toByteArray(port), toByteArray(destinationDb),
+            toByteArray(timeout), keys));
   }
 
   public void hincrByFloat(final byte[] key, final byte[] field, double increment) {

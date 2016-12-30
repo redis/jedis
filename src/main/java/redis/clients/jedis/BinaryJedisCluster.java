@@ -4,6 +4,7 @@ import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -1876,4 +1877,37 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+
+
+  @Override
+  public byte[] dump(final byte[] key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.dump(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public String restore(final byte[] key, final int ttl, final byte[] serializedValue, final MigrateParams migrateParams) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue, migrateParams);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue);
+      }
+    }.runBinary(key);
+  }
+
+
 }

@@ -10,6 +10,7 @@ import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.RedisPipeline;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.migrate.MigrateParams;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -1435,8 +1436,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> restore(byte[] key, int ttl, byte[] serializedValue) {
-    getClient(key).restore(key, ttl, serializedValue);
+  public Response<String> restore(byte[] key, int ttl, byte[] serializedValue, MigrateParams migrateParams) {
+    getClient(key).restore(key, ttl, serializedValue, migrateParams);
     return getResponse(BuilderFactory.STRING);
   }
 

@@ -37,6 +37,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private CommandListener commandListener;
 
   public Connection() {
   }
@@ -108,6 +109,14 @@ public class Connection implements Closeable {
     }
   }
 
+  public void setCommandListener(CommandListener listener) {
+    this.commandListener = listener;
+  }
+
+  public void clearCommandListener() {
+    this.commandListener = null;
+  }
+
   public Connection sendCommand(final ProtocolCommand cmd, final String... args) {
     final byte[][] bargs = new byte[args.length][];
     for (int i = 0; i < args.length; i++) {
@@ -124,6 +133,12 @@ public class Connection implements Closeable {
     try {
       connect();
       Protocol.sendCommand(outputStream, cmd, args);
+
+      // Record commands sent, for retrying in cluster pipeline.
+      if (commandListener != null) {
+        commandListener.afterCommand(this, cmd, args);
+      }
+
       return this;
     } catch (JedisConnectionException ex) {
       /*

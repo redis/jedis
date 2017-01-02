@@ -306,4 +306,9 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
 
     return result;
   }
+
+  public List<Object> syncAndReturnAll() {
+    sync();
+    return getResults();
+  }
 }

@@ -105,7 +105,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
           int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
-}
+  }
+
+  public JedisClusterPipeline pipelined() {
+    return new JedisClusterPipeline(connectionHandler);
+  }
 
   @Override
   public String set(final String key, final String value) {

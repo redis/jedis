@@ -25,8 +25,11 @@ import redis.clients.util.JedisClusterCRC16;
  * }
  * </pre>
  * 
- * So we keep states in class members and share among these methods. The operation is recorded and
- * replay when retrying.
+ * All operations defined in "PipelineBase" will call "getClient" and then "getResponse". So we keep
+ * states in class members and share among these methods. The operation is recorded and will be
+ * replayed when retrying.
+ * <p>
+ * Adding cluster pipelining support need just small changes on other classes.
  */
 public class JedisClusterPipeline extends PipelineBase implements CommandListener {
 
@@ -63,11 +66,9 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
       operation.setCommand(cmd);
       operation.setArgs(args);
 
-      // Use the slot in last call to getClient,
-      // because every operation requires a client
+      // Use the slot in last call on getClient, because every operation requires a client
       // for example: getClient(key).decr(key);
       operation.setSlot(lastSlot);
-
       lastCommand = operation;
     }
   }
@@ -186,18 +187,18 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
 
         try {
           if (operation.isAsking()) {
-            // Read response of asking
+            // Read response of asking, should be always "OK"
             client.getOne();
           }
 
           // Reset asking flag
           operation.setAsking(false);
 
-          // Read response for each command
+          // Read responses for each command
           Object data = client.getOne();
           operation.getResp().set(data);
         } catch (JedisMovedDataException e) {
-          // if moved message received, update slots,
+          // if moved message received, update slots mapping
           int slot = e.getSlot();
           HostAndPort node = e.getTargetNode();
 
@@ -212,9 +213,8 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
           // Will retry later
           retries.add(operation);
         } catch (JedisAskDataException e) {
-          // if asked message received,
-          // need send asking before next sending,
-          // but do not cache and update slots
+          // if asked message received, send asking before next retrying,
+          // but do not cache and update slots mapping
           operation.setAsking(true);
           HostAndPort node = e.getTargetNode();
 
@@ -228,7 +228,7 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
         } catch (JedisException e) {
           operation.setError(e);
 
-          // No more retries
+          // No more retries, connection may corrupt
           releaseConnection(operation.getConnection());
         }
       }

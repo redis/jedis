@@ -96,7 +96,7 @@ Please check the [WIKI](https://github.com/xetorthio/jedis/wiki) for more useful
 
 That is great!
 
-Please see CONTRIBUTING.md on project's root directory for follow up how to contribute to Jedis project.
+Please see [CONTRIBUTING.md](https://github.com/xetorthio/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
 
 Thanks for helping!
 

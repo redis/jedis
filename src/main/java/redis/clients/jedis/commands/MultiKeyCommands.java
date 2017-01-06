@@ -44,6 +44,7 @@ public interface MultiKeyCommands {
    * of limited length)
    * @param pattern
    * @return Multi bulk reply
+   * @see <a href="https://redis.io/commands/keys">Redis KEYS documentation</a>
    */
   Set<String> keys(String pattern);
 
@@ -145,6 +146,7 @@ public interface MultiKeyCommands {
    * @param cursor The cursor.
    * @param params the scan parameters. For example a glob-style match pattern
    * @return the scan result with the results of this iteration and the new position of the cursor
+   * @see <a href="https://redis.io/commands/scan">Redis SCAN documentation</a>
    */
   ScanResult<String> scan(final String cursor, final ScanParams params);
 

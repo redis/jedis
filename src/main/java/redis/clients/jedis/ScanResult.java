@@ -25,6 +25,15 @@ public class ScanResult<T> {
     return SafeEncoder.encode(cursor);
   }
 
+  /**
+   * Is the iteration complete. I.e. was the complete dataset scanned.
+   *
+   * @return true if the iteration is complete
+   */
+  public boolean isCompleteIteration() {
+    return ScanParams.SCAN_POINTER_START.equals(getCursor());
+  }
+
   public byte[] getCursorAsBytes() {
     return cursor;
   }

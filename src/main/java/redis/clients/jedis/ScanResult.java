@@ -17,6 +17,10 @@ public class ScanResult<T> {
     this.results = results;
   }
 
+  /**
+   * Returns the new value of the cursor
+   * @return the new cursor value. {@link ScanParams#SCAN_POINTER_START} when a complete iteration has finished
+   */
   public String getCursor() {
     return SafeEncoder.encode(cursor);
   }
@@ -25,6 +29,10 @@ public class ScanResult<T> {
     return cursor;
   }
 
+  /**
+   * The scan results from the current call.
+   * @return the scan results
+   */
   public List<T> getResult() {
     return results;
   }

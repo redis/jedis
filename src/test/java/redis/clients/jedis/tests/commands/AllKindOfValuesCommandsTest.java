@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.set.SetParams.setParams;
@@ -612,6 +613,29 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  public void scanIsCompleteIteration() {
+    for (int i = 0; i < 100; i++) {
+      jedis.set("a" + i, "a" + i);
+    }
+
+    ScanResult<String> result = scanCompletely();
+
+    assertNotNull(result);
+    assertTrue(result.isCompleteIteration());
+  }
+
+  private ScanResult<String> scanCompletely() {
+    String cursor = SCAN_POINTER_START;
+    ScanResult<String> scanResult;
+    do {
+      scanResult = jedis.scan(cursor);
+      cursor = scanResult.getCursor();
+    } while (!SCAN_POINTER_START.equals(scanResult.getCursor()));
+
+    return scanResult;
   }
 
   @Test

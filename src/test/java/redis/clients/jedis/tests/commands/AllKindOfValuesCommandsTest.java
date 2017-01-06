@@ -621,14 +621,19 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
       jedis.set("a" + i, "a" + i);
     }
 
-    ScanResult<String> result = scanCompletely();
+    ScanResult<String> result = jedis.scan(SCAN_POINTER_START);
+    // note: in theory Redis would be allowed to already return all results on the 1st scan,
+    // but in practice this never happens for data sets greater than a few tens
+    // see: https://redis.io/commands/scan#number-of-elements-returned-at-every-scan-call
+    assertFalse(result.isCompleteIteration());
+
+    result = scanCompletely(result.getCursor());
 
     assertNotNull(result);
     assertTrue(result.isCompleteIteration());
   }
 
-  private ScanResult<String> scanCompletely() {
-    String cursor = SCAN_POINTER_START;
+  private ScanResult<String> scanCompletely(String cursor) {
     ScanResult<String> scanResult;
     do {
       scanResult = jedis.scan(cursor);

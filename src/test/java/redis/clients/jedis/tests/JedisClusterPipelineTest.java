@@ -248,4 +248,61 @@ public class JedisClusterPipelineTest {
     }
   }
 
+  /**
+   * slot->nodes 15363 node3 e
+   */
+  @Test
+  public void testMigrating() {
+    log.info("test migrate slot");
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(nodeInfo1);
+    JedisCluster jedis = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+
+    try {
+      JedisClusterPipeline pipeline = jedis.pipelined();
+
+      // Ensure the key "e" does not exist
+      jedis.del("e");
+
+      String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
+      String node2Id = JedisClusterTestUtil.getNodeId(node2.clusterNodes());
+      node3.clusterSetSlotMigrating(15363, node2Id);
+      node2.clusterSetSlotImporting(15363, node3Id);
+
+      pipeline.set("e", "e1");
+      pipeline.sync();
+      assertEquals(1, pipeline.getCounterOfAsking());
+
+      Response<String> e1Response = pipeline.get("e");
+      pipeline.sync();
+      assertEquals("e1", e1Response.get());
+      assertEquals(1, pipeline.getCounterOfAsking());
+
+      pipeline.del("e");
+      pipeline.sync();
+      assertEquals(1, pipeline.getCounterOfAsking());
+
+      // Ensure the key "e" does not exist
+      jedis.del("e");
+
+      node2.clusterSetSlotNode(15363, node2Id);
+      node3.clusterSetSlotNode(15363, node2Id);
+
+      pipeline.set("e", "e2");
+      pipeline.sync();
+      assertEquals(1, pipeline.getCounterOfMoving());
+      assertEquals(0, pipeline.getCounterOfAsking());
+
+      // Then the slot mapping cache has been updated
+      Response<String> e2Response = pipeline.get("e");
+      pipeline.sync();
+      assertEquals("e2", e2Response.get());
+      assertEquals(0, pipeline.getCounterOfMoving());
+      assertEquals(0, pipeline.getCounterOfAsking());
+    } finally {
+      jedis.close();
+    }
+  }
+
 }

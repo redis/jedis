@@ -47,6 +47,17 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
   private HostAndPort lastSlotNode = null;
   private int lastSlot = -1;
 
+  private int counterOfAsking = 0;
+  private int counterOfMoving = 0;
+
+  public int getCounterOfAsking() {
+    return counterOfAsking;
+  }
+
+  public int getCounterOfMoving() {
+    return counterOfMoving;
+  }
+
   public JedisClusterPipeline(JedisClusterConnectionHandler connectionHandler) {
     this.connectionHandler = connectionHandler;
   }
@@ -198,6 +209,8 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
           Object data = client.getOne();
           operation.getResp().set(data);
         } catch (JedisMovedDataException e) {
+          counterOfMoving++;
+
           // if moved message received, update slots mapping
           int slot = e.getSlot();
           HostAndPort node = e.getTargetNode();
@@ -213,6 +226,8 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
           // Will retry later
           retries.add(operation);
         } catch (JedisAskDataException e) {
+          counterOfAsking++;
+
           // if asked message received, send asking before next retrying,
           // but do not cache and update slots mapping
           operation.setAsking(true);
@@ -288,8 +303,12 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
   public void sync() {
     try {
       isRecording = false;
+      counterOfMoving = 0;
+      counterOfAsking = 0;
+
       syncImpl();
     } finally {
+      // Pipeline could be used more than once.
       responses = cmds;
       isRecording = true;
       reset();

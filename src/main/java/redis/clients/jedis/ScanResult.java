@@ -39,16 +39,31 @@ public class ScanResult<T> {
   }
 
   /**
+   * Returns the new value of the cursor
+   * @return the new cursor value. {@link ScanParams#SCAN_POINTER_START} when a complete iteration has finished
    * FIXME: This method should be changed to getCursor() on next major release
    */
   public String getStringCursor() {
     return SafeEncoder.encode(cursor);
   }
 
+  /**
+   * Is the iteration complete. I.e. was the complete dataset scanned.
+   *
+   * @return true if the iteration is complete
+   */
+  public boolean isCompleteIteration() {
+    return ScanParams.SCAN_POINTER_START.equals(getStringCursor());
+  }
+
   public byte[] getCursorAsBytes() {
     return cursor;
   }
 
+  /**
+   * The scan results from the current call.
+   * @return the scan results
+   */
   public List<T> getResult() {
     return results;
   }

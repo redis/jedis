@@ -1,8 +1,8 @@
 package redis.clients.jedis.exceptions;
 
 /**
- * This exception will be thrown when the Jedis client won't be able to retreive a connection from
- * the pool, since all the connections are being used (aka. an "exhausted" pool).
+ * This exception will be thrown when the Jedis client isn't able to retrieve a connection from
+ * the pool, since all the connections are being used (a.k.a. an "exhausted" pool).
  */
 public class JedisExhaustedPoolException extends JedisException {
 

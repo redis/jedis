@@ -10,7 +10,7 @@ public class HostAndPort implements Serializable {
   private static final long serialVersionUID = -519876229978427751L;
 
   protected static Logger log = LoggerFactory.getLogger(HostAndPort.class.getName());
-  public static final String LOCALHOST_STR = getLocalHostQuietly();
+  public static String localhost;
 
 
   private String host;
@@ -91,13 +91,52 @@ public class HostAndPort implements Serializable {
   }
 
   public static String convertHost(String host) {
-    if (host.equals("127.0.0.1") || host.startsWith("localhost") || host.equals("0.0.0.0") ||
-        host.startsWith("169.254") ||
-        host.startsWith("::1") || host.startsWith("0:0:0:0:0:0:0:1")) {
-      return LOCALHOST_STR;
-    } else {
+    try {
+        /*
+         * Validate the host name as an IPV4/IPV6 address.
+         * If this is an AWS ENDPOINT it will not parse.
+         * In that case accept host as is.
+         *
+         * Costs: If this is an IPV4/6 encoding, e.g. 127.0.0.1 then no DNS lookup
+         * is done.  If it is a name then a DNS lookup is done but it is normally cached.
+         * Secondarily, this class is typically used to create a connection once
+         * at the beginning of processing and then not used again.  So even if the DNS
+         * lookup needs to be done then the cost is miniscule.
+         */
+      InetAddress inetAddress = InetAddress.getByName(host);
+
+      // isLoopbackAddress() handles both IPV4 and IPV6
+      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254"))
+        return getLocalhost();
+      else
+        return host;
+    } catch (Exception e) {
+      // Not a valid IP address
+      log.warn("{}.convertHost '" + host + "' is not a valid IP address. ", HostAndPort.class.getName(), e);
       return host;
     }
+  }
+
+  public static void setLocalhost(String localhost) {
+    synchronized (HostAndPort.class) {
+      HostAndPort.localhost = localhost;
+    }
+  }
+
+  /**
+   * This method resolves the localhost in a 'lazy manner'.
+   *
+   * @return localhost
+   */
+  public static String getLocalhost() {
+    if (localhost == null) {
+      synchronized (HostAndPort.class) {
+        if (localhost == null) {
+          return localhost = getLocalHostQuietly();
+        }
+      }
+    }
+    return localhost;
   }
 
   public static String getLocalHostQuietly() {

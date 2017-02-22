@@ -2,13 +2,14 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HostAndPort implements Serializable {
   private static final long serialVersionUID = -519876229978427751L;
 
-  protected static Logger log = Logger.getLogger(HostAndPort.class.getName());
+  protected static Logger log = LoggerFactory.getLogger(HostAndPort.class.getName());
   public static final String LOCALHOST_STR = getLocalHostQuietly();
 
 
@@ -104,7 +105,8 @@ public class HostAndPort implements Serializable {
     try {
       localAddress = InetAddress.getLocalHost().getHostAddress();
     } catch (Exception ex) {
-      log.logp(Level.SEVERE, HostAndPort.class.getName(), "getLocalHostQuietly", "cant resolve localhost address", ex);
+      log.error("{}.getLocalHostQuietly : cant resolve localhost address",
+        HostAndPort.class.getName(), ex);
       localAddress = "localhost";
     }
     return localAddress;

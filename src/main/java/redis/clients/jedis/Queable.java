@@ -10,9 +10,14 @@ public class Queable {
     pipelinedResponses.clear();
   }
 
+  /* 
+    Certain server-side failure scenarios create "null" response-data
+    Scenarios we should fend against.
+    TODO - improve "data" Object validation
+  */
   protected Response<?> generateResponse(Object data) {
     Response<?> response = pipelinedResponses.poll();
-    if (response != null) {
+    if (response != null && data != null ) {
       response.set(data);
     }
     return response;

@@ -27,7 +27,11 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(new HostAndPort(host, port));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
-    this.password = password;
+    if(password != null && ! password.trim().isEmpty()){
+      this.password = password;
+    }else{
+      this.password = null;
+    }
     this.database = database;
     this.clientName = clientName;
   }

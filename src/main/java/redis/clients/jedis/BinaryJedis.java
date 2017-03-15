@@ -3019,6 +3019,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.sync();
   }
 
+  public void psync(String runid, String offset) {
+    client.psync(runid, offset);
+  }
+
   @Override
   public Long lpushx(final byte[] key, final byte[]... string) {
     client.lpushx(key, string);

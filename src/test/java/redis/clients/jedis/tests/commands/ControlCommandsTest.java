@@ -137,6 +137,16 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void psync() {
+    Properties props = extractRedisInfo("server");
+    String runid = (String) props.get("run_id");
+    props = extractRedisInfo("replication");
+    String offset = (String) props.get("master_repl_offset");
+
+    jedis.psync(runid, offset);
+  }
+
+  @Test
   public void debug() {
     jedis.set("foo", "bar");
     String resp = jedis.debug(DebugParams.OBJECT("foo"));

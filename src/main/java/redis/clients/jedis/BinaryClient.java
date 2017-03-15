@@ -879,6 +879,10 @@ public class BinaryClient extends Connection {
     sendCommand(SYNC);
   }
 
+  public void psync(String runid, String offset) {
+    sendCommand(PSYNC, runid, offset);
+  }
+
   public void lpushx(final byte[] key, final byte[]... string) {
     sendCommand(LPUSHX, joinParameters(key, string));
   }

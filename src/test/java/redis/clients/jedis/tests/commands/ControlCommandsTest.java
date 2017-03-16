@@ -143,7 +143,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     props = extractRedisInfo("replication");
     String offset = (String) props.get("master_repl_offset");
 
-    jedis.psync(runid, offset);
+    assertEquals("CONTINUE", jedis.psync(runid, offset));
   }
 
   @Test

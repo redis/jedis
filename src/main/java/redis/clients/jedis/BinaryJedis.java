@@ -3019,8 +3019,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.sync();
   }
 
-  public void psync(String runid, String offset) {
+  public String psync(String runid, String offset) {
     client.psync(runid, offset);
+    return client.getBulkReply();
   }
 
   @Override

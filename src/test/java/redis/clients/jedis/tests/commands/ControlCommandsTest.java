@@ -9,7 +9,10 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import java.util.List;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
@@ -143,7 +146,9 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     props = extractRedisInfo("replication");
     String offset = (String) props.get("master_repl_offset");
 
-    assertEquals("CONTINUE", jedis.psync(runid, offset));
+    String reply = jedis.psync(runid, offset);
+    assertNotNull(reply);
+    assertTrue(reply.startsWith("FULLRESYNC") || reply.equals("CONTINUE"));
   }
 
   @Test

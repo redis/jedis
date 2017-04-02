@@ -15,9 +15,11 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.SafeEncoder;
 
-public abstract class JedisPubSub extends BinaryJedisPubSub {
+public abstract class JedisPubSub {
 
   private static final String JEDIS_SUBSCRIPTION_MESSAGE = "JedisPubSub is not subscribed to a Jedis instance.";
+  private int subscribedChannels = 0;
+  private volatile Client client;
 
   public void onMessage(String channel, String message) {
   }
@@ -86,6 +88,14 @@ public abstract class JedisPubSub extends BinaryJedisPubSub {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
     client.punsubscribe(patterns);
+    client.flush();
+  }
+
+  public void ping() {
+    if (client == null) {
+      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+    }
+    client.ping();
     client.flush();
   }
 

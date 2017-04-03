@@ -1872,4 +1872,25 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+
+
+  @Override
+  public byte[] dump(final byte[] key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.dump(key);
+      }
+    }.runBinary(key);
+  }
+  @Override
+  public String restore(final byte[] key, final int ttl, final byte[] serializedValue, final String... replaceArgs) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue, replaceArgs);
+      }
+    }.runBinary(key);
+  }
+
 }

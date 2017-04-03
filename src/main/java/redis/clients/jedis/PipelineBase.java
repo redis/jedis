@@ -1430,13 +1430,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
-  public Response<String> restore(String key, int ttl, byte[] serializedValue) {
-    getClient(key).restore(key, ttl, serializedValue);
+  public Response<String> restore(String key, int ttl, byte[] serializedValue, final String... replaceArgs) {
+    getClient(key).restore(key, ttl, serializedValue, replaceArgs);
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> restore(byte[] key, int ttl, byte[] serializedValue) {
-    getClient(key).restore(key, ttl, serializedValue);
+  public Response<String> restore(byte[] key, int ttl, byte[] serializedValue, final String... replaceArgs) {
+    getClient(key).restore(key, ttl, serializedValue, replaceArgs);
     return getResponse(BuilderFactory.STRING);
   }
 

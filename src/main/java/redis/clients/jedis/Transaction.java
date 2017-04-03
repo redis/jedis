@@ -51,7 +51,9 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
     List<Object> formatted = new ArrayList<Object>();
     for (Object o : unformatted) {
       try {
-        formatted.add(generateResponse(o).get());
+        if ( o != null ) {
+          formatted.add(generateResponse(o).get());
+        }
       } catch (JedisDataException e) {
         formatted.add(e);
       }

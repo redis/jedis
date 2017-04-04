@@ -646,6 +646,114 @@ public class PipeliningTest {
     retFuture2.get();
   }
 
+  @Test
+  public void testInfinities() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 10d, "b");
+    jedis.zadd("foo", 0.1d, "c");
+    jedis.zadd("foo", 2d, "a");
+
+    // zcount
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Long> result = pipeline.zcount("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      pipeline.sync();
+      assertEquals(new Long(3L), result.get());
+    }
+
+    // zrangeByScore
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<String>> range = pipeline.zrangeByScore("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("c");
+      expected.add("a");
+      expected.add("b");
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+    // zrangeByScore with offset and count
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<String>> range = pipeline.zrangeByScore("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, 1);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("a");
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+
+    // zrevrangeByScore
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<String>> range = pipeline.zrevrangeByScore("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("b");
+      expected.add("a");
+      expected.add("c");
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+    // zrevrangeByScore with offset and count
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<String>> range = pipeline.zrevrangeByScore("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 1, 1);
+      Set<String> expected = new LinkedHashSet<String>();
+      expected.add("a");
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+
+    // zrangeByScoreWithScores
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<Tuple>> range = pipeline.zrangeByScoreWithScores("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("c", 0.1d));
+      expected.add(new Tuple("a", 2d));
+      expected.add(new Tuple("b", 10d));
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+    // zrangeByScoreWithScores with offset and count
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<Tuple>> range = pipeline.zrangeByScoreWithScores("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, 1);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("a", 2d));
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+
+    // zrevrangeByScoreWithScores
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<Tuple>> range = pipeline.zrevrangeByScoreWithScores("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("b", 10d));
+      expected.add(new Tuple("a", 2d));
+      expected.add(new Tuple("c", 0.1d));
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+    // zrevrangeByScoreWithScores with offset and count
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Set<Tuple>> range = pipeline.zrevrangeByScoreWithScores("foo", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 1, 1);
+      Set<Tuple> expected = new LinkedHashSet<Tuple>();
+      expected.add(new Tuple("a", 2d));
+      pipeline.sync();
+      assertEquals(expected, range.get());
+    }
+
+    // zremrangeByScore
+    {
+      Pipeline pipeline = jedis.pipelined();
+      Response<Long> result = pipeline.zremrangeByScore("foo", Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+      pipeline.sync();
+      assertEquals(new Long(3L), result.get());
+    }
+  }
+
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {
     assertFalse(firstKey.equals(secondKey));
     assertTrue(firstKey.equals(value1) || firstKey.equals(value2));

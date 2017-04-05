@@ -180,7 +180,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.pexpire(key, millisecondsTimestamp);
+        return connection.pexpireAt(key, millisecondsTimestamp);
       }
     }.runBinary(key);
   }

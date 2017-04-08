@@ -79,6 +79,24 @@ public class JedisClusterInfoCache {
           }
         }
       }
+      
+      //close the jedis pool of the fail node
+      String localNodes = jedis.clusterNodes();
+      for (String nodeInfo: localNodes.split("\n")) {
+          if(nodeInfo.contains("fail")){
+              ClusterNodeInformation clusterNodeInfo = nodeInfoParser.parse(
+                      nodeInfo, new HostAndPort(jedis.getClient().getHost(),
+                              jedis.getClient().getPort()));
+
+              HostAndPort failNode = clusterNodeInfo.getNode();
+              String nodeKey = getNodeKey(failNode);
+              JedisPool jedisPool=nodes.get(nodeKey);
+              if(jedisPool!=null){
+                  jedisPool.close();
+                  nodes.remove(nodeKey);                    
+              }
+          }
+      }
     } finally {
       w.unlock();
     }

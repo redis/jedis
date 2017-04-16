@@ -2,6 +2,8 @@
 
 # Jedis
 
+[![Join the chat at https://gitter.im/xetorthio/jedis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/xetorthio/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.
 
 Jedis was conceived to be EASY to use.

@@ -14,7 +14,7 @@ import redis.clients.jedis.params.sortedset.ZIncrByParams;
 /**
  * Common interface for sharded and non-sharded BinaryJedis
  */
-public interface BinaryJedisCommands {
+public interface BinaryJedisCommands  {
   String set(byte[] key, byte[] value);
 
   String set(byte[] key, byte[] value, SetParams params);
@@ -214,12 +214,12 @@ public interface BinaryJedisCommands {
   Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
   Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max, int offset,
-      int count);
+                          int count);
 
   Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);
 
   Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, int offset,
-      int count);
+                             int count);
 
   Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
 
@@ -258,15 +258,15 @@ public interface BinaryJedisCommands {
   List<GeoCoordinate> geopos(byte[] key, byte[]... members);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+                                    GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+                                    GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+                                            GeoRadiusParam param);
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
 

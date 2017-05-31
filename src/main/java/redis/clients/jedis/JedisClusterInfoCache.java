@@ -1,263 +1,319 @@
 package redis.clients.jedis;
 
-import redis.clients.util.SafeEncoder;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.SafeEncoder;
+
 public class JedisClusterInfoCache {
-  private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-  private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+	private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
+	private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+	private final Map<HostAndPort, RedisNodeInfo> nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();
 
-  private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-  private final Lock r = rwl.readLock();
-  private final Lock w = rwl.writeLock();
-  private volatile boolean rediscovering;
-  private final GenericObjectPoolConfig poolConfig;
+	private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+	private final Lock r = rwl.readLock();
+	private final Lock w = rwl.writeLock();
+	private final ReentrantLock slotsLock = new ReentrantLock();
+	private final GenericObjectPoolConfig poolConfig;
 
-  private int connectionTimeout;
-  private int soTimeout;
+	private int connectionTimeout;
+	private int soTimeout;
 
-  private static final int MASTER_NODE_INDEX = 2;
+	private static final int MASTER_NODE_INDEX = 2;
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
-    this(poolConfig, timeout, timeout);
-  }
+	public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
+		this(poolConfig, timeout, timeout);
+	}
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout) {
-    this.poolConfig = poolConfig;
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
-  }
+	public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+			final int soTimeout) {
+		this.poolConfig = poolConfig;
+		this.connectionTimeout = connectionTimeout;
+		this.soTimeout = soTimeout;
+	}
 
-  public void discoverClusterNodesAndSlots(Jedis jedis) {
-    w.lock();
+	public void discoverClusterNodesAndSlots(Jedis jedis) {
+		w.lock();
+		try {
+			reset();
+			assignSlots(retriveClusterSlots(jedis));
+		} finally {
+			w.unlock();
+		}
+	}
 
-    try {
-      reset();
-      List<Object> slots = jedis.clusterSlots();
+	public void renewClusterSlots(Jedis jedis) {
+		if (slotsLock.tryLock()) {
+			try {
+				if (jedis != null) {
+					try {
+						Map<HostAndPort, RedisNodeInfo> _nodeInfo = retriveClusterSlots(jedis);
+						if (hasChanged(_nodeInfo, nodeInfo)) {
+							assignSlots(_nodeInfo);
+						}
+						return;
+					} catch (JedisException e) {
+						// try nodes from all pools
+					}
+				}
 
-      for (Object slotInfoObj : slots) {
-        List<Object> slotInfo = (List<Object>) slotInfoObj;
+				for (JedisPool jp : getShuffledNodesPool()) {
+					try {
+						jedis = jp.getResource();
+						Map<HostAndPort, RedisNodeInfo> _nodeInfo = retriveClusterSlots(jedis);
+						if (hasChanged(_nodeInfo, nodeInfo)) {
+							System.out.println("new slots:" + _nodeInfo);
+							System.out.println("old slots:" + nodeInfo);
+							assignSlots(_nodeInfo);
+						}
+						return;
+					} catch (JedisConnectionException e) {
+						// try next nodes
+					} finally {
+						if (jedis != null) {
+							jedis.close();
+						}
+					}
+				}
+			} finally {
+				slotsLock.unlock();
+			}
+		}
 
-        if (slotInfo.size() <= MASTER_NODE_INDEX) {
-          continue;
-        }
+	}
 
-        List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+	public JedisPool setupNodeIfNotExist(HostAndPort node) {
+		w.lock();
+		try {
+			String nodeKey = getNodeKey(node);
+			JedisPool existingPool = nodes.get(nodeKey);
+			if (existingPool != null)
+				return existingPool;
 
-        // hostInfos
-        int size = slotInfo.size();
-        for (int i = MASTER_NODE_INDEX; i < size; i++) {
-          List<Object> hostInfos = (List<Object>) slotInfo.get(i);
-          if (hostInfos.size() <= 0) {
-            continue;
-          }
+			JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(), connectionTimeout, soTimeout,
+					null, 0, null);
+			nodes.put(nodeKey, nodePool);
+			return nodePool;
+		} finally {
+			w.unlock();
+		}
+	}
 
-          HostAndPort targetNode = generateHostAndPort(hostInfos);
-          setupNodeIfNotExist(targetNode);
-          if (i == MASTER_NODE_INDEX) {
-            assignSlotsToNode(slotNums, targetNode);
-          }
-        }
-      }
-    } finally {
-      w.unlock();
-    }
-  }
+	public JedisPool getNode(String nodeKey) {
+		r.lock();
+		try {
+			return nodes.get(nodeKey);
+		} finally {
+			r.unlock();
+		}
+	}
 
-  public void renewClusterSlots(Jedis jedis) {
-    //If rediscovering is already in process - no need to start one more same rediscovering, just return
-    if (!rediscovering) {
-      try {
-        w.lock();
-        rediscovering = true;
+	public JedisPool getSlotPool(int slot) {
+		r.lock();
+		try {
+			return slots.get(slot);
+		} finally {
+			r.unlock();
+		}
+	}
 
-        if (jedis != null) {
-          try {
-            discoverClusterSlots(jedis);
-            return;
-          } catch (JedisException e) {
-            //try nodes from all pools
-          }
-        }
+	public Map<String, JedisPool> getNodes() {
+		r.lock();
+		try {
+			return new HashMap<String, JedisPool>(nodes);
+		} finally {
+			r.unlock();
+		}
+	}
 
-        for (JedisPool jp : getShuffledNodesPool()) {
-          try {
-            jedis = jp.getResource();
-            discoverClusterSlots(jedis);
-            return;
-          } catch (JedisConnectionException e) {
-            // try next nodes
-          } finally {
-            if (jedis != null) {
-              jedis.close();
-            }
-          }
-        }
-      } finally {
-        rediscovering = false;
-        w.unlock();
-      }
-    }
-  }
+	public List<JedisPool> getShuffledNodesPool() {
+		r.lock();
+		try {
+			List<JedisPool> pools = new ArrayList<JedisPool>(nodes.values());
+			Collections.shuffle(pools);
+			return pools;
+		} finally {
+			r.unlock();
+		}
+	}
 
-  private void discoverClusterSlots(Jedis jedis) {
-    List<Object> slots = jedis.clusterSlots();
-    this.slots.clear();
+	/**
+	 * Clear discovered nodes collections and gently release allocated resources
+	 */
+	public void reset() {
+		w.lock();
+		try {
+			for (JedisPool pool : nodes.values()) {
+				try {
+					if (pool != null) {
+						pool.destroy();
+					}
+				} catch (Exception e) {
+					// pass
+				}
+			}
+			nodes.clear();
+			slots.clear();
+			nodeInfo.clear();
+		} finally {
+			w.unlock();
+		}
+	}
 
-    for (Object slotInfoObj : slots) {
-      List<Object> slotInfo = (List<Object>) slotInfoObj;
+	public static String getNodeKey(HostAndPort hnp) {
+		return hnp.getHost() + ":" + hnp.getPort();
+	}
 
-      if (slotInfo.size() <= MASTER_NODE_INDEX) {
-        continue;
-      }
+	public static String getNodeKey(Client client) {
+		return client.getHost() + ":" + client.getPort();
+	}
 
-      List<Integer> slotNums = getAssignedSlotArray(slotInfo);
+	public static String getNodeKey(Jedis jedis) {
+		return getNodeKey(jedis.getClient());
+	}
 
-      // hostInfos
-      List<Object> hostInfos = (List<Object>) slotInfo.get(MASTER_NODE_INDEX);
-      if (hostInfos.isEmpty()) {
-        continue;
-      }
+	private Map<HostAndPort, RedisNodeInfo> retriveClusterSlots(Jedis jedis) {
+		Map<HostAndPort, RedisNodeInfo> _nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();
+		List<Object> slots = jedis.clusterSlots();
 
-      // at this time, we just use master, discard slave information
-      HostAndPort targetNode = generateHostAndPort(hostInfos);
-      assignSlotsToNode(slotNums, targetNode);
-    }
-  }
+		for (Object slotInfoObj : slots) {
+			List<Object> slotInfo = (List<Object>) slotInfoObj;
 
-  private HostAndPort generateHostAndPort(List<Object> hostInfos) {
-    return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)),
-        ((Long) hostInfos.get(1)).intValue());
-  }
+			if (slotInfo.size() <= MASTER_NODE_INDEX) {
+				continue;
+			}
 
-  public JedisPool setupNodeIfNotExist(HostAndPort node) {
-    w.lock();
-    try {
-      String nodeKey = getNodeKey(node);
-      JedisPool existingPool = nodes.get(nodeKey);
-      if (existingPool != null) return existingPool;
+			int size = slotInfo.size();
+			for (int i = MASTER_NODE_INDEX; i < size; i++) {
+				List<Object> hostInfos = (List<Object>) slotInfo.get(i);
+				if (hostInfos.size() <= 0) {
+					continue;
+				}
 
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-              connectionTimeout, soTimeout, null, 0, null);
-      nodes.put(nodeKey, nodePool);
-      return nodePool;
-    } finally {
-      w.unlock();
-    }
-  }
+				HostAndPort targetNode = generateHostAndPort(hostInfos);
+				if (_nodeInfo.containsKey(targetNode)) {
+					_nodeInfo.get(targetNode).slots.add(new RedisNodeInfo.SlotSegment(
+							((Long) slotInfo.get(0)).intValue(), ((Long) slotInfo.get(1)).intValue()));
+				} else {
+					RedisNodeInfo redisNodeInfo = new RedisNodeInfo(targetNode, i == MASTER_NODE_INDEX);
+					redisNodeInfo.slots.add(new RedisNodeInfo.SlotSegment(((Long) slotInfo.get(0)).intValue(),
+							((Long) slotInfo.get(1)).intValue()));
+					_nodeInfo.put(targetNode, redisNodeInfo);
+				}
+			}
+		}
+		return _nodeInfo;
+	}
 
-  public void assignSlotToNode(int slot, HostAndPort targetNode) {
-    w.lock();
-    try {
-      JedisPool targetPool = setupNodeIfNotExist(targetNode);
-      slots.put(slot, targetPool);
-    } finally {
-      w.unlock();
-    }
-  }
+	private void assignSlots(Map<HostAndPort, RedisNodeInfo> _nodeInfo) {
+		w.lock();
+		try {
+			this.slots.clear();
+			for (RedisNodeInfo node : _nodeInfo.values()) {
+				JedisPool pool = setupNodeIfNotExist(node.node);
+				if (node.master) {
+					for (RedisNodeInfo.SlotSegment ss : node.slots) {
+						for (int i = ss.slotStart; i <= ss.slotEnd; i++) {
+							slots.put(Integer.valueOf(i), pool);
+						}
+					}
+				}
+			}
+			nodeInfo.clear();
+			nodeInfo.putAll(_nodeInfo);
+		} finally {
+			w.unlock();
+		}
+	}
 
-  public void assignSlotsToNode(List<Integer> targetSlots, HostAndPort targetNode) {
-    w.lock();
-    try {
-      JedisPool targetPool = setupNodeIfNotExist(targetNode);
-      for (Integer slot : targetSlots) {
-        slots.put(slot, targetPool);
-      }
-    } finally {
-      w.unlock();
-    }
-  }
+	private boolean hasChanged(Map<HostAndPort, RedisNodeInfo> newNodeInfo,
+			Map<HostAndPort, RedisNodeInfo> oldNodeInfo) {
+		System.out.println("check changed");
+		if (newNodeInfo.size() != oldNodeInfo.size())
+			return true;
 
-  public JedisPool getNode(String nodeKey) {
-    r.lock();
-    try {
-      return nodes.get(nodeKey);
-    } finally {
-      r.unlock();
-    }
-  }
+		for (Map.Entry<HostAndPort, RedisNodeInfo> entry : newNodeInfo.entrySet()) {
+			RedisNodeInfo node = oldNodeInfo.get(entry.getKey());
+			if (node == null || !node.equals(entry.getValue())) {
+				return true;
+			}
+		}
+		System.out.println("unchanged");
+		return false;
+	}
 
-  public JedisPool getSlotPool(int slot) {
-    r.lock();
-    try {
-      return slots.get(slot);
-    } finally {
-      r.unlock();
-    }
-  }
+	private HostAndPort generateHostAndPort(List<Object> hostInfos) {
+		return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)), ((Long) hostInfos.get(1)).intValue());
+	}
 
-  public Map<String, JedisPool> getNodes() {
-    r.lock();
-    try {
-      return new HashMap<String, JedisPool>(nodes);
-    } finally {
-      r.unlock();
-    }
-  }
+	private static class RedisNodeInfo {
+		public RedisNodeInfo(HostAndPort targetNode, boolean master) {
+			this.master = master;
+			this.node = targetNode;
+			this.slots = new HashSet<>();
+		}
 
-  public List<JedisPool> getShuffledNodesPool() {
-    r.lock();
-    try {
-      List<JedisPool> pools = new ArrayList<JedisPool>(nodes.values());
-      Collections.shuffle(pools);
-      return pools;
-    } finally {
-      r.unlock();
-    }
-  }
+		final Set<SlotSegment> slots;
+		final HostAndPort node;
+		final boolean master;
 
-  /**
-   * Clear discovered nodes collections and gently release allocated resources
-   */
-  public void reset() {
-    w.lock();
-    try {
-      for (JedisPool pool : nodes.values()) {
-        try {
-          if (pool != null) {
-            pool.destroy();
-          }
-        } catch (Exception e) {
-          // pass
-        }
-      }
-      nodes.clear();
-      slots.clear();
-    } finally {
-      w.unlock();
-    }
-  }
+		@Override
+		public boolean equals(Object obj) {
+			if (!(obj instanceof RedisNodeInfo))
+				return false;
 
-  public static String getNodeKey(HostAndPort hnp) {
-    return hnp.getHost() + ":" + hnp.getPort();
-  }
+			RedisNodeInfo _node = (RedisNodeInfo) obj;
 
-  public static String getNodeKey(Client client) {
-    return client.getHost() + ":" + client.getPort();
-  }
+			return _node.master == master && _node.node.equals(node) && _node.slots.equals(slots);
+		}
 
-  public static String getNodeKey(Jedis jedis) {
-    return getNodeKey(jedis.getClient());
-  }
+		@Override
+		public String toString() {
+			return node + ",master:" + master + "slots:" + slots;
+		}
 
-  private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {
-    List<Integer> slotNums = new ArrayList<Integer>();
-    for (int slot = ((Long) slotInfo.get(0)).intValue(); slot <= ((Long) slotInfo.get(1))
-        .intValue(); slot++) {
-      slotNums.add(slot);
-    }
-    return slotNums;
-  }
+		private static class SlotSegment {
+			private final int slotStart;
+			private final int slotEnd;
+
+			public SlotSegment(int slotStart, int slotEnd) {
+				this.slotStart = slotStart;
+				this.slotEnd = slotEnd;
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				if (!(obj instanceof SlotSegment))
+					return false;
+
+				SlotSegment slots = (SlotSegment) obj;
+				return slots.slotStart == slotStart && slots.slotEnd == slotEnd;
+			}
+
+			@Override
+			public String toString() {
+				return "start:" + slotStart + ",end:" + slotEnd;
+			}
+
+			@Override
+			public int hashCode() {
+				int hashCode = 1;
+				hashCode = 31 * hashCode + slotStart;
+				return 31 * hashCode + slotEnd;
+			}
+		}
+	}
+
 }

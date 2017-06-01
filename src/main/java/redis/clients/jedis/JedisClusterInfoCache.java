@@ -74,8 +74,6 @@ public class JedisClusterInfoCache {
 						jedis = jp.getResource();
 						Map<HostAndPort, RedisNodeInfo> _nodeInfo = retriveClusterSlots(jedis);
 						if (hasChanged(_nodeInfo, nodeInfo)) {
-							System.out.println("new slots:" + _nodeInfo);
-							System.out.println("old slots:" + nodeInfo);
 							assignSlots(_nodeInfo);
 						}
 						return;
@@ -240,7 +238,6 @@ public class JedisClusterInfoCache {
 
 	private boolean hasChanged(Map<HostAndPort, RedisNodeInfo> newNodeInfo,
 			Map<HostAndPort, RedisNodeInfo> oldNodeInfo) {
-		System.out.println("check changed");
 		if (newNodeInfo.size() != oldNodeInfo.size())
 			return true;
 
@@ -250,7 +247,6 @@ public class JedisClusterInfoCache {
 				return true;
 			}
 		}
-		System.out.println("unchanged");
 		return false;
 	}
 

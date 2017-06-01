@@ -258,7 +258,7 @@ public class JedisClusterInfoCache {
 		public RedisNodeInfo(HostAndPort targetNode, boolean master) {
 			this.master = master;
 			this.node = targetNode;
-			this.slots = new HashSet<>();
+			this.slots = new HashSet<SlotSegment>();
 		}
 
 		final Set<SlotSegment> slots;

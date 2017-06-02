@@ -84,6 +84,11 @@
 			<version>2.8</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<version>1.5.5</version>
+		</dependency>
 	</dependencies>
 
   <distributionManagement>

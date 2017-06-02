@@ -55,6 +55,7 @@ public class JedisClusterInfoCache {
 	}
 
 	public void renewClusterSlots(Jedis jedis) {
+		//a separate lock used to reduce impaction on the workable nodes when a slave node is in failover.
 		if (slotsLock.tryLock()) {
 			try {
 				if (jedis != null) {

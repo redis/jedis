@@ -20,7 +20,7 @@ import redis.clients.util.SafeEncoder;
 public class JedisClusterInfoCache {
 	private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
 	private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
-	private final Map<HostAndPort, RedisNodeInfo> nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();//used to store current node&slot information
+	private final Map<HostAndPort, RedisNodeInfo> nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();
 
 	private final ReentrantLock slotsLock = new ReentrantLock();
 	private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();

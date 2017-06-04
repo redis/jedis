@@ -22,10 +22,10 @@ public class JedisClusterInfoCache {
 	private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 	private final Map<HostAndPort, RedisNodeInfo> nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();
 
+	private final ReentrantLock slotsLock = new ReentrantLock();
 	private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
 	private final Lock r = rwl.readLock();
 	private final Lock w = rwl.writeLock();
-	private final ReentrantLock slotsLock = new ReentrantLock();
 	private final GenericObjectPoolConfig poolConfig;
 
 	private int connectionTimeout;
@@ -46,24 +46,26 @@ public class JedisClusterInfoCache {
 
 	public void discoverClusterNodesAndSlots(Jedis jedis) {
 		w.lock();
+
 		try {
 			reset();
-			assignSlots(retriveClusterSlots(jedis));
+			// Both master&slave nodes will be discovered for the first initialization
+			discoverClusterSlots(jedis, false);
 		} finally {
 			w.unlock();
 		}
 	}
 
 	public void renewClusterSlots(Jedis jedis) {
-		//a separate lock used to reduce impaction on the workable nodes when a slave node is in failover.
+		// A separate lock to reduce the occupation on the write lock in order to reduce
+		// the impaction on the workable nodes when a slave is in failover.
+		// If another thread is doing the renew, current thread will fail fast.
 		if (slotsLock.tryLock()) {
 			try {
 				if (jedis != null) {
 					try {
-						Map<HostAndPort, RedisNodeInfo> _nodeInfo = retriveClusterSlots(jedis);
-						if (hasChanged(_nodeInfo, nodeInfo)) {
-							assignSlots(_nodeInfo);
-						}
+						// Only the new master nodes will be added into the pool, the slaves will be discarded here.
+						discoverClusterSlots(jedis, true);
 						return;
 					} catch (JedisException e) {
 						// try nodes from all pools
@@ -73,10 +75,9 @@ public class JedisClusterInfoCache {
 				for (JedisPool jp : getShuffledNodesPool()) {
 					try {
 						jedis = jp.getResource();
-						Map<HostAndPort, RedisNodeInfo> _nodeInfo = retriveClusterSlots(jedis);
-						if (hasChanged(_nodeInfo, nodeInfo)) {
-							assignSlots(_nodeInfo);
-						}
+						// Only the new master nodes will be added into the pool, the slaves will be discarded here. the
+						// side effect is the client will never be aware of the new or removed slaves.
+						discoverClusterSlots(jedis, true);
 						return;
 					} catch (JedisConnectionException e) {
 						// try next nodes
@@ -93,6 +94,57 @@ public class JedisClusterInfoCache {
 
 	}
 
+	/**
+	 * Discover the nodes and slots, once the changed nodes found the mapping between slots and JedisPool will be
+	 * refreshed. <br/>
+	 * 
+	 * Please NOTE only the master node will be added into the mapping between slots and JedisPool.
+	 * @param jedis
+	 * @param setupMasterOnly if true only the master node will be added into mapping between nodes and JedisPool,
+	 * otherwise both the master and slave nodes will be added.
+	 */
+	private void discoverClusterSlots(Jedis jedis, boolean setupMasterOnly) {
+		Map<HostAndPort, RedisNodeInfo> _nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();
+		List<Object> slots = jedis.clusterSlots();
+
+		for (Object slotInfoObj : slots) {
+			List<Object> slotInfo = (List<Object>) slotInfoObj;
+
+			if (slotInfo.size() <= MASTER_NODE_INDEX) {
+				continue;
+			}
+
+			int size = slotInfo.size();
+			for (int i = MASTER_NODE_INDEX; i < size; i++) {
+				List<Object> hostInfos = (List<Object>) slotInfo.get(i);
+				if (hostInfos.size() <= 0) {
+					continue;
+				}
+
+				HostAndPort targetNode = generateHostAndPort(hostInfos);
+				if (_nodeInfo.containsKey(targetNode)) {
+					_nodeInfo.get(targetNode).slots.add(new RedisNodeInfo.SlotSegment(
+							((Long) slotInfo.get(0)).intValue(), ((Long) slotInfo.get(1)).intValue()));
+				} else {
+					RedisNodeInfo redisNodeInfo = new RedisNodeInfo(targetNode, i == MASTER_NODE_INDEX);
+					redisNodeInfo.slots.add(new RedisNodeInfo.SlotSegment(((Long) slotInfo.get(0)).intValue(),
+							((Long) slotInfo.get(1)).intValue()));
+					_nodeInfo.put(targetNode, redisNodeInfo);
+				}
+			}
+		}
+		// Only acquire the write lock when the slots are found changed so that the write lock
+		// occupation will be
+		// improved further.
+		if (hasChanged(_nodeInfo, nodeInfo)) {
+			assignSlots(_nodeInfo, setupMasterOnly);
+		}
+	}
+
+	private HostAndPort generateHostAndPort(List<Object> hostInfos) {
+		return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)), ((Long) hostInfos.get(1)).intValue());
+	}
+
 	public JedisPool setupNodeIfNotExist(HostAndPort node) {
 		w.lock();
 		try {
@@ -105,6 +157,28 @@ public class JedisClusterInfoCache {
 					null, 0, null);
 			nodes.put(nodeKey, nodePool);
 			return nodePool;
+		} finally {
+			w.unlock();
+		}
+	}
+
+	public void assignSlotToNode(int slot, HostAndPort targetNode) {
+		w.lock();
+		try {
+			JedisPool targetPool = setupNodeIfNotExist(targetNode);
+			slots.put(slot, targetPool);
+		} finally {
+			w.unlock();
+		}
+	}
+
+	public void assignSlotsToNode(List<Integer> targetSlots, HostAndPort targetNode) {
+		w.lock();
+		try {
+			JedisPool targetPool = setupNodeIfNotExist(targetNode);
+			for (Integer slot : targetSlots) {
+				slots.put(slot, targetPool);
+			}
 		} finally {
 			w.unlock();
 		}
@@ -183,55 +257,24 @@ public class JedisClusterInfoCache {
 		return getNodeKey(jedis.getClient());
 	}
 
-	private Map<HostAndPort, RedisNodeInfo> retriveClusterSlots(Jedis jedis) {
-		Map<HostAndPort, RedisNodeInfo> _nodeInfo = new HashMap<HostAndPort, RedisNodeInfo>();
-		List<Object> slots = jedis.clusterSlots();
-
-		for (Object slotInfoObj : slots) {
-			List<Object> slotInfo = (List<Object>) slotInfoObj;
-
-			if (slotInfo.size() <= MASTER_NODE_INDEX) {
-				continue;
-			}
-
-			int size = slotInfo.size();
-			for (int i = MASTER_NODE_INDEX; i < size; i++) {
-				List<Object> hostInfos = (List<Object>) slotInfo.get(i);
-				if (hostInfos.size() <= 0) {
-					continue;
-				}
-
-				HostAndPort targetNode = generateHostAndPort(hostInfos);
-				if (_nodeInfo.containsKey(targetNode)) {
-					_nodeInfo.get(targetNode).slots.add(new RedisNodeInfo.SlotSegment(
-							((Long) slotInfo.get(0)).intValue(), ((Long) slotInfo.get(1)).intValue()));
-				} else {
-					RedisNodeInfo redisNodeInfo = new RedisNodeInfo(targetNode, i == MASTER_NODE_INDEX);
-					redisNodeInfo.slots.add(new RedisNodeInfo.SlotSegment(((Long) slotInfo.get(0)).intValue(),
-							((Long) slotInfo.get(1)).intValue()));
-					_nodeInfo.put(targetNode, redisNodeInfo);
-				}
-			}
-		}
-		return _nodeInfo;
-	}
-
-	private void assignSlots(Map<HostAndPort, RedisNodeInfo> _nodeInfo) {
+	private void assignSlots(Map<HostAndPort, RedisNodeInfo> _nodeInfo, boolean setupMasterOnly) {
 		w.lock();
 		try {
 			this.slots.clear();
+			this.nodeInfo.clear();
 			for (RedisNodeInfo node : _nodeInfo.values()) {
-				JedisPool pool = setupNodeIfNotExist(node.node);
 				if (node.master) {
+					JedisPool pool = setupNodeIfNotExist(node.node);
 					for (RedisNodeInfo.SlotSegment ss : node.slots) {
 						for (int i = ss.slotStart; i <= ss.slotEnd; i++) {
 							slots.put(Integer.valueOf(i), pool);
 						}
 					}
+				} else if (!setupMasterOnly) {
+					setupNodeIfNotExist(node.node);
 				}
 			}
-			nodeInfo.clear();
-			nodeInfo.putAll(_nodeInfo);
+			this.nodeInfo.putAll(_nodeInfo);
 		} finally {
 			w.unlock();
 		}
@@ -249,10 +292,6 @@ public class JedisClusterInfoCache {
 			}
 		}
 		return false;
-	}
-
-	private HostAndPort generateHostAndPort(List<Object> hostInfos) {
-		return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)), ((Long) hostInfos.get(1)).intValue());
 	}
 
 	private static class RedisNodeInfo {

@@ -57,4 +57,10 @@ public class HostAndPortTest {
     String host = "localhost";
     HostAndPort.parseString(host + ":");
   }
+
+  @Test
+  public void checkConvertHost() {
+    String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e";
+    Assert.assertEquals(HostAndPort.convertHost(host), host);
+  }
 }

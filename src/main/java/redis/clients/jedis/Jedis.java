@@ -2695,8 +2695,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return eval(script, 0);
   }
 
-  public Object evalsha(String script) {
-    return evalsha(script, 0);
+  @Override
+  public Object evalsha(String sha1) {
+    return evalsha(sha1, 0);
   }
 
   private Object getEvalResult() {

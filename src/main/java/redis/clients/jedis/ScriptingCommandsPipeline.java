@@ -9,7 +9,7 @@ public interface ScriptingCommandsPipeline {
 
   Response<Object> eval(String script);
 
-  Response<Object> evalsha(String script);
+  Response<Object> evalsha(String sha1);
 
   Response<Object> evalsha(String sha1, List<String> keys, List<String> args);
 

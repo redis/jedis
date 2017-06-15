@@ -1768,11 +1768,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   }
 
   @Override
-  public Object evalsha(final String script, final String key) {
+  public Object evalsha(final String sha1, final String key) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
-        return connection.evalsha(script);
+        return connection.evalsha(sha1);
       }
     }.run(key);
   }

@@ -219,11 +219,11 @@ public interface RedisPipeline {
   
   Response<List<Long>> bitfield(String key, String... arguments);
 
-  Response pttl(String key);
+  Response<Long> pttl(String key);
 
-  Response set(String key, String value, String nxxx, String expx, int time);
+  Response<String> set(String key, String value, String nxxx, String expx, int time);
 
-  Response psetex(String key, long milliseconds, String value);
+  Response<String> psetex(String key, long milliseconds, String value);
 
   // Geo Commands
 

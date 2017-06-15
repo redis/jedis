@@ -12,7 +12,7 @@ public interface BinaryScriptingCommands {
 
   Object eval(byte[] script);
 
-  Object evalsha(byte[] script);
+  Object evalsha(byte[] sha1);
 
   Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args);
 

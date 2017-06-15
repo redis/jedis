@@ -469,8 +469,8 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.EVAL_RESULT);
   }
 
-  public Response<Object> evalsha(String script) {
-    return this.evalsha(script, 0, new String[0]);
+  public Response<Object> evalsha(String sha1) {
+    return this.evalsha(sha1, 0, new String[0]);
   }
 
   public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {

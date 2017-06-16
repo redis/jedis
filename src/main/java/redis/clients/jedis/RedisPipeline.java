@@ -219,6 +219,14 @@ public interface RedisPipeline {
   
   Response<List<Long>> bitfield(String key, String... arguments);
 
+  Response<Long> pttl(String key);
+
+  Response<String> set(String key, String value, String nxxx, String expx, int time);
+
+  Response<String> psetex(String key, long milliseconds, String value);
+
+  Response<Long> zremrangeByScore(String key, String start, String end);
+
   // Geo Commands
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);

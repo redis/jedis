@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface RedisPipeline {
   Response<Long> append(String key, String value);

@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.sortedset.ZAddParams;
+import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
 public interface RedisPipeline {
   Response<Long> append(String key, String value);
@@ -224,6 +224,8 @@ public interface RedisPipeline {
   Response<String> set(String key, String value, String nxxx, String expx, int time);
 
   Response<String> psetex(String key, long milliseconds, String value);
+
+  Response<Long> zremrangeByScore(String key, String start, String end);
 
   // Geo Commands
 

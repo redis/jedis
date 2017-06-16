@@ -9,7 +9,7 @@ public interface ScriptingCommands {
 
   Object eval(String script);
 
-  Object evalsha(String script);
+  Object evalsha(String sha1);
 
   Object evalsha(String sha1, List<String> keys, List<String> args);
 

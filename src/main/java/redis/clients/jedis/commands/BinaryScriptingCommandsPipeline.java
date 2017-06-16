@@ -14,7 +14,7 @@ public interface BinaryScriptingCommandsPipeline {
 
   Response<Object> eval(byte[] script);
 
-  Response<Object> evalsha(byte[] script);
+  Response<Object> evalsha(byte[] sha1);
 
   Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args);
 

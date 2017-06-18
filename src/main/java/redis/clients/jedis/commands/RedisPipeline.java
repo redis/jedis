@@ -1,7 +1,15 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
+import redis.clients.jedis.BinaryClient;
+import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
@@ -247,4 +255,51 @@ public interface RedisPipeline {
 
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
+
+  Response<Long> bitpos(String key, boolean value);
+
+  Response<Long> bitpos(String key, boolean value, BitPosParams params);
+
+  Response<String> set(String key, String value, SetParams params);
+
+  Response<List<String>> srandmember(String key, int count);
+
+  Response<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count);
+
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max);
+
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset,
+          int count);
+
+  Response<Set<String>> zrevrangeByScore(String key, String max, String min, int offset,
+          int count);
+
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min);
+
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset,
+          int count);
+
+  Response<Long> zremrangeByScore(String key, String start, String end);
+
+  Response<byte[]> dump(String key);
+
+  Response<Long> objectRefcount(String key);
+
+  Response<String> objectEncoding(String key);
+
+  Response<Long> objectIdletime(String key);
+
+  Response<Long> pttl(String key);
+
+  Response<String> restore(String key, int ttl, byte[] serializedValue);
+
+  Response<Double> incrByFloat(String key, double increment);
+
+  Response<String> psetex(String key, long milliseconds, String value);
+
+  Response<Double> hincrByFloat(String key, String field, double increment);
+
+  Response<Long> zcount(String key, String min, String max);
+
+  Response<String> migrate(String host, int port, String key, int destinationDb, int timeout);
 }

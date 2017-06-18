@@ -1,8 +1,15 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
-
+import redis.clients.jedis.BinaryClient;
+import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
@@ -266,4 +273,34 @@ public interface BinaryRedisPipeline {
   Response<List<Long>> bitfield(final byte[] key, final byte[]... elements);
 
   Response<Long> hstrlen(final byte[] key, final byte[] field);
+
+  Response<Long> bitpos(byte[] key, boolean value);
+
+  Response<Long> bitpos(byte[] key, boolean value, BitPosParams params);
+
+  Response<String> set(byte[] key, byte[] value, SetParams params);
+
+  Response<List<byte[]>> srandmember(byte[] key, int count);
+
+  Response<Long> zcount(byte[] key, byte[] min, byte[] max);
+
+  Response<byte[]> dump(byte[] key);
+
+  Response<Long> objectRefcount(byte[] key);
+
+  Response<byte[]> objectEncoding(byte[] key);
+
+  Response<Long> objectIdletime(byte[] key);
+
+  Response<Long> pttl(byte[] key);
+
+  Response<String> restore(byte[] key, int ttl, byte[] serializedValue);
+
+  Response<Double> incrByFloat(byte[] key, double increment);
+
+  Response<String> psetex(byte[] key, long milliseconds, byte[] value);
+
+  Response<Double> hincrByFloat(byte[] key, byte[] field, double increment);
+
+  Response<String> migrate(byte[] host, int port, byte[] key, int destinationDb, int timeout);
 }

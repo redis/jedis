@@ -75,8 +75,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     return connectionHandler.getNodes();
   }
 
-  public JedisSlotBasedConnectionHandler getConnectionHandler() {
-	  return (JedisSlotBasedConnectionHandler) this.connectionHandler;
+  public Jedis getConnectionFromSlot(int slot) {
+	  return  this.connectionHandler.getConnectionFromSlot(slot);
   }
 
   @Override

@@ -1,9 +1,15 @@
 package redis.clients.jedis;
 
 import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import java.util.Set;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
@@ -26,6 +32,11 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
+  }
+  
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName,
+                                         boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
   @Override

@@ -15,6 +15,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.params.set.SetParams;
@@ -63,8 +67,22 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-          int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
+                      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
     super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
+  }
+  
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
+                      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
+                      boolean ssl) {
+    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl);
+  }
+  
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
+                      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
+                      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
+                      HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
+    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig,
+          ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
   public JedisCluster(Set<HostAndPort> nodes) {
@@ -105,7 +123,21 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
           int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
-}
+  }
+  
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+                      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
+                      boolean ssl) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl);
+  }
+  
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+                      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
+                      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
+                      HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, 
+          ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+  }
 
   @Override
   public String set(final String key, final String value) {

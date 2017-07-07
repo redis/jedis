@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -29,19 +32,32 @@ public class JedisClusterInfoCache {
   private String password;
   private String clientName;
 
+  private boolean ssl;
+  private SSLSocketFactory sslSocketFactory;
+  private SSLParameters sslParameters;
+  private HostnameVerifier hostnameVerifier;
+  private Map<Integer, Integer> portMap;
+
   private static final int MASTER_NODE_INDEX = 2;
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
-    this(poolConfig, timeout, timeout, null, null);
+    this(poolConfig, timeout, timeout, null, null, false, null, null, null, null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout, final String password, final String clientName) {
+      final int connectionTimeout, final int soTimeout, final String password, final String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
+      HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.password = password;
     this.clientName = clientName;
+    this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
+    this.portMap = portMap;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -143,8 +159,15 @@ public class JedisClusterInfoCache {
   }
 
   private HostAndPort generateHostAndPort(List<Object> hostInfos) {
-    return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)),
-        ((Long) hostInfos.get(1)).intValue());
+    String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
+    int port = ((Long) hostInfos.get(1)).intValue();
+    if (ssl && portMap != null) {
+      Integer mappedPort = portMap.get(port);
+      if (mappedPort != null) {
+        port = mappedPort;
+      }
+    }
+    return new HostAndPort(host, port);
   }
 
   public JedisPool setupNodeIfNotExist(HostAndPort node) {
@@ -155,7 +178,8 @@ public class JedisClusterInfoCache {
       if (existingPool != null) return existingPool;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, clientName, false, null, null, null);
+          connectionTimeout, soTimeout, password, 0, clientName, 
+          ssl, sslSocketFactory, sslParameters, hostnameVerifier);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {

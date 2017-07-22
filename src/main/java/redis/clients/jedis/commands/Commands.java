@@ -320,4 +320,6 @@ public interface Commands {
    * @param field
    */
   void hstrlen(final String key, final String field);
+  
+  void moduleExecute(final String command,final String key, final String... args);
 }

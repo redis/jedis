@@ -1300,4 +1300,13 @@ public class BinaryClient extends Connection {
   public void hstrlen(final byte[] key, final byte[] field) {
     sendCommand(Command.HSTRLEN, key, field);
   }
+  
+  public void moduleExecute(final byte[] command, final byte[] key, final byte[]... args) {
+    final byte[][] allArgs = new byte[args.length + 1][];
+    allArgs[0] = key;
+    for (int i = 0; i < args.length; i++)
+      allArgs[i + 1] = args[i];
+
+    sendCommand(command, args);
+  }
 }

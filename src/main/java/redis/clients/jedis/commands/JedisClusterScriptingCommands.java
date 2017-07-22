@@ -9,7 +9,7 @@ public interface JedisClusterScriptingCommands {
 
   Object eval(String script, String key);
 
-  Object evalsha(String script, String key);
+  Object evalsha(String sha1, String key);
 
   Object evalsha(String sha1, List<String> keys, List<String> args);
 

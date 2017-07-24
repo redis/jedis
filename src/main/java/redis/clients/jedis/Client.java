@@ -1216,5 +1216,15 @@ public class Client extends BinaryClient implements Commands {
   public void hstrlen(final String key, final String field) {
     hstrlen(SafeEncoder.encode(key), SafeEncoder.encode(field));
   }
+  
+  @Override
+  public void moduleExecute(final String command, final String key, final String... arguments) {
+    byte[][] argumentArray = new byte[arguments.length][];
+    int index = 0;
+    for (String argument : arguments) {
+      argumentArray[index++] = SafeEncoder.encode(argument);
+    }
+    moduleExecute(SafeEncoder.encode(command), SafeEncoder.encode(key), argumentArray);
+  }
 
 }

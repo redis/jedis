@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisClusterPortMap;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.*;
@@ -34,16 +35,17 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final JedisPoolConfig DEFAULT_CONFIG = new JedisPoolConfig();
   
-  private Map<Integer, Integer> portMap = new HashMap<Integer, Integer>();
+  private JedisClusterPortMap portMap = new JedisClusterPortMap() {
+    public int GetSSLPort(int port) {
+      return port + 1000;
+    }
+  };
 
   @Before
   public void setUp() throws InterruptedException {
     super.setUp();
     
     SSLJedisTest.setupTrustStore(); // set up trust store for SSL tests
-    for (HostAndPort hp : HostAndPortUtil.getClusterServers()) {
-      portMap.put(hp.getPort(), hp.getPort() + 1000);
-    }
   }
 
   @AfterClass
@@ -231,8 +233,12 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   
   @Test
   public void portMapIgnoredIfSSLFalse() {
-    Map<Integer, Integer> portMap = new HashMap<Integer, Integer>();
-    portMap.put(7379, 9739);
+    JedisClusterPortMap portMap = new JedisClusterPortMap() {
+      public int GetSSLPort(int port) {
+        if (port == 7379) return 9379;
+        return port;
+      }
+    };
     
     JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
             DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, false, 

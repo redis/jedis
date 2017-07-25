@@ -36,7 +36,7 @@ public class JedisClusterInfoCache {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
-  private Map<Integer, Integer> portMap;
+  private JedisClusterPortMap portMap;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -47,7 +47,7 @@ public class JedisClusterInfoCache {
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
       final int connectionTimeout, final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
-      HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
+      HostnameVerifier hostnameVerifier, JedisClusterPortMap portMap) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -162,7 +162,7 @@ public class JedisClusterInfoCache {
     String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
     int port = ((Long) hostInfos.get(1)).intValue();
     if (ssl && portMap != null) {
-      Integer mappedPort = portMap.get(port);
+      Integer mappedPort = portMap.GetSSLPort(port);
       if (mappedPort != null) {
         port = mappedPort;
       }

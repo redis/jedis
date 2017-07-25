@@ -80,7 +80,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
                       int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
                       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
-                      HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
+                      HostnameVerifier hostnameVerifier, JedisClusterPortMap portMap) {
     super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig,
           ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
@@ -134,7 +134,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
                       int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
                       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
-                      HostnameVerifier hostnameVerifier, Map<Integer, Integer> portMap) {
+                      HostnameVerifier hostnameVerifier, JedisClusterPortMap portMap) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, 
           ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }

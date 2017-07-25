@@ -36,7 +36,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   private static final JedisPoolConfig DEFAULT_CONFIG = new JedisPoolConfig();
   
   private JedisClusterPortMap portMap = new JedisClusterPortMap() {
-    public int GetSSLPort(int port) {
+    public int getSSLPort(int port) {
       return port + 1000;
     }
   };
@@ -234,7 +234,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   @Test
   public void portMapIgnoredIfSSLFalse() {
     JedisClusterPortMap portMap = new JedisClusterPortMap() {
-      public int GetSSLPort(int port) {
+      public int getSSLPort(int port) {
         if (port == 7379) return 9379;
         return port;
       }

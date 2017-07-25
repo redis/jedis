@@ -162,7 +162,7 @@ public class JedisClusterInfoCache {
     String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
     int port = ((Long) hostInfos.get(1)).intValue();
     if (ssl && portMap != null) {
-      Integer mappedPort = portMap.GetSSLPort(port);
+      Integer mappedPort = portMap.getSSLPort(port);
       if (mappedPort != null) {
         port = mappedPort;
       }

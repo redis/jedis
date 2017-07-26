@@ -8,4 +8,6 @@ public interface ModuleCommands {
   String moduleLoad(String path);
   String moduleUnload(String name);
   List<Module> moduleList();
+  
+  Object moduleExecute(String command, String key, String... args) ;
 }

@@ -3575,4 +3575,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public Object moduleExecute(String command, String key, String... args) {
+    checkIsInMultiOrPipeline();
+      client.moduleExecute(command, key, args);
+      return client.getOne();
+  }
 }

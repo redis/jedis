@@ -16,8 +16,6 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.SafeEncoder;
 
 public abstract class JedisPubSub {
-
-  private static final String JEDIS_SUBSCRIPTION_MESSAGE = "JedisPubSub is not subscribed to a Jedis instance.";
   private int subscribedChannels = 0;
   private volatile Client client;
 
@@ -45,7 +43,7 @@ public abstract class JedisPubSub {
 
   public void unsubscribe() {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub was not subscribed to a Jedis instance.");
     }
     client.unsubscribe();
     client.flush();
@@ -53,7 +51,7 @@ public abstract class JedisPubSub {
 
   public void unsubscribe(String... channels) {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.unsubscribe(channels);
     client.flush();
@@ -61,7 +59,7 @@ public abstract class JedisPubSub {
 
   public void subscribe(String... channels) {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.subscribe(channels);
     client.flush();
@@ -69,7 +67,7 @@ public abstract class JedisPubSub {
 
   public void psubscribe(String... patterns) {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.psubscribe(patterns);
     client.flush();
@@ -77,7 +75,7 @@ public abstract class JedisPubSub {
 
   public void punsubscribe() {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.punsubscribe();
     client.flush();
@@ -85,7 +83,7 @@ public abstract class JedisPubSub {
 
   public void punsubscribe(String... patterns) {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.punsubscribe(patterns);
     client.flush();
@@ -93,7 +91,7 @@ public abstract class JedisPubSub {
 
   public void ping() {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     }
     client.ping();
     client.flush();
@@ -171,6 +169,12 @@ public abstract class JedisPubSub {
 
     /* Invalidate instance since this thread is no longer listening */
     this.client = null;
+
+    /*
+     * Reset pipeline count because subscribe() calls would have increased it but nothing
+     * decremented it.
+     */
+    client.resetPipelinedCount();
   }
 
   public int getSubscribedChannels() {

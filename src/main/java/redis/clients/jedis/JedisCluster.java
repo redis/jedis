@@ -1,13 +1,10 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.jedis.commands.JedisClusterCommands;
-import redis.clients.jedis.commands.JedisClusterScriptingCommands;
-import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.util.KeyMergeUtil;
+import redis.clients.jedis.params.geo.GeoRadiusParam;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,13 +13,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
-import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.JedisClusterHashTagUtil;
 import redis.clients.util.SafeEncoder;
 
-public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
+public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+
   public static enum Reset {
     SOFT, HARD
   }
@@ -35,6 +31,23 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     this(Collections.singleton(node), timeout, DEFAULT_MAX_REDIRECTIONS);
   }
 
+  /**
+   * add by viekie
+   * @param nodes
+   * @param timeout
+   * @param poolConfig
+   * @param password
+   */
+  public JedisCluster(Set<HostAndPort> nodes, int timeout, final GenericObjectPoolConfig poolConfig,String password) {
+      this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig,password);
+  }
+  
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxRedirections,
+          final GenericObjectPoolConfig poolConfig,String password) {
+        super(jedisClusterNode, timeout, maxRedirections, poolConfig,password);
+  }
+  
+  
   public JedisCluster(HostAndPort node, int timeout, int maxAttempts) {
     this(Collections.singleton(node), timeout, maxAttempts, new GenericObjectPoolConfig());
   }
@@ -61,12 +74,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
                       int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
     super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
-
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-          int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
-    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
-  }
-
+  
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
   }
@@ -102,11 +110,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-          int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
-}
-
   @Override
   public String set(final String key, final String value) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
@@ -118,11 +121,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String set(final String key, final String value, final SetParams params) {
+  public String set(final String key, final String value, final String nxxx, final String expx,
+      final long time) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
-        return connection.set(key, value, params);
+        return connection.set(key, value, nxxx, expx, time);
       }
     }.run(key);
   }
@@ -228,6 +232,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long pttl(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.pttl(key);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Boolean setbit(final String key, final long offset, final boolean value) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
       @Override
@@ -303,6 +317,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.setex(key, seconds, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String psetex(final String key, final long milliseconds, final String value) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.psetex(key, milliseconds, value);
       }
     }.run(key);
   }
@@ -433,6 +457,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Long execute(Jedis connection) {
         return connection.hincrBy(key, field, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Double hincrByFloat(final String key, final String field, final double value) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.hincrByFloat(key, field, value);
       }
     }.run(key);
   }
@@ -1221,7 +1255,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
-    @Override
+  @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params) {
 
     String matchPattern = null;
@@ -1233,7 +1267,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
 
       return new JedisClusterCommand< ScanResult<String>>(connectionHandler,
-                                                          maxAttempts) {
+              maxAttempts) {
         @Override
         public ScanResult<String> execute(Jedis connection) {
           return connection.scan(cursor, params);
@@ -1245,12 +1279,44 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
   
   @Override
+  public Long bitpos(final String key, final boolean value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
-                                                                      maxAttempts) {
+        maxAttempts) {
       @Override
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Entry<String, String>> hscan(final String key, final String cursor,
+      final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
+        maxAttempts) {
+      @Override
+      public ScanResult<Entry<String, String>> execute(Jedis connection) {
+        return connection.hscan(key, cursor, params);
       }
     }.run(key);
   }
@@ -1266,11 +1332,31 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
+        return connection.sscan(key, cursor, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public ScanResult<Tuple> zscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor, params);
       }
     }.run(key);
   }
@@ -1689,11 +1775,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Object evalsha(final String sha1, final String key) {
+  public Object evalsha(final String script, final String key) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
-        return connection.evalsha(sha1);
+        return connection.evalsha(script);
       }
     }.run(key);
   }
@@ -1724,6 +1810,113 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.scriptLoad(script);
+      }
+    }.run(key);
+  }
+
+  /*
+   * below methods will be removed at 3.0
+   */
+
+  /**
+   * @deprecated SetParams is scheduled to be introduced at next major release Please use setnx
+   *             instead for now
+   * @see <a href="https://github.com/xetorthio/jedis/pull/878">issue#878</a>
+   */
+  @Deprecated
+  @Override
+  public String set(String key, String value, String nxxx) {
+    return setnx(key, value) == 1 ? "OK" : null;
+  }
+
+  /**
+   * @deprecated unusable command, this will be removed at next major release.
+   */
+  @Deprecated
+  @Override
+  public List<String> blpop(final String arg) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.blpop(arg);
+      }
+    }.run(arg);
+  }
+
+  /**
+   * @deprecated unusable command, this will be removed at next major release.
+   */
+  @Deprecated
+  @Override
+  public List<String> brpop(final String arg) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.brpop(arg);
+      }
+    }.run(arg);
+  }
+
+  /**
+   * @deprecated Redis Cluster uses only db index 0, so it doesn't make sense. scheduled to be
+   *             removed on next major release
+   */
+  @Deprecated
+  @Override
+  public Long move(final String key, final int dbIndex) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.move(key, dbIndex);
+      }
+    }.run(key);
+  }
+
+  /**
+   * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
+   * on next major release
+   * @see <a href="https://github.com/xetorthio/jedis/issues/531">issue#531</a>
+   */
+  @Deprecated
+  @Override
+  public ScanResult<Entry<String, String>> hscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
+        maxAttempts) {
+      @Override
+      public ScanResult<Entry<String, String>> execute(Jedis connection) {
+        return connection.hscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  /**
+   * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
+   * on next major release
+   * @see <a href="https://github.com/xetorthio/jedis/issues/531">issue#531</a>
+   */
+  @Deprecated
+  @Override
+  public ScanResult<String> sscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
+        return connection.sscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  /**
+   * This method is deprecated due to bug (scan cursor should be unsigned long) And will be removed
+   * on next major release
+   * @see <a href="https://github.com/xetorthio/jedis/issues/531">issue#531</a>
+   */
+  @Deprecated
+  @Override
+  public ScanResult<Tuple> zscan(final String key, final int cursor) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor);
       }
     }.run(key);
   }
@@ -1840,16 +2033,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public List<Long> execute(Jedis connection) {
         return connection.bitfield(key, arguments);
-      }
-    }.run(key);
-  }
-
-  @Override
-  public Long hstrlen(final String key, final String field) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hstrlen(key, field);
       }
     }.run(key);
   }

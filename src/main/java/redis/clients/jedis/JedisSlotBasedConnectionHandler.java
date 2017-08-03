@@ -16,16 +16,18 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+          final GenericObjectPoolConfig poolConfig, int timeout,String password) {
+        this(nodes, poolConfig, timeout, timeout,password);
+      }
+
+  
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, null);
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, password);
-  }
-
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
   }
 
   @Override

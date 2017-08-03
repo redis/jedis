@@ -12,8 +12,7 @@ import redis.clients.util.ShardInfo;
 import redis.clients.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
-
-  private static final String REDISS = "rediss";
+  
   private int connectionTimeout;
   private int soTimeout;
   private String host;
@@ -35,7 +34,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
       this.port = uri.getPort();
       this.password = JedisURIHelper.getPassword(uri);
       this.db = JedisURIHelper.getDBIndex(uri);
-      this.ssl = uri.getScheme().equals(REDISS);
+      this.ssl = uri.getScheme().equals("rediss");
     } else {
       this.host = host;
       this.port = Protocol.DEFAULT_PORT;
@@ -51,7 +50,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
       this.port = uri.getPort();
       this.password = JedisURIHelper.getPassword(uri);
       this.db = JedisURIHelper.getDBIndex(uri);
-      this.ssl = uri.getScheme().equals(REDISS);
+      this.ssl = uri.getScheme().equals("rediss");
       this.sslSocketFactory = sslSocketFactory;
       this.sslParameters = sslParameters;
       this.hostnameVerifier = hostnameVerifier;
@@ -208,7 +207,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.port = uri.getPort();
     this.password = JedisURIHelper.getPassword(uri);
     this.db = JedisURIHelper.getDBIndex(uri);
-    this.ssl = uri.getScheme().equals(REDISS);
+    this.ssl = uri.getScheme().equals("rediss");
   }
 
   public JedisShardInfo(URI uri, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -223,7 +222,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.port = uri.getPort();
     this.password = JedisURIHelper.getPassword(uri);
     this.db = JedisURIHelper.getDBIndex(uri);
-    this.ssl = uri.getScheme().equals(REDISS);
+    this.ssl = uri.getScheme().equals("rediss");
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
@@ -265,7 +264,6 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.soTimeout = soTimeout;
   }
 
-  @Override
   public String getName() {
     return name;
   }

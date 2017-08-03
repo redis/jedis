@@ -13,14 +13,9 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
                                        final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
-    this(nodes, poolConfig, connectionTimeout, soTimeout, password, null);
+    this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, password);
+    initializeSlotsCache(nodes, poolConfig, password);
   }
-
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-          final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
-    this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, password, clientName);
-    initializeSlotsCache(nodes, poolConfig, password, clientName);
-}
 
   abstract Jedis getConnection();
 
@@ -34,16 +29,13 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     return cache.getNodes();
   }
 
-  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig, String password, String clientName) {
+  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig, String password) {
     for (HostAndPort hostAndPort : startNodes) {
       Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort());
+      if (password != null) {
+        jedis.auth(password);
+      }
       try {
-        if (password != null) {
-          jedis.auth(password);
-        }
-        if (clientName != null) {
-          jedis.clientSetname(clientName);
-        }
         cache.discoverClusterNodesAndSlots(jedis);
         break;
       } catch (JedisConnectionException e) {

@@ -32,10 +32,10 @@ Please post General questions to Google Group. It can be closed without answer w
 
 # How to contribute by Pull Request
 
-1. Fork Jedis on github (http://help.github.com/fork-a-repo/)
+1. Fork Jedis on github (https://help.github.com/articles/fork-a-repo/)
 2. Create a topic branch (git checkout -b my_branch)
 3. Push to your branch (git push origin my_branch)
-4. Post a pull request on github (http://help.github.com/send-pull-requests/)
+4. Post a pull request on github (https://help.github.com/articles/creating-a-pull-request/)
 
 I recommend you to create branch with meaningful name, not modifying master branch directly.
 

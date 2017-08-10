@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -64,11 +65,19 @@ public class Sharded<R, S extends ShardInfo<R>> {
   }
 
   public R getShard(byte[] key) {
-    return resources.get(getShardInfo(key));
+    return getShard(getShardInfo(key));
   }
 
   public R getShard(String key) {
-    return resources.get(getShardInfo(key));
+    return getShard(getShardInfo(key));
+  }
+
+  public R getShard(S shardInfo) {
+    return resources.get(shardInfo);
+  }
+
+  public void replaceShard(S shardInfo) {
+    resources.put(shardInfo, shardInfo.createResource());
   }
 
   public S getShardInfo(byte[] key) {
@@ -100,6 +109,10 @@ public class Sharded<R, S extends ShardInfo<R>> {
 
   public Collection<S> getAllShardInfo() {
     return Collections.unmodifiableCollection(nodes.values());
+  }
+
+  public Set<S> getDistinctShardInfo() {
+    return (Set<S>) Collections.unmodifiableSet(resources.keySet());
   }
 
   public Collection<R> getAllShards() {

@@ -1,7 +1,9 @@
 package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
@@ -19,7 +21,7 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
-import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class ShardedJedisPoolTest {
@@ -100,6 +102,53 @@ public class ShardedJedisPoolTest {
     jedis = pool.getResource();
     jedis.incr("foo");
     jedis.close();
+    pool.destroy();
+  }
+
+  @Test
+  public void checkRepairedWhenJedisIsBroken() {
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    JedisShardInfo shardInfo0 = shards.get(0);
+    JedisShardInfo shardInfo1 = shards.get(1);
+    ShardedJedis jedis1 = pool.getResource();
+    Jedis shard10 = jedis1.getShard(shardInfo0);
+    Jedis shard11 = jedis1.getShard(shardInfo1);
+    breakClient(shard10);
+    assertTrue(shard10.getClient().isBroken());
+    jedis1.close();
+
+    ShardedJedis jedis2 = pool.getResource();
+    assertEquals(jedis1, jedis2);
+    Jedis shard20 = jedis2.getShard(shardInfo0);
+    Jedis shard21 = jedis2.getShard(shardInfo1);
+    assertFalse(shard20.getClient().isBroken());
+    assertNotSame(shard10, shard20);
+    assertSame(shard11, shard21);
+    jedis2.close();
+    pool.destroy();
+  }
+
+  @Test
+  public void checkRepairedWhenJedisIsBroken2() {
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setTestOnBorrow(true);
+    List<JedisShardInfo> withBrokenShards = new ArrayList<JedisShardInfo>(shards);
+    withBrokenShards.set(0, new JedisShardInfo("localhost", 1234));
+    ShardedJedisPool pool = new ShardedJedisPool(config, withBrokenShards);
+    JedisShardInfo shardInfo0 = withBrokenShards.get(0);
+    JedisShardInfo shardInfo1 = withBrokenShards.get(1);
+    ShardedJedis jedis1 = pool.getResource();
+    Jedis shard10 = jedis1.getShard(shardInfo0);
+    Jedis shard11 = jedis1.getShard(shardInfo1);
+    jedis1.close();
+
+    ShardedJedis jedis2 = pool.getResource();
+    assertEquals(jedis1, jedis2);
+    Jedis shard20 = jedis2.getShard(shardInfo0);
+    Jedis shard21 = jedis2.getShard(shardInfo1);
+    assertNotSame(shard10, shard20);
+    assertSame(shard11, shard21);
+    jedis2.close();
     pool.destroy();
   }
 
@@ -299,4 +348,11 @@ public class ShardedJedisPoolTest {
     }
   }
 
+  private void breakClient(Jedis jedis) {
+    try {
+      jedis.quit();
+      jedis.getClient().rollbackTimeout();
+    } catch(JedisConnectionException ex) {
+    }
+  }
 }

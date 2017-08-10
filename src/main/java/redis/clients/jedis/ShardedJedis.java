@@ -785,21 +785,14 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   @Override
   public void close() {
     if (dataSource != null) {
-      boolean broken = false;
-
-      for (Jedis jedis : getAllShards()) {
+      for (JedisShardInfo shardInfo: getDistinctShardInfo()) {
+        Jedis jedis = getShard(shardInfo);
         if (jedis.getClient().isBroken()) {
-          broken = true;
-          break;
+          replaceShard(shardInfo);
+          Jedis.destroy(jedis);
         }
       }
-
-      if (broken) {
-        dataSource.returnBrokenResource(this);
-      } else {
-        dataSource.returnResource(this);
-      }
-
+      dataSource.returnResource(this);
     } else {
       disconnect();
     }

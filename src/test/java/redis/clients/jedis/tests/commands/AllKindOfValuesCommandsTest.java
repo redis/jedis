@@ -45,6 +45,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void pingWithMessage() {
+    String argument = "message";
+    String response = jedis.ping(argument);
+    assertEquals(argument, response);
+  }
+
+  @Test
   public void exists() {
     String status = jedis.set("foo", "bar");
     assertEquals("OK", status);

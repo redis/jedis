@@ -12,6 +12,13 @@ public interface BasicCommands {
   String ping();
 
   /**
+   * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
+   * @param message
+   * @return message
+   */
+  String ping(String message);
+
+  /**
    * Ask the server to close the connection. The connection is closed as soon as all pending replies have been written to the client.
    * @return OK
    */

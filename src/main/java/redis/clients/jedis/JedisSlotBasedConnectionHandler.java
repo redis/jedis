@@ -10,39 +10,35 @@ import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
 
-	public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
-			int timeout) {
-		this(nodes, poolConfig, timeout, timeout);
-	}
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig poolConfig, int timeout) {
+    this(nodes, poolConfig, timeout, timeout);
+  }
 
-	public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
-			int connectionTimeout, int soTimeout) {
-		super(nodes, poolConfig, connectionTimeout, soTimeout, null);
-	}
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, null);
+  }
 
-	public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
-			int connectionTimeout, int soTimeout, String password) {
-		super(nodes, poolConfig, connectionTimeout, soTimeout, password);
-	}
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password);
+  }
 
-	public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
-			int connectionTimeout, int soTimeout, String password, String clientName) {
-		super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
-	}
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
+  }
 
-	@Override
-	public Jedis getConnection() {
+  @Override
+  public Jedis getConnection() {
+     return getJedisPool().getResource();
+  }
 
-		return getJedisPool().getResource();
-
-	}
-
-	@Override
-	public Jedis getConnectionFromSlot(int slot) {
-		return getJedisPoolFromSlot(slot).getResource();
-	}
-
-	@Override
+  @Override
+  public Jedis getConnectionFromSlot(int slot) {
+	  return getJedisPoolFromSlot(slot).getResource();
+  }
+  
+  @Override
 	public JedisPool getJedisPoolFromSlot(int slot) {
 		JedisPool connectionPool = cache.getSlotPool(slot);
 		if (connectionPool != null) {
@@ -92,4 +88,5 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 		}
 		throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
 	}
+  
 }

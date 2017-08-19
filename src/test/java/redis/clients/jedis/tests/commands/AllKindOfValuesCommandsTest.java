@@ -47,8 +47,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void pingWithMessage() {
     String argument = "message";
-    String response = jedis.ping(argument);
-    assertEquals(argument, response);
+    assertEquals(argument, jedis.ping(argument));
+    
+    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
   }
 
   @Test

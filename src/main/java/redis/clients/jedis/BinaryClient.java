@@ -112,7 +112,7 @@ public class BinaryClient extends Connection {
     sendCommand(Command.PING);
   }
 
-  public void ping(final String message) {
+  public void ping(final byte[] message) {
     sendCommand(Command.PING, message);
   }
 

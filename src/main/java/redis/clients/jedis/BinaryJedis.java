@@ -207,11 +207,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
-  @Override
-  public String ping(final String message) {
+  /**
+   * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
+   * @param message
+   * @return message
+   */
+  public byte[] ping(final byte[] message) {
     checkIsInMultiOrPipeline();
     client.ping(message);
-    return client.getStatusCodeReply();
+    return client.getBinaryBulkReply();
   }
 
   /**

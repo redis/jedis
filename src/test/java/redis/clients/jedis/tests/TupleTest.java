@@ -12,6 +12,16 @@ import static org.junit.Assert.assertEquals;
 public class TupleTest {
 
   @Test
+  public void tupleCompare() {
+    Tuple t1 = new Tuple("foo", 1d);
+    Tuple t2 = new Tuple("bar", 2d);
+
+    assertEquals(-1, t1.compareTo(t2));
+    assertEquals(1, t2.compareTo(t1));
+    assertEquals(0, t2.compareTo(t2));
+  }
+
+  @Test
   public void testCompareTo() {
     Tuple t1 = new Tuple("foo", 1.0);
     Tuple t2 = new Tuple("bar", 1.0);

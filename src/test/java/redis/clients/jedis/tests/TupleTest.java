@@ -1,9 +1,10 @@
 package redis.clients.jedis.tests;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import redis.clients.jedis.Tuple;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Antonio Tomac <antonio.tomac@mediatoolkit.com>

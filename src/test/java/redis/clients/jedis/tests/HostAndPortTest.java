@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
+
+import redis.clients.jedis.HostAndPort;
 
 /**
  * Created by smagellan on 7/11/16.

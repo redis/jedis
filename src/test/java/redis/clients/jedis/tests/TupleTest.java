@@ -1,7 +1,9 @@
-package redis.clients.jedis;
+package redis.clients.jedis.tests;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import redis.clients.jedis.Tuple;
 
 /**
  * @author Antonio Tomac <antonio.tomac@mediatoolkit.com>

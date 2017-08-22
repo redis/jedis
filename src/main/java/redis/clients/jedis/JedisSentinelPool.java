@@ -95,6 +95,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     initPool(master);
   }
 
+  @Override
   public void destroy() {
     for (MasterListener m : masterListeners) {
       m.shutdown();
@@ -222,12 +223,14 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     }
   }
 
+  @Override
   protected void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
+  @Override
   protected void returnResource(final Jedis resource) {
     if (resource != null) {
       resource.resetState();

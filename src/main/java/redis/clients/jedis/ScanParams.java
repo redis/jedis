@@ -1,10 +1,9 @@
 package redis.clients.jedis;
 
-import java.nio.ByteBuffer;
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
-import redis.clients.jedis.Protocol.Keyword;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +11,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.util.SafeEncoder;
 
 public class ScanParams {

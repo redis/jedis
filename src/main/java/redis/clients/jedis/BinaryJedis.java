@@ -34,7 +34,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host) {
     URI uri = URI.create(host);
-    if (uri.getScheme() != null && uri.getScheme().equals("redis")) {
+    if (uri.getScheme() != null && (uri.getScheme().equals("redis") || uri.getScheme().equals("rediss"))) {
       initializeClientFromURI(uri);
     } else {
       client = new Client(host);

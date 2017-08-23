@@ -112,6 +112,10 @@ public class BinaryClient extends Connection {
     sendCommand(Command.PING);
   }
 
+  public void ping(final byte[] message) {
+    sendCommand(Command.PING, message);
+  }
+
   public void set(final byte[] key, final byte[] value) {
     sendCommand(Command.SET, key, value);
   }
@@ -1262,7 +1266,6 @@ public class BinaryClient extends Connection {
   public void moduleUnload(byte[] name) {
     sendCommand(MODULE, Keyword.UNLOAD.raw, name);
   }
-
 
   private ArrayList<byte[]> convertScoreMembersToByteArrays(final Map<byte[], Double> scoreMembers) {
     ArrayList<byte[]> args = new ArrayList<byte[]>(scoreMembers.size() * 2);

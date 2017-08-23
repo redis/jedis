@@ -1,14 +1,12 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.commands.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class MultiKeyPipelineBase extends PipelineBase implements
+public abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPipeline,
     MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
-    BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline, BasicRedisPipeline {
+    BinaryScriptingCommandsPipeline {
 
   protected Client client = null;
 
@@ -377,6 +375,11 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }
 
+  public Response<List<String>> time() {
+    client.time();
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
   public Response<Long> dbSize() {
     client.dbSize();
     return getResponse(BuilderFactory.LONG);
@@ -455,34 +458,6 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<Object> eval(String script) {
-    return this.eval(script, 0, new String[0]);
-  }
-
-  public Response<Object> eval(String script, List<String> keys, List<String> args) {
-    String[] argv = Jedis.getParams(keys, args);
-    return this.eval(script, keys.size(), argv);
-  }
-
-  public Response<Object> eval(String script, int keyCount, String... params) {
-    getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
-  }
-
-  public Response<Object> evalsha(String sha1) {
-    return this.evalsha(sha1, 0, new String[0]);
-  }
-
-  public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
-    String[] argv = Jedis.getParams(keys, args);
-    return this.evalsha(sha1, keys.size(), argv);
-  }
-
-  public Response<Object> evalsha(String sha1, int keyCount, String... params) {
-    getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
-  }
-
   public Response<Object> eval(byte[] script) {
     return this.eval(script, 0);
   }
@@ -517,18 +492,6 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<Long> pfcount(String... keys) {
-    client.pfcount(keys);
-    return getResponse(BuilderFactory.LONG);
-  }
-
-  @Override
-  public Response<Long> pfcount(final byte[]... keys) {
-    client.pfcount(keys);
-    return getResponse(BuilderFactory.LONG);
-  }
-
-  @Override
   public Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {
     client.pfmerge(destkey, sourcekeys);
     return getResponse(BuilderFactory.STRING);
@@ -541,28 +504,15 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<List<String>> time() {
-    client.time();
-    return getResponse(BuilderFactory.STRING_LIST);
+  public Response<Long> pfcount(String... keys) {
+    client.pfcount(keys);
+    return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<String> moduleUnload(String name) {
-    client.moduleUnload(name);
-    return getResponse(BuilderFactory.STRING);
+  public Response<Long> pfcount(final byte[]... keys) {
+    client.pfcount(keys);
+    return getResponse(BuilderFactory.LONG);
   }
 
-  @Override
-  public Response<List<Module>> moduleList() {
-    client.moduleList();
-    return getResponse(BuilderFactory.MODULE_LIST);
-  }
-
-  @Override
-  public Response<String> moduleLoad(String path) {
-    client.moduleLoad(path);
-    return getResponse(BuilderFactory.STRING);
-  }  
-  
-  
 }

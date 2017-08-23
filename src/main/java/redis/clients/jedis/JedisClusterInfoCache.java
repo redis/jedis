@@ -31,21 +31,19 @@ public class JedisClusterInfoCache {
   private int connectionTimeout;
   private int soTimeout;
   private String password;
-  private String clientName;
 
   private static final int MASTER_NODE_INDEX = 2;
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
-    this(poolConfig, timeout, timeout, null, null);
+    this(poolConfig, timeout, timeout, null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout, final String password, final String clientName) {
+      final int connectionTimeout, final int soTimeout, final String password) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.password = password;
-    this.clientName = clientName;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -158,7 +156,7 @@ public class JedisClusterInfoCache {
       if (existingPool != null) return existingPool;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, clientName, false, null, null, null);
+          connectionTimeout, soTimeout, password, 0, null, false, null, null, null);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {
@@ -199,6 +197,7 @@ public class JedisClusterInfoCache {
       w.unlock();
     }
   }
+
 
   public void assignSlotToNode(int slot, HostAndPort targetNode) {
     w.lock();

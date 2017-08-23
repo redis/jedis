@@ -11,10 +11,9 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.JedisURIHelper;
+import redis.clients.util.Pool;
 
-public class JedisPool extends JedisPoolAbstract {
-
-  private static final String REDISS = "rediss";
+public class JedisPool extends Pool<Jedis> {
 
   public JedisPool() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -37,7 +36,7 @@ public class JedisPool extends JedisPoolAbstract {
       int port = uri.getPort();
       String password = JedisURIHelper.getPassword(uri);
       int database = JedisURIHelper.getDBIndex(uri);
-      boolean ssl = uri.getScheme().equals(REDISS);
+      boolean ssl = uri.getScheme().equals("rediss");
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h, port,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, password, database, null,
             ssl, null, null, null), new GenericObjectPoolConfig());
@@ -56,7 +55,7 @@ public class JedisPool extends JedisPoolAbstract {
       int port = uri.getPort();
       String password = JedisURIHelper.getPassword(uri);
       int database = JedisURIHelper.getDBIndex(uri);
-      boolean ssl = uri.getScheme().equals(REDISS);
+      boolean ssl = uri.getScheme().equals("rediss");
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(h, port,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, password, database, null, ssl,
             sslSocketFactory, sslParameters, hostnameVerifier),
@@ -218,7 +217,7 @@ public class JedisPool extends JedisPoolAbstract {
       final int connectionTimeout, final int soTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout, null,
-        (uri.getScheme() !=null && uri.getScheme().equals(REDISS)), sslSocketFactory,
+        (uri.getScheme() !=null && uri.getScheme().equals("rediss")), sslSocketFactory,
         sslParameters, hostnameVerifier));
   }
 
@@ -229,15 +228,25 @@ public class JedisPool extends JedisPoolAbstract {
     return jedis;
   }
 
+  /**
+   * @deprecated starting from Jedis 3.0 this method will not be exposed. Resource cleanup should be
+   *             done using @see {@link redis.clients.jedis.Jedis#close()}
+   */
   @Override
-  protected void returnBrokenResource(final Jedis resource) {
+  @Deprecated
+  public void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
+  /**
+   * @deprecated starting from Jedis 3.0 this method will not be exposed. Resource cleanup should be
+   *             done using @see {@link redis.clients.jedis.Jedis#close()}
+   */
   @Override
-  protected void returnResource(final Jedis resource) {
+  @Deprecated
+  public void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
         resource.resetState();

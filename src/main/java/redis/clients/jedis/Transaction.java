@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,14 +40,13 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   }
 
   public List<Object> exec() {
-    // Discard QUEUED or ERROR
-    client.getMany(getPipelinedResponseLength());
     client.exec();
+    client.getAll(1); // Discard all but the last reply
     inTransaction = false;
 
     List<Object> unformatted = client.getObjectMultiBulkReply();
     if (unformatted == null) {
-      return null;
+      return Collections.emptyList();
     }
     List<Object> formatted = new ArrayList<Object>();
     for (Object o : unformatted) {
@@ -60,14 +60,13 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   }
 
   public List<Response<?>> execGetResponse() {
-    // Discard QUEUED or ERROR
-    client.getMany(getPipelinedResponseLength());
     client.exec();
+    client.getAll(1); // Discard all but the last reply
     inTransaction = false;
 
     List<Object> unformatted = client.getObjectMultiBulkReply();
     if (unformatted == null) {
-      return null;
+      return Collections.emptyList();
     }
     List<Response<?>> response = new ArrayList<Response<?>>();
     for (Object o : unformatted) {
@@ -77,19 +76,15 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   }
 
   public String discard() {
-    client.getMany(getPipelinedResponseLength());
     client.discard();
+    client.getAll(1); // Discard all but the last reply
     inTransaction = false;
     clean();
     return client.getStatusCodeReply();
   }
 
-  public void setClient(Client client) {
-    this.client = client;
-  }
-
   @Override
-  public void close() {
+  public void close() throws IOException {
     clear();
   }
 }

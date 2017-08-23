@@ -38,15 +38,25 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
     return jedis;
   }
 
+  /**
+   * @deprecated starting from Jedis 3.0 this method will not be exposed. Resource cleanup should be
+   *             done using @see {@link redis.clients.jedis.Jedis#close()}
+   */
   @Override
-  protected void returnBrokenResource(final ShardedJedis resource) {
+  @Deprecated
+  public void returnBrokenResource(final ShardedJedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
+  /**
+   * @deprecated starting from Jedis 3.0 this method will not be exposed. Resource cleanup should be
+   *             done using @see {@link redis.clients.jedis.Jedis#close()}
+   */
   @Override
-  protected void returnResource(final ShardedJedis resource) {
+  @Deprecated
+  public void returnResource(final ShardedJedis resource) {
     if (resource != null) {
       resource.resetState();
       returnResourceObject(resource);

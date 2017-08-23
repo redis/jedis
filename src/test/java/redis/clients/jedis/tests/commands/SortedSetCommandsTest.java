@@ -1117,16 +1117,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void tupleCompare() {
-    Tuple t1 = new Tuple("foo", 1d);
-    Tuple t2 = new Tuple("bar", 2d);
-
-    assertEquals(-1, t1.compareTo(t2));
-    assertEquals(1, t2.compareTo(t1));
-    assertEquals(0, t2.compareTo(t2));
-  }
-
-  @Test
   public void zscan() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");

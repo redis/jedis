@@ -46,6 +46,18 @@ public class SSLJedisTest extends JedisCommandTestBase {
   }
 
   /**
+   * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
+   */
+  @Test
+  public void connectWithUrl() {
+    // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
+    Jedis jedis = new Jedis("rediss://localhost:6390");
+    jedis.auth("foobared");
+    jedis.get("foo");
+    jedis.close();
+  }
+
+  /**
    * Tests opening a default SSL/TLS connection to redis.
    */
   @Test

@@ -137,10 +137,6 @@ public class BinaryClient extends Connection {
     sendCommand(EXISTS, keys);
   }
 
-  public void exists(final byte[] key) {
-    sendCommand(EXISTS, key);
-  }
-
   public void del(final byte[]... keys) {
     sendCommand(DEL, keys);
   }

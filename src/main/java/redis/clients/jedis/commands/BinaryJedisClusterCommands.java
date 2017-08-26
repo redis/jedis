@@ -34,6 +34,8 @@ public interface BinaryJedisClusterCommands {
 
   Long ttl(byte[] key);
 
+  Long touch(byte[] key);
+
   Boolean setbit(byte[] key, long offset, boolean value);
 
   Boolean setbit(byte[] key, long offset, byte[] value);

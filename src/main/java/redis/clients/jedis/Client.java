@@ -114,6 +114,15 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void touch(final String... keys) {
+    final byte[][] bkeys = new byte[keys.length][];
+    for (int i = 0; i < keys.length; i++) {
+      bkeys[i] = SafeEncoder.encode(keys[i]);
+    }
+    touch(bkeys);
+  }
+
+  @Override
   public void move(final String key, final int dbIndex) {
     move(SafeEncoder.encode(key), dbIndex);
   }

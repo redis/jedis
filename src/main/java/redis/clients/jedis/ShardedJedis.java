@@ -828,6 +828,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Long touch(String key) {
+    Jedis j = getShard(key);
+    return j.touch(key);
+  }
+
+  @Override
   public Long geoadd(String key, double longitude, double latitude, String member) {
     Jedis j = getShard(key);
     return j.geoadd(key, longitude, latitude, member);

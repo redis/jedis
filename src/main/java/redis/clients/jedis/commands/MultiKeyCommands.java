@@ -153,4 +153,6 @@ public interface MultiKeyCommands {
   String pfmerge(final String destkey, final String... sourcekeys);
 
   long pfcount(final String... keys);
+
+  Long touch(String... keys);
 }

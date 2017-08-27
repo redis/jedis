@@ -532,6 +532,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return statusCodeReply;
   }
 
+  @Override
+  public String swapDB(final int index1, final int index2) {
+    checkIsInMultiOrPipeline();
+    client.swapDB(index1, index2);
+    return client.getStatusCodeReply();
+  }
+
   /**
    * Move the specified key from the currently selected DB to the specified destination DB. Note
    * that this command returns 1 only if the key was successfully moved, and 0 if the target key was

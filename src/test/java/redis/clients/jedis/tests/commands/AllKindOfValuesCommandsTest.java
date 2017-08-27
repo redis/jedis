@@ -410,6 +410,34 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void swapDB() {
+    jedis.set("foo1", "bar1");
+    jedis.select(1);
+    assertEquals(null, jedis.get("foo1"));
+    jedis.set("foo2", "bar2");
+    String status = jedis.swapDB(0, 1);
+    assertEquals("OK", status);
+    assertEquals("bar1", jedis.get("foo1"));
+    assertEquals(null, jedis.get("foo2"));
+    jedis.select(0);
+    assertEquals(null, jedis.get("foo1"));
+    assertEquals("bar2", jedis.get("foo2"));
+
+    // Binary
+    jedis.set(bfoo1, bbar1);
+    jedis.select(1);
+    assertArrayEquals(null, jedis.get(bfoo1));
+    jedis.set(bfoo2, bbar2);
+    status = jedis.swapDB(0, 1);
+    assertEquals("OK", status);
+    assertArrayEquals(bbar1, jedis.get(bfoo1));
+    assertArrayEquals(null, jedis.get(bfoo2));
+    jedis.select(0);
+    assertArrayEquals(null, jedis.get(bfoo1));
+    assertArrayEquals(bbar2, jedis.get(bfoo2));
+  }
+
+  @Test
   public void flushDB() {
     jedis.set("foo", "bar");
     assertEquals(1, jedis.dbSize().intValue());

@@ -780,7 +780,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public long pfcount(final byte[] key) {
+  public Long pfcount(final byte[] key) {
     Jedis j = getShard(key);
     return j.pfcount(key);
   }

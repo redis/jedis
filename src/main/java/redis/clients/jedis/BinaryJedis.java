@@ -3529,7 +3529,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public long pfcount(final byte[] key) {
+  public Long pfcount(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.pfcount(key);
     return client.getIntegerReply();

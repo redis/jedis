@@ -3508,14 +3508,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long pfcount(final String key) {
+  public Long pfcount(final String key) {
     checkIsInMultiOrPipeline();
     client.pfcount(key);
     return client.getIntegerReply();
   }
 
   @Override
-  public long pfcount(final String... keys) {
+  public Long pfcount(final String... keys) {
     checkIsInMultiOrPipeline();
     client.pfcount(keys);
     return client.getIntegerReply();

@@ -251,7 +251,7 @@ public interface JedisClusterCommands {
 
   Long pfadd(String key, String... elements);
 
-  long pfcount(String key);
+  Long pfcount(String key);
 
   // Geo Commands
 

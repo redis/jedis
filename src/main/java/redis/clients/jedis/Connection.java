@@ -159,6 +159,8 @@ public class Connection implements Closeable {
         socket.setSoTimeout(soTimeout);
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
+
+        broken = false;
       } catch (IOException ex) {
         broken = true;
         throw new JedisConnectionException(ex);

@@ -12,7 +12,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.BinaryJedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;

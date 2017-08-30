@@ -7,6 +7,7 @@ import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.util.JedisClusterHashTagUtil;
 import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
 
@@ -17,10 +18,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.util.JedisClusterHashTagUtil;
 
 public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
+
+  public static enum Reset {
+    SOFT, HARD
+  }
 
   public static final short HASHSLOTS = 16384;
   protected static final int DEFAULT_TIMEOUT = 2000;

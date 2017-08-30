@@ -31,10 +31,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.BinaryJedisCluster.Reset;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;

@@ -74,6 +74,15 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   public Map<String, JedisPool> getClusterNodes() {
     return connectionHandler.getNodes();
   }
+	    
+  public JedisPool getAnyClusterNode() {
+    Collection<JedisPool> jedisPools = getClusterNodes().values();
+    if(jedisPools.isEmpty()) {
+	throw new JedisClusterException("not any known node in cluster");
+    }
+    Collections.shuffle(jedisPools);
+    return jedisPools.iterator().next();
+  }
 
   public Jedis getConnectionFromSlot(int slot) {
 	  return  this.connectionHandler.getConnectionFromSlot(slot);

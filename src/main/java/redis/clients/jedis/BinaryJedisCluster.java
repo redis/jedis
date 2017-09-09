@@ -9,6 +9,7 @@ import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.KeyMergeUtil;
 import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.exceptions.JedisClusterException;
 
 import java.io.Closeable;
 import java.util.Collection;
@@ -73,6 +74,14 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   public Map<String, JedisPool> getClusterNodes() {
     return connectionHandler.getNodes();
+  }
+	    
+  public JedisPool getAnyClusterNode() {
+    Collection<JedisPool> jedisPools = getClusterNodes().values();
+    if(jedisPools.isEmpty()) {
+	throw new JedisClusterException("not any known node in cluster");
+    }
+    return jedisPools.stream().findAny().get();
   }
 
   public Jedis getConnectionFromSlot(int slot) {

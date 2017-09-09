@@ -38,6 +38,8 @@ public interface JedisCommands {
 
   Long pttl(final String key);
 
+  Long touch(String key);
+
   Boolean setbit(String key, long offset, boolean value);
 
   Boolean setbit(String key, long offset, String value);

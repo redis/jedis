@@ -517,6 +517,26 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Alters the last access time of a key(s). A key is ignored if it does not exist.
+   * Time complexity: O(N) where N is the number of keys that will be touched.
+   * @param keys
+   * @return Integer reply: The number of keys that were touched.
+   */
+  @Override
+  public Long touch(byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.touch(keys);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long touch(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.touch(key);
+    return client.getIntegerReply();
+  }
+
+  /**
    * Select the DB with having the specified zero-based numeric index. For default every new client
    * connection is automatically selected to DB 0.
    * @param index

@@ -114,6 +114,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long touch(byte[] key) {
+    Jedis j = getShard(key);
+    return j.touch(key);
+  }
+
+  @Override
   public byte[] getSet(byte[] key, byte[] value) {
     Jedis j = getShard(key);
     return j.getSet(key, value);

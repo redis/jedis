@@ -71,5 +71,7 @@ public interface MultiKeyJedisClusterCommands {
 
   long pfcount(final String... keys);
 
+  Long touch(String... keys);
+
   ScanResult<String> scan(final String cursor, final ScanParams params);
 }

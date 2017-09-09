@@ -552,6 +552,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Long> touch(String... keys) {
+    client.touch(keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> touch(byte[]... keys) {
+    client.touch(keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<String> moduleUnload(String name) {
     client.moduleUnload(name);
     return getResponse(BuilderFactory.STRING);

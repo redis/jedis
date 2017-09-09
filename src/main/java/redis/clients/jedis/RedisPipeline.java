@@ -133,6 +133,8 @@ public interface RedisPipeline {
 
   Response<String> substr(String key, int start, int end);
 
+  Response<Long> touch(String key);
+
   Response<Long> ttl(String key);
 
   Response<String> type(String key);

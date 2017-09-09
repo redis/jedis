@@ -68,4 +68,6 @@ public interface MultiKeyCommandsPipeline {
   Response<String> pfmerge(final String destkey, final String... sourcekeys);
 
   Response<Long> pfcount(final String... keys);
+
+  Response<Long> touch(String... keys);
 }

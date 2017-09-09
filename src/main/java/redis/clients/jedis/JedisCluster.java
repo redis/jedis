@@ -224,6 +224,24 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     }.run(key);
   }
 
+  public Long touch(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.touch(key);
+      }
+    }.run(key);
+  }
+
+  public Long touch(final String... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.touch(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
   @Override
   public Long pttl(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {

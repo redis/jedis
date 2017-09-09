@@ -355,6 +355,55 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void touch() throws Exception {
+    long reply = jedis.touch("foo1", "foo2", "foo3");
+    assertEquals(0, reply);
+
+    jedis.set("foo1", "bar1");
+
+    Thread.sleep(2000);
+    assertTrue(jedis.objectIdletime("foo1") > 0);
+
+    reply = jedis.touch("foo1");
+    assertEquals(1, reply);
+    assertTrue(jedis.objectIdletime("foo1") == 0);
+
+    reply = jedis.touch("foo1", "foo2", "foo3");
+    assertEquals(1, reply);
+
+    jedis.set("foo2", "bar2");
+
+    jedis.set("foo3", "bar3");
+
+    reply = jedis.touch("foo1", "foo2", "foo3");
+    assertEquals(3, reply);
+
+    // Binary
+    reply = jedis.touch(bfoo1, bfoo2, bfoo3);
+    assertEquals(0, reply);
+
+    jedis.set(bfoo1, bbar1);
+
+    Thread.sleep(2000);
+    assertTrue(jedis.objectIdletime(bfoo1) > 0);
+
+    reply = jedis.touch(bfoo1);
+    assertEquals(1, reply);
+    assertTrue(jedis.objectIdletime(bfoo1) == 0);
+
+    reply = jedis.touch(bfoo1, bfoo2, bfoo3);
+    assertEquals(1, reply);
+
+    jedis.set(bfoo2, bbar2);
+
+    jedis.set(bfoo3, bbar3);
+
+    reply = jedis.touch(bfoo1, bfoo2, bfoo3);
+    assertEquals(3, reply);
+
+  }
+
+  @Test
   public void select() {
     jedis.set("foo", "bar");
     String status = jedis.select(1);

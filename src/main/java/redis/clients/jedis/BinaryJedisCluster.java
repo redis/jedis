@@ -198,6 +198,26 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
+  public Long touch(final byte[] key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.touch(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long touch(final byte[]... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.touch(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public Boolean setbit(final byte[] key, final long offset, final boolean value) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
       @Override

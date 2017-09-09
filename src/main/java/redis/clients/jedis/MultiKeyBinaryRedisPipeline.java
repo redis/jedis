@@ -69,4 +69,6 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<String> pfmerge(final byte[] destkey, final byte[]... sourcekeys);
 
   Response<Long> pfcount(final byte[]... keys);
+
+  Response<Long> touch(byte[]... keys);
 }

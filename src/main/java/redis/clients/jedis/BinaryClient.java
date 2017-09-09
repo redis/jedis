@@ -176,6 +176,14 @@ public class BinaryClient extends Connection {
     sendCommand(TTL, key);
   }
 
+  public void touch(final byte[] key) {
+    sendCommand(TOUCH, key);
+  }
+
+  public void touch(final byte[]... keys) {
+    sendCommand(TOUCH, keys);
+  }
+
   public void select(final int index) {
     sendCommand(SELECT, toByteArray(index));
   }

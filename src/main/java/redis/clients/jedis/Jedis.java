@@ -344,6 +344,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Alters the last access time of a key(s). A key is ignored if it does not exist.
+   * Time complexity: O(N) where N is the number of keys that will be touched.
+   * @param keys
+   * @return Integer reply: The number of keys that were touched.
+   */
+  @Override
+  public Long touch(final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.touch(keys);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long touch(String key) {
+    checkIsInMultiOrPipeline();
+    client.touch(key);
+    return client.getIntegerReply();
+  }
+
+  /**
    * Move the specified key from the currently selected DB to the specified destination DB. Note
    * that this command returns 1 only if the key was successfully moved, and 0 if the target key was
    * already there or if the source key was not found at all, so it is possible to use MOVE as a

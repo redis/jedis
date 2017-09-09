@@ -135,6 +135,8 @@ public interface BinaryRedisPipeline {
 
   Response<String> substr(byte[] key, int start, int end);
 
+  Response<Long> touch(byte[] keys);
+
   Response<Long> ttl(byte[] key);
 
   Response<String> type(byte[] key);

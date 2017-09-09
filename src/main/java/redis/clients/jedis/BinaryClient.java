@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.ENCODING;
 import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
@@ -12,6 +11,7 @@ import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
 import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
 import java.util.List;

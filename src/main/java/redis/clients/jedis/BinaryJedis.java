@@ -242,6 +242,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param params
    * @return Status code reply
    */
+  @Override
   public String set(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
     client.set(key, value, params);
@@ -283,6 +284,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
    *         none of the specified keys existed
    */
+  @Override
   public Long exists(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.exists(keys);

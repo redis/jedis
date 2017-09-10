@@ -30,53 +30,63 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
   @Override
   public Jedis getConnection() {
-    // In antirez's redis-rb-cluster implementation,
-    // getRandomConnection always return valid connection (able to
-    // ping-pong)
-    // or exception if all connections are invalid
-
-    List<JedisPool> pools = cache.getShuffledNodesPool();
-
-    for (JedisPool pool : pools) {
-      Jedis jedis = null;
-      try {
-        jedis = pool.getResource();
-
-        if (jedis == null) {
-          continue;
-        }
-
-        String result = jedis.ping();
-
-        if (result.equalsIgnoreCase("pong")) return jedis;
-
-        jedis.close();
-      } catch (JedisException ex) {
-        if (jedis != null) {
-          jedis.close();
-        }
-      }
-    }
-
-    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+     return getJedisPool().getResource();
   }
 
   @Override
   public Jedis getConnectionFromSlot(int slot) {
-    JedisPool connectionPool = cache.getSlotPool(slot);
-    if (connectionPool != null) {
-      // It can't guaranteed to get valid connection because of node
-      // assignment
-      return connectionPool.getResource();
-    } else {
-      renewSlotCache(); //It's abnormal situation for cluster mode, that we have just nothing for slot, try to rediscover state
-      connectionPool = cache.getSlotPool(slot);
-      if (connectionPool != null) {
-        return connectionPool.getResource();
-      } else {
-        //no choice, fallback to new connection to random node
-        return getConnection();
-      }
-    }
+	  return getJedisPoolFromSlot(slot).getResource();
   }
+  
+  @Override
+	public JedisPool getJedisPoolFromSlot(int slot) {
+		JedisPool connectionPool = cache.getSlotPool(slot);
+		if (connectionPool != null) {
+			// It can't guaranteed to get valid connection because of node
+			// assignment
+			return connectionPool;
+		} else {
+			renewSlotCache(); // It's abnormal situation for cluster mode, that we have just nothing for slot,
+								// try to rediscover state
+			connectionPool = cache.getSlotPool(slot);
+			if (connectionPool != null) {
+				return connectionPool;
+			} else {
+				// no choice, fallback to new connection to random node
+				return getJedisPool();
+			}
+		}
+	}
+
+	@Override
+	public JedisPool getJedisPool() {
+		// In antirez's redis-rb-cluster implementation,
+		// getRandomConnection always return valid connection (able to
+		// ping-pong)
+		// or exception if all connections are invalid
+		List<JedisPool> pools = cache.getShuffledNodesPool();
+
+		for (JedisPool pool : pools) {
+			Jedis jedis = null;
+			try {
+				jedis = pool.getResource();
+
+				if (jedis == null) {
+					continue;
+				}
+
+				String result = jedis.ping();
+				if (result.equalsIgnoreCase("pong"))
+					return pool;
+
+				jedis.close();
+			} catch (JedisException ex) {
+				if (jedis != null) {
+					jedis.close();
+				}
+			}
+		}
+		throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+	}
+  
 }

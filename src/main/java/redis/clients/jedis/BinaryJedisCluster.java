@@ -75,6 +75,10 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   public Jedis getConnectionFromSlot(int slot) {
 	  return  this.connectionHandler.getConnectionFromSlot(slot);
   }
+  
+  public JedisPool getJedisPoolFromSlot(int slot) {
+	  return this.connectionHandler.getJedisPoolFromSlot(slot);
+  }
 
   @Override
   public String set(final byte[] key, final byte[] value) {

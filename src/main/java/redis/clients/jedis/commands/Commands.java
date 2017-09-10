@@ -19,8 +19,6 @@ public interface Commands {
 
   void get(final String key);
 
-  void exists(final String key);
-
   void exists(final String... keys);
 
   void del(final String... keys);

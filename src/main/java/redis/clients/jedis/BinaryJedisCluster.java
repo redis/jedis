@@ -1738,6 +1738,15 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster and Redis Cluster only uses
+   *             db index 0 scheduled to be removed on next major release
+   */
+  @Override
+  public String swapDB(int index1, int index2) {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
    * @deprecated No key operation doesn't make sense for Redis Cluster scheduled to be removed on
    *             next major release
    */

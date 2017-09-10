@@ -188,6 +188,10 @@ public class BinaryClient extends Connection {
     sendCommand(SELECT, toByteArray(index));
   }
 
+  public void swapDB(final int index1, final int index2) {
+    sendCommand(SWAPDB, toByteArray(index1), toByteArray(index2));
+  }
+
   public void move(final byte[] key, final int dbIndex) {
     sendCommand(MOVE, key, toByteArray(dbIndex));
   }

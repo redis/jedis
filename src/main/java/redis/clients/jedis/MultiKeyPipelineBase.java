@@ -403,6 +403,11 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements Basic
     return response;
   }
 
+  public Response<String> swapDB(int index1, int index2) {
+    client.swapDB(index1, index2);
+    return getResponse(BuilderFactory.STRING);
+  }
+
   public Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
     client.bitop(op, destKey, srcKeys);
     return getResponse(BuilderFactory.LONG);

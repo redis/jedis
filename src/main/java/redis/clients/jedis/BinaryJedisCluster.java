@@ -24,14 +24,14 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   public static final short HASHSLOTS = 16384;
   protected static final int DEFAULT_TIMEOUT = 2000;
-  protected static final int DEFAULT_MAX_REDIRECTIONS = 5;
+  protected static final int DEFAULT_MAX_ATTEMPTS = 5;
 
   protected int maxAttempts;
 
   protected JedisClusterConnectionHandler connectionHandler;
 
   public BinaryJedisCluster(Set<HostAndPort> nodes, int timeout) {
-    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, new GenericObjectPoolConfig());
+    this(nodes, timeout, DEFAULT_MAX_ATTEMPTS, new GenericObjectPoolConfig());
   }
 
   public BinaryJedisCluster(Set<HostAndPort> nodes) {

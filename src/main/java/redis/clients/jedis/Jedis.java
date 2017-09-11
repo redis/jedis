@@ -223,6 +223,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long del(final String key) {
+    checkIsInMultiOrPipeline();
     client.del(key);
     return client.getIntegerReply();
   }
@@ -2629,12 +2630,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long strlen(final String key) {
+    checkIsInMultiOrPipeline();
     client.strlen(key);
     return client.getIntegerReply();
   }
 
   @Override
   public Long lpushx(final String key, final String... string) {
+    checkIsInMultiOrPipeline();
     client.lpushx(key, string);
     return client.getIntegerReply();
   }
@@ -2655,12 +2658,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long rpushx(final String key, final String... string) {
+    checkIsInMultiOrPipeline();
     client.rpushx(key, string);
     return client.getIntegerReply();
   }
 
   @Override
   public String echo(final String string) {
+    checkIsInMultiOrPipeline();
     client.echo(string);
     return client.getBulkReply();
   }
@@ -2668,6 +2673,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Long linsert(final String key, final LIST_POSITION where, final String pivot,
       final String value) {
+    checkIsInMultiOrPipeline();
     client.linsert(key, where, pivot, value);
     return client.getIntegerReply();
   }
@@ -2699,12 +2705,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public Boolean setbit(final String key, final long offset, final boolean value) {
+    checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
     return client.getIntegerReply() == 1;
   }
 
   @Override
   public Boolean setbit(final String key, final long offset, final String value) {
+    checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
     return client.getIntegerReply() == 1;
   }
@@ -2717,18 +2725,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public Boolean getbit(final String key, final long offset) {
+    checkIsInMultiOrPipeline();
     client.getbit(key, offset);
     return client.getIntegerReply() == 1;
   }
 
   @Override
   public Long setrange(final String key, final long offset, final String value) {
+    checkIsInMultiOrPipeline();
     client.setrange(key, offset, value);
     return client.getIntegerReply();
   }
 
   @Override
   public String getrange(final String key, final long startOffset, final long endOffset) {
+    checkIsInMultiOrPipeline();
     client.getrange(key, startOffset, endOffset);
     return client.getBulkReply();
   }
@@ -2740,6 +2751,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long bitpos(final String key, final boolean value, final BitPosParams params) {
+    checkIsInMultiOrPipeline();
     client.bitpos(key, value, params);
     return client.getIntegerReply();
   }
@@ -2978,18 +2990,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long bitcount(final String key) {
+    checkIsInMultiOrPipeline();
     client.bitcount(key);
     return client.getIntegerReply();
   }
 
   @Override
   public Long bitcount(final String key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
     client.bitcount(key, start, end);
     return client.getIntegerReply();
   }
 
   @Override
   public Long bitop(final BitOP op, final String destKey, final String... srcKeys) {
+    checkIsInMultiOrPipeline();
     client.bitop(op, destKey, srcKeys);
     return client.getIntegerReply();
   }

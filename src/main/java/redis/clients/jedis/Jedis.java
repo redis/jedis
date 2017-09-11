@@ -2970,20 +2970,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long objectRefcount(final String string) {
-    client.objectRefcount(string);
+  public Long objectRefcount(final String key) {
+    client.objectRefcount(key);
     return client.getIntegerReply();
   }
 
   @Override
-  public String objectEncoding(final String string) {
-    client.objectEncoding(string);
+  public String objectEncoding(final String key) {
+    client.objectEncoding(key);
     return client.getBulkReply();
   }
 
   @Override
-  public Long objectIdletime(final String string) {
-    client.objectIdletime(string);
+  public Long objectIdletime(final String key) {
+    client.objectIdletime(key);
     return client.getIntegerReply();
   }
 

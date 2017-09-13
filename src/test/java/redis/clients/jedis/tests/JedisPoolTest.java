@@ -433,7 +433,7 @@ public class JedisPoolTest {
       try (Jedis obj2 = pool.getResource()) {
         obj2.set("foo", "bar");
         assertEquals("bar", obj2.get("foo"));
-      }
+      }  
     }
   }
 }

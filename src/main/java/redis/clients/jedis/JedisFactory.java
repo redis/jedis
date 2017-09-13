@@ -18,11 +18,11 @@ import redis.clients.util.JedisURIHelper;
 /**
  * PoolableObjectFactory custom impl.
  */
-class JedisFactory implements PooledObjectFactory<Jedis> {
+public class JedisFactory implements PooledObjectFactory<Jedis> {
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
+  private final AtomicReference<String> password = new AtomicReference<String>();
   private final int connectionTimeout;
   private final int soTimeout;
-  private final String password;
   private final int database;
   private final String clientName;
   private final boolean ssl;
@@ -35,9 +35,9 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this.hostAndPort.set(new HostAndPort(host, port));
+    this.password.set(password);
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
-    this.password = password;
     this.database = database;
     this.clientName = clientName;
     this.ssl = ssl;
@@ -57,7 +57,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
-    this.password = JedisURIHelper.getPassword(uri);
+    this.password.set(JedisURIHelper.getPassword(uri));
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
     this.ssl = ssl;
@@ -69,9 +69,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   public void setHostAndPort(final HostAndPort hostAndPort) {
     this.hostAndPort.set(hostAndPort);
   }
+  
+  public void setPassword(final String password) {
+    this.password.set(password);
+  }
 
   @Override
-  public void activateObject(PooledObject<Jedis> pooledJedis) throws Exception {
+  public void activateObject(final PooledObject<Jedis> pooledJedis) throws Exception {
     final BinaryJedis jedis = pooledJedis.getObject();
     if (jedis.getDB() != database) {
       jedis.select(database);
@@ -80,7 +84,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   @Override
-  public void destroyObject(PooledObject<Jedis> pooledJedis) throws Exception {
+  public void destroyObject(final PooledObject<Jedis> pooledJedis) throws Exception {
     final BinaryJedis jedis = pooledJedis.getObject();
     if (jedis.isConnected()) {
       try {
@@ -104,8 +108,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     try {
       jedis.connect();
-      if (password != null) {
-        jedis.auth(password);
+      if (password.get() != null) {
+        jedis.auth(password.get());
       }
       if (database != 0) {
         jedis.select(database);
@@ -123,12 +127,12 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   @Override
-  public void passivateObject(PooledObject<Jedis> pooledJedis) throws Exception {
+  public void passivateObject(final PooledObject<Jedis> pooledJedis) throws Exception {
     // TODO maybe should select db 0? Not sure right now.
   }
 
   @Override
-  public boolean validateObject(PooledObject<Jedis> pooledJedis) {
+  public boolean validateObject(final PooledObject<Jedis> pooledJedis) {
     final BinaryJedis jedis = pooledJedis.getObject();
     try {
       HostAndPort hostAndPort = this.hostAndPort.get();

@@ -18,11 +18,11 @@ import redis.clients.util.JedisURIHelper;
 /**
  * PoolableObjectFactory custom impl.
  */
-class JedisFactory implements PooledObjectFactory<Jedis> {
+public class JedisFactory implements PooledObjectFactory<Jedis> {
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
+  private final AtomicReference<String> password = new AtomicReference<String>();
   private final int connectionTimeout;
   private final int soTimeout;
-  private final String password;
   private final int database;
   private final String clientName;
   private final boolean ssl;
@@ -30,7 +30,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final SSLParameters sslParameters;
   private final HostnameVerifier hostnameVerifier;
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
+  public JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, password, database, clientName,
         false, null, null, null);
@@ -43,7 +43,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(new HostAndPort(host, port));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
-    this.password = password;
+    this.password.set(password);
     this.database = database;
     this.clientName = clientName;
     this.ssl = ssl;
@@ -68,7 +68,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
-    this.password = JedisURIHelper.getPassword(uri);
+    this.password.set(JedisURIHelper.getPassword(uri));
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
     this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
@@ -79,6 +79,10 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
     this.hostAndPort.set(hostAndPort);
+  }
+
+  public void setPassword(final String password) {
+    this.password.set(password);
   }
 
   @Override
@@ -115,8 +119,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     try {
       jedis.connect();
-      if (password != null) {
-        jedis.auth(password);
+      if (password.get() != null) {
+        jedis.auth(password.get());
       }
       if (database != 0) {
         jedis.select(database);

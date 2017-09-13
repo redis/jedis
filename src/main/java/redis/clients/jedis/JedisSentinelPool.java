@@ -175,6 +175,27 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     initPool(master);
   }
 
+  public JedisSentinelPool(String masterName, Set<String> sentinels, final GenericObjectPoolConfig poolConfig, final JedisFactory factory) {
+    this.poolConfig = poolConfig;
+    this.connectionTimeout = Protocol.DEFAULT_TIMEOUT;
+    this.soTimeout = Protocol.DEFAULT_TIMEOUT;
+    this.infiniteSoTimeout = 0;
+    this.user = null;
+    this.password = null;
+    this.database = Protocol.DEFAULT_DATABASE;
+    this.clientName = null;
+    this.sentinelConnectionTimeout = Protocol.DEFAULT_TIMEOUT;
+    this.sentinelSoTimeout = Protocol.DEFAULT_TIMEOUT;
+    this.sentinelUser = null;
+    this.sentinelPassword = null;
+    this.sentinelClientName = null;
+    this.factory = factory;
+
+    HostAndPort master = initSentinels(sentinels, masterName);
+    initPool(poolConfig, factory);
+    initPool(master);
+  }
+
   @Override
   public void destroy() {
     for (MasterListener m : masterListeners) {

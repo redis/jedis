@@ -16,10 +16,12 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisFactory;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class JedisPoolTest {
@@ -382,4 +384,40 @@ public class JedisPoolTest {
     return clientList.split("\n").length;
   }
 
+  @Test
+  public void testResetInvalidPassword() {
+    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000, "foobared", 0, "my_shiny_client_name");
+    
+
+    try(JedisPool pool = new JedisPool(new JedisPoolConfig(), factory);
+        Jedis obj1 = pool.getResource();){
+      obj1.set("foo", "bar");
+      assertEquals("bar", obj1.get("foo"));
+      assertEquals(1, pool.getNumActive());
+      
+      factory.setPassword("wrong password");
+      try (Jedis obj2 = pool.getResource()) {
+        fail("Should not get resource from pool");
+      } catch (JedisConnectionException e) {}
+    }
+  }
+  
+  @Test
+  public void testResetValidPassword() {
+    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000, "bad password", 0, "my_shiny_client_name");
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), factory);
+    Jedis obj = null;
+    try {
+      pool.getResource();
+      fail("Could not get resource from pool");
+    } catch (JedisConnectionException e) {
+      factory.setPassword("foobared");
+      obj = pool.getResource();
+      obj.set("foo", "bar");
+      assertEquals("bar", obj.get("foo"));
+    } finally {
+      obj.close();
+      pool.close(); 
+    }
+  }
 }

@@ -14,6 +14,10 @@ public final class JedisClusterHashTagUtil {
     return extractHashTag(key, true);
   }
 
+  public static boolean isClusterCompliantMatchPattern(byte[] matchPattern) {
+    return isClusterCompliantMatchPattern(SafeEncoder.encode(matchPattern));
+  }
+
   public static boolean isClusterCompliantMatchPattern(String matchPattern) {
     String tag = extractHashTag(matchPattern, false);
     return tag != null && !tag.isEmpty();

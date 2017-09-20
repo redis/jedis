@@ -34,11 +34,11 @@ public class ShardedJedisTest {
   public void testAvoidLeaksUponDisconnect() throws InterruptedException {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>(2);
     // 6379
-    JedisShardInfo shard1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());
+    JedisShardInfo shard1 = new JedisShardInfo(redis1);
     shard1.setPassword("foobared");
     shards.add(shard1);
     // 6380
-    JedisShardInfo shard2 = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+    JedisShardInfo shard2 = new JedisShardInfo(redis2);
     shard2.setPassword("foobared");
     shards.add(shard2);
 
@@ -95,8 +95,8 @@ public class ShardedJedisTest {
   @Test
   public void checkSharding() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
-    shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
+    shards.add(new JedisShardInfo(redis1));
+    shards.add(new JedisShardInfo(redis2));
     ShardedJedis jedis = new ShardedJedis(shards);
     List<String> keys = getKeysDifferentShard(jedis);
     JedisShardInfo s1 = jedis.getShardInfo(keys.get(0));
@@ -107,10 +107,10 @@ public class ShardedJedisTest {
   @Test
   public void trySharding() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    JedisShardInfo si = new JedisShardInfo(redis1.getHost(), redis1.getPort());
+    JedisShardInfo si = new JedisShardInfo(redis1);
     si.setPassword("foobared");
     shards.add(si);
-    si = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+    si = new JedisShardInfo(redis2);
     si.setPassword("foobared");
     shards.add(si);
     ShardedJedis jedis = new ShardedJedis(shards);
@@ -120,12 +120,12 @@ public class ShardedJedisTest {
     JedisShardInfo s2 = jedis.getShardInfo("b");
     jedis.disconnect();
 
-    Jedis j = new Jedis(s1.getHost(), s1.getPort());
+    Jedis j = new Jedis(s1);
     j.auth("foobared");
     assertEquals("bar", j.get("a"));
     j.disconnect();
 
-    j = new Jedis(s2.getHost(), s2.getPort());
+    j = new Jedis(s2);
     j.auth("foobared");
     assertEquals("bar1", j.get("b"));
     j.disconnect();
@@ -134,10 +134,10 @@ public class ShardedJedisTest {
   @Test
   public void tryShardingWithMurmure() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    JedisShardInfo si = new JedisShardInfo(redis1.getHost(), redis1.getPort());
+    JedisShardInfo si = new JedisShardInfo(redis1);
     si.setPassword("foobared");
     shards.add(si);
-    si = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+    si = new JedisShardInfo(redis2);
     si.setPassword("foobared");
     shards.add(si);
     ShardedJedis jedis = new ShardedJedis(shards, Hashing.MURMUR_HASH);
@@ -147,12 +147,12 @@ public class ShardedJedisTest {
     JedisShardInfo s2 = jedis.getShardInfo("b");
     jedis.disconnect();
 
-    Jedis j = new Jedis(s1.getHost(), s1.getPort());
+    Jedis j = new Jedis(s1);
     j.auth("foobared");
     assertEquals("bar", j.get("a"));
     j.disconnect();
 
-    j = new Jedis(s2.getHost(), s2.getPort());
+    j = new Jedis(s2);
     j.auth("foobared");
     assertEquals("bar1", j.get("b"));
     j.disconnect();
@@ -161,8 +161,8 @@ public class ShardedJedisTest {
   @Test
   public void checkKeyTags() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
-    shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
+    shards.add(new JedisShardInfo(redis1));
+    shards.add(new JedisShardInfo(redis2));
     ShardedJedis jedis = new ShardedJedis(shards, ShardedJedis.DEFAULT_KEY_TAG_PATTERN);
 
     assertEquals(jedis.getKeyTag("foo"), "foo");
@@ -308,8 +308,8 @@ public class ShardedJedisTest {
   @Test
   public void checkCloseable() {
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
-    shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
+    shards.add(new JedisShardInfo(redis1));
+    shards.add(new JedisShardInfo(redis2));
     shards.get(0).setPassword("foobared");
     shards.get(1).setPassword("foobared");
 

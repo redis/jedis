@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,11 +10,15 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.set.SetParams.setParams;
 
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import static org.awaitility.Awaitility.*;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
@@ -355,14 +360,33 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   }
 
+  private Callable<Boolean> jedisTargetIsIdle(final String target) {
+    return new Callable<Boolean>() {
+      @Override
+      public Boolean call() throws Exception {
+        return jedis.objectIdletime(target) > 0;
+      }
+    };
+  }
+
+  private Callable<Boolean> jedisTargetIsIdle(final byte[] target) {
+    return new Callable<Boolean>() {
+      @Override
+      public Boolean call() throws Exception {
+        return jedis.objectIdletime(target) > 0;
+      }
+    };
+  }
   @Test
   public void touch() throws Exception {
-    long reply = jedis.touch("foo1", "foo2", "foo3");
+    final String foo1 = "foo1";
+    long reply = jedis.touch(foo1, "foo2", "foo3");
     assertEquals(0, reply);
 
-    jedis.set("foo1", "bar1");
+    jedis.set(foo1, "bar1");
 
-    Thread.sleep(2000);
+    await().atMost(2, TimeUnit.SECONDS).until(jedisTargetIsIdle(foo1));
+
     assertTrue(jedis.objectIdletime("foo1") > 0);
 
     reply = jedis.touch("foo1");
@@ -385,7 +409,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo1, bbar1);
 
-    Thread.sleep(2000);
+    await().atMost(2, TimeUnit.SECONDS).until(jedisTargetIsIdle(bfoo1));
+
     assertTrue(jedis.objectIdletime(bfoo1) > 0);
 
     reply = jedis.touch(bfoo1);

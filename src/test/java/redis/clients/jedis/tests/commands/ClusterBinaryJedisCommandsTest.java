@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -9,6 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -186,14 +189,18 @@ public class ClusterBinaryJedisCommandsTest {
   }
 
   private void waitForClusterReady() throws InterruptedException {
-    boolean clusterOk = false;
-    while (!clusterOk) {
-      if (node1.clusterInfo().split("\n")[0].contains("ok")
-          && node2.clusterInfo().split("\n")[0].contains("ok")
-          && node3.clusterInfo().split("\n")[0].contains("ok")) {
-        clusterOk = true;
-      }
-      Thread.sleep(50);
-    }
+    await().atMost(50, TimeUnit.SECONDS).until(clusterIsReady());
   }
+
+  private Callable<Boolean> clusterIsReady() {
+    return new Callable<Boolean>() {
+      @Override
+      public Boolean call() throws Exception {
+        return node1.clusterInfo().split("\n")[0].contains("ok")
+                && node2.clusterInfo().split("\n")[0].contains("ok")
+                && node3.clusterInfo().split("\n")[0].contains("ok");
+      }
+    };
+  }
+
 }

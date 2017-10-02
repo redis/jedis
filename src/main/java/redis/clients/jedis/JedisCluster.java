@@ -28,23 +28,23 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(HostAndPort node) {
-	this(Collections.singleton(node), DEFAULT_TIMEOUT);
+    this(Collections.singleton(node));
   }
 
   public JedisCluster(HostAndPort node, int timeout) {
-    this(Collections.singleton(node), timeout, DEFAULT_MAX_ATTEMPTS);
+    this(Collections.singleton(node), timeout);
   }
 
   public JedisCluster(HostAndPort node, int timeout, int maxAttempts) {
-    this(Collections.singleton(node), timeout, maxAttempts, new GenericObjectPoolConfig());
+    this(Collections.singleton(node), timeout, maxAttempts);
   }
 
   public JedisCluster(HostAndPort node, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), DEFAULT_TIMEOUT, DEFAULT_MAX_ATTEMPTS, poolConfig);
+    this(Collections.singleton(node), poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int timeout, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), timeout, DEFAULT_MAX_ATTEMPTS, poolConfig);
+    this(Collections.singleton(node), timeout, poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int timeout, int maxAttempts,
@@ -54,17 +54,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
       int maxAttempts, final GenericObjectPoolConfig poolConfig) {
-    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig);
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-                      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
-    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
+      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-          int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
-    super(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
+      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> nodes) {

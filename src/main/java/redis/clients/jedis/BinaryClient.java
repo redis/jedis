@@ -763,6 +763,10 @@ public class BinaryClient extends Connection {
     sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
   }
 
+  public void zremrangeByScore(final byte[] key, final double start, final double end) {
+    sendCommand(ZREMRANGEBYSCORE, key, toByteArray(start), toByteArray(end));
+  }
+
   public void zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
     sendCommand(ZREMRANGEBYSCORE, key, start, end);
   }

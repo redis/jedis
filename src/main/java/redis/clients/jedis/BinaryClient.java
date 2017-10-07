@@ -261,6 +261,18 @@ public class BinaryClient extends Connection {
     sendCommand(HSET, key, field, value);
   }
 
+  public void hset(final byte[] key, final Map<byte[], byte[]> hash) {
+    final byte[][] params = new byte[1 + hash.size() * 2][];
+
+    int index = 0;
+    params[index++] = key;
+    for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+      params[index++] = entry.getKey();
+      params[index++] = entry.getValue();
+    }
+    sendCommand(HSET, params);
+  }
+
   public void hget(final byte[] key, final byte[] field) {
     sendCommand(HGET, key, field);
   }

@@ -65,6 +65,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> hset(byte[] key, byte[] field, byte[] value);
 
+  Response<Long> hset(byte[] key, Map<byte[], byte[]> hash);
+
   Response<Long> hsetnx(byte[] key, byte[] field, byte[] value);
 
   Response<List<byte[]>> hvals(byte[] key);

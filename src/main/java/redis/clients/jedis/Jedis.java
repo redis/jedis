@@ -734,6 +734,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long hset(final String key, final Map<String, String> hash) {
+    checkIsInMultiOrPipeline();
+    client.hset(key, hash);
+    return client.getIntegerReply();
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>

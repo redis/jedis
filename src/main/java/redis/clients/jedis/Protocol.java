@@ -113,7 +113,7 @@ public final class Protocol {
     if (message.startsWith(MOVED_RESPONSE)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
       throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-          Integer.valueOf(movedInfo[2])), Integer.valueOf(movedInfo[0]));
+          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_RESPONSE)) {
       String[] askInfo = parseTargetHostAndSlot(message);
       throw new JedisAskDataException(message, new HostAndPort(askInfo[1],

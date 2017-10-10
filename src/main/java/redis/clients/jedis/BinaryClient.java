@@ -109,23 +109,23 @@ public class BinaryClient extends Connection {
   }
 
   public void ping() {
-    sendCommand(Command.PING);
+    sendCommand(PING);
   }
 
   public void ping(final byte[] message) {
-    sendCommand(Command.PING, message);
+    sendCommand(PING, message);
   }
 
   public void set(final byte[] key, final byte[] value) {
-    sendCommand(Command.SET, key, value);
+    sendCommand(SET, key, value);
   }
 
   public void set(final byte[] key, final byte[] value, final SetParams params) {
-    sendCommand(Command.SET, params.getByteParams(key, value));
+    sendCommand(SET, params.getByteParams(key, value));
   }
 
   public void get(final byte[] key) {
-    sendCommand(Command.GET, key);
+    sendCommand(GET, key);
   }
 
   public void quit() {
@@ -1189,7 +1189,7 @@ public class BinaryClient extends Connection {
   }
 
   public void asking() {
-    sendCommand(Command.ASKING);
+    sendCommand(ASKING);
   }
 
   public void pfadd(final byte[] key, final byte[]... elements) {
@@ -1305,10 +1305,10 @@ public class BinaryClient extends Connection {
     byte[][] bitfieldArgs = new byte[argsLength + 1][];
     bitfieldArgs[0] = key;
     System.arraycopy(value, 0, bitfieldArgs, 1, argsLength);
-    sendCommand(Command.BITFIELD, bitfieldArgs);
+    sendCommand(BITFIELD, bitfieldArgs);
   }
 
   public void hstrlen(final byte[] key, final byte[] field) {
-    sendCommand(Command.HSTRLEN, key, field);
+    sendCommand(HSTRLEN, key, field);
   }
 }

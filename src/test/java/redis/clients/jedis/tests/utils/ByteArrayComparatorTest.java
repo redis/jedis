@@ -1,11 +1,11 @@
 package redis.clients.jedis.tests.utils;
 
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
+
 import redis.clients.util.ByteArrayComparator;
-
 import redis.clients.util.SafeEncoder;
-
-import static org.junit.Assert.assertEquals;
 
 public class ByteArrayComparatorTest {
 
@@ -15,8 +15,16 @@ public class ByteArrayComparatorTest {
     byte[] foo2 = SafeEncoder.encode("foo");
     byte[] bar = SafeEncoder.encode("bar");
 
-    assertEquals(0, ByteArrayComparator.compare(foo, foo2));
-    assertEquals(1, ByteArrayComparator.compare(foo, bar));
-    assertEquals(-1, ByteArrayComparator.compare(bar, foo));
+    assertTrue(ByteArrayComparator.compare(foo, foo2) == 0);
+    assertTrue(ByteArrayComparator.compare(foo, bar) > 0);
+    assertTrue(ByteArrayComparator.compare(bar, foo) < 0);
+  }
+
+  @Test
+  public void testPrefix() {
+    byte[] foo = SafeEncoder.encode("foo");
+    byte[] fooo = SafeEncoder.encode("fooo");
+    assertTrue(ByteArrayComparator.compare(foo, fooo) < 0);
+    assertTrue(ByteArrayComparator.compare(fooo, foo) > 0);
   }
 }

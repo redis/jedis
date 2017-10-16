@@ -13,7 +13,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>com.github.sazzad16</groupId>
     <artifactId>jedis</artifactId>
-    <version>2.9.0</version>
+    <version>2.9.1</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>

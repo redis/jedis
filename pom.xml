@@ -38,6 +38,7 @@
     <connection>scm:git:git://github.com/sazzad16/jedis.git</connection>
     <developerConnection>scm:git:ssh://github.com:sazzad16/jedis.git</developerConnection>
     <url>http://github.com/sazzad16/jedis/tree/master</url>
+    <tag>jedis-2.9.1</tag>
   </scm>
 
   <properties>
@@ -85,8 +86,8 @@
   <distributionManagement>
     <repository>
       <id>github</id>
-      <name>GitHub ${project.artifactId} Repository</name>
-      <url>https://github.com/sazzad16/jedis</url>
+      <name>GitHub jedis Repository</name>
+      <url>https://raw.githubusercontent.com/sazzad16/jedis/mvn-repo</url>
     </repository>
   </distributionManagement>
 

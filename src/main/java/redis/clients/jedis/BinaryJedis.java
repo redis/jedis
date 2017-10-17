@@ -325,6 +325,33 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * This command is very similar to DEL: it removes the specified keys. Just like DEL a key is
+   * ignored if it does not exist. However the command performs the actual memory reclaiming in a
+   * different thread, so it is not blocking, while DEL is. This is where the command name comes
+   * from: the command just unlinks the keys from the keyspace. The actual removal will happen later
+   * asynchronously.
+   * <p>
+   * Time complexity: O(1) for each key removed regardless of its size. Then the command does O(N)
+   * work in a different thread in order to reclaim memory, where N is the number of allocations the
+   * deleted objects where composed of.
+   * @param keys
+   * @return Integer reply: The number of keys that were unlinked
+   */
+  @Override
+  public Long unlink(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.unlink(keys);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long unlink(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.unlink(key);
+    return client.getIntegerReply();
+  }
+
+  /**
    * Return the type of the value stored at key in form of a string. The type can be one of "none",
    * "string", "list", "set". "none" is returned if the key does not exist. Time complexity: O(1)
    * @param key

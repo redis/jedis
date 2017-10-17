@@ -232,6 +232,8 @@ public interface BinaryJedisClusterCommands {
 
   Long del(byte[] key);
 
+  Long unlink(byte[] key);
+
   byte[] echo(byte[] arg);
 
   Long bitcount(byte[] key);

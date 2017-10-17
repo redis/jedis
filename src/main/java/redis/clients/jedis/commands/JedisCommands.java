@@ -240,6 +240,8 @@ public interface JedisCommands {
 
   Long del(String key);
 
+  Long unlink(String key);
+
   String echo(String string);
 
   Long move(String key, int dbIndex);

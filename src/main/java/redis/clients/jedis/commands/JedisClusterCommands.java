@@ -235,6 +235,8 @@ public interface JedisClusterCommands {
 
   Long del(String key);
 
+  Long unlink(String key);
+
   String echo(String string);
 
   Long bitcount(String key);

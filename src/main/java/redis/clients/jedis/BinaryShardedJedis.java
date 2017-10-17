@@ -162,6 +162,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long unlink(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.unlink(key);
+  }
+
+  @Override
   public Long incrBy(final byte[] key, final long integer) {
     Jedis j = getShard(key);
     return j.incrBy(key, integer);

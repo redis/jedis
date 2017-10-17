@@ -23,6 +23,8 @@ public interface Commands {
 
   void del(String... keys);
 
+  void unlink(String... keys);
+
   void type(String key);
 
   void keys(String pattern);

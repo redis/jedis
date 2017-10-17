@@ -33,6 +33,8 @@ public interface JedisClusterCommands {
 
   Long ttl(String key);
 
+  Long pttl(String key);
+
   Long touch(String key);
 
   Boolean setbit(String key, long offset, boolean value);

@@ -338,6 +338,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String psetex(final String key, final long milliseconds, final String value) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.psetex(key, milliseconds, value);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long decrBy(final String key, final long integer) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

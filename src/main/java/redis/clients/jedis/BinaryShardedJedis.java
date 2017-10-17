@@ -138,6 +138,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public String psetex(byte[] key, long milliseconds, byte[] value) {
+    Jedis j = getShard(key);
+    return j.psetex(key, milliseconds, value);
+  }
+
+  @Override
   public Long decrBy(final byte[] key, final long integer) {
     Jedis j = getShard(key);
     return j.decrBy(key, integer);

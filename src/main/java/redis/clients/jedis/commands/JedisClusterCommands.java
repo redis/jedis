@@ -53,6 +53,8 @@ public interface JedisClusterCommands {
 
   String setex(String key, int seconds, String value);
 
+  String psetex(String key, long milliseconds, String value);
+
   Long decrBy(String key, long integer);
 
   Long decr(String key);

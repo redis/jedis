@@ -14,8 +14,6 @@ Or use it as a maven dependency:
     <groupId>com.github.sazzad16</groupId>
     <artifactId>jedis</artifactId>
     <version>2.9.1</version>
-    <type>jar</type>
-    <scope>compile</scope>
 </dependency>
 ```
 

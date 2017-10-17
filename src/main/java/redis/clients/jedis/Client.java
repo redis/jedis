@@ -75,6 +75,15 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void unlink(final String... keys) {
+    final byte[][] bkeys = new byte[keys.length][];
+    for (int i = 0; i < keys.length; i++) {
+      bkeys[i] = SafeEncoder.encode(keys[i]);
+    }
+    unlink(bkeys);
+  }
+
+  @Override
   public void type(final String key) {
     type(SafeEncoder.encode(key));
   }
@@ -107,6 +116,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void ttl(final String key) {
     ttl(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void pttl(final String key) {
+    pttl(SafeEncoder.encode(key));
   }
 
   @Override
@@ -299,7 +313,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void lrem(final String key, long count, final String value) {
+  public void lrem(final String key, final long count, final String value) {
     lrem(SafeEncoder.encode(key), count, SafeEncoder.encode(value));
   }
 
@@ -429,7 +443,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zadd(String key, Map<String, Double> scoreMembers) {
+  public void zadd(final String key, final Map<String, Double> scoreMembers) {
     HashMap<byte[], Double> binaryScoreMembers = convertScoreMembersToBinary(scoreMembers);
     zadd(SafeEncoder.encode(key), binaryScoreMembers);
   }
@@ -456,7 +470,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zincrby(String key, double score, String member, ZIncrByParams params) {
+  public void zincrby(final String key, final double score, final String member, final ZIncrByParams params) {
     zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
   }
 
@@ -584,7 +598,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void zrangeByScore(final String key, final double min, final double max, final int offset,
-      int count) {
+      final int count) {
     zrangeByScore(SafeEncoder.encode(key), toByteArray(min), toByteArray(max), offset, count);
   }
 
@@ -606,7 +620,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void zrangeByScore(final String key, final String min, final String max, final int offset,
-      int count) {
+      final int count) {
     zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max),
       offset, count);
   }
@@ -631,12 +645,12 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void zrevrangeByScore(final String key, final double max, final double min,
-      final int offset, int count) {
+      final int offset, final int count) {
     zrevrangeByScore(SafeEncoder.encode(key), toByteArray(max), toByteArray(min), offset, count);
   }
 
   public void zrevrangeByScore(final String key, final String max, final String min,
-      final int offset, int count) {
+      final int offset, final int count) {
     zrevrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
       offset, count);
   }
@@ -731,11 +745,11 @@ public class Client extends BinaryClient implements Commands {
       count);
   }
 
-  public void zrevrangeByLex(String key, String max, String min) {
+  public void zrevrangeByLex(final String key, final String max, final String min) {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min));
   }
 
-  public void zrevrangeByLex(String key, String max, String min, int offset, int count) {
+  public void zrevrangeByLex(final String key, final String max, final String min, final int offset, final int count) {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
       offset, count);
   }
@@ -776,7 +790,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void brpoplpush(String source, String destination, int timeout) {
+  public void brpoplpush(final String source, final String destination, final int timeout) {
     brpoplpush(SafeEncoder.encode(source), SafeEncoder.encode(destination), timeout);
   }
 
@@ -791,7 +805,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void getbit(String key, long offset) {
+  public void getbit(final String key, final long offset) {
     getbit(SafeEncoder.encode(key), offset);
   }
 
@@ -800,12 +814,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void setrange(String key, long offset, String value) {
+  public void setrange(final String key, final long offset, final String value) {
     setrange(SafeEncoder.encode(key), offset, SafeEncoder.encode(value));
   }
 
   @Override
-  public void getrange(String key, long startOffset, long endOffset) {
+  public void getrange(final String key, final long startOffset, final long endOffset) {
     getrange(SafeEncoder.encode(key), startOffset, endOffset);
   }
 
@@ -845,7 +859,7 @@ public class Client extends BinaryClient implements Commands {
     subscribe(cs);
   }
 
-  public void pubsubChannels(String pattern) {
+  public void pubsubChannels(final String pattern) {
     pubsub(Protocol.PUBSUB_CHANNELS, pattern);
   }
 
@@ -853,29 +867,29 @@ public class Client extends BinaryClient implements Commands {
     pubsub(Protocol.PUBSUB_NUM_PAT);
   }
 
-  public void pubsubNumSub(String... channels) {
+  public void pubsubNumSub(final String... channels) {
     pubsub(Protocol.PUBSUB_NUMSUB, channels);
   }
 
   @Override
-  public void configSet(String parameter, String value) {
+  public void configSet(final String parameter, final String value) {
     configSet(SafeEncoder.encode(parameter), SafeEncoder.encode(value));
   }
 
   @Override
-  public void configGet(String pattern) {
+  public void configGet(final String pattern) {
     configGet(SafeEncoder.encode(pattern));
   }
 
-  public void eval(String script, int keyCount, String... params) {
+  public void eval(final String script, final int keyCount, final String... params) {
     eval(SafeEncoder.encode(script), toByteArray(keyCount), getByteParams(params));
   }
 
-  public void evalsha(String sha1, int keyCount, String... params) {
+  public void evalsha(final String sha1, final int keyCount, final String... params) {
     evalsha(SafeEncoder.encode(sha1), toByteArray(keyCount), getByteParams(params));
   }
 
-  public void scriptExists(String... sha1) {
+  public void scriptExists(final String... sha1) {
     final byte[][] bsha1 = new byte[sha1.length][];
     for (int i = 0; i < bsha1.length; i++) {
       bsha1[i] = SafeEncoder.encode(sha1[i]);
@@ -883,22 +897,22 @@ public class Client extends BinaryClient implements Commands {
     scriptExists(bsha1);
   }
 
-  public void scriptLoad(String script) {
+  public void scriptLoad(final String script) {
     scriptLoad(SafeEncoder.encode(script));
   }
 
   @Override
-  public void objectRefcount(String key) {
+  public void objectRefcount(final String key) {
     objectRefcount(SafeEncoder.encode(key));
   }
 
   @Override
-  public void objectIdletime(String key) {
+  public void objectIdletime(final String key) {
     objectIdletime(SafeEncoder.encode(key));
   }
 
   @Override
-  public void objectEncoding(String key) {
+  public void objectEncoding(final String key) {
     objectEncoding(SafeEncoder.encode(key));
   }
 
@@ -908,12 +922,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void bitcount(final String key, long start, long end) {
+  public void bitcount(final String key, final long start, final long end) {
     bitcount(SafeEncoder.encode(key), start, end);
   }
 
   @Override
-  public void bitop(BitOP op, final String destKey, String... srcKeys) {
+  public void bitop(final BitOP op, final String destKey, final String... srcKeys) {
     bitop(op, SafeEncoder.encode(destKey), getByteParams(srcKeys));
   }
 
@@ -939,10 +953,6 @@ public class Client extends BinaryClient implements Commands {
 
   public void pexpireAt(final String key, final long millisecondsTimestamp) {
     pexpireAt(SafeEncoder.encode(key), millisecondsTimestamp);
-  }
-
-  public void pttl(final String key) {
-    pttl(SafeEncoder.encode(key));
   }
 
   @Override
@@ -972,7 +982,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void hincrByFloat(final String key, final String field, double increment) {
+  public void hincrByFloat(final String key, final String field, final double increment) {
     hincrByFloat(SafeEncoder.encode(key), SafeEncoder.encode(field), increment);
   }
 
@@ -1037,7 +1047,7 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
   }
 
-  public void clusterReset(Reset resetType) {
+  public void clusterReset(final Reset resetType) {
     cluster(Protocol.CLUSTER_RESET, resetType.toString());
   }
 
@@ -1072,7 +1082,7 @@ public class Client extends BinaryClient implements Commands {
       nodeId);
   }
 
-  public void pfadd(String key, final String... elements) {
+  public void pfadd(final String key, final String... elements) {
     pfadd(SafeEncoder.encode(key), SafeEncoder.encodeMany(elements));
   }
 
@@ -1128,45 +1138,45 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
-  public void geoadd(String key, double longitude, double latitude, String member) {
+  public void geoadd(final String key, final double longitude, final double latitude, final String member) {
     geoadd(SafeEncoder.encode(key), longitude, latitude, SafeEncoder.encode(member));
   }
 
-  public void geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+  public void geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     geoadd(SafeEncoder.encode(key), convertMemberCoordinateMapToBinary(memberCoordinateMap));
   }
 
-  public void geodist(String key, String member1, String member2) {
+  public void geodist(final String key, final String member1, final String member2) {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2));
   }
 
-  public void geodist(String key, String member1, String member2, GeoUnit unit) {
+  public void geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
   }
 
-  public void geohash(String key, String... members) {
+  public void geohash(final String key, final String... members) {
     geohash(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
-  public void geopos(String key, String[] members) {
+  public void geopos(final String key, final String[] members) {
     geopos(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
-  public void georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+  public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }
 
-  public void georadius(String key, double longitude, double latitude, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
-  public void georadiusByMember(String key, String member, double radius, GeoUnit unit) {
+  public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
   }
 
-  public void georadiusByMember(String key, String member, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
   }
 
@@ -1178,19 +1188,19 @@ public class Client extends BinaryClient implements Commands {
     return p;
   }
 
-  public void moduleLoad(String path) {
+  public void moduleLoad(final String path) {
     moduleLoad(SafeEncoder.encode(path));
   }
   public void moduleLoad() {
     moduleList();
   }
 
-  public void moduleUnload(String name) {
+  public void moduleUnload(final String name) {
     moduleUnload(SafeEncoder.encode(name));
   }
-  private HashMap<byte[], Double> convertScoreMembersToBinary(Map<String, Double> scoreMembers) {
-    HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
 
+  private HashMap<byte[], Double> convertScoreMembersToBinary(final Map<String, Double> scoreMembers) {
+    HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
     for (Entry<String, Double> entry : scoreMembers.entrySet()) {
       binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
     }
@@ -1198,9 +1208,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(
-      Map<String, GeoCoordinate> memberCoordinateMap) {
+      final Map<String, GeoCoordinate> memberCoordinateMap) {
     HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
-
     for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {
       binaryMemberCoordinateMap.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
     }

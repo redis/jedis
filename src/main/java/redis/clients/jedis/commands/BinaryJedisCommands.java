@@ -29,7 +29,7 @@ public interface BinaryJedisCommands {
 
   Long expire(byte[] key, int seconds);
 
-  Long pexpire(byte[] key, final long milliseconds);
+  Long pexpire(byte[] key, long milliseconds);
 
   Long expireAt(byte[] key, long unixTime);
 
@@ -54,6 +54,8 @@ public interface BinaryJedisCommands {
   Long setnx(byte[] key, byte[] value);
 
   String setex(byte[] key, int seconds, byte[] value);
+
+  String psetex(byte[] key, long milliseconds, byte[] value);
 
   Long decrBy(byte[] key, long integer);
 
@@ -131,7 +133,7 @@ public interface BinaryJedisCommands {
 
   byte[] srandmember(byte[] key);
 
-  List<byte[]> srandmember(final byte[] key, final int count);
+  List<byte[]> srandmember(byte[] key, int count);
 
   Long strlen(byte[] key);
 
@@ -211,19 +213,19 @@ public interface BinaryJedisCommands {
 
   Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
 
-  Long zlexcount(final byte[] key, final byte[] min, final byte[] max);
+  Long zlexcount(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max, int offset,
+  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset,
       int count);
 
-  Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);
+  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, int offset,
+  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset,
       int count);
 
-  Long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+  Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
   Long linsert(byte[] key, BinaryClient.LIST_POSITION where, byte[] pivot, byte[] value);
 
@@ -233,17 +235,19 @@ public interface BinaryJedisCommands {
 
   Long del(byte[] key);
 
+  Long unlink(byte[] key);
+
   byte[] echo(byte[] arg);
 
   Long move(byte[] key, int dbIndex);
 
-  Long bitcount(final byte[] key);
+  Long bitcount(byte[] key);
 
-  Long bitcount(final byte[] key, long start, long end);
+  Long bitcount(byte[] key, long start, long end);
 
-  Long pfadd(final byte[] key, final byte[]... elements);
+  Long pfadd(byte[] key, byte[]... elements);
 
-  long pfcount(final byte[] key);
+  Long pfcount(byte[] key);
 
   // Geo Commands
 
@@ -287,7 +291,7 @@ public interface BinaryJedisCommands {
    * @param key
    * @param arguments
    */
-  List<Long> bitfield(final byte[] key, final byte[]... arguments);
+  List<Long> bitfield(byte[] key, byte[]... arguments);
   
   /**
    * Used for HSTRLEN Redis command
@@ -295,6 +299,6 @@ public interface BinaryJedisCommands {
    * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(final byte[] key, final byte[] field);
+  Long hstrlen(byte[] key, byte[] field);
 
 }

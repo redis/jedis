@@ -523,14 +523,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Integer reply: The number of keys that were touched.
    */
   @Override
-  public Long touch(byte[]... keys) {
+  public Long touch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.touch(keys);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long touch(byte[] key) {
+  public Long touch(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.touch(key);
     return client.getIntegerReply();
@@ -1648,7 +1648,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
+  public Long zadd(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zadd(key, score, member, params);
     return client.getIntegerReply();
@@ -1662,7 +1662,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
+  public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
@@ -1720,7 +1720,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params) {
+  public Double zincrby(final byte[] key, final double score, final byte[] member, final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
     client.zincrby(key, score, member, params);
     String newscore = client.getBulkReply();
@@ -2177,7 +2177,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> blpop(byte[]... args) {
+  public List<byte[]> blpop(final byte[]... args) {
     checkIsInMultiOrPipeline();
     client.blpop(args);
     client.setTimeoutInfinite();
@@ -2189,7 +2189,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> brpop(byte[]... args) {
+  public List<byte[]> brpop(final byte[]... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
     client.setTimeoutInfinite();
@@ -2753,14 +2753,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByLex(key, max, min);
     return SetFromList.of(client.getBinaryMultiBulkReply());
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByLex(key, max, min, offset, count);
     return SetFromList.of(client.getBinaryMultiBulkReply());
@@ -3118,7 +3118,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return the element
    */
   @Override
-  public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
+  public byte[] brpoplpush(final byte[] source, final byte[] destination, final int timeout) {
     client.brpoplpush(source, destination, timeout);
     client.setTimeoutInfinite();
     try {
@@ -3136,14 +3136,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public Boolean setbit(byte[] key, long offset, boolean value) {
+  public Boolean setbit(final byte[] key, final long offset, final boolean value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
     return client.getIntegerReply() == 1;
   }
 
   @Override
-  public Boolean setbit(byte[] key, long offset, byte[] value) {
+  public Boolean setbit(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
     return client.getIntegerReply() == 1;
@@ -3156,7 +3156,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public Boolean getbit(byte[] key, long offset) {
+  public Boolean getbit(final byte[] key, final long offset) {
     checkIsInMultiOrPipeline();
     client.getbit(key, offset);
     return client.getIntegerReply() == 1;
@@ -3173,28 +3173,28 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long setrange(byte[] key, long offset, byte[] value) {
+  public Long setrange(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setrange(key, offset, value);
     return client.getIntegerReply();
   }
 
   @Override
-  public byte[] getrange(byte[] key, long startOffset, long endOffset) {
+  public byte[] getrange(final byte[] key, final long startOffset, final long endOffset) {
     checkIsInMultiOrPipeline();
     client.getrange(key, startOffset, endOffset);
     return client.getBinaryBulkReply();
   }
 
   @Override
-  public Long publish(byte[] channel, byte[] message) {
+  public Long publish(final byte[] channel, final byte[] message) {
     checkIsInMultiOrPipeline();
     client.publish(channel, message);
     return client.getIntegerReply();
   }
 
   @Override
-  public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
+  public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
     client.setTimeoutInfinite();
     try {
       jedisPubSub.proceed(client, channels);
@@ -3204,7 +3204,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
+  public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
     client.setTimeoutInfinite();
     try {
       jedisPubSub.proceedWithPatterns(client, patterns);
@@ -3224,7 +3224,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Script result
    */
   @Override
-  public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+  public Object eval(final byte[] script, final List<byte[]> keys, final List<byte[]> args) {
     return eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
   }
 
@@ -3243,7 +3243,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
+  public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
     client.setTimeoutInfinite();
     try {
       client.eval(script, keyCount, params);
@@ -3254,27 +3254,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Object eval(byte[] script, int keyCount, byte[]... params) {
+  public Object eval(final byte[] script, final int keyCount, final byte[]... params) {
     return eval(script, toByteArray(keyCount), params);
   }
 
   @Override
-  public Object eval(byte[] script) {
+  public Object eval(final byte[] script) {
     return eval(script, 0);
   }
 
   @Override
-  public Object evalsha(byte[] sha1) {
+  public Object evalsha(final byte[] sha1) {
     return evalsha(sha1, 1);
   }
 
   @Override
-  public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+  public Object evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
     return evalsha(sha1, keys.size(), getParamsWithBinary(keys, args));
   }
 
   @Override
-  public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
+  public Object evalsha(final byte[] sha1, final int keyCount, final byte[]... params) {
     client.setTimeoutInfinite();
     try {
       client.evalsha(sha1, keyCount, params);
@@ -3290,7 +3290,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
-  public Long scriptExists(byte[] sha1) {
+  public Long scriptExists(final byte[] sha1) {
     byte[][] a = new byte[1][];
     a[0] = sha1;
     return scriptExists(a).get(0);
@@ -3303,7 +3303,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public byte[] scriptLoad(byte[] script) {
+  public byte[] scriptLoad(final byte[] script) {
     client.scriptLoad(script);
     return client.getBinaryBulkReply();
   }
@@ -3333,25 +3333,25 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary(long entries) {
+  public List<byte[]> slowlogGetBinary(final long entries) {
     client.slowlogGet(entries);
     return client.getBinaryMultiBulkReply();
   }
 
   @Override
-  public Long objectRefcount(byte[] key) {
+  public Long objectRefcount(final byte[] key) {
     client.objectRefcount(key);
     return client.getIntegerReply();
   }
 
   @Override
-  public byte[] objectEncoding(byte[] key) {
+  public byte[] objectEncoding(final byte[] key) {
     client.objectEncoding(key);
     return client.getBinaryBulkReply();
   }
 
   @Override
-  public Long objectIdletime(byte[] key) {
+  public Long objectIdletime(final byte[] key) {
     client.objectIdletime(key);
     return client.getIntegerReply();
   }
@@ -3364,14 +3364,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long bitcount(final byte[] key, long start, long end) {
+  public Long bitcount(final byte[] key, final long start, final long end) {
     checkIsInMultiOrPipeline();
     client.bitcount(key, start, end);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys) {
+  public Long bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
     checkIsInMultiOrPipeline();
     client.bitop(op, destKey, srcKeys);
     return client.getIntegerReply();
@@ -3487,7 +3487,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * the method. Sorry :S
    */
   @Override
-  public Long waitReplicas(int replicas, long timeout) {
+  public Long waitReplicas(final int replicas, final long timeout) {
     checkIsInMultiOrPipeline();
     client.waitReplicas(replicas, timeout);
     return client.getIntegerReply();
@@ -3515,7 +3515,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long pfcount(byte[]... keys) {
+  public Long pfcount(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.pfcount(keys);
     return client.getIntegerReply();
@@ -3591,21 +3591,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
+  public Long geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
     checkIsInMultiOrPipeline();
     client.geoadd(key, longitude, latitude, member);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  public Long geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
     client.geoadd(key, memberCoordinateMap);
     return client.getIntegerReply();
   }
 
   @Override
-  public Double geodist(byte[] key, byte[] member1, byte[] member2) {
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2);
     String dval = client.getBulkReply();
@@ -3613,7 +3613,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2, unit);
     String dval = client.getBulkReply();
@@ -3621,46 +3621,46 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> geohash(byte[] key, byte[]... members) {
+  public List<byte[]> geohash(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
     client.geohash(key, members);
     return client.getBinaryMultiBulkReply();
   }
 
   @Override
-  public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
+  public List<GeoCoordinate> geopos(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
     client.geopos(key, members);
     return BuilderFactory.GEO_COORDINATE_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
-      double radius, GeoUnit unit) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadius(key, longitude, latitude, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude,
-      double radius, GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadius(key, longitude, latitude, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
-      GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius,
-      GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
@@ -3778,14 +3778,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<Long> bitfield(byte[] key, byte[]... arguments) {
+  public List<Long> bitfield(final byte[] key, final byte[]... arguments) {
     checkIsInMultiOrPipeline();
     client.bitfield(key, arguments);
     return client.getIntegerMultiBulkReply();
   }
 
   @Override
-  public Long hstrlen(byte[] key, byte[] field) {
+  public Long hstrlen(final byte[] key, final byte[] field) {
     checkIsInMultiOrPipeline();
     client.hstrlen(key, field);
     return client.getIntegerReply();

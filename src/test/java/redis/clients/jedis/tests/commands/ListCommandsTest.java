@@ -426,9 +426,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
   @Test
   public void blpop() throws InterruptedException {
     List<String> result = jedis.blpop(1, "foo");
-    if(result.isEmpty()){
-      result = null;
-    }
     assertNull(result);
 
     jedis.lpush("foo", "bar");
@@ -453,9 +450,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
   @Test
   public void brpop() throws InterruptedException {
     List<String> result = jedis.brpop(1, "foo");
-    if(result.isEmpty()){
-      result = null;
-    }
     assertNull(result);
 
     jedis.lpush("foo", "bar");

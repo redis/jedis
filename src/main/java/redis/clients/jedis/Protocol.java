@@ -76,6 +76,9 @@ public final class Protocol {
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
 
+  public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
+  public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
+
   private Protocol() {
     // this prevent the class from instantiation
   }
@@ -229,10 +232,13 @@ public final class Protocol {
   }
 
   public static final byte[] toByteArray(final double value) {
-    if (Double.isInfinite(value)) {
-      return value == Double.POSITIVE_INFINITY ? "+inf".getBytes() : "-inf".getBytes();
+    if (value == Double.POSITIVE_INFINITY) {
+      return POSITIVE_INFINITY_BYTES;
+    } else if (value == Double.NEGATIVE_INFINITY) {
+      return NEGATIVE_INFINITY_BYTES;
+    } else {
+      return SafeEncoder.encode(String.valueOf(value));
     }
-    return SafeEncoder.encode(String.valueOf(value));
   }
 
   public static enum Command implements ProtocolCommand {

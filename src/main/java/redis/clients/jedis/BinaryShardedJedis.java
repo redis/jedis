@@ -133,6 +133,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.setex(key, seconds, value);
   }
 
+  public String psetex(byte[] key, long milliseconds, byte[] value) {
+    Jedis j = getShard(key);
+    return j.psetex(key, milliseconds, value);
+  }
+
   public Long decrBy(byte[] key, long integer) {
     Jedis j = getShard(key);
     return j.decrBy(key, integer);

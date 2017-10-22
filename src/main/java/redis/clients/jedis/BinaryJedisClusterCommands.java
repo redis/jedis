@@ -49,6 +49,7 @@ public interface BinaryJedisClusterCommands {
   Long setnx(byte[] key, byte[] value);
 
   String setex(byte[] key, int seconds, byte[] value);
+
   String psetex(byte[] key, long milliseconds, byte[] value);
 
   Long decrBy(byte[] key, long integer);

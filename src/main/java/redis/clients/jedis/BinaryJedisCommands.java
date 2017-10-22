@@ -61,6 +61,8 @@ public interface BinaryJedisCommands {
 
   String setex(byte[] key, int seconds, byte[] value);
 
+  String psetex(byte[] key, long milliseconds, byte[] value);
+
   Long decrBy(byte[] key, long integer);
 
   Long decr(byte[] key);

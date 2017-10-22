@@ -285,30 +285,6 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<Set<Tuple>> TUPLE_ZSET_BINARY = new Builder<Set<Tuple>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<Tuple> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
-      Iterator<byte[]> iterator = l.iterator();
-      while (iterator.hasNext()) {
-        result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
-      }
-
-      return result;
-
-    }
-
-    @Override
-    public String toString() {
-      return "ZSet<Tuple>";
-    }
-  };
-
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
 
     @Override

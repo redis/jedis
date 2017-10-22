@@ -96,7 +96,7 @@ public class BinaryClient extends Connection {
         getStatusCodeReply();
       }
       if (db > 0) {
-        select(Long.valueOf(db).intValue());
+        select(db);
         getStatusCodeReply();
       }
     }

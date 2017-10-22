@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.Arrays;
 
+import redis.clients.util.ByteArrayComparator;
 import redis.clients.util.SafeEncoder;
 
 public class Tuple implements Comparable<Tuple> {
@@ -50,8 +51,14 @@ public class Tuple implements Comparable<Tuple> {
 
   @Override
   public int compareTo(Tuple other) {
-    if (this.score == other.getScore() || Arrays.equals(this.element, other.element)) return 0;
-    else return this.score < other.getScore() ? -1 : 1;
+    return compare(this, other);
+  }
+
+  public static int compare(Tuple t1, Tuple t2) {
+    int compScore = Double.compare(t1.score, t2.score);
+    if(compScore != 0) return compScore;
+
+    return ByteArrayComparator.compare(t1.element, t2.element);
   }
 
   public String getElement() {

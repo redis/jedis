@@ -9,6 +9,7 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -1186,5 +1187,20 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     ScanResult<Tuple> bResult = jedis.zscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  public void infinity() {
+    jedis.zadd("key", Double.POSITIVE_INFINITY, "pos");
+    assertEquals((Double) Double.POSITIVE_INFINITY, jedis.zscore("key", "pos"));
+    jedis.zadd("key", Double.NEGATIVE_INFINITY, "neg");
+    assertEquals((Double) Double.NEGATIVE_INFINITY, jedis.zscore("key", "neg"));
+    jedis.zadd("key", 0f, "zero");
+
+    Set<Tuple> set = jedis.zrangeWithScores("key", 0, -1);
+    Iterator<Tuple> itr = set.iterator();
+    assertEquals(Double.NEGATIVE_INFINITY, itr.next().getScore(), 0f);
+    assertEquals(0f, itr.next().getScore(), 0f);
+    assertEquals(Double.POSITIVE_INFINITY, itr.next().getScore(), 0f);
   }
 }

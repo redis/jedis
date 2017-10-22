@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import org.junit.Test;
 
 import redis.clients.jedis.Tuple;
@@ -53,5 +54,20 @@ public class TupleTest {
     assertEquals(1, t2.compareTo(t1));
     assertFalse(t1.equals(t2));
     assertFalse(t2.equals(t1));
+  }
+
+  @Test
+  public void testSameElement() {
+    Tuple t1 = new Tuple("user1", 10.0);
+    Tuple t2 = new Tuple("user1", 5.0);
+
+    // Intentionally skipping compareTo.
+    assertFalse(t1.equals(t2));
+    assertFalse(t2.equals(t1));
+
+    HashSet<Tuple> hashSet = new HashSet<Tuple>();
+    hashSet.add(t1);
+    hashSet.add(t2);
+    assertEquals(2, hashSet.size());
   }
 }

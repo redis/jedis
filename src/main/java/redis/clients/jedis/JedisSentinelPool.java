@@ -287,6 +287,16 @@ public class JedisSentinelPool extends Pool<Jedis> {
           if (!running.get()) {
             break;
           }
+          
+          /*
+           * Added code for active refresh
+           */
+          List<String> masterAddr = j.sentinelGetMasterAddrByName(masterName);  
+          if (masterAddr == null || masterAddr.size() != 2) {
+            log.warn("Can not get master addr, master name: {}. Sentinel: {}：{}.",masterName,host,port);
+          }else{
+              initPool(toHostAndPort(masterAddr)); 
+          }
 
           j.subscribe(new JedisPubSub() {
             @Override

@@ -25,6 +25,7 @@ import redis.clients.jedis.commands.ModuleCommands;
 import redis.clients.jedis.commands.MultiKeyCommands;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
@@ -2891,6 +2892,33 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.evalsha(sha1, keyCount, params);
     return getEvalResult();
+  }
+
+  @Override
+  public Object smartEval(RedisScriptingRoutine script) {
+    try {
+      return evalsha(script.getDigest());
+    } catch (JedisNoScriptException ex) {
+      return eval(script.getRoutineBody());
+    }
+  }
+
+  @Override
+  public Object smartEval(RedisScriptingRoutine script, List<String> keys, List<String> args) {
+    try {
+      return evalsha(script.getDigest(), keys, args);
+    } catch (JedisNoScriptException ex) {
+      return eval(script.getRoutineBody(), keys, args);
+    }
+  }
+
+  @Override
+  public Object smartEval(RedisScriptingRoutine script, int keyCount, String... params) {
+    try {
+      return evalsha(script.getDigest(), keyCount, params);
+    } catch (JedisNoScriptException ex) {
+      return eval(script.getRoutineBody(), keyCount, params);
+    }
   }
 
   @Override

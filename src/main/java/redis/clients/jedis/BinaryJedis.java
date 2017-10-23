@@ -1815,14 +1815,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrangeWithScores(key, start, stop);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
   public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrevrangeWithScores(key, start, stop);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   /**
@@ -2442,7 +2442,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   /**
@@ -2503,10 +2503,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max, offset, count);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
-  private Set<Tuple> getBinaryTupledSet() {
+  protected Set<Tuple> getTupledSet() {
     List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
@@ -2560,7 +2560,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
@@ -2568,7 +2568,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final byte[] min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   /**

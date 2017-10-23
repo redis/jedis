@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.BinaryJedisCluster.Reset;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 

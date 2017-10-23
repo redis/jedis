@@ -34,7 +34,8 @@ import redis.clients.util.JedisURIHelper;
 import redis.clients.util.SafeEncoder;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
-    AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
+    AdvancedBinaryJedisCommands, BinaryScriptingCommands, ClusterCommands, Closeable {
+
   protected Client client = null;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
@@ -3776,4 +3777,151 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.hstrlen(key, field);
     return client.getIntegerReply();
   }
+
+  @Override
+  public String clusterNodes() {
+    checkIsInMultiOrPipeline();
+    client.clusterNodes();
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String clusterMeet(final String ip, final int port) {
+    checkIsInMultiOrPipeline();
+    client.clusterMeet(ip, port);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterReset(final BinaryJedisCluster.Reset resetType) {
+    checkIsInMultiOrPipeline();
+    client.clusterReset(resetType);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterAddSlots(final int... slots) {
+    checkIsInMultiOrPipeline();
+    client.clusterAddSlots(slots);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterDelSlots(final int... slots) {
+    checkIsInMultiOrPipeline();
+    client.clusterDelSlots(slots);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterInfo() {
+    checkIsInMultiOrPipeline();
+    client.clusterInfo();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public List<String> clusterGetKeysInSlot(final int slot, final int count) {
+    checkIsInMultiOrPipeline();
+    client.clusterGetKeysInSlot(slot, count);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public String clusterSetSlotNode(final int slot, final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterSetSlotNode(slot, nodeId);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterSetSlotMigrating(final int slot, final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterSetSlotMigrating(slot, nodeId);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterSetSlotImporting(final int slot, final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterSetSlotImporting(slot, nodeId);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterSetSlotStable(final int slot) {
+    checkIsInMultiOrPipeline();
+    client.clusterSetSlotStable(slot);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterForget(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterForget(nodeId);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterFlushSlots() {
+    checkIsInMultiOrPipeline();
+    client.clusterFlushSlots();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long clusterKeySlot(final String key) {
+    checkIsInMultiOrPipeline();
+    client.clusterKeySlot(key);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long clusterCountKeysInSlot(final int slot) {
+    checkIsInMultiOrPipeline();
+    client.clusterCountKeysInSlot(slot);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public String clusterSaveConfig() {
+    checkIsInMultiOrPipeline();
+    client.clusterSaveConfig();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterReplicate(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterReplicate(nodeId);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public List<String> clusterSlaves(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterSlaves(nodeId);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public String clusterFailover() {
+    checkIsInMultiOrPipeline();
+    client.clusterFailover();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public List<Object> clusterSlots() {
+    checkIsInMultiOrPipeline();
+    client.clusterSlots();
+    return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public String readonly() {
+    client.readonly();
+    return client.getStatusCodeReply();
+  }
+
 }

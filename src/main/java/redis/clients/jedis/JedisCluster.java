@@ -23,9 +23,6 @@ import redis.clients.util.SafeEncoder;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
-  public static enum Reset {
-    SOFT, HARD
-  }
 
   public JedisCluster(HostAndPort node) {
 	this(Collections.singleton(node), DEFAULT_TIMEOUT);

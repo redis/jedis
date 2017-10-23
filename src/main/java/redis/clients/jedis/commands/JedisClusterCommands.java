@@ -288,4 +288,6 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(final String key, final String field);
+  
+  Object moduleExecute(final String command, final String key, final String... args);
 }

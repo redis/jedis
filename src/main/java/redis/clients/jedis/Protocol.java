@@ -88,7 +88,7 @@ public final class Protocol {
     sendCommand(os, command.getRaw(), args);
   }
 
-  private static void sendCommand(final RedisOutputStream os, final byte[] command,
+  protected static void sendCommand(final RedisOutputStream os, final byte[] command,
       final byte[]... args) {
     try {
       os.write(ASTERISK_BYTE);

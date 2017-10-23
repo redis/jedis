@@ -147,6 +147,34 @@ public class Connection implements Closeable {
       throw ex;
     }
   }
+  
+  public Connection sendCommand(final byte[] cmd, final byte[]... args) {
+    try {
+      connect();
+      Protocol.sendCommand(outputStream, cmd, args);
+      return this;
+    } catch (JedisConnectionException ex) {
+      /*
+       * When client send request which formed by invalid protocol, Redis send back error message
+       * before close connection. We try to read it to provide reason of failure.
+       */
+      try {
+        String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
+        if (errorMessage != null && errorMessage.length() > 0) {
+          ex = new JedisConnectionException(errorMessage, ex.getCause());
+        }
+      } catch (Exception e) {
+        /*
+         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
+         * ignore. This approach is safe because reading error message is optional and connection
+         * will eventually be closed.
+         */
+      }
+      // Any other exceptions related to connection?
+      broken = true;
+      throw ex;
+    }
+  }
 
   public String getHost() {
     return host;

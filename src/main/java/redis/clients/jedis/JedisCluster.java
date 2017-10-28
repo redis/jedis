@@ -19,6 +19,9 @@ import redis.clients.util.SafeEncoder;
 public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
 
+  /**
+   * @deprecated Use {@link ClusterReset} instead.
+   */
   public static enum Reset {
     SOFT, HARD
   }

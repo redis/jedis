@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.List;
 
+import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.JedisCluster.Reset;
 
 public interface ClusterCommands {
@@ -43,7 +44,9 @@ public interface ClusterCommands {
 
   List<Object> clusterSlots();
 
+  @Deprecated
   String clusterReset(Reset resetType);
+  String clusterReset(ClusterReset resetType);
 
   String readonly();
 }

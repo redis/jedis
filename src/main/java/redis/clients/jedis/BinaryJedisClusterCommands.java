@@ -224,7 +224,9 @@ public interface BinaryJedisClusterCommands {
 
   Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
+  @Deprecated
   Long linsert(byte[] key, Client.LIST_POSITION where, byte[] pivot, byte[] value);
+  Long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
   Long lpushx(byte[] key, byte[]... arg);
 

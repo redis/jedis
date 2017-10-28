@@ -20,7 +20,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -3147,7 +3146,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot,
+  public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot,
       final byte[] value) {
     checkIsInMultiOrPipeline();
     client.linsert(key, where, pivot, value);

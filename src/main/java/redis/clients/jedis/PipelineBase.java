@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.RedisPipeline;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
@@ -417,13 +416,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> linsert(final String key, final LIST_POSITION where, final String pivot, final String value) {
+  public Response<Long> linsert(final String key, final ListPosition where, final String pivot, final String value) {
     getClient(key).linsert(key, where, pivot, value);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot, final byte[] value) {
+  public Response<Long> linsert(final byte[] key, final ListPosition where, final byte[] pivot, final byte[] value) {
     getClient(key).linsert(key, where, pivot, value);
     return getResponse(BuilderFactory.LONG);
   }

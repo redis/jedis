@@ -76,7 +76,7 @@ public interface RedisPipeline {
 
   Response<String> lindex(String key, long index);
 
-  Response<Long> linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value);
+  Response<Long> linsert(String key, ListPosition where, String pivot, String value);
 
   Response<Long> llen(String key);
 

@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -1197,7 +1196,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long linsert(final String key, final LIST_POSITION where, final String pivot,
+  public Long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

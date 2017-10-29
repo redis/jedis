@@ -159,6 +159,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zcount(byte[] key, double min, double max);
 
+  Response<Long> zcount(byte[] key, byte[] min, byte[] max);
+
   Response<Double> zincrby(byte[] key, double increment, byte[] member);
 
   Response<Double> zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params);

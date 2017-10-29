@@ -900,6 +900,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> zcount(final String key, final String min, final String max) {
     getClient(key).zcount(key, min, max);
     return getResponse(BuilderFactory.LONG);
@@ -911,6 +912,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> zcount(final byte[] key, final byte[] min, final byte[] max) {
     getClient(key).zcount(key, min, max);
     return getResponse(BuilderFactory.LONG);

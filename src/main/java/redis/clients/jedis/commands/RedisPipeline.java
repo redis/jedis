@@ -227,7 +227,7 @@ public interface RedisPipeline {
   Response<Set<String>> zrevrangeByLex(String key, String max, String min,
       int offset, int count);
 
-  Response<Long> zremrangeByLex(String key, String start, String end);
+  Response<Long> zremrangeByLex(String key, String min, String max);
 
   Response<Long> bitcount(String key);
 

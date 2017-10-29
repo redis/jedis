@@ -63,7 +63,7 @@ public interface BinaryJedisCommands {
 
   Long decr(byte[] key);
 
-  Long incrBy(byte[] key, long integer);
+  Long incrBy(byte[] key, long increment);
 
   Double incrByFloat(byte[] key, double value);
 

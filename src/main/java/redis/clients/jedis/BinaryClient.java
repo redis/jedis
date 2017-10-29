@@ -237,8 +237,8 @@ public class BinaryClient extends Connection {
     sendCommand(DECR, key);
   }
 
-  public void incrBy(final byte[] key, final long integer) {
-    sendCommand(INCRBY, key, toByteArray(integer));
+  public void incrBy(final byte[] key, final long increment) {
+    sendCommand(INCRBY, key, toByteArray(increment));
   }
 
   public void incrByFloat(final byte[] key, final double value) {

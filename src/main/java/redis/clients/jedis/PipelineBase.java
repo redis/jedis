@@ -383,14 +383,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> incrBy(final String key, final long integer) {
-    getClient(key).incrBy(key, integer);
+  public Response<Long> incrBy(final String key, final long increment) {
+    getClient(key).incrBy(key, increment);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> incrBy(final byte[] key, final long integer) {
-    getClient(key).incrBy(key, integer);
+  public Response<Long> incrBy(final byte[] key, final long increment) {
+    getClient(key).incrBy(key, increment);
     return getResponse(BuilderFactory.LONG);
   }
 

@@ -70,7 +70,7 @@ public interface RedisPipeline {
 
   Response<Long> incr(String key);
 
-  Response<Long> incrBy(String key, long integer);
+  Response<Long> incrBy(String key, long increment);
 
   Response<String> lindex(String key, long index);
 

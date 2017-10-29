@@ -185,8 +185,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void incrBy(final String key, final long integer) {
-    incrBy(SafeEncoder.encode(key), integer);
+  public void incrBy(final String key, final long increment) {
+    incrBy(SafeEncoder.encode(key), increment);
   }
 
   @Override

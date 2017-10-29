@@ -616,13 +616,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see #decr(String)
    * @see #decrBy(String, long)
    * @param key
-   * @param integer
+   * @param increment
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Long incrBy(final String key, final long integer) {
+  public Long incrBy(final String key, final long increment) {
     checkIsInMultiOrPipeline();
-    client.incrBy(key, integer);
+    client.incrBy(key, increment);
     return client.getIntegerReply();
   }
 

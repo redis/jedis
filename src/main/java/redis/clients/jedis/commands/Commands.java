@@ -71,7 +71,7 @@ public interface Commands {
 
   void decr(String key);
 
-  void incrBy(String key, long integer);
+  void incrBy(String key, long increment);
 
   void incrByFloat(String key, double value);
 

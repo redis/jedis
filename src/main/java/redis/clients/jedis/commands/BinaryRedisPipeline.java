@@ -71,7 +71,7 @@ public interface BinaryRedisPipeline {
 
   Response<Long> incr(byte[] key);
 
-  Response<Long> incrBy(byte[] key, long integer);
+  Response<Long> incrBy(byte[] key, long increment);
 
   Response<byte[]> lindex(byte[] key, long index);
 

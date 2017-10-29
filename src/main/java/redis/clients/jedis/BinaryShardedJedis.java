@@ -634,9 +634,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long zremrangeByRank(final byte[] key, final long start, final long end) {
+  public Long zremrangeByRank(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zremrangeByRank(key, start, end);
+    return j.zremrangeByRank(key, start, stop);
   }
 
   @Override

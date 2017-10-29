@@ -207,7 +207,7 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zrem(byte[] key, byte[]... member);
 
-  Response<Long> zremrangeByRank(byte[] key, long start, long end);
+  Response<Long> zremrangeByRank(byte[] key, long start, long stop);
 
   Response<Long> zremrangeByScore(byte[] key, double start, double end);
 

@@ -1070,11 +1070,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long zremrangeByRank(final byte[] key, final long start, final long end) {
+  public Long zremrangeByRank(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByRank(key, start, end);
+        return connection.zremrangeByRank(key, start, stop);
       }
     }.runBinary(key);
   }

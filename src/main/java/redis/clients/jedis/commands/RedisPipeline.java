@@ -190,7 +190,7 @@ public interface RedisPipeline {
 
   Response<Long> zrem(String key, String... member);
 
-  Response<Long> zremrangeByRank(String key, long start, long end);
+  Response<Long> zremrangeByRank(String key, long start, long stop);
 
   Response<Long> zremrangeByScore(String key, double start, double end);
 

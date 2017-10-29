@@ -203,7 +203,7 @@ public interface JedisClusterCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
-  Long zremrangeByRank(String key, long start, long end);
+  Long zremrangeByRank(String key, long start, long stop);
 
   Long zremrangeByScore(String key, double start, double end);
 

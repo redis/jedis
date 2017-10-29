@@ -676,8 +676,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zremrangeByRank(final String key, final long start, final long end) {
-    zremrangeByRank(SafeEncoder.encode(key), start, end);
+  public void zremrangeByRank(final String key, final long start, final long stop) {
+    zremrangeByRank(SafeEncoder.encode(key), start, stop);
   }
 
   @Override

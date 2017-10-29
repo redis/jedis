@@ -243,7 +243,7 @@ public interface Commands {
   void zrevrangeByScoreWithScores(String key, String max, String min,
       int offset, int count);
 
-  void zremrangeByRank(String key, long start, long end);
+  void zremrangeByRank(String key, long start, long stop);
 
   void zremrangeByScore(String key, double start, double end);
 

@@ -1189,14 +1189,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zremrangeByRank(final String key, final long start, final long end) {
-    getClient(key).zremrangeByRank(key, start, end);
+  public Response<Long> zremrangeByRank(final String key, final long start, final long stop) {
+    getClient(key).zremrangeByRank(key, start, stop);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> zremrangeByRank(final byte[] key, final long start, final long end) {
-    getClient(key).zremrangeByRank(key, start, end);
+  public Response<Long> zremrangeByRank(final byte[] key, final long start, final long stop) {
+    getClient(key).zremrangeByRank(key, start, stop);
     return getResponse(BuilderFactory.LONG);
   }
 

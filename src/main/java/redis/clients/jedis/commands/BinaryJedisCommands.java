@@ -209,7 +209,7 @@ public interface BinaryJedisCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Long zremrangeByRank(byte[] key, long start, long end);
+  Long zremrangeByRank(byte[] key, long start, long stop);
 
   Long zremrangeByScore(byte[] key, double start, double end);
 

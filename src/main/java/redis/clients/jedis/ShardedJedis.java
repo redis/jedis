@@ -674,9 +674,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zremrangeByRank(final String key, final long start, final long end) {
+  public Long zremrangeByRank(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zremrangeByRank(key, start, end);
+    return j.zremrangeByRank(key, start, stop);
   }
 
   @Override

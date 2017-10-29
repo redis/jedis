@@ -2586,9 +2586,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * and M the number of elements removed by the operation
    */
   @Override
-  public Long zremrangeByRank(final byte[] key, final long start, final long end) {
+  public Long zremrangeByRank(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.zremrangeByRank(key, start, end);
+    client.zremrangeByRank(key, start, stop);
     return client.getIntegerReply();
   }
 

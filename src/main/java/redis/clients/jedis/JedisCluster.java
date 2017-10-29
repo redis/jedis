@@ -789,11 +789,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zrem(final String key, final String... member) {
+  public Long zrem(final String key, final String... members) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zrem(key, member);
+        return connection.zrem(key, members);
       }
     }.run(key);
   }

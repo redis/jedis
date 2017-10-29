@@ -1184,14 +1184,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zrem(final String key, final String... member) {
-    getClient(key).zrem(key, member);
+  public Response<Long> zrem(final String key, final String... members) {
+    getClient(key).zrem(key, members);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> zrem(final byte[] key, final byte[]... member) {
-    getClient(key).zrem(key, member);
+  public Response<Long> zrem(final byte[] key, final byte[]... members) {
+    getClient(key).zrem(key, members);
     return getResponse(BuilderFactory.LONG);
   }
 

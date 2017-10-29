@@ -761,11 +761,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long zrem(final byte[] key, final byte[]... member) {
+  public Long zrem(final byte[] key, final byte[]... members) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zrem(key, member);
+        return connection.zrem(key, members);
       }
     }.runBinary(key);
   }

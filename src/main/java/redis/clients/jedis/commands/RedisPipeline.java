@@ -199,7 +199,7 @@ public interface RedisPipeline {
 
   Response<Long> zrank(String key, String member);
 
-  Response<Long> zrem(String key, String... member);
+  Response<Long> zrem(String key, String... members);
 
   Response<Long> zremrangeByRank(String key, long start, long stop);
 

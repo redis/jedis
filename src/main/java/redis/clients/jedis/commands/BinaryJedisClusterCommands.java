@@ -146,7 +146,7 @@ public interface BinaryJedisClusterCommands {
 
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
-  Long zrem(byte[] key, byte[]... member);
+  Long zrem(byte[] key, byte[]... members);
 
   Double zincrby(byte[] key, double increment, byte[] member);
 

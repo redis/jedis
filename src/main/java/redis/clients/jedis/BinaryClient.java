@@ -456,8 +456,8 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
-  public void zrange(final byte[] key, final long start, final long end) {
-    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));
+  public void zrange(final byte[] key, final long start, final long stop) {
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
   public void zrem(final byte[] key, final byte[]... members) {
@@ -486,8 +486,8 @@ public class BinaryClient extends Connection {
     sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
   }
 
-  public void zrangeWithScores(final byte[] key, final long start, final long end) {
-    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end), WITHSCORES.raw);
+  public void zrangeWithScores(final byte[] key, final long start, final long stop) {
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
   }
 
   public void zrevrangeWithScores(final byte[] key, final long start, final long end) {

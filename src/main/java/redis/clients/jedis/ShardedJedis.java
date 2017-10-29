@@ -484,9 +484,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<String> zrange(final String key, final long start, final long end) {
+  public Set<String> zrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrange(key, start, end);
+    return j.zrange(key, start, stop);
   }
 
   @Override
@@ -526,9 +526,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final String key, final long start, final long end) {
+  public Set<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrangeWithScores(key, start, end);
+    return j.zrangeWithScores(key, start, stop);
   }
 
   @Override

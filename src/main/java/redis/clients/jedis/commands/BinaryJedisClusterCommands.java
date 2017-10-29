@@ -144,7 +144,7 @@ public interface BinaryJedisClusterCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
-  Set<byte[]> zrange(byte[] key, long start, long end);
+  Set<byte[]> zrange(byte[] key, long start, long stop);
 
   Long zrem(byte[] key, byte[]... member);
 
@@ -158,7 +158,7 @@ public interface BinaryJedisClusterCommands {
 
   Set<byte[]> zrevrange(byte[] key, long start, long end);
 
-  Set<Tuple> zrangeWithScores(byte[] key, long start, long end);
+  Set<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
   Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end);
 

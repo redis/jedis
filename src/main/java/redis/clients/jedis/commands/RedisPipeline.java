@@ -160,7 +160,7 @@ public interface RedisPipeline {
 
   Response<Double> zincrby(String key, double score, String member, ZIncrByParams params);
 
-  Response<Set<String>> zrange(String key, long start, long end);
+  Response<Set<String>> zrange(String key, long start, long stop);
 
   Response<Set<String>> zrangeByScore(String key, double min, double max);
 
@@ -184,7 +184,7 @@ public interface RedisPipeline {
   Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset,
       int count);
 
-  Response<Set<Tuple>> zrangeWithScores(String key, long start, long end);
+  Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop);
 
   Response<Long> zrank(String key, String member);
 

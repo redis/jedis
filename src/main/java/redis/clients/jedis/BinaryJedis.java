@@ -750,13 +750,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #decr(byte[])
    * @see #incrBy(byte[], long)
    * @param key
-   * @param integer
+   * @param decrement
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Long decrBy(final byte[] key, final long integer) {
+  public Long decrBy(final byte[] key, final long decrement) {
     checkIsInMultiOrPipeline();
-    client.decrBy(key, integer);
+    client.decrBy(key, decrement);
     return client.getIntegerReply();
   }
 

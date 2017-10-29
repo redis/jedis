@@ -19,7 +19,7 @@ public interface BinaryRedisPipeline {
 
   Response<Long> decr(byte[] key);
 
-  Response<Long> decrBy(byte[] key, long integer);
+  Response<Long> decrBy(byte[] key, long decrement);
 
   Response<Long> del(byte[] keys);
 

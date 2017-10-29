@@ -348,11 +348,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long decrBy(final String key, final long integer) {
+  public Long decrBy(final String key, final long decrement) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.decrBy(key, integer);
+        return connection.decrBy(key, decrement);
       }
     }.run(key);
   }

@@ -18,7 +18,7 @@ public interface RedisPipeline {
 
   Response<Long> decr(String key);
 
-  Response<Long> decrBy(String key, long integer);
+  Response<Long> decrBy(String key, long decrement);
 
   Response<Long> del(String key);
 

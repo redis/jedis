@@ -175,8 +175,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void decrBy(final String key, final long integer) {
-    decrBy(SafeEncoder.encode(key), integer);
+  public void decrBy(final String key, final long decrement) {
+    decrBy(SafeEncoder.encode(key), decrement);
   }
 
   @Override

@@ -150,9 +150,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long decrBy(final byte[] key, final long integer) {
+  public Long decrBy(final byte[] key, final long decrement) {
     Jedis j = getShard(key);
-    return j.decrBy(key, integer);
+    return j.decrBy(key, decrement);
   }
 
   @Override

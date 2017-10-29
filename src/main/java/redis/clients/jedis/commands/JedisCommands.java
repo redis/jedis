@@ -58,7 +58,7 @@ public interface JedisCommands {
 
   String psetex(String key, long milliseconds, String value);
 
-  Long decrBy(String key, long integer);
+  Long decrBy(String key, long decrement);
 
   Long decr(String key);
 

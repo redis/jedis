@@ -67,7 +67,7 @@ public interface Commands {
 
   void msetnx(String... keysvalues);
 
-  void decrBy(String key, long integer);
+  void decrBy(String key, long decrement);
 
   void decr(String key);
 

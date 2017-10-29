@@ -229,8 +229,8 @@ public class BinaryClient extends Connection {
     sendCommand(MSETNX, keysvalues);
   }
 
-  public void decrBy(final byte[] key, final long integer) {
-    sendCommand(DECRBY, key, toByteArray(integer));
+  public void decrBy(final byte[] key, final long decrement) {
+    sendCommand(DECRBY, key, toByteArray(decrement));
   }
 
   public void decr(final byte[] key) {

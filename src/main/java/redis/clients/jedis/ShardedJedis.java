@@ -184,9 +184,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long decrBy(final String key, final long integer) {
+  public Long decrBy(final String key, final long decrement) {
     Jedis j = getShard(key);
-    return j.decrBy(key, integer);
+    return j.decrBy(key, decrement);
   }
 
   @Override

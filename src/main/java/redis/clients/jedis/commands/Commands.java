@@ -39,9 +39,9 @@ public interface Commands {
 
   void ttl(String key);
 
-  void pttl(final String key);
+  void pttl(String key);
 
-  void touch(final String... keys);
+  void touch(String... keys);
 
   void setbit(String key, long offset, boolean value);
 
@@ -215,6 +215,8 @@ public interface Commands {
 
   void zrangeByScore(String key, double min, double max, int offset,
       int count);
+
+  void zrangeByScore(String key, String min, String max, int offset, int count);
 
   void zrangeByScoreWithScores(String key, double min, double max);
 

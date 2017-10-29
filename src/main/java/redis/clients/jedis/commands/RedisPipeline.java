@@ -168,6 +168,8 @@ public interface RedisPipeline {
 
   Response<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count);
 
+  Response<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count);
+
   Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max);
 
   Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset,

@@ -614,6 +614,7 @@ public class Client extends BinaryClient implements Commands {
     zrevrangeByScore(SafeEncoder.encode(key), toByteArray(max), toByteArray(min));
   }
 
+  @Override
   public void zrangeByScore(final String key, final String min, final String max, final int offset,
       final int count) {
     zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max),

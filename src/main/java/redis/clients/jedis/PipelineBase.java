@@ -982,6 +982,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
+  @Override
   public Response<Set<String>> zrangeByScore(final String key, final String min, final String max, final int offset,
       final int count) {
     getClient(key).zrangeByScore(key, min, max, offset, count);

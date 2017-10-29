@@ -1231,26 +1231,26 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<String>> zrevrange(final String key, final long start, final long end) {
-    getClient(key).zrevrange(key, start, end);
+  public Response<Set<String>> zrevrange(final String key, final long start, final long stop) {
+    getClient(key).zrevrange(key, start, stop);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrange(final byte[] key, final long start, final long end) {
-    getClient(key).zrevrange(key, start, end);
+  public Response<Set<byte[]>> zrevrange(final byte[] key, final long start, final long stop) {
+    getClient(key).zrevrange(key, start, stop);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeWithScores(final String key, final long start, final long end) {
-    getClient(key).zrevrangeWithScores(key, start, end);
+  public Response<Set<Tuple>> zrevrangeWithScores(final String key, final long start, final long stop) {
+    getClient(key).zrevrangeWithScores(key, start, stop);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeWithScores(final byte[] key, final long start, final long end) {
-    getClient(key).zrevrangeWithScores(key, start, end);
+  public Response<Set<Tuple>> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
+    getClient(key).zrevrangeWithScores(key, start, stop);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 

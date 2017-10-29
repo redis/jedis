@@ -215,9 +215,9 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zremrangeByScore(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<byte[]>> zrevrange(byte[] key, long start, long end);
+  Response<Set<byte[]>> zrevrange(byte[] key, long start, long stop);
 
-  Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long end);
+  Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop);
 
   Response<Long> zrevrank(byte[] key, byte[] member);
 

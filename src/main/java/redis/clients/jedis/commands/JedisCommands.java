@@ -158,11 +158,11 @@ public interface JedisCommands {
 
   Long zrevrank(String key, String member);
 
-  Set<String> zrevrange(String key, long start, long end);
+  Set<String> zrevrange(String key, long start, long stop);
 
   Set<Tuple> zrangeWithScores(String key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(String key, long start, long end);
+  Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
   Long zcard(String key);
 

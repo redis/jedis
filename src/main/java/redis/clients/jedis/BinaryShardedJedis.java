@@ -480,9 +480,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrevrange(final byte[] key, final long start, final long end) {
+  public Set<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrevrange(key, start, end);
+    return j.zrevrange(key, start, stop);
   }
 
   @Override
@@ -492,9 +492,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long end) {
+  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrevrangeWithScores(key, start, end);
+    return j.zrevrangeWithScores(key, start, stop);
   }
 
   @Override

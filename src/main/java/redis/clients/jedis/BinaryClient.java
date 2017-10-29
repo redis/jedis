@@ -482,16 +482,16 @@ public class BinaryClient extends Connection {
     sendCommand(ZREVRANK, key, member);
   }
 
-  public void zrevrange(final byte[] key, final long start, final long end) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
+  public void zrevrange(final byte[] key, final long start, final long stop) {
+    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
   public void zrangeWithScores(final byte[] key, final long start, final long stop) {
     sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
   }
 
-  public void zrevrangeWithScores(final byte[] key, final long start, final long end) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end), WITHSCORES.raw);
+  public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
+    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
   }
 
   public void zcard(final byte[] key) {

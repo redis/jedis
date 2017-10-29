@@ -159,11 +159,11 @@ public interface BinaryJedisCommands {
 
   Long zrevrank(byte[] key, byte[] member);
 
-  Set<byte[]> zrevrange(byte[] key, long start, long end);
+  Set<byte[]> zrevrange(byte[] key, long start, long stop);
 
   Set<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end);
+  Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
   Long zcard(byte[] key);
 

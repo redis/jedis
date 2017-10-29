@@ -207,9 +207,9 @@ public interface RedisPipeline {
 
   Response<Long> zremrangeByScore(String key, String min, String max);
 
-  Response<Set<String>> zrevrange(String key, long start, long end);
+  Response<Set<String>> zrevrange(String key, long start, long stop);
 
-  Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long end);
+  Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long stop);
 
   Response<Long> zrevrank(String key, String member);
 

@@ -179,11 +179,11 @@ public interface Commands {
 
   void zrevrank(String key, String member);
 
-  void zrevrange(String key, long start, long end);
+  void zrevrange(String key, long start, long stop);
 
   void zrangeWithScores(String key, long start, long stop);
 
-  void zrevrangeWithScores(String key, long start, long end);
+  void zrevrangeWithScores(String key, long start, long stop);
 
   void zcard(String key);
 

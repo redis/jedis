@@ -181,6 +181,8 @@ public interface RedisPipeline {
 
   Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count);
 
+  Response<Set<String>> zrevrangeByScore(String key, String max, String min, int offset, int count);
+
   Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min);
 
   Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset,

@@ -235,6 +235,8 @@ public interface Commands {
   void zrevrangeByScore(String key, double max, double min, int offset,
       int count);
 
+  void zrevrangeByScore(String key, String max, String min, int offset, int count);
+
   void zrevrangeByScoreWithScores(String key, double max, double min);
 
   void zrevrangeByScoreWithScores(String key, double max, double min,

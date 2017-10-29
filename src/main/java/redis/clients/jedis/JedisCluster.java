@@ -799,22 +799,22 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Double zincrby(final String key, final double score, final String member) {
+  public Double zincrby(final String key, final double increment, final String member) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.zincrby(key, score, member);
+        return connection.zincrby(key, increment, member);
       }
     }.run(key);
   }
 
   @Override
-  public Double zincrby(final String key, final double score, final String member,
+  public Double zincrby(final String key, final double increment, final String member,
       final ZIncrByParams params) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.zincrby(key, score, member, params);
+        return connection.zincrby(key, increment, member, params);
       }
     }.run(key);
   }

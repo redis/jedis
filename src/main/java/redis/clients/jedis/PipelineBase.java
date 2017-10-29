@@ -917,26 +917,26 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Double> zincrby(final String key, final double score, final String member) {
-    getClient(key).zincrby(key, score, member);
+  public Response<Double> zincrby(final String key, final double increment, final String member) {
+    getClient(key).zincrby(key, increment, member);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
   @Override
-  public Response<Double> zincrby(final String key, final double score, final String member, ZIncrByParams params) {
-    getClient(key).zincrby(key, score, member, params);
+  public Response<Double> zincrby(final String key, final double increment, final String member, ZIncrByParams params) {
+    getClient(key).zincrby(key, increment, member, params);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
   @Override
-  public Response<Double> zincrby(final byte[] key, final double score, final byte[] member) {
-    getClient(key).zincrby(key, score, member);
+  public Response<Double> zincrby(final byte[] key, final double increment, final byte[] member) {
+    getClient(key).zincrby(key, increment, member);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
   @Override
-  public Response<Double> zincrby(final byte[] key, final double score, final byte[] member, ZIncrByParams params) {
-    getClient(key).zincrby(key, score, member);
+  public Response<Double> zincrby(final byte[] key, final double increment, final byte[] member, ZIncrByParams params) {
+    getClient(key).zincrby(key, increment, member);
     return getResponse(BuilderFactory.DOUBLE);
   }
 

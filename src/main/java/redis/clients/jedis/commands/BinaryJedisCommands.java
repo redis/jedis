@@ -151,9 +151,9 @@ public interface BinaryJedisCommands {
 
   Long zrem(byte[] key, byte[]... member);
 
-  Double zincrby(byte[] key, double score, byte[] member);
+  Double zincrby(byte[] key, double increment, byte[] member);
 
-  Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params);
+  Double zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params);
 
   Long zrank(byte[] key, byte[] member);
 

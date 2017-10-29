@@ -171,9 +171,9 @@ public interface Commands {
 
   void zrem(String key, String... members);
 
-  void zincrby(String key, double score, String member);
+  void zincrby(String key, double increment, String member);
 
-  void zincrby(String key, double score, String member, ZIncrByParams params);
+  void zincrby(String key, double increment, String member, ZIncrByParams params);
 
   void zrank(String key, String member);
 

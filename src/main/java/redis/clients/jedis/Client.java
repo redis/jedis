@@ -460,13 +460,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zincrby(final String key, final double score, final String member) {
-    zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
+  public void zincrby(final String key, final double increment, final String member) {
+    zincrby(SafeEncoder.encode(key), increment, SafeEncoder.encode(member));
   }
 
   @Override
-  public void zincrby(final String key, final double score, final String member, final ZIncrByParams params) {
-    zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
+  public void zincrby(final String key, final double increment, final String member, final ZIncrByParams params) {
+    zincrby(SafeEncoder.encode(key), increment, SafeEncoder.encode(member), params);
   }
 
   @Override

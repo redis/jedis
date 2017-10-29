@@ -464,14 +464,14 @@ public class BinaryClient extends Connection {
     sendCommand(ZREM, joinParameters(key, members));
   }
 
-  public void zincrby(final byte[] key, final double score, final byte[] member) {
-    sendCommand(ZINCRBY, key, toByteArray(score), member);
+  public void zincrby(final byte[] key, final double increment, final byte[] member) {
+    sendCommand(ZINCRBY, key, toByteArray(increment), member);
   }
 
-  public void zincrby(final byte[] key, final double score, final byte[] member,
+  public void zincrby(final byte[] key, final double increment, final byte[] member,
       final ZIncrByParams params) {
     // Note that it actually calls ZADD with INCR option, so it requires Redis 3.0.2 or upper.
-    sendCommand(ZADD, params.getByteParams(key, toByteArray(score), member));
+    sendCommand(ZADD, params.getByteParams(key, toByteArray(increment), member));
   }
 
   public void zrank(final byte[] key, final byte[] member) {

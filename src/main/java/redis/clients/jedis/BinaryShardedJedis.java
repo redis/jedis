@@ -456,15 +456,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member) {
     Jedis j = getShard(key);
-    return j.zincrby(key, score, member);
+    return j.zincrby(key, increment, member);
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member, ZIncrByParams params) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member, ZIncrByParams params) {
     Jedis j = getShard(key);
-    return j.zincrby(key, score, member, params);
+    return j.zincrby(key, increment, member, params);
   }
 
   @Override

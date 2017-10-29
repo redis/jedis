@@ -771,22 +771,22 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.zincrby(key, score, member);
+        return connection.zincrby(key, increment, member);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member,
+  public Double zincrby(final byte[] key, final double increment, final byte[] member,
       final ZIncrByParams params) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.zincrby(key, score, member, params);
+        return connection.zincrby(key, increment, member, params);
       }
     }.runBinary(key);
   }

@@ -156,9 +156,9 @@ public interface RedisPipeline {
 
   Response<Long> zcount(String key, double min, double max);
 
-  Response<Double> zincrby(String key, double score, String member);
+  Response<Double> zincrby(String key, double increment, String member);
 
-  Response<Double> zincrby(String key, double score, String member, ZIncrByParams params);
+  Response<Double> zincrby(String key, double increment, String member, ZIncrByParams params);
 
   Response<Set<String>> zrange(String key, long start, long stop);
 

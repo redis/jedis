@@ -145,9 +145,9 @@ public interface JedisClusterCommands {
 
   Long zrem(String key, String... member);
 
-  Double zincrby(String key, double score, String member);
+  Double zincrby(String key, double increment, String member);
 
-  Double zincrby(String key, double score, String member, ZIncrByParams params);
+  Double zincrby(String key, double increment, String member, ZIncrByParams params);
 
   Long zrank(String key, String member);
 

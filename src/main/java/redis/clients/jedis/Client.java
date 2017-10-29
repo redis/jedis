@@ -683,13 +683,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zremrangeByScore(final String key, final double start, final double end) {
-    zremrangeByScore(SafeEncoder.encode(key), toByteArray(start), toByteArray(end));
+  public void zremrangeByScore(final String key, final double min, final double max) {
+    zremrangeByScore(SafeEncoder.encode(key), toByteArray(min), toByteArray(max));
   }
 
   @Override
-  public void zremrangeByScore(final String key, final String start, final String end) {
-    zremrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(end));
+  public void zremrangeByScore(final String key, final String min, final String max) {
+    zremrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
   }
 
   @Override

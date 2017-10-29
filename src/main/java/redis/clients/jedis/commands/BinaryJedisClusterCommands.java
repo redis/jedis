@@ -208,9 +208,9 @@ public interface BinaryJedisClusterCommands {
 
   Long zremrangeByRank(byte[] key, long start, long stop);
 
-  Long zremrangeByScore(byte[] key, double start, double end);
+  Long zremrangeByScore(byte[] key, double min, double max);
 
-  Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
+  Long zremrangeByScore(byte[] key, byte[] min, byte[] max);
 
   Long zlexcount(byte[] key, byte[] min, byte[] max);
 

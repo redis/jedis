@@ -205,9 +205,9 @@ public interface JedisClusterCommands {
 
   Long zremrangeByRank(String key, long start, long stop);
 
-  Long zremrangeByScore(String key, double start, double end);
+  Long zremrangeByScore(String key, double min, double max);
 
-  Long zremrangeByScore(String key, String start, String end);
+  Long zremrangeByScore(String key, String min, String max);
 
   Long zlexcount(String key, String min, String max);
 

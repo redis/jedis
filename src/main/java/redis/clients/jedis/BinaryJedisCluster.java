@@ -1080,21 +1080,21 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final double start, final double end) {
+  public Long zremrangeByScore(final byte[] key, final double min, final double max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, start, end);
+        return connection.zremrangeByScore(key, min, max);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
+  public Long zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, start, end);
+        return connection.zremrangeByScore(key, min, max);
       }
     }.runBinary(key);
   }

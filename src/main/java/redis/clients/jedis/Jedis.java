@@ -2359,21 +2359,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements removed by the operation
    * @param key
-   * @param start
-   * @param end
+   * @param min
+   * @param max
    * @return Integer reply, specifically the number of elements removed.
    */
   @Override
-  public Long zremrangeByScore(final String key, final double start, final double end) {
+  public Long zremrangeByScore(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    client.zremrangeByScore(key, start, end);
+    client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final String start, final String end) {
+  public Long zremrangeByScore(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    client.zremrangeByScore(key, start, end);
+    client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
   }
 

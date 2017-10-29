@@ -203,7 +203,9 @@ public interface RedisPipeline {
 
   Response<Long> zremrangeByRank(String key, long start, long stop);
 
-  Response<Long> zremrangeByScore(String key, double start, double end);
+  Response<Long> zremrangeByScore(String key, double min, double max);
+
+  Response<Long> zremrangeByScore(String key, String min, String max);
 
   Response<Set<String>> zrevrange(String key, long start, long end);
 

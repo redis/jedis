@@ -249,9 +249,9 @@ public interface Commands {
 
   void zremrangeByRank(String key, long start, long stop);
 
-  void zremrangeByScore(String key, double start, double end);
+  void zremrangeByScore(String key, double min, double max);
 
-  void zremrangeByScore(String key, String start, String end);
+  void zremrangeByScore(String key, String min, String max);
 
   void zunionstore(String dstkey, String... sets);
 

@@ -640,15 +640,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final double start, final double end) {
+  public Long zremrangeByScore(final byte[] key, final double min, final double max) {
     Jedis j = getShard(key);
-    return j.zremrangeByScore(key, start, end);
+    return j.zremrangeByScore(key, min, max);
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
+  public Long zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     Jedis j = getShard(key);
-    return j.zremrangeByScore(key, start, end);
+    return j.zremrangeByScore(key, min, max);
   }
 
   @Override

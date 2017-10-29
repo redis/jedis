@@ -1208,25 +1208,25 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zremrangeByScore(final String key, final double start, final double end) {
-    getClient(key).zremrangeByScore(key, start, end);
+  public Response<Long> zremrangeByScore(final String key, final double min, final double max) {
+    getClient(key).zremrangeByScore(key, min, max);
     return getResponse(BuilderFactory.LONG);
   }
 
-  public Response<Long> zremrangeByScore(final String key, final String start, final String end) {
-    getClient(key).zremrangeByScore(key, start, end);
-    return getResponse(BuilderFactory.LONG);
-  }
-
-  @Override
-  public Response<Long> zremrangeByScore(final byte[] key, final double start, final double end) {
-    getClient(key).zremrangeByScore(key, toByteArray(start), toByteArray(end));
+  public Response<Long> zremrangeByScore(final String key, final String min, final String max) {
+    getClient(key).zremrangeByScore(key, min, max);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
-    getClient(key).zremrangeByScore(key, start, end);
+  public Response<Long> zremrangeByScore(final byte[] key, final double min, final double max) {
+    getClient(key).zremrangeByScore(key, toByteArray(min), toByteArray(max));
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
+    getClient(key).zremrangeByScore(key, min, max);
     return getResponse(BuilderFactory.LONG);
   }
 

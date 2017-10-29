@@ -1108,21 +1108,21 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final double start, final double end) {
+  public Long zremrangeByScore(final String key, final double min, final double max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, start, end);
+        return connection.zremrangeByScore(key, min, max);
       }
     }.run(key);
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final String start, final String end) {
+  public Long zremrangeByScore(final String key, final String min, final String max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, start, end);
+        return connection.zremrangeByScore(key, min, max);
       }
     }.run(key);
   }

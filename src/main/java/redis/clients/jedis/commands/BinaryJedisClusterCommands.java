@@ -104,7 +104,7 @@ public interface BinaryJedisClusterCommands {
 
   List<byte[]> lrange(byte[] key, long start, long stop);
 
-  String ltrim(byte[] key, long start, long end);
+  String ltrim(byte[] key, long start, long stop);
 
   byte[] lindex(byte[] key, long index);
 

@@ -370,9 +370,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String ltrim(final String key, final long start, final long end) {
+  public String ltrim(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.ltrim(key, start, end);
+    return j.ltrim(key, start, stop);
   }
 
   @Override

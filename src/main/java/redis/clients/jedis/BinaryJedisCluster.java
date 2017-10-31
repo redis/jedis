@@ -560,11 +560,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public String ltrim(final byte[] key, final long start, final long end) {
+  public String ltrim(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
-        return connection.ltrim(key, start, end);
+        return connection.ltrim(key, start, stop);
       }
     }.runBinary(key);
   }

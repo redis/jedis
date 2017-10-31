@@ -90,7 +90,7 @@ public interface RedisPipeline {
 
   Response<String> lset(String key, long index, String value);
 
-  Response<String> ltrim(String key, long start, long end);
+  Response<String> ltrim(String key, long start, long stop);
 
   Response<Long> move(String key, int dbIndex);
 

@@ -91,7 +91,7 @@ public interface BinaryRedisPipeline {
 
   Response<String> lset(byte[] key, long index, byte[] value);
 
-  Response<String> ltrim(byte[] key, long start, long end);
+  Response<String> ltrim(byte[] key, long start, long stop);
 
   Response<Long> move(byte[] key, int dbIndex);
 

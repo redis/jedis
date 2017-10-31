@@ -330,9 +330,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String ltrim(final byte[] key, final long start, final long end) {
+  public String ltrim(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.ltrim(key, start, end);
+    return j.ltrim(key, start, stop);
   }
 
   @Override

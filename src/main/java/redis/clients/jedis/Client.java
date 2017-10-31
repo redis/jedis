@@ -293,8 +293,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void ltrim(final String key, final long start, final long end) {
-    ltrim(SafeEncoder.encode(key), start, end);
+  public void ltrim(final String key, final long start, final long stop) {
+    ltrim(SafeEncoder.encode(key), start, stop);
   }
 
   @Override

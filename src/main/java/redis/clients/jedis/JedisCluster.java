@@ -378,11 +378,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Double incrByFloat(final String key, final double value) {
+  public Double incrByFloat(final String key, final double increment) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.incrByFloat(key, value);
+        return connection.incrByFloat(key, increment);
       }
     }.run(key);
   }

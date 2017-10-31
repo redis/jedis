@@ -180,9 +180,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Double incrByFloat(final byte[] key, final double integer) {
+  public Double incrByFloat(final byte[] key, final double increment) {
     Jedis j = getShard(key);
-    return j.incrByFloat(key, integer);
+    return j.incrByFloat(key, increment);
   }
 
   @Override

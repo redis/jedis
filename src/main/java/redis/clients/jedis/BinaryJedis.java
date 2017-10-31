@@ -825,13 +825,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #decr(byte[])
    * @see #decrBy(byte[], long)
    * @param key the key to increment
-   * @param integer the value to increment by
+   * @param increment the value to increment by
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Double incrByFloat(final byte[] key, final double integer) {
+  public Double incrByFloat(final byte[] key, final double increment) {
     checkIsInMultiOrPipeline();
-    client.incrByFloat(key, integer);
+    client.incrByFloat(key, increment);
     String dval = client.getBulkReply();
     return (dval != null ? new Double(dval) : null);
   }

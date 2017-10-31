@@ -202,9 +202,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Double incrByFloat(final String key, final double integer) {
+  public Double incrByFloat(final String key, final double increment) {
     Jedis j = getShard(key);
-    return j.incrByFloat(key, integer);
+    return j.incrByFloat(key, increment);
   }
 
   @Override

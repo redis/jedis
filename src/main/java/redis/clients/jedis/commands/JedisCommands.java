@@ -64,7 +64,7 @@ public interface JedisCommands {
 
   Long incrBy(String key, long increment);
 
-  Double incrByFloat(String key, double value);
+  Double incrByFloat(String key, double increment);
 
   Long incr(String key);
 

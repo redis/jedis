@@ -73,7 +73,7 @@ public interface Commands {
 
   void incrBy(String key, long increment);
 
-  void incrByFloat(String key, double value);
+  void incrByFloat(String key, double increment);
 
   void incr(String key);
 

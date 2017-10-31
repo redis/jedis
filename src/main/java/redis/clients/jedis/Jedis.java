@@ -638,13 +638,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param value
+   * @param increment
    * @return Double reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Double incrByFloat(final String key, final double value) {
+  public Double incrByFloat(final String key, final double increment) {
     checkIsInMultiOrPipeline();
-    client.incrByFloat(key, value);
+    client.incrByFloat(key, increment);
     String dval = client.getBulkReply();
     return (dval != null ? new Double(dval) : null);
   }

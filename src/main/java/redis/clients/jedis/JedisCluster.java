@@ -568,11 +568,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<String> lrange(final String key, final long start, final long end) {
+  public List<String> lrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
       @Override
       public List<String> execute(Jedis connection) {
-        return connection.lrange(key, start, end);
+        return connection.lrange(key, start, stop);
       }
     }.run(key);
   }

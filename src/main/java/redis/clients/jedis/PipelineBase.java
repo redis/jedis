@@ -467,14 +467,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<String>> lrange(final String key, final long start, final long end) {
-    getClient(key).lrange(key, start, end);
+  public Response<List<String>> lrange(final String key, final long start, final long stop) {
+    getClient(key).lrange(key, start, stop);
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
   @Override
-  public Response<List<byte[]>> lrange(final byte[] key, final long start, final long end) {
-    getClient(key).lrange(key, start, end);
+  public Response<List<byte[]>> lrange(final byte[] key, final long start, final long stop) {
+    getClient(key).lrange(key, start, stop);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 

@@ -288,8 +288,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void lrange(final String key, final long start, final long end) {
-    lrange(SafeEncoder.encode(key), start, end);
+  public void lrange(final String key, final long start, final long stop) {
+    lrange(SafeEncoder.encode(key), start, stop);
   }
 
   @Override

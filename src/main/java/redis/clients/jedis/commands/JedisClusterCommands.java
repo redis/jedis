@@ -99,7 +99,7 @@ public interface JedisClusterCommands {
 
   Long llen(String key);
 
-  List<String> lrange(String key, long start, long end);
+  List<String> lrange(String key, long start, long stop);
 
   String ltrim(String key, long start, long end);
 

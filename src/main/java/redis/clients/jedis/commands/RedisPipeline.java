@@ -84,7 +84,7 @@ public interface RedisPipeline {
 
   Response<Long> lpushx(String key, String... string);
 
-  Response<List<String>> lrange(String key, long start, long end);
+  Response<List<String>> lrange(String key, long start, long stop);
 
   Response<Long> lrem(String key, long count, String value);
 

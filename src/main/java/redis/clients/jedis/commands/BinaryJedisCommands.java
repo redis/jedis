@@ -105,7 +105,7 @@ public interface BinaryJedisCommands {
 
   Long llen(byte[] key);
 
-  List<byte[]> lrange(byte[] key, long start, long end);
+  List<byte[]> lrange(byte[] key, long start, long stop);
 
   String ltrim(byte[] key, long start, long end);
 

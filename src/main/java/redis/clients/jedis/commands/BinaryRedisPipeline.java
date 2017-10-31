@@ -85,7 +85,7 @@ public interface BinaryRedisPipeline {
 
   Response<Long> lpushx(byte[] key, byte[]... bytes);
 
-  Response<List<byte[]>> lrange(byte[] key, long start, long end);
+  Response<List<byte[]>> lrange(byte[] key, long start, long stop);
 
   Response<Long> lrem(byte[] key, long count, byte[] value);
 

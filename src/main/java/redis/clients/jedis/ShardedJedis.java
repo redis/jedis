@@ -364,9 +364,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<String> lrange(final String key, final long start, final long end) {
+  public List<String> lrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.lrange(key, start, end);
+    return j.lrange(key, start, stop);
   }
 
   @Override

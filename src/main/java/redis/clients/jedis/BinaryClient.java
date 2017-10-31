@@ -327,8 +327,8 @@ public class BinaryClient extends Connection {
     sendCommand(LLEN, key);
   }
 
-  public void lrange(final byte[] key, final long start, final long end) {
-    sendCommand(LRANGE, key, toByteArray(start), toByteArray(end));
+  public void lrange(final byte[] key, final long start, final long stop) {
+    sendCommand(LRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
   public void ltrim(final byte[] key, final long start, final long end) {

@@ -550,11 +550,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<byte[]> lrange(final byte[] key, final long start, final long end) {
+  public List<byte[]> lrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
       public List<byte[]> execute(Jedis connection) {
-        return connection.lrange(key, start, end);
+        return connection.lrange(key, start, stop);
       }
     }.runBinary(key);
   }

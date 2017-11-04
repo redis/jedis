@@ -143,6 +143,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> ttl(byte[] key);
 
+  Response<Long> pttl(byte[] key);
+
   Response<String> type(byte[] key);
 
   Response<Long> zadd(byte[] key, double score, byte[] member);

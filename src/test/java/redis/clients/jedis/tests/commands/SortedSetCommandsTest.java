@@ -1192,15 +1192,15 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   @Test
   public void infinity() {
     jedis.zadd("key", Double.POSITIVE_INFINITY, "pos");
-    assertEquals((Double) Double.POSITIVE_INFINITY, jedis.zscore("key", "pos"));
+    assertEquals(Double.POSITIVE_INFINITY, jedis.zscore("key", "pos"), 0d);
     jedis.zadd("key", Double.NEGATIVE_INFINITY, "neg");
-    assertEquals((Double) Double.NEGATIVE_INFINITY, jedis.zscore("key", "neg"));
-    jedis.zadd("key", 0f, "zero");
+    assertEquals(Double.NEGATIVE_INFINITY, jedis.zscore("key", "neg"), 0d);
+    jedis.zadd("key", 0d, "zero");
 
     Set<Tuple> set = jedis.zrangeWithScores("key", 0, -1);
     Iterator<Tuple> itr = set.iterator();
-    assertEquals(Double.NEGATIVE_INFINITY, itr.next().getScore(), 0f);
-    assertEquals(0f, itr.next().getScore(), 0f);
-    assertEquals(Double.POSITIVE_INFINITY, itr.next().getScore(), 0f);
+    assertEquals(Double.NEGATIVE_INFINITY, itr.next().getScore(), 0d);
+    assertEquals(0d, itr.next().getScore(), 0d);
+    assertEquals(Double.POSITIVE_INFINITY, itr.next().getScore(), 0d);
   }
 }

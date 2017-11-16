@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,6 +46,19 @@ public class JedisPoolTest {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
     Jedis jedis = pool.getResource();
     jedis.auth("foobared");
+    jedis.set("foo", "bar");
+    assertEquals("bar", jedis.get("foo"));
+    jedis.close();
+    pool.close();
+    assertTrue(pool.isClosed());
+  }
+
+  // Need to set up a proxy server first.
+  @Test
+  public void checkCloseableConnectionsViaSocksProxy() throws Exception {
+    Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 7788));
+    JedisPool pool = new JedisPool("localhost", 6379, proxy);
+    Jedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();

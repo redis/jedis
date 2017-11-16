@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.net.Proxy;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -27,6 +28,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final String clientName;
   private final boolean ssl;
   private final SSLSocketFactory sslSocketFactory;
+  private final Proxy proxy;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
 
@@ -44,6 +46,24 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
+    this.proxy = null;
+  }
+
+  public JedisFactory(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final String password, final int database, final String clientName,
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier, final Proxy proxy) {
+    this.hostAndPort.set(new HostAndPort(host, port));
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
+    this.password = password;
+    this.database = database;
+    this.clientName = clientName;
+    this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
+    this.proxy = proxy;
   }
 
   public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -64,6 +84,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
+    this.proxy = null;
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
@@ -99,8 +120,10 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hostAndPort = this.hostAndPort.get();
+
     final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
         soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    jedis.getClient().setProxy(proxy);
 
     try {
       jedis.connect();

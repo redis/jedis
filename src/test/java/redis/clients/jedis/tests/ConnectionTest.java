@@ -12,6 +12,9 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+
 public class ConnectionTest {
   private Connection client;
 
@@ -43,6 +46,17 @@ public class ConnectionTest {
     client.setHost("localhost");
     client.setPort(6379);
     client.setTimeoutInfinite();
+  }
+
+  // Need to set up a proxy server first.
+  @Test
+  public void connectViaSocksProxy() {
+    Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 7788));
+    client.setProxy(proxy);
+    client.setHost("localhost");
+    client.setPort(6379);
+    client.connect();
+    client.close();
   }
 
   @Test

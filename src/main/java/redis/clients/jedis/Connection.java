@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class Connection implements Closeable {
   private String host = Protocol.DEFAULT_HOST;
   private int port = Protocol.DEFAULT_PORT;
   private Socket socket;
+  private Proxy proxy;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
@@ -79,12 +81,20 @@ public class Connection implements Closeable {
     return soTimeout;
   }
 
+  public Proxy getProxy() {
+    return proxy;
+  }
+
   public void setConnectionTimeout(int connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
 
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
+  }
+
+  public void setProxy(Proxy proxy) {
+    this.proxy = proxy;
   }
 
   public void setTimeoutInfinite() {
@@ -167,7 +177,7 @@ public class Connection implements Closeable {
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = new Socket();
+        socket = this.proxy != null? new Socket(proxy) :new Socket();
         // ->@wjw_add
         socket.setReuseAddress(true);
         socket.setKeepAlive(true); // Will monitor the TCP connection is

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
@@ -180,7 +181,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void randomKey() {
-    assertEquals(null, jedis.randomKey());
+    assertNull(jedis.randomKey());
 
     jedis.set("foo", "bar");
 
@@ -194,7 +195,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     // Binary
     jedis.del("foo");
     jedis.del("bar");
-    assertEquals(null, jedis.randomKey());
+    assertNull(jedis.randomKey());
 
     jedis.set(bfoo, bbar);
 
@@ -214,7 +215,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     String value = jedis.get("foo");
-    assertEquals(null, value);
+    assertNull(value);
 
     value = jedis.get("bar");
     assertEquals("bar", value);
@@ -225,7 +226,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", bstatus);
 
     byte[] bvalue = jedis.get(bfoo);
-    assertEquals(null, bvalue);
+    assertNull(bvalue);
 
     bvalue = jedis.get(bbar);
     assertArrayEquals(bbar, bvalue);
@@ -351,7 +352,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foo", "bar");
     String status = jedis.select(1);
     assertEquals("OK", status);
-    assertEquals(null, jedis.get("foo"));
+    assertNull(jedis.get("foo"));
     status = jedis.select(0);
     assertEquals("OK", status);
     assertEquals("bar", jedis.get("foo"));
@@ -359,7 +360,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set(bfoo, bbar);
     String bstatus = jedis.select(1);
     assertEquals("OK", bstatus);
-    assertEquals(null, jedis.get(bfoo));
+    assertNull(jedis.get(bfoo));
     bstatus = jedis.select(0);
     assertEquals("OK", bstatus);
     assertArrayEquals(bbar, jedis.get(bfoo));
@@ -380,7 +381,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foo", "bar");
     status = jedis.move("foo", 1);
     assertEquals(1, status);
-    assertEquals(null, jedis.get("foo"));
+    assertNull(jedis.get("foo"));
 
     jedis.select(1);
     assertEquals("bar", jedis.get("foo"));
@@ -393,7 +394,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set(bfoo, bbar);
     bstatus = jedis.move(bfoo, 1);
     assertEquals(1, bstatus);
-    assertEquals(null, jedis.get(bfoo));
+    assertNull(jedis.get(bfoo));
 
     jedis.select(1);
     assertArrayEquals(bbar, jedis.get(bfoo));

@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
@@ -31,7 +32,7 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.hdel("bar", "foo", "foo1").intValue());
     assertEquals(0, jedis.hdel("foo", "foo", "foo1").intValue());
     assertEquals(2, jedis.hdel("foo", "bar", "foo2").intValue());
-    assertEquals(null, jedis.hget("foo", "bar"));
+    assertNull(jedis.hget("foo", "bar"));
 
     // Binary
     Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
@@ -43,7 +44,7 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.hdel(bbar, bfoo, bfoo1).intValue());
     assertEquals(0, jedis.hdel(bfoo, bfoo, bfoo1).intValue());
     assertEquals(2, jedis.hdel(bfoo, bbar, bfoo2).intValue());
-    assertEquals(null, jedis.hget(bfoo, bbar));
+    assertNull(jedis.hget(bfoo, bbar));
 
   }
 

@@ -231,7 +231,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpush("foo", "3");
 
     assertEquals("3", jedis.lindex("foo", 0));
-    assertEquals(null, jedis.lindex("foo", 100));
+    assertNull(jedis.lindex("foo", 100));
 
     // Binary
     jedis.lpush(bfoo, b1);
@@ -239,7 +239,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpush(bfoo, b3);
 
     assertArrayEquals(b3, jedis.lindex(bfoo, 0));
-    assertEquals(null, jedis.lindex(bfoo, 100));
+    assertNull(jedis.lindex(bfoo, 100));
 
   }
 
@@ -308,7 +308,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpop("foo");
 
     element = jedis.lpop("foo");
-    assertEquals(null, element);
+    assertNull(element);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -327,7 +327,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpop(bfoo);
 
     belement = jedis.lpop(bfoo);
-    assertEquals(null, belement);
+    assertNull(belement);
 
   }
 
@@ -349,7 +349,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.rpop("foo");
 
     element = jedis.rpop("foo");
-    assertEquals(null, element);
+    assertNull(element);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -368,7 +368,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.rpop(bfoo);
 
     belement = jedis.rpop(bfoo);
-    assertEquals(null, belement);
+    assertNull(belement);
 
   }
 

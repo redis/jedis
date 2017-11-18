@@ -87,7 +87,7 @@ public class ProtocolTest {
   public void nullBulkReply() {
     InputStream is = new ByteArrayInputStream("$-1\r\n".getBytes());
     String response = (String) Protocol.read(new RedisInputStream(is));
-    assertEquals(null, response);
+    assertNull(response);
   }
 
   @Test

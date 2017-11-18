@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
@@ -52,14 +53,14 @@ public class HashesCommandsTest extends JedisCommandTestBase {
   @Test
   public void hget() {
     jedis.hset("foo", "bar", "car");
-    assertEquals(null, jedis.hget("bar", "foo"));
-    assertEquals(null, jedis.hget("foo", "car"));
+    assertNull(jedis.hget("bar", "foo"));
+    assertNull(jedis.hget("foo", "car"));
     assertEquals("car", jedis.hget("foo", "bar"));
 
     // Binary
     jedis.hset(bfoo, bbar, bcar);
-    assertEquals(null, jedis.hget(bbar, bfoo));
-    assertEquals(null, jedis.hget(bfoo, bcar));
+    assertNull(jedis.hget(bbar, bfoo));
+    assertNull(jedis.hget(bfoo, bcar));
     assertArrayEquals(bcar, jedis.hget(bfoo, bbar));
   }
 
@@ -214,7 +215,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.hdel("bar", "foo").intValue());
     assertEquals(0, jedis.hdel("foo", "foo").intValue());
     assertEquals(1, jedis.hdel("foo", "bar").intValue());
-    assertEquals(null, jedis.hget("foo", "bar"));
+    assertNull(jedis.hget("foo", "bar"));
 
     // Binary
     Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
@@ -225,7 +226,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.hdel(bbar, bfoo).intValue());
     assertEquals(0, jedis.hdel(bfoo, bfoo).intValue());
     assertEquals(1, jedis.hdel(bfoo, bbar).intValue());
-    assertEquals(null, jedis.hget(bfoo, bbar));
+    assertNull(jedis.hget(bfoo, bbar));
 
   }
 

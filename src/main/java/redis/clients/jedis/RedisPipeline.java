@@ -197,27 +197,27 @@ public interface RedisPipeline {
 
   Response<Double> zscore(String key, String member);
 
-  Response<Long> zlexcount(final String key, final String min, final String max);
+  Response<Long> zlexcount(String key, String min, String max);
 
-  Response<Set<String>> zrangeByLex(final String key, final String min, final String max);
+  Response<Set<String>> zrangeByLex(String key, String min, String max);
 
-  Response<Set<String>> zrangeByLex(final String key, final String min, final String max,
-      final int offset, final int count);
+  Response<Set<String>> zrangeByLex(String key, String min, String max,
+      int offset, int count);
 
-  Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min);
+  Response<Set<String>> zrevrangeByLex(String key, String max, String min);
 
-  Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min,
-      final int offset, final int count);
+  Response<Set<String>> zrevrangeByLex(String key, String max, String min,
+      int offset, int count);
 
-  Response<Long> zremrangeByLex(final String key, final String start, final String end);
+  Response<Long> zremrangeByLex(String key, String start, String end);
 
   Response<Long> bitcount(String key);
 
   Response<Long> bitcount(String key, long start, long end);
 
-  Response<Long> pfadd(final String key, final String... elements);
+  Response<Long> pfadd(String key, String... elements);
 
-  Response<Long> pfcount(final String key);
+  Response<Long> pfcount(String key);
   
   Response<List<Long>> bitfield(String key, String... arguments);
 

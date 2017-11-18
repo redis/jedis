@@ -98,7 +98,7 @@ public interface MultiKeyCommands {
 
   String randomKey();
 
-  Long bitop(BitOP op, final String destKey, String... srcKeys);
+  Long bitop(BitOP op, String destKey, String... srcKeys);
 
   @Deprecated
   /**
@@ -106,7 +106,7 @@ public interface MultiKeyCommands {
    */
   ScanResult<String> scan(int cursor);
 
-  ScanResult<String> scan(final String cursor);
+  ScanResult<String> scan(String cursor);
 
   /**
    * Iterates the set of keys in the currently selected Redis database.
@@ -149,9 +149,9 @@ public interface MultiKeyCommands {
    * @return the scan result with the results of this iteration and the new position of the cursor
    * @see <a href="https://redis.io/commands/scan">Redis SCAN documentation</a>
    */
-  ScanResult<String> scan(final String cursor, final ScanParams params);
+  ScanResult<String> scan(String cursor, ScanParams params);
 
-  String pfmerge(final String destkey, final String... sourcekeys);
+  String pfmerge(String destkey, String... sourcekeys);
 
-  long pfcount(final String... keys);
+  long pfcount(String... keys);
 }

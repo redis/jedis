@@ -36,7 +36,7 @@ public interface JedisCommands {
 
   Long ttl(String key);
 
-  Long pttl(final String key);
+  Long pttl(String key);
 
   Long touch(String key);
 

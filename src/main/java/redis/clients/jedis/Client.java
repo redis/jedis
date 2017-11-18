@@ -950,6 +950,7 @@ public class Client extends BinaryClient implements Commands {
     pexpireAt(SafeEncoder.encode(key), millisecondsTimestamp);
   }
 
+  @Override
   public void pttl(final String key) {
     pttl(SafeEncoder.encode(key));
   }

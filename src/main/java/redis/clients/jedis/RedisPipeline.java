@@ -135,6 +135,8 @@ public interface RedisPipeline {
 
   Response<Long> ttl(String key);
 
+  Response<Long> pttl(String key);
+
   Response<String> type(String key);
 
   Response<Long> zadd(String key, double score, String member);

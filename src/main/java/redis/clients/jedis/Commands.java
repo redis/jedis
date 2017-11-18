@@ -35,6 +35,8 @@ public interface Commands {
 
   public void ttl(final String key);
 
+  void pttl(final String key);
+
   public void setbit(String key, long offset, boolean value);
 
   public void setbit(String key, long offset, String value);

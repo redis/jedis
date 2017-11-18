@@ -253,6 +253,8 @@ public interface BinaryJedisCommands {
 
   Long del(byte[] key);
 
+  Long unlink(byte[] key);
+
   byte[] echo(byte[] arg);
 
   Long move(byte[] key, int dbIndex);

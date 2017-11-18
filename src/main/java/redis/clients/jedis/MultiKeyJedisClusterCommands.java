@@ -8,6 +8,8 @@ public interface MultiKeyJedisClusterCommands {
 
   Long del(String... keys);
 
+  Long unlink(String... keys);
+
   List<String> blpop(int timeout, String... keys);
 
   List<String> brpop(int timeout, String... keys);

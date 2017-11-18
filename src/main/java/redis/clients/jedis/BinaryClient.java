@@ -136,6 +136,10 @@ public class BinaryClient extends Connection {
     sendCommand(DEL, keys);
   }
 
+  public void unlink(final byte[]... keys) {
+    sendCommand(UNLINK, keys);
+  }
+
   public void type(final byte[] key) {
     sendCommand(TYPE, key);
   }

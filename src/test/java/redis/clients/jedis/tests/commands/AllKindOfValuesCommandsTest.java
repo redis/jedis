@@ -146,6 +146,46 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void unlink() {
+    jedis.set("foo1", "bar1");
+    jedis.set("foo2", "bar2");
+    jedis.set("foo3", "bar3");
+
+    long reply = jedis.unlink("foo1", "foo2", "foo3");
+    assertEquals(3, reply);
+
+    reply = jedis.exists("foo1", "foo2", "foo3");
+    assertEquals(0, reply);
+
+    jedis.set("foo1", "bar1");
+
+    reply = jedis.unlink("foo1", "foo2");
+    assertEquals(1, reply);
+
+    reply = jedis.unlink("foo1", "foo2");
+    assertEquals(0, reply);
+
+    // Binary ...
+    jedis.set(bfoo1, bbar1);
+    jedis.set(bfoo2, bbar2);
+    jedis.set(bfoo3, bbar3);
+
+    reply = jedis.unlink(bfoo1, bfoo2, bfoo3);
+    assertEquals(3, reply);
+
+    reply = jedis.exists(bfoo1, bfoo2, bfoo3);
+    assertEquals(0, reply);
+
+    jedis.set(bfoo1, bbar1);
+
+    reply = jedis.unlink(bfoo1, bfoo2);
+    assertEquals(1, reply);
+
+    reply = jedis.unlink(bfoo1, bfoo2);
+    assertEquals(0, reply);
+  }
+
+  @Test
   public void type() {
     jedis.set("foo", "bar");
     String status = jedis.type("foo");

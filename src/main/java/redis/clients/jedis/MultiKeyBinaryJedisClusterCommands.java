@@ -8,6 +8,8 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Long del(byte[]... keys);
 
+  Long unlink(byte[]... keys);
+
   List<byte[]> blpop(int timeout, byte[]... keys);
 
   List<byte[]> brpop(int timeout, byte[]... keys);

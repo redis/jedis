@@ -6,6 +6,8 @@ import java.util.Set;
 public interface MultiKeyCommands {
   Long del(String... keys);
 
+  Long unlink(String... keys);
+
   Long exists(String... keys);
 
   List<String> blpop(int timeout, String... keys);

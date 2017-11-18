@@ -21,6 +21,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> del(byte[] keys);
 
+  Response<Long> unlink(byte[] keys);
+
   Response<byte[]> echo(byte[] string);
 
   Response<Boolean> exists(byte[] key);

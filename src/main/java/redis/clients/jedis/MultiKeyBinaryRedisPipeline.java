@@ -10,6 +10,8 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> del(byte[]... keys);
 
+  Response<Long> unlink(byte[]... keys);
+
   Response<Long> exists(byte[]... keys);
 
   Response<List<byte[]>> blpop(byte[]... args);

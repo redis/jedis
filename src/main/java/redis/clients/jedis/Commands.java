@@ -21,6 +21,8 @@ public interface Commands {
 
   public void del(final String... keys);
 
+  void unlink(String... keys);
+
   public void type(final String key);
 
   public void keys(final String pattern);

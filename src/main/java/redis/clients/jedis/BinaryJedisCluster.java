@@ -1129,6 +1129,26 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
+  public Long unlink(final byte[] key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.unlink(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long unlink(final byte[]... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.unlink(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public byte[] echo(final byte[] arg) {
     // note that it'll be run from arbitary node
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {

@@ -6,6 +6,8 @@ import java.util.Set;
 public interface MultiKeyBinaryCommands {
   Long del(byte[]... keys);
 
+  Long unlink(byte[]... keys);
+
   Long exists(byte[]... keys);
 
   List<byte[]> blpop(int timeout, byte[]... keys);

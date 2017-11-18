@@ -209,19 +209,19 @@ public interface JedisClusterCommands {
 
   Long zremrangeByScore(String key, String start, String end);
 
-  Long zlexcount(final String key, final String min, final String max);
+  Long zlexcount(String key, String min, String max);
 
-  Set<String> zrangeByLex(final String key, final String min, final String max);
+  Set<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(final String key, final String min, final String max, final int offset,
-      final int count);
+  Set<String> zrangeByLex(String key, String min, String max, int offset,
+      int count);
 
-  Set<String> zrevrangeByLex(final String key, final String max, final String min);
+  Set<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(final String key, final String max, final String min,
-      final int offset, final int count);
+  Set<String> zrevrangeByLex(String key, String max, String min,
+      int offset, int count);
 
-  Long zremrangeByLex(final String key, final String min, final String max);
+  Long zremrangeByLex(String key, String min, String max);
 
   Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value);
 
@@ -239,19 +239,19 @@ public interface JedisClusterCommands {
 
   String echo(String string);
 
-  Long bitcount(final String key);
+  Long bitcount(String key);
 
-  Long bitcount(final String key, long start, long end);
+  Long bitcount(String key, long start, long end);
 
-  ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
+  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor);
 
-  ScanResult<String> sscan(final String key, final String cursor);
+  ScanResult<String> sscan(String key, String cursor);
 
-  ScanResult<Tuple> zscan(final String key, final String cursor);
+  ScanResult<Tuple> zscan(String key, String cursor);
 
-  Long pfadd(final String key, final String... elements);
+  Long pfadd(String key, String... elements);
 
-  long pfcount(final String key);
+  long pfcount(String key);
 
   // Geo Commands
 
@@ -291,5 +291,5 @@ public interface JedisClusterCommands {
    * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(final String key, final String field);
+  Long hstrlen(String key, String field);
 }

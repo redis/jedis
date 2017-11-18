@@ -228,6 +228,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
+  @Override
   public String toString() {
     return host + ":" + port + "*" + getWeight();
   }

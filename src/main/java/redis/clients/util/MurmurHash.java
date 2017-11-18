@@ -136,10 +136,12 @@ public class MurmurHash implements Hashing {
     return h;
   }
 
+  @Override
   public long hash(byte[] key) {
     return hash64A(key, 0x1234ABCD);
   }
 
+  @Override
   public long hash(String key) {
     return hash(SafeEncoder.encode(key));
   }

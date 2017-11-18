@@ -157,6 +157,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *          key if it already exist. EX|PX, expire time units: EX = seconds; PX = milliseconds
    * @return Status code reply
    */
+  @Override
   public String set(final String key, final String value, final SetParams params) {
     checkIsInMultiOrPipeline();
     client.set(key, value, params);
@@ -185,6 +186,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
    *         0 if none of the specified key existed
    */
+  @Override
   public Long exists(final String... keys) {
     checkIsInMultiOrPipeline();
     client.exists(keys);

@@ -280,6 +280,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Long unlink(String key) {
+    Jedis j = getShard(key);
+    return j.unlink(key);
+  }
+
+  @Override
   public Long hdel(String key, String... fields) {
     Jedis j = getShard(key);
     return j.hdel(key, fields);

@@ -22,6 +22,8 @@ public interface RedisPipeline {
 
   Response<Long> del(String key);
 
+  Response<Long> unlink(String key);
+
   Response<String> echo(String string);
 
   Response<Boolean> exists(String key);

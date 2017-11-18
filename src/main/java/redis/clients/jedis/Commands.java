@@ -341,7 +341,7 @@ public interface Commands {
   /**
    * Used for BITFIELD Redis command
    * @param key
-   * @param args
+   * @param arguments
    */
-  void bitfield(final String key, final String...arguments);
+  void bitfield(final String key, final String... arguments);
 }

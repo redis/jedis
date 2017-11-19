@@ -31,7 +31,7 @@ public class HostAndPort implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof HostAndPort) {
+    if (this.getClass() == obj.getClass()) {
       HostAndPort hp = (HostAndPort) obj;
 
       String thisHost = convertHost(host);

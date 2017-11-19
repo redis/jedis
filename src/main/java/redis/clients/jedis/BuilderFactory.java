@@ -174,9 +174,7 @@ public final class BuilderFactory {
       if (null == data) {
         return Collections.emptyList();
       }
-      List<byte[]> l = (List<byte[]>) data;
-
-      return l;
+      return (List<byte[]>) data;
     }
 
     @Override

@@ -34,9 +34,8 @@ public class JedisSentinelTestUtil {
     }, "*");
 
     String[] chunks = newmaster.get().split(" ");
-    HostAndPort newMaster = new HostAndPort(chunks[3], Integer.parseInt(chunks[4]));
 
-    return newMaster;
+    return new HostAndPort(chunks[3], Integer.parseInt(chunks[4]));
   }
 
 }

@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -176,7 +177,7 @@ public final class Protocol {
   private static byte[] processBulkReply(final RedisInputStream is) {
     final int len = is.readIntCrLf();
     if (len == -1) {
-      return null;
+      return new byte[0];
     }
 
     final byte[] read = new byte[len];
@@ -202,7 +203,7 @@ public final class Protocol {
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
     if (num == -1) {
-      return null;
+      return Collections.emptyList();
     }
     final List<Object> ret = new ArrayList<Object>(num);
     for (int i = 0; i < num; i++) {

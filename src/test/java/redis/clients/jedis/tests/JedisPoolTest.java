@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool2.PooledObject;
@@ -137,7 +138,8 @@ public class JedisPoolTest {
     JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
         "foobared", 1);
     Jedis jedis1 = pool1.getResource();
-    assertNull(jedis1.get("foo"));
+   // assertNull(jedis1.get("foo"));
+    assertEquals(new ArrayList(0),jedis1.get("foo"));
     jedis1.close();
     pool1.destroy();
     assertTrue(pool1.isClosed());

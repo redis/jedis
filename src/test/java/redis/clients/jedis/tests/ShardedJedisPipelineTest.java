@@ -96,7 +96,8 @@ public class ShardedJedisPipelineTest {
 
     assertEquals("foo", string.get());
     assertEquals(Long.valueOf(1), del.get());
-    assertNull(emptyString.get());
+    assertEquals(new ArrayList(0),emptyString.get());
+    //assertNull(emptyString.get());
     assertEquals("foo", list.get());
     assertEquals("bar", hash.get());
     assertEquals("foo", zset.get().iterator().next());
@@ -125,7 +126,7 @@ public class ShardedJedisPipelineTest {
     ShardedJedisPipeline p = jedis.pipelined();
     Response<String> shouldNotExist = p.get(UUID.randomUUID().toString());
     p.sync();
-    assertNull(shouldNotExist.get());
+    assertEquals(new ArrayList(0), shouldNotExist.get());
   }
 
   @Test

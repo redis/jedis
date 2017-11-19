@@ -188,7 +188,8 @@ public class PipeliningTest {
     Response<Double> score = p.zscore("zset", "bar");
     p.sync();
 
-    assertNull(score.get());
+   // assertNull(score.get());
+    assertEquals(new ArrayList(0),score.get());
   }
 
   @Test(expected = JedisDataException.class)
@@ -216,7 +217,8 @@ public class PipeliningTest {
     Pipeline p = jedis.pipelined();
     Response<String> shouldNotExist = p.get(UUID.randomUUID().toString());
     p.sync();
-    assertNull(shouldNotExist.get());
+    //assertNull(shouldNotExist.get());
+    assertEquals(new ArrayList(0),shouldNotExist.get());
   }
 
   @Test
@@ -422,8 +424,7 @@ public class PipeliningTest {
     Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
     Response<byte[]> bResult2 = bP.get(bKey);
     bP.sync();
-
-    assertNull(bResult0.get());
+    assertEquals(new ArrayList(0),bResult0.get());
     assertNull(bResult1.get());
     assertArrayEquals(SafeEncoder.encode("13"), bResult2.get());
   }
@@ -487,7 +488,8 @@ public class PipeliningTest {
     p.sync();
 
     assertNull(result0.get());
-    assertNull(result1.get());
+    //assertNull(result1.get());
+    assertEquals(new ArrayList(0),result1.get());
     assertEquals("13", result2.get());
   }
 
@@ -510,7 +512,8 @@ public class PipeliningTest {
     p.sync();
 
     assertNull(result0.get());
-    assertNull(result1.get());
+    //assertNull(result1.get());
+    assertEquals(new ArrayList(0),result1.get());
     assertArrayEquals(SafeEncoder.encode("13"), result2.get());
   }
 

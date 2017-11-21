@@ -115,11 +115,11 @@ public final class Protocol {
     if (message.startsWith(MOVED_RESPONSE)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
       throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-          Integer.valueOf(movedInfo[2])), Integer.valueOf(movedInfo[0]));
+          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_RESPONSE)) {
       String[] askInfo = parseTargetHostAndSlot(message);
       throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
-          Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
+          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_RESPONSE)) {

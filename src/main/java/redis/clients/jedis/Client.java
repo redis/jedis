@@ -59,11 +59,12 @@ public class Client extends BinaryClient implements Commands {
     get(SafeEncoder.encode(key));
   }
 
-  @Override
+  @Deprecated
   public void exists(final String key) {
     exists(SafeEncoder.encode(key));
   }
 
+  @Override
   public void exists(final String... keys) {
     final byte[][] bkeys = SafeEncoder.encodeMany(keys);
     exists(bkeys);

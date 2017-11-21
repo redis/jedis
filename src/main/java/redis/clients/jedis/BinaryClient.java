@@ -180,10 +180,6 @@ public class BinaryClient extends Connection {
     sendCommand(TTL, key);
   }
 
-  public void touch(final byte[] key) {
-    sendCommand(TOUCH, key);
-  }
-
   public void touch(final byte[]... keys) {
     sendCommand(TOUCH, keys);
   }

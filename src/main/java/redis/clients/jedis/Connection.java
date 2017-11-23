@@ -283,12 +283,12 @@ public class Connection implements Closeable {
 
   @SuppressWarnings("unchecked")
   public List<Object> getRawObjectMultiBulkReply() {
+    flush();
+    pipelinedCommands--;
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
-    flush();
-    pipelinedCommands--;
     return getRawObjectMultiBulkReply();
   }
 

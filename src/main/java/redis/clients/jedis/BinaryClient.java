@@ -24,6 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
@@ -1077,7 +1078,7 @@ public class BinaryClient extends Connection {
       break;
     case NOT:
       kw = Keyword.NOT;
-      len = Math.min(1, len);
+      if (len > 1) throw new JedisDataException("BITOP NOT must be called with a single source key");
       break;
     }
 

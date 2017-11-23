@@ -2506,7 +2506,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   private Set<Tuple> getBinaryTupledSet() {
-    checkIsInMultiOrPipeline();
     List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();

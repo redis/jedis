@@ -1265,7 +1265,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
         public ScanResult<String> execute(Jedis connection) {
           return connection.scan(cursor, params);
         }
-      }.runBinary(SafeEncoder.encode(matchPattern));
+      }.run(matchPattern);
     } else {
       throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }

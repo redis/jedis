@@ -67,4 +67,6 @@ public interface MultiKeyBinaryJedisClusterCommands {
   Long pfcount(byte[]... keys);
 
   Long touch(byte[]... keys);
+
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 }

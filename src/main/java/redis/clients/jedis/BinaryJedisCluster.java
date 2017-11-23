@@ -2025,9 +2025,9 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   @Override
   public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
 
-    String matchPattern = null;
+    byte[] matchPattern = null;
 
-    if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
+    if (params == null || (matchPattern = params.binaryMatch()) == null || matchPattern.length == 0) {
       throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName() + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
@@ -2039,7 +2039,7 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
         public ScanResult<byte[]> execute(Jedis connection) {
           return connection.scan(cursor, params);
         }
-      }.runBinary(SafeEncoder.encode(matchPattern));
+      }.runBinary(matchPattern);
     } else {
       throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName() + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }

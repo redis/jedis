@@ -17,9 +17,9 @@ public interface AdvancedJedisCommands {
 
   List<Slowlog> slowlogGet(long entries);
 
-  Long objectRefcount(String string);
+  Long objectRefcount(String key);
 
-  String objectEncoding(String string);
+  String objectEncoding(String key);
 
-  Long objectIdletime(String string);
+  Long objectIdletime(String key);
 }

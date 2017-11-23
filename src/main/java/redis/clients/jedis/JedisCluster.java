@@ -32,7 +32,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(HostAndPort node, int timeout) {
-    this(Collections.singleton(node), timeout, DEFAULT_MAX_REDIRECTIONS);
+    this(Collections.singleton(node), timeout, DEFAULT_MAX_ATTEMPTS);
   }
 
   public JedisCluster(HostAndPort node, int timeout, int maxAttempts) {
@@ -40,11 +40,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(HostAndPort node, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+    this(Collections.singleton(node), DEFAULT_TIMEOUT, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int timeout, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+    this(Collections.singleton(node), timeout, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int timeout, int maxAttempts,
@@ -72,7 +72,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout) {
-    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS);
+    this(nodes, timeout, DEFAULT_MAX_ATTEMPTS);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
@@ -80,11 +80,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig) {
-    this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+    this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, final GenericObjectPoolConfig poolConfig) {
-    this(nodes, timeout, DEFAULT_MAX_REDIRECTIONS, poolConfig);
+    this(nodes, timeout, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxAttempts,

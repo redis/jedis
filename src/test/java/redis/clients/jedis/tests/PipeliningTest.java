@@ -362,7 +362,7 @@ public class PipeliningTest {
     String script = "return 'success!'";
 
     Pipeline p = jedis.pipelined();
-    Response<String> result = p.eval(script);
+    Response<Object> result = p.eval(script);
     p.sync();
 
     assertEquals("success!", result.get());
@@ -387,9 +387,9 @@ public class PipeliningTest {
 
     Pipeline p = jedis.pipelined();
     p.set(key, "0");
-    Response<String> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
     p.incr(key);
-    Response<String> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
     Response<String> result2 = p.get(key);
     p.sync();
 

@@ -83,7 +83,7 @@ public class HostAndPort implements Serializable {
     try {
       String[] parts = extractParts(from);
       String host = parts[0];
-      int port = Integer.valueOf(parts[1]);
+      int port = Integer.parseInt(parts[1]);
       return new HostAndPort(convertHost(host), port);
     } catch (NumberFormatException ex) {
       throw new IllegalArgumentException(ex);

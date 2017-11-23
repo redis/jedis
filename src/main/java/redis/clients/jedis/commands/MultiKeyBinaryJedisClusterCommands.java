@@ -11,6 +11,8 @@ import java.util.Set;
 public interface MultiKeyBinaryJedisClusterCommands {
   Long del(byte[]... keys);
 
+  Long unlink(byte[]... keys);
+
   Long exists(byte[]... keys);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
@@ -63,9 +65,9 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns);
 
-  Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
+  Long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
-  String pfmerge(final byte[] destkey, final byte[]... sourcekeys);
+  String pfmerge(byte[] destkey, byte[]... sourcekeys);
 
   Long pfcount(byte[]... keys);
 

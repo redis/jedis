@@ -23,6 +23,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> del(byte[] keys);
 
+  Response<Long> unlink(byte[] keys);
+
   Response<byte[]> echo(byte[] string);
 
   Response<Boolean> exists(byte[] key);
@@ -217,27 +219,27 @@ public interface BinaryRedisPipeline {
 
   Response<Double> zscore(byte[] key, byte[] member);
 
-  Response<Long> zlexcount(final byte[] key, final byte[] min, final byte[] max);
+  Response<Long> zlexcount(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+  Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<byte[]>> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+  Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max,
       int offset, int count);
 
-  Response<Set<byte[]>> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min);
+  Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Response<Set<byte[]>> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+  Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min,
       int offset, int count);
 
-  Response<Long> zremrangeByLex(final byte[] key, final byte[] min, final byte[] max);
+  Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
   Response<Long> bitcount(byte[] key);
 
   Response<Long> bitcount(byte[] key, long start, long end);
 
-  Response<Long> pfadd(final byte[] key, final byte[]... elements);
+  Response<Long> pfadd(byte[] key, byte[]... elements);
 
-  Response<Long> pfcount(final byte[] key);
+  Response<Long> pfcount(byte[] key);
 
   // Geo Commands
 
@@ -265,7 +267,7 @@ public interface BinaryRedisPipeline {
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<Long>> bitfield(final byte[] key, final byte[]... elements);
+  Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
-  Response<Long> hstrlen(final byte[] key, final byte[] field);
+  Response<Long> hstrlen(byte[] key, byte[] field);
 }

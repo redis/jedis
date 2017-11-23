@@ -89,7 +89,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     t.set("mykey", "foo");
     List<Object> resp = t.exec();
-    assertEquals(null, resp);
+    assertNull(resp);
     assertEquals("bar", jedis.get("mykey"));
 
     // Binary
@@ -103,7 +103,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     t.set(bmykey, bfoo);
     resp = t.exec();
-    assertEquals(null, resp);
+    assertNull(resp);
     assertTrue(Arrays.equals(bbar, jedis.get(bmykey)));
   }
 
@@ -274,7 +274,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     t.set("foooo", "barrr");
 
     jedis.resetState();
-    assertEquals(null, jedis.get("foooo"));
+    assertNull(jedis.get("foooo"));
   }
 
   @Test
@@ -286,7 +286,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     p.set("foooo", "barrr");
 
     jedis.resetState();
-    assertEquals(null, jedis.get("foooo"));
+    assertNull(jedis.get("foooo"));
   }
 
   @Test

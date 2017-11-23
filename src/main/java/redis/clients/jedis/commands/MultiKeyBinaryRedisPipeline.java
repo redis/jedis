@@ -15,6 +15,8 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> del(byte[]... keys);
 
+  Response<Long> unlink(byte[]... keys);
+
   Response<Long> exists(byte[]... keys);
 
   Response<List<byte[]>> blpop(byte[]... args);
@@ -69,11 +71,11 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<byte[]> randomKeyBinary();
 
-  Response<Long> bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
+  Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
-  Response<String> pfmerge(final byte[] destkey, final byte[]... sourcekeys);
+  Response<String> pfmerge(byte[] destkey, byte[]... sourcekeys);
 
-  Response<Long> pfcount(final byte[]... keys);
+  Response<Long> pfcount(byte[]... keys);
 
   Response<Long> touch(byte[]... keys);
 }

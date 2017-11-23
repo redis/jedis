@@ -228,6 +228,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long pttl(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.pttl(key);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long touch(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -323,6 +333,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.setex(key, seconds, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String psetex(final String key, final long milliseconds, final String value) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.psetex(key, milliseconds, value);
       }
     }.run(key);
   }
@@ -1208,6 +1228,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         return connection.del(key);
       }
     }.run(key);
+  }
+
+  @Override
+  public Long unlink(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.unlink(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long unlink(final String... keys) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.unlink(keys);
+      }
+    }.run(keys.length, keys);
   }
 
   @Override

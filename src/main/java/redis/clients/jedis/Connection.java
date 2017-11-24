@@ -167,24 +167,21 @@ public class Connection implements Closeable {
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = new Socket();
-        // ->@wjw_add
-        socket.setReuseAddress(true);
-        socket.setKeepAlive(true); // Will monitor the TCP connection is
-        // valid
-        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
-        // ensure timely delivery of data
-        socket.setSoLinger(true, 0); // Control calls close () method,
-        // the underlying socket is closed
-        // immediately
-        // <-@wjw_add
+        if (!ssl) {
+          socket = new Socket();
+          socket.setReuseAddress(true);
+          socket.setKeepAlive(true); // Will monitor the TCP connection is valid
+          socket.setTcpNoDelay(true); // Socket buffer Whether closed,
+          // to ensure timely delivery of data
+          socket.setSoLinger(true, 0); // Control calls close() method,
+          // the underlying socket is closed immediately
 
-        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
-        socket.setSoTimeout(soTimeout);
+          socket.connect(new InetSocketAddress(host, port), connectionTimeout);
+          socket.setSoTimeout(soTimeout);
 
-        if (ssl) {
+        } else {
           if (null == sslSocketFactory) {
-            sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+            sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
           }
           socket = (SSLSocket) sslSocketFactory.createSocket(socket, host, port, true);
           if (null != sslParameters) {
@@ -202,8 +199,7 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to host " 
-            + host + ":" + port, ex);
+        throw new JedisConnectionException("Failed connecting to host " + host + ":" + port, ex);
       }
     }
   }

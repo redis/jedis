@@ -3501,6 +3501,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
   public Long pttl(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.pttl(key);

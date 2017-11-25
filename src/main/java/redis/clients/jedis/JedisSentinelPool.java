@@ -142,7 +142,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       Jedis jedis = null;
       try {
-        jedis = new Jedis(hap.getHost(), hap.getPort());
+        jedis = new Jedis(hap);
 
         List<String> masterAddr = jedis.sentinelGetMasterAddrByName(masterName);
 

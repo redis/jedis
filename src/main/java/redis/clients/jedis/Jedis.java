@@ -45,6 +45,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host);
   }
 
+  public Jedis(final HostAndPort hp) {
+    super(hp);
+  }
+
   public Jedis(final String host, final int port) {
     super(host, port);
   }

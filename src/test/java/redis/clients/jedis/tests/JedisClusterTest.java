@@ -64,23 +64,23 @@ public class JedisClusterTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
+    node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
     node1.flushAll();
 
-    node2 = new Jedis(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node2 = new Jedis(nodeInfo2);
     node2.auth("cluster");
     node2.flushAll();
 
-    node3 = new Jedis(nodeInfo3.getHost(), nodeInfo3.getPort());
+    node3 = new Jedis(nodeInfo3);
     node3.auth("cluster");
     node3.flushAll();
 
-    node4 = new Jedis(nodeInfo4.getHost(), nodeInfo4.getPort());
+    node4 = new Jedis(nodeInfo4);
     node4.auth("cluster");
     node4.flushAll();
 
-    nodeSlave2 = new Jedis(nodeInfoSlave2.getHost(), nodeInfoSlave2.getPort());
+    nodeSlave2 = new Jedis(nodeInfoSlave2);
     nodeSlave2.auth("cluster");
     nodeSlave2.flushAll();
     // ---- configure cluster

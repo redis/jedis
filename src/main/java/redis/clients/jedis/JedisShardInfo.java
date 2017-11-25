@@ -65,6 +65,10 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this(host, Protocol.DEFAULT_PORT, name);
   }
 
+  public JedisShardInfo(HostAndPort hp) {
+    this(hp.getHost(), hp.getPort());
+  }
+
   public JedisShardInfo(String host, int port) {
     this(host, port, Protocol.DEFAULT_TIMEOUT);
   }

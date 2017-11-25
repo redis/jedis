@@ -49,7 +49,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinel() {
-    Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+    Jedis j = new Jedis(sentinel);
 
     try {
       List<Map<String, String>> masters = j.sentinelMasters();
@@ -79,8 +79,8 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelFailover() throws InterruptedException {
-    Jedis j = new Jedis(sentinelForFailover.getHost(), sentinelForFailover.getPort());
-    Jedis j2 = new Jedis(sentinelForFailover.getHost(), sentinelForFailover.getPort());
+    Jedis j = new Jedis(sentinelForFailover);
+    Jedis j2 = new Jedis(sentinelForFailover);
 
     try {
       List<String> masterHostAndPort = j.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
@@ -102,7 +102,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelMonitor() {
-    Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+    Jedis j = new Jedis(sentinel);
 
     try {
       // monitor new master
@@ -123,7 +123,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelRemove() {
-    Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+    Jedis j = new Jedis(sentinel);
 
     try {
       ensureMonitored(sentinel, REMOVE_MASTER_NAME, MASTER_IP, master.getPort(), 1);
@@ -146,7 +146,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelSet() {
-    Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+    Jedis j = new Jedis(sentinel);
 
     try {
       Map<String, String> parameterMap = new HashMap<String, String>();
@@ -173,7 +173,7 @@ public class JedisSentinelTest {
 
   private void ensureMonitored(HostAndPort sentinel, String masterName, String ip, int port,
       int quorum) {
-    Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+    Jedis j = new Jedis(sentinel);
     try {
       j.sentinelMonitor(masterName, ip, port, quorum);
     } catch (JedisDataException e) {
@@ -183,7 +183,7 @@ public class JedisSentinelTest {
   }
 
   private void ensureRemoved(String masterName) {
-    Jedis j = new Jedis(sentinel.getHost(), sentinel.getPort());
+    Jedis j = new Jedis(sentinel);
     try {
       j.sentinelRemove(masterName);
     } catch (JedisDataException e) {

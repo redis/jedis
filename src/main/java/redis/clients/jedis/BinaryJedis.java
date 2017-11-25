@@ -3294,7 +3294,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object evalsha(final byte[] sha1) {
-    return evalsha(sha1, 1);
+    return evalsha(sha1, 0);
   }
 
   @Override

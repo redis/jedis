@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -126,6 +127,15 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     String result = (String) jedis.evalsha("6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
 
     assertEquals("bar", result);
+  }
+
+  @Test
+  public void evalshaBinary() {
+    jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
+    jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
+    byte[] result = (byte[]) jedis.evalsha(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+
+    assertArrayEquals(SafeEncoder.encode("bar"), result);
   }
 
   @Test(expected = JedisNoScriptException.class)

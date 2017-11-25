@@ -41,6 +41,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
+  public BinaryJedis(final HostAndPort hp) {
+    this(hp.getHost(), hp.getPort());
+  }
+
   public BinaryJedis(final String host, final int port) {
     client = new Client(host, port);
   }

@@ -31,8 +31,8 @@ public class ShardedJedisPoolTest {
   @Before
   public void startUp() {
     shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(redis1.getHost(), redis1.getPort()));
-    shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
+    shards.add(new JedisShardInfo(redis1));
+    shards.add(new JedisShardInfo(redis2));
     shards.get(0).setPassword("foobared");
     shards.get(1).setPassword("foobared");
     Jedis j = new Jedis(shards.get(0));

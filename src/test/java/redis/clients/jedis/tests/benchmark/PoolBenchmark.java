@@ -16,7 +16,7 @@ public class PoolBenchmark {
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws Exception {
-    Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
+    Jedis j = new Jedis(hnp);
     j.connect();
     j.auth("foobared");
     j.flushAll();

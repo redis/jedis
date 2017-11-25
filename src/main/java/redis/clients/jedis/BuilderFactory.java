@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.Collections;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,7 +77,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public List<String> build(Object data) {
       if (null == data) {
-        return Collections.emptyList();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final ArrayList<String> result = new ArrayList<String>(l.size());
@@ -146,7 +145,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<String> result = new HashSet<String>(l.size(), 1);
@@ -172,7 +171,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public List<byte[]> build(Object data) {
       if (null == data) {
-        return Collections.emptyList();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
 
@@ -190,7 +189,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<byte[]> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<byte[]> result = new LinkedHashSet<byte[]>(l);
@@ -235,7 +234,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<String> result = new LinkedHashSet<String>(l.size(), 1);
@@ -261,7 +260,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<Tuple> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
@@ -285,7 +284,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<Tuple> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
@@ -366,7 +365,7 @@ public final class BuilderFactory {
     @Override
     public List<GeoCoordinate> build(Object data) {
       if (null == data) {
-        return Collections.emptyList();
+        return null;
       }
       return interpretGeoposResult((List<Object>) data);
     }
@@ -397,7 +396,7 @@ public final class BuilderFactory {
     @Override
     public List<GeoRadiusResponse> build(Object data) {
       if (data == null) {
-        return Collections.emptyList();
+        return null;
       } else {
         List<Object> objectList = (List<Object>) data;
 

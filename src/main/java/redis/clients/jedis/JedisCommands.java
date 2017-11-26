@@ -56,13 +56,13 @@ public interface JedisCommands {
 
   String psetex(String key, long milliseconds, String value);
 
-  Long decrBy(String key, long integer);
+  Long decrBy(String key, long decrement);
 
   Long decr(String key);
 
-  Long incrBy(String key, long integer);
+  Long incrBy(String key, long increment);
 
-  Double incrByFloat(String key, double value);
+  Double incrByFloat(String key, double increment);
 
   Long incr(String key);
 
@@ -102,9 +102,9 @@ public interface JedisCommands {
 
   Long llen(String key);
 
-  List<String> lrange(String key, long start, long end);
+  List<String> lrange(String key, long start, long stop);
 
-  String ltrim(String key, long start, long end);
+  String ltrim(String key, long start, long stop);
 
   String lindex(String key, long index);
 
@@ -144,23 +144,23 @@ public interface JedisCommands {
 
   Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
-  Set<String> zrange(String key, long start, long end);
+  Set<String> zrange(String key, long start, long stop);
 
-  Long zrem(String key, String... member);
+  Long zrem(String key, String... members);
 
-  Double zincrby(String key, double score, String member);
+  Double zincrby(String key, double increment, String member);
 
-  Double zincrby(String key, double score, String member, ZIncrByParams params);
+  Double zincrby(String key, double increment, String member, ZIncrByParams params);
 
   Long zrank(String key, String member);
 
   Long zrevrank(String key, String member);
 
-  Set<String> zrevrange(String key, long start, long end);
+  Set<String> zrevrange(String key, long start, long stop);
 
-  Set<Tuple> zrangeWithScores(String key, long start, long end);
+  Set<Tuple> zrangeWithScores(String key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(String key, long start, long end);
+  Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
   Long zcard(String key);
 
@@ -206,11 +206,11 @@ public interface JedisCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
-  Long zremrangeByRank(String key, long start, long end);
+  Long zremrangeByRank(String key, long start, long stop);
 
-  Long zremrangeByScore(String key, double start, double end);
+  Long zremrangeByScore(String key, double min, double max);
 
-  Long zremrangeByScore(String key, String start, String end);
+  Long zremrangeByScore(String key, String min, String max);
 
   Long zlexcount(String key, String min, String max);
 

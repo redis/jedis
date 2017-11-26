@@ -19,7 +19,7 @@ import redis.clients.util.JedisClusterHashTagUtil;
 public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
-  public static final short HASHSLOTS = 16384;
+  public static final int HASHSLOTS = 16384;
   protected static final int DEFAULT_TIMEOUT = 2000;
   protected static final int DEFAULT_MAX_ATTEMPTS = 5;
 

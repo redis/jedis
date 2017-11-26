@@ -1287,6 +1287,23 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   }
 
   @Override
+  public Set<String> keys(final String pattern) {
+    if (pattern == null || pattern.isEmpty()) {
+      throw new IllegalArgumentException(this.getClass().getSimpleName() + " only supports KEYS commands with non-empty patterns");
+    }
+    if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(pattern)) {
+      return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+        @Override
+        public Set<String> execute(Jedis connection) {
+          return connection.keys(pattern);
+        }
+      }.run(pattern);
+    } else {
+      throw new IllegalArgumentException(this.getClass().getSimpleName() + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
+    }
+  }
+
+  @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params) {
 
     String matchPattern = null;

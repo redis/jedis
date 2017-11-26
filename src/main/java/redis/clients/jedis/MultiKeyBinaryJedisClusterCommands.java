@@ -69,4 +69,6 @@ public interface MultiKeyBinaryJedisClusterCommands {
   Long touch(byte[]... keys);
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
+
+  Set<byte[]> keys(byte[] pattern);
 }

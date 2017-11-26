@@ -9,6 +9,7 @@ import org.junit.Test;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
 import java.util.List;
@@ -183,6 +184,14 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
     String resultNot = jedis.get("resultNot");
     assertEquals("\u0077", resultNot);
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void bitOpNotShouldFailForMultipleSourceKeys() {
+    jedis.set("key1", "\u0060");
+    jedis.set("key2", "\u0044");
+
+    jedis.bitop(BitOP.NOT, "key3", "key1", "key2");
   }
 
   @Test

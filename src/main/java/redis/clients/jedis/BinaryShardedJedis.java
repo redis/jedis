@@ -150,9 +150,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long decrBy(final byte[] key, final long integer) {
+  public Long decrBy(final byte[] key, final long decrement) {
     Jedis j = getShard(key);
-    return j.decrBy(key, integer);
+    return j.decrBy(key, decrement);
   }
 
   @Override
@@ -174,15 +174,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long incrBy(final byte[] key, final long integer) {
+  public Long incrBy(final byte[] key, final long increment) {
     Jedis j = getShard(key);
-    return j.incrBy(key, integer);
+    return j.incrBy(key, increment);
   }
 
   @Override
-  public Double incrByFloat(final byte[] key, final double integer) {
+  public Double incrByFloat(final byte[] key, final double increment) {
     Jedis j = getShard(key);
-    return j.incrByFloat(key, integer);
+    return j.incrByFloat(key, increment);
   }
 
   @Override
@@ -324,15 +324,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<byte[]> lrange(final byte[] key, final long start, final long end) {
+  public List<byte[]> lrange(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.lrange(key, start, end);
+    return j.lrange(key, start, stop);
   }
 
   @Override
-  public String ltrim(final byte[] key, final long start, final long end) {
+  public String ltrim(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.ltrim(key, start, end);
+    return j.ltrim(key, start, stop);
   }
 
   @Override
@@ -444,9 +444,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrange(final byte[] key, final long start, final long end) {
+  public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrange(key, start, end);
+    return j.zrange(key, start, stop);
   }
 
   @Override
@@ -456,15 +456,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member) {
     Jedis j = getShard(key);
-    return j.zincrby(key, score, member);
+    return j.zincrby(key, increment, member);
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member, ZIncrByParams params) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member, ZIncrByParams params) {
     Jedis j = getShard(key);
-    return j.zincrby(key, score, member, params);
+    return j.zincrby(key, increment, member, params);
   }
 
   @Override
@@ -480,21 +480,21 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrevrange(final byte[] key, final long start, final long end) {
+  public Set<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrevrange(key, start, end);
+    return j.zrevrange(key, start, stop);
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long end) {
+  public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrangeWithScores(key, start, end);
+    return j.zrangeWithScores(key, start, stop);
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long end) {
+  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrevrangeWithScores(key, start, end);
+    return j.zrevrangeWithScores(key, start, stop);
   }
 
   @Override
@@ -634,21 +634,21 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long zremrangeByRank(final byte[] key, final long start, final long end) {
+  public Long zremrangeByRank(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zremrangeByRank(key, start, end);
+    return j.zremrangeByRank(key, start, stop);
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final double start, final double end) {
+  public Long zremrangeByScore(final byte[] key, final double min, final double max) {
     Jedis j = getShard(key);
-    return j.zremrangeByScore(key, start, end);
+    return j.zremrangeByScore(key, min, max);
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
+  public Long zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     Jedis j = getShard(key);
-    return j.zremrangeByScore(key, start, end);
+    return j.zremrangeByScore(key, min, max);
   }
 
   @Override

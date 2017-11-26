@@ -175,8 +175,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void decrBy(final String key, final long integer) {
-    decrBy(SafeEncoder.encode(key), integer);
+  public void decrBy(final String key, final long decrement) {
+    decrBy(SafeEncoder.encode(key), decrement);
   }
 
   @Override
@@ -185,8 +185,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void incrBy(final String key, final long integer) {
-    incrBy(SafeEncoder.encode(key), integer);
+  public void incrBy(final String key, final long increment) {
+    incrBy(SafeEncoder.encode(key), increment);
   }
 
   @Override
@@ -288,13 +288,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void lrange(final String key, final long start, final long end) {
-    lrange(SafeEncoder.encode(key), start, end);
+  public void lrange(final String key, final long start, final long stop) {
+    lrange(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
-  public void ltrim(final String key, final long start, final long end) {
-    ltrim(SafeEncoder.encode(key), start, end);
+  public void ltrim(final String key, final long start, final long stop) {
+    ltrim(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
@@ -450,8 +450,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zrange(final String key, final long start, final long end) {
-    zrange(SafeEncoder.encode(key), start, end);
+  public void zrange(final String key, final long start, final long stop) {
+    zrange(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
@@ -460,13 +460,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zincrby(final String key, final double score, final String member) {
-    zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member));
+  public void zincrby(final String key, final double increment, final String member) {
+    zincrby(SafeEncoder.encode(key), increment, SafeEncoder.encode(member));
   }
 
   @Override
-  public void zincrby(final String key, final double score, final String member, final ZIncrByParams params) {
-    zincrby(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
+  public void zincrby(final String key, final double increment, final String member, final ZIncrByParams params) {
+    zincrby(SafeEncoder.encode(key), increment, SafeEncoder.encode(member), params);
   }
 
   @Override
@@ -480,18 +480,18 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zrevrange(final String key, final long start, final long end) {
-    zrevrange(SafeEncoder.encode(key), start, end);
+  public void zrevrange(final String key, final long start, final long stop) {
+    zrevrange(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
-  public void zrangeWithScores(final String key, final long start, final long end) {
-    zrangeWithScores(SafeEncoder.encode(key), start, end);
+  public void zrangeWithScores(final String key, final long start, final long stop) {
+    zrangeWithScores(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
-  public void zrevrangeWithScores(final String key, final long start, final long end) {
-    zrevrangeWithScores(SafeEncoder.encode(key), start, end);
+  public void zrevrangeWithScores(final String key, final long start, final long stop) {
+    zrevrangeWithScores(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
@@ -614,6 +614,7 @@ public class Client extends BinaryClient implements Commands {
     zrevrangeByScore(SafeEncoder.encode(key), toByteArray(max), toByteArray(min));
   }
 
+  @Override
   public void zrangeByScore(final String key, final String min, final String max, final int offset,
       final int count) {
     zrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max),
@@ -644,6 +645,7 @@ public class Client extends BinaryClient implements Commands {
     zrevrangeByScore(SafeEncoder.encode(key), toByteArray(max), toByteArray(min), offset, count);
   }
 
+  @Override
   public void zrevrangeByScore(final String key, final String max, final String min,
       final int offset, final int count) {
     zrevrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
@@ -676,18 +678,18 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zremrangeByRank(final String key, final long start, final long end) {
-    zremrangeByRank(SafeEncoder.encode(key), start, end);
+  public void zremrangeByRank(final String key, final long start, final long stop) {
+    zremrangeByRank(SafeEncoder.encode(key), start, stop);
   }
 
   @Override
-  public void zremrangeByScore(final String key, final double start, final double end) {
-    zremrangeByScore(SafeEncoder.encode(key), toByteArray(start), toByteArray(end));
+  public void zremrangeByScore(final String key, final double min, final double max) {
+    zremrangeByScore(SafeEncoder.encode(key), toByteArray(min), toByteArray(max));
   }
 
   @Override
-  public void zremrangeByScore(final String key, final String start, final String end) {
-    zremrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(end));
+  public void zremrangeByScore(final String key, final String min, final String max) {
+    zremrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
   }
 
   @Override

@@ -567,13 +567,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see #decr(String)
    * @see #incrBy(String, long)
    * @param key
-   * @param integer
+   * @param decrement
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Long decrBy(final String key, final long integer) {
+  public Long decrBy(final String key, final long decrement) {
     checkIsInMultiOrPipeline();
-    client.decrBy(key, integer);
+    client.decrBy(key, decrement);
     return client.getIntegerReply();
   }
 
@@ -616,13 +616,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @see #decr(String)
    * @see #decrBy(String, long)
    * @param key
-   * @param integer
+   * @param increment
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Long incrBy(final String key, final long integer) {
+  public Long incrBy(final String key, final long increment) {
     checkIsInMultiOrPipeline();
-    client.incrBy(key, integer);
+    client.incrBy(key, increment);
     return client.getIntegerReply();
   }
 
@@ -638,13 +638,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param value
+   * @param increment
    * @return Double reply, this commands will reply with the new value of key after the increment.
    */
   @Override
-  public Double incrByFloat(final String key, final double value) {
+  public Double incrByFloat(final String key, final double increment) {
     checkIsInMultiOrPipeline();
-    client.incrByFloat(key, value);
+    client.incrByFloat(key, increment);
     String dval = client.getBulkReply();
     return (dval != null ? new Double(dval) : null);
   }
@@ -1017,13 +1017,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * offset)
    * @param key
    * @param start
-   * @param end
+   * @param stop
    * @return Multi bulk reply, specifically a list of elements in the specified range.
    */
   @Override
-  public List<String> lrange(final String key, final long start, final long end) {
+  public List<String> lrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.lrange(key, start, end);
+    client.lrange(key, start, stop);
     return client.getMultiBulkReply();
   }
 
@@ -1054,13 +1054,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * Time complexity: O(n) (with n being len of list - len of range)
    * @param key
    * @param start
-   * @param end
+   * @param stop
    * @return Status code reply
    */
   @Override
-  public String ltrim(final String key, final long start, final long end) {
+  public String ltrim(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.ltrim(key, start, end);
+    client.ltrim(key, start, stop);
     return client.getStatusCodeReply();
   }
 
@@ -1512,9 +1512,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Set<String> zrange(final String key, final long start, final long end) {
+  public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.zrange(key, start, end);
+    client.zrange(key, start, stop);
     final List<String> members = client.getMultiBulkReply();
     return SetFromList.of(members);
   }
@@ -1551,22 +1551,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * Time complexity O(log(N)) with N being the number of elements in the sorted set
    * @param key
-   * @param score
+   * @param increment
    * @param member
    * @return The new score
    */
   @Override
-  public Double zincrby(final String key, final double score, final String member) {
+  public Double zincrby(final String key, final double increment, final String member) {
     checkIsInMultiOrPipeline();
-    client.zincrby(key, score, member);
+    client.zincrby(key, increment, member);
     String newscore = client.getBulkReply();
     return Double.valueOf(newscore);
   }
 
   @Override
-  public Double zincrby(final String key, final double score, final String member, final ZIncrByParams params) {
+  public Double zincrby(final String key, final double increment, final String member, final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
-    client.zincrby(key, score, member, params);
+    client.zincrby(key, increment, member, params);
     String newscore = client.getBulkReply();
 
     // with nx / xx options it could return null now
@@ -1622,24 +1622,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Set<String> zrevrange(final String key, final long start, final long end) {
+  public Set<String> zrevrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.zrevrange(key, start, end);
+    client.zrevrange(key, start, stop);
     final List<String> members = client.getMultiBulkReply();
     return SetFromList.of(members);
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final String key, final long start, final long end) {
+  public Set<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.zrangeWithScores(key, start, end);
+    client.zrangeWithScores(key, start, stop);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long end) {
+  public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.zrevrangeWithScores(key, start, end);
+    client.zrevrangeWithScores(key, start, stop);
     return getTupledSet();
   }
 
@@ -2344,9 +2344,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * and M the number of elements removed by the operation
    */
   @Override
-  public Long zremrangeByRank(final String key, final long start, final long end) {
+  public Long zremrangeByRank(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    client.zremrangeByRank(key, start, end);
+    client.zremrangeByRank(key, start, stop);
     return client.getIntegerReply();
   }
 
@@ -2359,21 +2359,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements removed by the operation
    * @param key
-   * @param start
-   * @param end
+   * @param min
+   * @param max
    * @return Integer reply, specifically the number of elements removed.
    */
   @Override
-  public Long zremrangeByScore(final String key, final double start, final double end) {
+  public Long zremrangeByScore(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    client.zremrangeByScore(key, start, end);
+    client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final String start, final String end) {
+  public Long zremrangeByScore(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    client.zremrangeByScore(key, start, end);
+    client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
   }
 

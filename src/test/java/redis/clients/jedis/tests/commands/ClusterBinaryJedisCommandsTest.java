@@ -166,6 +166,20 @@ public class ClusterBinaryJedisCommandsTest {
   }
 
   @Test
+  public void testKeys() {
+    assertEquals(0, jedisCluster.keys("{f}o*".getBytes()).size());
+    jedisCluster.set("{f}oo1".getBytes(), "bar".getBytes());
+    jedisCluster.set("{f}oo2".getBytes(), "bar".getBytes());
+    jedisCluster.set("{f}oo3".getBytes(), "bar".getBytes());
+    assertEquals(3, jedisCluster.keys("{f}o*".getBytes()).size());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void failKeys() {
+    jedisCluster.keys("*".getBytes());
+  }
+
+  @Test
   public void testGetSlot() {
     assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar"));
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()),

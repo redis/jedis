@@ -76,4 +76,6 @@ public interface MultiKeyJedisClusterCommands {
   Long touch(String... keys);
 
   ScanResult<String> scan(String cursor, ScanParams params);
+
+  Set<String> keys(String pattern);
 }

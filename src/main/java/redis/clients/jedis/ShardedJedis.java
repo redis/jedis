@@ -191,9 +191,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long decrBy(final String key, final long integer) {
+  public Long decrBy(final String key, final long decrement) {
     Jedis j = getShard(key);
-    return j.decrBy(key, integer);
+    return j.decrBy(key, decrement);
   }
 
   @Override
@@ -203,15 +203,15 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long incrBy(final String key, final long integer) {
+  public Long incrBy(final String key, final long increment) {
     Jedis j = getShard(key);
-    return j.incrBy(key, integer);
+    return j.incrBy(key, increment);
   }
 
   @Override
-  public Double incrByFloat(final String key, final double integer) {
+  public Double incrByFloat(final String key, final double increment) {
     Jedis j = getShard(key);
-    return j.incrByFloat(key, integer);
+    return j.incrByFloat(key, increment);
   }
 
   @Override
@@ -371,15 +371,15 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<String> lrange(final String key, final long start, final long end) {
+  public List<String> lrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.lrange(key, start, end);
+    return j.lrange(key, start, stop);
   }
 
   @Override
-  public String ltrim(final String key, final long start, final long end) {
+  public String ltrim(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.ltrim(key, start, end);
+    return j.ltrim(key, start, stop);
   }
 
   @Override
@@ -491,9 +491,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<String> zrange(final String key, final long start, final long end) {
+  public Set<String> zrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrange(key, start, end);
+    return j.zrange(key, start, stop);
   }
 
   @Override
@@ -503,15 +503,15 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Double zincrby(final String key, final double score, final String member) {
+  public Double zincrby(final String key, final double increment, final String member) {
     Jedis j = getShard(key);
-    return j.zincrby(key, score, member);
+    return j.zincrby(key, increment, member);
   }
 
   @Override
-  public Double zincrby(final String key, final double score, final String member, ZIncrByParams params) {
+  public Double zincrby(final String key, final double increment, final String member, ZIncrByParams params) {
     Jedis j = getShard(key);
-    return j.zincrby(key, score, member, params);
+    return j.zincrby(key, increment, member, params);
   }
 
   @Override
@@ -527,21 +527,21 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<String> zrevrange(final String key, final long start, final long end) {
+  public Set<String> zrevrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrevrange(key, start, end);
+    return j.zrevrange(key, start, stop);
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final String key, final long start, final long end) {
+  public Set<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrangeWithScores(key, start, end);
+    return j.zrangeWithScores(key, start, stop);
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long end) {
+  public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zrevrangeWithScores(key, start, end);
+    return j.zrevrangeWithScores(key, start, stop);
   }
 
   @Override
@@ -681,21 +681,21 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zremrangeByRank(final String key, final long start, final long end) {
+  public Long zremrangeByRank(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
-    return j.zremrangeByRank(key, start, end);
+    return j.zremrangeByRank(key, start, stop);
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final double start, final double end) {
+  public Long zremrangeByScore(final String key, final double min, final double max) {
     Jedis j = getShard(key);
-    return j.zremrangeByScore(key, start, end);
+    return j.zremrangeByScore(key, min, max);
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final String start, final String end) {
+  public Long zremrangeByScore(final String key, final String min, final String max) {
     Jedis j = getShard(key);
-    return j.zremrangeByScore(key, start, end);
+    return j.zremrangeByScore(key, min, max);
   }
 
   @Override

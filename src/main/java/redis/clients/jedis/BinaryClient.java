@@ -224,20 +224,20 @@ public class BinaryClient extends Connection {
     sendCommand(MSETNX, keysvalues);
   }
 
-  public void decrBy(final byte[] key, final long integer) {
-    sendCommand(DECRBY, key, toByteArray(integer));
+  public void decrBy(final byte[] key, final long decrement) {
+    sendCommand(DECRBY, key, toByteArray(decrement));
   }
 
   public void decr(final byte[] key) {
     sendCommand(DECR, key);
   }
 
-  public void incrBy(final byte[] key, final long integer) {
-    sendCommand(INCRBY, key, toByteArray(integer));
+  public void incrBy(final byte[] key, final long increment) {
+    sendCommand(INCRBY, key, toByteArray(increment));
   }
 
-  public void incrByFloat(final byte[] key, final double value) {
-    sendCommand(INCRBYFLOAT, key, toByteArray(value));
+  public void incrByFloat(final byte[] key, final double increment) {
+    sendCommand(INCRBYFLOAT, key, toByteArray(increment));
   }
 
   public void incr(final byte[] key) {
@@ -322,12 +322,12 @@ public class BinaryClient extends Connection {
     sendCommand(LLEN, key);
   }
 
-  public void lrange(final byte[] key, final long start, final long end) {
-    sendCommand(LRANGE, key, toByteArray(start), toByteArray(end));
+  public void lrange(final byte[] key, final long start, final long stop) {
+    sendCommand(LRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
-  public void ltrim(final byte[] key, final long start, final long end) {
-    sendCommand(LTRIM, key, toByteArray(start), toByteArray(end));
+  public void ltrim(final byte[] key, final long start, final long stop) {
+    sendCommand(LTRIM, key, toByteArray(start), toByteArray(stop));
   }
 
   public void lindex(final byte[] key, final long index) {
@@ -452,22 +452,22 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
-  public void zrange(final byte[] key, final long start, final long end) {
-    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end));
+  public void zrange(final byte[] key, final long start, final long stop) {
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
   public void zrem(final byte[] key, final byte[]... members) {
     sendCommand(ZREM, joinParameters(key, members));
   }
 
-  public void zincrby(final byte[] key, final double score, final byte[] member) {
-    sendCommand(ZINCRBY, key, toByteArray(score), member);
+  public void zincrby(final byte[] key, final double increment, final byte[] member) {
+    sendCommand(ZINCRBY, key, toByteArray(increment), member);
   }
 
-  public void zincrby(final byte[] key, final double score, final byte[] member,
+  public void zincrby(final byte[] key, final double increment, final byte[] member,
       final ZIncrByParams params) {
     // Note that it actually calls ZADD with INCR option, so it requires Redis 3.0.2 or upper.
-    sendCommand(ZADD, params.getByteParams(key, toByteArray(score), member));
+    sendCommand(ZADD, params.getByteParams(key, toByteArray(increment), member));
   }
 
   public void zrank(final byte[] key, final byte[] member) {
@@ -478,16 +478,16 @@ public class BinaryClient extends Connection {
     sendCommand(ZREVRANK, key, member);
   }
 
-  public void zrevrange(final byte[] key, final long start, final long end) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end));
+  public void zrevrange(final byte[] key, final long start, final long stop) {
+    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
-  public void zrangeWithScores(final byte[] key, final long start, final long end) {
-    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(end), WITHSCORES.raw);
+  public void zrangeWithScores(final byte[] key, final long start, final long stop) {
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
   }
 
-  public void zrevrangeWithScores(final byte[] key, final long start, final long end) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(end), WITHSCORES.raw);
+  public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
+    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
   }
 
   public void zcard(final byte[] key) {
@@ -755,16 +755,16 @@ public class BinaryClient extends Connection {
       toByteArray(count), WITHSCORES.raw);
   }
 
-  public void zremrangeByRank(final byte[] key, final long start, final long end) {
-    sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(end));
+  public void zremrangeByRank(final byte[] key, final long start, final long stop) {
+    sendCommand(ZREMRANGEBYRANK, key, toByteArray(start), toByteArray(stop));
   }
 
-  public void zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
-    sendCommand(ZREMRANGEBYSCORE, key, start, end);
+  public void zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
+    sendCommand(ZREMRANGEBYSCORE, key, min, max);
   }
 
-  public void zremrangeByScore(final byte[] key, final String start, final String end) {
-    sendCommand(ZREMRANGEBYSCORE, key, start.getBytes(), end.getBytes());
+  public void zremrangeByScore(final byte[] key, final String min, final String max) {
+    sendCommand(ZREMRANGEBYSCORE, key, min.getBytes(), max.getBytes());
   }
 
   public void zunionstore(final byte[] dstkey, final byte[]... sets) {

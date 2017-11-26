@@ -54,13 +54,13 @@ public interface BinaryJedisClusterCommands {
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
-  Long decrBy(byte[] key, long integer);
+  Long decrBy(byte[] key, long decrement);
 
   Long decr(byte[] key);
 
-  Long incrBy(byte[] key, long integer);
+  Long incrBy(byte[] key, long increment);
 
-  Double incrByFloat(byte[] key, double value);
+  Double incrByFloat(byte[] key, double increment);
 
   Long incr(byte[] key);
 
@@ -100,9 +100,9 @@ public interface BinaryJedisClusterCommands {
 
   Long llen(byte[] key);
 
-  List<byte[]> lrange(byte[] key, long start, long end);
+  List<byte[]> lrange(byte[] key, long start, long stop);
 
-  String ltrim(byte[] key, long start, long end);
+  String ltrim(byte[] key, long start, long stop);
 
   byte[] lindex(byte[] key, long index);
 
@@ -142,23 +142,23 @@ public interface BinaryJedisClusterCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
-  Set<byte[]> zrange(byte[] key, long start, long end);
+  Set<byte[]> zrange(byte[] key, long start, long stop);
 
-  Long zrem(byte[] key, byte[]... member);
+  Long zrem(byte[] key, byte[]... members);
 
-  Double zincrby(byte[] key, double score, byte[] member);
+  Double zincrby(byte[] key, double increment, byte[] member);
 
-  Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params);
+  Double zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params);
 
   Long zrank(byte[] key, byte[] member);
 
   Long zrevrank(byte[] key, byte[] member);
 
-  Set<byte[]> zrevrange(byte[] key, long start, long end);
+  Set<byte[]> zrevrange(byte[] key, long start, long stop);
 
-  Set<Tuple> zrangeWithScores(byte[] key, long start, long end);
+  Set<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end);
+  Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
   Long zcard(byte[] key);
 
@@ -204,11 +204,11 @@ public interface BinaryJedisClusterCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Long zremrangeByRank(byte[] key, long start, long end);
+  Long zremrangeByRank(byte[] key, long start, long stop);
 
-  Long zremrangeByScore(byte[] key, double start, double end);
+  Long zremrangeByScore(byte[] key, double min, double max);
 
-  Long zremrangeByScore(byte[] key, byte[] start, byte[] end);
+  Long zremrangeByScore(byte[] key, byte[] min, byte[] max);
 
   Long zlexcount(byte[] key, byte[] min, byte[] max);
 

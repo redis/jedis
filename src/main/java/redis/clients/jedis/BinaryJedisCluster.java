@@ -318,11 +318,11 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Long decrBy(final byte[] key, final long integer) {
+  public Long decrBy(final byte[] key, final long decrement) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.decrBy(key, integer);
+        return connection.decrBy(key, decrement);
       }
     }.runBinary(key);
   }
@@ -338,21 +338,21 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Long incrBy(final byte[] key, final long integer) {
+  public Long incrBy(final byte[] key, final long increment) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.incrBy(key, integer);
+        return connection.incrBy(key, increment);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Double incrByFloat(final byte[] key, final double value) {
+  public Double incrByFloat(final byte[] key, final double increment) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.incrByFloat(key, value);
+        return connection.incrByFloat(key, increment);
       }
     }.runBinary(key);
   }
@@ -548,21 +548,21 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public List<byte[]> lrange(final byte[] key, final long start, final long end) {
+  public List<byte[]> lrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
       public List<byte[]> execute(Jedis connection) {
-        return connection.lrange(key, start, end);
+        return connection.lrange(key, start, stop);
       }
     }.runBinary(key);
   }
 
   @Override
-  public String ltrim(final byte[] key, final long start, final long end) {
+  public String ltrim(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
-        return connection.ltrim(key, start, end);
+        return connection.ltrim(key, start, stop);
       }
     }.runBinary(key);
   }
@@ -749,42 +749,42 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Set<byte[]> zrange(final byte[] key, final long start, final long end) {
+  public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
       @Override
       public Set<byte[]> execute(Jedis connection) {
-        return connection.zrange(key, start, end);
+        return connection.zrange(key, start, stop);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Long zrem(final byte[] key, final byte[]... member) {
+  public Long zrem(final byte[] key, final byte[]... members) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zrem(key, member);
+        return connection.zrem(key, members);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.zincrby(key, score, member);
+        return connection.zincrby(key, increment, member);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double score, final byte[] member,
+  public Double zincrby(final byte[] key, final double increment, final byte[] member,
       final ZIncrByParams params) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
       public Double execute(Jedis connection) {
-        return connection.zincrby(key, score, member, params);
+        return connection.zincrby(key, increment, member, params);
       }
     }.runBinary(key);
   }
@@ -810,31 +810,31 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Set<byte[]> zrevrange(final byte[] key, final long start, final long end) {
+  public Set<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
       @Override
       public Set<byte[]> execute(Jedis connection) {
-        return connection.zrevrange(key, start, end);
+        return connection.zrevrange(key, start, stop);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long end) {
+  public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
       @Override
       public Set<Tuple> execute(Jedis connection) {
-        return connection.zrangeWithScores(key, start, end);
+        return connection.zrangeWithScores(key, start, stop);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long end) {
+  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
       @Override
       public Set<Tuple> execute(Jedis connection) {
-        return connection.zrevrangeWithScores(key, start, end);
+        return connection.zrevrangeWithScores(key, start, stop);
       }
     }.runBinary(key);
   }
@@ -1068,31 +1068,31 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
-  public Long zremrangeByRank(final byte[] key, final long start, final long end) {
+  public Long zremrangeByRank(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByRank(key, start, end);
+        return connection.zremrangeByRank(key, start, stop);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final double start, final double end) {
+  public Long zremrangeByScore(final byte[] key, final double min, final double max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, start, end);
+        return connection.zremrangeByScore(key, min, max);
       }
     }.runBinary(key);
   }
 
   @Override
-  public Long zremrangeByScore(final byte[] key, final byte[] start, final byte[] end) {
+  public Long zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, start, end);
+        return connection.zremrangeByScore(key, min, max);
       }
     }.runBinary(key);
   }

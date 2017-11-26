@@ -38,9 +38,9 @@ public interface Commands {
 
   void ttl(String key);
 
-  void pttl(final String key);
+  void pttl(String key);
 
-  void touch(final String... keys);
+  void touch(String... keys);
 
   void setbit(String key, long offset, boolean value);
 
@@ -66,13 +66,13 @@ public interface Commands {
 
   void msetnx(String... keysvalues);
 
-  void decrBy(String key, long integer);
+  void decrBy(String key, long decrement);
 
   void decr(String key);
 
-  void incrBy(String key, long integer);
+  void incrBy(String key, long increment);
 
-  void incrByFloat(String key, double value);
+  void incrByFloat(String key, double increment);
 
   void incr(String key);
 
@@ -112,9 +112,9 @@ public interface Commands {
 
   void llen(String key);
 
-  void lrange(String key, long start, long end);
+  void lrange(String key, long start, long stop);
 
-  void ltrim(String key, long start, long end);
+  void ltrim(String key, long start, long stop);
 
   void lindex(String key, long index);
 
@@ -166,23 +166,23 @@ public interface Commands {
 
   void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
-  void zrange(String key, long start, long end);
+  void zrange(String key, long start, long stop);
 
   void zrem(String key, String... members);
 
-  void zincrby(String key, double score, String member);
+  void zincrby(String key, double increment, String member);
 
-  void zincrby(String key, double score, String member, ZIncrByParams params);
+  void zincrby(String key, double increment, String member, ZIncrByParams params);
 
   void zrank(String key, String member);
 
   void zrevrank(String key, String member);
 
-  void zrevrange(String key, long start, long end);
+  void zrevrange(String key, long start, long stop);
 
-  void zrangeWithScores(String key, long start, long end);
+  void zrangeWithScores(String key, long start, long stop);
 
-  void zrevrangeWithScores(String key, long start, long end);
+  void zrevrangeWithScores(String key, long start, long stop);
 
   void zcard(String key);
 
@@ -215,6 +215,8 @@ public interface Commands {
   void zrangeByScore(String key, double min, double max, int offset,
       int count);
 
+  void zrangeByScore(String key, String min, String max, int offset, int count);
+
   void zrangeByScoreWithScores(String key, double min, double max);
 
   void zrangeByScoreWithScores(String key, double min, double max,
@@ -232,6 +234,8 @@ public interface Commands {
   void zrevrangeByScore(String key, double max, double min, int offset,
       int count);
 
+  void zrevrangeByScore(String key, String max, String min, int offset, int count);
+
   void zrevrangeByScoreWithScores(String key, double max, double min);
 
   void zrevrangeByScoreWithScores(String key, double max, double min,
@@ -242,11 +246,11 @@ public interface Commands {
   void zrevrangeByScoreWithScores(String key, String max, String min,
       int offset, int count);
 
-  void zremrangeByRank(String key, long start, long end);
+  void zremrangeByRank(String key, long start, long stop);
 
-  void zremrangeByScore(String key, double start, double end);
+  void zremrangeByScore(String key, double min, double max);
 
-  void zremrangeByScore(String key, String start, String end);
+  void zremrangeByScore(String key, String min, String max);
 
   void zunionstore(String dstkey, String... sets);
 

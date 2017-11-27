@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests.commands;
 
-
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,19 +9,16 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.set.SetParams.setParams;
 
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import static org.awaitility.Awaitility.*;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.tests.utils.AwaitilityUtils;
 import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
@@ -360,23 +356,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   }
 
-  private Callable<Boolean> jedisTargetIsIdle(final String target) {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return jedis.objectIdletime(target) > 0;
-      }
-    };
-  }
-
-  private Callable<Boolean> jedisTargetIsIdle(final byte[] target) {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return jedis.objectIdletime(target) > 0;
-      }
-    };
-  }
   @Test
   public void touch() throws Exception {
     final String foo1 = "foo1";
@@ -385,7 +364,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(foo1, "bar1");
 
-    await().atMost(2, TimeUnit.SECONDS).until(jedisTargetIsIdle(foo1));
+    AwaitilityUtils.waitFor(2000);
 
     assertTrue(jedis.objectIdletime("foo1") > 0);
 
@@ -409,7 +388,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo1, bbar1);
 
-    await().atMost(2, TimeUnit.SECONDS).until(jedisTargetIsIdle(bfoo1));
+    AwaitilityUtils.waitFor(2000);
 
     assertTrue(jedis.objectIdletime(bfoo1) > 0);
 

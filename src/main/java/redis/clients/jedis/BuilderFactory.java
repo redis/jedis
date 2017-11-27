@@ -401,11 +401,11 @@ public final class BuilderFactory {
 
       List<Object> objectList = (List<Object>) data;
 
+      List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
       if (objectList.isEmpty()) {
-        return new ArrayList<GeoRadiusResponse>();
+        return responses;
       }
 
-      List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
       if (objectList.get(0) instanceof List<?>) {
         // list of members with additional informations
         GeoRadiusResponse resp;
@@ -452,7 +452,6 @@ public final class BuilderFactory {
   };
 
 
-
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {
@@ -462,11 +461,10 @@ public final class BuilderFactory {
 
       List<List<Object>> objectList = (List<List<Object>>) data;
 
-      if (objectList.isEmpty()) {
-        return new ArrayList<Module>();
-      }
-
       List<Module> responses = new ArrayList<Module>(objectList.size());
+      if (objectList.isEmpty()) {
+        return responses;
+      }
 
       for (List<Object> moduleResp: objectList) {
         Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());

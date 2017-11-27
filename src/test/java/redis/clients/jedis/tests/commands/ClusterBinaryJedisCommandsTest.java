@@ -196,7 +196,7 @@ public class ClusterBinaryJedisCommandsTest {
 
       }
 
-      AwaitilityUtils.waitFor(2000);
+      AwaitilityUtils.waitFor(50);
     }
   }
 }

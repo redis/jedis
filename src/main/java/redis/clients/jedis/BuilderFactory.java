@@ -21,7 +21,7 @@ public final class BuilderFactory {
       try {
         return Double.valueOf(string);
       } catch (NumberFormatException e) {
-        if (string.equals("inf")) return Double.POSITIVE_INFINITY;
+        if (string.equals("inf") || string.equals("+inf")) return Double.POSITIVE_INFINITY;
         if (string.equals("-inf")) return Double.NEGATIVE_INFINITY;
         throw e;
       }

@@ -1561,20 +1561,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double zincrby(final String key, final double increment, final String member) {
     checkIsInMultiOrPipeline();
     client.zincrby(key, increment, member);
-    String newscore = client.getBulkReply();
-    return Double.valueOf(newscore);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
   public Double zincrby(final String key, final double increment, final String member, final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
     client.zincrby(key, increment, member, params);
-    String newscore = client.getBulkReply();
-
-    // with nx / xx options it could return null now
-    if (newscore == null) return null;
-
-    return Double.valueOf(newscore);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -1674,8 +1668,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double zscore(final String key, final String member) {
     checkIsInMultiOrPipeline();
     client.zscore(key, member);
-    final String score = client.getBulkReply();
-    return (score != null ? new Double(score) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
@@ -2272,19 +2265,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max, offset, count);
     return getTupledSet();
-  }
-
-  private Set<Tuple> getTupledSet() {
-    List<String> membersWithScores = client.getMultiBulkReply();
-    if (membersWithScores.isEmpty()) {
-      return Collections.emptySet();
-    }
-    Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);
-    Iterator<String> iterator = membersWithScores.iterator();
-    while (iterator.hasNext()) {
-      set.add(new Tuple(iterator.next(), Double.valueOf(iterator.next())));
-    }
-    return set;
   }
 
   @Override

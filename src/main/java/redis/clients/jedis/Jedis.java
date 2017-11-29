@@ -2635,6 +2635,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
+    checkIsInMultiOrPipeline();
     client.linsert(key, where, pivot, value);
     return client.getIntegerReply();
   }

@@ -3237,6 +3237,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot,
       final byte[] value) {
+    checkIsInMultiOrPipeline();
     client.linsert(key, where, pivot, value);
     return client.getIntegerReply();
   }

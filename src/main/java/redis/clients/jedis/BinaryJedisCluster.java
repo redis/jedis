@@ -1975,21 +1975,21 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
     String matchPattern = null;
 
     if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
-      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName() + " only supports SCAN commands with non-empty MATCH patterns");
+      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName()
+          + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
-    if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
-
-      return new JedisClusterCommand< ScanResult<byte[]>>(connectionHandler,
-              maxAttempts) {
-        @Override
-        public ScanResult<byte[]> execute(Jedis connection) {
-          return connection.scan(cursor, params);
-        }
-      }.runBinary(SafeEncoder.encode(matchPattern));
-    } else {
-      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName() + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
+    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
+      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName()
+          + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
+
+    return new JedisClusterCommand< ScanResult<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<byte[]> execute(Jedis connection) {
+        return connection.scan(cursor, params);
+      }
+    }.runBinary(SafeEncoder.encode(matchPattern));
   }
   
   @Override

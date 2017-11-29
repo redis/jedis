@@ -1254,21 +1254,21 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     String matchPattern = null;
 
     if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
-      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports SCAN commands with non-empty MATCH patterns");
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
+          + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
     if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
-
-      return new JedisClusterCommand< ScanResult<String>>(connectionHandler,
-              maxAttempts) {
-        @Override
-        public ScanResult<String> execute(Jedis connection) {
-          return connection.scan(cursor, params);
-        }
-      }.run(matchPattern);
-    } else {
-      throw new IllegalArgumentException(JedisCluster.class.getSimpleName() + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
+          + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
+
+    return new JedisClusterCommand< ScanResult<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
+        return connection.scan(cursor, params);
+      }
+    }.run(matchPattern);
   }
   
   @Override

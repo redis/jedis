@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -117,10 +117,10 @@ public class JedisClusterTest {
     node2.flushDB();
     node3.flushDB();
     node4.flushDB();
-    node1.clusterReset(Reset.SOFT);
-    node2.clusterReset(Reset.SOFT);
-    node3.clusterReset(Reset.SOFT);
-    node4.clusterReset(Reset.SOFT);
+    node1.clusterReset(ClusterReset.SOFT);
+    node2.clusterReset(ClusterReset.SOFT);
+    node3.clusterReset(ClusterReset.SOFT);
+    node4.clusterReset(ClusterReset.SOFT);
   }
 
   @After
@@ -223,7 +223,7 @@ public class JedisClusterTest {
     nodeSlave2.readonly();
     nodeSlave2.get("test");
 
-    nodeSlave2.clusterReset(Reset.SOFT);
+    nodeSlave2.clusterReset(ClusterReset.SOFT);
     nodeSlave2.flushDB();
   }
 

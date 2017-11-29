@@ -12,7 +12,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
@@ -1058,8 +1057,8 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
   }
 
-  public void clusterReset(final Reset resetType) {
-    cluster(Protocol.CLUSTER_RESET, resetType.toString());
+  public void clusterReset(final ClusterReset resetType) {
+    cluster(Protocol.CLUSTER_RESET, resetType.name());
   }
 
   public void clusterAddSlots(final int... slots) {

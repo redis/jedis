@@ -74,6 +74,8 @@ public interface JedisCommands {
 
   Long hset(String key, String field, String value);
 
+  Long hset(String key, Map<String, String> hash);
+
   String hget(String key, String field);
 
   Long hsetnx(String key, String field, String value);

@@ -210,6 +210,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long hset(final byte[] key, final Map<byte[], byte[]> hash) {
+    Jedis j = getShard(key);
+    return j.hset(key, hash);
+  }
+
+  @Override
   public byte[] hget(final byte[] key, final byte[] field) {
     Jedis j = getShard(key);
     return j.hget(key, field);

@@ -232,6 +232,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Long hset(final String key, final Map<String, String> hash) {
+    Jedis j = getShard(key);
+    return j.hset(key, hash);
+  }
+
+  @Override
   public String hget(final String key, final String field) {
     Jedis j = getShard(key);
     return j.hget(key, field);

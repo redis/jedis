@@ -19,6 +19,7 @@ import org.junit.Test;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.tests.utils.AwaitilityUtils;
 import redis.clients.util.SafeEncoder;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
@@ -398,12 +399,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void touch() throws Exception {
-    long reply = jedis.touch("foo1", "foo2", "foo3");
+    final String foo1 = "foo1";
+    long reply = jedis.touch(foo1, "foo2", "foo3");
     assertEquals(0, reply);
 
-    jedis.set("foo1", "bar1");
+    jedis.set(foo1, "bar1");
 
-    Thread.sleep(2000);
+    AwaitilityUtils.waitFor(2000);
+
     assertTrue(jedis.objectIdletime("foo1") > 0);
 
     reply = jedis.touch("foo1");
@@ -426,7 +429,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo1, bbar1);
 
-    Thread.sleep(2000);
+    AwaitilityUtils.waitFor(2000);
+
     assertTrue(jedis.objectIdletime(bfoo1) > 0);
 
     reply = jedis.touch(bfoo1);

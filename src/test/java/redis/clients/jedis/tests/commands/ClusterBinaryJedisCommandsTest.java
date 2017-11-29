@@ -20,6 +20,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.utils.AwaitilityUtils;
 import redis.clients.util.JedisClusterCRC16;
 
 public class ClusterBinaryJedisCommandsTest {
@@ -203,11 +204,13 @@ public class ClusterBinaryJedisCommandsTest {
     boolean clusterOk = false;
     while (!clusterOk) {
       if (node1.clusterInfo().split("\n")[0].contains("ok")
-          && node2.clusterInfo().split("\n")[0].contains("ok")
-          && node3.clusterInfo().split("\n")[0].contains("ok")) {
+              && node2.clusterInfo().split("\n")[0].contains("ok")
+              && node3.clusterInfo().split("\n")[0].contains("ok")) {
         clusterOk = true;
+
       }
-      Thread.sleep(50);
+
+      AwaitilityUtils.waitFor(50);
     }
   }
 }

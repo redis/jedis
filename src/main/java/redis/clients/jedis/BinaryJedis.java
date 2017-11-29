@@ -1701,20 +1701,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Double zincrby(final byte[] key, final double increment, final byte[] member) {
     checkIsInMultiOrPipeline();
     client.zincrby(key, increment, member);
-    String newscore = client.getBulkReply();
-    return Double.valueOf(newscore);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
   public Double zincrby(final byte[] key, final double increment, final byte[] member, final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
     client.zincrby(key, increment, member, params);
-    String newscore = client.getBulkReply();
-
-    // with nx / xx options it could return null now
-    if (newscore == null) return null;
-
-    return Double.valueOf(newscore);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -1774,14 +1768,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrangeWithScores(key, start, stop);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
   public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrevrangeWithScores(key, start, stop);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   /**
@@ -2443,7 +2437,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   /**
@@ -2504,10 +2498,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max, offset, count);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
-  private Set<Tuple> getBinaryTupledSet() {
+  protected Set<Tuple> getTupledSet() {
     List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
@@ -2515,7 +2509,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);
     Iterator<byte[]> iterator = membersWithScores.iterator();
     while (iterator.hasNext()) {
-      set.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder.encode(iterator.next()))));
+      set.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
     }
     return set;
   }
@@ -2561,7 +2555,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
@@ -2569,7 +2563,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final byte[] min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   /**
@@ -3618,7 +3612,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
-      results.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder.encode(iterator.next()))));
+      results.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
     }
     return new ScanResult<Tuple>(newcursor, results);
   }

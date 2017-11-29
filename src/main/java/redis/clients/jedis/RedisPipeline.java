@@ -63,6 +63,8 @@ public interface RedisPipeline {
 
   Response<Long> hset(String key, String field, String value);
 
+  Response<Long> hset(String key, Map<String, String> hash);
+
   Response<Long> hsetnx(String key, String field, String value);
 
   Response<List<String>> hvals(String key);

@@ -958,6 +958,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long hset(final byte[] key, final Map<byte[], byte[]> hash) {
+    checkIsInMultiOrPipeline();
+    client.hset(key, hash);
+    return client.getIntegerReply();
+  }
+
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>

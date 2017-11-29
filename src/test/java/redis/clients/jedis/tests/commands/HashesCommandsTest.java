@@ -115,6 +115,26 @@ public class HashesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void hsetVariadic() {
+    Map<String, String> hash = new HashMap<String, String>();
+    hash.put("bar", "car");
+    hash.put("car", "bar");
+    long status = jedis.hset("foo", hash);
+    assertEquals(2, status);
+    assertEquals("car", jedis.hget("foo", "bar"));
+    assertEquals("bar", jedis.hget("foo", "car"));
+
+    // Binary
+    Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
+    bhash.put(bbar, bcar);
+    bhash.put(bcar, bbar);
+    status = jedis.hset(bfoo, bhash);
+    assertEquals(2, status);
+    assertArrayEquals(bcar, jedis.hget(bfoo, bbar));
+    assertArrayEquals(bbar, jedis.hget(bfoo, bcar));
+  }
+
+  @Test
   public void hmget() {
     Map<String, String> hash = new HashMap<String, String>();
     hash.put("bar", "car");

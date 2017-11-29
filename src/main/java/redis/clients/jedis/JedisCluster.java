@@ -433,6 +433,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   }
 
   @Override
+  public Long hset(final String key, final Map<String, String> hash) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.hset(key, hash);
+      }
+    }.run(key);
+  }
+
+  @Override
   public String hget(final String key, final String field) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override

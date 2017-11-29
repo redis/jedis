@@ -72,6 +72,8 @@ public interface BinaryJedisClusterCommands {
 
   Long hset(byte[] key, byte[] field, byte[] value);
 
+  Long hset(byte[] key, Map<byte[], byte[]> hash);
+
   byte[] hget(byte[] key, byte[] field);
 
   Long hsetnx(byte[] key, byte[] field, byte[] value);

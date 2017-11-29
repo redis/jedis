@@ -408,6 +408,16 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
+  public Long hset(final byte[] key, final Map<byte[], byte[]> hash) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.hset(key, hash);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public byte[] hget(final byte[] key, final byte[] field) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override

@@ -1055,7 +1055,6 @@ public class BinaryClient extends Connection {
       break;
     case NOT:
       kw = Keyword.NOT;
-      len = Math.min(1, len);
       break;
     }
 

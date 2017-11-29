@@ -185,6 +185,11 @@ public class BitCommandsTest extends JedisCommandTestBase {
     assertEquals("\u0077", resultNot);
   }
 
+  @Test(expected = redis.clients.jedis.exceptions.JedisDataException.class)
+  public void bitOpNotMultiSourceShouldFail() {
+    jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
+  }
+
   @Test
   public void testBitfield() {
     List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");

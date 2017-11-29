@@ -1005,25 +1005,9 @@ public class BinaryClient extends Connection {
   }
 
   public void bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
-    Keyword kw = Keyword.AND;
     int len = srcKeys.length;
-    switch (op) {
-    case AND:
-      kw = Keyword.AND;
-      break;
-    case OR:
-      kw = Keyword.OR;
-      break;
-    case XOR:
-      kw = Keyword.XOR;
-      break;
-    case NOT:
-      kw = Keyword.NOT;
-      break;
-    }
-
     byte[][] bargs = new byte[len + 2][];
-    bargs[0] = kw.raw;
+    bargs[0] = op.raw;
     bargs[1] = destKey;
     for (int i = 0; i < len; ++i) {
       bargs[i + 2] = srcKeys[i];

@@ -266,8 +266,7 @@ public final class BuilderFactory {
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
-        result.add(new Tuple(SafeEncoder.encode(iterator.next()), Double.valueOf(SafeEncoder
-            .encode(iterator.next()))));
+        result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
       }
       return result;
     }
@@ -290,7 +289,7 @@ public final class BuilderFactory {
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
-        result.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder.encode(iterator.next()))));
+        result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
       }
 
       return result;

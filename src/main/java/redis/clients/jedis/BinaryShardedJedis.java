@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
@@ -695,7 +694,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot, final byte[] value) {
+  public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot, final byte[] value) {
     Jedis j = getShard(key);
     return j.linsert(key, where, pivot, value);
   }

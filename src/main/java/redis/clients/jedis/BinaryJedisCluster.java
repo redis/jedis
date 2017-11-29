@@ -1110,7 +1110,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long linsert(final byte[] key, final Client.LIST_POSITION where, final byte[] pivot,
+  public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot,
       final byte[] value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

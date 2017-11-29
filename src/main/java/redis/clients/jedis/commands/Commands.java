@@ -2,8 +2,8 @@ package redis.clients.jedis.commands;
 
 import java.util.Map;
 
-import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
@@ -273,7 +273,7 @@ public interface Commands {
 
   void echo(String string);
 
-  void linsert(String key, LIST_POSITION where, String pivot, String value);
+  void linsert(String key, ListPosition where, String pivot, String value);
 
   void bgrewriteaof();
 

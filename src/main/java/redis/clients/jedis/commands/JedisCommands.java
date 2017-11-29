@@ -230,7 +230,7 @@ public interface JedisCommands {
 
   Long zremrangeByLex(String key, String min, String max);
 
-  Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value);
+  Long linsert(String key, ListPosition where, String pivot, String value);
 
   Long lpushx(String key, String... string);
 

@@ -28,17 +28,8 @@ import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
-  public enum LIST_POSITION {
-    BEFORE, AFTER;
-    public final byte[] raw;
-
-    private LIST_POSITION() {
-      raw = SafeEncoder.encode(name());
-    }
-  }
 
   private boolean isInMulti;
 
@@ -923,7 +914,7 @@ public class BinaryClient extends Connection {
     sendCommand(ECHO, string);
   }
 
-  public void linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot,
+  public void linsert(final byte[] key, final ListPosition where, final byte[] pivot,
       final byte[] value) {
     sendCommand(LINSERT, key, where.raw, pivot, value);
   }

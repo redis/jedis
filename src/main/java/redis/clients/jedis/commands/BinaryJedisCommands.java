@@ -231,7 +231,7 @@ public interface BinaryJedisCommands {
 
   Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Long linsert(byte[] key, BinaryClient.LIST_POSITION where, byte[] pivot, byte[] value);
+  Long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
   Long lpushx(byte[] key, byte[]... arg);
 

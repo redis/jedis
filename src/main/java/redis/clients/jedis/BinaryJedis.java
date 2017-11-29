@@ -2260,7 +2260,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Long zcount(final byte[] key, final double min, final double max) {
-    return zcount(key, toByteArray(min), toByteArray(max));
+    checkIsInMultiOrPipeline();
+    client.zcount(key, min, max);
+    return client.getIntegerReply();
   }
 
   @Override

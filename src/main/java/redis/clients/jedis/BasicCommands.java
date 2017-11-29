@@ -12,6 +12,8 @@ public interface BasicCommands {
 
   String select(int index);
 
+  String swapDB(int index1, int index2);
+
   String flushAll();
 
   String auth(String password);

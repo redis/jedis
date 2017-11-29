@@ -19,7 +19,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
           final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
     this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, password, clientName);
-    initializeSlotsCache(nodes, poolConfig, password, clientName);
+    initializeSlotsCache(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
 }
 
   abstract Jedis getConnection();
@@ -34,10 +34,12 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     return cache.getNodes();
   }
 
-  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig, String password, String clientName) {
+  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
+                                    int connectionTimeout, int soTimeout, String password, String clientName) {
     for (HostAndPort hostAndPort : startNodes) {
-      Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort());
+      Jedis jedis = null;
       try {
+        jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, soTimeout);
         if (password != null) {
           jedis.auth(password);
         }

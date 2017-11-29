@@ -36,4 +36,6 @@ public interface BasicRedisPipeline {
   Response<String> ping();
 
   Response<String> select(int index);
+
+  Response<String> swapDB(int index1, int index2);
 }

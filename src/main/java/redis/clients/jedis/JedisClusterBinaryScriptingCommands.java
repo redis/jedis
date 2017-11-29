@@ -11,7 +11,7 @@ public interface JedisClusterBinaryScriptingCommands {
 
   Object eval(byte[] script, byte[] key);
 
-  Object evalsha(byte[] script, byte[] key);
+  Object evalsha(byte[] sha1, byte[] key);
 
   Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args);
 

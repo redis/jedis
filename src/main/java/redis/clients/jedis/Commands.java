@@ -8,293 +8,301 @@ import java.util.Map;
 
 public interface Commands {
 
-  public void set(final String key, final String value);
+  void set(String key, String value);
 
   public void set(final String key, final String value, final String nxxx, final String expx,
       final long time);
 
-  public void get(final String key);
+  void get(String key);
 
+  @Deprecated
   public void exists(final String key);
 
-  public void exists(final String... keys);
+  void exists(String... keys);
 
-  public void del(final String... keys);
+  void del(String... keys);
 
-  public void type(final String key);
+  void unlink(String... keys);
 
-  public void keys(final String pattern);
+  void type(String key);
 
-  public void rename(final String oldkey, final String newkey);
+  void keys(String pattern);
 
-  public void renamenx(final String oldkey, final String newkey);
+  void rename(String oldkey, String newkey);
 
-  public void expire(final String key, final int seconds);
+  void renamenx(String oldkey, String newkey);
 
-  public void expireAt(final String key, final long unixTime);
+  void expire(String key, int seconds);
 
-  public void ttl(final String key);
+  void expireAt(String key, long unixTime);
 
-  public void setbit(String key, long offset, boolean value);
+  void ttl(String key);
 
-  public void setbit(String key, long offset, String value);
+  void pttl(String key);
 
-  public void getbit(String key, long offset);
+  void touch(String... keys);
 
-  public void setrange(String key, long offset, String value);
+  void setbit(String key, long offset, boolean value);
 
-  public void getrange(String key, long startOffset, long endOffset);
+  void setbit(String key, long offset, String value);
 
-  public void move(final String key, final int dbIndex);
+  void getbit(String key, long offset);
 
-  public void getSet(final String key, final String value);
+  void setrange(String key, long offset, String value);
 
-  public void mget(final String... keys);
+  void getrange(String key, long startOffset, long endOffset);
 
-  public void setnx(final String key, final String value);
+  void move(String key, int dbIndex);
 
-  public void setex(final String key, final int seconds, final String value);
+  void getSet(String key, String value);
 
-  public void mset(final String... keysvalues);
+  void mget(String... keys);
 
-  public void msetnx(final String... keysvalues);
+  void setnx(String key, String value);
 
-  public void decrBy(final String key, final long integer);
+  void setex(String key, int seconds, String value);
 
-  public void decr(final String key);
+  void mset(String... keysvalues);
 
-  public void incrBy(final String key, final long integer);
+  void msetnx(String... keysvalues);
 
-  public void incrByFloat(final String key, final double value);
+  void decrBy(String key, long decrement);
 
-  public void incr(final String key);
+  void decr(String key);
 
-  public void append(final String key, final String value);
+  void incrBy(String key, long increment);
 
-  public void substr(final String key, final int start, final int end);
+  void incrByFloat(String key, double increment);
 
-  public void hset(final String key, final String field, final String value);
+  void incr(String key);
 
-  public void hget(final String key, final String field);
+  void append(String key, String value);
 
-  public void hsetnx(final String key, final String field, final String value);
+  void substr(String key, int start, int end);
 
-  public void hmset(final String key, final Map<String, String> hash);
+  void hset(String key, String field, String value);
 
-  public void hmget(final String key, final String... fields);
+  void hget(String key, String field);
 
-  public void hincrBy(final String key, final String field, final long value);
+  void hsetnx(String key, String field, String value);
 
-  public void hincrByFloat(final String key, final String field, final double value);
+  void hmset(String key, Map<String, String> hash);
 
-  public void hexists(final String key, final String field);
+  void hmget(String key, String... fields);
 
-  public void hdel(final String key, final String... fields);
+  void hincrBy(String key, String field, long value);
 
-  public void hlen(final String key);
+  void hincrByFloat(String key, String field, double value);
 
-  public void hkeys(final String key);
+  void hexists(String key, String field);
 
-  public void hvals(final String key);
+  void hdel(String key, String... fields);
 
-  public void hgetAll(final String key);
+  void hlen(String key);
 
-  public void rpush(final String key, final String... strings);
+  void hkeys(String key);
 
-  public void lpush(final String key, final String... strings);
+  void hvals(String key);
 
-  public void llen(final String key);
+  void hgetAll(String key);
 
-  public void lrange(final String key, final long start, final long end);
+  void rpush(String key, String... strings);
 
-  public void ltrim(final String key, final long start, final long end);
+  void lpush(String key, String... strings);
 
-  public void lindex(final String key, final long index);
+  void llen(String key);
 
-  public void lset(final String key, final long index, final String value);
+  void lrange(String key, long start, long stop);
 
-  public void lrem(final String key, final long count, final String value);
+  void ltrim(String key, long start, long stop);
 
-  public void lpop(final String key);
+  void lindex(String key, long index);
 
-  public void rpop(final String key);
+  void lset(String key, long index, String value);
 
-  public void rpoplpush(final String srckey, final String dstkey);
+  void lrem(String key, long count, String value);
 
-  public void sadd(final String key, final String... members);
+  void lpop(String key);
 
-  public void smembers(final String key);
+  void rpop(String key);
 
-  public void srem(final String key, final String... member);
+  void rpoplpush(String srckey, String dstkey);
 
-  public void spop(final String key);
+  void sadd(String key, String... members);
 
-  public void spop(final String key, final long count);
+  void smembers(String key);
 
-  public void smove(final String srckey, final String dstkey, final String member);
+  void srem(String key, String... member);
 
-  public void scard(final String key);
+  void spop(String key);
 
-  public void sismember(final String key, final String member);
+  void spop(String key, long count);
 
-  public void sinter(final String... keys);
+  void smove(String srckey, String dstkey, String member);
 
-  public void sinterstore(final String dstkey, final String... keys);
+  void scard(String key);
 
-  public void sunion(final String... keys);
+  void sismember(String key, String member);
 
-  public void sunionstore(final String dstkey, final String... keys);
+  void sinter(String... keys);
 
-  public void sdiff(final String... keys);
+  void sinterstore(String dstkey, String... keys);
 
-  public void sdiffstore(final String dstkey, final String... keys);
+  void sunion(String... keys);
 
-  public void srandmember(final String key);
+  void sunionstore(String dstkey, String... keys);
 
-  public void zadd(final String key, final double score, final String member);
+  void sdiff(String... keys);
 
-  public void zadd(final String key, final double score, final String member,
-      final ZAddParams params);
+  void sdiffstore(String dstkey, String... keys);
 
-  public void zadd(final String key, final Map<String, Double> scoreMembers);
+  void srandmember(String key);
 
-  public void zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params);
+  void zadd(String key, double score, String member);
 
-  public void zrange(final String key, final long start, final long end);
+  void zadd(String key, double score, String member, ZAddParams params);
 
-  public void zrem(final String key, final String... members);
+  void zadd(String key, Map<String, Double> scoreMembers);
 
-  public void zincrby(final String key, final double score, final String member);
+  void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
-  public void zincrby(final String key, final double score, final String member,
-      final ZIncrByParams params);
+  void zrange(String key, long start, long stop);
 
-  public void zrank(final String key, final String member);
+  void zrem(String key, String... members);
 
-  public void zrevrank(final String key, final String member);
+  void zincrby(String key, double increment, String member);
 
-  public void zrevrange(final String key, final long start, final long end);
+  void zincrby(String key, double increment, String member, ZIncrByParams params);
 
-  public void zrangeWithScores(final String key, final long start, final long end);
+  void zrank(String key, String member);
 
-  public void zrevrangeWithScores(final String key, final long start, final long end);
+  void zrevrank(String key, String member);
 
-  public void zcard(final String key);
+  void zrevrange(String key, long start, long stop);
 
-  public void zscore(final String key, final String member);
+  void zrangeWithScores(String key, long start, long stop);
 
-  public void watch(final String... keys);
+  void zrevrangeWithScores(String key, long start, long stop);
 
-  public void sort(final String key);
+  void zcard(String key);
 
-  public void sort(final String key, final SortingParams sortingParameters);
+  void zscore(String key, String member);
 
-  public void blpop(final String[] args);
+  void watch(String... keys);
 
-  public void sort(final String key, final SortingParams sortingParameters, final String dstkey);
+  void sort(String key);
 
-  public void sort(final String key, final String dstkey);
+  void sort(String key, SortingParams sortingParameters);
 
-  public void brpop(final String[] args);
+  void blpop(String[] args);
 
-  public void brpoplpush(final String source, final String destination, final int timeout);
+  void sort(String key, SortingParams sortingParameters, String dstkey);
 
-  public void zcount(final String key, final double min, final double max);
+  void sort(String key, String dstkey);
 
-  public void zcount(final String key, final String min, final String max);
+  void brpop(String[] args);
 
-  public void zrangeByScore(final String key, final double min, final double max);
+  void brpoplpush(String source, String destination, int timeout);
 
-  public void zrangeByScore(final String key, final String min, final String max);
+  void zcount(String key, double min, double max);
 
-  public void zrangeByScore(final String key, final double min, final double max, final int offset,
+  void zcount(String key, String min, String max);
+
+  void zrangeByScore(String key, double min, double max);
+
+  void zrangeByScore(String key, String min, String max);
+
+  void zrangeByScore(String key, double min, double max, int offset,
       int count);
 
-  public void zrangeByScoreWithScores(final String key, final double min, final double max);
+  void zrangeByScore(String key, String min, String max, int offset, int count);
 
-  public void zrangeByScoreWithScores(final String key, final double min, final double max,
-      final int offset, final int count);
+  void zrangeByScoreWithScores(String key, double min, double max);
 
-  public void zrangeByScoreWithScores(final String key, final String min, final String max);
+  void zrangeByScoreWithScores(String key, double min, double max,
+      int offset, int count);
 
-  public void zrangeByScoreWithScores(final String key, final String min, final String max,
-      final int offset, final int count);
+  void zrangeByScoreWithScores(String key, String min, String max);
 
-  public void zrevrangeByScore(final String key, final double max, final double min);
+  void zrangeByScoreWithScores(String key, String min, String max,
+      int offset, int count);
 
-  public void zrevrangeByScore(final String key, final String max, final String min);
+  void zrevrangeByScore(String key, double max, double min);
 
-  public void zrevrangeByScore(final String key, final double max, final double min,
-      final int offset, int count);
+  void zrevrangeByScore(String key, String max, String min);
 
-  public void zrevrangeByScoreWithScores(final String key, final double max, final double min);
+  void zrevrangeByScore(String key, double max, double min, int offset,
+      int count);
 
-  public void zrevrangeByScoreWithScores(final String key, final double max, final double min,
-      final int offset, final int count);
+  void zrevrangeByScore(String key, String max, String min, int offset, int count);
 
-  public void zrevrangeByScoreWithScores(final String key, final String max, final String min);
+  void zrevrangeByScoreWithScores(String key, double max, double min);
 
-  public void zrevrangeByScoreWithScores(final String key, final String max, final String min,
-      final int offset, final int count);
+  void zrevrangeByScoreWithScores(String key, double max, double min,
+      int offset, int count);
 
-  public void zremrangeByRank(final String key, final long start, final long end);
+  void zrevrangeByScoreWithScores(String key, String max, String min);
 
-  public void zremrangeByScore(final String key, final double start, final double end);
+  void zrevrangeByScoreWithScores(String key, String max, String min,
+      int offset, int count);
 
-  public void zremrangeByScore(final String key, final String start, final String end);
+  void zremrangeByRank(String key, long start, long stop);
 
-  public void zunionstore(final String dstkey, final String... sets);
+  void zremrangeByScore(String key, double min, double max);
 
-  public void zunionstore(final String dstkey, final ZParams params, final String... sets);
+  void zremrangeByScore(String key, String min, String max);
 
-  public void zinterstore(final String dstkey, final String... sets);
+  void zunionstore(String dstkey, String... sets);
 
-  public void zinterstore(final String dstkey, final ZParams params, final String... sets);
+  void zunionstore(String dstkey, ZParams params, String... sets);
 
-  public void strlen(final String key);
+  void zinterstore(String dstkey, String... sets);
 
-  public void lpushx(final String key, final String... string);
+  void zinterstore(String dstkey, ZParams params, String... sets);
 
-  public void persist(final String key);
+  void strlen(String key);
 
-  public void rpushx(final String key, final String... string);
+  void lpushx(String key, String... string);
 
-  public void echo(final String string);
+  void persist(String key);
 
-  public void linsert(final String key, final LIST_POSITION where, final String pivot,
-      final String value);
+  void rpushx(String key, String... string);
 
-  public void bgrewriteaof();
+  void echo(String string);
 
-  public void bgsave();
+  void linsert(String key, LIST_POSITION where, String pivot, String value);
 
-  public void lastsave();
+  void bgrewriteaof();
 
-  public void save();
+  void bgsave();
 
-  public void configSet(final String parameter, final String value);
+  void lastsave();
 
-  public void configGet(final String pattern);
+  void save();
 
-  public void configResetStat();
+  void configSet(String parameter, String value);
 
-  public void multi();
+  void configGet(String pattern);
 
-  public void exec();
+  void configResetStat();
 
-  public void discard();
+  void multi();
 
-  public void objectRefcount(String key);
+  void exec();
 
-  public void objectIdletime(String key);
+  void discard();
 
-  public void objectEncoding(String key);
+  void objectRefcount(String key);
 
-  public void bitcount(final String key);
+  void objectIdletime(String key);
 
-  public void bitcount(final String key, long start, long end);
+  void objectEncoding(String key);
 
-  public void bitop(BitOP op, final String destKey, String... srcKeys);
+  void bitcount(String key);
+
+  void bitcount(String key, long start, long end);
+
+  void bitop(BitOP op, String destKey, String... srcKeys);
 
   @Deprecated
   /**
@@ -328,28 +336,27 @@ public interface Commands {
    */
   public void zscan(final String key, int cursor, final ScanParams params);
 
-  public void scan(final String cursor, final ScanParams params);
+  void scan(String cursor, ScanParams params);
 
-  public void hscan(final String key, final String cursor, final ScanParams params);
+  void hscan(String key, String cursor, ScanParams params);
 
-  public void sscan(final String key, final String cursor, final ScanParams params);
+  void sscan(String key, String cursor, ScanParams params);
 
-  public void zscan(final String key, final String cursor, final ScanParams params);
+  void zscan(String key, String cursor, ScanParams params);
 
-  public void waitReplicas(int replicas, long timeout);
+  void waitReplicas(int replicas, long timeout);
 
   /**
    * Used for BITFIELD Redis command
    * @param key
-   * @param args
+   * @param arguments
    */
-  void bitfield(final String key, final String...arguments);
+  void bitfield(String key, String... arguments);
 
   /**
    * Used for HSTRLEN Redis command
-   *
    * @param key
    * @param field
    */
-  void hstrlen(final String key, final String field);
+  void hstrlen(String key, String field);
 }

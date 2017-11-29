@@ -39,8 +39,8 @@ public class JedisSentinelPoolTest {
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
-    sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
-    sentinelJedis2 = new Jedis(sentinel2.getHost(), sentinel2.getPort());
+    sentinelJedis1 = new Jedis(sentinel1);
+    sentinelJedis2 = new Jedis(sentinel2);
   }
 
   @Test(expected = JedisConnectionException.class)

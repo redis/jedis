@@ -8,6 +8,8 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Long del(byte[]... keys);
 
+  Long unlink(byte[]... keys);
+
   List<byte[]> blpop(int timeout, byte[]... keys);
 
   List<byte[]> brpop(int timeout, byte[]... keys);
@@ -58,9 +60,15 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns);
 
-  Long bitop(BitOP op, final byte[] destKey, byte[]... srcKeys);
+  Long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
-  String pfmerge(final byte[] destkey, final byte[]... sourcekeys);
+  String pfmerge(byte[] destkey, byte[]... sourcekeys);
 
   Long pfcount(byte[]... keys);
+
+  Long touch(byte[]... keys);
+
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
+
+  Set<byte[]> keys(byte[] pattern);
 }

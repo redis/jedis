@@ -40,7 +40,7 @@ public abstract class JedisCommandTestBase {
   }
 
   protected Jedis createJedis() {
-    Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
+    Jedis j = new Jedis(hnp);
     j.connect();
     j.auth("foobared");
     j.flushAll();

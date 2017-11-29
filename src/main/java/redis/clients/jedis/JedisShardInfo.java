@@ -64,31 +64,35 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this(host, Protocol.DEFAULT_PORT, name);
   }
 
+  public JedisShardInfo(HostAndPort hp) {
+    this(hp.getHost(), hp.getPort());
+  }
+
   public JedisShardInfo(String host, int port) {
-    this(host, port, 2000);
+    this(host, port, Protocol.DEFAULT_TIMEOUT);
   }
 
   public JedisShardInfo(String host, int port, boolean ssl) {
-    this(host, port, 2000, 2000, Sharded.DEFAULT_WEIGHT, ssl);
+    this(host, port, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, Sharded.DEFAULT_WEIGHT, ssl);
   }
 
   public JedisShardInfo(String host, int port, boolean ssl, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    this(host, port, 2000, 2000, Sharded.DEFAULT_WEIGHT, ssl, sslSocketFactory, sslParameters,
+    this(host, port, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, Sharded.DEFAULT_WEIGHT, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
   }
 
   public JedisShardInfo(String host, int port, String name) {
-    this(host, port, 2000, name);
+    this(host, port, Protocol.DEFAULT_TIMEOUT, name);
   }
 
   public JedisShardInfo(String host, int port, String name, boolean ssl) {
-    this(host, port, 2000, name, ssl);
+    this(host, port, Protocol.DEFAULT_TIMEOUT, name, ssl);
   }
 
   public JedisShardInfo(String host, int port, String name, boolean ssl, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    this(host, port, 2000, name, ssl, sslSocketFactory, sslParameters,
+    this(host, port, Protocol.DEFAULT_TIMEOUT, name, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
   }
 
@@ -228,6 +232,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
+  @Override
   public String toString() {
     return host + ":" + port + "*" + getWeight();
   }
@@ -264,6 +269,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.soTimeout = soTimeout;
   }
 
+  @Override
   public String getName() {
     return name;
   }

@@ -54,6 +54,10 @@ public class Client extends BinaryClient implements Commands {
       SafeEncoder.encode(expx), time);
   }
 
+  public void set(final String key, final String value, final String expx, final long time) {
+    set(SafeEncoder.encode(key), SafeEncoder.encode(value), SafeEncoder.encode(expx), time);
+  }
+
   @Override
   public void get(final String key) {
     get(SafeEncoder.encode(key));

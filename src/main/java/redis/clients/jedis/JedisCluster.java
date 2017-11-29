@@ -125,6 +125,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
   }
 
   @Override
+  public String set(final String key, final String value, final String expx, final long time) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.set(key, value, expx, time);
+      }
+    }.run(key);
+  }
+
+  @Override
   public String get(final String key) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override

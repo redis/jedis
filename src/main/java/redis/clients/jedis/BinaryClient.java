@@ -119,6 +119,10 @@ public class BinaryClient extends Connection {
     sendCommand(Command.SET, key, value, nxxx, expx, toByteArray(time));
   }
 
+  public void set(final byte[] key, final byte[] value, final byte[] expx, final long time) {
+    sendCommand(Command.SET, key, value, expx, toByteArray(time));
+  }
+
   public void get(final byte[] key) {
     sendCommand(Command.GET, key);
   }

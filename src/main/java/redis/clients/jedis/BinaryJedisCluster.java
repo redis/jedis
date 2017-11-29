@@ -98,6 +98,16 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
   }
 
   @Override
+  public String set(final byte[] key, final byte[] value, final byte[] expx, final long time) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.set(key, value, expx, time);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public byte[] get(final byte[] key) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override

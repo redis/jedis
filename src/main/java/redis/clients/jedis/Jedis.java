@@ -157,6 +157,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1
+   * GB).
+   * @param key
+   * @param value
+   * @param expx EX|PX, expire time units: EX = seconds; PX = milliseconds
+   * @param time expire time in the units of <code>expx</code>
+   * @return Status code reply
+   */
+  public String set(final String key, final String value, final String expx, final long time) {
+    checkIsInMultiOrPipeline();
+    client.set(key, value, expx, time);
+    return client.getStatusCodeReply();
+  }
+
+  /**
    * Get the value of the specified key. If the key does not exist null is returned. If the value
    * stored at key is not a string an error is returned because GET can only handle string values.
    * <p>

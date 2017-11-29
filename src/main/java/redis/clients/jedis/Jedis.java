@@ -3430,8 +3430,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  /**
+   * @deprecated Use {@link #clusterReset(redis.clients.jedis.ClusterReset) }
+   */
   @Override
   public String clusterReset(final Reset resetType) {
+    checkIsInMultiOrPipeline();
+    client.clusterReset(resetType);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterReset(final ClusterReset resetType) {
     checkIsInMultiOrPipeline();
     client.clusterReset(resetType);
     return client.getStatusCodeReply();

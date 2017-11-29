@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 
@@ -45,22 +45,22 @@ public class ClusterCommandsTest {
 
   @AfterClass
   public static void removeSlots() throws InterruptedException {
-    node1.clusterReset(Reset.SOFT);
-    node2.clusterReset(Reset.SOFT);
+    node1.clusterReset(ClusterReset.SOFT);
+    node2.clusterReset(ClusterReset.SOFT);
   }
 
   @Test
   public void testClusterSoftReset() {
     node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
     assertTrue(node1.clusterNodes().split("\n").length > 1);
-    node1.clusterReset(Reset.SOFT);
+    node1.clusterReset(ClusterReset.SOFT);
     assertEquals(1, node1.clusterNodes().split("\n").length);
   }
 
   @Test
   public void testClusterHardReset() {
     String nodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
-    node1.clusterReset(Reset.HARD);
+    node1.clusterReset(ClusterReset.HARD);
     String newNodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
     assertNotEquals(nodeId, newNodeId);
   }

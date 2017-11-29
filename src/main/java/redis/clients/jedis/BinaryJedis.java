@@ -2520,7 +2520,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
@@ -2582,7 +2582,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrangeByScoreWithScores(key, min, max, offset, count);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
@@ -2640,7 +2640,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override
@@ -2648,7 +2648,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       final double min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
-    return getBinaryTupledSet();
+    return getTupledSet();
   }
 
   @Override

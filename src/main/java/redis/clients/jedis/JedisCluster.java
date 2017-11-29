@@ -1217,8 +1217,22 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     }.run(key);
   }
 
+  /**
+   * @deprecated Use {@link #linsert(java.lang.String, redis.clients.jedis.ListPosition, java.lang.String, java.lang.String) }
+   */
   @Override
   public Long linsert(final String key, final LIST_POSITION where, final String pivot,
+      final String value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.linsert(key, where, pivot, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

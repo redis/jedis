@@ -2621,10 +2621,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  /**
+   * @deprecated Use {@link #linsert(java.lang.String, redis.clients.jedis.ListPosition, java.lang.String, java.lang.String) }
+   */
   @Override
   public Long linsert(final String key, final LIST_POSITION where, final String pivot,
       final String value) {
     checkIsInMultiOrPipeline();
+    client.linsert(key, where, pivot, value);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long linsert(final String key, final ListPosition where, final String pivot,
+      final String value) {
     client.linsert(key, where, pivot, value);
     return client.getIntegerReply();
   }

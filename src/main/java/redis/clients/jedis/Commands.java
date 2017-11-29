@@ -272,7 +272,9 @@ public interface Commands {
 
   void echo(String string);
 
+  @Deprecated
   void linsert(String key, LIST_POSITION where, String pivot, String value);
+  void linsert(String key, ListPosition where, String pivot, String value);
 
   void bgrewriteaof();
 

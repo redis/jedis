@@ -75,7 +75,9 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> lindex(byte[] key, long index);
 
+  @Deprecated
   Response<Long> linsert(byte[] key, BinaryClient.LIST_POSITION where, byte[] pivot, byte[] value);
+  Response<Long> linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
   Response<Long> llen(byte[] key);
 

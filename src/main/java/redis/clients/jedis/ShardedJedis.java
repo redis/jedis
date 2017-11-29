@@ -742,7 +742,14 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  @Deprecated
   public Long linsert(final String key, final LIST_POSITION where, final String pivot, final String value) {
+    Jedis j = getShard(key);
+    return j.linsert(key, where, pivot, value);
+  }
+
+  @Override
+  public Long linsert(final String key, final ListPosition where, final String pivot, final String value) {
     Jedis j = getShard(key);
     return j.linsert(key, where, pivot, value);
   }

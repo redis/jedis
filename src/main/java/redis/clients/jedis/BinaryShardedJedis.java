@@ -709,8 +709,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.zremrangeByLex(key, min, max);
   }
 
+  @Deprecated
   @Override
   public Long linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot, final byte[] value) {
+    Jedis j = getShard(key);
+    return j.linsert(key, where, pivot, value);
+  }
+
+  @Override
+  public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot, final byte[] value) {
     Jedis j = getShard(key);
     return j.linsert(key, where, pivot, value);
   }

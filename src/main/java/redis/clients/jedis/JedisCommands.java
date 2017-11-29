@@ -232,7 +232,9 @@ public interface JedisCommands {
 
   Long zremrangeByLex(String key, String min, String max);
 
+  @Deprecated
   Long linsert(String key, Client.LIST_POSITION where, String pivot, String value);
+  Long linsert(String key, ListPosition where, String pivot, String value);
 
   Long lpushx(String key, String... string);
 

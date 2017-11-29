@@ -414,13 +414,27 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  @Deprecated
   public Response<Long> linsert(final String key, final LIST_POSITION where, final String pivot, final String value) {
     getClient(key).linsert(key, where, pivot, value);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
+  public Response<Long> linsert(final String key, final ListPosition where, final String pivot, final String value) {
+    getClient(key).linsert(key, where, pivot, value);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  @Deprecated
   public Response<Long> linsert(final byte[] key, final LIST_POSITION where, final byte[] pivot, final byte[] value) {
+    getClient(key).linsert(key, where, pivot, value);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> linsert(final byte[] key, final ListPosition where, final byte[] pivot, final byte[] value) {
     getClient(key).linsert(key, where, pivot, value);
     return getResponse(BuilderFactory.LONG);
   }

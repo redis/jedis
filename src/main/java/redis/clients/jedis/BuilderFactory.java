@@ -397,48 +397,48 @@ public final class BuilderFactory {
     public List<GeoRadiusResponse> build(Object data) {
       if (data == null) {
         return null;
-      } else {
-        List<Object> objectList = (List<Object>) data;
+      }
 
-        if (objectList.isEmpty()) {
-          return new ArrayList<GeoRadiusResponse>();
-        }
+      List<Object> objectList = (List<Object>) data;
 
-        List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
-        if (objectList.get(0) instanceof List<?>) {
-          // list of members with additional informations
-          GeoRadiusResponse resp;
-          for (Object obj : objectList) {
-            List<Object> informations = (List<Object>) obj;
-
-            resp = new GeoRadiusResponse((byte[]) informations.get(0));
-
-            int size = informations.size();
-            for (int idx = 1; idx < size; idx++) {
-              Object info = informations.get(idx);
-              if (info instanceof List<?>) {
-                // coordinate
-                List<Object> coord = (List<Object>) info;
-
-                resp.setCoordinate(new GeoCoordinate(convertByteArrayToDouble(coord.get(0)),
-                    convertByteArrayToDouble(coord.get(1))));
-              } else {
-                // distance
-                resp.setDistance(convertByteArrayToDouble(info));
-              }
-            }
-
-            responses.add(resp);
-          }
-        } else {
-          // list of members
-          for (Object obj : objectList) {
-            responses.add(new GeoRadiusResponse((byte[]) obj));
-          }
-        }
-
+      List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
+      if (objectList.isEmpty()) {
         return responses;
       }
+
+      if (objectList.get(0) instanceof List<?>) {
+        // list of members with additional informations
+        GeoRadiusResponse resp;
+        for (Object obj : objectList) {
+          List<Object> informations = (List<Object>) obj;
+
+          resp = new GeoRadiusResponse((byte[]) informations.get(0));
+
+          int size = informations.size();
+          for (int idx = 1; idx < size; idx++) {
+            Object info = informations.get(idx);
+            if (info instanceof List<?>) {
+              // coordinate
+              List<Object> coord = (List<Object>) info;
+
+              resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
+                  DOUBLE.build(coord.get(1))));
+            } else {
+              // distance
+              resp.setDistance(DOUBLE.build(info));
+            }
+          }
+
+          responses.add(resp);
+        }
+      } else {
+        // list of members
+        for (Object obj : objectList) {
+          responses.add(new GeoRadiusResponse((byte[]) obj));
+        }
+      }
+
+      return responses;
     }
 
     private Double convertByteArrayToDouble(Object obj) {
@@ -452,35 +452,32 @@ public final class BuilderFactory {
   };
 
 
-
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {
       if (data == null) {
         return null;
-      } else {
-        List<List<Object>> objectList = (List<List<Object>>) data;
+      }
 
-        if (objectList.isEmpty()) {
-          return new ArrayList<Module>();
-        }
+      List<List<Object>> objectList = (List<List<Object>>) data;
 
-        List<Module> responses = new ArrayList<Module>(objectList.size());
-
-        for (List<Object> moduleResp: objectList) {
-          Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());
-          responses.add(m);
-        }
-
+      List<Module> responses = new ArrayList<Module>(objectList.size());
+      if (objectList.isEmpty()) {
         return responses;
       }
+
+      for (List<Object> moduleResp: objectList) {
+        Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());
+        responses.add(m);
+      }
+
+      return responses;
     }
 
     @Override
     public String toString() {
       return "List<Module>";
     }
-
   };
 
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {

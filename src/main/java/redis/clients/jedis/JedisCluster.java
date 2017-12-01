@@ -174,6 +174,24 @@ public class JedisCluster extends BinaryJedisCluster implements JedisCommands,
     }.run(key);
   }
 
+  public byte[] dump(final String key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.dump(key);
+      }
+    }.run(key);
+  }
+
+  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue);
+      }
+    }.run(key);
+  }
+
   @Override
   public Long expire(final String key, final int seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {

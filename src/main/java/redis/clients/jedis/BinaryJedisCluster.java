@@ -149,6 +149,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(key);
   }
 
+  @Override
   public byte[] dump(final byte[] key) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override
@@ -158,6 +159,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(key);
   }
 
+  @Override
   public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override

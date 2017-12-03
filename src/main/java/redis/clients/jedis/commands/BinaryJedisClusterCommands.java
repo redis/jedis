@@ -24,6 +24,10 @@ public interface BinaryJedisClusterCommands {
 
   String type(byte[] key);
 
+  byte[] dump(byte[] key);
+
+  String restore(byte[] key, int ttl, byte[] serializedValue);
+
   Long expire(byte[] key, int seconds);
 
   Long pexpire(byte[] key, long milliseconds);

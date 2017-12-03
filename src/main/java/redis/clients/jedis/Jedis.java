@@ -3098,12 +3098,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  @Override
   public byte[] dump(final String key) {
     checkIsInMultiOrPipeline();
     client.dump(key);
     return client.getBinaryBulkReply();
   }
 
+  @Override
   public String restore(final String key, final int ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restore(key, ttl, serializedValue);

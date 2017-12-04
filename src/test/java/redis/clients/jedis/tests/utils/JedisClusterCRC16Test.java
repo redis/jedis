@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
-import redis.clients.util.JedisClusterCRC16;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterCRC16Test {
 

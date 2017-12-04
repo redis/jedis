@@ -20,9 +20,9 @@ import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisBusyException;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.RedisInputStream;
+import redis.clients.jedis.util.RedisOutputStream;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ProtocolTest {
   @Test

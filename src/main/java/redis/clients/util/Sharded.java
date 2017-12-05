@@ -57,7 +57,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
         nodes.put(this.algo.hash("SHARD-" + i + "-NODE-" + n), shardInfo);
       }
       else for (int n = 0; n < 160 * shardInfo.getWeight(); n++) {
-        nodes.put(this.algo.hash(shardInfo.getName() + "*" + shardInfo.getWeight() + n), shardInfo);
+        nodes.put(this.algo.hash(shardInfo.getName() + "*" + n), shardInfo);
       }
       resources.put(shardInfo, shardInfo.createResource());
     }

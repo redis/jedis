@@ -71,6 +71,18 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public byte[] dump(final String key) {
+    Jedis j = getShard(key);
+    return j.dump(key);
+  }
+
+  @Override
+  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+    Jedis j = getShard(key);
+    return j.restore(key, ttl, serializedValue);
+  }
+
+  @Override
   public Long expire(final String key, final int seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);

@@ -28,6 +28,10 @@ public interface JedisCommands {
 
   String type(String key);
 
+  byte[] dump(String key);
+
+  String restore(String key, int ttl, byte[] serializedValue);
+
   Long expire(String key, int seconds);
 
   Long pexpire(String key, long milliseconds);

@@ -1579,7 +1579,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
+   * Return the rank (or index) of member in the sorted set at key, with scores being ordered from
    * low to high.
    * <p>
    * When the given member does not exist in the sorted set, the special value 'nil' is returned.
@@ -1602,7 +1602,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
+   * Return the rank (or index) of member in the sorted set at key, with scores being ordered from
    * high to low.
    * <p>
    * When the given member does not exist in the sorted set, the special value 'nil' is returned.

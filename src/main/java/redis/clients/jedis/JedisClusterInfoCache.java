@@ -166,40 +166,6 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public JedisPool setupNodeIfNotExist(HostAndPort node, boolean ssl) {
-    w.lock();
-    try {
-      String nodeKey = getNodeKey(node);
-      JedisPool existingPool = nodes.get(nodeKey);
-      if (existingPool != null) return existingPool;
-
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, null, ssl, null, null, null);
-      nodes.put(nodeKey, nodePool);
-      return nodePool;
-    } finally {
-      w.unlock();
-    }
-  }
-
-  public JedisPool setupNodeIfNotExist(HostAndPort node, boolean ssl, SSLSocketFactory sslSocketFactory,
-                                  SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    w.lock();
-    try {
-      String nodeKey = getNodeKey(node);
-      JedisPool existingPool = nodes.get(nodeKey);
-      if (existingPool != null) return existingPool;
-
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, null, ssl, sslSocketFactory, sslParameters,
-          hostnameVerifier);
-      nodes.put(nodeKey, nodePool);
-      return nodePool;
-    } finally {
-      w.unlock();
-    }
-  }
-
   public void assignSlotToNode(int slot, HostAndPort targetNode) {
     w.lock();
     try {

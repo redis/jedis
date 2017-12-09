@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisDataException;

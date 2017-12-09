@@ -18,7 +18,6 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.util.JedisClusterHashTagUtil;
-import redis.clients.util.SafeEncoder;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {

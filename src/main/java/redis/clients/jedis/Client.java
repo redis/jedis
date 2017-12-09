@@ -1201,9 +1201,6 @@ public class Client extends BinaryClient implements Commands {
   public void moduleLoad(final String path) {
     moduleLoad(SafeEncoder.encode(path));
   }
-  public void moduleLoad() {
-    moduleList();
-  }
 
   public void moduleUnload(final String name) {
     moduleUnload(SafeEncoder.encode(name));

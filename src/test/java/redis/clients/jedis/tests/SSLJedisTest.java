@@ -29,9 +29,8 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 
-public class SSLJedisTest extends JedisCommandTestBase {
+public class SSLJedisTest {
 
   @BeforeClass
   public static void setupTrustStore() {

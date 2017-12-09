@@ -5,20 +5,19 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.Jedis;
 
-public class ConnectionHandlingCommandsTest extends JedisCommandTestBase {
-  protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
+public class ConnectionHandlingCommandsTest {
 
   @Test
   public void quit() {
+    Jedis jedis = new Jedis();
     assertEquals("OK", jedis.quit());
   }
 
   @Test
   public void binary_quit() {
-    BinaryJedis bj = new BinaryJedis(hnp.getHost());
+    BinaryJedis bj = new BinaryJedis();
     assertEquals("OK", bj.quit());
   }
 }

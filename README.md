@@ -8,7 +8,7 @@ Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Red
 
 Jedis was conceived to be EASY to use.
 
-Jedis is fully compatible with redis 2.8.x and 3.x.x.
+Jedis is fully compatible with redis 2.1.0, 2.8.x and 3.x.x.
 
 ## Community
 
@@ -136,3 +136,4 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
+Roy will look at it!

@@ -6,6 +6,9 @@ public final class JedisURIHelper {
 
   private static final int DEFAULT_DB = 0;
 
+  private static final String REDIS = "redis";
+  private static final String REDISS = "rediss";
+
   private JedisURIHelper(){
     throw new InstantiationError( "Must not instantiate this class" );
   }
@@ -41,6 +44,20 @@ public final class JedisURIHelper {
 
   private static boolean isEmpty(String value) {
     return value == null || value.trim().length() == 0;
+  }
+
+  /**
+   * This assumes {@link #isValid(java.net.URI) is called earlier.
+   */
+  public static boolean isRedisScheme(URI uri) {
+    return uri.getScheme().equals(REDIS);
+  }
+
+  /**
+   * This assumes {@link #isValid(java.net.URI) is called earlier.
+   */
+  public static boolean isRedisSSLScheme(URI uri) {
+    return uri.getScheme().equals(REDISS);
   }
 
 }

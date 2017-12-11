@@ -46,18 +46,12 @@ public final class JedisURIHelper {
     return value == null || value.trim().length() == 0;
   }
 
-  /**
-   * This assumes {@link #isValid(java.net.URI) is called earlier.
-   */
   public static boolean isRedisScheme(URI uri) {
-    return uri.getScheme().equals(REDIS);
+    return REDIS.equals(uri.getScheme());
   }
 
-  /**
-   * This assumes {@link #isValid(java.net.URI) is called earlier.
-   */
   public static boolean isRedisSSLScheme(URI uri) {
-    return uri.getScheme().equals(REDISS);
+    return REDISS.equals(uri.getScheme());
   }
 
 }

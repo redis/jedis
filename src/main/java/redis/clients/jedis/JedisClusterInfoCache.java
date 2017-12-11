@@ -166,6 +166,7 @@ public class JedisClusterInfoCache {
     }
   }
 
+  @Deprecated
   public JedisPool setupNodeIfNotExist(HostAndPort node, boolean ssl) {
     w.lock();
     try {
@@ -182,6 +183,7 @@ public class JedisClusterInfoCache {
     }
   }
 
+  @Deprecated
   public JedisPool setupNodeIfNotExist(HostAndPort node, boolean ssl, SSLSocketFactory sslSocketFactory,
                                   SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     w.lock();

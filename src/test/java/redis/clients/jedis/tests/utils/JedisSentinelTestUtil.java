@@ -21,9 +21,8 @@ public class JedisSentinelTestUtil {
           punsubscribe();
         } else if (channel.startsWith("-failover-abort")) {
           punsubscribe();
-          throw new FailoverAbortedException(
-              "Unfortunately sentinel cannot failover... reason(channel) : " + channel
-                  + " / message : " + message);
+          throw new FailoverAbortedException("Unfortunately sentinel cannot failover..."
+              + " reason(channel) : " + channel + " / message : " + message);
         }
       }
 

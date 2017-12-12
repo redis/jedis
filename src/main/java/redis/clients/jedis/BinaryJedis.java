@@ -9,7 +9,6 @@ import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.JedisURIHelper;
-import redis.clients.util.SafeEncoder;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;

@@ -1,16 +1,12 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ComparisonFailure;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;

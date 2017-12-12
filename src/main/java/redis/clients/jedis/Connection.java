@@ -188,7 +188,7 @@ public class Connection implements Closeable {
           if (null == sslSocketFactory) {
             sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
           }
-          socket = (SSLSocket) sslSocketFactory.createSocket(socket, host, port, true);
+          socket = sslSocketFactory.createSocket(socket, host, port, true);
           if (null != sslParameters) {
             ((SSLSocket) socket).setSSLParameters(sslParameters);
           }

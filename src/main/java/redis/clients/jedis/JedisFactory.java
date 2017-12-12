@@ -27,8 +27,14 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final String clientName;
   private final boolean ssl;
   private final SSLSocketFactory sslSocketFactory;
-  private SSLParameters sslParameters;
-  private HostnameVerifier hostnameVerifier;
+  private final SSLParameters sslParameters;
+  private final HostnameVerifier hostnameVerifier;
+
+  JedisFactory(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final String password, final int database, final String clientName) {
+    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
+        false, null, null, null);
+  }
 
   public JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,
@@ -46,6 +52,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
+  @Deprecated
   public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
@@ -61,6 +68,31 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
     this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
+  }
+
+  JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+      final String clientName) {
+    this(uri, connectionTimeout, soTimeout, clientName, null, null, null);
+  }
+
+  JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+      final String clientName, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
+    }
+
+    this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
+    this.password = JedisURIHelper.getPassword(uri);
+    this.database = JedisURIHelper.getDBIndex(uri);
+    this.clientName = clientName;
+    this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;

@@ -748,7 +748,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void lpushx(final String key, final String... string) {
-    lpushx(SafeEncoder.encode(key), getByteParams(string));
+    lpushx(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
   }
 
   @Override
@@ -758,7 +758,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void rpushx(final String key, final String... string) {
-    rpushx(SafeEncoder.encode(key), getByteParams(string));
+    rpushx(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
   }
 
   @Override
@@ -865,11 +865,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void eval(final String script, final int keyCount, final String... params) {
-    eval(SafeEncoder.encode(script), toByteArray(keyCount), getByteParams(params));
+    eval(SafeEncoder.encode(script), toByteArray(keyCount), SafeEncoder.encodeMany(params));
   }
 
   public void evalsha(final String sha1, final int keyCount, final String... params) {
-    evalsha(SafeEncoder.encode(sha1), toByteArray(keyCount), getByteParams(params));
+    evalsha(SafeEncoder.encode(sha1), toByteArray(keyCount), SafeEncoder.encodeMany(params));
   }
 
   public void scriptExists(final String... sha1) {
@@ -911,7 +911,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void bitop(final BitOP op, final String destKey, final String... srcKeys) {
-    bitop(op, SafeEncoder.encode(destKey), getByteParams(srcKeys));
+    bitop(op, SafeEncoder.encode(destKey), SafeEncoder.encodeMany(srcKeys));
   }
 
   public void sentinel(final String... args) {
@@ -1215,14 +1215,6 @@ public class Client extends BinaryClient implements Commands {
   public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
-  }
-
-  private byte[][] getByteParams(String... params) {
-    byte[][] p = new byte[params.length][];
-    for (int i = 0; i < params.length; i++)
-      p[i] = SafeEncoder.encode(params[i]);
-
-    return p;
   }
 
   private HashMap<byte[], Double> convertScoreMembersToBinary(final Map<String, Double> scoreMembers) {

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private Proxy proxy;
 
   public Connection() {
   }
@@ -108,6 +110,10 @@ public class Connection implements Closeable {
     }
   }
 
+  public void setProxy(Proxy proxy){
+    this.proxy=proxy;
+  }
+
   public Connection sendCommand(final ProtocolCommand cmd, final String... args) {
     final byte[][] bargs = new byte[args.length][];
     for (int i = 0; i < args.length; i++) {
@@ -167,7 +173,11 @@ public class Connection implements Closeable {
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = new Socket();
+        if(proxy !=null){
+          socket = new Socket(proxy);
+        }else {
+          socket = new Socket();
+        }
         // ->@wjw_add
         socket.setReuseAddress(true);
         socket.setKeepAlive(true); // Will monitor the TCP connection is
@@ -202,7 +212,7 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to host " 
+        throw new JedisConnectionException("Failed connecting to host "
             + host + ":" + port, ex);
       }
     }

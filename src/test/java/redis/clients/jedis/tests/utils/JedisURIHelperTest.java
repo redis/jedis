@@ -4,14 +4,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.util.JedisURIHelper;
 
 public class JedisURIHelperTest {
+
+  @Test
+  public void  parseProxyTest() throws URISyntaxException {
+    URI uri = new URI("redis://:getui2015!@10.10.10.62:6379?proxy=socks5://user:password@proxyhost:1080");
+    Proxy proxy = JedisURIHelper.getProxy(uri);
+    Assert.assertNotNull(proxy);
+  }
 
   @Test
   public void shouldGetPasswordFromURIWithCredentials() throws URISyntaxException {

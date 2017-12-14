@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Pipeline extends MultiKeyPipelineBase implements Closeable {
@@ -47,6 +48,18 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     public void addResponse(Response<?> response) {
       responses.add(response);
     }
+  }
+
+  public <T> Response<T> sendCommand(Builder<T> builder, final String command, String... args) {
+    ProtocolCommand protocolCommand = new ProtocolCommand() {
+      @Override
+      public byte[] getRaw() {
+        return command.getBytes();
+      }
+    };
+
+    client.sendCommand(protocolCommand, args);
+    return getResponse(builder);
   }
 
   @Override

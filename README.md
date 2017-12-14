@@ -2,6 +2,10 @@
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 
+# Scopely's fork features
+
+- [x] Added method to Pipeline interface to allow executing custom commands
+
 # Jedis
 
 Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.

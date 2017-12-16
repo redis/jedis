@@ -45,6 +45,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
   
   @Override
+  public Long sendGenericCmdInteger(String... args) {
+	return 0L;
+  }
+
+  
+  @Override
   public String set(final String key, final String value) {
     Jedis j = getShard(key);
     return j.set(key, value);

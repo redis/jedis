@@ -143,6 +143,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.sendGenericCmd(args);
     return client.getBulkReply();
   }
+  
+  @Override
+  public Long sendGenericCmdInteger(String... args) {
+    client.sendGenericCmd(args);
+    return client.getIntegerReply();
+  }
 
   
   /**

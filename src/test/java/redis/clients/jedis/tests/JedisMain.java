@@ -15,6 +15,12 @@ public class JedisMain {
 		result = jedis.sendGenericCmdString("GET","foo");
 		System.out.println("Result Generic Command[GET]: " + result);
 		
+		result = jedis.sendGenericCmdInteger("INCR","X");
+		System.out.println("Result Generic Command[INCR]: " + result);
+		
+		result = jedis.sendGenericCmdString("INFO");
+		System.out.println("Result Generic Command[INFO]: " + result);
+		
 		jedis.close();
 	}
 }

@@ -18,6 +18,8 @@ public interface JedisCommands {
   Object sendGenericCmdList(String ...args);
   
   String sendGenericCmdString(String ...args);
+  
+  Long sendGenericCmdInteger(String ...args);
 	
   String set(String key, String value);
 

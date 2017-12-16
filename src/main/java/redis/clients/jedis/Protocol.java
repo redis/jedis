@@ -240,6 +240,24 @@ public final class Protocol {
       return SafeEncoder.encode(String.valueOf(value));
     }
   }
+  
+  public static class GenericCommand implements ProtocolCommand { 
+	  
+	  private final byte[] raw;
+	  
+	  GenericCommand(String name) {
+	      raw = SafeEncoder.encode(name);
+	  }
+
+	  @Override
+	  public byte[] getRaw() {
+	     return raw;
+	  }
+	  
+	  public static GenericCommand from(String name) {
+		  return new GenericCommand(name);
+	  }
+  }
 
   public static enum Command implements ProtocolCommand {
     PING, SET, GET, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME, RENAMENX, RENAMEX, 

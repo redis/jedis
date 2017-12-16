@@ -33,7 +33,17 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public ShardedJedis(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
     super(shards, algo, keyTagPattern);
   }
-
+  
+  @Override
+  public String sendGenericCmdString(String... args) {
+	return "TODO: code here!";
+  }
+  
+  @Override
+  public Object sendGenericCmdList(String... args) {
+	return "TODO: code here!";
+  }
+  
   @Override
   public String set(final String key, final String value) {
     Jedis j = getShard(key);

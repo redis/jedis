@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,18 @@ public class Client extends BinaryClient implements Commands {
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
-
+  
+  @Override
+  public void sendGenericCmd(String... args) {
+	  if (args==null || args.length==0) 
+		  throw new IllegalArgumentException("You need pass at least the custom command name. ");
+	  
+	  String[] argsWithoutCommandName = new String[args.length-1];
+	  System.arraycopy(args, 1, argsWithoutCommandName, 0, args.length-1);
+	  
+	  sendCommand(Protocol.GenericCommand.from(args[0]), argsWithoutCommandName);
+  }
+  
   @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));

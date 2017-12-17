@@ -12,6 +12,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.IOUtils;
 import redis.clients.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
@@ -105,9 +106,7 @@ public class JedisClusterInfoCache {
           } catch (JedisConnectionException e) {
             // try next nodes
           } finally {
-            if (j != null) {
-              j.close();
-            }
+            IOUtils.closeQuietly(j);
           }
         }
       } finally {

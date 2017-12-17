@@ -1,18 +1,20 @@
 package redis.clients.util;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.net.Socket;
+
+import redis.clients.jedis.exceptions.JedisException;
 
 public class IOUtils {
   private IOUtils() {
   }
 
-  public static void closeQuietly(Socket sock) {
+  public static void closeQuietly(Closeable closeable) {
     // It's same thing as Apache Commons - IOUtils.closeQuietly()
-    if (sock != null) {
+    if (closeable != null) {
       try {
-        sock.close();
-      } catch (IOException e) {
+        closeable.close();
+      } catch (IOException | JedisException e) {
         // ignored
       }
     }

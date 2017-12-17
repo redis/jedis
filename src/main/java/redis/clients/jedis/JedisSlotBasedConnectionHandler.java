@@ -7,6 +7,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
+import redis.clients.util.IOUtils;
 
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
 
@@ -50,11 +51,9 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
         if (result.equalsIgnoreCase("pong")) return jedis;
 
-        jedis.close();
+        IOUtils.closeQuietly(jedis);
       } catch (JedisException ex) {
-        if (jedis != null) {
-          jedis.close();
-        }
+        IOUtils.closeQuietly(jedis);
       }
     }
 

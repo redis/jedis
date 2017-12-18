@@ -60,26 +60,17 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void exists(final String... keys) {
-    final byte[][] bkeys = SafeEncoder.encodeMany(keys);
-    exists(bkeys);
+    exists(SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void del(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < keys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    del(bkeys);
+    del(SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void unlink(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < keys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    unlink(bkeys);
+    unlink(SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -119,11 +110,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void touch(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < keys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    touch(bkeys);
+    touch(SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -138,11 +125,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void mget(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    mget(bkeys);
+    mget(SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -157,20 +140,12 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void mset(final String... keysvalues) {
-    final byte[][] bkeysvalues = new byte[keysvalues.length][];
-    for (int i = 0; i < keysvalues.length; i++) {
-      bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
-    }
-    mset(bkeysvalues);
+    mset(SafeEncoder.encodeMany(keysvalues));
   }
 
   @Override
   public void msetnx(final String... keysvalues) {
-    final byte[][] bkeysvalues = new byte[keysvalues.length][];
-    for (int i = 0; i < keysvalues.length; i++) {
-      bkeysvalues[i] = SafeEncoder.encode(keysvalues[i]);
-    }
-    msetnx(bkeysvalues);
+    msetnx(SafeEncoder.encodeMany(keysvalues));
   }
 
   @Override
@@ -238,11 +213,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void hmget(final String key, final String... fields) {
-    final byte[][] bfields = new byte[fields.length][];
-    for (int i = 0; i < bfields.length; i++) {
-      bfields[i] = SafeEncoder.encode(fields[i]);
-    }
-    hmget(SafeEncoder.encode(key), bfields);
+    hmget(SafeEncoder.encode(key), SafeEncoder.encodeMany(fields));
   }
 
   @Override
@@ -377,56 +348,32 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void sinter(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    sinter(bkeys);
+    sinter(SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void sinterstore(final String dstkey, final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    sinterstore(SafeEncoder.encode(dstkey), bkeys);
+    sinterstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void sunion(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    sunion(bkeys);
+    sunion(SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void sunionstore(final String dstkey, final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    sunionstore(SafeEncoder.encode(dstkey), bkeys);
+    sunionstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void sdiff(final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    sdiff(bkeys);
+    sdiff(SafeEncoder.encodeMany(keys));
   }
 
   @Override
   public void sdiffstore(final String dstkey, final String... keys) {
-    final byte[][] bkeys = new byte[keys.length][];
-    for (int i = 0; i < bkeys.length; i++) {
-      bkeys[i] = SafeEncoder.encode(keys[i]);
-    }
-    sdiffstore(SafeEncoder.encode(dstkey), bkeys);
+    sdiffstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -514,11 +461,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void watch(final String... keys) {
-    final byte[][] bargs = new byte[keys.length][];
-    for (int i = 0; i < bargs.length; i++) {
-      bargs[i] = SafeEncoder.encode(keys[i]);
-    }
-    watch(bargs);
+    watch(SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -533,11 +476,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void blpop(final String[] args) {
-    final byte[][] bargs = new byte[args.length][];
-    for (int i = 0; i < bargs.length; i++) {
-      bargs[i] = SafeEncoder.encode(args[i]);
-    }
-    blpop(bargs);
+    blpop(SafeEncoder.encodeMany(args));
   }
 
   public void blpop(final int timeout, final String... keys) {
@@ -562,11 +501,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void brpop(final String[] args) {
-    final byte[][] bargs = new byte[args.length][];
-    for (int i = 0; i < bargs.length; i++) {
-      bargs[i] = SafeEncoder.encode(args[i]);
-    }
-    brpop(bargs);
+    brpop(SafeEncoder.encodeMany(args));
   }
 
   public void brpop(final int timeout, final String... keys) {
@@ -702,38 +637,22 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void zunionstore(final String dstkey, final String... sets) {
-    final byte[][] bsets = new byte[sets.length][];
-    for (int i = 0; i < bsets.length; i++) {
-      bsets[i] = SafeEncoder.encode(sets[i]);
-    }
-    zunionstore(SafeEncoder.encode(dstkey), bsets);
+    zunionstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(sets));
   }
 
   @Override
   public void zunionstore(final String dstkey, final ZParams params, final String... sets) {
-    final byte[][] bsets = new byte[sets.length][];
-    for (int i = 0; i < bsets.length; i++) {
-      bsets[i] = SafeEncoder.encode(sets[i]);
-    }
-    zunionstore(SafeEncoder.encode(dstkey), params, bsets);
+    zunionstore(SafeEncoder.encode(dstkey), params, SafeEncoder.encodeMany(sets));
   }
 
   @Override
   public void zinterstore(final String dstkey, final String... sets) {
-    final byte[][] bsets = new byte[sets.length][];
-    for (int i = 0; i < bsets.length; i++) {
-      bsets[i] = SafeEncoder.encode(sets[i]);
-    }
-    zinterstore(SafeEncoder.encode(dstkey), bsets);
+    zinterstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(sets));
   }
 
   @Override
   public void zinterstore(final String dstkey, final ZParams params, final String... sets) {
-    final byte[][] bsets = new byte[sets.length][];
-    for (int i = 0; i < bsets.length; i++) {
-      bsets[i] = SafeEncoder.encode(sets[i]);
-    }
-    zinterstore(SafeEncoder.encode(dstkey), params, bsets);
+    zinterstore(SafeEncoder.encode(dstkey), params, SafeEncoder.encodeMany(sets));
   }
 
   public void zlexcount(final String key, final String min, final String max) {
@@ -833,35 +752,19 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void unsubscribe(final String... channels) {
-    final byte[][] cs = new byte[channels.length][];
-    for (int i = 0; i < cs.length; i++) {
-      cs[i] = SafeEncoder.encode(channels[i]);
-    }
-    unsubscribe(cs);
+    unsubscribe(SafeEncoder.encodeMany(channels));
   }
 
   public void psubscribe(final String... patterns) {
-    final byte[][] ps = new byte[patterns.length][];
-    for (int i = 0; i < ps.length; i++) {
-      ps[i] = SafeEncoder.encode(patterns[i]);
-    }
-    psubscribe(ps);
+    psubscribe(SafeEncoder.encodeMany(patterns));
   }
 
   public void punsubscribe(final String... patterns) {
-    final byte[][] ps = new byte[patterns.length][];
-    for (int i = 0; i < ps.length; i++) {
-      ps[i] = SafeEncoder.encode(patterns[i]);
-    }
-    punsubscribe(ps);
+    punsubscribe(SafeEncoder.encodeMany(patterns));
   }
 
   public void subscribe(final String... channels) {
-    final byte[][] cs = new byte[channels.length][];
-    for (int i = 0; i < cs.length; i++) {
-      cs[i] = SafeEncoder.encode(channels[i]);
-    }
-    subscribe(cs);
+    subscribe(SafeEncoder.encodeMany(channels));
   }
 
   public void pubsubChannels(final String pattern) {
@@ -895,11 +798,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void scriptExists(final String... sha1) {
-    final byte[][] bsha1 = new byte[sha1.length][];
-    for (int i = 0; i < bsha1.length; i++) {
-      bsha1[i] = SafeEncoder.encode(sha1[i]);
-    }
-    scriptExists(bsha1);
+    scriptExists(SafeEncoder.encodeMany(sha1));
   }
 
   public void scriptLoad(final String script) {
@@ -937,11 +836,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void sentinel(final String... args) {
-    final byte[][] arg = new byte[args.length][];
-    for (int i = 0; i < arg.length; i++) {
-      arg[i] = SafeEncoder.encode(args[i]);
-    }
-    sentinel(arg);
+    sentinel(SafeEncoder.encodeMany(args));
   }
 
   public void dump(final String key) {
@@ -1217,12 +1112,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void bitfield(final String key, final String... arguments) {
-    byte[][] argumentArray = new byte[arguments.length][];
-    int index = 0;
-    for(String argument : arguments) {
-      argumentArray[index++] = SafeEncoder.encode(argument);
-    }
-    bitfield(SafeEncoder.encode(key), argumentArray);
+    bitfield(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
   }
 
   @Override

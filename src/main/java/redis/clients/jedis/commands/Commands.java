@@ -12,7 +12,9 @@ import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 
 public interface Commands {
-
+  
+  void sendGenericCmd(String cmdName,String... args);	
+	
   void set(String key, String value);
 
   void set(String key, String value, SetParams params);

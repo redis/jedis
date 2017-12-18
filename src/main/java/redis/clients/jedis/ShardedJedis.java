@@ -33,7 +33,23 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public ShardedJedis(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
     super(shards, algo, keyTagPattern);
   }
+  
+  @Override
+  public String sendGenericCmdString(String cmdName,String... args) {
+	throw new UnsupportedOperationException("sendGenericCmdString not supported on Sharded Redis");
+  }
+  
+  @Override
+  public Object sendGenericCmdList(String cmdName,String... args) {
+	  throw new UnsupportedOperationException("sendGenericCmdList not supported on Sharded Redis");
+  }
+  
+  @Override
+  public Long sendGenericCmdInteger(String cmdName,String... args) {
+	  throw new UnsupportedOperationException("sendGenericCmdInteger not supported on Sharded Redis");
+  }
 
+  
   @Override
   public String set(final String key, final String value) {
     Jedis j = getShard(key);

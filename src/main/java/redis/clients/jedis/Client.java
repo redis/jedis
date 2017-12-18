@@ -42,7 +42,15 @@ public class Client extends BinaryClient implements Commands {
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
-
+  
+  @Override
+  public void sendGenericCmd(String cmdName,String... args) {
+	  if (cmdName==null || cmdName.length()==0) 
+		  throw new IllegalArgumentException("You need pass at least the custom command name. ");
+	  
+	  sendCommand(Protocol.GenericCommand.from(cmdName), args);
+  }
+  
   @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));

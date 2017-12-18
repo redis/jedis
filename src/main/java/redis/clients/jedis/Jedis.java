@@ -132,6 +132,25 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  @Override
+  public Object sendGenericCmdList(String cmdName,String... args) {
+    client.sendGenericCmd(cmdName,args);
+    return BuilderFactory.STRING_SET.build( client.getRawObjectMultiBulkReply() );
+  }
+  
+  @Override
+  public String sendGenericCmdString(String cmdName,String... args) {
+    client.sendGenericCmd(cmdName,args);
+    return client.getBulkReply();
+  }
+  
+  @Override
+  public Long sendGenericCmdInteger(String cmdName,String... args) {
+    client.sendGenericCmd(cmdName,args);
+    return client.getIntegerReply();
+  }
+
+  
   /**
    * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1
    * GB).

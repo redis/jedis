@@ -14,6 +14,13 @@ import redis.clients.jedis.params.sortedset.ZIncrByParams;
  * Common interface for sharded and non-sharded Jedis
  */
 public interface JedisCommands {
+	 
+  Object sendGenericCmdList(String cmdName,String ...args);
+  
+  String sendGenericCmdString(String cmdName,String ...args);
+  
+  Long sendGenericCmdInteger(String cmdName,String ...args);
+	
   String set(String key, String value);
 
   String set(String key, String value, SetParams params);

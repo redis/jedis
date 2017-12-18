@@ -133,20 +133,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Object sendGenericCmdList(String... args) {
-    client.sendGenericCmd(args);
+  public Object sendGenericCmdList(String cmdName,String... args) {
+    client.sendGenericCmd(cmdName,args);
     return BuilderFactory.STRING_SET.build( client.getRawObjectMultiBulkReply() );
   }
   
   @Override
-  public String sendGenericCmdString(String... args) {
-    client.sendGenericCmd(args);
+  public String sendGenericCmdString(String cmdName,String... args) {
+    client.sendGenericCmd(cmdName,args);
     return client.getBulkReply();
   }
   
   @Override
-  public Long sendGenericCmdInteger(String... args) {
-    client.sendGenericCmd(args);
+  public Long sendGenericCmdInteger(String cmdName,String... args) {
+    client.sendGenericCmd(cmdName,args);
     return client.getIntegerReply();
   }
 

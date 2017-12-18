@@ -15,11 +15,11 @@ import redis.clients.jedis.params.sortedset.ZIncrByParams;
  */
 public interface JedisCommands {
 	 
-  Object sendGenericCmdList(String ...args);
+  Object sendGenericCmdList(String cmdName,String ...args);
   
-  String sendGenericCmdString(String ...args);
+  String sendGenericCmdString(String cmdName,String ...args);
   
-  Long sendGenericCmdInteger(String ...args);
+  Long sendGenericCmdInteger(String cmdName,String ...args);
 	
   String set(String key, String value);
 

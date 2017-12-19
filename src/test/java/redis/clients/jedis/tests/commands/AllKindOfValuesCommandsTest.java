@@ -403,7 +403,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set("foo1", "bar1");
 
-    Thread.sleep(2000);
+    Thread.sleep(1100); // little over 1 sec
     assertTrue(jedis.objectIdletime("foo1") > 0);
 
     reply = jedis.touch("foo1");
@@ -426,7 +426,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo1, bbar1);
 
-    Thread.sleep(2000);
+    Thread.sleep(1100); // little over 1 sec
     assertTrue(jedis.objectIdletime(bfoo1) > 0);
 
     reply = jedis.touch(bfoo1);

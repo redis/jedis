@@ -136,7 +136,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     log.info("Trying to find master from available Sentinels...");
 
     for (String sentinel : sentinels) {
-      final HostAndPort hap = HostAndPort.parseString(sentinel);
+      final HostAndPort hap = toHostAndPort(sentinel);
 
       log.debug("Connecting to Sentinel {}", hap);
 
@@ -185,7 +185,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     log.info("Redis master running at " + master + ", starting Sentinel listeners...");
 
     for (String sentinel : sentinels) {
-      final HostAndPort hap = HostAndPort.parseString(sentinel);
+      final HostAndPort hap = toHostAndPort(sentinel);
       MasterListener masterListener = new MasterListener(masterName, hap.getHost(), hap.getPort());
       // whether MasterListener threads are alive or not, process can be stopped
       masterListener.setDaemon(true);
@@ -199,7 +199,14 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   private HostAndPort toHostAndPort(List<String> getMasterAddrByNameResult) {
     String host = getMasterAddrByNameResult.get(0);
     int port = Integer.parseInt(getMasterAddrByNameResult.get(1));
+    return new HostAndPort(host, port);
+  }
 
+  private HostAndPort toHostAndPort(String sentinel) {
+    int lastColon = sentinel.lastIndexOf(":");
+    if (lastColon == -1) throw new IllegalArgumentException(sentinel + " does not contain port.");
+    String host = sentinel.substring(0, lastColon);
+    int port = Integer.parseInt(sentinel.substring(lastColon + 1));
     return new HostAndPort(host, port);
   }
 

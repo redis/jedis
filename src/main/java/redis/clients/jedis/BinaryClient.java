@@ -71,11 +71,19 @@ public class BinaryClient extends Connection {
   public boolean isInWatch() {
     return isInWatch;
   }
-  
+
   private byte[][] joinParameters(byte[] first, byte[][] rest) {
     byte[][] result = new byte[rest.length + 1][];
     result[0] = first;
     System.arraycopy(rest, 0, result, 1, rest.length);
+    return result;
+  }
+
+  private byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 2][];
+    result[0] = first;
+    result[1] = second;
+    System.arraycopy(rest, 0, result, 2, rest.length);
     return result;
   }
 
@@ -260,10 +268,7 @@ public class BinaryClient extends Connection {
   }
 
   public void hmget(final byte[] key, final byte[]... fields) {
-    final byte[][] params = new byte[fields.length + 1][];
-    params[0] = key;
-    System.arraycopy(fields, 0, params, 1, fields.length);
-    sendCommand(HMGET, params);
+    sendCommand(HMGET, joinParameters(key, fields));
   }
 
   public void hincrBy(final byte[] key, final byte[] field, final long value) {
@@ -375,10 +380,7 @@ public class BinaryClient extends Connection {
   }
 
   public void sinterstore(final byte[] dstkey, final byte[]... keys) {
-    final byte[][] params = new byte[keys.length + 1][];
-    params[0] = dstkey;
-    System.arraycopy(keys, 0, params, 1, keys.length);
-    sendCommand(SINTERSTORE, params);
+    sendCommand(SINTERSTORE, joinParameters(dstkey, keys));
   }
 
   public void sunion(final byte[]... keys) {
@@ -386,10 +388,7 @@ public class BinaryClient extends Connection {
   }
 
   public void sunionstore(final byte[] dstkey, final byte[]... keys) {
-    byte[][] params = new byte[keys.length + 1][];
-    params[0] = dstkey;
-    System.arraycopy(keys, 0, params, 1, keys.length);
-    sendCommand(SUNIONSTORE, params);
+    sendCommand(SUNIONSTORE, joinParameters(dstkey, keys));
   }
 
   public void sdiff(final byte[]... keys) {
@@ -397,10 +396,7 @@ public class BinaryClient extends Connection {
   }
 
   public void sdiffstore(final byte[] dstkey, final byte[]... keys) {
-    byte[][] params = new byte[keys.length + 1][];
-    params[0] = dstkey;
-    System.arraycopy(keys, 0, params, 1, keys.length);
-    sendCommand(SDIFFSTORE, params);
+    sendCommand(SDIFFSTORE, joinParameters(dstkey, keys));
   }
 
   public void srandmember(final byte[] key) {
@@ -752,11 +748,7 @@ public class BinaryClient extends Connection {
   }
 
   public void zunionstore(final byte[] dstkey, final byte[]... sets) {
-    final byte[][] params = new byte[sets.length + 2][];
-    params[0] = dstkey;
-    params[1] = toByteArray(sets.length);
-    System.arraycopy(sets, 0, params, 2, sets.length);
-    sendCommand(ZUNIONSTORE, params);
+    sendCommand(ZUNIONSTORE, joinParameters(dstkey, toByteArray(sets.length), sets));
   }
 
   public void zunionstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
@@ -771,11 +763,7 @@ public class BinaryClient extends Connection {
   }
 
   public void zinterstore(final byte[] dstkey, final byte[]... sets) {
-    final byte[][] params = new byte[sets.length + 2][];
-    params[0] = dstkey;
-    params[1] = Protocol.toByteArray(sets.length);
-    System.arraycopy(sets, 0, params, 2, sets.length);
-    sendCommand(ZINTERSTORE, params);
+    sendCommand(ZINTERSTORE, joinParameters(dstkey, Protocol.toByteArray(sets.length), sets));
   }
 
   public void zinterstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
@@ -954,33 +942,20 @@ public class BinaryClient extends Connection {
     if (isInWatch()) unwatch();
   }
 
-  private void sendEvalCommand(final Command command, final byte[] script, final byte[] keyCount, final byte[][] params) {
-
-    final byte[][] allArgs = new byte[params.length + 2][];
-
-    allArgs[0] = script;
-    allArgs[1] = keyCount;
-
-    for (int i = 0; i < params.length; i++)
-      allArgs[i + 2] = params[i];
-
-    sendCommand(command, allArgs);
-  }
-
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
-    sendEvalCommand(EVAL, script, keyCount, params);
+    sendCommand(EVAL, joinParameters(script, keyCount, params));
   }
 
   public void eval(final byte[] script, final int keyCount, final byte[]... params) {
-    eval(script, toByteArray(keyCount), params);
+    sendCommand(EVAL, joinParameters(script, toByteArray(keyCount), params));
   }
 
   public void evalsha(final byte[] sha1, final byte[] keyCount, final byte[]... params) {
-    sendEvalCommand(EVALSHA, sha1, keyCount, params);
+    sendCommand(EVALSHA, joinParameters(sha1, keyCount, params));
   }
 
   public void evalsha(final byte[] sha1, final int keyCount, final byte[]... params) {
-    sendEvalCommand(EVALSHA, sha1, toByteArray(keyCount), params);
+    sendCommand(EVALSHA, joinParameters(sha1, toByteArray(keyCount), params));
   }
 
   public void scriptFlush() {
@@ -988,12 +963,7 @@ public class BinaryClient extends Connection {
   }
 
   public void scriptExists(final byte[]... sha1) {
-    byte[][] args = new byte[sha1.length + 1][];
-    args[0] = Keyword.EXISTS.raw;
-    for (int i = 0; i < sha1.length; i++)
-      args[i + 1] = sha1[i];
-
-    sendCommand(SCRIPT, args);
+    sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.raw, sha1));
   }
 
   public void scriptLoad(final byte[] script) {
@@ -1042,7 +1012,6 @@ public class BinaryClient extends Connection {
 
   public void bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
     Keyword kw = Keyword.AND;
-    int len = srcKeys.length;
     switch (op) {
     case AND:
       kw = Keyword.AND;
@@ -1058,14 +1027,7 @@ public class BinaryClient extends Connection {
       break;
     }
 
-    byte[][] bargs = new byte[len + 2][];
-    bargs[0] = kw.raw;
-    bargs[1] = destKey;
-    for (int i = 0; i < len; ++i) {
-      bargs[i + 2] = srcKeys[i];
-    }
-
-    sendCommand(BITOP, bargs);
+    sendCommand(BITOP, joinParameters(kw.raw, destKey, srcKeys));
   }
 
   public void sentinel(final byte[]... args) {
@@ -1344,10 +1306,6 @@ public class BinaryClient extends Connection {
   }
 
   public void bitfield(final byte[] key, final byte[]... value) {
-    int argsLength = value.length;
-    byte[][] bitfieldArgs = new byte[argsLength + 1][];
-    bitfieldArgs[0] = key;
-    System.arraycopy(value, 0, bitfieldArgs, 1, argsLength);
-    sendCommand(Command.BITFIELD, bitfieldArgs);
+    sendCommand(BITFIELD, joinParameters(key, value));
   }
 }

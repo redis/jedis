@@ -101,15 +101,16 @@ public class JedisClusterInfoCache {
         }
 
         for (JedisPool jp : getShuffledNodesPool()) {
+          Jedis j = null;
           try {
-            jedis = jp.getResource();
-            discoverClusterSlots(jedis);
+            j = jp.getResource();
+            discoverClusterSlots(j);
             return;
           } catch (JedisConnectionException e) {
             // try next nodes
           } finally {
-            if (jedis != null) {
-              jedis.close();
+            if (j != null) {
+              j.close();
             }
           }
         }

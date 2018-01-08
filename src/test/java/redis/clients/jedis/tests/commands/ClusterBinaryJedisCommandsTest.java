@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -107,7 +108,7 @@ public class ClusterBinaryJedisCommandsTest {
     byte[] byteKey = "foo".getBytes();
     byte[] byteValue = "2".getBytes();
     jedisCluster.set(byteKey, byteValue);
-    assertEquals(new String(jedisCluster.get(byteKey)), "2");
+    assertArrayEquals(byteValue, jedisCluster.get(byteKey));
   }
 
   @SuppressWarnings("unchecked")
@@ -117,7 +118,7 @@ public class ClusterBinaryJedisCommandsTest {
     byte[] byteValue = "2".getBytes();
     jedisCluster.set(byteKey, byteValue);
     jedisCluster.incr(byteKey);
-    assertEquals(new String(jedisCluster.get(byteKey)), "3");
+    assertArrayEquals("3".getBytes(), jedisCluster.get(byteKey));
   }
 
   @SuppressWarnings("unchecked")
@@ -140,15 +141,15 @@ public class ClusterBinaryJedisCommandsTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testHmset() {
-    byte[] byteKey = "language".getBytes();
-    byte[] language = "java".getBytes();
+    byte[] key = "jedis".getBytes();
+    byte[] field = "language".getBytes();
+    byte[] value = "java".getBytes();
     HashMap<byte[], byte[]> map = new HashMap();
-    map.put(byteKey, language);
-    jedisCluster.hmset(byteKey, map);
-    List<byte[]> listResults = jedisCluster.hmget(byteKey, byteKey);
+    map.put(field, value);
+    jedisCluster.hmset(key, map);
+    List<byte[]> listResults = jedisCluster.hmget(key, field);
     for (byte[] result : listResults) {
-      String resultString = new String(result);
-      assertEquals(resultString, "java");
+      assertArrayEquals(value, result);
     }
   }
 
@@ -181,13 +182,16 @@ public class ClusterBinaryJedisCommandsTest {
 
   @Test
   public void testGetSlot() {
-    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar"));
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()),
       JedisClusterCRC16.getSlot("{user1000}.followers".getBytes()));
-    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()),
-      JedisClusterCRC16.getSlot("bar".getBytes()));
-    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()),
-      JedisClusterCRC16.getSlot("bar".getBytes()));
+    assertEquals(JedisClusterCRC16.getSlot("bar".getBytes()),
+        JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()));
+    assertNotEquals(JedisClusterCRC16.getSlot("bar".getBytes()),
+        JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()));
+    assertNotEquals(JedisClusterCRC16.getSlot(new byte[0]),
+        JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()));
+    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()),
+        JedisClusterCRC16.getSlot("foo{{bar}}zap".getBytes()));
   }
 
   private static String getNodeId(String infoOutput) {

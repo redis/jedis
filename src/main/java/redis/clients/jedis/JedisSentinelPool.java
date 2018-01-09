@@ -12,8 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.Pool;
 
-public class JedisSentinelPool extends JedisPoolAbstract {
+public class JedisSentinelPool extends Pool<Jedis> {
 
   protected GenericObjectPoolConfig poolConfig;
 
@@ -120,11 +121,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
           initPool(poolConfig, factory);
         } else {
           factory.setHostAndPort(currentHostMaster);
-          // although we clear the pool, we still have to check the
-          // returned object
-          // in getResource, this call only clears idle instances, not
-          // borrowed instances
-          internalPool.clear();
+          // although we clear the pool, we still have to check the returned object in getResource,
+          // this call only clears idle instances, not borrowed instances
+          clear();
         }
 
         log.info("Created JedisPool to master at " + master);
@@ -228,21 +227,21 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   @Override
-  protected void returnBrokenResource(final Jedis resource) {
+  public void returnBrokenResource(final Jedis resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
   @Override
-  protected void returnResource(final Jedis resource) {
+  public void returnResource(final Jedis resource) {
     if (resource != null) {
       resource.resetState();
       returnResourceObject(resource);
     }
   }
 
-  protected class MasterListener extends Thread {
+  public class MasterListener extends Thread {
 
     protected String masterName;
     protected String host;

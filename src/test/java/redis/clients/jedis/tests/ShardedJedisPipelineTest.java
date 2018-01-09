@@ -23,7 +23,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.Tuple;
-import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisBatchOperationException;
 
 public class ShardedJedisPipelineTest {
 
@@ -109,7 +109,7 @@ public class ShardedJedisPipelineTest {
     assertEquals(1, zrangeWithScores.get().size());
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisBatchOperationException.class)
   public void pipelineResponseWithinPipeline() {
     jedis.set("string", "foo");
 

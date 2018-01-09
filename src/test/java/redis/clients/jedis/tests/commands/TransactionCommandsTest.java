@@ -22,6 +22,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.JedisBatchOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
@@ -145,7 +146,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", resp.get(0));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisBatchOperationException.class)
   public void validateWhenInMulti() {
     jedis.multi();
     jedis.ping();
@@ -204,7 +205,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertArrayEquals("foo".getBytes(), set.get());
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisBatchOperationException.class)
   public void transactionResponseWithinPipeline() {
     jedis.set("string", "foo");
 

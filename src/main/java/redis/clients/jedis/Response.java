@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisBatchOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Response<T> {
@@ -24,13 +25,12 @@ public class Response<T> {
   }
 
   public T get() {
-    // if response has dependency response and dependency is not built,
-    // build it first and no more!!
+    // if response has dependency response and dependency is not built, build it first and no more!!
     if (dependency != null && dependency.set && !dependency.built) {
       dependency.build();
     }
     if (!set) {
-      throw new JedisDataException(
+      throw new JedisBatchOperationException(
           "Please close pipeline or multi block before calling this method.");
     }
     if (!built) {

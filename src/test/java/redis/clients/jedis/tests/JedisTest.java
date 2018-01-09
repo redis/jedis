@@ -18,7 +18,6 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
@@ -70,7 +69,7 @@ public class JedisTest extends JedisCommandTestBase {
     jedis.hmget("foobar", "foo");
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisException.class)
   public void failWhenSendingNullValues() {
     jedis.set("foo", null);
   }

@@ -3,7 +3,6 @@ package redis.clients.jedis.util;
 import java.io.UnsupportedEncodingException;
 
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -25,7 +24,7 @@ public final class SafeEncoder {
   public static byte[] encode(final String str) {
     try {
       if (str == null) {
-        throw new JedisDataException("value sent to redis cannot be null");
+        throw new JedisException("null value cannot be sent to redis");
       }
       return str.getBytes(Protocol.CHARSET);
     } catch (UnsupportedEncodingException e) {

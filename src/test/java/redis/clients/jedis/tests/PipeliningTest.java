@@ -31,6 +31,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.exceptions.JedisBatchOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -191,7 +192,7 @@ public class PipeliningTest {
     assertNull(score.get());
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisBatchOperationException.class)
   public void pipelineResponseWithinPipeline() {
     jedis.set("string", "foo");
 
@@ -308,27 +309,27 @@ public class PipeliningTest {
     assertEquals("world", r3.get());
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMulti() {
+  @Test(expected = JedisBatchOperationException.class)
+  public void pipelineExecShoudThrowBatchExceptionWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.exec();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineDiscardShoudThrowJedisDataExceptionWhenNotInMulti() {
+  @Test(expected = JedisBatchOperationException.class)
+  public void pipelineDiscardShoudThrowBatchExceptionWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.discard();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineMultiShoudThrowJedisDataExceptionWhenAlreadyInMulti() {
+  @Test(expected = JedisBatchOperationException.class)
+  public void pipelineMultiShoudThrowBatchExceptionWhenAlreadyInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.multi();
     pipeline.set("foo", "3");
     pipeline.multi();
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = JedisBatchOperationException.class)
   public void testJedisThowExceptionWhenInPipeline() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.set("foo", "3");
@@ -636,7 +637,7 @@ public class PipeliningTest {
     try {
       pipeline.exec();
       fail("close should discard transaction");
-    } catch (JedisDataException e) {
+    } catch (JedisBatchOperationException e) {
       assertTrue(e.getMessage().contains("EXEC without MULTI"));
       // pass
     }

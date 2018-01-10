@@ -1,17 +1,18 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
 import org.junit.Test;
-
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.exceptions.JedisDataException;
+
+import java.util.List;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 
 public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
@@ -55,8 +56,24 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   public void info() {
     String info = jedis.info();
     assertNotNull(info);
-    info = jedis.info("server");
+    Properties props = extractRedisInfo("server");
     assertNotNull(info);
+    assertTrue(props.size() > 0);
+    System.out.println(props.get("run_id"));
+    props = extractRedisInfo("replication");
+    assertTrue(props.size() > 0);
+    System.out.println(props.get("master_repl_offset"));
+  }
+
+  private Properties extractRedisInfo(String section) {
+    String[] lines = jedis.info(section).split("\r\n");
+    Properties props = new Properties();
+    for(String line: lines) {
+      String[] kv = line.split(":");
+      if (kv.length > 1)
+        props.put(kv[0], kv[1]);
+    }
+    return props;
   }
 
   @Test
@@ -120,6 +137,18 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
   public void sync() {
     jedis.sync();
+  }
+
+  @Test
+  public void psync() {
+    Properties props = extractRedisInfo("server");
+    String runid = (String) props.get("run_id");
+    props = extractRedisInfo("replication");
+    String offset = (String) props.get("master_repl_offset");
+
+    String reply = jedis.psync(runid, offset);
+    assertNotNull(reply);
+    assertTrue(reply.startsWith("FULLRESYNC") || reply.equals("CONTINUE"));
   }
 
   @Test

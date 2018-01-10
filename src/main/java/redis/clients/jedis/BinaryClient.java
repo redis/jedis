@@ -41,24 +41,29 @@ public class BinaryClient extends Connection {
 
   public BinaryClient() {
     super();
+    connect();
   }
 
   public BinaryClient(final String host) {
     super(host);
+    connect();
   }
 
   public BinaryClient(final String host, final int port) {
     super(host, port);
+    connect();
   }
 
   public BinaryClient(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
+    connect();
   }
 
   public BinaryClient(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    connect();
   }
 
   public boolean isInMulti() {

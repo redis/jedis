@@ -89,9 +89,6 @@ public class Connection implements Closeable {
 
   public void setTimeoutInfinite() {
     try {
-      if (!isConnected()) {
-        connect();
-      }
       socket.setSoTimeout(0);
     } catch (SocketException ex) {
       broken = true;
@@ -122,7 +119,6 @@ public class Connection implements Closeable {
 
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
-      connect();
       Protocol.sendCommand(outputStream, cmd, args);
     } catch (JedisConnectionException ex) {
       /*

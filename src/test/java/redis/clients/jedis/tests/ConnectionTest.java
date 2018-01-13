@@ -54,7 +54,7 @@ public class ConnectionTest {
   }
 
   @Test
-  public void getErrorAfterConnectionReset() throws Exception {
+  public void getErrorMultibulkLength() throws Exception {
     class TestConnection extends Connection {
       public TestConnection() {
         super("localhost", 6379);

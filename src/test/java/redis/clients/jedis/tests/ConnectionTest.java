@@ -22,7 +22,7 @@ public class ConnectionTest {
 
   @After
   public void tearDown() throws Exception {
-    client.disconnect();
+    client.close();
   }
 
   @Test(expected = JedisConnectionException.class)

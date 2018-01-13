@@ -899,6 +899,9 @@ public class BinaryClient extends Connection {
   @Override
   public void close() {
     db = 0;
+    password = null;
+    isInMulti = false;
+    isInWatch = false;
     super.close();
   }
 

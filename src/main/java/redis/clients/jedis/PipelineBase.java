@@ -6,10 +6,10 @@ import java.util.Set;
 
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.RedisPipeline;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 

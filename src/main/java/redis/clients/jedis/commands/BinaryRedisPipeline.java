@@ -2,9 +2,9 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.*;
 
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
 
 import java.util.List;
 import java.util.Map;

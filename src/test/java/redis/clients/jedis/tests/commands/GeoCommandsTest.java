@@ -14,7 +14,7 @@ import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.util.SafeEncoder;
 
 public class GeoCommandsTest extends JedisCommandTestBase {

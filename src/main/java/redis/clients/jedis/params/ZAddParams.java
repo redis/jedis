@@ -1,6 +1,5 @@
-package redis.clients.jedis.params.sortedset;
+package redis.clients.jedis.params;
 
-import redis.clients.jedis.params.Params;
 import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
@@ -11,7 +10,7 @@ public class ZAddParams extends Params {
   private static final String NX = "nx";
   private static final String CH = "ch";
 
-  private ZAddParams() {
+  public ZAddParams() {
   }
 
   public static ZAddParams zAddParams() {

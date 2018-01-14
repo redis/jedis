@@ -24,10 +24,10 @@ import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.JedisURIHelper;
 

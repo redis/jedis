@@ -1,8 +1,7 @@
-package redis.clients.jedis.params.set;
+package redis.clients.jedis.params;
 
 import java.util.ArrayList;
 
-import redis.clients.jedis.params.Params;
 import redis.clients.util.SafeEncoder;
 
 public class SetParams extends Params {
@@ -12,7 +11,7 @@ public class SetParams extends Params {
   private static final String PX = "px";
   private static final String EX = "ex";
 
-  private SetParams() {
+  public SetParams() {
   }
 
   public static SetParams setParams() {

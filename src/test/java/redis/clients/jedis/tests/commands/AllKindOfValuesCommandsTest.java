@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
-import static redis.clients.jedis.params.set.SetParams.setParams;
+import static redis.clients.jedis.params.SetParams.setParams;
 
 import java.util.Arrays;
 import java.util.HashSet;

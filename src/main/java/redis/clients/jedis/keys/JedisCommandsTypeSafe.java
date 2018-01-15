@@ -261,15 +261,15 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     Long bitpos(String key, boolean value, BitPosParams params);
 
-    default ScanResult<Map.Entry<String, String>> hscan(HashKey key, String cursor) { return hscan(key.getKey(), cursor); }
+    default ScanResult<Map.Entry<String, String>> hscan(HashKey key, cursor) { return hscan(key.getKey(), cursor); }
 
     default ScanResult<Map.Entry<String, String>> hscan(HashKey key, String cursor, ScanParams params) { return hscan(key.getKey(), cursor, params); }
 
     default ScanResult<String> sscan(SetKey key, String cursor) { return sscan(key.getKey(), cursor); }
 
-    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor) { return zscan(key.getKey(), String cursor); }
+    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor) { return zscan(key.getKey(), cursor); }
 
-    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor, ScanParams params) { return zscan(key.getKey(), String cursor, ScanParams params); }
+    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor, ScanParams params) { return zscan(key.getKey(), cursor, ScanParams params); }
 
     default ScanResult<String> sscan(SetKey key, String cursor, ScanParams params) { return sscan(key.getKey(), cursor, ScanParams params); }
 
@@ -299,5 +299,5 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     List<Long> bitfield(String key, String... arguments);
 
-    default Long hstrlen(HashKey key, String field) { return hstrlen(key.getKey(), String field); }
+    default Long hstrlen(HashKey key, String field) { return hstrlen(key.getKey(), field); }
 }

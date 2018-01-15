@@ -105,21 +105,21 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     // Lists
 
-    default Long rpush(ListKey key, String... string) { return rpush(key.getKey(), String... string); }
+    default Long rpush(ListKey key, String... string) { return rpush(key.getKey(), string); }
 
-    default Long lpush(ListKey key, String... string) { return lpush(key.getKey(), String... string); }
+    default Long lpush(ListKey key, String... string) { return lpush(key.getKey(), string); }
 
     default Long llen(ListKey key) { return llen(key.getKey()); }
 
-    default List<String> lrange(ListKey key, long start, long stop) { return lrange(key.getKey(), long start, long stop); }
+    default List<String> lrange(ListKey key, long start, long stop) { return lrange(key.getKey(), start, stop); }
 
-    default String ltrim(ListKey key, long start, long stop) { return ltrim(key.getKey(), long start, long stop); }
+    default String ltrim(ListKey key, long start, long stop) { return ltrim(key.getKey(), start, stop); }
 
-    default String lindex(ListKey key, long index) { return lindex(key.getKey(), long index); }
+    default String lindex(ListKey key, long index) { return lindex(key.getKey(), index); }
 
-    default String lset(ListKey key, long index, String value) { return lset(key.getKey(), long index, String value); }
+    default String lset(ListKey key, long index, String value) { return lset(key.getKey(), index, value); }
 
-    default Long lrem(ListKey key, long count, String value) { return lrem(key.getKey(), long count, String value); }
+    default Long lrem(ListKey key, long count, String value) { return lrem(key.getKey(), count, value); }
 
     default String lpop(ListKey key) { return lpop(key.getKey()); }
 
@@ -235,11 +235,11 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
     
     // Lists
 
-    default Long linsert(ListKey key, ListPosition where, String pivot, String value) { return linsert(key.getKey(), ListPosition where, String pivot, String value); }
+    default Long linsert(ListKey key, ListPosition where, String pivot, String value) { return linsert(key.getKey(), where, pivot, value); }
 
-    default Long lpushx(ListKey key, String... string) { return lpushx(key.getKey(), String... string); }
+    default Long lpushx(ListKey key, String... string) { return lpushx(key.getKey(), string); }
 
-    default Long rpushx(ListKey key, String... string) { return rpushx(key.getKey(), String... string); }
+    default Long rpushx(ListKey key, String... string) { return rpushx(key.getKey(), string); }
 
     List<String> blpop(int timeout, String key);
 

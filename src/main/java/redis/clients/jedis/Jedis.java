@@ -21,6 +21,7 @@ import redis.clients.jedis.commands.ModuleCommands;
 import redis.clients.jedis.commands.MultiKeyCommands;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.keys.HashKey;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;

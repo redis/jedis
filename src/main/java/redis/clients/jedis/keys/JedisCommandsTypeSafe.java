@@ -13,9 +13,9 @@ import java.util.Set;
 
 public interface JedisCommandsTypeSafe extends JedisCommands {
 
-    default String set(SetKey key, String value) { return set(key.getKey(), String value); }
+    default String set(SetKey key, String value) { return set(key.getKey(), value); }
 
-    default String set(SetKey key, String value, SetParams params) { return set(key.getKey(), String value, SetParams params); }
+    default String set(SetKey key, String value, SetParams params) { return set(key.getKey(), value, params); }
 
     String get(String key);
 
@@ -43,21 +43,21 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     Long touch(String key);
 
-    default Boolean setbit(SetKey key, long offset, boolean value) { return setbit(key.getKey(), long offset, boolean value); }
+    default Boolean setbit(SetKey key, long offset, boolean value) { return setbit(key.getKey(), offset, value); }
 
-    default Boolean setbit(SetKey key, long offset, String value) { return setbit(key.getKey(), long offset, String value); }
+    default Boolean setbit(SetKey key, long offset, String value) { return setbit(key.getKey(), offset, value); }
 
     Boolean getbit(String key, long offset);
 
-    default Long setrange(SetKey key, long offset, String value) { return setrange(key.getKey(), long offset, String value); }
+    default Long setrange(SetKey key, long offset, String value) { return setrange(key.getKey(), offset, value); }
 
     String getrange(String key, long startOffset, long endOffset);
 
     String getSet(String key, String value);
 
-    default Long setnx(SetKey key, String value) { return setnx(key.getKey(), String value); }
+    default Long setnx(SetKey key, String value) { return setnx(key.getKey(), value); }
 
-    default String setex(SetKey key, int seconds, String value) { return setex(key.getKey(), int seconds, String value); }
+    default String setex(SetKey key, int seconds, String value) { return setex(key.getKey(), seconds, value); }
 
     String psetex(String key, long milliseconds, String value);
 
@@ -159,7 +159,7 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     default Set<String> zrange(SortedSetKey key, long start, long stop) { return zrange(key.getKey(), start, stop); }
 
-    default Long zrem(SortedSetKey key, String... members) { return zrem(key.getKey(), String... members); }
+    default Long zrem(SortedSetKey key, String... members) { return zrem(key.getKey(), members); }
 
     default Double zincrby(SortedSetKey key, double increment, String member) { return zincrby(key.getKey(), increment, member); }
 
@@ -185,53 +185,53 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     default Set<String> zrangeByScore(SortedSetKey key, double min, double max) { return zrangeByScore(key.getKey(), min, max); }
 
-    default Set<String> zrangeByScore(SortedSetKey key, String min, String max) { return zrangeByScore(key.getKey(), String min, String max); }
+    default Set<String> zrangeByScore(SortedSetKey key, String min, String max) { return zrangeByScore(key.getKey(), min, max); }
 
     default Set<String> zrevrangeByScore(SortedSetKey key, double max, double min) { return zrevrangeByScore(key.getKey(), max, min); }
 
-    default Set<String> zrangeByScore(SortedSetKey key, double min, double max, int offset, int count) { return zrangeByScore(key.getKey(), double min, double max, int offset, int count); }
+    default Set<String> zrangeByScore(SortedSetKey key, double min, double max, int offset, int count) { return zrangeByScore(key.getKey(), min, max, offset, count); }
 
-    default Set<String> zrevrangeByScore(SortedSetKey key, String max, String min) { return zrevrangeByScore(key.getKey(), String max, String min); }
+    default Set<String> zrevrangeByScore(SortedSetKey key, String max, String min) { return zrevrangeByScore(key.getKey(), max, min); }
 
-    default Set<String> zrangeByScore(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByScore(key.getKey(), String min, String max, int offset, int count); }
+    default Set<String> zrangeByScore(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByScore(key.getKey(), min, max, offset, count); }
 
-    default Set<String> zrevrangeByScore(SortedSetKey key, double max, double min, int offset, int count) { return zrevrangeByScore(key.getKey(), double max, double min, int offset, int count); }
+    default Set<String> zrevrangeByScore(SortedSetKey key, double max, double min, int offset, int count) { return zrevrangeByScore(key.getKey(), max, min, offset, count); }
 
-    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, double min, double max) { return zrangeByScoreWithScores(key.getKey(), double min, double max); }
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, double min, double max) { return zrangeByScoreWithScores(key.getKey(), min, max); }
 
-    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, double max, double min) { return zrevrangeByScoreWithScores(key.getKey(), double max, double min); }
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, double max, double min) { return zrevrangeByScoreWithScores(key.getKey(), max, min); }
 
-    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, double min, double max, int offset, int count) { return zrangeByScoreWithScores(key.getKey(), double min, double max, int offset, int count); }
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, double min, double max, int offset, int count) { return zrangeByScoreWithScores(key.getKey(), min, max, offset, count); }
 
-    default Set<String> zrevrangeByScore(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByScore(key.getKey(), String max, String min, int offset, int count); }
+    default Set<String> zrevrangeByScore(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByScore(key.getKey(), max, min, offset, count); }
 
-    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, String min, String max) { return zrangeByScoreWithScores(key.getKey(), String min, String max); }
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, String min, String max) { return zrangeByScoreWithScores(key.getKey(), min, max); }
 
-    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, String max, String min) { return zrevrangeByScoreWithScores(key.getKey(), String max, String min); }
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, String max, String min) { return zrevrangeByScoreWithScores(key.getKey(), max, min); }
 
-    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByScoreWithScores(key.getKey(), String min, String max, int offset, int count); }
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByScoreWithScores(key.getKey(), min, max, offset, count); }
 
-    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, double max, double min, int offset, int count) { return zrevrangeByScoreWithScores(key.getKey(), double max, double min, int offset, int count); }
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, double max, double min, int offset, int count) { return zrevrangeByScoreWithScores(key.getKey(), max, min, offset, count); }
 
-    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByScoreWithScores(key.getKey(), String max, String min, int offset, int count); }
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByScoreWithScores(key.getKey(), max, min, offset, count); }
 
-    default Long zremrangeByRank(SortedSetKey key, long start, long stop) { return zremrangeByRank(key.getKey(), long start, long stop); }
+    default Long zremrangeByRank(SortedSetKey key, long start, long stop) { return zremrangeByRank(key.getKey(), start, stop); }
 
-    default Long zremrangeByScore(SortedSetKey key, double min, double max) { return zremrangeByScore(key.getKey(), double min, double max); }
+    default Long zremrangeByScore(SortedSetKey key, double min, double max) { return zremrangeByScore(key.getKey(), min, max); }
 
-    default Long zremrangeByScore(SortedSetKey key, String min, String max) { return zremrangeByScore(key.getKey(), String min, String max); }
+    default Long zremrangeByScore(SortedSetKey key, String min, String max) { return zremrangeByScore(key.getKey(), min, max); }
 
-    default Long zlexcount(SortedSetKey key, String min, String max) { return zlexcount(key.getKey(), String min, String max); }
+    default Long zlexcount(SortedSetKey key, String min, String max) { return zlexcount(key.getKey(), min, max); }
 
-    default Set<String> zrangeByLex(SortedSetKey key, String min, String max) { return zrangeByLex(key.getKey(), String min, String max); }
+    default Set<String> zrangeByLex(SortedSetKey key, String min, String max) { return zrangeByLex(key.getKey(), min, max); }
 
-    default Set<String> zrangeByLex(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByLex(key.getKey(), String min, String max, int offset, int count); }
+    default Set<String> zrangeByLex(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByLex(key.getKey(), min, max, offset, count); }
 
-    default Set<String> zrevrangeByLex(SortedSetKey key, String max, String min) { return zrevrangeByLex(key.getKey(), String max, String min); }
+    default Set<String> zrevrangeByLex(SortedSetKey key, String max, String min) { return zrevrangeByLex(key.getKey(), max, min); }
 
-    default Set<String> zrevrangeByLex(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByLex(key.getKey(), String max, String min, int offset, int count); }
+    default Set<String> zrevrangeByLex(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByLex(key.getKey(), max, min, offset, count); }
 
-    default Long zremrangeByLex(SortedSetKey key, String min, String max) { return zremrangeByLex(key.getKey(), String min, String max); }
+    default Long zremrangeByLex(SortedSetKey key, String min, String max) { return zremrangeByLex(key.getKey(), min, max); }
     
     // Lists
 
@@ -261,7 +261,7 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     Long bitpos(String key, boolean value, BitPosParams params);
 
-    default ScanResult<Map.Entry<String, String>> hscan(HashKey key, cursor) { return hscan(key.getKey(), cursor); }
+    default ScanResult<Map.Entry<String, String>> hscan(HashKey key, String cursor) { return hscan(key.getKey(), cursor); }
 
     default ScanResult<Map.Entry<String, String>> hscan(HashKey key, String cursor, ScanParams params) { return hscan(key.getKey(), cursor, params); }
 
@@ -269,9 +269,9 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     default ScanResult<Tuple> zscan(SortedSetKey key, String cursor) { return zscan(key.getKey(), cursor); }
 
-    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor, ScanParams params) { return zscan(key.getKey(), cursor, ScanParams params); }
+    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor, ScanParams params) { return zscan(key.getKey(), cursor, params); }
 
-    default ScanResult<String> sscan(SetKey key, String cursor, ScanParams params) { return sscan(key.getKey(), cursor, ScanParams params); }
+    default ScanResult<String> sscan(SetKey key, String cursor, ScanParams params) { return sscan(key.getKey(), cursor, params); }
 
     Long pfadd(String key, String... elements);
 

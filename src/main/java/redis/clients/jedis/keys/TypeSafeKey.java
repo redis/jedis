@@ -12,4 +12,8 @@ public class TypeSafeKey {
         this.key = key;
     }
 
+    @Override
+    public String toString() {
+        return key;
+    }
 }

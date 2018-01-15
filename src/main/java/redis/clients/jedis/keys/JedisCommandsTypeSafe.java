@@ -13,9 +13,9 @@ import java.util.Set;
 
 public interface JedisCommandsTypeSafe extends JedisCommands {
 
-    String set(String key, String value);
+    default String set(SetKey key, String value) { return set(key.getKey(), String value); }
 
-    String set(String key, String value, SetParams params);
+    default String set(SetKey key, String value, SetParams params) { return set(key.getKey(), String value, SetParams params); }
 
     String get(String key);
 
@@ -43,21 +43,21 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     Long touch(String key);
 
-    Boolean setbit(String key, long offset, boolean value);
+    default Boolean setbit(SetKey key, long offset, boolean value) { return setbit(key.getKey(), long offset, boolean value); }
 
-    Boolean setbit(String key, long offset, String value);
+    default Boolean setbit(SetKey key, long offset, String value) { return setbit(key.getKey(), long offset, String value); }
 
     Boolean getbit(String key, long offset);
 
-    Long setrange(String key, long offset, String value);
+    default Long setrange(SetKey key, long offset, String value) { return setrange(key.getKey(), long offset, String value); }
 
     String getrange(String key, long startOffset, long endOffset);
 
     String getSet(String key, String value);
 
-    Long setnx(String key, String value);
+    default Long setnx(SetKey key, String value) { return setnx(key.getKey(), String value); }
 
-    String setex(String key, int seconds, String value);
+    default String setex(SetKey key, int seconds, String value) { return setex(key.getKey(), int seconds, String value); }
 
     String psetex(String key, long milliseconds, String value);
 
@@ -73,7 +73,7 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     Long append(String key, String value);
 
-    String substr(String key, int start, int end);
+    // Hashes
 
     default Long hset(HashKey key, String field, String value) { return hset(key.getKey(), field, value); }
 
@@ -103,6 +103,8 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     default Map<String, String> hgetAll(HashKey key) { return hgetAll(key.getKey()); }
 
+    // Lists
+
     Long rpush(String key, String... string);
 
     Long lpush(String key, String... string);
@@ -123,113 +125,115 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     String rpop(String key);
 
-    Long sadd(String key, String... member);
+    // Sets
 
-    Set<String> smembers(String key);
+    default Long sadd(SetKey key, String... member) { return sadd(key.getKey(), member); }
 
-    Long srem(String key, String... member);
+    default Set<String> smembers(SetKey key) { return smembers(key.getKey()); }
 
-    String spop(String key);
+    default Long srem(SetKey key, String... member) { return srem(key.getKey(), member); }
 
-    Set<String> spop(String key, long count);
+    default String spop(SetKey key) { return spop(key.getKey()); }
 
-    Long scard(String key);
+    default Set<String> spop(SetKey key, long count) { return spop(key.getKey(), count); }
 
-    Boolean sismember(String key, String member);
+    default Long scard(SetKey key) { return scard(key.getKey()); }
 
-    String srandmember(String key);
+    default Boolean sismember(SetKey key, String member) { return sismember(key.getKey(), member); }
 
-    List<String> srandmember(String key, int count);
+    default String srandmember(SetKey key) { return srandmember(key.getKey()); }
 
-    Long strlen(String key);
+    default List<String> srandmember(SetKey key, int count) { return srandmember(key.getKey(), count); }
 
-    Long zadd(String key, double score, String member);
+    default Long strlen(SetKey key) { return strlen(key.getKey()); }
 
-    Long zadd(String key, double score, String member, ZAddParams params);
+    // Sorted sets
 
-    Long zadd(String key, Map<String, Double> scoreMembers);
+    default Long zadd(SortedSetKey key, double score, String member) { return zadd(key.getKey(), score, member); }
 
-    Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
+    default Long zadd(SortedSetKey key, double score, String member, ZAddParams params) { return zadd(key.getKey(), score, member, params); }
 
-    Set<String> zrange(String key, long start, long stop);
+    default Long zadd(SortedSetKey key, Map<String, Double> scoreMembers) { return zadd(key.getKey(), scoreMembers); }
 
-    Long zrem(String key, String... members);
+    default Long zadd(SortedSetKey key, Map<String, Double> scoreMembers, ZAddParams params) { return zadd(key.getKey(), scoreMembers, params); }
 
-    Double zincrby(String key, double increment, String member);
+    default Set<String> zrange(SortedSetKey key, long start, long stop) { return zrange(key.getKey(), start, stop); }
 
-    Double zincrby(String key, double increment, String member, ZIncrByParams params);
+    default Long zrem(SortedSetKey key, String... members) { return zrem(key.getKey(), String... members); }
 
-    Long zrank(String key, String member);
+    default Double zincrby(SortedSetKey key, double increment, String member) { return zincrby(key.getKey(), increment, member); }
 
-    Long zrevrank(String key, String member);
+    default Double zincrby(SortedSetKey key, double increment, String member, ZIncrByParams params) { return zincrby(key.getKey(), increment, member, params); }
 
-    Set<String> zrevrange(String key, long start, long stop);
+    default Long zrank(SortedSetKey key, String member) { return zrank(key.getKey(), member); }
 
-    Set<Tuple> zrangeWithScores(String key, long start, long stop);
+    default Long zrevrank(SortedSetKey key, String member) { return zrevrank(key.getKey(), member); }
 
-    Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
+    default Set<String> zrevrange(SortedSetKey key, long start, long stop) { return zrevrange(key.getKey(), start, stop); }
 
-    Long zcard(String key);
+    default Set<Tuple> zrangeWithScores(SortedSetKey key, long start, long stop) { return zrangeWithScores(key.getKey(), start, stop); }
 
-    Double zscore(String key, String member);
+    default Set<Tuple> zrevrangeWithScores(SortedSetKey key, long start, long stop) { return zrevrangeWithScores(key.getKey(), start, stop); }
 
-    List<String> sort(String key);
+    default Long zcard(SortedSetKey key) { return zcard(key.getKey()); }
 
-    List<String> sort(String key, SortingParams sortingParameters);
+    default Double zscore(SortedSetKey key, String member) { return zscore(key.getKey(), member); }
 
-    Long zcount(String key, double min, double max);
+    default Long zcount(SortedSetKey key, double min, double max) { return zcount(key.getKey(), min, max); }
 
-    Long zcount(String key, String min, String max);
+    default Long zcount(SortedSetKey key, String min, String max) { return zcount(key.getKey(), min, max); }
 
-    Set<String> zrangeByScore(String key, double min, double max);
+    default Set<String> zrangeByScore(SortedSetKey key, double min, double max) { return zrangeByScore(key.getKey(), min, max); }
 
-    Set<String> zrangeByScore(String key, String min, String max);
+    default Set<String> zrangeByScore(SortedSetKey key, String min, String max) { return zrangeByScore(key.getKey(), String min, String max); }
 
-    Set<String> zrevrangeByScore(String key, double max, double min);
+    default Set<String> zrevrangeByScore(SortedSetKey key, double max, double min) { return zrevrangeByScore(key.getKey(), max, min); }
 
-    Set<String> zrangeByScore(String key, double min, double max, int offset, int count);
+    default Set<String> zrangeByScore(SortedSetKey key, double min, double max, int offset, int count) { return zrangeByScore(key.getKey(), double min, double max, int offset, int count); }
 
-    Set<String> zrevrangeByScore(String key, String max, String min);
+    default Set<String> zrevrangeByScore(SortedSetKey key, String max, String min) { return zrevrangeByScore(key.getKey(), String max, String min); }
 
-    Set<String> zrangeByScore(String key, String min, String max, int offset, int count);
+    default Set<String> zrangeByScore(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByScore(key.getKey(), String min, String max, int offset, int count); }
 
-    Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count);
+    default Set<String> zrevrangeByScore(SortedSetKey key, double max, double min, int offset, int count) { return zrevrangeByScore(key.getKey(), double max, double min, int offset, int count); }
 
-    Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, double min, double max) { return zrangeByScoreWithScores(key.getKey(), double min, double max); }
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, double max, double min) { return zrevrangeByScoreWithScores(key.getKey(), double max, double min); }
 
-    Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, double min, double max, int offset, int count) { return zrangeByScoreWithScores(key.getKey(), double min, double max, int offset, int count); }
 
-    Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count);
+    default Set<String> zrevrangeByScore(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByScore(key.getKey(), String max, String min, int offset, int count); }
 
-    Set<Tuple> zrangeByScoreWithScores(String key, String min, String max);
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, String min, String max) { return zrangeByScoreWithScores(key.getKey(), String min, String max); }
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, String max, String min) { return zrevrangeByScoreWithScores(key.getKey(), String max, String min); }
 
-    Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
+    default Set<Tuple> zrangeByScoreWithScores(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByScoreWithScores(key.getKey(), String min, String max, int offset, int count); }
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, double max, double min, int offset, int count) { return zrevrangeByScoreWithScores(key.getKey(), double max, double min, int offset, int count); }
 
-    Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
+    default Set<Tuple> zrevrangeByScoreWithScores(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByScoreWithScores(key.getKey(), String max, String min, int offset, int count); }
 
-    Long zremrangeByRank(String key, long start, long stop);
+    default Long zremrangeByRank(SortedSetKey key, long start, long stop) { return zremrangeByRank(key.getKey(), long start, long stop); }
 
-    Long zremrangeByScore(String key, double min, double max);
+    default Long zremrangeByScore(SortedSetKey key, double min, double max) { return zremrangeByScore(key.getKey(), double min, double max); }
 
-    Long zremrangeByScore(String key, String min, String max);
+    default Long zremrangeByScore(SortedSetKey key, String min, String max) { return zremrangeByScore(key.getKey(), String min, String max); }
 
-    Long zlexcount(String key, String min, String max);
+    default Long zlexcount(SortedSetKey key, String min, String max) { return zlexcount(key.getKey(), String min, String max); }
 
-    Set<String> zrangeByLex(String key, String min, String max);
+    default Set<String> zrangeByLex(SortedSetKey key, String min, String max) { return zrangeByLex(key.getKey(), String min, String max); }
 
-    Set<String> zrangeByLex(String key, String min, String max, int offset, int count);
+    default Set<String> zrangeByLex(SortedSetKey key, String min, String max, int offset, int count) { return zrangeByLex(key.getKey(), String min, String max, int offset, int count); }
 
-    Set<String> zrevrangeByLex(String key, String max, String min);
+    default Set<String> zrevrangeByLex(SortedSetKey key, String max, String min) { return zrevrangeByLex(key.getKey(), String max, String min); }
 
-    Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
+    default Set<String> zrevrangeByLex(SortedSetKey key, String max, String min, int offset, int count) { return zrevrangeByLex(key.getKey(), String max, String min, int offset, int count); }
 
-    Long zremrangeByLex(String key, String min, String max);
+    default Long zremrangeByLex(SortedSetKey key, String min, String max) { return zremrangeByLex(key.getKey(), String min, String max); }
+    
+    // Lists
 
     Long linsert(String key, ListPosition where, String pivot, String value);
 
@@ -261,13 +265,13 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     default ScanResult<Map.Entry<String, String>> hscan(HashKey key, String cursor, ScanParams params) { return hscan(key.getKey(), cursor, params); }
 
-    ScanResult<String> sscan(String key, String cursor);
+    default ScanResult<String> sscan(SetKey key, String cursor) { return sscan(key.getKey(), cursor); }
 
-    ScanResult<Tuple> zscan(String key, String cursor);
+    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor) { return zscan(key.getKey(), String cursor); }
 
-    ScanResult<Tuple> zscan(String key, String cursor, ScanParams params);
+    default ScanResult<Tuple> zscan(SortedSetKey key, String cursor, ScanParams params) { return zscan(key.getKey(), String cursor, ScanParams params); }
 
-    ScanResult<String> sscan(String key, String cursor, ScanParams params);
+    default ScanResult<String> sscan(SetKey key, String cursor, ScanParams params) { return sscan(key.getKey(), cursor, ScanParams params); }
 
     Long pfadd(String key, String... elements);
 

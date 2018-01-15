@@ -105,25 +105,25 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     // Lists
 
-    Long rpush(String key, String... string);
+    default Long rpush(ListKey key, String... string) { return rpush(key.getKey(), String... string); }
 
-    Long lpush(String key, String... string);
+    default Long lpush(ListKey key, String... string) { return lpush(key.getKey(), String... string); }
 
-    Long llen(String key);
+    default Long llen(ListKey key) { return llen(key.getKey()); }
 
-    List<String> lrange(String key, long start, long stop);
+    default List<String> lrange(ListKey key, long start, long stop) { return lrange(key.getKey(), long start, long stop); }
 
-    String ltrim(String key, long start, long stop);
+    default String ltrim(ListKey key, long start, long stop) { return ltrim(key.getKey(), long start, long stop); }
 
-    String lindex(String key, long index);
+    default String lindex(ListKey key, long index) { return lindex(key.getKey(), long index); }
 
-    String lset(String key, long index, String value);
+    default String lset(ListKey key, long index, String value) { return lset(key.getKey(), long index, String value); }
 
-    Long lrem(String key, long count, String value);
+    default Long lrem(ListKey key, long count, String value) { return lrem(key.getKey(), long count, String value); }
 
-    String lpop(String key);
+    default String lpop(ListKey key) { return lpop(key.getKey()); }
 
-    String rpop(String key);
+    default String rpop(ListKey key) { return rpop(key.getKey()); }
 
     // Sets
 
@@ -235,11 +235,11 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
     
     // Lists
 
-    Long linsert(String key, ListPosition where, String pivot, String value);
+    default Long linsert(ListKey key, ListPosition where, String pivot, String value) { return linsert(key.getKey(), ListPosition where, String pivot, String value); }
 
-    Long lpushx(String key, String... string);
+    default Long lpushx(ListKey key, String... string) { return lpushx(key.getKey(), String... string); }
 
-    Long rpushx(String key, String... string);
+    default Long rpushx(ListKey key, String... string) { return rpushx(key.getKey(), String... string); }
 
     List<String> blpop(int timeout, String key);
 

@@ -29,7 +29,7 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     String restore(String key, int ttl, byte[] serializedValue);
 
-    Long expire(String key, int seconds);
+    default Long expire(TypeSafeKey key, int seconds) { return expire(key.getKey(), seconds); }
 
     Long pexpire(String key, long milliseconds);
 
@@ -41,7 +41,7 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     Long pttl(String key);
 
-    Long touch(String key);
+    default Long touch(TypeSafeKey key) { return touch(key.getKey()); }
 
     default Boolean setbit(SetKey key, long offset, boolean value) { return setbit(key.getKey(), offset, value); }
 
@@ -61,17 +61,17 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     String psetex(String key, long milliseconds, String value);
 
-    Long decrBy(String key, long decrement);
+    default Long decrBy(NumberKey key, long decrement) {  return decrBy(key.getKey(), decrement); }
 
-    Long decr(String key);
+    default Long decr(NumberKey key) {  return decr(key.getKey()); }
 
-    Long incrBy(String key, long increment);
+    default Long incrBy(NumberKey key, long increment) {  return incrBy(key.getKey(), increment); }
 
-    Double incrByFloat(String key, double increment);
+    default Double incrByFloat(NumberKey key, double increment) {  return incrByFloat(key.getKey(), increment); }
 
-    Long incr(String key);
+    default Long incr(NumberKey key) {  return incr(key.getKey()); }
 
-    Long append(String key, String value);
+    default Long append(StringKey key, String value) { return append(key.getKey(), value); }
 
     // Hashes
 
@@ -241,9 +241,9 @@ public interface JedisCommandsTypeSafe extends JedisCommands {
 
     default Long rpushx(ListKey key, String... string) { return rpushx(key.getKey(), string); }
 
-    List<String> blpop(int timeout, String key);
+    default List<String> blpop(int timeout, ListKey key) { return blpop(timeout, key.getKey()); }
 
-    List<String> brpop(int timeout, String key);
+    default List<String> brpop(int timeout, ListKey key) { return brpop(timeout, key.getKey()); }
 
     Long del(String key);
 

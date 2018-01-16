@@ -247,6 +247,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> pfcount(byte[] key);
 
+  Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);

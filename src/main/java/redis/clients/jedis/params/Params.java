@@ -19,6 +19,7 @@ public abstract class Params {
   }
 
   public byte[][] getByteParams() {
+    if (params == null) return new byte[0][];
     ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
 
     for (Entry<String, Object> param : params.entrySet()) {

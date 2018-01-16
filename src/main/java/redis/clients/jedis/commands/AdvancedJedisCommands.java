@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.util.Slowlog;
 
 public interface AdvancedJedisCommands {
@@ -22,4 +23,8 @@ public interface AdvancedJedisCommands {
   String objectEncoding(String key);
 
   Long objectIdletime(String key);
+
+  String migrate(String host, int port, String key, int destinationDB, int timeout);
+
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
 }

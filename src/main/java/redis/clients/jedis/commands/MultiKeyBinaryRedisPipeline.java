@@ -4,6 +4,7 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.MigrateParams;
 
 import java.util.List;
 import java.util.Set;
@@ -78,4 +79,6 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<Long> pfcount(byte[]... keys);
 
   Response<Long> touch(byte[]... keys);
+
+  Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
 }

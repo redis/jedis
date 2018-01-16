@@ -243,6 +243,8 @@ public interface RedisPipeline {
   
   Response<Long> hstrlen(String key, String field);
 
+  Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);

@@ -3,7 +3,7 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static redis.clients.jedis.params.set.SetParams.setParams;
+import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;

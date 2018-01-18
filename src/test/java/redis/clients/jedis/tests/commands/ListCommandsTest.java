@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ListCommandsTest extends JedisCommandTestBase {
@@ -231,7 +232,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpush("foo", "3");
 
     assertEquals("3", jedis.lindex("foo", 0));
-    assertEquals(null, jedis.lindex("foo", 100));
+    assertNull(jedis.lindex("foo", 100));
 
     // Binary
     jedis.lpush(bfoo, b1);
@@ -239,7 +240,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpush(bfoo, b3);
 
     assertArrayEquals(b3, jedis.lindex(bfoo, 0));
-    assertEquals(null, jedis.lindex(bfoo, 100));
+    assertNull(jedis.lindex(bfoo, 100));
 
   }
 
@@ -308,7 +309,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpop("foo");
 
     element = jedis.lpop("foo");
-    assertEquals(null, element);
+    assertNull(element);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -327,7 +328,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpop(bfoo);
 
     belement = jedis.lpop(bfoo);
-    assertEquals(null, belement);
+    assertNull(belement);
 
   }
 
@@ -349,7 +350,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.rpop("foo");
 
     element = jedis.rpop("foo");
-    assertEquals(null, element);
+    assertNull(element);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -368,7 +369,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.rpop(bfoo);
 
     belement = jedis.rpop(bfoo);
-    assertEquals(null, belement);
+    assertNull(belement);
 
   }
 
@@ -426,9 +427,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
   @Test
   public void blpop() throws InterruptedException {
     List<String> result = jedis.blpop(1, "foo");
-    if(result.isEmpty()){
-      result = null;
-    }
     assertNull(result);
 
     jedis.lpush("foo", "bar");
@@ -453,9 +451,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
   @Test
   public void brpop() throws InterruptedException {
     List<String> result = jedis.brpop(1, "foo");
-    if(result.isEmpty()){
-      result = null;
-    }
     assertNull(result);
 
     jedis.lpush("foo", "bar");
@@ -515,11 +510,11 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void linsert() {
-    long status = jedis.linsert("foo", Client.LIST_POSITION.BEFORE, "bar", "car");
+    long status = jedis.linsert("foo", ListPosition.BEFORE, "bar", "car");
     assertEquals(0, status);
 
     jedis.lpush("foo", "a");
-    status = jedis.linsert("foo", Client.LIST_POSITION.AFTER, "a", "b");
+    status = jedis.linsert("foo", ListPosition.AFTER, "a", "b");
     assertEquals(2, status);
 
     List<String> actual = jedis.lrange("foo", 0, 100);
@@ -529,15 +524,15 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
     assertEquals(expected, actual);
 
-    status = jedis.linsert("foo", Client.LIST_POSITION.BEFORE, "bar", "car");
+    status = jedis.linsert("foo", ListPosition.BEFORE, "bar", "car");
     assertEquals(-1, status);
 
     // Binary
-    long bstatus = jedis.linsert(bfoo, Client.LIST_POSITION.BEFORE, bbar, bcar);
+    long bstatus = jedis.linsert(bfoo, ListPosition.BEFORE, bbar, bcar);
     assertEquals(0, bstatus);
 
     jedis.lpush(bfoo, bA);
-    bstatus = jedis.linsert(bfoo, Client.LIST_POSITION.AFTER, bA, bB);
+    bstatus = jedis.linsert(bfoo, ListPosition.AFTER, bA, bB);
     assertEquals(2, bstatus);
 
     List<byte[]> bactual = jedis.lrange(bfoo, 0, 100);
@@ -547,7 +542,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
     assertByteArrayListEquals(bexpected, bactual);
 
-    bstatus = jedis.linsert(bfoo, Client.LIST_POSITION.BEFORE, bbar, bcar);
+    bstatus = jedis.linsert(bfoo, ListPosition.BEFORE, bbar, bcar);
     assertEquals(-1, bstatus);
 
   }

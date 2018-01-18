@@ -1,7 +1,6 @@
-package redis.clients.jedis.params.geo;
+package redis.clients.jedis.params;
 
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.params.Params;
 import redis.clients.util.SafeEncoder;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ public class GeoRadiusParam extends Params {
   private static final String DESC = "desc";
   private static final String COUNT = "count";
 
-  private GeoRadiusParam() {
+  public GeoRadiusParam() {
   }
 
   public static GeoRadiusParam geoRadiusParam() {

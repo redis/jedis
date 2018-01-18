@@ -1,10 +1,11 @@
 package redis.clients.jedis;
 
-import java.nio.ByteBuffer;
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
+
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,6 +50,14 @@ public class ScanParams {
       paramsList.add(param.getValue().array());
     }
     return Collections.unmodifiableCollection(paramsList);
+  }
+
+  byte[] binaryMatch() {
+    if (params.containsKey(MATCH)) {
+      return params.get(MATCH).array();
+    } else {
+      return null;
+    }
   }
 
   String match() {

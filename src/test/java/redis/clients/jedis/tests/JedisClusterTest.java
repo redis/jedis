@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -64,23 +64,23 @@ public class JedisClusterTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
+    node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
     node1.flushAll();
 
-    node2 = new Jedis(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node2 = new Jedis(nodeInfo2);
     node2.auth("cluster");
     node2.flushAll();
 
-    node3 = new Jedis(nodeInfo3.getHost(), nodeInfo3.getPort());
+    node3 = new Jedis(nodeInfo3);
     node3.auth("cluster");
     node3.flushAll();
 
-    node4 = new Jedis(nodeInfo4.getHost(), nodeInfo4.getPort());
+    node4 = new Jedis(nodeInfo4);
     node4.auth("cluster");
     node4.flushAll();
 
-    nodeSlave2 = new Jedis(nodeInfoSlave2.getHost(), nodeInfoSlave2.getPort());
+    nodeSlave2 = new Jedis(nodeInfoSlave2);
     nodeSlave2.auth("cluster");
     nodeSlave2.flushAll();
     // ---- configure cluster
@@ -117,10 +117,10 @@ public class JedisClusterTest {
     node2.flushDB();
     node3.flushDB();
     node4.flushDB();
-    node1.clusterReset(Reset.SOFT);
-    node2.clusterReset(Reset.SOFT);
-    node3.clusterReset(Reset.SOFT);
-    node4.clusterReset(Reset.SOFT);
+    node1.clusterReset(ClusterReset.SOFT);
+    node2.clusterReset(ClusterReset.SOFT);
+    node3.clusterReset(ClusterReset.SOFT);
+    node4.clusterReset(ClusterReset.SOFT);
   }
 
   @After
@@ -223,7 +223,7 @@ public class JedisClusterTest {
     nodeSlave2.readonly();
     nodeSlave2.get("test");
 
-    nodeSlave2.clusterReset(Reset.SOFT);
+    nodeSlave2.clusterReset(ClusterReset.SOFT);
     nodeSlave2.flushDB();
   }
 

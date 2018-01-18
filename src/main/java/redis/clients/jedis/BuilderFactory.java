@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,10 +16,18 @@ public final class BuilderFactory {
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
-      String asString = STRING.build(data);
-      return asString == null ? null : Double.valueOf(asString);
+      String string = STRING.build(data);
+      if (string == null) return null;
+      try {
+        return Double.valueOf(string);
+      } catch (NumberFormatException e) {
+        if (string.equals("inf") || string.equals("+inf")) return Double.POSITIVE_INFINITY;
+        if (string.equals("-inf")) return Double.NEGATIVE_INFINITY;
+        throw e;
+      }
     }
 
+    @Override
     public String toString() {
       return "double";
     }
@@ -31,6 +38,7 @@ public final class BuilderFactory {
       return ((Long) data) == 1;
     }
 
+    @Override
     public String toString() {
       return "boolean";
     }
@@ -41,6 +49,7 @@ public final class BuilderFactory {
       return ((byte[]) data); // deleted == 1
     }
 
+    @Override
     public String toString() {
       return "byte[]";
     }
@@ -52,6 +61,7 @@ public final class BuilderFactory {
       return (Long) data;
     }
 
+    @Override
     public String toString() {
       return "long";
     }
@@ -63,6 +73,7 @@ public final class BuilderFactory {
       return data == null ? null : SafeEncoder.encode((byte[]) data);
     }
 
+    @Override
     public String toString() {
       return "string";
     }
@@ -73,7 +84,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public List<String> build(Object data) {
       if (null == data) {
-        return Collections.emptyList();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final ArrayList<String> result = new ArrayList<String>(l.size());
@@ -87,6 +98,7 @@ public final class BuilderFactory {
       return result;
     }
 
+    @Override
     public String toString() {
       return "List<String>";
     }
@@ -106,6 +118,7 @@ public final class BuilderFactory {
       return hash;
     }
 
+    @Override
     public String toString() {
       return "Map<String, String>";
     }
@@ -127,6 +140,7 @@ public final class BuilderFactory {
       return hash;
     }
 
+    @Override
     public String toString() {
       return "PUBSUB_NUMSUB_MAP<String, String>";
     }
@@ -138,7 +152,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<String> result = new HashSet<String>(l.size(), 1);
@@ -152,6 +166,7 @@ public final class BuilderFactory {
       return result;
     }
 
+    @Override
     public String toString() {
       return "Set<String>";
     }
@@ -163,13 +178,14 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public List<byte[]> build(Object data) {
       if (null == data) {
-        return Collections.emptyList();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
 
       return l;
     }
 
+    @Override
     public String toString() {
       return "List<byte[]>";
     }
@@ -180,7 +196,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<byte[]> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<byte[]> result = new LinkedHashSet<byte[]>(l);
@@ -194,6 +210,7 @@ public final class BuilderFactory {
       return result;
     }
 
+    @Override
     public String toString() {
       return "ZSet<byte[]>";
     }
@@ -212,6 +229,7 @@ public final class BuilderFactory {
       return hash;
     }
 
+    @Override
     public String toString() {
       return "Map<byte[], byte[]>";
     }
@@ -223,7 +241,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<String> result = new LinkedHashSet<String>(l.size(), 1);
@@ -237,6 +255,7 @@ public final class BuilderFactory {
       return result;
     }
 
+    @Override
     public String toString() {
       return "ZSet<String>";
     }
@@ -248,45 +267,22 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<Tuple> build(Object data) {
       if (null == data) {
-        return Collections.emptySet();
+        return null;
       }
       List<byte[]> l = (List<byte[]>) data;
       final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
-        result.add(new Tuple(SafeEncoder.encode(iterator.next()), Double.valueOf(SafeEncoder
-            .encode(iterator.next()))));
+        result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
       }
       return result;
     }
 
-    public String toString() {
-      return "ZSet<Tuple>";
-    }
-
-  };
-
-  public static final Builder<Set<Tuple>> TUPLE_ZSET_BINARY = new Builder<Set<Tuple>>() {
     @Override
-    @SuppressWarnings("unchecked")
-    public Set<Tuple> build(Object data) {
-      if (null == data) {
-        return Collections.emptySet();
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
-      Iterator<byte[]> iterator = l.iterator();
-      while (iterator.hasNext()) {
-        result.add(new Tuple(iterator.next(), Double.valueOf(SafeEncoder.encode(iterator.next()))));
-      }
-
-      return result;
-
-    }
-
     public String toString() {
       return "ZSet<Tuple>";
     }
+
   };
 
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
@@ -296,6 +292,7 @@ public final class BuilderFactory {
       return evalResult(data);
     }
 
+    @Override
     public String toString() {
       return "Eval<Object>";
     }
@@ -325,6 +322,7 @@ public final class BuilderFactory {
       return evalResult(data);
     }
 
+    @Override
     public String toString() {
       return "Eval<Object>";
     }
@@ -349,11 +347,12 @@ public final class BuilderFactory {
     @Override
     public List<GeoCoordinate> build(Object data) {
       if (null == data) {
-        return Collections.emptyList();
+        return null;
       }
       return interpretGeoposResult((List<Object>) data);
     }
 
+    @Override
     public String toString() {
       return "List<GeoCoordinate>";
     }
@@ -365,9 +364,8 @@ public final class BuilderFactory {
           responseCoordinate.add(null);
         } else {
           List<Object> respList = (List<Object>) response;
-          GeoCoordinate coord = new GeoCoordinate(Double.parseDouble(SafeEncoder
-              .encode((byte[]) respList.get(0))), Double.parseDouble(SafeEncoder
-              .encode((byte[]) respList.get(1))));
+          GeoCoordinate coord = new GeoCoordinate(DOUBLE.build(respList.get(0)),
+              DOUBLE.build(respList.get(1)));
           responseCoordinate.add(coord);
         }
       }
@@ -379,89 +377,84 @@ public final class BuilderFactory {
     @Override
     public List<GeoRadiusResponse> build(Object data) {
       if (data == null) {
-        return Collections.emptyList();
-      } else {
-        List<Object> objectList = (List<Object>) data;
+        return null;
+      }
 
-        if (objectList.isEmpty()) {
-          return new ArrayList<GeoRadiusResponse>();
-        }
+      List<Object> objectList = (List<Object>) data;
 
-        List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
-        if (objectList.get(0) instanceof List<?>) {
-          // list of members with additional informations
-          GeoRadiusResponse resp;
-          for (Object obj : objectList) {
-            List<Object> informations = (List<Object>) obj;
-
-            resp = new GeoRadiusResponse((byte[]) informations.get(0));
-
-            int size = informations.size();
-            for (int idx = 1; idx < size; idx++) {
-              Object info = informations.get(idx);
-              if (info instanceof List<?>) {
-                // coordinate
-                List<Object> coord = (List<Object>) info;
-
-                resp.setCoordinate(new GeoCoordinate(convertByteArrayToDouble(coord.get(0)),
-                    convertByteArrayToDouble(coord.get(1))));
-              } else {
-                // distance
-                resp.setDistance(convertByteArrayToDouble(info));
-              }
-            }
-
-            responses.add(resp);
-          }
-        } else {
-          // list of members
-          for (Object obj : objectList) {
-            responses.add(new GeoRadiusResponse((byte[]) obj));
-          }
-        }
-
+      List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
+      if (objectList.isEmpty()) {
         return responses;
       }
+
+      if (objectList.get(0) instanceof List<?>) {
+        // list of members with additional informations
+        GeoRadiusResponse resp;
+        for (Object obj : objectList) {
+          List<Object> informations = (List<Object>) obj;
+
+          resp = new GeoRadiusResponse((byte[]) informations.get(0));
+
+          int size = informations.size();
+          for (int idx = 1; idx < size; idx++) {
+            Object info = informations.get(idx);
+            if (info instanceof List<?>) {
+              // coordinate
+              List<Object> coord = (List<Object>) info;
+
+              resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
+                  DOUBLE.build(coord.get(1))));
+            } else {
+              // distance
+              resp.setDistance(DOUBLE.build(info));
+            }
+          }
+
+          responses.add(resp);
+        }
+      } else {
+        // list of members
+        for (Object obj : objectList) {
+          responses.add(new GeoRadiusResponse((byte[]) obj));
+        }
+      }
+
+      return responses;
     }
 
-    private Double convertByteArrayToDouble(Object obj) {
-      return Double.valueOf(SafeEncoder.encode((byte[]) obj));
-    }
-
+    @Override
     public String toString() {
       return "GeoRadiusWithParamsResult";
     }
   };
 
 
-
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {
       if (data == null) {
-        return Collections.emptyList();
-      } else {
-        List<List<Object>> objectList = (List<List<Object>>) data;
+        return null;
+      }
 
-        if (objectList.isEmpty()) {
-          return new ArrayList<Module>();
-        }
+      List<List<Object>> objectList = (List<List<Object>>) data;
 
-        List<Module> responses = new ArrayList<Module>(objectList.size());
-
-        for (List<Object> moduleResp: objectList) {
-          Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());
-          responses.add(m);
-        }
-
+      List<Module> responses = new ArrayList<Module>(objectList.size());
+      if (objectList.isEmpty()) {
         return responses;
       }
+
+      for (List<Object> moduleResp: objectList) {
+        Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());
+        responses.add(m);
+      }
+
+      return responses;
     }
 
+    @Override
     public String toString() {
       return "List<Module>";
     }
-
   };
 
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
@@ -474,6 +467,7 @@ public final class BuilderFactory {
       return (List<Long>) data;
     }
 
+    @Override
     public String toString() {
       return "List<Long>";
     }

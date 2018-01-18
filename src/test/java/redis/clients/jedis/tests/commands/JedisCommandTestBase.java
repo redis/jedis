@@ -1,16 +1,12 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ComparisonFailure;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -30,7 +26,6 @@ public abstract class JedisCommandTestBase {
     jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
     jedis.connect();
     jedis.auth("foobared");
-    jedis.configSet("timeout", "300");
     jedis.flushAll();
   }
 
@@ -40,7 +35,7 @@ public abstract class JedisCommandTestBase {
   }
 
   protected Jedis createJedis() {
-    Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
+    Jedis j = new Jedis(hnp);
     j.connect();
     j.auth("foobared");
     j.flushAll();

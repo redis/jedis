@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test(expected = JedisConnectionException.class)
   public void timeoutConnection() throws Exception {
-    jedis = new Jedis("localhost", 6379, 15000);
+    Jedis jedis = new Jedis("localhost", 6379, 15000);
     jedis.auth("foobared");
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
@@ -65,7 +64,7 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test(expected = JedisConnectionException.class)
   public void timeoutConnectionWithURI() throws Exception {
-    jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
+    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
     jedis.hmget("foobar", "foo");

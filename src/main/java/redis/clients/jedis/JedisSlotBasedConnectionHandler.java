@@ -2,9 +2,9 @@ package redis.clients.jedis;
 
 import java.util.List;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
 import java.util.Set;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;

@@ -19,7 +19,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
@@ -35,17 +34,17 @@ public class ShardedJedisPipelineTest {
 
   @Before
   public void setUp() throws Exception {
-    Jedis jedis = new Jedis(redis1.getHost(), redis1.getPort());
+    Jedis jedis = new Jedis(redis1);
     jedis.auth("foobared");
     jedis.flushAll();
     jedis.disconnect();
-    jedis = new Jedis(redis2.getHost(), redis2.getPort());
+    jedis = new Jedis(redis2);
     jedis.auth("foobared");
     jedis.flushAll();
     jedis.disconnect();
 
-    JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());
-    JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+    JedisShardInfo shardInfo1 = new JedisShardInfo(redis1);
+    JedisShardInfo shardInfo2 = new JedisShardInfo(redis2);
     shardInfo1.setPassword("foobared");
     shardInfo2.setPassword("foobared");
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
@@ -130,8 +129,8 @@ public class ShardedJedisPipelineTest {
 
   @Test
   public void testSyncWithNoCommandQueued() {
-    JedisShardInfo shardInfo1 = new JedisShardInfo(redis1.getHost(), redis1.getPort());
-    JedisShardInfo shardInfo2 = new JedisShardInfo(redis2.getHost(), redis2.getPort());
+    JedisShardInfo shardInfo1 = new JedisShardInfo(redis1);
+    JedisShardInfo shardInfo2 = new JedisShardInfo(redis2);
     shardInfo1.setPassword("foobared");
     shardInfo2.setPassword("foobared");
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();

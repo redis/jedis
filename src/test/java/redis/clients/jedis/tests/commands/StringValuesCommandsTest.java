@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +20,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     String value = jedis.get("foo");
     assertEquals("bar", value);
 
-    assertEquals(null, jedis.get("bar"));
+    assertNull(jedis.get("bar"));
   }
 
   @Test
   public void getSet() {
     String value = jedis.getSet("foo", "bar");
-    assertEquals(null, value);
+    assertNull(value);
     value = jedis.get("foo");
     assertEquals("bar", value);
   }

@@ -61,8 +61,8 @@ public class ConnectionTest {
       }
 
       @Override
-      public Connection sendCommand(ProtocolCommand cmd, byte[]... args) {
-        return super.sendCommand(cmd, args);
+      public void sendCommand(ProtocolCommand cmd, byte[]... args) {
+        super.sendCommand(cmd, args);
       }
     }
 

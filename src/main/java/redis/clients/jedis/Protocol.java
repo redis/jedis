@@ -76,6 +76,9 @@ public final class Protocol {
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
 
+  public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
+  public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
+
   private Protocol() {
     // this prevent the class from instantiation
   }
@@ -113,11 +116,11 @@ public final class Protocol {
     if (message.startsWith(MOVED_RESPONSE)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
       throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-          Integer.valueOf(movedInfo[2])), Integer.valueOf(movedInfo[0]));
+          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_RESPONSE)) {
       String[] askInfo = parseTargetHostAndSlot(message);
       throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
-          Integer.valueOf(askInfo[2])), Integer.valueOf(askInfo[0]));
+          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_RESPONSE)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_RESPONSE)) {
@@ -229,14 +232,17 @@ public final class Protocol {
   }
 
   public static final byte[] toByteArray(final double value) {
-    if (Double.isInfinite(value)) {
-      return value == Double.POSITIVE_INFINITY ? "+inf".getBytes() : "-inf".getBytes();
+    if (value == Double.POSITIVE_INFINITY) {
+      return POSITIVE_INFINITY_BYTES;
+    } else if (value == Double.NEGATIVE_INFINITY) {
+      return NEGATIVE_INFINITY_BYTES;
+    } else {
+      return SafeEncoder.encode(String.valueOf(value));
     }
-    return SafeEncoder.encode(String.valueOf(value));
   }
 
   public static enum Command implements ProtocolCommand {
-    PING, SET, GET, QUIT, EXISTS, DEL, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME, RENAMENX, RENAMEX, 
+    PING, SET, GET, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME, RENAMENX, RENAMEX, 
     DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET, SETNX, SETEX, MSET, MSETNX, 
     DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, 
     HDEL, HLEN, HKEYS, HVALS, HGETALL, RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, 
@@ -250,7 +256,7 @@ public final class Protocol {
     SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG, OBJECT, BITCOUNT, BITOP, 
     SENTINEL, DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT, PSETEX, CLIENT, TIME, MIGRATE, HINCRBYFLOAT, 
     SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, 
-    GEOHASH, GEOPOS, GEORADIUS, GEORADIUSBYMEMBER, MODULE, BITFIELD, HSTRLEN;
+    GEOHASH, GEOPOS, GEORADIUS, GEORADIUSBYMEMBER, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB;
 
     private final byte[] raw;
 
@@ -265,7 +271,7 @@ public final class Protocol {
   }
 
   public static enum Keyword {
-    AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE, PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES, RESETSTAT, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME, AND, OR, XOR, NOT, GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD;
+    AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE, PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES, RESETSTAT, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME, GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD;
     public final byte[] raw;
 
     Keyword() {

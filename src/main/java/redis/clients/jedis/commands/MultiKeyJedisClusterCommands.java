@@ -13,6 +13,8 @@ import java.util.Set;
 public interface MultiKeyJedisClusterCommands {
   Long del(String... keys);
 
+  Long unlink(String... keys);
+
   Long exists(String... keys);
 
   List<String> blpop(int timeout, String... keys);
@@ -65,11 +67,15 @@ public interface MultiKeyJedisClusterCommands {
 
   void psubscribe(JedisPubSub jedisPubSub, String... patterns);
 
-  Long bitop(BitOP op, final String destKey, String... srcKeys);
+  Long bitop(BitOP op, String destKey, String... srcKeys);
 
-  String pfmerge(final String destkey, final String... sourcekeys);
+  String pfmerge(String destkey, String... sourcekeys);
 
-  long pfcount(final String... keys);
+  long pfcount(String... keys);
 
-  ScanResult<String> scan(final String cursor, final ScanParams params);
+  Long touch(String... keys);
+
+  ScanResult<String> scan(String cursor, ScanParams params);
+
+  Set<String> keys(String pattern);
 }

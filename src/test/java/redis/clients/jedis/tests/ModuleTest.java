@@ -25,7 +25,7 @@ public class ModuleTest extends JedisCommandTestBase {
 
     @Override
     public byte[] getRaw() {
-      return SafeEncoder.encode("testmodule.simple");
+      return raw;
     }
   }
 

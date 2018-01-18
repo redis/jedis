@@ -35,15 +35,15 @@ public class ClusterBinaryJedisCommandsTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
+    node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
     node1.flushAll();
 
-    node2 = new Jedis(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node2 = new Jedis(nodeInfo2);
     node2.auth("cluster");
     node2.flushAll();
 
-    node3 = new Jedis(nodeInfo3.getHost(), nodeInfo3.getPort());
+    node3 = new Jedis(nodeInfo3);
     node3.auth("cluster");
     node3.flushAll();
 
@@ -163,6 +163,20 @@ public class ClusterBinaryJedisCommandsTest {
     jedisCluster.rpush(key, value2);
     long num = 2L;
     assertEquals(2, (long) jedisCluster.llen(key));
+  }
+
+  @Test
+  public void testKeys() {
+    assertEquals(0, jedisCluster.keys("{f}o*".getBytes()).size());
+    jedisCluster.set("{f}oo1".getBytes(), "bar".getBytes());
+    jedisCluster.set("{f}oo2".getBytes(), "bar".getBytes());
+    jedisCluster.set("{f}oo3".getBytes(), "bar".getBytes());
+    assertEquals(3, jedisCluster.keys("{f}o*".getBytes()).size());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void failKeys() {
+    jedisCluster.keys("*".getBytes());
   }
 
   @Test

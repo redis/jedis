@@ -12,6 +12,7 @@ public class FragmentedByteArrayInputStream extends ByteArrayInputStream {
     super(buf);
   }
 
+  @Override
   public synchronized int read(final byte[] b, final int off, final int len) {
     readMethodCallCount++;
     if (len <= 10) {

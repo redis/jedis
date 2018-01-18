@@ -1,10 +1,10 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.*;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +23,10 @@ public interface JedisClusterCommands {
 
   String type(String key);
 
+  byte[] dump(String key);
+
+  String restore(String key, int ttl, byte[] serializedValue);
+
   Long expire(String key, int seconds);
 
   Long pexpire(String key, long milliseconds);
@@ -32,6 +36,10 @@ public interface JedisClusterCommands {
   Long pexpireAt(String key, long millisecondsTimestamp);
 
   Long ttl(String key);
+
+  Long pttl(String key);
+
+  Long touch(String key);
 
   Boolean setbit(String key, long offset, boolean value);
 
@@ -49,13 +57,15 @@ public interface JedisClusterCommands {
 
   String setex(String key, int seconds, String value);
 
-  Long decrBy(String key, long integer);
+  String psetex(String key, long milliseconds, String value);
+
+  Long decrBy(String key, long decrement);
 
   Long decr(String key);
 
-  Long incrBy(String key, long integer);
+  Long incrBy(String key, long increment);
 
-  Double incrByFloat(String key, double value);
+  Double incrByFloat(String key, double increment);
 
   Long incr(String key);
 
@@ -64,6 +74,8 @@ public interface JedisClusterCommands {
   String substr(String key, int start, int end);
 
   Long hset(String key, String field, String value);
+
+  Long hset(String key, Map<String, String> hash);
 
   String hget(String key, String field);
 
@@ -93,9 +105,9 @@ public interface JedisClusterCommands {
 
   Long llen(String key);
 
-  List<String> lrange(String key, long start, long end);
+  List<String> lrange(String key, long start, long stop);
 
-  String ltrim(String key, long start, long end);
+  String ltrim(String key, long start, long stop);
 
   String lindex(String key, long index);
 
@@ -135,23 +147,23 @@ public interface JedisClusterCommands {
 
   Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
-  Set<String> zrange(String key, long start, long end);
+  Set<String> zrange(String key, long start, long stop);
 
-  Long zrem(String key, String... member);
+  Long zrem(String key, String... members);
 
-  Double zincrby(String key, double score, String member);
+  Double zincrby(String key, double increment, String member);
 
-  Double zincrby(String key, double score, String member, ZIncrByParams params);
+  Double zincrby(String key, double increment, String member, ZIncrByParams params);
 
   Long zrank(String key, String member);
 
   Long zrevrank(String key, String member);
 
-  Set<String> zrevrange(String key, long start, long end);
+  Set<String> zrevrange(String key, long start, long stop);
 
-  Set<Tuple> zrangeWithScores(String key, long start, long end);
+  Set<Tuple> zrangeWithScores(String key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(String key, long start, long end);
+  Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
   Long zcard(String key);
 
@@ -197,27 +209,27 @@ public interface JedisClusterCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
-  Long zremrangeByRank(String key, long start, long end);
+  Long zremrangeByRank(String key, long start, long stop);
 
-  Long zremrangeByScore(String key, double start, double end);
+  Long zremrangeByScore(String key, double min, double max);
 
-  Long zremrangeByScore(String key, String start, String end);
+  Long zremrangeByScore(String key, String min, String max);
 
-  Long zlexcount(final String key, final String min, final String max);
+  Long zlexcount(String key, String min, String max);
 
-  Set<String> zrangeByLex(final String key, final String min, final String max);
+  Set<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(final String key, final String min, final String max, final int offset,
-      final int count);
+  Set<String> zrangeByLex(String key, String min, String max, int offset,
+      int count);
 
-  Set<String> zrevrangeByLex(final String key, final String max, final String min);
+  Set<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(final String key, final String max, final String min,
-      final int offset, final int count);
+  Set<String> zrevrangeByLex(String key, String max, String min,
+      int offset, int count);
 
-  Long zremrangeByLex(final String key, final String min, final String max);
+  Long zremrangeByLex(String key, String min, String max);
 
-  Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value);
+  Long linsert(String key, ListPosition where, String pivot, String value);
 
   Long lpushx(String key, String... string);
 
@@ -229,21 +241,23 @@ public interface JedisClusterCommands {
 
   Long del(String key);
 
+  Long unlink(String key);
+
   String echo(String string);
 
-  Long bitcount(final String key);
+  Long bitcount(String key);
 
-  Long bitcount(final String key, long start, long end);
+  Long bitcount(String key, long start, long end);
 
-  ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor);
+  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor);
 
-  ScanResult<String> sscan(final String key, final String cursor);
+  ScanResult<String> sscan(String key, String cursor);
 
-  ScanResult<Tuple> zscan(final String key, final String cursor);
+  ScanResult<Tuple> zscan(String key, String cursor);
 
-  Long pfadd(final String key, final String... elements);
+  Long pfadd(String key, String... elements);
 
-  long pfcount(final String key);
+  long pfcount(String key);
 
   // Geo Commands
 
@@ -283,5 +297,5 @@ public interface JedisClusterCommands {
    * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(final String key, final String field);
+  Long hstrlen(String key, String field);
 }

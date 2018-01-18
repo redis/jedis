@@ -3111,6 +3111,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public String restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+    checkIsInMultiOrPipeline();
+    client.restoreReplace(key, ttl, serializedValue);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public Long pexpire(final String key, final long milliseconds) {
     checkIsInMultiOrPipeline();
     client.pexpire(key, milliseconds);

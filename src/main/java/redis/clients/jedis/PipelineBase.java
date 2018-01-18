@@ -1389,11 +1389,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<byte[]> dump(final String key) {
     getClient(key).dump(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
+  @Override
   public Response<byte[]> dump(final byte[] key) {
     getClient(key).dump(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
@@ -1473,13 +1475,27 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<String> restore(final String key, final int ttl, final byte[] serializedValue) {
     getClient(key).restore(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<String> restore(final byte[] key, final int ttl, final byte[] serializedValue) {
     getClient(key).restore(key, ttl, serializedValue);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+    getClient(key).restoreReplace(key, ttl, serializedValue);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    getClient(key).restoreReplace(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
 

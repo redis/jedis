@@ -75,4 +75,20 @@ public class ConnectionTest {
       assertEquals("ERR Protocol error: invalid multibulk length", jce.getMessage());
     }
   }
+
+  @Test
+  public void testReadProtocolWithBrokenState() {
+    client.connect();
+    try {
+      client.getOne();
+    } catch (JedisConnectionException exc) {
+      assertEquals("java.net.SocketTimeoutException: Read timed out", exc.getMessage());
+    }
+    try {
+      client.getOne();
+      fail("Should throw exception");
+    } catch (JedisConnectionException exc) {
+      assertEquals("Trying to read from a broken connection", exc.getMessage());
+    }
+  }
 }

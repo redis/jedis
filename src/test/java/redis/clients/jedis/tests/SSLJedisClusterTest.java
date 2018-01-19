@@ -129,7 +129,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   }
   
   @Test
-  public void connectByIpAddressWithSSLParameters() {
+  public void connectByIpAddressFailsWithSSLParameters() {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
     

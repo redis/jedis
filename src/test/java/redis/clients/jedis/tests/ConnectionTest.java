@@ -81,8 +81,7 @@ public class ConnectionTest {
     client.connect();
     try {
       client.getOne();
-    } catch (JedisConnectionException exc) {
-      assertEquals("java.net.SocketTimeoutException: Read timed out", exc.getMessage());
+    } catch (JedisConnectionException ignored) {
     }
     try {
       client.getOne();

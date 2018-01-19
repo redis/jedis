@@ -119,6 +119,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     
     try {
       jc.get("foo");
+      Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
@@ -143,11 +144,10 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       Assert.assertEquals(SSLException.class, e.getCause().getClass());
       Assert.assertEquals(SSLHandshakeException.class, e.getCause().getCause().getClass());
       Assert.assertEquals(CertificateException.class, e.getCause().getCause().getCause().getClass());
-    }
-    
-    if (jc != null) {
-      jc.close();
-      Assert.fail("JedisCluster object is unexpectedly non-null");
+    } finally {
+      if (jc != null) {
+        jc.close();
+      }
     }
   }
   
@@ -180,10 +180,10 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       // Null pointer exception occurs from closing Jedis object that did not connect due to custom
       // hostname validation. When closing this Jedis object, the RedisOutputStream in the underlying 
       // Connection object is null and causes this exception
-    }
-    if (jc2 != null) {
-      jc2.close();
-      Assert.fail("JedisCluster object is unexpectedly non-null");
+    } finally {
+      if (jc2 != null) {
+        jc2.close();
+      }
     }
     
     JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
@@ -223,11 +223,10 @@ public class SSLJedisClusterTest extends JedisClusterTest {
           RuntimeException.class, e.getCause().getCause().getCause().getClass());
       Assert.assertEquals("Unexpected fourth inner exception.",
           InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getCause().getClass());
-    }
-    
-    if (jc != null) {
-      jc.close();
-      Assert.fail("JedisCluster object is unexpectedly non-null");
+    } finally {
+      if (jc != null) {
+        jc.close();
+      }
     }
   }
   

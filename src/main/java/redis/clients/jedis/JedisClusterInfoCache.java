@@ -36,7 +36,7 @@ public class JedisClusterInfoCache {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
-  private JedisClusterPortMap portMap;
+  private JedisClusterHostAndPortMap hostAndPortMap;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -52,7 +52,7 @@ public class JedisClusterInfoCache {
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
       final int connectionTimeout, final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
-      HostnameVerifier hostnameVerifier, JedisClusterPortMap portMap) {
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -62,7 +62,7 @@ public class JedisClusterInfoCache {
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
-    this.portMap = portMap;
+    this.hostAndPortMap = hostAndPortMap;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -166,10 +166,10 @@ public class JedisClusterInfoCache {
   private HostAndPort generateHostAndPort(List<Object> hostInfos) {
     String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
     int port = ((Long) hostInfos.get(1)).intValue();
-    if (ssl && portMap != null) {
-      Integer mappedPort = portMap.getSSLPort(port);
-      if (mappedPort != null) {
-        port = mappedPort;
+    if (ssl && hostAndPortMap != null) {
+      HostAndPort hostAndPort = hostAndPortMap.getSSLHostAndPort(host, port);
+      if (hostAndPortMap != null) {
+        return hostAndPort;
       }
     }
     return new HostAndPort(host, port);

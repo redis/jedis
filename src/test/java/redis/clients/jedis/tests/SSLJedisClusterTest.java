@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisClusterPortMap;
+import redis.clients.jedis.JedisClusterHostAndPortMap;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.*;
@@ -35,9 +35,17 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final JedisPoolConfig DEFAULT_CONFIG = new JedisPoolConfig();
   
-  private JedisClusterPortMap portMap = new JedisClusterPortMap() {
-    public int getSSLPort(int port) {
-      return port + 1000;
+  private JedisClusterHostAndPortMap hostAndPortMap = new JedisClusterHostAndPortMap() {
+    public HostAndPort getSSLHostAndPort(String host, int port) {
+      host = host.equalsIgnoreCase("127.0.0.1") ? "localhost" : host;
+      return new HostAndPort(host, port + 1000);
+    }
+  };
+  
+  //don't map IP addresses so that we try to connect with host 127.0.0.1
+  private JedisClusterHostAndPortMap portMap = new JedisClusterHostAndPortMap() {
+    public HostAndPort getSSLHostAndPort(String host, int port) {
+      return new HostAndPort(host, port + 1000);
     }
   };
 
@@ -63,23 +71,23 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("localhost", 8379));
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS,
-    		                           "cluster", null, DEFAULT_CONFIG, true, null, null, null, portMap);
+    		                           "cluster", null, DEFAULT_CONFIG, true, null, null, null, hostAndPortMap);
     Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
     assertEquals(3, clusterNodes.size());
-    assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
-    assertTrue(clusterNodes.containsKey("127.0.0.1:8380"));
-    assertTrue(clusterNodes.containsKey("127.0.0.1:8381"));
+    assertTrue(clusterNodes.containsKey("localhost:8379"));
+    assertTrue(clusterNodes.containsKey("localhost:8380"));
+    assertTrue(clusterNodes.containsKey("localhost:8381"));
     
     jc.get("foo");
     jc.close();
   
     JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, 
-    		                            DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, null, null, null, portMap);
+    		                            DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, null, null, null, hostAndPortMap);
     clusterNodes = jc2.getClusterNodes();
     assertEquals(3, clusterNodes.size());
-    assertTrue(clusterNodes.containsKey("127.0.0.1:8379"));
-    assertTrue(clusterNodes.containsKey("127.0.0.1:8380"));
-    assertTrue(clusterNodes.containsKey("127.0.0.1:8381"));
+    assertTrue(clusterNodes.containsKey("localhost:8379"));
+    assertTrue(clusterNodes.containsKey("localhost:8380"));
+    assertTrue(clusterNodes.containsKey("localhost:8381"));
     jc2.get("foo");
     jc2.close();
   }
@@ -103,13 +111,13 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   public void connectByIpAddress() {
     JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, 
-        null, null, null, portMap);
+        null, null, null, hostAndPortMap);
     jc.get("foo");
     jc.close();
   }
   
   @Test
-  public void connectWithSSLParameters() {
+  public void connectToNodesFailsWithSSLParametersAndNoHostMapping() {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
     
@@ -130,6 +138,18 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   }
   
   @Test
+  public void connectToNodesSucceedsWithSSLParametersAndHostMapping() {
+    final SSLParameters sslParameters = new SSLParameters();
+    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+    
+    JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, 
+        null, sslParameters, null, hostAndPortMap);
+    jc.get("foo");
+    jc.close();
+  }
+  
+  @Test
   public void connectByIpAddressFailsWithSSLParameters() {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
@@ -138,7 +158,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     try {
       jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
           DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, 
-          null, sslParameters, null, portMap);
+          null, sslParameters, null, hostAndPortMap);
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
       Assert.assertEquals(SSLException.class, e.getCause().getClass());
@@ -231,21 +251,40 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   }
   
   @Test
-  public void portMapIgnoredIfSSLFalse() {
-    JedisClusterPortMap portMap = new JedisClusterPortMap() {
-      public int getSSLPort(int port) {
-        if (port == 7379) return 9379;
-        return port;
+  public void hostAndPortMapIgnoredIfSSLFalse() {
+    JedisClusterHostAndPortMap hostAndPortMap = new JedisClusterHostAndPortMap() {
+      public HostAndPort getSSLHostAndPort(String host, int port) {
+        return new HostAndPort(host, port + 2000);
       }
     };
     
     JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
             DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, false, 
-            null, null, null, portMap);
+            null, null, null, hostAndPortMap);
     
     Map<String, JedisPool> nodes = jc.getClusterNodes();
     assertTrue(nodes.containsKey("127.0.0.1:7379"));
     assertFalse(nodes.containsKey("127.0.0.1:9739"));
+    jc.close();
+  }
+  
+  @Test
+  public void defaultHostAndPortUsedIfMapReturnsNull() {
+    JedisClusterHostAndPortMap hostAndPortMap = new JedisClusterHostAndPortMap() {
+      public HostAndPort getSSLHostAndPort(String host, int port) {
+        return null;
+      }
+    };
+    
+    JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+            DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, false, 
+            null, null, null, hostAndPortMap);
+    
+    Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
+    assertEquals(3, clusterNodes.size());
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
     jc.close();
   }
   

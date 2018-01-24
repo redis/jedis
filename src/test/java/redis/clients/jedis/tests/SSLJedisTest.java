@@ -247,7 +247,7 @@ public class SSLJedisTest {
    * Creates an SSLSocketFactory that trusts all certificates in
    * truststore.jceks.
    */
-  public static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
+  static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
 
     KeyStore trustStore = KeyStore.getInstance("jceks");
     InputStream inputStream = null;
@@ -271,7 +271,7 @@ public class SSLJedisTest {
    * Creates an SSLSocketFactory with a trust manager that does not trust any
    * certificates.
    */
-  public static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
+  static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
     TrustManager[] unTrustManagers = new TrustManager[] {
       new X509TrustManager() {
         public X509Certificate[] getAcceptedIssuers() {
@@ -297,7 +297,7 @@ public class SSLJedisTest {
    * for production.
    * 
    */
-  public static class BasicHostnameVerifier implements HostnameVerifier {
+  static class BasicHostnameVerifier implements HostnameVerifier {
 
     private static final String COMMON_NAME_RDN_PREFIX = "CN=";
 

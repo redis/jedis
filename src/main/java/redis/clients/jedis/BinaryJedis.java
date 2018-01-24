@@ -3017,6 +3017,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> configGet(final byte[] pattern) {
+    checkIsInMultiOrPipeline();
     client.configGet(pattern);
     return client.getBinaryMultiBulkReply();
   }
@@ -3027,7 +3028,35 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public String configResetStat() {
+    checkIsInMultiOrPipeline();
     client.configResetStat();
+    return client.getStatusCodeReply();
+  }
+
+  /**
+   * The CONFIG REWRITE command rewrites the redis.conf file the server was started with, applying
+   * the minimal changes needed to make it reflect the configuration currently used by the server,
+   * which may be different compared to the original one because of the use of the CONFIG SET command.
+   * 
+   * The rewrite is performed in a very conservative way:
+   * <ul>
+   * <li>Comments and the overall structure of the original redis.conf are preserved as much as possible.</li>
+   * <li>If an option already exists in the old redis.conf file, it will be rewritten at the same position (line number).</li>
+   * <li>If an option was not already present, but it is set to its default value, it is not added by the rewrite process.</li>
+   * <li>If an option was not already present, but it is set to a non-default value, it is appended at the end of the file.</li>
+   * <li>Non used lines are blanked. For instance if you used to have multiple save directives, but
+   * the current configuration has fewer or none as you disabled RDB persistence, all the lines will be blanked.</li>
+   * </ul>
+   * 
+   * CONFIG REWRITE is also able to rewrite the configuration file from scratch if the original one
+   * no longer exists for some reason. However if the server was started without a configuration
+   * file at all, the CONFIG REWRITE will just return an error.
+   * @return OK when the configuration was rewritten properly. Otherwise an error is returned.
+   */
+  @Override
+  public String configRewrite() {
+    checkIsInMultiOrPipeline();
+    client.configRewrite();
     return client.getStatusCodeReply();
   }
 
@@ -3062,6 +3091,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public byte[] configSet(final byte[] parameter, final byte[] value) {
+    checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getBinaryBulkReply();
   }

@@ -1344,23 +1344,23 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Object eval(final byte[] script, final byte[] key) {
+  public Object eval(final byte[] script, final byte[] sampleKey) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
         return connection.eval(script);
       }
-    }.runBinary(key);
+    }.runBinary(sampleKey);
   }
 
   @Override
-  public Object evalsha(final byte[] sha1, final byte[] key) {
+  public Object evalsha(final byte[] sha1, final byte[] sampleKey) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
         return connection.evalsha(sha1);
       }
-    }.runBinary(key);
+    }.runBinary(sampleKey);
   }
 
   @Override
@@ -1384,43 +1384,43 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<Long> scriptExists(final byte[] key, final byte[][] sha1) {
+  public List<Long> scriptExists(final byte[] sampleKey, final byte[]... sha1) {
     return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
       @Override
       public List<Long> execute(Jedis connection) {
         return connection.scriptExists(sha1);
       }
-    }.runBinary(key);
+    }.runBinary(sampleKey);
   }
 
   @Override
-  public byte[] scriptLoad(final byte[] script, final byte[] key) {
+  public byte[] scriptLoad(final byte[] script, final byte[] sampleKey) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override
       public byte[] execute(Jedis connection) {
         return connection.scriptLoad(script);
       }
-    }.runBinary(key);
+    }.runBinary(sampleKey);
   }
 
   @Override
-  public String scriptFlush(final byte[] key) {
+  public String scriptFlush(final byte[] sampleKey) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
         return connection.scriptFlush();
       }
-    }.runBinary(key);
+    }.runBinary(sampleKey);
   }
 
   @Override
-  public String scriptKill(final byte[] key) {
+  public String scriptKill(final byte[] sampleKey) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
         return connection.scriptKill();
       }
-    }.runBinary(key);
+    }.runBinary(sampleKey);
   }
 
   @Override

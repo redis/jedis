@@ -31,7 +31,7 @@ public abstract class Params {
     return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
-  public boolean contains(String name) {
+  protected boolean contains(String name) {
     if (params == null) return false;
 
     return params.containsKey(name);

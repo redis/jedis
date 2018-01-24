@@ -1974,6 +1974,16 @@ public class BinaryJedisCluster implements BasicCommands, BinaryJedisClusterComm
    */
   @Deprecated
   @Override
+  public String configRewrite() {
+    throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
+  }
+
+  /**
+   * @deprecated No key operation doesn't make sense for Redis Cluster scheduled to be removed on
+   *             next major release
+   */
+  @Deprecated
+  @Override
   public Long waitReplicas(int replicas, long timeout) {
     throw new JedisClusterException("No way to dispatch this command to Redis Cluster.");
   }

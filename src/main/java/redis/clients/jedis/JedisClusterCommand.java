@@ -38,7 +38,7 @@ public abstract class JedisClusterCommand<T> {
     }
 
     // For multiple keys, only execute if they all share the same connection slot.
-      int slot = JedisClusterCRC16.getSlot(keys[0]);
+    int slot = JedisClusterCRC16.getSlot(keys[0]);
     if (keys.length > 1) {
       for (int i = 1; i < keyCount; i++) {
         int nextSlot = JedisClusterCRC16.getSlot(keys[i]);

@@ -566,7 +566,7 @@ public class JedisClusterTest {
   public void testReturnConnectionOnJedisConnectionException() throws InterruptedException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", config);
 
@@ -582,7 +582,7 @@ public class JedisClusterTest {
   public void testReturnConnectionOnRedirection() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, DEFAULT_REDIRECTIONS, "cluster", config);
 
@@ -598,7 +598,7 @@ public class JedisClusterTest {
     // cluster node is defined as 127.0.0.1; adding localhost should work,
     // but shouldn't show up.
     jedisClusterNode.add(localhost);
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
     Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
@@ -612,7 +612,7 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new LinkedHashSet<HostAndPort>();
     jedisClusterNode.add(invalidHost);
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode,  0, 2, DEFAULT_REDIRECTIONS, "cluster", config);
     Map<String, JedisPool> clusterNodes = jc.getClusterNodes();

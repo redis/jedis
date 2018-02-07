@@ -259,11 +259,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys existed Time
-   * complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys exist.
+   * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
-   *         none of the specified keys existed
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
+   *         0 if none of the specified keys exist.
    */
   @Override
   public Long exists(final byte[]... keys) {
@@ -1896,7 +1896,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   protected void checkIsInMultiOrPipeline() {
     if (client.isInMulti()) {
       throw new JedisDataException(
-          "Cannot use Jedis when in Multi. Please use Transation or reset jedis state.");
+          "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
     } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
       throw new JedisDataException(
           "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state .");

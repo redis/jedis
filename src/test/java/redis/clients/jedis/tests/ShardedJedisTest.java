@@ -18,8 +18,8 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
-import redis.clients.util.Hashing;
-import redis.clients.util.Sharded;
+import redis.clients.jedis.util.Hashing;
+import redis.clients.jedis.util.Sharded;
 
 public class ShardedJedisTest {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);

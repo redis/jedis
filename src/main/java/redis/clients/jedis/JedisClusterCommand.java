@@ -130,9 +130,6 @@ public abstract class JedisClusterCommand<T> {
         //TODO make tracking of successful/unsuccessful operations for node - do renewing only
         //if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
-
-        //no more redirections left, throw original exception, not JedisClusterMaxRedirectionsException, because it's not MOVED situation
-        throw jce;
       }
 
       return runWithRetries(slot, attempts - 1, tryRandomNode, asking);

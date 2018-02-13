@@ -11,8 +11,6 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
 
-  private static final String NO_DISPATCH_MESSAGE = "No way to dispatch this command to Redis Cluster.";
-
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
   private final ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
@@ -25,16 +23,12 @@ public abstract class JedisClusterCommand<T> {
   public abstract T execute(Jedis connection);
 
   public T run(String key) {
-    if (key == null) {
-      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
-    }
-
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, false);
   }
 
   public T run(int keyCount, String... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
     }
 
     // For multiple keys, only execute if they all share the same connection slot.
@@ -53,16 +47,12 @@ public abstract class JedisClusterCommand<T> {
   }
 
   public T runBinary(byte[] key) {
-    if (key == null) {
-      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
-    }
-
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, false);
   }
 
   public T runBinary(int keyCount, byte[]... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
     }
 
     // For multiple keys, only execute if they all share the same connection slot.

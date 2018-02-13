@@ -628,6 +628,59 @@ public class JedisClusterTest {
     assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
   }
 
+  @Test
+  public void nullKeys() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+    JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+
+    String foo = "foo";
+    byte[] bfoo = new byte[]{0x0b, 0x0f, 0x00, 0x00};
+
+    try {
+      cluster.exists((String) null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(foo, null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(null, foo);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists((byte[]) null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(bfoo, null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(null, bfoo);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+  }
+
   private static String getNodeServingSlotRange(String infoOutput) {
     // f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0
     // 1394372400827 0 connected 5461-10922

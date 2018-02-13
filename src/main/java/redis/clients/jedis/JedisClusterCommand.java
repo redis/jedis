@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
+import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
@@ -26,7 +26,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T run(String key) {
     if (key == null) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
     }
 
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, false);
@@ -34,7 +34,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T run(int keyCount, String... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
     }
 
     // For multiple keys, only execute if they all share the same connection slot.
@@ -43,8 +43,8 @@ public abstract class JedisClusterCommand<T> {
       for (int i = 1; i < keyCount; i++) {
         int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
         if (slot != nextSlot) {
-          throw new JedisClusterException("No way to dispatch this command to Redis Cluster "
-              + "because keys have different slots.");
+          throw new JedisClusterOperationException("No way to dispatch this command to Redis "
+              + "Cluster because keys have different slots.");
         }
       }
     }
@@ -54,7 +54,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T runBinary(byte[] key) {
     if (key == null) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
     }
 
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, false);
@@ -62,7 +62,7 @@ public abstract class JedisClusterCommand<T> {
 
   public T runBinary(int keyCount, byte[]... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException(NO_DISPATCH_MESSAGE);
     }
 
     // For multiple keys, only execute if they all share the same connection slot.
@@ -71,8 +71,8 @@ public abstract class JedisClusterCommand<T> {
       for (int i = 1; i < keyCount; i++) {
         int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
         if (slot != nextSlot) {
-          throw new JedisClusterException("No way to dispatch this command to Redis Cluster "
-              + "because keys have different slots.");
+          throw new JedisClusterOperationException("No way to dispatch this command to Redis "
+              + "Cluster because keys have different slots.");
         }
       }
     }
@@ -94,7 +94,7 @@ public abstract class JedisClusterCommand<T> {
 
   private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, boolean asking) {
     if (attempts <= 0) {
-      throw new JedisClusterMaxRedirectionsException("Too many Cluster redirections?");
+      throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
     }
 
     Jedis connection = null;
@@ -152,7 +152,7 @@ public abstract class JedisClusterCommand<T> {
         askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
       } else if (jre instanceof JedisMovedDataException) {
       } else {
-        throw new JedisClusterException(jre);
+        throw new JedisClusterOperationException(jre);
       }
 
       return runWithRetries(slot, attempts - 1, false, asking);

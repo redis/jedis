@@ -364,7 +364,7 @@ public class JedisClusterTest {
     assertEquals("foo", jc.get("51"));
   }
 
-  @Test(expected = JedisClusterMaxRedirectionsException.class)
+  @Test(expected = JedisClusterMaxAttemptsException.class)
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
@@ -592,7 +592,7 @@ public class JedisClusterTest {
     jc.get("test");
   }
 
-  @Test(expected = JedisClusterMaxRedirectionsException.class, timeout = DEFAULT_TIMEOUT)
+  @Test(expected = JedisClusterMaxAttemptsException.class, timeout = DEFAULT_TIMEOUT)
   public void testReturnConnectionOnRedirection() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));

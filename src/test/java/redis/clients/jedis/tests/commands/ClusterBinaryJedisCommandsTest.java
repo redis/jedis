@@ -1,7 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -177,17 +176,6 @@ public class ClusterBinaryJedisCommandsTest {
   @Test(expected = IllegalArgumentException.class)
   public void failKeys() {
     jedisCluster.keys("*".getBytes());
-  }
-
-  @Test
-  public void testGetSlot() {
-    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar"));
-    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()),
-      JedisClusterCRC16.getSlot("{user1000}.followers".getBytes()));
-    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()),
-      JedisClusterCRC16.getSlot("bar".getBytes()));
-    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()),
-      JedisClusterCRC16.getSlot("bar".getBytes()));
   }
 
   private static String getNodeId(String infoOutput) {

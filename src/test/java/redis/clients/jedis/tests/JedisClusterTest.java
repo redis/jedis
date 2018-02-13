@@ -2,7 +2,6 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -377,15 +376,6 @@ public class JedisClusterTest {
   }
 
   @Test
-  public void testRedisHashtag() {
-    assertEquals(JedisClusterCRC16.getSlot("{bar"), JedisClusterCRC16.getSlot("foo{{bar}}zap"));
-    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
-      JedisClusterCRC16.getSlot("{user1000}.followers"));
-    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), JedisClusterCRC16.getSlot("bar"));
-    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
-  }
-
-  @Test
   public void testClusterForgetNode() throws InterruptedException {
     // at first, join node4 to cluster
     node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
@@ -456,12 +446,13 @@ public class JedisClusterTest {
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
 
-    for (int index = 0; index < 5; index++) {
+    int count = 5;
+    for (int index = 0; index < count; index++) {
       jc.set("foo{bar}" + index, "hello");
     }
 
     int slot = JedisClusterCRC16.getSlot("foo{bar}");
-    assertEquals(DEFAULT_REDIRECTIONS, node1.clusterCountKeysInSlot(slot).intValue());
+    assertEquals(count, node1.clusterCountKeysInSlot(slot).intValue());
   }
 
   @Test

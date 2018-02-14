@@ -251,7 +251,7 @@ public class JedisPool extends JedisPoolAbstract {
         returnResourceObject(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
-        throw new JedisException("Could not return the resource to the pool", e);
+        throw new JedisException("Resource is returned to the pool as broken", e);
       }
     }
   }

@@ -81,11 +81,13 @@ public class ConnectionTest {
     client.connect();
     try {
       client.getOne();
+      fail("Should have thrown an exception for timeout");
     } catch (JedisConnectionException ignored) {
+        assertEquals("java.net.SocketTimeoutException: Read timed out", ignored.getMessage());
     }
     try {
       client.getOne();
-      fail("Should throw exception");
+      fail("Should have failed due to reading from a broken connection");
     } catch (JedisConnectionException exc) {
       assertEquals("Trying to read from a broken connection", exc.getMessage());
     }

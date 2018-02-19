@@ -1,16 +1,14 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+
+import static org.junit.Assert.fail;
 
 public class ConnectionTest {
   private Connection client;
@@ -81,9 +79,9 @@ public class ConnectionTest {
     client.connect();
     try {
       client.getOne();
-      fail("Should have thrown an exception for timeout");
+      fail("Should have thrown an exception as there is nothing to read");
     } catch (JedisConnectionException ignored) {
-        assertEquals("java.net.SocketTimeoutException: Read timed out", ignored.getMessage());
+        assertEquals("Unexpected end of stream.", ignored.getMessage());
     }
     try {
       client.getOne();

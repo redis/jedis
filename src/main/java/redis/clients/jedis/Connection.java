@@ -195,6 +195,7 @@ public class Connection implements Closeable {
                 "The connection to '%s' failed ssl/tls hostname verification.", host);
             throw new JedisConnectionException(message);
           }
+          ((SSLSocket) socket).startHandshake();
         }
 
         outputStream = new RedisOutputStream(socket.getOutputStream());

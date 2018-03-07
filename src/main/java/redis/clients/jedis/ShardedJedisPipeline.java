@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import redis.clients.jedis.exceptions.JedisDataException;
+
 public class ShardedJedisPipeline extends PipelineBase {
   private BinaryShardedJedis jedis;
   private List<FutureResult> results = new ArrayList<FutureResult>();
@@ -41,7 +43,11 @@ public class ShardedJedisPipeline extends PipelineBase {
    */
   public void sync() {
     for (Client client : clients) {
-      generateResponse(client.getOne());
+      try {
+        generateResponse(client.getOne());
+      } catch (JedisDataException e) {
+        generateResponse(e);
+      }
     }
   }
 
@@ -54,7 +60,17 @@ public class ShardedJedisPipeline extends PipelineBase {
   public List<Object> syncAndReturnAll() {
     List<Object> formatted = new ArrayList<Object>();
     for (Client client : clients) {
-      formatted.add(generateResponse(client.getOne()).get());
+      Response<?> response;
+      try {
+        response = generateResponse(client.getOne());
+      } catch (JedisDataException e) {
+        response = generateResponse(e);
+      }
+      try {
+        formatted.add(response.get());
+      } catch (JedisDataException e) {
+        formatted.add(e);
+      }
     }
     return formatted;
   }

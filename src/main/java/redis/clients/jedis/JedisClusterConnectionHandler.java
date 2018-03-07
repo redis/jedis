@@ -22,16 +22,21 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     initializeSlotsCache(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
 }
 
-  abstract Jedis getConnection();
+  abstract Jedis getConnection(ReadFrom readFrom);
 
-  abstract Jedis getConnectionFromSlot(int slot);
+  abstract Jedis getConnectionFromSlot(int slot, ReadFrom readFrom);
 
   public Jedis getConnectionFromNode(HostAndPort node) {
-    return cache.setupNodeIfNotExist(node).getResource();
+    // this method is used for ASK response, MASTER is ok
+    return cache.setupNodeIfNotExist(node, true).getResource();
   }
   
   public Map<String, JedisPool> getNodes() {
-    return cache.getNodes();
+    return cache.getAllNodes();
+  }
+
+  public Map<String, JedisPool> getMasterNodes() {
+    return cache.getMasterNodes();
   }
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,

@@ -15,11 +15,17 @@ public abstract class JedisClusterCommand<T> {
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
+  private final ReadFrom readFrom;
   private final ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
+    this(connectionHandler, maxAttempts, ReadFrom.MASTER);
+  }
+
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts, ReadFrom readFrom) {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
+    this.readFrom = readFrom;
   }
 
   public abstract T execute(Jedis connection);
@@ -83,7 +89,7 @@ public abstract class JedisClusterCommand<T> {
   public T runWithAnyNode() {
     Jedis connection = null;
     try {
-      connection = connectionHandler.getConnection();
+      connection = connectionHandler.getConnection(readFrom);
       return execute(connection);
     } catch (JedisConnectionException e) {
       throw e;
@@ -110,9 +116,9 @@ public abstract class JedisClusterCommand<T> {
         asking = false;
       } else {
         if (tryRandomNode) {
-          connection = connectionHandler.getConnection();
+          connection = connectionHandler.getConnection(readFrom);
         } else {
-          connection = connectionHandler.getConnectionFromSlot(slot);
+          connection = connectionHandler.getConnectionFromSlot(slot, readFrom);
         }
       }
 

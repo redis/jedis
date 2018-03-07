@@ -167,6 +167,15 @@ public class JedisPool extends JedisPoolAbstract {
         database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, int port,
+                   final int connectionTimeout, final int soTimeout, final String password, final int database,
+                   final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+                   final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier,
+                   final boolean readOnly) {
+    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, password,
+            database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, readOnly));
+  }
+
   public JedisPool(final GenericObjectPoolConfig poolConfig) {
     this(poolConfig, Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }

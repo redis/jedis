@@ -25,7 +25,11 @@ public abstract class JedisClusterCommand<T> {
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts, ReadFrom readFrom) {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
-    this.readFrom = readFrom;
+    if (readFrom != null) {
+      this.readFrom = readFrom;
+    } else {
+      this.readFrom = ReadFrom.MASTER;
+    }
   }
 
   public abstract T execute(Jedis connection);

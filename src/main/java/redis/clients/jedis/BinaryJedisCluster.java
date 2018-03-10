@@ -49,53 +49,58 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxAttempts,
-                            final GenericObjectPoolConfig poolConfig) {
+      final GenericObjectPoolConfig poolConfig) {
     this(jedisClusterNode, timeout, maxAttempts, poolConfig, ReadFrom.MASTER);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxAttempts,
       final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        timeout);
+        timeout, readFrom);
     this.maxAttempts = maxAttempts;
     this.readFrom = readFrom;
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-                            int soTimeout, int maxAttempts, final GenericObjectPoolConfig poolConfig) {
+      int soTimeout, int maxAttempts, final GenericObjectPoolConfig poolConfig) {
     this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, poolConfig, ReadFrom.MASTER);
   }
 
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts,
-                            final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+      int soTimeout, int maxAttempts, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        connectionTimeout, soTimeout);
+        connectionTimeout, soTimeout, readFrom);
     this.maxAttempts = maxAttempts;
     this.readFrom = readFrom;
   }
 
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts,
-                            String password, GenericObjectPoolConfig poolConfig) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, poolConfig, ReadFrom.MASTER);
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+      int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig poolConfig) {
+    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, poolConfig,
+        ReadFrom.MASTER);
   }
 
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts,
-                            String password, GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+      int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig poolConfig,
+      ReadFrom readFrom) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-            connectionTimeout, soTimeout, password);
+        connectionTimeout, soTimeout, password, readFrom);
     this.maxAttempts = maxAttempts;
     this.readFrom = readFrom;
   }
 
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts,
-                            String password, String clientName, GenericObjectPoolConfig poolConfig) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ReadFrom.MASTER);
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+      int soTimeout, int maxAttempts, String password, String clientName,
+      GenericObjectPoolConfig poolConfig) {
+    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName,
+        poolConfig, ReadFrom.MASTER);
   }
 
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts,
-                            String password, String clientName, GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+      int soTimeout, int maxAttempts, String password, String clientName,
+      GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-            connectionTimeout, soTimeout, password, clientName);
+        connectionTimeout, soTimeout, password, clientName, readFrom);
     this.maxAttempts = maxAttempts;
     this.readFrom = readFrom;
   }
@@ -113,7 +118,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   public Jedis getConnectionFromSlot(int slot) {
     // since I don't know who will call this method, so this method only return MASTER nodes
-	return this.connectionHandler.getConnectionFromSlot(slot, ReadFrom.MASTER);
+    return this.connectionHandler.getConnectionFromSlot(slot, ReadFrom.MASTER);
   }
 
   @Override
@@ -1895,8 +1900,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
           + " only supports KEYS commands with non-empty patterns");
     }
     if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(pattern)) {
-      throw new IllegalArgumentException(this.getClass().getSimpleName()
-          + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(
+          this.getClass().getSimpleName()
+              + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts, readFrom) {
       @Override
@@ -1917,22 +1923,23 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }
 
     if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
-      throw new IllegalArgumentException(BinaryJedisCluster.class.getSimpleName()
-          + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(
+          BinaryJedisCluster.class.getSimpleName()
+              + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
 
-    return new JedisClusterCommand< ScanResult<byte[]>>(connectionHandler, maxAttempts, readFrom) {
+    return new JedisClusterCommand<ScanResult<byte[]>>(connectionHandler, maxAttempts, readFrom) {
       @Override
       public ScanResult<byte[]> execute(Jedis connection) {
         return connection.scan(cursor, params);
       }
     }.runBinary(matchPattern);
   }
-  
+
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
     return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,
-                                                                          maxAttempts, readFrom) {
+        maxAttempts, readFrom) {
       @Override
       public ScanResult<Map.Entry<byte[], byte[]>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
@@ -1944,7 +1951,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,
-                                                                          maxAttempts, readFrom) {
+        maxAttempts, readFrom) {
       @Override
       public ScanResult<Map.Entry<byte[], byte[]>> execute(Jedis connection) {
         return connection.hscan(key, cursor, params);

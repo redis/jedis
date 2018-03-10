@@ -11,21 +11,26 @@ import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int timeout) {
-    this(nodes, poolConfig, timeout, timeout);
+      final GenericObjectPoolConfig poolConfig, int timeout, ReadFrom readFrom) {
+    this(nodes, poolConfig, timeout, timeout, readFrom);
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, null);
+      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout,
+      ReadFrom readFrom) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, null, readFrom);
   }
 
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, password);
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+      GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password,
+      ReadFrom readFrom) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password, readFrom);
   }
 
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
+      GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password,
+      String clientName, ReadFrom readFrom) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, readFrom);
   }
 
   @Override
@@ -68,12 +73,13 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
       // assignment
       return connectionPool.getResource();
     } else {
-      renewSlotCache(); //It's abnormal situation for cluster mode, that we have just nothing for slot, try to rediscover state
+      renewSlotCache(); // It's abnormal situation for cluster mode, that we have just nothing for
+                        // slot, try to rediscover state
       connectionPool = cache.getSlotPool(slot, readFrom);
       if (connectionPool != null) {
         return connectionPool.getResource();
       } else {
-        //no choice, fallback to new connection to random node
+        // no choice, fallback to new connection to random node
         return getConnection(readFrom);
       }
     }

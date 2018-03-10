@@ -51,24 +51,27 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     this(Collections.singleton(node), timeout, maxAttempts, poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, final GenericObjectPoolConfig poolConfig) {
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      final GenericObjectPoolConfig poolConfig) {
     this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String password, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+        poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String password, String clientName, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+        clientName, poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-                      int maxAttempts, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig, readFrom);
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig,
+        readFrom);
   }
 
   public JedisCluster(Set<HostAndPort> nodes) {
@@ -101,7 +104,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxAttempts,
-                      final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+      final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     super(nodes, timeout, maxAttempts, poolConfig, readFrom);
   }
 
@@ -111,29 +114,30 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int connectionTimeout, int soTimeout,
-                      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
+      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig) {
     super(nodes, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int connectionTimeout, int soTimeout,
-          int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
+      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
     super(nodes, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int connectionTimeout, int soTimeout,
-                      int maxAttempts, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+      int maxAttempts, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     super(nodes, connectionTimeout, soTimeout, maxAttempts, poolConfig, readFrom);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int connectionTimeout, int soTimeout,
-                      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+      int maxAttempts, String password, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     super(nodes, connectionTimeout, soTimeout, maxAttempts, password, poolConfig, readFrom);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int connectionTimeout, int soTimeout,
-                      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig,
-                      ReadFrom readFrom) {
-    super(nodes, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, readFrom);
+      int maxAttempts, String password, String clientName,
+      final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+    super(nodes, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig,
+        readFrom);
   }
 
   @Override
@@ -1347,8 +1351,9 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           + " only supports KEYS commands with non-empty patterns");
     }
     if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(pattern)) {
-      throw new IllegalArgumentException(this.getClass().getSimpleName()
-          + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(
+          this.getClass().getSimpleName()
+              + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts, readFrom) {
       @Override
@@ -1369,22 +1374,23 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }
 
     if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
-      throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
-          + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(
+          JedisCluster.class.getSimpleName()
+              + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
 
-    return new JedisClusterCommand< ScanResult<String>>(connectionHandler, maxAttempts, readFrom) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts, readFrom) {
       @Override
       public ScanResult<String> execute(Jedis connection) {
         return connection.scan(cursor, params);
       }
     }.run(matchPattern);
   }
-  
+
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
-                                                                      maxAttempts, readFrom) {
+        maxAttempts, readFrom) {
       @Override
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);

@@ -22,14 +22,11 @@ public abstract class JedisClusterCommand<T> {
     this(connectionHandler, maxAttempts, ReadFrom.MASTER);
   }
 
-  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts, ReadFrom readFrom) {
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts,
+      ReadFrom readFrom) {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
-    if (readFrom != null) {
-      this.readFrom = readFrom;
-    } else {
-      this.readFrom = ReadFrom.MASTER;
-    }
+    this.readFrom = readFrom != null ? readFrom : ReadFrom.MASTER;
   }
 
   public abstract T execute(Jedis connection);
@@ -136,11 +133,12 @@ public abstract class JedisClusterCommand<T> {
       connection = null;
 
       if (attempts <= 1) {
-        //We need this because if node is not reachable anymore - we need to finally initiate slots renewing,
-        //or we can stuck with cluster state without one node in opposite case.
-        //But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
-        //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-        //if there were no successful responses from this node last few seconds
+        // We need this because if node is not reachable anymore - we need to finally initiate slots
+        // renewing,
+        // or we can stuck with cluster state without one node in opposite case.
+        // But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
+        // TODO make tracking of successful/unsuccessful operations for node - do renewing only
+        // if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
       }
 

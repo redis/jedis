@@ -13,12 +13,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.ShardedJedis;
-import redis.clients.jedis.ShardedJedisPipeline;
-import redis.clients.jedis.ShardedJedisPool;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
@@ -185,11 +180,11 @@ public class ShardedJedisPoolTest {
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
+    Jedis j = new Jedis(ClientOptions.builder().withPort(6380).build());
     j.auth("foobared");
     j.set("foo", "bar");
 
-    j = new Jedis("localhost", 6379);
+    j = new Jedis();
     j.auth("foobared");
     j.set("foo", "bar");
 
@@ -213,15 +208,15 @@ public class ShardedJedisPoolTest {
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
+    Jedis j = new Jedis(ClientOptions.builder().withPort(6380).build());
     j.auth("foobared");
     j.set("foo", "bar");
 
-    j = new Jedis("localhost", 6379);
+    j = new Jedis();
     j.auth("foobared");
     j.set("foo", "bar");
 
-    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    List<JedisShardInfo> shards = new ArrayList<>();
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
 

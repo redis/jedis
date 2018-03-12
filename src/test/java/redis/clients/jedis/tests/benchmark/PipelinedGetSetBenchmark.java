@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
 
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
@@ -14,7 +15,7 @@ public class PipelinedGetSetBenchmark {
   private static final int TOTAL_OPERATIONS = 200000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort());
+    Jedis jedis = new Jedis(ClientOptions.builder().withHostAndPort(hnp).build());
     jedis.connect();
     jedis.auth("foobared");
     jedis.flushAll();

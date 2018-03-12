@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -51,7 +52,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis("rediss://localhost:6390");
+    Jedis jedis = new Jedis(ClientOptions.builder().withURI("rediss://localhost:6390").build());
     jedis.auth("foobared");
     jedis.get("foo");
     jedis.close();
@@ -63,7 +64,7 @@ public class SSLJedisTest extends JedisCommandTestBase {
   @Test
   public void connectWithoutShardInfo() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"));
+    Jedis jedis = new Jedis(ClientOptions.builder().withURI("rediss://localhost:6390").build());
     jedis.auth("foobared");
     jedis.get("foo");
     jedis.close();

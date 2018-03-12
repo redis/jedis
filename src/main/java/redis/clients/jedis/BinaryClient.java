@@ -1,27 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
@@ -29,6 +7,20 @@ import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Command.EXISTS;
+import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.toByteArray;
 
 public class BinaryClient extends Connection {
   public enum LIST_POSITION {
@@ -40,34 +32,14 @@ public class BinaryClient extends Connection {
     }
   }
 
-  private boolean isInMulti;
-
-  private String password;
-
   private int db;
+  private boolean isInMulti;
 
   private boolean isInWatch;
 
-  public BinaryClient() {
-    super();
-  }
-
-  public BinaryClient(final String host) {
-    super(host);
-  }
-
-  public BinaryClient(final String host, final int port) {
-    super(host, port);
-  }
-
-  public BinaryClient(final String host, final int port, final boolean ssl) {
-    super(host, port, ssl);
-  }
-
-  public BinaryClient(final String host, final int port, final boolean ssl,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  public BinaryClient(final ClientOptions clientOptions) {
+    super(clientOptions);
+    this.db = clientOptions.getDatabase();
   }
 
   public boolean isInMulti() {
@@ -77,7 +49,15 @@ public class BinaryClient extends Connection {
   public boolean isInWatch() {
     return isInWatch;
   }
-  
+
+  public int getDb() {
+    return db;
+  }
+
+  public void setDb(int db) {
+    this.db = db;
+  }
+
   private byte[][] joinParameters(byte[] first, byte[][] rest) {
     byte[][] result = new byte[rest.length + 1][];
     result[0] = first;
@@ -85,20 +65,12 @@ public class BinaryClient extends Connection {
     return result;
   }
 
-  public void setPassword(final String password) {
-    this.password = password;
-  }
-
-  public void setDb(int db) {
-    this.db = db;
-  }
-
   @Override
   public void connect() {
     if (!isConnected()) {
       super.connect();
-      if (password != null) {
-        auth(password);
+      if (clientOptions.getPassword() != null) {
+        auth();
         getStatusCodeReply();
       }
       if (db > 0) {
@@ -189,7 +161,13 @@ public class BinaryClient extends Connection {
     sendCommand(TOUCH, keys);
   }
 
-  public void select(final int index) {
+  public void select() {
+    if(clientOptions.getDatabase() > 0) {
+      select(clientOptions.getDatabase());
+    }
+  }
+
+  public void select(int index) {
     sendCommand(SELECT, toByteArray(index));
   }
 
@@ -579,8 +557,13 @@ public class BinaryClient extends Connection {
     brpop(args.toArray(new byte[args.size()][]));
   }
 
-  public void auth(final String password) {
-    setPassword(password);
+  public void auth() {
+    if(clientOptions.getPassword() != null) {
+      auth(clientOptions.getPassword());
+    }
+  }
+
+  public void auth(String password) {
     sendCommand(AUTH, password);
   }
 
@@ -952,10 +935,6 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
-  public int getDB() {
-    return db;
-  }
-
   @Override
   public void disconnect() {
     db = 0;
@@ -964,7 +943,6 @@ public class BinaryClient extends Connection {
 
   @Override
   public void close() {
-    db = 0;
     super.close();
   }
 

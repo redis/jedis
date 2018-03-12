@@ -1,22 +1,7 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.Test;
-
-import redis.clients.jedis.BinaryJedis;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -24,11 +9,21 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.util.SafeEncoder;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.*;
+
 public class JedisTest extends JedisCommandTestBase {
+
+  public static final String PASSWORD = "foobared";
+  public static final String LOCALHOST = "localhost";
+
   @Test
   public void useWithoutConnecting() {
-    Jedis jedis = new Jedis("localhost");
-    jedis.auth("foobared");
+    Jedis jedis = new Jedis(ClientOptions.builder().withPassword(PASSWORD).build());
     jedis.dbSize();
   }
 
@@ -56,7 +51,8 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test(expected = JedisConnectionException.class)
   public void timeoutConnection() throws Exception {
-    jedis = new Jedis("localhost", 6379, 15000);
+    ClientOptions clientOptions = ClientOptions.builder().withHost("localhost").withPort(6379).withTimeout(15000).build();
+    jedis = new Jedis(clientOptions);
     jedis.auth("foobared");
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
@@ -65,7 +61,8 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test(expected = JedisConnectionException.class)
   public void timeoutConnectionWithURI() throws Exception {
-    jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
+    ClientOptions clientOptions = ClientOptions.builder().withURI("redis://:foobared@localhost:6380/2").withTimeout(15000).build();
+    jedis = new Jedis(clientOptions);
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
     jedis.hmget("foobar", "foo");
@@ -78,7 +75,7 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    Jedis j = new Jedis(new URI("localhost:6380"));
+    Jedis j = new Jedis(ClientOptions.builder().withURI("localhost:6380").build());
     j.ping();
   }
 
@@ -93,22 +90,11 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
+    Jedis j = new Jedis(ClientOptions.builder().withPort(6379).build());
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
-    Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2");
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
-  }
-
-  @Test
-  public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
+    Jedis jedis = new Jedis(ClientOptions.builder().withURI("redis://:foobared@localhost:6379/2").build());
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
   }
@@ -128,23 +114,23 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
+    Jedis jedis = new Jedis(ClientOptions.builder().withURI("redis://localhost:6380").build());
     jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
+    assertEquals(jedis.getClient().getClientOptions().getHost(), "localhost");
+    assertEquals(jedis.getClient().getClientOptions().getPort(), 6380);
     assertEquals(jedis.getDB(), 0);
 
-    jedis = new Jedis("redis://localhost:6380/");
+    jedis = new Jedis(ClientOptions.builder().withURI("redis://localhost:6380/").build());
     jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
+    assertEquals(jedis.getClient().getClientOptions().getHost(), "localhost");
+    assertEquals(jedis.getClient().getClientOptions().getPort(), 6380);
     assertEquals(jedis.getDB(), 0);
   }
 
   @Test
   public void checkCloseable() {
     jedis.close();
-    BinaryJedis bj = new BinaryJedis("localhost");
+    BinaryJedis bj = new BinaryJedis(ClientOptions.builder().build());
     bj.connect();
     bj.close();
   }

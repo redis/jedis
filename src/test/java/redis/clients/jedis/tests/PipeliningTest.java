@@ -26,11 +26,7 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.util.SafeEncoder;
 
@@ -41,7 +37,7 @@ public class PipeliningTest {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 2000);
+    jedis = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withTimeout(2000).build());
     jedis.connect();
     jedis.auth("foobared");
     jedis.flushAll();
@@ -583,14 +579,14 @@ public class PipeliningTest {
   @Test
   public void testSyncWithNoCommandQueued() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    Jedis jedis2 = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withTimeout(500).build());
 
     Pipeline pipeline = jedis2.pipelined();
     pipeline.sync();
 
     jedis2.close();
 
-    jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis2 = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withTimeout(500).build());
 
     pipeline = jedis2.pipelined();
     List<Object> resp = pipeline.syncAndReturnAll();
@@ -602,7 +598,7 @@ public class PipeliningTest {
   @Test
   public void testCloseable() throws IOException {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    Jedis jedis2 = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withTimeout(500).build());
     jedis2.auth("foobared");
 
     Pipeline pipeline = jedis2.pipelined();
@@ -619,7 +615,7 @@ public class PipeliningTest {
   @Test
   public void testCloseableWithMulti() throws IOException {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    Jedis jedis2 = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withTimeout(500).build());
     jedis2.auth("foobared");
 
     Pipeline pipeline = jedis2.pipelined();

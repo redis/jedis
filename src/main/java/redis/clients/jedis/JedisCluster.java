@@ -27,6 +27,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     SOFT, HARD
   }
 
+
   public JedisCluster(HostAndPort node) {
 	this(Collections.singleton(node), DEFAULT_TIMEOUT);
   }
@@ -106,6 +107,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           int maxAttempts, String password, String clientName, final GenericObjectPoolConfig poolConfig) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
 }
+
 
   @Override
   public String set(final String key, final String value) {

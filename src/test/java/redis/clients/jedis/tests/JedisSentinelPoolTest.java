@@ -10,10 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
@@ -37,8 +34,8 @@ public class JedisSentinelPoolTest {
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
-    sentinelJedis1 = new Jedis(sentinel1.getHost(), sentinel1.getPort());
-    sentinelJedis2 = new Jedis(sentinel2.getHost(), sentinel2.getPort());
+    sentinelJedis1 = new Jedis(ClientOptions.builder().withHostAndPort(sentinel1).build());
+    sentinelJedis2 = new Jedis(ClientOptions.builder().withHostAndPort(sentinel2).build());
   }
 
   @Test(expected = JedisConnectionException.class)

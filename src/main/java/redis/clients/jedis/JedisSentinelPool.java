@@ -111,11 +111,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     if (!master.equals(currentHostMaster)) {
       currentHostMaster = master;
       if (factory == null) {
-        factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-            soTimeout, password, database, clientName, false, null, null, null);
+        factory = new JedisFactory(ClientOptions.builder().withHostAndPort(master).withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout).withPassword(password).withDatabase(database).withClientName(clientName).build());
         initPool(poolConfig, factory);
       } else {
-        factory.setHostAndPort(currentHostMaster);
         // although we clear the pool, we still have to check the
         // returned object
         // in getResource, this call only clears idle instances, not
@@ -141,7 +139,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       Jedis jedis = null;
       try {
-        jedis = new Jedis(hap.getHost(), hap.getPort());
+        jedis = new Jedis(ClientOptions.builder().withHostAndPort(hap).build());
 
         List<String> masterAddr = jedis.sentinelGetMasterAddrByName(masterName);
 
@@ -210,8 +208,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       // get a reference because it can change concurrently
       final HostAndPort master = currentHostMaster;
-      final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(), jedis.getClient()
-          .getPort());
+      final HostAndPort connection = new HostAndPort(jedis.getClient().getClientOptions().getHost(), jedis.getClient()
+          .getClientOptions().getPort());
 
       if (master.equals(connection)) {
         // connected to the correct master
@@ -267,7 +265,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       while (running.get()) {
 
-        j = new Jedis(host, port);
+        j = new Jedis(ClientOptions.builder().withHost(host).withPort(port).build());
 
         try {
           // double check that it is not being shutdown

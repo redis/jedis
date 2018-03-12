@@ -1,22 +1,13 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.SafeEncoder;
+
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class JedisClusterInfoCache {
   private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
@@ -150,15 +141,14 @@ public class JedisClusterInfoCache {
         ((Long) hostInfos.get(1)).intValue());
   }
 
-  public JedisPool setupNodeIfNotExist(HostAndPort node) {
+  public JedisPool setupNodeIfNotExist(ClientOptions options){
     w.lock();
     try {
-      String nodeKey = getNodeKey(node);
+      String nodeKey = getNodeKey(options.getHost(), options.getPort());
       JedisPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, clientName, false, null, null, null);
+      JedisPool nodePool = new JedisPool(poolConfig, options);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {
@@ -166,38 +156,9 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public JedisPool setupNodeIfNotExist(HostAndPort node, boolean ssl) {
-    w.lock();
-    try {
-      String nodeKey = getNodeKey(node);
-      JedisPool existingPool = nodes.get(nodeKey);
-      if (existingPool != null) return existingPool;
-
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, null, ssl, null, null, null);
-      nodes.put(nodeKey, nodePool);
-      return nodePool;
-    } finally {
-      w.unlock();
-    }
-  }
-
-  public JedisPool setupNodeIfNotExist(HostAndPort node, boolean ssl, SSLSocketFactory sslSocketFactory,
-                                  SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    w.lock();
-    try {
-      String nodeKey = getNodeKey(node);
-      JedisPool existingPool = nodes.get(nodeKey);
-      if (existingPool != null) return existingPool;
-
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, null, ssl, sslSocketFactory, sslParameters,
-          hostnameVerifier);
-      nodes.put(nodeKey, nodePool);
-      return nodePool;
-    } finally {
-      w.unlock();
-    }
+  public JedisPool setupNodeIfNotExist(HostAndPort node){
+    ClientOptions clientOptions = ClientOptions.builder().withHostAndPort(node).withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout).withPassword(password).withClientName(clientName).build();
+    return setupNodeIfNotExist(clientOptions);
   }
 
   public void assignSlotToNode(int slot, HostAndPort targetNode) {
@@ -243,7 +204,7 @@ public class JedisClusterInfoCache {
   public Map<String, JedisPool> getNodes() {
     r.lock();
     try {
-      return new HashMap<String, JedisPool>(nodes);
+      return new HashMap<>(nodes);
     } finally {
       r.unlock();
     }
@@ -286,8 +247,12 @@ public class JedisClusterInfoCache {
     return hnp.getHost() + ":" + hnp.getPort();
   }
 
+  public static String getNodeKey(String host, int port) {
+    return host + ":" + port;
+  }
+
   public static String getNodeKey(Client client) {
-    return client.getHost() + ":" + client.getPort();
+    return client.getClientOptions().getHost() + ":" + client.getClientOptions().getPort();
   }
 
   public static String getNodeKey(Jedis jedis) {

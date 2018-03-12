@@ -294,5 +294,20 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public Jedis createResource() {
     return new Jedis(this);
   }
+
+  public ClientOptions toClientOptions() {
+
+    return ClientOptions.builder().
+            withHost(host).
+            withPort(port).
+            withClientName(name).
+            withDatabase(db).
+            withPassword(password).
+            withConnectionTimeout(connectionTimeout).
+            withSoTimeout(soTimeout).
+            withSsl(ssl).
+            withSslOptions(SslOptions.builder().withSslParameters(sslParameters).withSslSocketFactory(sslSocketFactory).withHostnameVerifier(hostnameVerifier).build()).
+            build();
+  }
   
 }

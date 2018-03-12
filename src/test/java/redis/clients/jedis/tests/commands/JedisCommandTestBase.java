@@ -12,11 +12,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ComparisonFailure;
 
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
 public abstract class JedisCommandTestBase {
+  public static final String PASSWORD = "foobared";
   protected static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   protected Jedis jedis;
@@ -27,9 +29,8 @@ public abstract class JedisCommandTestBase {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withPassword(PASSWORD).withTimeout(500).build());
     jedis.connect();
-    jedis.auth("foobared");
     jedis.configSet("timeout", "300");
     jedis.flushAll();
   }
@@ -40,9 +41,8 @@ public abstract class JedisCommandTestBase {
   }
 
   protected Jedis createJedis() {
-    Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
+    Jedis j = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withPassword(PASSWORD).build());
     j.connect();
-    j.auth("foobared");
     j.flushAll();
     return j;
   }

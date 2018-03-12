@@ -12,6 +12,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster.Reset;
@@ -28,11 +29,11 @@ public class ClusterCommandsTest {
   @Before
   public void setUp() throws Exception {
 
-    node1 = new Jedis(nodeInfo1.getHost(), nodeInfo1.getPort());
+    node1 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo1).build());
     node1.auth("cluster");
     node1.flushAll();
 
-    node2 = new Jedis(nodeInfo2.getHost(), nodeInfo2.getPort());
+    node2 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo2).build());
     node2.auth("cluster");
     node2.flushAll();
   }

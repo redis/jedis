@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
@@ -18,7 +19,7 @@ public class ConnectionHandlingCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void binary_quit() {
-    BinaryJedis bj = new BinaryJedis(hnp.getHost());
+    BinaryJedis bj = new BinaryJedis(ClientOptions.builder().withHostAndPort(hnp).build());
     assertEquals("OK", bj.quit());
   }
 }

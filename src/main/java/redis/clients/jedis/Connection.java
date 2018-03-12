@@ -1,18 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -21,70 +8,36 @@ import redis.clients.util.RedisInputStream;
 import redis.clients.util.RedisOutputStream;
 import redis.clients.util.SafeEncoder;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private String host = Protocol.DEFAULT_HOST;
-  private int port = Protocol.DEFAULT_PORT;
+  protected ClientOptions clientOptions;
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
-  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean broken = false;
-  private boolean ssl;
-  private SSLSocketFactory sslSocketFactory;
-  private SSLParameters sslParameters;
-  private HostnameVerifier hostnameVerifier;
 
-  public Connection() {
+  public Connection(ClientOptions clientOptions) {
+    this.clientOptions = clientOptions;
   }
 
-  public Connection(final String host) {
-    this.host = host;
-  }
-
-  public Connection(final String host, final int port) {
-    this.host = host;
-    this.port = port;
-  }
-
-  public Connection(final String host, final int port, final boolean ssl) {
-    this.host = host;
-    this.port = port;
-    this.ssl = ssl;
-  }
-
-  public Connection(final String host, final int port, final boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier) {
-    this.host = host;
-    this.port = port;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
+  public ClientOptions getClientOptions() {
+    return clientOptions;
   }
 
   public Socket getSocket() {
     return socket;
-  }
-
-  public int getConnectionTimeout() {
-    return connectionTimeout;
-  }
-
-  public int getSoTimeout() {
-    return soTimeout;
-  }
-
-  public void setConnectionTimeout(int connectionTimeout) {
-    this.connectionTimeout = connectionTimeout;
-  }
-
-  public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
   }
 
   public void setTimeoutInfinite() {
@@ -101,7 +54,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(soTimeout);
+      socket.setSoTimeout(clientOptions.getSoTimeout());
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -148,23 +101,10 @@ public class Connection implements Closeable {
     }
   }
 
-  public String getHost() {
-    return host;
-  }
-
-  public void setHost(final String host) {
-    this.host = host;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public void setPort(final int port) {
-    this.port = port;
-  }
-
   public void connect() {
+    String host = clientOptions.getHost();
+    int port = clientOptions.getPort();
+
     if (!isConnected()) {
       try {
         socket = new Socket();
@@ -179,21 +119,24 @@ public class Connection implements Closeable {
         // immediately
         // <-@wjw_add
 
-        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
-        socket.setSoTimeout(soTimeout);
+        socket.connect(new InetSocketAddress(host, port), clientOptions.getConnectionTimeout());
+        socket.setSoTimeout(clientOptions.getSoTimeout());
 
-        if (ssl) {
-          if (null == sslSocketFactory) {
-            sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+        if (clientOptions.isSsl()) {
+
+          if (clientOptions.getSslOptions().getSslSocketFactory() != null) {
+            socket = clientOptions.getSslOptions().getSslSocketFactory().createSocket(socket, host, port, true);
+          } else {
+            socket = ((SSLSocketFactory)SSLSocketFactory.getDefault()).createSocket(socket, host, port, true);
           }
-          socket = (SSLSocket) sslSocketFactory.createSocket(socket, host, port, true);
-          if (null != sslParameters) {
-            ((SSLSocket) socket).setSSLParameters(sslParameters);
+
+          if (clientOptions.getSslOptions().getSslParameters() != null) {
+            ((SSLSocket) socket).setSSLParameters(clientOptions.getSslOptions().getSslParameters());
           }
-          if ((null != hostnameVerifier) &&
-              (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
+          if ((clientOptions.getSslOptions().getHostnameVerifier() != null) &&
+                  (!clientOptions.getSslOptions().getHostnameVerifier().verify(host, ((SSLSocket) socket).getSession()))) {
             String message = String.format(
-                "The connection to '%s' failed ssl/tls hostname verification.", host);
+                    "The connection to '%s' failed ssl/tls hostname verification.", host);
             throw new JedisConnectionException(message);
           }
         }
@@ -202,8 +145,8 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to host " 
-            + host + ":" + port, ex);
+        throw new JedisConnectionException("Failed connecting to host "
+                + host + ":" + port, ex);
       }
     }
   }

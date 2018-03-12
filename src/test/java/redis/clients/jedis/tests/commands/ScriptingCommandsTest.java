@@ -15,6 +15,7 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -23,6 +24,8 @@ import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.util.SafeEncoder;
 
 public class ScriptingCommandsTest extends JedisCommandTestBase {
+
+  public static final String PASSWORD = "foobared";
 
   @SuppressWarnings("unchecked")
   @Test
@@ -60,9 +63,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     args.add("second".getBytes());
     args.add("third".getBytes());
 
-    BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(), 500);
+    BinaryJedis binaryJedis = new BinaryJedis(ClientOptions.builder().withHostAndPort(hnp).withConnectionTimeout(500).withPassword(PASSWORD).build());
     binaryJedis.connect();
-    binaryJedis.auth("foobared");
 
     List<byte[]> responses = (List<byte[]>) binaryJedis.eval(script.getBytes(), keys, args);
     assertEquals(5, responses.size());
@@ -210,8 +212,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void scriptExistsWithBrokenConnection() {
-    Jedis deadClient = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
-    deadClient.auth("foobared");
+    Jedis deadClient = new Jedis(jedis.getClient().getClientOptions());
+    deadClient.auth(PASSWORD);
 
     deadClient.clientSetname("DEAD");
 

@@ -6,19 +6,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.ClientOptions;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class PoolBenchmark {
+  public static final String PASSWORD = "foobared";
+  public static final int TIMEOUT = 2000;
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws Exception {
-    Jedis j = new Jedis(hnp.getHost(), hnp.getPort());
+    Jedis j = new Jedis(ClientOptions.builder().withHostAndPort(hnp).withPassword(PASSWORD).build());
     j.connect();
-    j.auth("foobared");
     j.flushAll();
     j.quit();
     j.disconnect();
@@ -30,8 +32,7 @@ public class PoolBenchmark {
   }
 
   private static void withPool() throws Exception {
-    final JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), hnp.getHost(),
-        hnp.getPort(), 2000, "foobared");
+    final JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), ClientOptions.builder().withHostAndPort(hnp).withConnectionTimeout(TIMEOUT).withPassword(PASSWORD).build());
     List<Thread> tds = new ArrayList<Thread>();
 
     final AtomicInteger ind = new AtomicInteger();

@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
 import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
@@ -22,26 +18,8 @@ import redis.clients.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
 
-  public Client() {
-    super();
-  }
-
-  public Client(final String host) {
-    super(host);
-  }
-
-  public Client(final String host, final int port) {
-    super(host, port);
-  }
-
-  public Client(final String host, final int port, final boolean ssl) {
-    super(host, port, ssl);
-  }
-
-  public Client(final String host, final int port, final boolean ssl,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  public Client(final ClientOptions clientOptions) {
+    super(clientOptions);
   }
 
   @Override
@@ -962,8 +940,14 @@ public class Client extends BinaryClient implements Commands {
     clientKill(SafeEncoder.encode(client));
   }
 
-  public void clientSetname(final String name) {
+  public void setName(final String name) {
     clientSetname(SafeEncoder.encode(name));
+  }
+
+  public void setName() {
+    if(clientOptions.getClientName() != null) {
+      setName(clientOptions.getClientName());
+    }
   }
 
   public void migrate(final String host, final int port, final String key, final int destinationDb,
@@ -1221,5 +1205,4 @@ public class Client extends BinaryClient implements Commands {
   public void hstrlen(final String key, final String field) {
     hstrlen(SafeEncoder.encode(key), SafeEncoder.encode(field));
   }
-
 }

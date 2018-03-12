@@ -16,14 +16,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.ShardedJedis;
-import redis.clients.jedis.ShardedJedisPipeline;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ShardedJedisPipelineTest {
@@ -35,11 +28,11 @@ public class ShardedJedisPipelineTest {
 
   @Before
   public void setUp() throws Exception {
-    Jedis jedis = new Jedis(redis1.getHost(), redis1.getPort());
+    Jedis jedis = new Jedis(ClientOptions.builder().withHostAndPort(redis1).build());
     jedis.auth("foobared");
     jedis.flushAll();
     jedis.disconnect();
-    jedis = new Jedis(redis2.getHost(), redis2.getPort());
+    jedis = new Jedis(ClientOptions.builder().withHostAndPort(redis2).build());
     jedis.auth("foobared");
     jedis.flushAll();
     jedis.disconnect();

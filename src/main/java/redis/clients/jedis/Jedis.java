@@ -1,30 +1,8 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.commands.AdvancedJedisCommands;
-import redis.clients.jedis.commands.BasicCommands;
-import redis.clients.jedis.commands.ClusterCommands;
-import redis.clients.jedis.commands.JedisCommands;
-import redis.clients.jedis.commands.ModuleCommands;
-import redis.clients.jedis.commands.MultiKeyCommands;
-import redis.clients.jedis.commands.ScriptingCommands;
-import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.set.SetParams;
 import redis.clients.jedis.params.sortedset.ZAddParams;
@@ -32,93 +10,24 @@ import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
 
+import java.util.*;
+import java.util.Map.Entry;
+
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
-  public Jedis() {
-    super();
+  public Jedis(){
+    this(ClientOptions.create());
   }
 
-  public Jedis(final String host) {
-    super(host);
+  public Jedis(ClientOptions clientOptions) {
+    super(clientOptions);
   }
 
-  public Jedis(final String host, final int port) {
-    super(host, port);
-  }
-
-  public Jedis(final String host, final int port, final boolean ssl) {
-    super(host, port, ssl);
-  }
-
-  public Jedis(final String host, final int port, final boolean ssl,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public Jedis(final String host, final int port, final int timeout) {
-    super(host, port, timeout);
-  }
-
-  public Jedis(final String host, final int port, final int timeout, final boolean ssl) {
-    super(host, port, timeout, ssl);
-  }
-
-  public Jedis(final String host, final int port, final int timeout, final boolean ssl,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(host, port, timeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
-    super(host, port, connectionTimeout, soTimeout);
-  }
-
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final boolean ssl) {
-    super(host, port, connectionTimeout, soTimeout, ssl);
-  }
-
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier);
-  }
-
-  public Jedis(JedisShardInfo shardInfo) {
-    super(shardInfo);
-  }
-
-  public Jedis(URI uri) {
-    super(uri);
-  }
-
-  public Jedis(URI uri, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public Jedis(final URI uri, final int timeout) {
-    super(uri, timeout);
-  }
-
-  public Jedis(final URI uri, final int timeout, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    super(uri, timeout, sslSocketFactory, sslParameters, hostnameVerifier);
-  }
-
-  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout) {
-    super(uri, connectionTimeout, soTimeout);
-  }
-
-  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
-    super(uri, connectionTimeout, soTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
+  public Jedis(JedisShardInfo shard) {
+    super(shard.toClientOptions());
   }
 
   /**
@@ -3181,7 +3090,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public String clientSetname(final String name) {
     checkIsInMultiOrPipeline();
-    client.clientSetname(name);
+    client.setName(name);
     return client.getStatusCodeReply();
   }
 

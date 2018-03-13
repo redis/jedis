@@ -69,6 +69,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String password, String clientName, final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+            clientName, poolConfig, readFrom);
+  }
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
       final GenericObjectPoolConfig poolConfig, ReadFrom readFrom) {
     this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig,
         readFrom);

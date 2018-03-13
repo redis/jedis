@@ -24,6 +24,12 @@ public class JedisClusterTestUtil {
     }
   }
 
+  public static void waitForReplicaReady(Jedis node, int slaveCount) throws InterruptedException {
+    while (node.clusterNodes().split("slave").length < slaveCount + 1) {
+      Thread.sleep(50);
+    }
+  }
+
   public static String getNodeId(String infoOutput) {
     for (String infoLine : infoOutput.split("\n")) {
       if (infoLine.contains("myself")) {

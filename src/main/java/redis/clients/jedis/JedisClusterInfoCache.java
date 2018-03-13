@@ -208,6 +208,13 @@ public class JedisClusterInfoCache extends AbstractJedisClusterInfoCache {
     }
   }
 
+  public Map<String, JedisPool> getNodes(ReadFrom readFrom) {
+    if (ReadFrom.BOTH != readFrom) {
+      throw new UnsupportedOperationException("Maybe you should use EnhancedJedisClusterInfoCache");
+    }
+    return getNodes();
+  }
+
   public List<JedisPool> getShuffledNodesPool(ReadFrom readFrom) {
     r.lock();
     try {

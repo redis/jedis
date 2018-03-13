@@ -116,6 +116,10 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     return connectionHandler.getNodes();
   }
 
+  public Map<String, JedisPool> getClusterNodes(ReadFrom readFrom) {
+    return connectionHandler.getNodes(readFrom);
+  }
+
   public Jedis getConnectionFromSlot(int slot) {
     // since I don't know who will call this method, so this method only return MASTER nodes
     return this.connectionHandler.getConnectionFromSlot(slot, ReadFrom.MASTER);

@@ -42,6 +42,10 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     return cache.getNodes();
   }
 
+  public Map<String, JedisPool> getNodes(ReadFrom readFrom) {
+    return cache.getNodes(readFrom);
+  }
+
   private void initializeSlotsCache(Set<HostAndPort> startNodes,
       GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password,
       String clientName) {

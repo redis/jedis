@@ -178,10 +178,21 @@ public class EnhancedJedisClusterInfoCache extends AbstractJedisClusterInfoCache
   }
 
   public Map<String, JedisPool> getNodes() {
+    return getNodes(ReadFrom.BOTH);
+  }
+
+  public Map<String, JedisPool> getNodes(ReadFrom readFrom) {
     r.lock();
     try {
-      Map<String, JedisPool> nodes = new HashMap<String, JedisPool>(slaveNodes);
-      nodes.putAll(masterNodes);
+      Map<String, JedisPool> nodes;
+      if (ReadFrom.SLAVE == readFrom) {
+        nodes = new HashMap<String, JedisPool>(slaveNodes);
+      } else if (ReadFrom.MASTER == readFrom) {
+        nodes = new HashMap<String, JedisPool>(masterNodes);
+      } else {
+        nodes = new HashMap<String, JedisPool>(slaveNodes);
+        nodes.putAll(masterNodes);
+      }
       return nodes;
     } finally {
       r.unlock();

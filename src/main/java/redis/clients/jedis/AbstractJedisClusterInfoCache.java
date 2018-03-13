@@ -11,6 +11,8 @@ public abstract class AbstractJedisClusterInfoCache {
 
   public abstract Map<String, JedisPool> getNodes();
 
+  public abstract Map<String, JedisPool> getNodes(ReadFrom readFrom);
+
   public abstract void discoverClusterNodesAndSlots(Jedis jedis);
 
   public abstract void renewClusterSlots(Jedis jedis);

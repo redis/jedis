@@ -1,25 +1,19 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.*;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.util.JedisClusterCRC16;
 
+import java.util.*;
+
+import static org.junit.Assert.*;
+
 public class ClusterBinaryJedisCommandsTest {
+  public static final String PASSWORD = "cluster";
   private Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
@@ -32,16 +26,13 @@ public class ClusterBinaryJedisCommandsTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    node1 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo1).build());
-    node1.auth("cluster");
+    node1 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo1).withPassword(PASSWORD).build());
     node1.flushAll();
 
-    node2 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo2).build());
-    node2.auth("cluster");
+    node2 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo2).withPassword(PASSWORD).build());
     node2.flushAll();
 
-    node3 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo3).build());
-    node3.auth("cluster");
+    node3 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo3).withPassword(PASSWORD).build());
     node3.flushAll();
 
     // ---- configure cluster
@@ -72,7 +63,7 @@ public class ClusterBinaryJedisCommandsTest {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
+    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, PASSWORD, new JedisPoolConfig());
 
   }
 

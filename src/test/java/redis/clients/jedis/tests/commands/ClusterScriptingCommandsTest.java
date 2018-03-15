@@ -1,25 +1,25 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.util.JedisClusterCRC16;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class ClusterScriptingCommandsTest {
+  public static final String PASSWORD = "cluster";
   private Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
@@ -32,16 +32,13 @@ public class ClusterScriptingCommandsTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    node1 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo1).build());
-    node1.auth("cluster");
+    node1 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo1).withPassword(PASSWORD).build());
     node1.flushAll();
 
-    node2 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo2).build());
-    node2.auth("cluster");
+    node2 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo2).withPassword(PASSWORD).build());
     node2.flushAll();
 
-    node3 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo3).build());
-    node3.auth("cluster");
+    node3 = new Jedis(ClientOptions.builder().withHostAndPort(nodeInfo3).withPassword(PASSWORD).build());
     node3.flushAll();
 
     // ---- configure cluster

@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,40 +39,34 @@ public class MasterSlaveJedisClusterTest {
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final JedisPoolConfig DEFAULT_CONFIG = new JedisPoolConfig();
 
-  private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
-  private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
-  private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-  private HostAndPort nodeInfoSlave1 = HostAndPortUtil.getClusterServers().get(3);
-  private HostAndPort nodeInfoSlave2 = HostAndPortUtil.getClusterServers().get(4);
-  private HostAndPort nodeInfoSlave3 = HostAndPortUtil.getClusterServers().get(5);
+  private static HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
+  private static HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
+  private static HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
+  private static HostAndPort nodeInfoSlave1 = HostAndPortUtil.getClusterServers().get(3);
+  private static HostAndPort nodeInfoSlave2 = HostAndPortUtil.getClusterServers().get(4);
+  private static HostAndPort nodeInfoSlave3 = HostAndPortUtil.getClusterServers().get(5);
 
   protected Logger log = LoggerFactory.getLogger(getClass().getName());
 
+  @BeforeClass
+  public static void reset() {
+    // reset the cluster before tests
+    resetNode(nodeInfo1);
+    resetNode(nodeInfo2);
+    resetNode(nodeInfo3);
+    resetNode(nodeInfoSlave1);
+    resetNode(nodeInfoSlave2);
+    resetNode(nodeInfoSlave3);
+  }
+
   @Before
   public void setUp() throws InterruptedException {
-    node1 = new Jedis(nodeInfo1);
-    node1.auth(PASSWORD);
-    node1.flushAll();
-
-    node2 = new Jedis(nodeInfo2);
-    node2.auth(PASSWORD);
-    node2.flushAll();
-
-    node3 = new Jedis(nodeInfo3);
-    node3.auth(PASSWORD);
-    node3.flushAll();
-
-    nodeSlave1 = new Jedis(nodeInfoSlave1);
-    nodeSlave1.auth(PASSWORD);
-    nodeSlave1.flushAll();
-
-    nodeSlave2 = new Jedis(nodeInfoSlave2);
-    nodeSlave2.auth(PASSWORD);
-    nodeSlave2.flushAll();
-
-    nodeSlave3 = new Jedis(nodeInfoSlave3);
-    nodeSlave3.auth(PASSWORD);
-    nodeSlave3.flushAll();
+    node1 = initJedis(nodeInfo1);
+    node2 = initJedis(nodeInfo2);
+    node3 = initJedis(nodeInfo3);
+    nodeSlave1 = initJedis(nodeInfoSlave1);
+    nodeSlave2 = initJedis(nodeInfoSlave2);
+    nodeSlave3 = initJedis(nodeInfoSlave3);
 
     // ---- configure cluster
 
@@ -113,60 +108,8 @@ public class MasterSlaveJedisClusterTest {
   }
 
   @After
-  public void tearDown() throws InterruptedException {
-    node1 = new Jedis(nodeInfo1);
-    node1.auth(PASSWORD);
-    try {
-      node1.flushAll();
-    } catch (Exception e) {
-      // ignore
-    }
-    node1.clusterReset(ClusterReset.SOFT);
-
-    node2 = new Jedis(nodeInfo2);
-    node2.auth(PASSWORD);
-    try {
-      node2.flushAll();
-    } catch (Exception e) {
-      // ignore
-    }
-    node2.clusterReset(ClusterReset.SOFT);
-
-    node3 = new Jedis(nodeInfo3);
-    node3.auth(PASSWORD);
-    try {
-      node3.flushAll();
-    } catch (Exception e) {
-      // ignore
-    }
-    node3.clusterReset(ClusterReset.SOFT);
-
-    nodeSlave1 = new Jedis(nodeInfoSlave1);
-    nodeSlave1.auth(PASSWORD);
-    try {
-      nodeSlave1.flushAll();
-    } catch (Exception e) {
-      // ignore
-    }
-    nodeSlave1.clusterReset(ClusterReset.SOFT);
-
-    nodeSlave2 = new Jedis(nodeInfoSlave2);
-    nodeSlave2.auth(PASSWORD);
-    try {
-      nodeSlave2.flushAll();
-    } catch (Exception e) {
-      // ignore
-    }
-    nodeSlave2.clusterReset(ClusterReset.SOFT);
-
-    nodeSlave3 = new Jedis(nodeInfoSlave3);
-    nodeSlave3.auth(PASSWORD);
-    try {
-      nodeSlave3.flushAll();
-    } catch (Exception e) {
-      // ignore
-    }
-    nodeSlave3.clusterReset(ClusterReset.SOFT);
+  public void tearDown() {
+    reset();
   }
 
   @Test
@@ -232,7 +175,18 @@ public class MasterSlaveJedisClusterTest {
 
     assertEquals("OK", jc1.set("foo", "bar"));
     assertEquals("bar", jc1.get("foo"));
-    assertEquals("bar", jc2.get("foo"));
+    int i = 0;
+    for (; i < 10; i++) {
+      if ("bar".equals(jc2.get("foo"))) {
+        break;
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        // sleep for a while
+      }
+    }
+    assertTrue("can't get the right value from slave after 1000ms", i < 10);
   }
 
   @Test
@@ -289,5 +243,24 @@ public class MasterSlaveJedisClusterTest {
   private boolean isSlavePort(int port) {
     return port == nodeInfoSlave1.getPort() || port == nodeInfoSlave2.getPort()
         || port == nodeInfoSlave3.getPort();
+  }
+
+  private Jedis initJedis(HostAndPort nodeInfo) {
+    Jedis node = new Jedis(nodeInfo);
+    node.auth(PASSWORD);
+    node.flushAll();
+    return node;
+  }
+
+  private static void resetNode(HostAndPort nodeInfo) {
+    Jedis node = new Jedis(nodeInfo);
+    node.auth(PASSWORD);
+    try {
+      node.flushAll();
+    } catch (Exception e) {
+      // ignore
+    }
+    node.clusterReset(ClusterReset.SOFT);
+    node.close();
   }
 }

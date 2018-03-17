@@ -145,6 +145,7 @@ define REDIS_CLUSTER_NODE1_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
+masterauth cluster
 port 7379
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node1.pid
@@ -159,6 +160,7 @@ define REDIS_CLUSTER_NODE2_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
+masterauth cluster
 port 7380
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node2.pid
@@ -173,6 +175,7 @@ define REDIS_CLUSTER_NODE3_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
+masterauth cluster
 port 7381
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node3.pid
@@ -187,6 +190,7 @@ define REDIS_CLUSTER_NODE4_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
+masterauth cluster
 port 7382
 cluster-node-timeout 50
 pidfile /tmp/redis_cluster_node4.pid
@@ -201,6 +205,7 @@ define REDIS_CLUSTER_NODE5_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
+masterauth cluster
 port 7383
 cluster-node-timeout 5000
 pidfile /tmp/redis_cluster_node5.pid
@@ -215,6 +220,7 @@ define REDIS_CLUSTER_NODE6_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
+masterauth cluster
 port 7384
 cluster-node-timeout 5000
 pidfile /tmp/redis_cluster_node6.pid

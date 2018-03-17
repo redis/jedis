@@ -37,6 +37,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private JedisCommandListener listener = NoopJedisCommandListener.INSTANCE;
 
   public Connection() {
   }
@@ -87,6 +88,10 @@ public class Connection implements Closeable {
     this.soTimeout = soTimeout;
   }
 
+  public void setListener(JedisCommandListener listener) {
+    this.listener = listener;
+  }
+
   public void setTimeoutInfinite() {
     try {
       if (!isConnected()) {
@@ -122,8 +127,10 @@ public class Connection implements Closeable {
 
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
+      listener.commandStarted(this, cmd, args);
       connect();
       Protocol.sendCommand(outputStream, cmd, args);
+      listener.commandFinished(this, cmd);
     } catch (JedisConnectionException ex) {
       /*
        * When client send request which formed by invalid protocol, Redis send back error message
@@ -143,7 +150,11 @@ public class Connection implements Closeable {
       }
       // Any other exceptions related to connection?
       broken = true;
+      listener.commandFailed(this, cmd, ex);
       throw ex;
+    } catch (Throwable t) {
+      listener.commandFailed(this, cmd, t);
+      throw t;
     }
   }
 

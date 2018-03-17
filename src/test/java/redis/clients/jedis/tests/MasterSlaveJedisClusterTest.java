@@ -99,10 +99,9 @@ public class MasterSlaveJedisClusterTest {
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
 
     // setting replica
-    String nodes = node1.clusterNodes();
-    nodeSlave1.clusterReplicate(JedisClusterTestUtil.getNodeId(nodes, nodeInfo1));
-    nodeSlave2.clusterReplicate(JedisClusterTestUtil.getNodeId(nodes, nodeInfo2));
-    nodeSlave3.clusterReplicate(JedisClusterTestUtil.getNodeId(nodes, nodeInfo3));
+    nodeSlave1.clusterReplicate(JedisClusterTestUtil.getNodeId(node1.clusterNodes()));
+    nodeSlave2.clusterReplicate(JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
+    nodeSlave3.clusterReplicate(JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
 
     JedisClusterTestUtil.waitForReplicaReady(node1, 3);
   }
@@ -120,15 +119,15 @@ public class MasterSlaveJedisClusterTest {
     assertEquals(3, jc.getClusterNodes(ReadFrom.MASTER).size());
     assertEquals(3, jc.getClusterNodes(ReadFrom.SLAVE).size());
 
-    List<String> nodes = Arrays.asList(nodeInfo1.toString(), nodeInfo2.toString(),
-      nodeInfo3.toString());
-    for (String node : nodes) {
-      assertTrue(jc.getClusterNodes(ReadFrom.MASTER).containsKey(node));
+    List<Integer> nodes = Arrays.asList(nodeInfo1.getPort(), nodeInfo2.getPort(),
+      nodeInfo3.getPort());
+    for (int node : nodes) {
+      assertTrue(jc.getClusterNodes(ReadFrom.MASTER).containsKey(localHost + ":" + node));
     }
-    nodes = Arrays.asList(nodeInfoSlave1.toString(), nodeInfoSlave2.toString(),
-      nodeInfoSlave3.toString());
-    for (String node : nodes) {
-      assertTrue(jc.getClusterNodes(ReadFrom.SLAVE).containsKey(node));
+    nodes = Arrays.asList(nodeInfoSlave1.getPort(), nodeInfoSlave2.getPort(),
+      nodeInfoSlave3.getPort());
+    for (int node : nodes) {
+      assertTrue(jc.getClusterNodes(ReadFrom.SLAVE).containsKey(localHost + ":" + node));
     }
 
     jc = new JedisCluster(nodeInfo1, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS,
@@ -153,17 +152,16 @@ public class MasterSlaveJedisClusterTest {
     JedisSlotBasedConnectionHandler handler = getHandlerFromJedis(jc);
 
     Jedis jedis = handler.getConnection(ReadFrom.MASTER);
-    assertTrue(isMasterPort(jedis.getClient().getPort()));
+    assertTrue(containNode(jedis, node1, node2, node3));
 
     jedis = handler.getConnection(ReadFrom.SLAVE);
-    assertTrue(isSlavePort(jedis.getClient().getPort()));
+    assertTrue(containNode(jedis, nodeSlave1, nodeSlave2, nodeSlave3));
 
     jedis = handler.getConnectionFromSlot(10, ReadFrom.BOTH);
     Jedis master = handler.getConnectionFromSlot(10, ReadFrom.MASTER);
     Jedis slave = handler.getConnectionFromSlot(10, ReadFrom.SLAVE);
     assertEquals(3, slave.getClient().getPort() - master.getClient().getPort());
-    assertTrue(jedis.getClient().getPort() == master.getClient().getPort()
-        || jedis.getClient().getPort() == slave.getClient().getPort());
+    assertTrue(containNode(jedis, master, slave));
   }
 
   @Test
@@ -235,14 +233,14 @@ public class MasterSlaveJedisClusterTest {
     return handler;
   }
 
-  private boolean isMasterPort(int port) {
-    return port == nodeInfo1.getPort() || port == nodeInfo2.getPort()
-        || port == nodeInfo3.getPort();
-  }
-
-  private boolean isSlavePort(int port) {
-    return port == nodeInfoSlave1.getPort() || port == nodeInfoSlave2.getPort()
-        || port == nodeInfoSlave3.getPort();
+  private boolean containNode(Jedis node, Jedis...nodes) {
+    for (Jedis n : nodes) {
+      // we don't compare host because they are same
+      if (node.getClient().getPort() == n.getClient().getPort()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private Jedis initJedis(HostAndPort nodeInfo) {

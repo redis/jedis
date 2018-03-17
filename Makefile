@@ -211,6 +211,20 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node5.conf
 endef
 
+define REDIS_CLUSTER_NODE6_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7384
+cluster-node-timeout 5000
+pidfile /tmp/redis_cluster_node6.pid
+logfile /tmp/redis_cluster_node6.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_cluster_node6.conf
+endef
+
 #STUNNEL
 define STUNNEL_CONF
 cert = src/test/resources/private.pem
@@ -236,6 +250,7 @@ export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
+export REDIS_CLUSTER_NODE6_CONF
 export STUNNEL_CONF
 export STUNNEL_BIN
 
@@ -265,6 +280,7 @@ start: stunnel cleanup
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_CLUSTER_NODE6_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -291,6 +307,7 @@ stop:
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_cluster_node6.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
@@ -300,6 +317,7 @@ stop:
 	rm -f /tmp/redis_cluster_node3.conf
 	rm -f /tmp/redis_cluster_node4.conf
 	rm -f /tmp/redis_cluster_node5.conf
+	rm -f /tmp/redis_cluster_node6.conf
 
 test: compile-module start
 	sleep 2

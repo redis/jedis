@@ -221,13 +221,11 @@ public interface RedisPipeline {
 
   Response<Set<String>> zrangeByLex(String key, String min, String max);
 
-  Response<Set<String>> zrangeByLex(String key, String min, String max,
-      int offset, int count);
+  Response<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count);
 
   Response<Set<String>> zrevrangeByLex(String key, String max, String min);
 
-  Response<Set<String>> zrevrangeByLex(String key, String max, String min,
-      int offset, int count);
+  Response<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Response<Long> zremrangeByLex(String key, String min, String max);
 
@@ -238,9 +236,9 @@ public interface RedisPipeline {
   Response<Long> pfadd(String key, String... elements);
 
   Response<Long> pfcount(String key);
-  
+
   Response<List<Long>> bitfield(String key, String... arguments);
-  
+
   Response<Long> hstrlen(String key, String field);
 
   // Geo Commands

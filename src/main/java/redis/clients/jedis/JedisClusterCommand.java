@@ -15,11 +15,18 @@ public abstract class JedisClusterCommand<T> {
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
+  private final ReadFrom readFrom;
   private final ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
+    this(connectionHandler, maxAttempts, ReadFrom.MASTER);
+  }
+
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts,
+      ReadFrom readFrom) {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
+    this.readFrom = readFrom != null ? readFrom : ReadFrom.MASTER;
   }
 
   public abstract T execute(Jedis connection);
@@ -83,7 +90,7 @@ public abstract class JedisClusterCommand<T> {
   public T runWithAnyNode() {
     Jedis connection = null;
     try {
-      connection = connectionHandler.getConnection();
+      connection = connectionHandler.getConnection(readFrom);
       return execute(connection);
     } catch (JedisConnectionException e) {
       throw e;
@@ -110,9 +117,9 @@ public abstract class JedisClusterCommand<T> {
         asking = false;
       } else {
         if (tryRandomNode) {
-          connection = connectionHandler.getConnection();
+          connection = connectionHandler.getConnection(readFrom);
         } else {
-          connection = connectionHandler.getConnectionFromSlot(slot);
+          connection = connectionHandler.getConnectionFromSlot(slot, readFrom);
         }
       }
 
@@ -126,11 +133,12 @@ public abstract class JedisClusterCommand<T> {
       connection = null;
 
       if (attempts <= 1) {
-        //We need this because if node is not reachable anymore - we need to finally initiate slots renewing,
-        //or we can stuck with cluster state without one node in opposite case.
-        //But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
-        //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-        //if there were no successful responses from this node last few seconds
+        // We need this because if node is not reachable anymore - we need to finally initiate slots
+        // renewing,
+        // or we can stuck with cluster state without one node in opposite case.
+        // But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
+        // TODO make tracking of successful/unsuccessful operations for node - do renewing only
+        // if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
       }
 

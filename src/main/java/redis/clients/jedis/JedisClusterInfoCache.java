@@ -12,9 +12,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.SafeEncoder;
 
-public class JedisClusterInfoCache {
+public class JedisClusterInfoCache extends AbstractJedisClusterInfoCache {
   private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
   private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
@@ -36,7 +35,8 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout, final String password, final String clientName) {
+      final int connectionTimeout, final int soTimeout, final String password,
+      final String clientName) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -81,7 +81,8 @@ public class JedisClusterInfoCache {
   }
 
   public void renewClusterSlots(Jedis jedis) {
-    //If rediscovering is already in process - no need to start one more same rediscovering, just return
+    // If rediscovering is already in process - no need to start one more same rediscovering, just
+    // return
     if (!rediscovering) {
       try {
         w.lock();
@@ -92,11 +93,11 @@ public class JedisClusterInfoCache {
             discoverClusterSlots(jedis);
             return;
           } catch (JedisException e) {
-            //try nodes from all pools
+            // try nodes from all pools
           }
         }
 
-        for (JedisPool jp : getShuffledNodesPool()) {
+        for (JedisPool jp : getShuffledNodesPool(null)) {
           Jedis j = null;
           try {
             j = jp.getResource();
@@ -140,11 +141,6 @@ public class JedisClusterInfoCache {
       HostAndPort targetNode = generateHostAndPort(hostInfos);
       assignSlotsToNode(slotNums, targetNode);
     }
-  }
-
-  private HostAndPort generateHostAndPort(List<Object> hostInfos) {
-    return new HostAndPort(SafeEncoder.encode((byte[]) hostInfos.get(0)),
-        ((Long) hostInfos.get(1)).intValue());
   }
 
   public JedisPool setupNodeIfNotExist(HostAndPort node) {
@@ -194,7 +190,7 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public JedisPool getSlotPool(int slot) {
+  public JedisPool getSlotPool(int slot, ReadFrom readFrom) {
     r.lock();
     try {
       return slots.get(slot);
@@ -212,7 +208,14 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public List<JedisPool> getShuffledNodesPool() {
+  public Map<String, JedisPool> getNodes(ReadFrom readFrom) {
+    if (ReadFrom.BOTH != readFrom) {
+      throw new UnsupportedOperationException("Maybe you should use EnhancedJedisClusterInfoCache");
+    }
+    return getNodes();
+  }
+
+  public List<JedisPool> getShuffledNodesPool(ReadFrom readFrom) {
     r.lock();
     try {
       List<JedisPool> pools = new ArrayList<JedisPool>(nodes.values());
@@ -224,7 +227,7 @@ public class JedisClusterInfoCache {
   }
 
   /**
-   * Clear discovered nodes collections and gently release allocated resources
+   * Clear discovered masterNodes collections and gently release allocated resources
    */
   public void reset() {
     w.lock();
@@ -243,26 +246,5 @@ public class JedisClusterInfoCache {
     } finally {
       w.unlock();
     }
-  }
-
-  public static String getNodeKey(HostAndPort hnp) {
-    return hnp.getHost() + ":" + hnp.getPort();
-  }
-
-  public static String getNodeKey(Client client) {
-    return client.getHost() + ":" + client.getPort();
-  }
-
-  public static String getNodeKey(Jedis jedis) {
-    return getNodeKey(jedis.getClient());
-  }
-
-  private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {
-    List<Integer> slotNums = new ArrayList<Integer>();
-    for (int slot = ((Long) slotInfo.get(0)).intValue(); slot <= ((Long) slotInfo.get(1))
-        .intValue(); slot++) {
-      slotNums.add(slot);
-    }
-    return slotNums;
   }
 }

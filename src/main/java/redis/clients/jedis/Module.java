@@ -9,7 +9,6 @@ public class Module {
     this.version = version;
   }
 
-
   public String getName() {
     return name;
   }
@@ -36,6 +35,5 @@ public class Module {
     result = 31 * result + version;
     return result;
   }
-
 
 }

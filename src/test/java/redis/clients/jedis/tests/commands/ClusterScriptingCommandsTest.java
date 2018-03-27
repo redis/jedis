@@ -75,7 +75,8 @@ public class ClusterScriptingCommandsTest {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
+    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster",
+        new JedisPoolConfig());
 
   }
 

@@ -19,7 +19,8 @@ public class ScanResult<T> {
 
   /**
    * Returns the new value of the cursor
-   * @return the new cursor value. {@link ScanParams#SCAN_POINTER_START} when a complete iteration has finished
+   * @return the new cursor value. {@link ScanParams#SCAN_POINTER_START} when a complete iteration
+   *         has finished
    */
   public String getCursor() {
     return SafeEncoder.encode(cursor);
@@ -27,7 +28,6 @@ public class ScanResult<T> {
 
   /**
    * Is the iteration complete. I.e. was the complete dataset scanned.
-   *
    * @return true if the iteration is complete
    */
   public boolean isCompleteIteration() {

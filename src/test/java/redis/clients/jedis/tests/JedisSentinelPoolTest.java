@@ -1,22 +1,17 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.*;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.Test;
-
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.jedis.Transaction;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
+import static org.junit.Assert.*;
 
 public class JedisSentinelPoolTest {
   private static final String MASTER_NAME = "mymaster";
@@ -160,6 +155,30 @@ public class JedisSentinelPoolTest {
     }
 
     assertTrue(pool.isClosed());
+  }
+
+  @Test
+  public void checkReadOnlySlave() throws InterruptedException {
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+        new GenericObjectPoolConfig(), 1000, "foobared", 2, ReadFrom.SLAVE);
+
+    // first write via master
+    try (Jedis jedis = pool.getResource()) {
+      assertNotNull(jedis);
+      assertEquals(jedis.getDB(), 2);
+      jedis.set("readOnly", "test");
+      assertEquals("test", jedis.get("readOnly"));
+    }
+
+    // wait for replication
+    Thread.sleep(100);
+
+    // then read from slave
+    try (Jedis readOnly = pool.getResourceReadOnly()) {
+      assertNotNull(readOnly);
+      assertEquals(2, readOnly.getDB());
+      assertEquals("test", readOnly.get("readOnly"));
+    }
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {

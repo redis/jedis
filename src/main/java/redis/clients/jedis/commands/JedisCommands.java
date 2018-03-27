@@ -224,13 +224,11 @@ public interface JedisCommands {
 
   Set<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(String key, String min, String max, int offset,
-      int count);
+  Set<String> zrangeByLex(String key, String min, String max, int offset, int count);
 
   Set<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(String key, String max, String min,
-      int offset, int count);
+  Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Long zremrangeByLex(String key, String min, String max);
 
@@ -262,8 +260,7 @@ public interface JedisCommands {
 
   ScanResult<Map.Entry<String, String>> hscan(String key, String cursor);
 
-  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor,
-      ScanParams params);
+  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params);
 
   ScanResult<String> sscan(String key, String cursor);
 
@@ -307,11 +304,11 @@ public interface JedisCommands {
    * @param key
    * @param arguments
    */
-  List<Long> bitfield(String key, String...arguments);
-  
+  List<Long> bitfield(String key, String... arguments);
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    * @return lenth of the value for key
    */

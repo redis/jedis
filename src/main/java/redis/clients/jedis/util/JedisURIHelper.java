@@ -9,8 +9,8 @@ public final class JedisURIHelper {
   private static final String REDIS = "redis";
   private static final String REDISS = "rediss";
 
-  private JedisURIHelper(){
-    throw new InstantiationError( "Must not instantiate this class" );
+  private JedisURIHelper() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   public static String getPassword(URI uri) {

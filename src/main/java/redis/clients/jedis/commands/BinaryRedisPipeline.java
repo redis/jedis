@@ -229,13 +229,11 @@ public interface BinaryRedisPipeline {
 
   Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max,
-      int offset, int count);
+  Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min,
-      int offset, int count);
+  Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 

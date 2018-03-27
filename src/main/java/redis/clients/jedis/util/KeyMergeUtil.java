@@ -1,8 +1,8 @@
 package redis.clients.jedis.util;
 
 public final class KeyMergeUtil {
-  private KeyMergeUtil(){
-    throw new InstantiationError( "Must not instantiate this class" );
+  private KeyMergeUtil() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   public static String[] merge(String destKey, String[] keys) {

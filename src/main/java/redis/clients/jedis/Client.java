@@ -420,7 +420,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zincrby(final String key, final double increment, final String member, final ZIncrByParams params) {
+  public void zincrby(final String key, final double increment, final String member,
+      final ZIncrByParams params) {
     zincrby(SafeEncoder.encode(key), increment, SafeEncoder.encode(member), params);
   }
 
@@ -673,7 +674,8 @@ public class Client extends BinaryClient implements Commands {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min));
   }
 
-  public void zrevrangeByLex(final String key, final String max, final String min, final int offset, final int count) {
+  public void zrevrangeByLex(final String key, final String max, final String min,
+      final int offset, final int count) {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
       offset, count);
   }
@@ -1043,7 +1045,8 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
-  public void geoadd(final String key, final double longitude, final double latitude, final String member) {
+  public void geoadd(final String key, final double longitude, final double latitude,
+      final String member) {
     geoadd(SafeEncoder.encode(key), longitude, latitude, SafeEncoder.encode(member));
   }
 
@@ -1055,7 +1058,8 @@ public class Client extends BinaryClient implements Commands {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2));
   }
 
-  public void geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
+  public void geodist(final String key, final String member1, final String member2,
+      final GeoUnit unit) {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
   }
 
@@ -1067,21 +1071,23 @@ public class Client extends BinaryClient implements Commands {
     geopos(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
-  public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+  public void georadius(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }
 
-  public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadius(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
-  public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit) {
+  public void georadiusByMember(final String key, final String member, final double radius,
+      final GeoUnit unit) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
   }
 
-  public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadiusByMember(final String key, final String member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
   }
 

@@ -29,25 +29,25 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private final SSLSocketFactory sslSocketFactory;
   private final SSLParameters sslParameters;
   private final HostnameVerifier hostnameVerifier;
-  private final boolean readOnly;  // only used for redis cluster salve node
+  private final boolean readOnly; // only used for redis cluster salve node
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
-      final int soTimeout, final String password, final int database, final String clientName) {
-    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
-        false, null, null, null);
+  JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final String password, final int database, final String clientName) {
+    this(host, port, connectionTimeout, soTimeout, password, database, clientName, false, null,
+        null, null);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
-               final int soTimeout, final String password, final int database, final String clientName,
-               final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-               final HostnameVerifier hostnameVerifier) {
-    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
-            false, null, null, null, false);
+  JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final String password, final int database, final String clientName, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    this(host, port, connectionTimeout, soTimeout, password, database, clientName, false, null,
+        null, null, false);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
-      final int soTimeout, final String password, final int database, final String clientName,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+  JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final String password, final int database, final String clientName, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier, final boolean readOnly) {
     this.hostAndPort.set(new HostAndPort(host, port));
     this.connectionTimeout = connectionTimeout;
@@ -68,14 +68,15 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
-               final String clientName, final SSLSocketFactory sslSocketFactory,
-               final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final String clientName, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(uri, connectionTimeout, soTimeout, clientName, null, null, null, false);
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier, final boolean readOnly) {
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier,
+      final boolean readOnly) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI. %s", uri.toString()));

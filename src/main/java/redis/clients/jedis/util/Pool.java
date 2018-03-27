@@ -102,12 +102,10 @@ public abstract class Pool<T> implements Closeable {
       throw new JedisException("Could not destroy the pool", e);
     }
   }
-  
+
   /**
    * Returns the number of instances currently borrowed from this pool.
-   *
-   * @return The number of instances currently borrowed from this pool, -1 if
-   * the pool is inactive.
+   * @return The number of instances currently borrowed from this pool, -1 if the pool is inactive.
    */
   public int getNumActive() {
     if (poolInactive()) {
@@ -116,12 +114,10 @@ public abstract class Pool<T> implements Closeable {
 
     return this.internalPool.getNumActive();
   }
-  
+
   /**
    * Returns the number of instances currently idle in this pool.
-   *
-   * @return The number of instances currently idle in this pool, -1 if the
-   * pool is inactive.
+   * @return The number of instances currently idle in this pool, -1 if the pool is inactive.
    */
   public int getNumIdle() {
     if (poolInactive()) {
@@ -130,11 +126,10 @@ public abstract class Pool<T> implements Closeable {
 
     return this.internalPool.getNumIdle();
   }
-  
+
   /**
-   * Returns an estimate of the number of threads currently blocked waiting for
-   * a resource from this pool.
-   *
+   * Returns an estimate of the number of threads currently blocked waiting for a resource from this
+   * pool.
    * @return The number of threads waiting, -1 if the pool is inactive.
    */
   public int getNumWaiters() {
@@ -144,13 +139,10 @@ public abstract class Pool<T> implements Closeable {
 
     return this.internalPool.getNumWaiters();
   }
-  
+
   /**
-   * Returns the mean waiting time spent by threads to obtain a resource from
-   * this pool.
-   *
-   * @return The mean waiting time, in milliseconds, -1 if the pool is
-   * inactive.
+   * Returns the mean waiting time spent by threads to obtain a resource from this pool.
+   * @return The mean waiting time, in milliseconds, -1 if the pool is inactive.
    */
   public long getMeanBorrowWaitTimeMillis() {
     if (poolInactive()) {
@@ -159,13 +151,10 @@ public abstract class Pool<T> implements Closeable {
 
     return this.internalPool.getMeanBorrowWaitTimeMillis();
   }
-  
+
   /**
-   * Returns the maximum waiting time spent by threads to obtain a resource
-   * from this pool.
-   *
-   * @return The maximum waiting time, in milliseconds, -1 if the pool is
-   * inactive.
+   * Returns the maximum waiting time spent by threads to obtain a resource from this pool.
+   * @return The maximum waiting time, in milliseconds, -1 if the pool is inactive.
    */
   public long getMaxBorrowWaitTimeMillis() {
     if (poolInactive()) {

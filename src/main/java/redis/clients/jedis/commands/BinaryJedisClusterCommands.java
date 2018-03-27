@@ -222,13 +222,11 @@ public interface BinaryJedisClusterCommands {
 
   Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset,
-      int count);
+  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset,
-      int count);
+  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
@@ -295,10 +293,10 @@ public interface BinaryJedisClusterCommands {
    * @param arguments
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    */
   Long hstrlen(byte[] key, byte[] field);

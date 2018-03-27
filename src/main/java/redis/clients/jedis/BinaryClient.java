@@ -641,14 +641,14 @@ public class BinaryClient extends Connection {
 
   public void zrangeByScore(final byte[] key, final double min, final double max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.raw, toByteArray(offset),
-      toByteArray(count));
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.raw,
+      toByteArray(offset), toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.raw, toByteArray(offset),
-      toByteArray(count));
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.raw,
+      toByteArray(offset), toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
@@ -661,14 +661,14 @@ public class BinaryClient extends Connection {
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.raw, toByteArray(offset),
-      toByteArray(count), WITHSCORES.raw);
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.raw,
+      toByteArray(offset), toByteArray(count), WITHSCORES.raw);
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.raw, toByteArray(offset),
-      toByteArray(count), WITHSCORES.raw);
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.raw,
+      toByteArray(offset), toByteArray(count), WITHSCORES.raw);
   }
 
   public void zrangeByScore(final byte[] key, final byte[] min, final byte[] max, final int offset,
@@ -1107,7 +1107,8 @@ public class BinaryClient extends Connection {
     sendCommand(READONLY);
   }
 
-  public void geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+  public void geoadd(final byte[] key, final double longitude, final double latitude,
+      final byte[] member) {
     sendCommand(GEOADD, key, toByteArray(longitude), toByteArray(latitude), member);
   }
 
@@ -1126,7 +1127,8 @@ public class BinaryClient extends Connection {
     sendCommand(GEODIST, key, member1, member2);
   }
 
-  public void geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+  public void geodist(final byte[] key, final byte[] member1, final byte[] member2,
+      final GeoUnit unit) {
     sendCommand(GEODIST, key, member1, member2, unit.raw);
   }
 
@@ -1138,23 +1140,25 @@ public class BinaryClient extends Connection {
     sendCommand(GEOPOS, joinParameters(key, members));
   }
 
-  public void georadius(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+  public void georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
     sendCommand(GEORADIUS, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
       unit.raw);
   }
 
-  public void georadius(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
       toByteArray(radius), unit.raw));
   }
 
-  public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
+  public void georadiusByMember(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit) {
     sendCommand(GEORADIUSBYMEMBER, key, member, toByteArray(radius), unit.raw);
   }
 
-  public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadiusByMember(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 

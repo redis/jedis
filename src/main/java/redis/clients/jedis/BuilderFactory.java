@@ -109,7 +109,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
+      final Map<String, String> hash = new HashMap<String, String>(flatHash.size() / 2, 1);
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
@@ -130,7 +130,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<Object> flatHash = (List<Object>) data;
-      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
+      final Map<String, String> hash = new HashMap<String, String>(flatHash.size() / 2, 1);
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),
@@ -270,7 +270,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
+      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size() / 2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
         result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
@@ -402,8 +402,8 @@ public final class BuilderFactory {
               // coordinate
               List<Object> coord = (List<Object>) info;
 
-              resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
-                  DOUBLE.build(coord.get(1))));
+              resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)), DOUBLE.build(coord
+                  .get(1))));
             } else {
               // distance
               resp.setDistance(DOUBLE.build(info));
@@ -428,7 +428,6 @@ public final class BuilderFactory {
     }
   };
 
-
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {
@@ -443,8 +442,9 @@ public final class BuilderFactory {
         return responses;
       }
 
-      for (List<Object> moduleResp: objectList) {
-        Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)), ((Long) moduleResp.get(3)).intValue());
+      for (List<Object> moduleResp : objectList) {
+        Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)),
+            ((Long) moduleResp.get(3)).intValue());
         responses.add(m);
       }
 
@@ -474,9 +474,8 @@ public final class BuilderFactory {
 
   };
 
-
   private BuilderFactory() {
-    throw new InstantiationError( "Must not instantiate this class" );
+    throw new InstantiationError("Must not instantiate this class");
   }
 
 }

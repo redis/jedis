@@ -18,28 +18,27 @@ public class HostAndPortTest {
     String port = "6379";
 
     assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+      Arrays.asList(host, port));
 
     host = "";
     port = "";
     assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+      Arrays.asList(host, port));
 
     host = "localhost";
     port = "";
     assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
-
+      Arrays.asList(host, port));
 
     host = "";
     port = "6379";
     assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+      Arrays.asList(host, port));
 
     host = "11:22:33:44:55";
     port = "";
     assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+      Arrays.asList(host, port));
   }
 
   @Test

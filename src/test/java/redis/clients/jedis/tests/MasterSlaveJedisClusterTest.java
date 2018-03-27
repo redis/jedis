@@ -233,7 +233,7 @@ public class MasterSlaveJedisClusterTest {
     return handler;
   }
 
-  private boolean containNode(Jedis node, Jedis...nodes) {
+  private boolean containNode(Jedis node, Jedis... nodes) {
     for (Jedis n : nodes) {
       // we don't compare host because they are same
       if (node.getClient().getPort() == n.getClient().getPort()) {

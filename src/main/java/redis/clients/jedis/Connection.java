@@ -183,16 +183,16 @@ public class Connection implements Closeable {
 
         if (ssl) {
           if (null == sslSocketFactory) {
-            sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+            sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
           }
           socket = sslSocketFactory.createSocket(socket, host, port, true);
           if (null != sslParameters) {
             ((SSLSocket) socket).setSSLParameters(sslParameters);
           }
-          if ((null != hostnameVerifier) &&
-              (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
+          if ((null != hostnameVerifier)
+              && (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
             String message = String.format(
-                "The connection to '%s' failed ssl/tls hostname verification.", host);
+              "The connection to '%s' failed ssl/tls hostname verification.", host);
             throw new JedisConnectionException(message);
           }
         }
@@ -201,8 +201,7 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to host " 
-            + host + ":" + port, ex);
+        throw new JedisConnectionException("Failed connecting to host " + host + ":" + port, ex);
       }
     }
   }

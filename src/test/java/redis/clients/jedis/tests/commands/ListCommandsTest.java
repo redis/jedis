@@ -194,7 +194,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void lindex() {
+  public void lset() {
     jedis.lpush("foo", "1");
     jedis.lpush("foo", "2");
     jedis.lpush("foo", "3");
@@ -226,7 +226,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void lset() {
+  public void lindex() {
     jedis.lpush("foo", "1");
     jedis.lpush("foo", "2");
     jedis.lpush("foo", "3");

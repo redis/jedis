@@ -49,6 +49,7 @@
 		<sentinel-hosts>localhost:26379,localhost:26380,localhost:26381</sentinel-hosts>
 		<cluster-hosts>localhost:7379,localhost:7380,localhost:7381,localhost:7382,localhost:7383,localhost:7384,localhost:7385</cluster-hosts>
     	<github.global.server>github</github.global.server>
+		<links>https://commons.apache.org/proper/commons-pool/apidocs/</links>
 	</properties>
 
 	<dependencies>

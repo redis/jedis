@@ -21,6 +21,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
@@ -374,6 +375,14 @@ public class JedisPoolTest {
     } catch (Exception e) {
       assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
+
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void testAvoidAuthWithEmptyPassword() {
+    JedisPool jp = new JedisPool(new GenericObjectPoolConfig(), "localhost", 6380, 0, "");
+    Jedis j = jp.getResource();
+    j.ping();
 
   }
 

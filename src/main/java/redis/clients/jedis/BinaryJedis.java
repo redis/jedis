@@ -161,7 +161,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       sslSocketFactory, sslParameters, hostnameVerifier);
 
     String password = JedisURIHelper.getPassword(uri);
-    if (password != null) {
+    if (password != null && !password.isEmpty()) {
       client.auth(password);
       client.getStatusCodeReply();
     }

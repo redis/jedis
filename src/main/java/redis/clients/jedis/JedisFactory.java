@@ -115,7 +115,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
     try {
       jedis.connect();
-      if (password != null) {
+      if (password != null && !password.isEmpty()) {
         jedis.auth(password);
       }
       if (database != 0) {

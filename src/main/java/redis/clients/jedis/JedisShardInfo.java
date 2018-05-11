@@ -7,9 +7,9 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.util.JedisURIHelper;
-import redis.clients.util.ShardInfo;
-import redis.clients.util.Sharded;
+import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.ShardInfo;
+import redis.clients.jedis.util.Sharded;
 
 public class JedisShardInfo extends ShardInfo<Jedis> {
 

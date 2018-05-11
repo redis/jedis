@@ -1,4 +1,4 @@
-package redis.clients.util;
+package redis.clients.jedis.util;
 
 import java.io.UnsupportedEncodingException;
 

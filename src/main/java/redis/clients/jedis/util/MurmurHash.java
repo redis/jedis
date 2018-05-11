@@ -9,7 +9,7 @@
  * for the specific language governing permissions and limitations under the License.
  */
 
-package redis.clients.util;
+package redis.clients.jedis.util;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

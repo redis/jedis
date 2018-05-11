@@ -17,10 +17,10 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.exceptions.JedisClusterException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class ClusterScriptingCommandsTest {
   private Jedis node1;
@@ -102,7 +102,7 @@ public class ClusterScriptingCommandsTest {
   }
 
   @SuppressWarnings("unchecked")
-  @Test(expected = JedisClusterException.class)
+  @Test(expected = JedisClusterOperationException.class)
   public void testJedisClusterException() {
     String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
     List<String> keys = new ArrayList<String>();
@@ -141,7 +141,7 @@ public class ClusterScriptingCommandsTest {
   }
 
   @SuppressWarnings("unchecked")
-  @Test(expected = JedisClusterException.class)
+  @Test(expected = JedisClusterOperationException.class)
   public void testJedisClusterException2() {
     byte[] script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}".getBytes();
     List<byte[]> keys = new ArrayList<byte[]>();

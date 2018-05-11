@@ -25,8 +25,8 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.util.SafeEncoder;
-import redis.clients.util.Slowlog;
+import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
@@ -180,11 +180,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns the number of keys existed Time
-   * complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys exist.
+   * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
-   *         0 if none of the specified key existed
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
+   *         0 if none of the specified keys exist.
    */
   @Override
   public Long exists(final String... keys) {

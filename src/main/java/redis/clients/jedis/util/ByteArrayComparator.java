@@ -1,4 +1,4 @@
-package redis.clients.util;
+package redis.clients.jedis.util;
 
 public final class ByteArrayComparator {
   private ByteArrayComparator() {

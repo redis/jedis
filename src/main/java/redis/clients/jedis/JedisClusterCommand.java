@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.logging.Logger;
+
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
@@ -11,6 +13,8 @@ import redis.clients.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
 
+  private final static Logger LOG = Logger.getLogger(JedisClusterCommand.class.getName());
+  
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
   private final ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
@@ -134,6 +138,7 @@ public abstract class JedisClusterCommand<T> {
 
       return runWithRetries(slot, attempts - 1, tryRandomNode, asking);
     } catch (JedisRedirectionException jre) {
+      LOG.warning("should request to : " + jre.getTargetNode());
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
         // it rebuilds cluster's slot cache

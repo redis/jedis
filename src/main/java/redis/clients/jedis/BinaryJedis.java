@@ -1921,10 +1921,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         pipeline.clear();
       }
 
-      if (client.isInWatch()) {
-        unwatch();
-      }
-
       client.resetState();
     }
 

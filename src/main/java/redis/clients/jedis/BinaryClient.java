@@ -997,6 +997,10 @@ public class BinaryClient extends Connection {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
   }
 
+  public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.raw);
+  }
+
   public void pexpire(final byte[] key, final long milliseconds) {
     sendCommand(PEXPIRE, key, toByteArray(milliseconds));
   }

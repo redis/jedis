@@ -243,6 +243,12 @@ public interface RedisPipeline {
   
   Response<Long> hstrlen(String key, String field);
 
+  Response<byte[]> dump(String key);
+
+  Response<String> restore(String key, int ttl, byte[] serializedValue);
+
+  Response<String> restoreReplace(String key, int ttl, byte[] serializedValue);
+
   // Geo Commands
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);

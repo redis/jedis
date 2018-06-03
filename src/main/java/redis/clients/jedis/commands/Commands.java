@@ -307,6 +307,12 @@ public interface Commands {
 
   void bitop(BitOP op, String destKey, String... srcKeys);
 
+  void dump(String key);
+
+  void restore(String key, int ttl, byte[] serializedValue);
+
+  void restoreReplace(String key, int ttl, byte[] serializedValue);
+
   void scan(String cursor, ScanParams params);
 
   void hscan(String key, String cursor, ScanParams params);

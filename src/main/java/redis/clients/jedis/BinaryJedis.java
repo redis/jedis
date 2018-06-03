@@ -1863,11 +1863,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public void resetState() {
     if (client.isConnected()) {
       if (transaction != null) {
-        transaction.clear();
+        transaction.close();
       }
 
       if (pipeline != null) {
-        pipeline.clear();
+        pipeline.close();
       }
 
       client.resetState();

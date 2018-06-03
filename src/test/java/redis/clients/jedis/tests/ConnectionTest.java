@@ -20,7 +20,7 @@ public class ConnectionTest {
 
   @After
   public void tearDown() throws Exception {
-    client.disconnect();
+    client.close();
   }
 
   @Test(expected = JedisConnectionException.class)
@@ -52,7 +52,7 @@ public class ConnectionTest {
   }
 
   @Test
-  public void getErrorAfterConnectionReset() throws Exception {
+  public void getErrorMultibulkLength() throws Exception {
     class TestConnection extends Connection {
       public TestConnection() {
         super("localhost", 6379);

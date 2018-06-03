@@ -32,18 +32,18 @@ public class ModuleTest extends JedisCommandTestBase {
   @Test
   public void testModules() {
     String res = jedis.moduleLoad("/tmp/testmodule.so");
-    assertEquals(res, "OK");
+    assertEquals("OK", res);
 
     List<Module> modules = jedis.moduleList();
 
-    assertEquals(modules.get(0).getName(), "testmodule");
+    assertEquals("testmodule", modules.get(0).getName());
 
     jedis.getClient().sendCommand(ModuleCommand.SIMPLE);
     Long out = jedis.getClient().getIntegerReply();
     assertTrue(out > 0);
 
     res = jedis.moduleUnload("testmodule");
-    assertEquals(res, "OK");
+    assertEquals("OK", res);
   }
 
 }

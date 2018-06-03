@@ -136,7 +136,7 @@ public class BitCommandsTest extends JedisCommandTestBase {
     long reply = jedis.setrange("key1", 6, "Jedis");
     assertEquals(11, reply);
 
-    assertEquals(jedis.get("key1"), "Hello Jedis");
+    assertEquals("Hello Jedis", jedis.get("key1"));
 
     assertEquals("Hello", jedis.getrange("key1", 0, 4));
     assertEquals("Jedis", jedis.getrange("key1", 6, 11));

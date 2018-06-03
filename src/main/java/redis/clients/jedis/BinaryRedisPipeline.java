@@ -247,6 +247,12 @@ public interface BinaryRedisPipeline {
 
   Response<Long> pfcount(byte[] key);
 
+  Response<byte[]> dump(byte[] key);
+
+  Response<String> restore(byte[] key, int ttl, byte[] serializedValue);
+
+  Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue);
+
   // Geo Commands
 
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);

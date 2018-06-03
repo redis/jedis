@@ -32,6 +32,8 @@ public interface JedisCommands {
 
   String restore(String key, int ttl, byte[] serializedValue);
 
+  //String restoreReplace(String key, int ttl, byte[] serializedValue);
+
   Long expire(String key, int seconds);
 
   Long pexpire(String key, long milliseconds);

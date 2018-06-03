@@ -96,6 +96,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.restore(key, ttl, serializedValue);
   }
 
+  public String restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+    Jedis j = getShard(key);
+    return j.restoreReplace(key, ttl, serializedValue);
+  }
+
   @Override
   public Long expire(final String key, final int seconds) {
     Jedis j = getShard(key);

@@ -6,19 +6,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -608,10 +613,40 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void dumpAndRestore() {
-    jedis.set("foo1", "bar1");
+    jedis.set("foo1", "bar");
     byte[] sv = jedis.dump("foo1");
     jedis.restore("foo2", 0, sv);
-    assertTrue(jedis.exists("foo2"));
+    assertEquals("bar", jedis.get("foo2"));
+  }
+
+  @Test
+  public void restoreReplace() {
+    // take a separate instance
+    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
+    jedis2.auth("foobared");
+    jedis2.flushAll();
+
+    jedis2.set("foo", "bar");
+
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("a", "A");
+    map.put("b", "B");
+
+    jedis.hset("from", map);
+    byte[] serialized = jedis.dump("from");
+
+    try {
+      jedis2.restore("foo", 0, serialized);
+      fail("Simple restore on a existing key should fail");
+    } catch(JedisDataException e) {
+      // should be here
+    }
+    assertEquals("bar", jedis2.get("foo"));
+
+    jedis2.restoreReplace("foo", 0, serialized);
+    assertEquals(map, jedis2.hgetAll("foo"));
+
+    jedis2.close();
   }
 
   @Test

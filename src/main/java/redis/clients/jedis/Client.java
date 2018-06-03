@@ -855,12 +855,19 @@ public class Client extends BinaryClient implements Commands {
     sentinel(SafeEncoder.encodeMany(args));
   }
 
+  @Override
   public void dump(final String key) {
     dump(SafeEncoder.encode(key));
   }
 
+  @Override
   public void restore(final String key, final int ttl, final byte[] serializedValue) {
     restore(SafeEncoder.encode(key), ttl, serializedValue);
+  }
+
+  @Override
+  public void restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+    restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
   @Deprecated

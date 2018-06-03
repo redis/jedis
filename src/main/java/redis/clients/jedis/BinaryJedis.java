@@ -3530,6 +3530,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    checkIsInMultiOrPipeline();
+    client.restoreReplace(key, ttl, serializedValue);
+    return client.getStatusCodeReply();
+  }
+
   @Deprecated
   public Long pexpire(final byte[] key, final int milliseconds) {
     return pexpire(key, (long) milliseconds);

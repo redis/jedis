@@ -31,6 +31,8 @@ public interface BinaryJedisCommands {
 
   String restore(byte[] key, int ttl, byte[] serializedValue);
 
+  String restoreReplace(byte[] key, int ttl, byte[] serializedValue);
+
   Long expire(byte[] key, int seconds);
 
   /**

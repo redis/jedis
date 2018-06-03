@@ -107,6 +107,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    Jedis j = getShard(key);
+    return j.restoreReplace(key, ttl, serializedValue);
+  }
+
+  @Override
   public Long expire(final byte[] key, final int seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);

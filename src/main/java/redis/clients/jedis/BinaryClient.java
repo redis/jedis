@@ -907,7 +907,10 @@ public class BinaryClient extends Connection {
   }
 
   public void resetState() {
-    if (isInWatch()) unwatch();
+    if (isInWatch()) {
+      unwatch();
+      getStatusCodeReply();
+    }
   }
 
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {

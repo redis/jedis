@@ -122,7 +122,7 @@ public class ClusterScriptingCommandsTest {
     int numKeys = 1;
     String[] args = { "foo" };
     jedisCluster.eval(script, numKeys, args);
-    assertEquals(jedisCluster.get("foo"), "bar");
+    assertEquals("bar", jedisCluster.get("foo"));
   }
 
   @SuppressWarnings("unchecked")
@@ -160,7 +160,7 @@ public class ClusterScriptingCommandsTest {
     byte[] script = "return redis.call('set',KEYS[1],'bar')".getBytes();
     byte[] args = "foo".getBytes();
     jedisCluster.eval(script, 1, args);
-    assertEquals(jedisCluster.get("foo"), "bar");
+    assertEquals("bar", jedisCluster.get("foo"));
   }
 
   @SuppressWarnings("unchecked")

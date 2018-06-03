@@ -166,8 +166,8 @@ public class ShardedJedisPoolTest {
     shards.set(1, new JedisShardInfo("localhost", 1234));
     pool = new ShardedJedisPool(redisConfig, shards);
     jedis = pool.getResource();
-    Long actual = Long.valueOf(0);
-    Long fails = Long.valueOf(0);
+    long actual = 0;
+    long fails = 0;
     for (int i = 0; i < 1000; i++) {
       try {
         jedis.get("a-test-" + i);
@@ -178,8 +178,8 @@ public class ShardedJedisPoolTest {
     }
     pool.returnResource(jedis);
     pool.destroy();
-    assertEquals(actual, c1);
-    assertEquals(fails, c2);
+    assertEquals(Long.valueOf(actual), c1);
+    assertEquals(Long.valueOf(fails), c2);
   }
 
   @Test

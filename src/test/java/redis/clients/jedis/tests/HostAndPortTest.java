@@ -6,40 +6,32 @@ import java.util.Arrays;
 
 import redis.clients.jedis.HostAndPort;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by smagellan on 7/11/16.
- */
 public class HostAndPortTest {
   @Test
   public void checkExtractParts() throws Exception {
     String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e:1999";
     String port = "6379";
 
-    assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
 
     host = "";
     port = "";
-    assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
 
     host = "localhost";
     port = "";
-    assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
-
+    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
 
     host = "";
     port = "6379";
-    assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
 
     host = "11:22:33:44:55";
     port = "";
-    assertEquals(Arrays.asList(HostAndPort.extractParts(host + ":" + port)),
-            Arrays.asList(host, port));
+    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
   }
 
   @Test

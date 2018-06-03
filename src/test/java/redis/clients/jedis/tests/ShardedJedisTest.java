@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -168,14 +169,11 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo(redis2.getHost(), redis2.getPort()));
     ShardedJedis jedis = new ShardedJedis(shards, ShardedJedis.DEFAULT_KEY_TAG_PATTERN);
 
-    assertEquals(jedis.getKeyTag("foo"), "foo");
-    assertEquals(jedis.getKeyTag("foo{bar}"), "bar");
-    assertEquals(jedis.getKeyTag("foo{bar}}"), "bar"); // default pattern is
-    // non greedy
-    assertEquals(jedis.getKeyTag("{bar}foo"), "bar"); // Key tag may appear
-    // anywhere
-    assertEquals(jedis.getKeyTag("f{bar}oo"), "bar"); // Key tag may appear
-    // anywhere
+    assertEquals("foo", jedis.getKeyTag("foo"));
+    assertEquals("bar", jedis.getKeyTag("foo{bar}"));
+    assertEquals("bar", jedis.getKeyTag("foo{bar}}")); // Default pattern is non greedy
+    assertEquals("bar", jedis.getKeyTag("{bar}foo")); // Key tag may appear anywhere
+    assertEquals("bar", jedis.getKeyTag("f{bar}oo")); // Key tag may appear anywhere
 
     JedisShardInfo s1 = jedis.getShardInfo("abc{bar}");
     JedisShardInfo s2 = jedis.getShardInfo("foo{bar}");
@@ -188,8 +186,8 @@ public class ShardedJedisTest {
 
     ShardedJedis jedis2 = new ShardedJedis(shards);
 
-    assertEquals(jedis2.getKeyTag("foo"), "foo");
-    assertNotSame(jedis2.getKeyTag("foo{bar}"), "bar");
+    assertEquals("foo", jedis2.getKeyTag("foo"));
+    assertNotEquals("bar", jedis2.getKeyTag("foo{bar}"));
 
     JedisShardInfo s5 = jedis2.getShardInfo(keys.get(0) + "{bar}");
     JedisShardInfo s6 = jedis2.getShardInfo(keys.get(1) + "{bar}");

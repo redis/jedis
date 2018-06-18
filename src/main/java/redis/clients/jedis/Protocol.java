@@ -259,15 +259,19 @@ public final class Protocol {
     PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS,
     GEORADIUSBYMEMBER, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB;
 
-    private final byte[] raw;
+    private byte[] raw;
 
     Command() {
-      raw = SafeEncoder.encode(this.name());
+    	rename(this.name());
     }
-
+    
     @Override
     public byte[] getRaw() {
       return raw;
+    }
+    
+    public void rename(final String newName) {
+    	raw = SafeEncoder.encode(newName);
     }
   }
 

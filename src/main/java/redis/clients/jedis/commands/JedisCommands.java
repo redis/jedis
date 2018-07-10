@@ -318,4 +318,17 @@ public interface JedisCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(String key, String field);
+  
+  EntryID xadd(String key, EntryID id, Map<String, String> hash);
+	
+  Long xlen(String key);
+  
+  List<Map.Entry<EntryID, String>> xrange(String key, long start, long end, int count);
+	
+  List<Map.Entry<EntryID, String>> xrange(String key, long start, long end);
+	
+  List<Map.Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end, int count);
+	
+  List<Map.Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end);
+
 }

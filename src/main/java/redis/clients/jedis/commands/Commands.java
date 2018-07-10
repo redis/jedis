@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.Map;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.EntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
@@ -336,4 +337,10 @@ public interface Commands {
    * @param field
    */
   void hstrlen(String key, String field);
+  
+  void xadd(String key, EntryID id, Map<String, String> hash);
+	
+  void xlen(String key);
+
+  void xrange(String key, EntryID start, EntryID end, long count);  
 }

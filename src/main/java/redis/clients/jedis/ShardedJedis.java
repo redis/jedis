@@ -937,4 +937,40 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.hstrlen(key, field);
   }
+
+@Override
+public EntryID xadd(String key, EntryID id, Map<String, String> hash) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public Long xlen(String key) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public List<Entry<EntryID, String>> xrange(String key, long start, long end, int count) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public List<Entry<EntryID, String>> xrange(String key, long start, long end) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end, int count) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end) {
+	// TODO Auto-generated method stub
+	return null;
+}
 }

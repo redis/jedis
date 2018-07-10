@@ -1209,4 +1209,25 @@ public class BinaryClient extends Connection {
   public void hstrlen(final byte[] key, final byte[] field) {
     sendCommand(HSTRLEN, key, field);
   }
+  
+  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash) {
+	  final byte[][] params = new byte[2 + hash.size() * 2][];
+	  int index = 0;
+	  params[index++] = key;
+	  params[index++] = id;
+	  for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+	    params[index++] = entry.getKey();
+	    params[index++] = entry.getValue();
+	  }
+	  sendCommand(XADD, params);
+  }
+  
+  public void xlen(final byte[] key) {
+     sendCommand(XLEN, key);
+  }
+  
+  public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) { 
+     sendCommand(XRANGE, key, start, end, Keyword.COUNT.raw, toByteArray(count));
+  }
+
 }

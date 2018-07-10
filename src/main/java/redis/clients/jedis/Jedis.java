@@ -3586,4 +3586,45 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public EntryID xadd(String key, EntryID id, Map<String, String> hash) {
+	    checkIsInMultiOrPipeline();
+	    client.xadd(key, id, hash);
+	    String[] result = client.getBulkReply().split("-");
+	    return new EntryID(Long.parseLong(result[0]), Long.parseLong(result[1]));
+  }
+
+  @Override
+  public Long xlen(String key) {
+	  checkIsInMultiOrPipeline();
+	  client.xlen(key);
+	  return client.getIntegerReply();
+  }
+
+  @Override
+  public List<Entry<EntryID, String>> xrange(String key, long start, long end, int count) {
+	  // TODO Auto-generated method stub
+	  return null;
+  }
+
+  @Override
+  public List<Entry<EntryID, String>> xrange(String key, long start, long end) {
+	  // TODO Auto-generated method stub
+	  return null;
+  }
+
+  @Override
+  public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end, int count) {
+	    checkIsInMultiOrPipeline();
+	    client.xrange(key, start, end, count);
+	    List<String> result = client.getMultiBulkReply();
+	    return null;
+  }
+
+  @Override
+  public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end) {
+	  // TODO Auto-generated method stub
+	  return null;
+  }
+
 }

@@ -1127,4 +1127,23 @@ public class Client extends BinaryClient implements Commands {
     hstrlen(SafeEncoder.encode(key), SafeEncoder.encode(field));
   }
 
+  @Override
+  public void xadd(final String key, final  EntryID id, final Map<String, String> hash) {
+    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
+    for (final Entry<String, String> entry : hash.entrySet()) {
+      bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
+    }
+    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id==null ? "*" : id.toString()), bhash);
+  }
+  
+  @Override
+  public void xlen(final String key) {
+	  xlen(SafeEncoder.encode(key));
+  }
+  
+  @Override
+  public void xrange(final String key, final  EntryID start, final  EntryID end, final long count) {
+	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
+  }
+  
 }

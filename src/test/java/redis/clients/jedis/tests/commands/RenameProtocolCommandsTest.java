@@ -49,7 +49,7 @@ public class RenameProtocolCommandsTest {
     jedis.set("mykey", "hello world2");
     try {
       jedis.del("mykey");
-      fail("JedisDataException expected");
+      fail("'DEL' command should be unknown");
     } catch (JedisDataException expected) {
       assertEquals("ERR unknown command 'DEL'", expected.getMessage());
     }

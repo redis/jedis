@@ -262,7 +262,7 @@ public final class Protocol {
     private byte[] raw;
 
     Command() {
-    	rename(this.name());
+      rename(this.name());
     }
 
     @Override
@@ -271,7 +271,7 @@ public final class Protocol {
     }
 
     public void rename(final String newName) {
-    	raw = SafeEncoder.encode(newName);
+      raw = SafeEncoder.encode(newName);
     }
   }
 

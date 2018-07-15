@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -43,9 +44,16 @@ public class RenameProtocolCommandsTest {
 		assertEquals("hello world", value);
 	}
 
-	@Test(expected = JedisDataException.class)
+	@Test
 	public void disabledCommand() {
-		jedis.set("mykey", "hello world");
-		jedis.del("mykey");
+		jedis.set("mykey", "hello world2");
+		try {
+			jedis.del("mykey");
+		    fail();
+		} catch(JedisDataException expected) {
+		    assertEquals("ERR unknown command 'DEL'", expected.getMessage());
+		}
+		String value = jedis.get("mykey");
+		assertEquals("hello world2", value);
 	}
 }

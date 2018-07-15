@@ -264,7 +264,7 @@ public final class Protocol {
     Command() {
     	rename(this.name());
     }
-    
+
     @Override
     public byte[] getRaw() {
       return raw;

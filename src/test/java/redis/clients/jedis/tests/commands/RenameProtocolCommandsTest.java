@@ -15,45 +15,45 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class RenameProtocolCommandsTest {
 
-	private Jedis jedis;
+  private Jedis jedis;
 
-	@Before
-	public void setUp() throws Exception {
-		HostAndPort hnp = HostAndPortUtil.getRedisServers().get(7);
-		jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-		jedis.connect();
-		jedis.auth("foobared");
-		jedis.flushAll();
+  @Before
+  public void setUp() throws Exception {
+    HostAndPort hnp = HostAndPortUtil.getRedisServers().get(7);
+    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis.connect();
+    jedis.auth("foobared");
+    jedis.flushAll();
 
-		Command.SET.rename("NEWSET");
-		Command.GET.rename("NEWGET");
-	}
+    Command.SET.rename("NEWSET");
+    Command.GET.rename("NEWGET");
+  }
 
-	@After
-	public void tearDown() {
-		Command.SET.rename("SET");
-		Command.GET.rename("GET");
-		
-		jedis.disconnect();
-	}
+  @After
+  public void tearDown() {
+    Command.SET.rename("SET");
+    Command.GET.rename("GET");
 
-	@Test
-	public void renameCommand() {
-		jedis.set("mykey", "hello world");
-		String value = jedis.get("mykey");
-		assertEquals("hello world", value);
-	}
+    jedis.disconnect();
+  }
 
-	@Test
-	public void disabledCommand() {
-		jedis.set("mykey", "hello world2");
-		try {
-			jedis.del("mykey");
-		    fail();
-		} catch(JedisDataException expected) {
-		    assertEquals("ERR unknown command 'DEL'", expected.getMessage());
-		}
-		String value = jedis.get("mykey");
-		assertEquals("hello world2", value);
-	}
+  @Test
+  public void renameCommand() {
+    jedis.set("mykey", "hello world");
+    String value = jedis.get("mykey");
+    assertEquals("hello world", value);
+  }
+
+  @Test
+  public void disabledCommand() {
+    jedis.set("mykey", "hello world2");
+    try {
+      jedis.del("mykey");
+      fail();
+    } catch (JedisDataException expected) {
+      assertEquals("ERR unknown command 'DEL'", expected.getMessage());
+    }
+    String value = jedis.get("mykey");
+    assertEquals("hello world2", value);
+  }
 }

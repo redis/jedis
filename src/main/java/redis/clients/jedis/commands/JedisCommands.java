@@ -319,6 +319,8 @@ public interface JedisCommands {
    */
   Long hstrlen(String key, String field);
   
+  EntryID xadd(String key, Map<String, String> hash);
+
   EntryID xadd(String key, EntryID id, Map<String, String> hash);
 	
   Long xlen(String key);

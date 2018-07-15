@@ -29,7 +29,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
+AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
@@ -3069,7 +3069,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String sentinelMonitor(final String masterName, final String ip, final int port, final int quorum) {
     client.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip, String.valueOf(port),
-      String.valueOf(quorum));
+        String.valueOf(quorum));
     return client.getStatusCodeReply();
   }
 
@@ -3587,44 +3587,49 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public EntryID xadd(String key, Map<String, String> hash) {
+    return xadd(key, null, hash);
+  }
+
+  @Override
   public EntryID xadd(String key, EntryID id, Map<String, String> hash) {
-	    checkIsInMultiOrPipeline();
-	    client.xadd(key, id, hash);
-	    String[] result = client.getBulkReply().split("-");
-	    return new EntryID(Long.parseLong(result[0]), Long.parseLong(result[1]));
+    checkIsInMultiOrPipeline();
+    client.xadd(key, id, hash);
+    String[] result = client.getBulkReply().split("-");
+    return new EntryID(Long.parseLong(result[0]), Long.parseLong(result[1]));
   }
 
   @Override
   public Long xlen(String key) {
-	  checkIsInMultiOrPipeline();
-	  client.xlen(key);
-	  return client.getIntegerReply();
+    checkIsInMultiOrPipeline();
+    client.xlen(key);
+    return client.getIntegerReply();
   }
 
   @Override
   public List<Entry<EntryID, String>> xrange(String key, long start, long end, int count) {
-	  // TODO Auto-generated method stub
-	  return null;
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
   public List<Entry<EntryID, String>> xrange(String key, long start, long end) {
-	  // TODO Auto-generated method stub
-	  return null;
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
   public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end, int count) {
-	    checkIsInMultiOrPipeline();
-	    client.xrange(key, start, end, count);
-	    List<String> result = client.getMultiBulkReply();
-	    return null;
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end, count);
+    List<String> result = client.getMultiBulkReply();
+    return null;
   }
 
   @Override
   public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end) {
-	  // TODO Auto-generated method stub
-	  return null;
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

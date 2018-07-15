@@ -269,7 +269,7 @@ public final class Protocol {
     public byte[] getRaw() {
       return raw;
     }
-    
+
     public void rename(final String newName) {
     	raw = SafeEncoder.encode(newName);
     }

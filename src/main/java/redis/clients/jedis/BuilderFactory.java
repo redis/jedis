@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
@@ -134,7 +136,7 @@ public final class BuilderFactory {
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-          String.valueOf((Long) iterator.next()));
+            String.valueOf((Long) iterator.next()));
       }
 
       return hash;
@@ -470,6 +472,44 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<Long>";
+    }
+
+  };
+
+
+  public static final Builder<List<Entry<EntryID, Map<String, String>>>> ENTRY_ID_LIST = new Builder<List<Entry<EntryID, Map<String, String>>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<Entry<EntryID, Map<String, String>>> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
+
+      List<Entry<EntryID, Map<String, String>>> responses = new ArrayList<Entry<EntryID, Map<String, String>>>(objectList.size()/2);
+      if (objectList.isEmpty()) {
+        return responses;
+      }
+
+      for(ArrayList<Object> res : objectList) {
+        String entryIdString = SafeEncoder.encode((byte[])res.get(0));
+        EntryID entryID = new EntryID(entryIdString);
+        List<byte[]> hash = (List<byte[]>)res.get(1);
+        
+        Iterator<byte[]> hashIterator = hash.iterator();
+        Map<String, String> map = new HashMap<String, String>(hash.size()/2);
+        while(hashIterator.hasNext()) {
+          map.put(SafeEncoder.encode((byte[])hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
+        }
+        responses.add(new AbstractMap.SimpleEntry<EntryID, Map<String, String>>(entryID, map));
+      }
+
+      return responses;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Entry<EntryID, String>>";
     }
 
   };

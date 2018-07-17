@@ -3607,27 +3607,26 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public List<Entry<EntryID, String>> xrange(String key, long start, long end, int count) {
+  public List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end, int count) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<Entry<EntryID, String>> xrange(String key, long start, long end) {
+  public List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end, int count) {
+  public List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end, int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
-    List<String> result = client.getMultiBulkReply();
-    return null;
+    return BuilderFactory.ENTRY_ID_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end) {
+  public List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end) {
     // TODO Auto-generated method stub
     return null;
   }

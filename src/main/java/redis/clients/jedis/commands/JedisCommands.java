@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -325,12 +326,12 @@ public interface JedisCommands {
 	
   Long xlen(String key);
   
-  List<Map.Entry<EntryID, String>> xrange(String key, long start, long end, int count);
+  List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end, int count);
 	
-  List<Map.Entry<EntryID, String>> xrange(String key, long start, long end);
+  List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end);
 	
-  List<Map.Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end, int count);
+  List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end, int count);
 	
-  List<Map.Entry<EntryID, String>> xrange(String key, EntryID start, EntryID end);
+  List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end);
 
 }

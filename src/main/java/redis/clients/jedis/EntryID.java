@@ -4,6 +4,12 @@ public class EntryID implements Comparable<EntryID> {
   final private long time;
   final private long sequence;
 
+  public EntryID(String id) {
+    String[] split = id.split("-");    
+    this.time = Long.parseLong(split[0]);
+    this.sequence = Long.parseLong(split[1]);
+  }
+  
   public EntryID(long time, long sequence) {
     this.time = time;
     this.sequence = sequence;

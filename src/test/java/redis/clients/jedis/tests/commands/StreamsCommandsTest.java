@@ -4,6 +4,7 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,14 +17,17 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
 
-  @Test(expected = JedisDataException.class) 
-  public void xaddFailed() {
-    Map<String,String> map1 = new HashMap<String, String>();
-    jedis.xadd("steam1", null, map1);
-  }	
-
   @Test
   public void xadd() {
+    
+    try {
+      Map<String,String> map1 = new HashMap<String, String>();
+      jedis.xadd("stream1", null, map1);
+      fail();
+    } catch (JedisDataException expected) {
+      assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
+    }
+    
     Map<String,String> map1 = new HashMap<String, String>();
     map1.put("f1", "v1");
     EntryID id1 = jedis.xadd("xadd-stream1", null, map1);

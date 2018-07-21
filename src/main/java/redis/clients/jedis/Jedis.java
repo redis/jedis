@@ -1317,7 +1317,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Integer reply, specifically: true if the element is a member of the set false if the element
+   * @return Boolean reply, specifically: true if the element is a member of the set false if the element
    *         is not a member of the set OR if the key does not exist
    */
   @Override

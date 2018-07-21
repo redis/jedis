@@ -194,8 +194,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
-   * returned. Note that even keys set with an empty string as value will return "1". Time
+   * Test if the specified key exists. The command returns true if the key exists, otherwise false is
+   * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false

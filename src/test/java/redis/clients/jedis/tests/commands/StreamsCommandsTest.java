@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 import redis.clients.jedis.EntryID;
+import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
@@ -74,31 +77,60 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void xrange() {
-    List<Entry<EntryID, Map<String, String>>> range = jedis.xrange("xlen-xrange", (EntryID)null, (EntryID)null, Integer.MAX_VALUE); 
+    List<StreamEntry> range = jedis.xrange("xrange-stream", (EntryID)null, (EntryID)null, Integer.MAX_VALUE); 
     assertEquals(0, range.size());
         
     Map<String,String> map = new HashMap<String, String>();
     map.put("f1", "v1");
-    EntryID id1 = jedis.xadd("xlen-xrange", null, map);
-    EntryID id2 = jedis.xadd("xlen-xrange", null, map);
-    List<Entry<EntryID, Map<String, String>>> range2 = jedis.xrange("xlen-xrange", (EntryID)null, (EntryID)null, 3); 
+    EntryID id1 = jedis.xadd("xrange-stream", null, map);
+    EntryID id2 = jedis.xadd("xrange-stream", null, map);
+    List<StreamEntry> range2 = jedis.xrange("xrange-stream", (EntryID)null, (EntryID)null, 3); 
     assertEquals(2, range2.size());
     
-    List<Entry<EntryID, Map<String, String>>> range3 = jedis.xrange("xlen-xrange", id1, null, 2); 
+    List<StreamEntry> range3 = jedis.xrange("xrange-stream", id1, null, 2); 
     assertEquals(2, range3.size());
     
-    List<Entry<EntryID, Map<String, String>>> range4 = jedis.xrange("xlen-xrange", id1, id2, 2); 
+    List<StreamEntry> range4 = jedis.xrange("xrange-stream", id1, id2, 2); 
     assertEquals(2, range4.size());
 
-    List<Entry<EntryID, Map<String, String>>> range5 = jedis.xrange("xlen-xrange", id1, id2, 1); 
+    List<StreamEntry> range5 = jedis.xrange("xrange-stream", id1, id2, 1); 
     assertEquals(1, range5.size());
     
-    List<Entry<EntryID, Map<String, String>>> range6 = jedis.xrange("xlen-xrange", id2, null, 4); 
+    List<StreamEntry> range6 = jedis.xrange("xrange-stream", id2, null, 4); 
     assertEquals(1, range6.size());
     
-    EntryID id3 = jedis.xadd("xlen-xrange", null, map);
-    List<Entry<EntryID, Map<String, String>>> range7 = jedis.xrange("xlen-xrange", id2, id2, 4); 
+    EntryID id3 = jedis.xadd("xrange-stream", null, map);
+    List<StreamEntry> range7 = jedis.xrange("xrange-stream", id2, id2, 4); 
     assertEquals(1, range7.size());
   }
+  
+  @Test
+  public void xread() {
+    
+    List<Entry<String, EntryID>> streamsQuery1 = new ArrayList<Entry<String, EntryID>>();
+    streamsQuery1.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream1", new EntryID()));
+
+    // Empty Stream
+    List<Entry<String, List<StreamEntry>>> range = jedis.xread(1, 1L, streamsQuery1); 
+    assertEquals(0, range.size());
+    
+    Map<String,String> map = new HashMap<String, String>();
+    map.put("f1", "v1");
+    EntryID id1 = jedis.xadd("xread-stream1", null, map);
+    EntryID id2 = jedis.xadd("xread-stream2", null, map);
+    
+    // Read only a single Stream
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamsQuery1); 
+    assertEquals(1, streams1.size());
+
+    // Read from two Streams
+    List<Entry<String, EntryID>> streamsQuery2 = new ArrayList<Entry<String, EntryID>>();
+    streamsQuery2.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream1", new EntryID()));
+    streamsQuery2.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream2", new EntryID()));
+    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(2, 1L, streamsQuery2); 
+    assertEquals(2, streams2.size());
+
+  }
+  
 
 }

@@ -1142,8 +1142,16 @@ public class Client extends BinaryClient implements Commands {
   }
   
   @Override
-  public void xrange(final String key, final  EntryID start, final  EntryID end, final long count) {
+  public void xrange(final String key, final EntryID start, final  EntryID end, final long count) {
 	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
+  }
+
+  public void xread(final int count, final long block, final List<Entry<String, EntryID>> streams) {
+    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.size());
+    for (final Entry<String, EntryID> entry : streams) {
+      bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
+    }
+    xread(count, block, bhash);
   }
   
 }

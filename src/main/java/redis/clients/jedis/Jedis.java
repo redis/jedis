@@ -3587,11 +3587,6 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public EntryID xadd(String key, Map<String, String> hash) {
-    return xadd(key, null, hash);
-  }
-
-  @Override
   public EntryID xadd(String key, EntryID id, Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     client.xadd(key, id, hash);
@@ -3607,28 +3602,30 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end, int count) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end, int count) {
+  public List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
-    return BuilderFactory.ENTRY_ID_LIST.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end) {
-    // TODO Auto-generated method stub
-    return null;
-  }
+  public List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(count, block, streams);
 
+    List<Object> streamsEntries = client.getObjectMultiBulkReply();
+    if(streamsEntries == null) {
+      return new ArrayList<Entry<String, List<StreamEntry>>>();
+    }
+    
+    List<Entry<String, List<StreamEntry>>> result = new ArrayList<Entry<String, List<StreamEntry>>>(streamsEntries.size());
+    for(Object streamObj : streamsEntries) {
+      List<Object> stream = (List<Object>)streamObj;
+      String streamId = SafeEncoder.encode((byte[])stream.get(0));
+      List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+      result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+    }
+    
+    return result;
+  }
 }

@@ -949,34 +949,17 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     // TODO Auto-generated method stub
     return null;
   }
-
+  
   @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end, int count) {
+  public List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end) {
+  public List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams){
     // TODO Auto-generated method stub
     return null;
   }
 
-  @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end, int count) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public EntryID xadd(String key, Map<String, String> hash) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 }

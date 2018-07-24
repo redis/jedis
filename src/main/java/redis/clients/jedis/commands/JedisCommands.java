@@ -311,7 +311,7 @@ public interface JedisCommands {
    * @param arguments
    */
   List<Long> bitfield(String key, String...arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
    * @param key 
@@ -319,19 +319,46 @@ public interface JedisCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(String key, String field);
-  
-  EntryID xadd(String key, Map<String, String> hash);
 
+  /**
+   * XADD key ID field string [field string ...]
+   * 
+   * @param key
+   * @param id
+   * @param hash
+   * @return
+   */
   EntryID xadd(String key, EntryID id, Map<String, String> hash);
-	
-  Long xlen(String key);
-  
-  List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end, int count);
-	
-  List<Entry<EntryID, Map<String, String>>> xrange(String key, long start, long end);
-	
-  List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end, int count);
-	
-  List<Entry<EntryID, Map<String, String>>> xrange(String key, EntryID start, EntryID end);
 
+  /**
+   * XLEN key
+   * 
+   * @param key
+   * @return
+   */
+  Long xlen(String key);
+
+  /**
+   * XRANGE key start end [COUNT count]
+   * 
+   * @param key
+   * @param start
+   * @param end
+   * @param count
+   * @return
+   */
+  List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count);
+
+  /**
+   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * 
+   * @param key
+   * @param count
+   * @param block
+   * @param streams
+   * @return
+   */
+  List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams);
+
+  
 }

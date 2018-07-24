@@ -477,16 +477,16 @@ public final class BuilderFactory {
   };
 
 
-  public static final Builder<List<Entry<EntryID, Map<String, String>>>> ENTRY_ID_LIST = new Builder<List<Entry<EntryID, Map<String, String>>>>() {
+  public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public  List<Entry<EntryID, Map<String, String>>> build(Object data) {
+    public  List<StreamEntry> build(Object data) {
       if (null == data) {
         return null;
       }
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
 
-      List<Entry<EntryID, Map<String, String>>> responses = new ArrayList<Entry<EntryID, Map<String, String>>>(objectList.size()/2);
+      List<StreamEntry> responses = new ArrayList<StreamEntry>(objectList.size()/2);
       if (objectList.isEmpty()) {
         return responses;
       }
@@ -501,7 +501,7 @@ public final class BuilderFactory {
         while(hashIterator.hasNext()) {
           map.put(SafeEncoder.encode((byte[])hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
         }
-        responses.add(new AbstractMap.SimpleEntry<EntryID, Map<String, String>>(entryID, map));
+        responses.add(new StreamEntry(entryID, map));
       }
 
       return responses;
@@ -509,9 +509,8 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "List<Entry<EntryID, String>>";
+      return "List<StreamEntry>";
     }
-
   };
 
 

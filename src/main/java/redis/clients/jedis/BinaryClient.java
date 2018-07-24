@@ -1230,4 +1230,23 @@ public class BinaryClient extends Connection {
      sendCommand(XRANGE, key, start, end, Keyword.COUNT.raw, toByteArray(count));
   }
 
+  public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
+    final byte[][] params = new byte[5 + streams.size() * 2][];
+
+    int streamsIndex = 0;
+    params[streamsIndex++] = Keyword.COUNT.raw;
+    params[streamsIndex++] = toByteArray(count);
+    params[streamsIndex++] = Keyword.BLOCK.raw;
+    params[streamsIndex++] = toByteArray(block);
+    
+    params[streamsIndex++] = Keyword.STREAMS.raw;
+    int idsIndex = streamsIndex + streams.size();
+
+    for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
+      params[streamsIndex++] = entry.getKey();
+      params[idsIndex++] = entry.getValue();
+    }
+    
+    sendCommand(XREAD, params);
+ }
 }

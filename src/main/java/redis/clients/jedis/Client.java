@@ -44,6 +44,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void ping(final String message) {
+    ping(SafeEncoder.encode(message));
+  }
+  
+  @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));
   }

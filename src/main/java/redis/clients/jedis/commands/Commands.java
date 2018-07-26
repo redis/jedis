@@ -13,6 +13,8 @@ import redis.clients.jedis.params.ZIncrByParams;
 
 public interface Commands {
 
+  void ping(String message);
+  
   void set(String key, String value);
 
   void set(String key, String value, SetParams params);

@@ -20,7 +20,11 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.commands.*;
+import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
+import redis.clients.jedis.commands.BasicCommands;
+import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.BinaryScriptingCommands;
+import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;

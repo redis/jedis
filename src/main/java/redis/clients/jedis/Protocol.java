@@ -150,20 +150,20 @@ public final class Protocol {
   }
 
   private static Object process(final RedisInputStream is) {
-
     final byte b = is.readByte();
-    if (b == PLUS_BYTE) {
+    switch(b) {
+    case PLUS_BYTE:
       return processStatusCodeReply(is);
-    } else if (b == DOLLAR_BYTE) {
+    case DOLLAR_BYTE:
       return processBulkReply(is);
-    } else if (b == ASTERISK_BYTE) {
+    case ASTERISK_BYTE:
       return processMultiBulkReply(is);
-    } else if (b == COLON_BYTE) {
+    case COLON_BYTE:
       return processInteger(is);
-    } else if (b == MINUS_BYTE) {
+    case MINUS_BYTE:
       processError(is);
       return null;
-    } else {
+    default:
       throw new JedisConnectionException("Unknown reply: " + (char) b);
     }
   }

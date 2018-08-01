@@ -194,8 +194,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
-   * returned. Note that even keys set with an empty string as value will return "1". Time
+   * Test if the specified key exists. The command returns true if the key exists, otherwise false is
+   * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false
@@ -452,7 +452,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Get the values of all the specified keys. If one or more keys dont exist or is not of type
+   * Get the values of all the specified keys. If one or more keys don't exist or is not of type
    * String, a 'nil' value is returned instead of the value of the specified key, but the operation
    * never fails.
    * <p>
@@ -855,7 +855,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
+   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -1312,12 +1312,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Return 1 if member is a member of the set stored at key, otherwise 0 is returned.
+   * Return true if member is a member of the set stored at key, otherwise false is returned.
    * <p>
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
+   * @return Boolean reply, specifically: true if the element is a member of the set false if the element
    *         is not a member of the set OR if the key does not exist
    */
   @Override

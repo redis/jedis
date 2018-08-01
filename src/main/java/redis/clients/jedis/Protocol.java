@@ -1,20 +1,14 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.*;
+import redis.clients.util.RedisInputStream;
+import redis.clients.util.RedisOutputStream;
+import redis.clients.util.SafeEncoder;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisBusyException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.exceptions.JedisNoScriptException;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
-import redis.clients.util.SafeEncoder;
 
 public final class Protocol {
 
@@ -87,7 +81,7 @@ public final class Protocol {
     sendCommand(os, command.raw, args);
   }
 
-  private static void sendCommand(final RedisOutputStream os, final byte[] command,
+  static void sendCommand(final RedisOutputStream os, final byte[] command,
       final byte[]... args) {
     try {
       os.write(ASTERISK_BYTE);

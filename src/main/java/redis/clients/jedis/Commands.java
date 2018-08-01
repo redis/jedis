@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface Commands {
 
+  void ping(String message);
+  
   void set(String key, String value);
 
   public void set(final String key, final String value, final String nxxx, final String expx,

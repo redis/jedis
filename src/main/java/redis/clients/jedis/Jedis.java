@@ -117,7 +117,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   public String ping(final String message) {
     checkIsInMultiOrPipeline();
-    client.sendCommand(Protocol.Command.PING, message);
+    client.ping(message);
     return client.getBulkReply();
   }
 
@@ -182,7 +182,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String get(final String key) {
     checkIsInMultiOrPipeline();
-    client.sendCommand(Protocol.Command.GET, key);
+    client.get(key);
     return client.getBulkReply();
   }
 

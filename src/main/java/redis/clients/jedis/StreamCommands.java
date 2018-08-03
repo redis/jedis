@@ -16,16 +16,16 @@ public interface StreamCommands {
      *
      * @param key   键名
      * @param pairs 键值对
-     * @return 实际存储的序号，如果输入的非“*”序号中不含“-”，Redis会自动添加“-0”并返回修改后的值
+     * @return 实际存储的序号
      */
-    String xaddDefault(String key, String entryId, String... pairs);
+    String xaddDefault(String key, String... pairs);
 
     /**
      * 添加元素到Stream，采用entryId为*
      *
      * @param key   键名
      * @param pairs 键值对
-     * @return 实际存储的序号，如果输入的非“*”序号中不含“-”，Redis会自动添加“-0”并返回修改后的值
+     * @return 实际存储的序号
      */
     String xaddDefault(String key, Map<String, String> pairs);
 

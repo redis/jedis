@@ -1319,7 +1319,7 @@ public class BinaryClient extends Connection {
    * @param pairs 元素的键值对集合
    */
   public void xadd(byte[] key, byte[] entryId, byte[][] pairs) {
-    sendCommand(Protocol.Command.XADD,joinParameters(key,entryId,pairs));
+    sendCommand(XADD,joinParameters(key,entryId,pairs));
   }
 
   /**
@@ -1337,13 +1337,43 @@ public class BinaryClient extends Connection {
     }
     byte[][] params;
     if(approx){
-      params=joinParameters(SafeEncoder.encode("MAXLEN"),joinParameters(toByteArray(maxLen)
+      params=joinParameters(MAXLEN.raw,joinParameters(toByteArray(maxLen)
               ,entryId,pairs));
     }else{
-      params=joinParameters(SafeEncoder.encode("MAXLEN"),SafeEncoder.encode("~"), joinParameters(toByteArray(maxLen)
+      params=joinParameters(MAXLEN.raw,SafeEncoder.encode("~"), joinParameters(toByteArray(maxLen)
                       ,entryId,pairs));
     }
-    sendCommand(Protocol.Command.XADD,joinParameters(key,params));
+    sendCommand(XADD,joinParameters(key,params));
+  }
+
+  /**
+   * 发送xlen命令
+   * @param key 键名
+   */
+  public void xlen(byte[] key){
+    sendCommand(XLEN,key);
+  }
+
+  /**
+   * 发送xrange命令
+   * @param key 键名
+   * @param startEntryId 起始id
+   * @param endEntryId 结束id
+   * @param count 最大取元素数
+   */
+  public void xrange(byte[] key, byte[] startEntryId, byte[] endEntryId, long count){
+    sendCommand(XRANGE,key,startEntryId,endEntryId,COUNT.raw,toByteArray(count));
+  }
+
+  /**
+   * 发送xrevrange命令
+   * @param key 键名
+   * @param startEntryId 起始id
+   * @param endEntryId 结束id
+   * @param count 最大取元素数
+   */
+  public void xrevrange(byte[] key, byte[] startEntryId, byte[] endEntryId, long count){
+    sendCommand(XREVRANGE,key,startEntryId,endEntryId,COUNT.raw,toByteArray(count));
   }
 
 }

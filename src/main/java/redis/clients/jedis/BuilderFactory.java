@@ -1,16 +1,10 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import redis.clients.jedis.params.stream.StreamParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
+
+import java.util.*;
 
 public final class BuilderFactory {
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
@@ -472,5 +466,31 @@ public final class BuilderFactory {
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );
   }
+
+  public static final Builder<StreamParams> STREAM_PARAMS=new Builder<StreamParams>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamParams build(Object data) {
+      List<Object> element=(List<Object>)data;
+      byte[] entryId=(byte[])element.get(0);
+      List<Object> pairs=(List<Object>)element.get(1);
+      if(entryId==null||pairs==null||pairs.size()%2==1){
+        return null;
+      }
+      StreamParams streamParams=new StreamParams();
+      streamParams.setEntryId(SafeEncoder.encode(entryId));
+      final Iterator<Object> iterator = pairs.iterator();
+      while (iterator.hasNext()) {
+        streamParams.addPair(SafeEncoder.encode((byte[]) iterator.next())
+                ,SafeEncoder.encode((byte[]) iterator.next()));
+      }
+      return streamParams;
+    }
+
+    @Override
+    public String toString(){
+      return "StreamParams";
+    }
+  };
 
 }

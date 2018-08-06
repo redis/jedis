@@ -30,4 +30,14 @@ public class StreamParams extends Params {
     public void setEntryId(String entryId) {
         this.entryId = entryId;
     }
+
+    /**
+     * 添加一个键值对
+     *
+     * @param field 字段名
+     * @param value 值
+     */
+    public void addPair(String field, String value) {
+        addParam(field, value);
+    }
 }

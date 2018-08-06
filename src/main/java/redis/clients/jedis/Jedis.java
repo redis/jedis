@@ -3701,27 +3701,48 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public long xlen(String key) {
-    return 0;
+    checkIsInMultiOrPipeline();
+    client.xlen(key);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * 从返回的字节流中组装出Stream元素
+   * @param reply 初步解析的数组
+   * @return Stream元素集合
+   */
+  private List<StreamParams> getXRangeResult(List<Object> reply){
+    List<StreamParams> listResult=new ArrayList<StreamParams>();
+    for (Object obj : reply) {//命令只会返回空集合，不会有nil
+      listResult.add(BuilderFactory.STREAM_PARAMS.build(obj));
+    }
+    return listResult;
   }
 
   @Override
   public List<StreamParams> xrange(String key, String startEntryId, String endEntryId) {
-    return null;
+    return xrange(key, startEntryId, endEntryId,0);
   }
 
   @Override
   public List<StreamParams> xrange(String key, String startEntryId, String endEntryId, long count) {
-    return null;
+    checkIsInMultiOrPipeline();
+    client.xrange(key,startEntryId,endEntryId,count);
+        List<Object> reply=client.getObjectMultiBulkReply();
+    return getXRangeResult(reply);
   }
 
   @Override
   public List<StreamParams> xrevrange(String key, String startEntryId, String endEntryId) {
-    return null;
+    return xrevrange(key, startEntryId, endEntryId,0);
   }
 
   @Override
   public List<StreamParams> xrevrange(String key, String startEntryId, String endEntryId, long count) {
-    return null;
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key,startEntryId,endEntryId,count);
+    List<Object> reply=client.getObjectMultiBulkReply();
+    return getXRangeResult(reply);
   }
 
   @Override

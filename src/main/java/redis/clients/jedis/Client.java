@@ -6,15 +6,14 @@ import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 
@@ -1142,4 +1141,17 @@ public class Client extends BinaryClient implements Commands {
     bitfield(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
   }
 
+  /**
+   * 发送XADD命令
+   * @param key 键名
+   * @param entryId 序号
+   * @param pairs 字段信息
+   */
+  public void xadd(String key, String entryId, String... pairs) {
+    xadd(SafeEncoder.encode(key),SafeEncoder.encode(entryId),SafeEncoder.encodeMany(pairs));
+  }
+
+  public void xadd(String key, boolean approx, long maxLen, String entryId, String... pairs){
+    xadd(SafeEncoder.encode(key),approx,maxLen,SafeEncoder.encode(entryId),SafeEncoder.encodeMany(pairs));
+  }
 }

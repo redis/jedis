@@ -1154,4 +1154,16 @@ public class Client extends BinaryClient implements Commands {
   public void xadd(String key, boolean approx, long maxLen, String entryId, String... pairs){
     xadd(SafeEncoder.encode(key),approx,maxLen,SafeEncoder.encode(entryId),SafeEncoder.encodeMany(pairs));
   }
+
+  public void xlen(String key){
+    xlen(SafeEncoder.encode(key));
+  }
+
+  public void xrange(String key,String startEntryId,String endEntryId,long count){
+    xrange(SafeEncoder.encode(key),SafeEncoder.encode(startEntryId),SafeEncoder.encode(endEntryId),count);
+  }
+
+  public void xrevrange(String key,String startEntryId,String endEntryId,long count){
+    xrevrange(SafeEncoder.encode(key),SafeEncoder.encode(startEntryId),SafeEncoder.encode(endEntryId),count);
+  }
 }

@@ -1,11 +1,15 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.Protocol.*;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
 import redis.clients.util.SafeEncoder;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +23,6 @@ import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
 import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.*;
 import static redis.clients.jedis.Protocol.toByteArray;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 public class BinaryClient extends Connection {
   public enum LIST_POSITION {
@@ -72,14 +72,14 @@ public class BinaryClient extends Connection {
     return isInWatch;
   }
 
-  private byte[][] joinParameters(byte[] first, byte[][] rest) {
+  protected byte[][] joinParameters(byte[] first, byte[][] rest) {
     byte[][] result = new byte[rest.length + 1][];
     result[0] = first;
     System.arraycopy(rest, 0, result, 1, rest.length);
     return result;
   }
 
-  private byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
+  protected byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
     byte[][] result = new byte[rest.length + 2][];
     result[0] = first;
     result[1] = second;
@@ -1311,4 +1311,39 @@ public class BinaryClient extends Connection {
   public void bitfield(final byte[] key, final byte[]... value) {
     sendCommand(BITFIELD, joinParameters(key, value));
   }
+
+  /**
+   * 发送xadd命令
+   * @param key 键名
+   * @param entryId 序号，接受“*”
+   * @param pairs 元素的键值对集合
+   */
+  public void xadd(byte[] key, byte[] entryId, byte[][] pairs) {
+    sendCommand(Protocol.Command.XADD,joinParameters(key,entryId,pairs));
+  }
+
+  /**
+   * 发送带Count参数的xadd命令
+   * @param key 键名
+   * @param approx 是否使用“~”参数
+   * @param maxLen 最大元素数
+   * @param entryId 序号
+   * @param pairs 元素的键值对集合
+   */
+  public void xadd(byte[] key,boolean approx, long maxLen, byte[] entryId, byte[][] pairs){
+    if(maxLen<=0){
+      xadd(key,entryId,pairs);
+      return;
+    }
+    byte[][] params;
+    if(approx){
+      params=joinParameters(SafeEncoder.encode("MAXLEN"),joinParameters(toByteArray(maxLen)
+              ,entryId,pairs));
+    }else{
+      params=joinParameters(SafeEncoder.encode("MAXLEN"),SafeEncoder.encode("~"), joinParameters(toByteArray(maxLen)
+                      ,entryId,pairs));
+    }
+    sendCommand(Protocol.Command.XADD,joinParameters(key,params));
+  }
+
 }

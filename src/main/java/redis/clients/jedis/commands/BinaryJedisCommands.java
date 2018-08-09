@@ -283,23 +283,23 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
-  List<GeoRadiusResponse> georadius_ro(byte[] key, double longitude, double latitude, double radius,
+  List<GeoRadiusResponse> georadiusReadOnly(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadius_ro(byte[] key, double longitude, double latitude, double radius,
+  List<GeoRadiusResponse> georadiusReadOnly(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusByMember_ro(byte[] key, byte[] member, double radius, GeoUnit unit);
+  List<GeoRadiusResponse> georadiusByMemberReadOnly(byte[] key, byte[] member, double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMember_ro(byte[] key, byte[] member, double radius, GeoUnit unit,
+  List<GeoRadiusResponse> georadiusByMemberReadOnly(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);

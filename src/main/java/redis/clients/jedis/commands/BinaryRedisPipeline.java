@@ -275,25 +275,25 @@ public interface BinaryRedisPipeline {
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadius_ro(byte[] key, double longitude, double latitude,
+  Response<List<GeoRadiusResponse>> georadiusReadOnly(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadius_ro(byte[] key, double longitude, double latitude,
+  Response<List<GeoRadiusResponse>> georadiusReadOnly(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusByMember_ro(byte[] key, byte[] member, double radius,
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(byte[] key, byte[] member, double radius,
       GeoUnit unit);
   
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusByMember_ro(byte[] key, byte[] member, double radius,
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);

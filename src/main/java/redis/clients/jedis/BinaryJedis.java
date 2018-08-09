@@ -3707,10 +3707,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius_ro(final byte[] key, final double longitude, final double latitude,
+  public List<GeoRadiusResponse> georadiusReadOnly(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    client.georadius_ro(key, longitude, latitude, radius, unit);
+    client.georadiusReadOnly(key, longitude, latitude, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
@@ -3723,10 +3723,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius_ro(final byte[] key, final double longitude, final double latitude,
+  public List<GeoRadiusResponse> georadiusReadOnly(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    client.georadius_ro(key, longitude, latitude, radius, unit, param);
+    client.georadiusReadOnly(key, longitude, latitude, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
   
@@ -3739,10 +3739,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember_ro(final byte[] key, final byte[] member, final double radius,
+  public List<GeoRadiusResponse> georadiusByMemberReadOnly(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    client.georadiusByMember_ro(key, member, radius, unit);
+    client.georadiusByMemberReadOnly(key, member, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
@@ -3755,10 +3755,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember_ro(final byte[] key, final byte[] member, final double radius,
+  public List<GeoRadiusResponse> georadiusByMemberReadOnly(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    client.georadiusByMember_ro(key, member, radius, unit, param);
+    client.georadiusByMemberReadOnly(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 

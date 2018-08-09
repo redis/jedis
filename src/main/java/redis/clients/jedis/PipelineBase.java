@@ -1633,9 +1633,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius_ro(final byte[] key, final double longitude, final double latitude,
+  public Response<List<GeoRadiusResponse>> georadiusReadOnly(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
-    getClient(key).georadius_ro(key, longitude, latitude, radius, unit);
+    getClient(key).georadiusReadOnly(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1647,9 +1647,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius_ro(final byte[] key, final double longitude, final double latitude,
+  public Response<List<GeoRadiusResponse>> georadiusReadOnly(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    getClient(key).georadius_ro(key, longitude, latitude, radius, unit, param);
+    getClient(key).georadiusReadOnly(key, longitude, latitude, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1661,9 +1661,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius_ro(final String key, final double longitude, final double latitude,
+  public Response<List<GeoRadiusResponse>> georadiusReadOnly(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
-    getClient(key).georadius_ro(key, longitude, latitude, radius, unit);
+    getClient(key).georadiusReadOnly(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1675,9 +1675,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius_ro(final String key, final double longitude, final double latitude,
+  public Response<List<GeoRadiusResponse>> georadiusReadOnly(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    getClient(key).georadius_ro(key, longitude, latitude, radius, unit, param);
+    getClient(key).georadiusReadOnly(key, longitude, latitude, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1689,9 +1689,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMember_ro(final byte[] key, final byte[] member,
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit) {
-    getClient(key).georadiusByMember_ro(key, member, radius, unit);
+    getClient(key).georadiusByMemberReadOnly(key, member, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1703,9 +1703,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMember_ro(final byte[] key, final byte[] member,
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    getClient(key).georadiusByMember_ro(key, member, radius, unit, param);
+    getClient(key).georadiusByMemberReadOnly(key, member, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1717,9 +1717,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMember_ro(final String key, final String member,
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(final String key, final String member,
       final double radius, final GeoUnit unit) {
-    getClient(key).georadiusByMember_ro(key, member, radius, unit);
+    getClient(key).georadiusByMemberReadOnly(key, member, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
@@ -1731,9 +1731,9 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMember_ro(final String key, final String member,
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    getClient(key).georadiusByMember_ro(key, member, radius, unit, param);
+    getClient(key).georadiusByMemberReadOnly(key, member, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 

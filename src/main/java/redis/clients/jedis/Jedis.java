@@ -3831,16 +3831,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public long xdel(String key, String entryId) {
-    return 0;
+    checkIsInMultiOrPipeline();
+    client.xdel(key, entryId);
+    return client.getIntegerReply();
   }
 
   @Override
   public long xtrimWithMaxlen(String key, long maxlen) {
-    return 0;
+    return xtrimWithMaxlen(key, false, maxlen);
   }
 
   @Override
   public long xtrimWithMaxlen(String key, boolean approx, long maxlen) {
-    return 0;
+      checkIsInMultiOrPipeline();
+      client.xtrimWithMaxlen(key, approx, maxlen);
+      return client.getIntegerReply();
   }
 }

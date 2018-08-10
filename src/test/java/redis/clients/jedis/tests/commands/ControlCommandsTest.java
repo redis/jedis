@@ -11,6 +11,7 @@ import org.junit.Test;
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
@@ -135,5 +136,11 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   public void waitReplicas() {
     Long replicas = jedis.waitReplicas(1, 100);
     assertEquals(1, replicas.longValue());
+  }
+
+  @Test(expected = JedisConnectionException.class)
+  public void clientPause() {
+    jedis.clientPause(5000);
+    jedis.ping();
   }
 }

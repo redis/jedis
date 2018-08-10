@@ -1166,4 +1166,20 @@ public class Client extends BinaryClient implements Commands {
   public void xrevrange(String key,String startEntryId,String endEntryId,long count){
     xrevrange(SafeEncoder.encode(key),SafeEncoder.encode(startEntryId),SafeEncoder.encode(endEntryId),count);
   }
+
+  public void xread(String... params){
+    xread(SafeEncoder.encodeMany(params));
+  }
+
+  public void xread(long count,String...params){
+    if(count<=0){
+      xread(params);
+    }else {
+      xread(count, SafeEncoder.encodeMany(params));
+    }
+  }
+
+  public void xreadBlock(long block,String... keys){
+    xreadBlock(block,SafeEncoder.encodeMany(keys));
+  }
 }

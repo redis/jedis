@@ -474,7 +474,7 @@ public final class BuilderFactory {
       List<Object> element=(List<Object>)data;
       byte[] entryId=(byte[])element.get(0);
       List<Object> pairs=(List<Object>)element.get(1);
-      if(entryId==null||pairs==null||pairs.size()%2==1){
+      if(entryId==null || pairs==null || (pairs.size() & 1)>0){
         return null;
       }
       StreamParams streamParams=new StreamParams();

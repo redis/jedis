@@ -1410,4 +1410,27 @@ public class BinaryClient extends Connection {
     sendCommand(XREAD,params);
   }
 
+  /**
+   * 发送xdel命令
+   * @param key 键名
+   * @param entryId 序号
+   */
+  public void xdel(byte[] key, byte[] entryId){
+    sendCommand(XDEL, key, entryId);
+  }
+
+  /**
+   * 按maxlen裁剪Stream
+   * @param key 键名
+   * @param approx 是否使用“~”参数
+   * @param maxlen 最大元素数
+   */
+  public void xtrimWithMaxlen(byte[] key, boolean approx, long maxlen) {
+    byte[][] params;
+    if(approx){
+      sendCommand(XTRIM, key, MAXLEN.raw, SafeEncoder.encode("~"), toByteArray(maxlen));
+    }else{
+      sendCommand(XTRIM, key, MAXLEN.raw, toByteArray(maxlen));
+    }
+  }
 }

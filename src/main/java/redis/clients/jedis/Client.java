@@ -1182,4 +1182,12 @@ public class Client extends BinaryClient implements Commands {
   public void xreadBlock(long block,String... keys){
     xreadBlock(block,SafeEncoder.encodeMany(keys));
   }
+
+  public void xdel(String key, String entryId){
+    xdel(SafeEncoder.encode(key), SafeEncoder.encode(entryId));
+  }
+
+  public void xtrimWithMaxlen(String key, boolean approx, long maxlen) {
+    xtrimWithMaxlen(SafeEncoder.encode(key), approx, maxlen);
+  }
 }

@@ -1149,7 +1149,7 @@ public class BinaryClient extends Connection {
       unit.raw);
   }
 
-  public void georadiusReadOnly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
     sendCommand(GEORADIUS_RO, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
       unit.raw);
   }
@@ -1160,7 +1160,7 @@ public class BinaryClient extends Connection {
       toByteArray(radius), unit.raw));
   }
 
-  public void georadiusReadOnly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
       toByteArray(radius), unit.raw));
@@ -1170,7 +1170,7 @@ public class BinaryClient extends Connection {
     sendCommand(GEORADIUSBYMEMBER, key, member, toByteArray(radius), unit.raw);
   }
 
-  public void georadiusByMemberReadOnly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
     sendCommand(GEORADIUSBYMEMBER_RO, key, member, toByteArray(radius), unit.raw);
   }
 
@@ -1179,7 +1179,7 @@ public class BinaryClient extends Connection {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 
-  public void georadiusByMemberReadOnly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER_RO, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }

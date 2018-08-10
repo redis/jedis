@@ -272,24 +272,24 @@ public interface RedisPipeline {
   Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusReadOnly(String key, double longitude, double latitude,
+  Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
   Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusReadOnly(String key, double longitude, double latitude,
+  Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(String key, String member, double radius,
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusByMemberReadOnly(String key, String member, double radius,
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 }

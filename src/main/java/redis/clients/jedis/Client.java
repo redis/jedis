@@ -1083,8 +1083,8 @@ public class Client extends BinaryClient implements Commands {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }
 
-  public void georadiusReadOnly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
-    georadiusReadOnly(SafeEncoder.encode(key), longitude, latitude, radius, unit);
+  public void georadiusReadonly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+    georadiusReadonly(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }
 
   public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
@@ -1092,17 +1092,17 @@ public class Client extends BinaryClient implements Commands {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
-  public void georadiusReadOnly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+  public void georadiusReadonly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
-    georadiusReadOnly(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
+    georadiusReadonly(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
   public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
   }
 
-  public void georadiusByMemberReadOnly(final String key, final String member, final double radius, final GeoUnit unit) {
-    georadiusByMemberReadOnly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
+  public void georadiusByMemberReadonly(final String key, final String member, final double radius, final GeoUnit unit) {
+    georadiusByMemberReadonly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
   }
 
   public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
@@ -1110,9 +1110,9 @@ public class Client extends BinaryClient implements Commands {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
   }
 
-  public void georadiusByMemberReadOnly(final String key, final String member, final double radius, final GeoUnit unit,
+  public void georadiusByMemberReadonly(final String key, final String member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
-    georadiusByMemberReadOnly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
+    georadiusByMemberReadonly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
   }
 
   public void moduleLoad(final String path) {

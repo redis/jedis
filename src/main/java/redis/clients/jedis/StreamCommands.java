@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.stream.NewStreamParams;
 import redis.clients.jedis.params.stream.StreamParams;
 
 import java.util.List;
@@ -186,7 +187,14 @@ public interface StreamCommands {
      * @param block 阻塞的时间，单位为毫秒
      * @return 取得的值, 只会有一个元素，Map的key为第一个取得了元素的Stream的键名。Redis可能返回nil，自动处理为空集合
      */
-    Map<String, StreamParams> xreadBlock(long block, String... keys);
+    NewStreamParams xreadBlock(long block, String... keys);
+
+    /**
+     * 一直Block直到接收到消息，即BLOCK 0
+     * @param keys 键名
+     * @return 取得的值
+     */
+    NewStreamParams xreadBlock(String... keys);
 
     /**
      * 删除一个元素

@@ -2,9 +2,11 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.JedisCluster.Reset;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.params.stream.NewStreamParams;
 import redis.clients.jedis.params.stream.StreamParams;
 import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
@@ -3744,29 +3746,87 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return getXRangeResult(reply);
   }
 
+    /**
+     * 组装XREAD的返回信息
+     * @param reply 初步解析的数组
+     * @return 带Stream键名分组的Stream元素集合
+     */
+    @SuppressWarnings("unchecked")
+  private Map<String, List<StreamParams>> getXReadResult(List<Object> reply){
+      Map<String,List<StreamParams>> result=new HashMap<String, List<StreamParams>>();
+      for(Object obj:reply){
+          List<Object> streamReply=(List<Object>)obj;
+          String key=(String)streamReply.get(0);
+          List<Object> streamData=(List<Object>)streamReply.get(1);
+          streamReply.clear();
+          if(key==null || streamData==null){
+              continue;
+          }
+          result.put(key,getXRangeResult(streamData));
+      }
+      reply.clear();
+      return result;
+  }
+
   @Override
   public Map<String, List<StreamParams>> xread(String... params) {
-    return null;
+    checkIsInMultiOrPipeline();
+    if((params.length & 1)>0){ //奇数个参数，非法
+        throw new JedisDataException("Invalid num of parameters");
+    }
+    client.xread(params);
+    List<Object> reply=client.getObjectMultiBulkReply();
+    return getXReadResult(reply);
   }
 
   @Override
   public Map<String, List<StreamParams>> xread(Map<String, String> pairs) {
-    return null;
+    checkIsInMultiOrPipeline();
+    client.xread(convertPairsMap(pairs));
+    List<Object> reply=client.getObjectMultiBulkReply();
+    return getXReadResult(reply);
   }
 
   @Override
   public Map<String, List<StreamParams>> xread(long count, String... params) {
-    return null;
+      checkIsInMultiOrPipeline();
+      client.xread(count, params);
+      List<Object> reply=client.getObjectMultiBulkReply();
+      return getXReadResult(reply);
   }
 
   @Override
   public Map<String, List<StreamParams>> xread(long count, Map<String, String> pairs) {
-    return null;
+      checkIsInMultiOrPipeline();
+      client.xread(count, convertPairsMap(pairs));
+      List<Object> reply=client.getObjectMultiBulkReply();
+      return getXReadResult(reply);
   }
 
   @Override
-  public Map<String, StreamParams> xreadBlock(long block, String... keys) {
-    return null;
+  public NewStreamParams xreadBlock(long block, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.xreadBlock(block,keys);
+    if(block==0){
+        client.setTimeoutInfinite();
+    }
+    NewStreamParams result=null;
+    try {
+      List<Object> reply = client.getObjectMultiBulkReply();
+      Map<String,List<StreamParams>> xreadResult = getXReadResult(reply);
+      if(!xreadResult.isEmpty()) {
+        String key = xreadResult.keySet().iterator().next();
+        result = new NewStreamParams(key, xreadResult.remove(key).remove(0));
+      }
+    } finally {
+      client.rollbackTimeout();
+    }
+    return result;
+  }
+
+  @Override
+  public NewStreamParams xreadBlock(String... keys) {
+    return xreadBlock(0,keys);
   }
 
   @Override

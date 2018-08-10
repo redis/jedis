@@ -1376,4 +1376,38 @@ public class BinaryClient extends Connection {
     sendCommand(XREVRANGE,key,startEntryId,endEntryId,COUNT.raw,toByteArray(count));
   }
 
+  /**
+   * 发送xread命令
+   * @param pairs 参数组
+   */
+  public void xread(byte[][] pairs){
+    sendCommand(XREAD,joinParameters(STREAMS.raw,pairs));
+  }
+
+  /**
+   * 发送带count限定的xread命令
+   * @param count 最大取元素数
+   * @param pairs 参数组
+   */
+  public void xread(long count, byte[][] pairs){
+    sendCommand(XREAD,joinParameters(COUNT.raw,toByteArray(count),joinParameters(STREAMS.raw,pairs)));
+  }
+
+  /**
+   * 发送带block的xread命令
+   * @param block 阻塞时间
+   * @param keys 键名
+   */
+  public void xreadBlock(long block,byte[][] keys){
+    int keyNum=keys.length;
+    byte[][] params=new byte[2 + keyNum * 2][];
+    params[0] = BLOCK.raw;
+    params[1] = toByteArray(block);
+    System.arraycopy(keys,0,params,2, keyNum);
+    for(int i = keyNum;i < params.length;i++){
+      params[i] = $.raw;
+    }
+    sendCommand(XREAD,params);
+  }
+
 }

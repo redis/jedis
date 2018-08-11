@@ -10,7 +10,15 @@ before_install:
     - tar -xvzf stunnel.tar.gz
     - cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
 install:
+  - echo "Downloading Maven 3.0";
+  - wget https://archive.apache.org/dist/maven/binaries/apache-maven-3.0-bin.zip || travis_terminate 1
+  - unzip -qq apache-maven-3.0-bin.zip || travis_terminate 1
+  - export M2_HOME=$PWD/apache-maven-3.0
+  - export PATH=$M2_HOME/bin:$PATH
+  - mvn -version
+  - mvn clean package install -DskipTests -Dgpg.skip
   - make travis-install
+
 script: make test
 cache:
   directories:

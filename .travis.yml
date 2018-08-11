@@ -17,3 +17,6 @@ cache:
     - $HOME/.m2
 addons:
   hostname: jedis
+  apt:
+    packages:
+      - openjdk-6-jdk

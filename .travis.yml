@@ -16,10 +16,12 @@ install:
   - export M2_HOME=$PWD/apache-maven-3.0
   - export PATH=$M2_HOME/bin:$PATH
   - mvn -version
+  - jdk_switcher use openjdk6
   - mvn clean package install -DskipTests -Dgpg.skip
   - make travis-install
 
-script: make test
+script:
+  - make test
 cache:
   directories:
     - $HOME/.m2

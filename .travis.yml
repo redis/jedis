@@ -15,8 +15,8 @@ install:
   - unzip -qq apache-maven-3.0-bin.zip || travis_terminate 1
   - export M2_HOME=$PWD/apache-maven-3.0
   - export PATH=$M2_HOME/bin:$PATH
+  - if [[ $JAVA_HOME = *java-6* ]]; then jdk_switcher use openjdk6; fi
   - mvn -version
-  - jdk_switcher use openjdk6
   - mvn clean package install -DskipTests -Dgpg.skip
   - make travis-install
 

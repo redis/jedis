@@ -53,11 +53,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<type>jar</type>
-			<scope>test</scope>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.22</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -65,6 +63,26 @@
 			<version>2.4.3</version>
 			<type>jar</type>
 			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.3</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -107,23 +125,6 @@
                                 <executions>
                                     <execution>
                                         <id>attach-sources</id>
-                                        <goals>
-                                            <goal>jar</goal>
-                                        </goals>
-                                    </execution>
-                                </executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<aggregate>true</aggregate>
-					<additionalparam>-Xdoclint:none</additionalparam>
-				</configuration>
-                                <executions>
-                                    <execution>
-                                        <id>attach-javadoc</id>
                                         <goals>
                                             <goal>jar</goal>
                                         </goals>

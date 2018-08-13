@@ -60,29 +60,29 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     prepareGeoData();
 
     Double dist = jedis.geodist("foo", "a", "b");
-    assertEquals(dist.intValue(), 157149);
+    assertEquals(157149, dist.intValue());
 
     dist = jedis.geodist("foo", "a", "b", GeoUnit.KM);
-    assertEquals(dist.intValue(), 157);
+    assertEquals(157, dist.intValue());
 
     dist = jedis.geodist("foo", "a", "b", GeoUnit.MI);
-    assertEquals(dist.intValue(), 97);
+    assertEquals(97, dist.intValue());
 
     dist = jedis.geodist("foo", "a", "b", GeoUnit.FT);
-    assertEquals(dist.intValue(), 515583);
+    assertEquals(515583, dist.intValue());
 
     // binary
     dist = jedis.geodist(bfoo, bA, bB);
-    assertEquals(dist.intValue(), 157149);
+    assertEquals(157149, dist.intValue());
 
     dist = jedis.geodist(bfoo, bA, bB, GeoUnit.KM);
-    assertEquals(dist.intValue(), 157);
+    assertEquals(157, dist.intValue());
 
     dist = jedis.geodist(bfoo, bA, bB, GeoUnit.MI);
-    assertEquals(dist.intValue(), 97);
+    assertEquals(97, dist.intValue());
 
     dist = jedis.geodist(bfoo, bA, bB, GeoUnit.FT);
-    assertEquals(dist.intValue(), 515583);
+    assertEquals(515583, dist.intValue());
   }
 
   @Test

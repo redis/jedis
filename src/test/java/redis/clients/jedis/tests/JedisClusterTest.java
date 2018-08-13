@@ -433,10 +433,14 @@ public class JedisClusterTest {
   @Test
   public void testClusterKeySlot() {
     // It assumes JedisClusterCRC16 is correctly implemented
-    assertEquals(node1.clusterKeySlot("foo{bar}zap}").intValue(),
-      JedisClusterCRC16.getSlot("foo{bar}zap"));
-    assertEquals(node1.clusterKeySlot("{user1000}.following").intValue(),
-      JedisClusterCRC16.getSlot("{user1000}.following"));
+    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
+        node1.clusterKeySlot("{user1000}.following").intValue());
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
+        node1.clusterKeySlot("foo{bar}{zap}").intValue());
+    assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
+        node1.clusterKeySlot("foo{}{bar}").intValue());
+    assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"),
+        node1.clusterKeySlot("foo{{bar}}zap").intValue());
   }
 
   @Test
@@ -528,11 +532,10 @@ public class JedisClusterTest {
 
     for (JedisPool pool : jc.getClusterNodes().values()) {
       Jedis jedis = pool.getResource();
-      assertEquals(jedis.getClient().getConnectionTimeout(), 4000);
-      assertEquals(jedis.getClient().getSoTimeout(), 4000);
+      assertEquals(4000, jedis.getClient().getConnectionTimeout());
+      assertEquals(4000, jedis.getClient().getSoTimeout());
       jedis.close();
     }
-
   }
 
   @Test

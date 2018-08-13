@@ -263,7 +263,7 @@ public class JedisPoolTest {
     } catch (Exception ignored) {
     }
 
-    assertEquals(destroyed.get(), 1);
+    assertEquals(1, destroyed.get());
   }
 
   @Test
@@ -355,9 +355,8 @@ public class JedisPoolTest {
   public void testAddObject() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
     pool.addObjects(1);
-    assertEquals(pool.getNumIdle(), 1);
+    assertEquals(1, pool.getNumIdle());
     pool.destroy();
-
   }
 
   @Test

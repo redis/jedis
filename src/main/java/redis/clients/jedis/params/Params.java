@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class Params {
 
@@ -37,7 +37,7 @@ public abstract class Params {
     return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
-  public boolean contains(String name) {
+  protected boolean contains(String name) {
     if (params == null) return false;
 
     return params.containsKey(name);

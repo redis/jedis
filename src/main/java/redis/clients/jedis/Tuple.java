@@ -3,8 +3,8 @@ package redis.clients.jedis;
 import java.util.Arrays;
 import java.util.Objects;
 
-import redis.clients.util.ByteArrayComparator;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.ByteArrayComparator;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class Tuple implements Comparable<Tuple> {
   private byte[] element;

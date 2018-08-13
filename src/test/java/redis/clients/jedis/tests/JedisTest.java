@@ -21,7 +21,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisTest extends JedisCommandTestBase {
   @Test
@@ -129,15 +129,15 @@ public class JedisTest extends JedisCommandTestBase {
   public void allowUrlWithNoDBAndNoPassword() {
     Jedis jedis = new Jedis("redis://localhost:6380");
     jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), 0);
+    assertEquals("localhost", jedis.getClient().getHost());
+    assertEquals(6380, jedis.getClient().getPort());
+    assertEquals(0, jedis.getDB());
 
     jedis = new Jedis("redis://localhost:6380/");
     jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), 0);
+    assertEquals("localhost", jedis.getClient().getHost());
+    assertEquals(6380, jedis.getClient().getPort());
+    assertEquals(0, jedis.getDB());
   }
 
   @Test

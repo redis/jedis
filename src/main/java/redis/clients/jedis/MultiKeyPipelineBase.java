@@ -1,6 +1,11 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.commands.*;
+import redis.clients.jedis.commands.BasicRedisPipeline;
+import redis.clients.jedis.commands.BinaryScriptingCommandsPipeline;
+import redis.clients.jedis.commands.ClusterPipeline;
+import redis.clients.jedis.commands.MultiKeyBinaryRedisPipeline;
+import redis.clients.jedis.commands.MultiKeyCommandsPipeline;
+import redis.clients.jedis.commands.ScriptingCommandsPipeline;
 
 import java.util.List;
 import java.util.Map;

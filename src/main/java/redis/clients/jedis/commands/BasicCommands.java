@@ -136,5 +136,7 @@ public interface BasicCommands {
 
   String configResetStat();
 
+  String configRewrite();
+
   Long waitReplicas(int replicas, long timeout);
 }

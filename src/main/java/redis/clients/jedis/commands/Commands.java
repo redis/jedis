@@ -14,6 +14,8 @@ import redis.clients.jedis.params.ZIncrByParams;
 
 public interface Commands {
 
+  void ping(String message);
+  
   void set(String key, String value);
 
   void set(String key, String value, SetParams params);
@@ -307,6 +309,12 @@ public interface Commands {
   void bitcount(String key, long start, long end);
 
   void bitop(BitOP op, String destKey, String... srcKeys);
+
+  void dump(String key);
+
+  void restore(String key, int ttl, byte[] serializedValue);
+
+  void restoreReplace(String key, int ttl, byte[] serializedValue);
 
   void scan(String cursor, ScanParams params);
 

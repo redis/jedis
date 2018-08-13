@@ -12,8 +12,8 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.util.Hashing;
-import redis.clients.util.Sharded;
+import redis.clients.jedis.util.Hashing;
+import redis.clients.jedis.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
@@ -94,6 +94,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restore(key, ttl, serializedValue);
+  }
+
+  @Override
+  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    Jedis j = getShard(key);
+    return j.restoreReplace(key, ttl, serializedValue);
   }
 
   @Override

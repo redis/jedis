@@ -6,7 +6,7 @@ import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
-import redis.clients.util.KeyMergeUtil;
+import redis.clients.jedis.util.KeyMergeUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.params.SetParams;
-import redis.clients.util.JedisClusterHashTagUtil;
+import redis.clients.jedis.util.JedisClusterHashTagUtil;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
@@ -1752,13 +1752,13 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Object eval(final String script, final String key) {
+  public Object eval(final String script, final String sampleKey) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
         return connection.eval(script);
       }
-    }.run(key);
+    }.run(sampleKey);
   }
 
   @Override
@@ -1792,43 +1792,63 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Object evalsha(final String sha1, final String key) {
+  public Object evalsha(final String sha1, final String sampleKey) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
         return connection.evalsha(sha1);
       }
-    }.run(key);
+    }.run(sampleKey);
   }
 
   @Override
-  public Boolean scriptExists(final String sha1, final String key) {
+  public Boolean scriptExists(final String sha1, final String sampleKey) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
       @Override
       public Boolean execute(Jedis connection) {
         return connection.scriptExists(sha1);
       }
-    }.run(key);
+    }.run(sampleKey);
   }
 
   @Override
-  public List<Boolean> scriptExists(final String key, final String... sha1) {
+  public List<Boolean> scriptExists(final String sampleKey, final String... sha1) {
     return new JedisClusterCommand<List<Boolean>>(connectionHandler, maxAttempts) {
       @Override
       public List<Boolean> execute(Jedis connection) {
         return connection.scriptExists(sha1);
       }
-    }.run(key);
+    }.run(sampleKey);
   }
 
   @Override
-  public String scriptLoad(final String script, final String key) {
+  public String scriptLoad(final String script, final String sampleKey) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
         return connection.scriptLoad(script);
       }
-    }.run(key);
+    }.run(sampleKey);
+  }
+
+  @Override
+  public String scriptFlush(final String sampleKey) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.scriptFlush();
+      }
+    }.run(sampleKey);
+  }
+
+  @Override
+  public String scriptKill(final String sampleKey) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.scriptKill();
+      }
+    }.run(sampleKey);
   }
 
   @Override

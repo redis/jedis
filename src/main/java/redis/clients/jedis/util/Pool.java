@@ -1,4 +1,4 @@
-package redis.clients.util;
+package redis.clients.jedis.util;
 
 import java.io.Closeable;
 import java.util.NoSuchElementException;
@@ -91,7 +91,7 @@ public abstract class Pool<T> implements Closeable {
     try {
       internalPool.invalidateObject(resource);
     } catch (Exception e) {
-      throw new JedisException("Could not return the resource to the pool", e);
+      throw new JedisException("Could not return the broken resource to the pool", e);
     }
   }
 

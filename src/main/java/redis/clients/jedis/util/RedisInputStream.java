@@ -7,9 +7,12 @@
  * for the specific language governing permissions and limitations under the License.
  */
 
-package redis.clients.util;
+package redis.clients.jedis.util;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 

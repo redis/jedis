@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,8 +9,8 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
-import redis.clients.util.JedisClusterCRC16;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterCRC16Test {
 
@@ -42,4 +43,25 @@ public class JedisClusterCRC16Test {
     solutionMap.put("Hello, World!", 0x4FD6);
     return solutionMap;
   }
+
+  @Test
+  public void testRedisHashtagGetSlot() {
+    assertEquals(JedisClusterCRC16.getSlot("{bar"), JedisClusterCRC16.getSlot("foo{{bar}}zap"));
+    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
+      JedisClusterCRC16.getSlot("{user1000}.followers"));
+    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), JedisClusterCRC16.getSlot("bar"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
+  }
+
+  @Test
+  public void testBinaryHashtagGetSlot() {
+    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar".getBytes()));
+    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()),
+      JedisClusterCRC16.getSlot("{user1000}.followers".getBytes()));
+    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()),
+      JedisClusterCRC16.getSlot("bar".getBytes()));
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()),
+      JedisClusterCRC16.getSlot("bar".getBytes()));
+  }
+
 }

@@ -17,7 +17,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
 
@@ -43,6 +43,11 @@ public class Client extends BinaryClient implements Commands {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  @Override
+  public void ping(final String message) {
+    ping(SafeEncoder.encode(message));
+  }
+  
   @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));
@@ -839,12 +844,19 @@ public class Client extends BinaryClient implements Commands {
     sentinel(SafeEncoder.encodeMany(args));
   }
 
+  @Override
   public void dump(final String key) {
     dump(SafeEncoder.encode(key));
   }
 
+  @Override
   public void restore(final String key, final int ttl, final byte[] serializedValue) {
     restore(SafeEncoder.encode(key), ttl, serializedValue);
+  }
+
+  @Override
+  public void restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+    restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
   public void pexpire(final String key, final long milliseconds) {

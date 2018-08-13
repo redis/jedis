@@ -1,17 +1,15 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisClusterMaxRedirectionsException;
+import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
-import redis.clients.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
-
-  private static final String NO_DISPATCH_MESSAGE = "No way to dispatch this command to Redis Cluster.";
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
@@ -24,16 +22,12 @@ public abstract class JedisClusterCommand<T> {
   public abstract T execute(Jedis connection);
 
   public T run(String key) {
-    if (key == null) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
-    }
-
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
   }
 
   public T run(int keyCount, String... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
     }
 
     // For multiple keys, only execute if they all share the same connection slot.
@@ -42,8 +36,8 @@ public abstract class JedisClusterCommand<T> {
       for (int i = 1; i < keyCount; i++) {
         int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
         if (slot != nextSlot) {
-          throw new JedisClusterException("No way to dispatch this command to Redis Cluster "
-              + "because keys have different slots.");
+          throw new JedisClusterOperationException("No way to dispatch this command to Redis "
+              + "Cluster because keys have different slots.");
         }
       }
     }
@@ -52,16 +46,12 @@ public abstract class JedisClusterCommand<T> {
   }
 
   public T runBinary(byte[] key) {
-    if (key == null) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
-    }
-
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
   }
 
   public T runBinary(int keyCount, byte[]... keys) {
     if (keys == null || keys.length == 0) {
-      throw new JedisClusterException(NO_DISPATCH_MESSAGE);
+      throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
     }
 
     // For multiple keys, only execute if they all share the same connection slot.
@@ -70,8 +60,8 @@ public abstract class JedisClusterCommand<T> {
       for (int i = 1; i < keyCount; i++) {
         int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
         if (slot != nextSlot) {
-          throw new JedisClusterException("No way to dispatch this command to Redis Cluster "
-              + "because keys have different slots.");
+          throw new JedisClusterOperationException("No way to dispatch this command to Redis "
+              + "Cluster because keys have different slots.");
         }
       }
     }
@@ -93,7 +83,7 @@ public abstract class JedisClusterCommand<T> {
 
   private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
     if (attempts <= 0) {
-      throw new JedisClusterMaxRedirectionsException("Too many Cluster redirections?");
+      throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
     }
 
     Jedis connection = null;
@@ -129,9 +119,6 @@ public abstract class JedisClusterCommand<T> {
         //TODO make tracking of successful/unsuccessful operations for node - do renewing only
         //if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
-
-        //no more redirections left, throw original exception, not JedisClusterMaxRedirectionsException, because it's not MOVED situation
-        throw jce;
       }
 
       return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);

@@ -1,7 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.tests.HostAndPortUtil;
-import redis.clients.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class ClusterBinaryJedisCommandsTest {
   private Jedis node1;
@@ -107,7 +107,7 @@ public class ClusterBinaryJedisCommandsTest {
     byte[] byteKey = "foo".getBytes();
     byte[] byteValue = "2".getBytes();
     jedisCluster.set(byteKey, byteValue);
-    assertEquals(new String(jedisCluster.get(byteKey)), "2");
+    assertArrayEquals(byteValue, jedisCluster.get(byteKey));
   }
 
   @SuppressWarnings("unchecked")
@@ -117,7 +117,7 @@ public class ClusterBinaryJedisCommandsTest {
     byte[] byteValue = "2".getBytes();
     jedisCluster.set(byteKey, byteValue);
     jedisCluster.incr(byteKey);
-    assertEquals(new String(jedisCluster.get(byteKey)), "3");
+    assertArrayEquals("3".getBytes(), jedisCluster.get(byteKey));
   }
 
   @SuppressWarnings("unchecked")
@@ -140,15 +140,15 @@ public class ClusterBinaryJedisCommandsTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testHmset() {
-    byte[] byteKey = "language".getBytes();
-    byte[] language = "java".getBytes();
+    byte[] key = "jedis".getBytes();
+    byte[] field = "language".getBytes();
+    byte[] value = "java".getBytes();
     HashMap<byte[], byte[]> map = new HashMap();
-    map.put(byteKey, language);
-    jedisCluster.hmset(byteKey, map);
-    List<byte[]> listResults = jedisCluster.hmget(byteKey, byteKey);
+    map.put(field, value);
+    jedisCluster.hmset(key, map);
+    List<byte[]> listResults = jedisCluster.hmget(key, field);
     for (byte[] result : listResults) {
-      String resultString = new String(result);
-      assertEquals(resultString, "java");
+      assertArrayEquals(value, result);
     }
   }
 
@@ -177,17 +177,6 @@ public class ClusterBinaryJedisCommandsTest {
   @Test(expected = IllegalArgumentException.class)
   public void failKeys() {
     jedisCluster.keys("*".getBytes());
-  }
-
-  @Test
-  public void testGetSlot() {
-    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar"));
-    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()),
-      JedisClusterCRC16.getSlot("{user1000}.followers".getBytes()));
-    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()),
-      JedisClusterCRC16.getSlot("bar".getBytes()));
-    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()),
-      JedisClusterCRC16.getSlot("bar".getBytes()));
   }
 
   private static String getNodeId(String infoOutput) {

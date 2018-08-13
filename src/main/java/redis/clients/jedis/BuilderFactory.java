@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.util.JedisByteHashMap;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
   public static final Builder<Double> DOUBLE = new Builder<Double>() {

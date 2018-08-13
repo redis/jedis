@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 
 import org.junit.Test;
 
-import redis.clients.util.JedisURIHelper;
+import redis.clients.jedis.util.JedisURIHelper;
 
 public class JedisURIHelperTest {
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import redis.clients.util.Slowlog;
+import redis.clients.jedis.util.Slowlog;
 
 public class SlowlogCommandsTest extends JedisCommandTestBase {
 

@@ -1,4 +1,4 @@
-package redis.clients.util;
+package redis.clients.jedis.util;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -81,41 +81,6 @@ public final class RedisOutputStream extends FilterOutputStream {
     }
   }
 
-  public void writeAsciiCrLf(final String in) throws IOException {
-    final int size = in.length();
-
-    for (int i = 0; i != size; ++i) {
-      if (count == buf.length) {
-        flushBuffer();
-      }
-      buf[count++] = (byte) in.charAt(i);
-    }
-
-    writeCrLf();
-  }
-
-  public static boolean isSurrogate(final char ch) {
-    return ch >= Character.MIN_SURROGATE && ch <= Character.MAX_SURROGATE;
-  }
-
-  public static int utf8Length(final String str) {
-    int strLen = str.length(), utfLen = 0;
-    for (int i = 0; i != strLen; ++i) {
-      char c = str.charAt(i);
-      if (c < 0x80) {
-        utfLen++;
-      } else if (c < 0x800) {
-        utfLen += 2;
-      } else if (isSurrogate(c)) {
-        i++;
-        utfLen += 4;
-      } else {
-        utfLen += 3;
-      }
-    }
-    return utfLen;
-  }
-
   public void writeCrLf() throws IOException {
     if (2 >= buf.length - count) {
       flushBuffer();
@@ -125,54 +90,6 @@ public final class RedisOutputStream extends FilterOutputStream {
     buf[count++] = '\n';
   }
 
-  public void writeUtf8CrLf(final String str) throws IOException {
-    int strLen = str.length();
-
-    int i;
-    for (i = 0; i < strLen; i++) {
-      char c = str.charAt(i);
-      if (!(c < 0x80)) break;
-      if (count == buf.length) {
-        flushBuffer();
-      }
-      buf[count++] = (byte) c;
-    }
-
-    for (; i < strLen; i++) {
-      char c = str.charAt(i);
-      if (c < 0x80) {
-        if (count == buf.length) {
-          flushBuffer();
-        }
-        buf[count++] = (byte) c;
-      } else if (c < 0x800) {
-        if (2 >= buf.length - count) {
-          flushBuffer();
-        }
-        buf[count++] = (byte) (0xc0 | (c >> 6));
-        buf[count++] = (byte) (0x80 | (c & 0x3f));
-      } else if (isSurrogate(c)) {
-        if (4 >= buf.length - count) {
-          flushBuffer();
-        }
-        int uc = Character.toCodePoint(c, str.charAt(i++));
-        buf[count++] = ((byte) (0xf0 | ((uc >> 18))));
-        buf[count++] = ((byte) (0x80 | ((uc >> 12) & 0x3f)));
-        buf[count++] = ((byte) (0x80 | ((uc >> 6) & 0x3f)));
-        buf[count++] = ((byte) (0x80 | (uc & 0x3f)));
-      } else {
-        if (3 >= buf.length - count) {
-          flushBuffer();
-        }
-        buf[count++] = ((byte) (0xe0 | ((c >> 12))));
-        buf[count++] = ((byte) (0x80 | ((c >> 6) & 0x3f)));
-        buf[count++] = ((byte) (0x80 | (c & 0x3f)));
-      }
-    }
-
-    writeCrLf();
-  }
-  
   public void writeIntCrLf(int value) throws IOException {
     if (value < 0) {
       write((byte) '-');

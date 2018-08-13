@@ -8,8 +8,8 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.util.Hashing;
-import redis.clients.util.Pool;
+import redis.clients.jedis.util.Hashing;
+import redis.clients.jedis.util.Pool;
 
 public class ShardedJedisPool extends Pool<ShardedJedis> {
   public ShardedJedisPool(final GenericObjectPoolConfig poolConfig, List<JedisShardInfo> shards) {

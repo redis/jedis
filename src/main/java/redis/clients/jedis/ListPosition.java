@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 public enum ListPosition {
   BEFORE, AFTER;

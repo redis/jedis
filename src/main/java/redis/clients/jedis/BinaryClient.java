@@ -856,7 +856,11 @@ public class BinaryClient extends Connection {
   }
 
   public void configResetStat() {
-    sendCommand(CONFIG, Keyword.RESETSTAT.name());
+    sendCommand(CONFIG, Keyword.RESETSTAT.raw);
+  }
+
+  public void configRewrite() {
+    sendCommand(CONFIG, Keyword.REWRITE.raw);
   }
 
   public void setbit(final byte[] key, final long offset, final byte[] value) {
@@ -904,7 +908,10 @@ public class BinaryClient extends Connection {
   }
 
   public void resetState() {
-    if (isInWatch()) unwatch();
+    if (isInWatch()) {
+      unwatch();
+      getStatusCodeReply();
+    }
   }
 
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
@@ -989,6 +996,10 @@ public class BinaryClient extends Connection {
 
   public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+  }
+
+  public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.raw);
   }
 
   public void pexpire(final byte[] key, final long milliseconds) {

@@ -6,6 +6,6 @@ public enum BitOP {
   public final byte[] raw;
 
   private BitOP() {
-    this.raw = redis.clients.util.SafeEncoder.encode(name());
+    this.raw = redis.clients.jedis.util.SafeEncoder.encode(name());
   }
 }

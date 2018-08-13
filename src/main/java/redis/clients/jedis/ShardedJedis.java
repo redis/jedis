@@ -12,7 +12,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.util.Hashing;
+import redis.clients.jedis.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
@@ -80,6 +80,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String restore(final String key, final int ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restore(key, ttl, serializedValue);
+  }
+
+  @Override
+  public String restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+    Jedis j = getShard(key);
+    return j.restoreReplace(key, ttl, serializedValue);
   }
 
   @Override

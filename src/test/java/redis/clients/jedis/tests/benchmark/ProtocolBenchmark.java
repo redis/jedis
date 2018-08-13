@@ -1,8 +1,8 @@
 package redis.clients.jedis.tests.benchmark;
 
 import redis.clients.jedis.Protocol;
-import redis.clients.util.RedisInputStream;
-import redis.clients.util.RedisOutputStream;
+import redis.clients.jedis.util.RedisInputStream;
+import redis.clients.jedis.util.RedisOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

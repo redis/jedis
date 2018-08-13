@@ -20,7 +20,11 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.commands.*;
+import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
+import redis.clients.jedis.commands.BasicCommands;
+import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.BinaryScriptingCommands;
+import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -29,8 +33,8 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.util.JedisByteHashMap;
-import redis.clients.util.JedisURIHelper;
+import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
@@ -253,11 +257,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys existed Time
-   * complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys exist.
+   * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
-   *         none of the specified keys existed
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
+   *         0 if none of the specified keys exist.
    */
   @Override
   public Long exists(final byte[]... keys) {
@@ -267,8 +271,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
-   * returned. Note that even keys set with an empty string as value will return "1". Time
+   * Test if the specified key exists. The command returns true if the key exists, otherwise false is
+   * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false
@@ -450,7 +454,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
    * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
    * not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining seconds.
@@ -475,9 +479,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * EXPIREAT works exctly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
+   * EXPIREAT works exactly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
    * seconds representing the Time To Live of the key as a second argument (that is a relative way
-   * of specifing the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
+   * of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
    * seconds elapsed since 1 Gen 1970).
    * <p>
    * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
@@ -610,7 +614,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Get the values of all the specified keys. If one or more keys dont exist or is not of type
+   * Get the values of all the specified keys. If one or more keys don't exist or is not of type
    * String, a 'nil' value is returned instead of the value of the specified key, but the operation
    * never fails.
    * <p>
@@ -1017,7 +1021,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
+   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -1290,7 +1294,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Remove the first count occurrences of the value element from the list. If count is zero all the
    * elements are removed. If count is negative elements are removed from tail to head, instead to
    * go from head to tail that is the normal behaviour. So for example LREM with count -2 and hello
-   * as value to remove against the list (a,b,c,hello,x,hello,hello) will have the list
+   * as value to remove against the list (a,b,c,hello,x,hello,hello) will leave the list
    * (a,b,c,hello,x). The number of removed elements is returned as an integer, see below for more
    * information about the returned value. Note that non existing keys are considered like empty
    * lists by LREM, so LREM against non existing keys will always return 0.
@@ -1350,7 +1354,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned. If
    * the srckey and dstkey are the same the operation is equivalent to removing the last element
-   * from the list and pusing it as first element of the list, so it's a "list rotation" command.
+   * from the list and pushing it as first element of the list, so it's a "list rotation" command.
    * <p>
    * Time complexity: O(1)
    * @param srckey
@@ -1480,12 +1484,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Return 1 if member is a member of the set stored at key, otherwise 0 is returned.
+   * Return true if member is a member of the set stored at key, otherwise false is returned.
    * <p>
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
+   * @return Boolean reply, specifically: true if the element is a member of the set false if the element
    *         is not a member of the set OR if the key does not exist
    */
   @Override
@@ -1518,8 +1522,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * This commnad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
-   * the resulting set is sotred as dstkey.
+   * This commanad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
+   * the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
@@ -1636,10 +1640,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Add the specified member having the specifeid score to the sorted set stored at key. If member
+   * Add the specified member having the specified score to the sorted set stored at key. If member
    * is already a member of the sorted set the score is updated, and the element reinserted in the
    * right position to ensure sorting. If key does not exist a new sorted set with the specified
-   * member as sole member is crated. If the key exists but does not hold a sorted set value an
+   * member as sole member is created. If the key exists but does not hold a sorted set value an
    * error is returned.
    * <p>
    * The score value can be the string representation of a double precision floating point number.
@@ -1709,7 +1713,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * position of the element in the sorted set accordingly. If member does not already exist in the
    * sorted set it is added with increment as score (that is, like if the previous score was
    * virtually zero). If key does not exist a new sorted set with the specified member as sole
-   * member is crated. If the key exists but does not hold a sorted set value an error is returned.
+   * member is created. If the key exists but does not hold a sorted set value an error is returned.
    * <p>
    * The score value can be the string representation of a double precision floating point number.
    * It's possible to provide a negative value to perform a decrement.
@@ -1846,7 +1850,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   protected void checkIsInMultiOrPipeline() {
     if (client.isInMulti()) {
       throw new JedisDataException(
-          "Cannot use Jedis when in Multi. Please use Transation or reset jedis state.");
+          "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
     } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
       throw new JedisDataException(
           "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state .");
@@ -1864,15 +1868,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public void resetState() {
     if (client.isConnected()) {
       if (transaction != null) {
-        transaction.clear();
+        transaction.close();
       }
 
       if (pipeline != null) {
-        pipeline.clear();
-      }
-
-      if (client.isInWatch()) {
-        unwatch();
+        pipeline.close();
       }
 
       client.resetState();
@@ -2953,12 +2953,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Change the replication settings.
    * <p>
    * The SLAVEOF command can change the replication settings of a slave on the fly. If a Redis
-   * server is arleady acting as slave, the command SLAVEOF NO ONE will turn off the replicaiton
+   * server is already acting as slave, the command SLAVEOF NO ONE will turn off the replication
    * turning the Redis server into a MASTER. In the proper form SLAVEOF hostname port will make the
    * server a slave of the specific server listening at the specified hostname and port.
    * <p>
    * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication
-   * against the old server and start the synchrnonization against the new one discarding the old
+   * against the old server and start the synchronization against the new one discarding the old
    * dataset.
    * <p>
    * The form SLAVEOF no one will stop replication turning the server into a MASTER but will not
@@ -3018,6 +3018,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> configGet(final byte[] pattern) {
+    checkIsInMultiOrPipeline();
     client.configGet(pattern);
     return client.getBinaryMultiBulkReply();
   }
@@ -3028,7 +3029,35 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public String configResetStat() {
+    checkIsInMultiOrPipeline();
     client.configResetStat();
+    return client.getStatusCodeReply();
+  }
+
+  /**
+   * The CONFIG REWRITE command rewrites the redis.conf file the server was started with, applying
+   * the minimal changes needed to make it reflect the configuration currently used by the server,
+   * which may be different compared to the original one because of the use of the CONFIG SET command.
+   * 
+   * The rewrite is performed in a very conservative way:
+   * <ul>
+   * <li>Comments and the overall structure of the original redis.conf are preserved as much as possible.</li>
+   * <li>If an option already exists in the old redis.conf file, it will be rewritten at the same position (line number).</li>
+   * <li>If an option was not already present, but it is set to its default value, it is not added by the rewrite process.</li>
+   * <li>If an option was not already present, but it is set to a non-default value, it is appended at the end of the file.</li>
+   * <li>Non used lines are blanked. For instance if you used to have multiple save directives, but
+   * the current configuration has fewer or none as you disabled RDB persistence, all the lines will be blanked.</li>
+   * </ul>
+   * 
+   * CONFIG REWRITE is also able to rewrite the configuration file from scratch if the original one
+   * no longer exists for some reason. However if the server was started without a configuration
+   * file at all, the CONFIG REWRITE will just return an error.
+   * @return OK when the configuration was rewritten properly. Otherwise an error is returned.
+   */
+  @Override
+  public String configRewrite() {
+    checkIsInMultiOrPipeline();
+    client.configRewrite();
     return client.getStatusCodeReply();
   }
 
@@ -3048,7 +3077,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Redis configuration file, with the following exceptions:
    * <p>
    * <ul>
-   * <li>The save paramter is a list of space-separated integers. Every pair of integers specify the
+   * <li>The save parameter is a list of space-separated integers. Every pair of integers specify the
    * time and number of changes limit to trigger a save. For instance the command CONFIG SET save
    * "3600 10 60 10000" will configure the server to issue a background saving of the RDB file every
    * 3600 seconds if there are at least 10 changes in the dataset, and every 60 seconds if there are
@@ -3063,6 +3092,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public byte[] configSet(final byte[] parameter, final byte[] value) {
+    checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getBinaryBulkReply();
   }
@@ -3416,11 +3446,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    checkIsInMultiOrPipeline();
+    client.restoreReplace(key, ttl, serializedValue);
+    return client.getStatusCodeReply();
+  }
+
   /**
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
    * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
    * not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining milliseconds.

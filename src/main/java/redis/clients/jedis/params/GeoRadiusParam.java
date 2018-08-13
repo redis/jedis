@@ -1,7 +1,7 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.Protocol;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 

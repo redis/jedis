@@ -38,4 +38,6 @@ public interface BasicRedisPipeline {
   Response<String> select(int index);
 
   Response<String> swapDB(int index1, int index2);
+
+  Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
 }

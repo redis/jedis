@@ -382,4 +382,6 @@ public interface Commands {
 
   void clientSetname(String name);
 
+  void migrate(String host, int port, String key, int destinationDB, int timeout);
+
 }

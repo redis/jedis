@@ -23,6 +23,8 @@ public interface AdvancedJedisCommands {
 
   Long objectIdletime(String key);
 
+  String migrate(String host, int port, String key, int destinationDB, int timeout);
+
   String clientKill(String ipPort);
 
   String clientKill(String ip, int port);

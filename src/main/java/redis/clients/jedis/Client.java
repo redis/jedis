@@ -930,7 +930,7 @@ public class Client extends BinaryClient implements Commands {
 
   public void migrate(final String host, final int port, final String key, final int destinationDb,
       final int timeout) {
-    migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key), destinationDb, timeout);
+    migrate(host, port, SafeEncoder.encode(key), destinationDb, timeout);
   }
 
   @Override

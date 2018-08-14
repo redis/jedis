@@ -3656,7 +3656,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getMultiBulkReply();
   }
 
+  /**
+   * @deprecated Use {@link #migrate(java.lang.String, int, byte[], int, int)}
+   */
+  @Deprecated
   public String migrate(final byte[] host, final int port, final byte[] key,
+      final int destinationDb, final int timeout) {
+    checkIsInMultiOrPipeline();
+    client.migrate(host, port, key, destinationDb, timeout);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String migrate(final String host, final int port, final byte[] key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
     client.migrate(host, port, key, destinationDb, timeout);

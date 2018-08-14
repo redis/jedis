@@ -250,6 +250,8 @@ public interface RedisPipeline {
 
   Response<String> restoreReplace(String key, int ttl, byte[] serializedValue);
 
+  Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);

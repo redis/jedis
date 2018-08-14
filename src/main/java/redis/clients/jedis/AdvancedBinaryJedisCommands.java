@@ -22,6 +22,8 @@ public interface AdvancedBinaryJedisCommands {
 
   Long objectIdletime(byte[] key);
 
+  String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
   String clientKill(byte[] ipPort);
 
   String clientKill(String ip, int port);

@@ -1161,10 +1161,20 @@ public class BinaryClient extends Connection {
     sendCommand(TIME);
   }
 
+  /**
+   * @deprecated Use {@link #migrate(java.lang.String, int, byte[], int, int)}
+   */
+  @Deprecated
   public void migrate(final byte[] host, final int port, final byte[] key, final int destinationDb,
       final int timeout) {
     sendCommand(MIGRATE, host, toByteArray(port), key, toByteArray(destinationDb),
       toByteArray(timeout));
+  }
+
+  public void migrate(final String host, final int port, final byte[] key, final int destinationDb,
+      final int timeout) {
+    sendCommand(MIGRATE, SafeEncoder.encode(host), toByteArray(port), key,
+        toByteArray(destinationDb), toByteArray(timeout));
   }
 
   public void hincrByFloat(final byte[] key, final byte[] field, final double increment) {

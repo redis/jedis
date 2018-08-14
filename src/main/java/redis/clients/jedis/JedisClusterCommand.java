@@ -13,7 +13,6 @@ public abstract class JedisClusterCommand<T> {
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
-  private final ThreadLocal<Jedis> askConnection = new ThreadLocal<Jedis>();
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
     this.connectionHandler = connectionHandler;
@@ -23,7 +22,7 @@ public abstract class JedisClusterCommand<T> {
   public abstract T execute(Jedis connection);
 
   public T run(String key) {
-    return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, false);
+    return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
   }
 
   public T run(int keyCount, String... keys) {
@@ -43,11 +42,11 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    return runWithRetries(slot, this.maxAttempts, false, false);
+    return runWithRetries(slot, this.maxAttempts, false, null);
   }
 
   public T runBinary(byte[] key) {
-    return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, false);
+    return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
   }
 
   public T runBinary(int keyCount, byte[]... keys) {
@@ -67,7 +66,7 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    return runWithRetries(slot, this.maxAttempts, false, false);
+    return runWithRetries(slot, this.maxAttempts, false, null);
   }
 
   public T runWithAnyNode() {
@@ -82,7 +81,7 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
-  private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, boolean asking) {
+  private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
     if (attempts <= 0) {
       throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
     }
@@ -90,14 +89,12 @@ public abstract class JedisClusterCommand<T> {
     Jedis connection = null;
     try {
 
-      if (asking) {
-        // TODO: Pipeline asking with the original command to make it
-        // faster....
-        connection = askConnection.get();
-        connection.asking();
-
-        // if asking success, reset asking flag
-        asking = false;
+      if (redirect != null) {
+        connection = this.connectionHandler.getConnectionFromNode(redirect.getTargetNode());
+        if (redirect instanceof JedisAskDataException) {
+          // TODO: Pipeline asking with the original command to make it faster....
+          connection.asking();
+        }
       } else {
         if (tryRandomNode) {
           connection = connectionHandler.getConnection();
@@ -116,36 +113,27 @@ public abstract class JedisClusterCommand<T> {
       connection = null;
 
       if (attempts <= 1) {
-        //We need this because if node is not reachable anymore - we need to finally initiate slots renewing,
-        //or we can stuck with cluster state without one node in opposite case.
-        //But now if maxAttempts = 1 or 2 we will do it too often. For each time-outed request.
+        //We need this because if node is not reachable anymore - we need to finally initiate slots
+        //renewing, or we can stuck with cluster state without one node in opposite case.
+        //But now if maxAttempts = [1 or 2] we will do it too often.
         //TODO make tracking of successful/unsuccessful operations for node - do renewing only
         //if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
       }
 
-      return runWithRetries(slot, attempts - 1, tryRandomNode, asking);
+      return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
-        // it rebuilds cluster's slot cache
-        // recommended by Redis cluster specification
+        // it rebuilds cluster's slot cache recommended by Redis cluster specification
         this.connectionHandler.renewSlotCache(connection);
       }
 
-      // release current connection before recursion or renewing
+      // release current connection before recursion
       releaseConnection(connection);
       connection = null;
 
-      if (jre instanceof JedisAskDataException) {
-        asking = true;
-        askConnection.set(this.connectionHandler.getConnectionFromNode(jre.getTargetNode()));
-      } else if (jre instanceof JedisMovedDataException) {
-      } else {
-        throw new JedisClusterOperationException(jre);
-      }
-
-      return runWithRetries(slot, attempts - 1, false, asking);
+      return runWithRetries(slot, attempts - 1, false, jre);
     } finally {
       releaseConnection(connection);
     }

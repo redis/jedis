@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.params.MigrateParams;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
@@ -27,4 +28,16 @@ public interface AdvancedJedisCommands {
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+
+  String clientKill(String ipPort);
+
+  String clientKill(String ip, int port);
+
+  Long clientKill(ClientKillParams params);
+
+  String clientGetname();
+
+  String clientList();
+
+  String clientSetname(String name);
 }

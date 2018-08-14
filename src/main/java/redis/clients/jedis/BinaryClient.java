@@ -23,6 +23,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
@@ -1022,8 +1023,16 @@ public class BinaryClient extends Connection {
     sendCommand(SRANDMEMBER, key, toByteArray(count));
   }
 
-  public void clientKill(final byte[] client) {
-    sendCommand(CLIENT, Keyword.KILL.raw, client);
+  public void clientKill(final byte[] ipPort) {
+    sendCommand(CLIENT, Keyword.KILL.raw, ipPort);
+  }
+
+  public void clientKill(final String ip, final int port) {
+    sendCommand(CLIENT, Keyword.KILL.name(), ip + ':' + port);
+  }
+
+  public void clientKill(ClientKillParams params) {
+    sendCommand(CLIENT, joinParameters(Keyword.KILL.raw, params.getByteParams()));
   }
 
   public void clientGetname() {
@@ -1169,9 +1178,20 @@ public class BinaryClient extends Connection {
       unit.raw);
   }
 
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+    sendCommand(GEORADIUS_RO, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
+      unit.raw);
+  }
+
   public void georadius(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
+      toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
+    sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
       toByteArray(radius), unit.raw));
   }
 
@@ -1179,9 +1199,18 @@ public class BinaryClient extends Connection {
     sendCommand(GEORADIUSBYMEMBER, key, member, toByteArray(radius), unit.raw);
   }
 
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
+    sendCommand(GEORADIUSBYMEMBER_RO, key, member, toByteArray(radius), unit.raw);
+  }
+
   public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
+    sendCommand(GEORADIUSBYMEMBER_RO, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 
   public void moduleLoad(final byte[] path) {

@@ -28,6 +28,7 @@ import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
@@ -3509,24 +3510,42 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
-  public String clientKill(final byte[] client) {
+  @Override
+  public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(client);
+    this.client.clientKill(ipPort);
     return this.client.getStatusCodeReply();
   }
 
-  public String clientGetname() {
+  @Override
+  public String clientKill(final String ip, final int port) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(ip, port);
+    return this.client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long clientKill(ClientKillParams params) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(params);
+    return this.client.getIntegerReply();
+  }
+
+  @Override
+  public byte[] clientGetnameBinary() {
     checkIsInMultiOrPipeline();
     client.clientGetname();
-    return client.getBulkReply();
+    return client.getBinaryBulkReply();
   }
 
-  public String clientList() {
+  @Override
+  public byte[] clientListBinary() {
     checkIsInMultiOrPipeline();
     client.clientList();
-    return client.getBulkReply();
+    return client.getBinaryBulkReply();
   }
 
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     client.clientSetname(name);
@@ -3717,6 +3736,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadiusReadonly(key, longitude, latitude, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
@@ -3724,6 +3751,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
+  @Override
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadiusReadonly(key, longitude, latitude, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+  
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit) {
@@ -3733,10 +3768,26 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberReadonly(key, member, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberReadonly(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 

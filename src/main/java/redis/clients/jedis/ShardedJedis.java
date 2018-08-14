@@ -959,10 +959,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.georadiusReadonly(key, longitude, latitude, radius, unit);
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadius(key, longitude, latitude, radius, unit, param);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    Jedis j = getShard(key);
+    return j.georadiusReadonly(key, longitude, latitude, radius, unit, param);
   }
 
   @Override
@@ -973,10 +987,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member, final double radius,
+      final GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.georadiusByMemberReadonly(key, member, radius, unit);
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member, final double radius,
       final GeoUnit unit, final GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit, param);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
+    Jedis j = getShard(key);
+    return j.georadiusByMemberReadonly(key, member, radius, unit, param);
   }
 
   @Override

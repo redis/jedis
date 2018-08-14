@@ -25,9 +25,11 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
 
@@ -1049,10 +1051,28 @@ public class BinaryClient extends Connection {
     sendCommand(TIME);
   }
 
-  public void migrate(final byte[] host, final int port, final byte[] key, final int destinationDb,
+  public void migrate(final String host, final int port, final byte[] key, final int destinationDb,
       final int timeout) {
-    sendCommand(MIGRATE, host, toByteArray(port), key, toByteArray(destinationDb),
-      toByteArray(timeout));
+    sendCommand(MIGRATE, SafeEncoder.encode(host), toByteArray(port), key,
+        toByteArray(destinationDb), toByteArray(timeout));
+  }
+
+  public void migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final byte[]... keys) {
+    byte[][] bparams = params.getByteParams();
+    int len = 5 + bparams.length + 1 + keys.length;
+    byte[][] args = new byte[len][];
+    int i = 0;
+    args[i++] = SafeEncoder.encode(host);
+    args[i++] = toByteArray(port);
+    args[i++] = new byte[0];
+    args[i++] = toByteArray(destinationDB);
+    args[i++] = toByteArray(timeout);
+    System.arraycopy(bparams, 0, args, i, bparams.length);
+    i += bparams.length;
+    args[i++] = Keyword.KEYS.raw;
+    System.arraycopy(keys, 0, args, i, keys.length);
+    sendCommand(MIGRATE, args);
   }
 
   public void hincrByFloat(final byte[] key, final byte[] field, final double increment) {

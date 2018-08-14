@@ -30,6 +30,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -3557,10 +3558,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getMultiBulkReply();
   }
 
-  public String migrate(final byte[] host, final int port, final byte[] key,
+  @Override
+  public String migrate(final String host, final int port, final byte[] key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
     client.migrate(host, port, key, destinationDb, timeout);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.migrate(host, port, destinationDB, timeout, params, keys);
     return client.getStatusCodeReply();
   }
 

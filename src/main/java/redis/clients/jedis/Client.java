@@ -14,6 +14,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -893,9 +894,16 @@ public class Client extends BinaryClient implements Commands {
     clientSetname(SafeEncoder.encode(name));
   }
 
-  public void migrate(final String host, final int port, final String key, final int destinationDb,
-      final int timeout) {
-    migrate(SafeEncoder.encode(host), port, SafeEncoder.encode(key), destinationDb, timeout);
+  @Override
+  public void migrate(final String host, final int port, final String key,
+      final int destinationDb, final int timeout) {
+    migrate(host, port, SafeEncoder.encode(key), destinationDb, timeout);
+  }
+
+  @Override
+  public void migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, String... keys) {
+    migrate(host, port, destinationDB, timeout, params, SafeEncoder.encodeMany(keys));
   }
 
   @Override

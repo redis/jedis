@@ -7,6 +7,7 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -339,6 +340,10 @@ public interface Commands {
    * @param field
    */
   void hstrlen(String key, String field);
+
+  void migrate(String host, int port, String key, int destinationDB, int timeout);
+
+  void migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
 
   void clientKill(String ipPort);
 

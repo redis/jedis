@@ -1401,12 +1401,16 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
-  public Response<String> migrate(final String host, final int port, final String key, final int destinationDb, final int timeout) {
+  @Override
+  public Response<String> migrate(final String host, final int port,
+      final String key, final int destinationDb, final int timeout) {
     getClient(key).migrate(host, port, key, destinationDb, timeout);
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> migrate(final byte[] host, final int port, final byte[] key, final int destinationDb, final int timeout) {
+  @Override
+  public Response<String> migrate(final String host, final int port,
+      final byte[] key, final int destinationDb, final int timeout) {
     getClient(key).migrate(host, port, key, destinationDb, timeout);
     return getResponse(BuilderFactory.STRING);
   }

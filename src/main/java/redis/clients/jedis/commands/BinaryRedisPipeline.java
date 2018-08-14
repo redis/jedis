@@ -258,6 +258,8 @@ public interface BinaryRedisPipeline {
 
   Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue);
 
+  Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);

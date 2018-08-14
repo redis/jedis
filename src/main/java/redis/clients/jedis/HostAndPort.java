@@ -10,7 +10,7 @@ public class HostAndPort implements Serializable {
   private static final long serialVersionUID = -519876229978427751L;
 
   protected static Logger log = LoggerFactory.getLogger(HostAndPort.class.getName());
-  public static String localhost;
+  public static volatile String localhost;
 
 
   private String host;

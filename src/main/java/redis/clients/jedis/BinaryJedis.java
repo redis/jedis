@@ -28,6 +28,7 @@ import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -3508,24 +3509,42 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
-  public String clientKill(final byte[] client) {
+  @Override
+  public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(client);
+    this.client.clientKill(ipPort);
     return this.client.getStatusCodeReply();
   }
 
-  public String clientGetname() {
+  @Override
+  public String clientKill(final String ip, final int port) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(ip, port);
+    return this.client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long clientKill(ClientKillParams params) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(params);
+    return this.client.getIntegerReply();
+  }
+
+  @Override
+  public byte[] clientGetnameBinary() {
     checkIsInMultiOrPipeline();
     client.clientGetname();
-    return client.getBulkReply();
+    return client.getBinaryBulkReply();
   }
 
-  public String clientList() {
+  @Override
+  public byte[] clientListBinary() {
     checkIsInMultiOrPipeline();
     client.clientList();
-    return client.getBulkReply();
+    return client.getBinaryBulkReply();
   }
 
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     client.clientSetname(name);

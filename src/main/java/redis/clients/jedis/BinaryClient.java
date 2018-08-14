@@ -23,6 +23,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -1020,8 +1021,16 @@ public class BinaryClient extends Connection {
     sendCommand(SRANDMEMBER, key, toByteArray(count));
   }
 
-  public void clientKill(final byte[] client) {
-    sendCommand(CLIENT, Keyword.KILL.raw, client);
+  public void clientKill(final byte[] ipPort) {
+    sendCommand(CLIENT, Keyword.KILL.raw, ipPort);
+  }
+
+  public void clientKill(final String ip, final int port) {
+    sendCommand(CLIENT, Keyword.KILL.name(), ip + ':' + port);
+  }
+
+  public void clientKill(ClientKillParams params) {
+    sendCommand(CLIENT, joinParameters(Keyword.KILL.raw, params.getByteParams()));
   }
 
   public void clientGetname() {

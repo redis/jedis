@@ -7,6 +7,7 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -338,4 +339,17 @@ public interface Commands {
    * @param field
    */
   void hstrlen(String key, String field);
+
+  void clientKill(String ipPort);
+
+  void clientKill(String ip, int port);
+
+  void clientKill(ClientKillParams params);
+
+  void clientGetname();
+
+  void clientList();
+
+  void clientSetname(String name);
+
 }

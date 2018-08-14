@@ -885,8 +885,8 @@ public class Client extends BinaryClient implements Commands {
     srandmember(SafeEncoder.encode(key), count);
   }
 
-  public void clientKill(final String client) {
-    clientKill(SafeEncoder.encode(client));
+  public void clientKill(final String ipPort) {
+    clientKill(SafeEncoder.encode(ipPort));
   }
 
   public void clientSetname(final String name) {

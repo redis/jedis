@@ -23,8 +23,14 @@ public abstract class Params {
 
     for (Entry<String, Object> param : params.entrySet()) {
       byteParams.add(SafeEncoder.encode(param.getKey()));
-      if (param.getValue() != null) {
-        byteParams.add(SafeEncoder.encode(String.valueOf(param.getValue())));
+
+      Object value = param.getValue();
+      if (value != null) {
+        if (value instanceof byte[]) {
+          byteParams.add((byte[]) value);
+        } else {
+          byteParams.add(SafeEncoder.encode(String.valueOf(value)));
+        }
       }
     }
 

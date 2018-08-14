@@ -22,4 +22,14 @@ public interface AdvancedJedisCommands {
   String objectEncoding(String key);
 
   Long objectIdletime(String key);
+
+  String clientKill(String ipPort);
+
+  String clientKill(String ip, int port);
+
+  String clientGetname();
+
+  String clientList();
+
+  String clientSetname(String name);
 }

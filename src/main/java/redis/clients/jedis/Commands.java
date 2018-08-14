@@ -371,4 +371,15 @@ public interface Commands {
    * @param field
    */
   void hstrlen(String key, String field);
+
+  void clientKill(String ipPort);
+
+  void clientKill(String ip, int port);
+
+  void clientGetname();
+
+  void clientList();
+
+  void clientSetname(String name);
+
 }

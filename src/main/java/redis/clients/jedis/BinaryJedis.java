@@ -3595,24 +3595,55 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
-  public String clientKill(final byte[] client) {
+  @Override
+  public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(client);
+    this.client.clientKill(ipPort);
     return this.client.getStatusCodeReply();
   }
 
+  @Override
+  public String clientKill(final String ip, final int port) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(ip, port);
+    return this.client.getStatusCodeReply();
+  }
+
+  /**
+   * @deprecated Use {@link #clientGetnameBinary()} or {@link Jedis#clientGetname()}
+   */
+  @Deprecated
   public String clientGetname() {
     checkIsInMultiOrPipeline();
     client.clientGetname();
     return client.getBulkReply();
   }
 
+  @Override
+  public byte[] clientGetnameBinary() {
+    checkIsInMultiOrPipeline();
+    client.clientGetname();
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * @deprecated Use {@link #clientListBinary()} OR {@link Jedis#clientList()}
+   */
+  @Deprecated
   public String clientList() {
     checkIsInMultiOrPipeline();
     client.clientList();
     return client.getBulkReply();
   }
 
+  @Override
+  public byte[] clientListBinary() {
+    checkIsInMultiOrPipeline();
+    client.clientList();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     client.clientSetname(name);

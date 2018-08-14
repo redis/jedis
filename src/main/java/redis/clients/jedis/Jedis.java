@@ -3209,12 +3209,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
-  public String clientKill(final String client) {
+  @Override
+  public String clientKill(final String ipPort) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(client);
+    this.client.clientKill(ipPort);
     return this.client.getStatusCodeReply();
   }
 
+  @Override
+  public String clientGetname() {
+    checkIsInMultiOrPipeline();
+    client.clientGetname();
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String clientList() {
+    checkIsInMultiOrPipeline();
+    client.clientList();
+    return client.getBulkReply();
+  }
+
+  @Override
   public String clientSetname(final String name) {
     checkIsInMultiOrPipeline();
     client.clientSetname(name);

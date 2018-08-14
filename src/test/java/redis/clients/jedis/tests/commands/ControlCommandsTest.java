@@ -11,7 +11,6 @@ import org.junit.Test;
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
@@ -138,10 +137,39 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     assertEquals(1, replicas.longValue());
   }
 
-  @Test(expected = JedisConnectionException.class)
-  public void clientPause() {
+  @Test
+  public void clientPause() throws InterruptedException {
+    assertEquals("PONG", jedis.ping());
     jedis.clientPause(600);
-    jedis.ping();
+    try {
+      jedis.ping();
+    } catch (Exception e) {
+      assertEquals("java.net.SocketTimeoutException: Read timed out", e.getMessage());
+    }
+    Thread.sleep(100);
+    assertEquals("PONG", jedis.ping());
+
+    Jedis jedis1 = createJedis();
+    Jedis jedis2 = createJedis();
+    assertEquals("PONG", jedis1.ping());
+    assertEquals("PONG", jedis2.ping());
+    jedis.clientPause(1200);
+    try {
+      jedis1.ping();
+    } catch (Exception e) {
+      assertEquals("java.net.SocketTimeoutException: Read timed out", e.getMessage());
+    }
+    try {
+      jedis2.ping();
+    } catch (Exception e) {
+      assertEquals("java.net.SocketTimeoutException: Read timed out", e.getMessage());
+    }
+    Thread.sleep(200);
+    assertEquals("PONG", jedis1.ping());
+    assertEquals("PONG", jedis2.ping());
+
+    jedis1.close();
+    jedis2.close();
   }
 
 }

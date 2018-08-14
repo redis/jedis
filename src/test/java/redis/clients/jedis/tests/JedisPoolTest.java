@@ -370,6 +370,31 @@ public class JedisPoolTest {
   }
 
   @Test
+  public void closeResourceTwice() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
+    Jedis j = pool.getResource();
+    j.auth("foobared");
+    j.ping();
+    j.close();
+    j.close();
+  }
+
+  @Test
+  public void closeBrokenResourceTwice() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
+    Jedis j = pool.getResource();
+    try {
+      // make connection broken
+      j.getClient().getOne();
+      fail();
+    } catch (Exception e) {
+    }
+    assertTrue(j.getClient().isBroken());
+    j.close();
+    j.close();
+  }
+
+  @Test
   public void testCloseConnectionOnMakeObject() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);

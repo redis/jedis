@@ -3634,6 +3634,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       } else {
         this.dataSource.returnResource(this);
       }
+      this.dataSource = null;
     } else {
       client.close();
     }

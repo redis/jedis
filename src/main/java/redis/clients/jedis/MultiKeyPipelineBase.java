@@ -1,11 +1,7 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.commands.BasicRedisPipeline;
-import redis.clients.jedis.commands.BinaryScriptingCommandsPipeline;
-import redis.clients.jedis.commands.ClusterPipeline;
-import redis.clients.jedis.commands.MultiKeyBinaryRedisPipeline;
-import redis.clients.jedis.commands.MultiKeyCommandsPipeline;
-import redis.clients.jedis.commands.ScriptingCommandsPipeline;
+import redis.clients.jedis.commands.*;
+import redis.clients.jedis.params.MigrateParams;
 
 import java.util.List;
 import java.util.Map;
@@ -693,5 +689,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }  
   
+  @Override
+  public Response<String> migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final String... keys) {
+    client.migrate(host, port, destinationDB, timeout, params, keys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final byte[]... keys) {
+    client.migrate(host, port, destinationDB, timeout, params, keys);
+    return getResponse(BuilderFactory.STRING);
+  }
   
 }

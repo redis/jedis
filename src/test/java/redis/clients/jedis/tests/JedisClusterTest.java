@@ -2,7 +2,6 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -377,16 +376,6 @@ public class JedisClusterTest {
   }
 
   @Test
-  public void testRedisHashtag() {
-    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
-      JedisClusterCRC16.getSlot("{user1000}.followers"));
-    assertEquals(JedisClusterCRC16.getSlot("bar"), JedisClusterCRC16.getSlot("foo{bar}{zap}"));
-    assertNotEquals(JedisClusterCRC16.getSlot("bar"), JedisClusterCRC16.getSlot("foo{}{bar}"));
-    assertNotEquals(JedisClusterCRC16.getSlot(""), JedisClusterCRC16.getSlot("foo{}{bar}"));
-    assertEquals(JedisClusterCRC16.getSlot("{bar"), JedisClusterCRC16.getSlot("foo{{bar}}zap"));
-  }
-
-  @Test
   public void testClusterForgetNode() throws InterruptedException {
     // at first, join node4 to cluster
     node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
@@ -640,6 +629,59 @@ public class JedisClusterTest {
     Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
     assertEquals(3, clusterNodes.size());
     assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
+  }
+
+  @Test
+  public void nullKeys() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+    JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+
+    String foo = "foo";
+    byte[] bfoo = new byte[]{0x0b, 0x0f, 0x00, 0x00};
+
+    try {
+      cluster.exists((String) null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(foo, null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(null, foo);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists((byte[]) null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(bfoo, null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(null, bfoo);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
   }
 
   private static String getNodeServingSlotRange(String infoOutput) {

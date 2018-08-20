@@ -16,7 +16,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
   private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-  private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private volatile Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -71,7 +71,7 @@ public class JedisClusterInfoCache {
           HostAndPort targetNode = generateHostAndPort(hostInfos);
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
-            assignSlotsToNode(slotNums, targetNode);
+            assignSlotsToNode(slotNums, targetNode, this.slots);
           }
         }
       }
@@ -119,7 +119,8 @@ public class JedisClusterInfoCache {
 
   private void discoverClusterSlots(Jedis jedis) {
     List<Object> slots = jedis.clusterSlots();
-    this.slots.clear();
+
+    Map<Integer, JedisPool> slotsMap = new HashMap<Integer, JedisPool>();
 
     for (Object slotInfoObj : slots) {
       List<Object> slotInfo = (List<Object>) slotInfoObj;
@@ -138,8 +139,10 @@ public class JedisClusterInfoCache {
 
       // at this time, we just use master, discard slave information
       HostAndPort targetNode = generateHostAndPort(hostInfos);
-      assignSlotsToNode(slotNums, targetNode);
+      assignSlotsToNode(slotNums, targetNode, slotsMap);
     }
+    
+    this.slots = slotsMap;
   }
 
   private HostAndPort generateHostAndPort(List<Object> hostInfos) {
@@ -163,25 +166,10 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public void assignSlotToNode(int slot, HostAndPort targetNode) {
-    w.lock();
-    try {
-      JedisPool targetPool = setupNodeIfNotExist(targetNode);
-      slots.put(slot, targetPool);
-    } finally {
-      w.unlock();
-    }
-  }
-
-  public void assignSlotsToNode(List<Integer> targetSlots, HostAndPort targetNode) {
-    w.lock();
-    try {
-      JedisPool targetPool = setupNodeIfNotExist(targetNode);
-      for (Integer slot : targetSlots) {
-        slots.put(slot, targetPool);
-      }
-    } finally {
-      w.unlock();
+  private void assignSlotsToNode(List<Integer> targetSlots, HostAndPort targetNode, Map<Integer, JedisPool> slotsMap) {
+    JedisPool targetPool = setupNodeIfNotExist(targetNode);
+    for (Integer slot : targetSlots) {
+      slotsMap.put(slot, targetPool);
     }
   }
 
@@ -195,12 +183,7 @@ public class JedisClusterInfoCache {
   }
 
   public JedisPool getSlotPool(int slot) {
-    r.lock();
-    try {
-      return slots.get(slot);
-    } finally {
-      r.unlock();
-    }
+    return slots.get(slot);
   }
 
   public Map<String, JedisPool> getNodes() {

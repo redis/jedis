@@ -254,4 +254,22 @@ public interface StreamCommands {
      * @return 成功返回“OK”
      */
     String xgroupsetid(String key, String group, String entryId);
+
+    /**
+     * 销毁ConsumerGroup
+     * @param key Stream的键名
+     * @param group ConsumerGroup名
+     * @return 删除的Group个数
+     */
+    long xgroupdestroy(String key, String group);
+
+
+    /**
+     *
+     * @param key Stream的键名
+     * @param group ConsumerGroup名
+     * @param consumer Consumer名
+     * @return 未确认的消息数
+     */
+    long xgroupdelconsumer(String key, String group, String consumer);
 }

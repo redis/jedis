@@ -1456,6 +1456,25 @@ public class BinaryClient extends Connection {
    * @param entryId 当前读取Stream游标的序号
    */
   public void xgroupsetid(byte[] key, byte[] group, byte[] entryId){
-      sendCommand(XGROUP, SETID.raw, key, group, entryId);
+    sendCommand(XGROUP, SETID.raw, key, group, entryId);
+  }
+
+  /**
+   * 发送xgroup destroy命令
+   * @param key Stream键名
+   * @param group ConsumerGroup名
+   */
+  public void xgroupdestroy(byte[] key, byte[] group){
+    sendCommand(XGROUP, DESTROY.raw, key, group);
+  }
+
+  /**
+   * 发送xgroup delconsumer命令
+   * @param key Stream键名
+   * @param group ConsumerGroup名
+   * @param consumer Consumer名
+   */
+  public void xgroupdelconsumer(byte[] key, byte[] group, byte[] consumer){
+    sendCommand(XGROUP, DELCONSUMER.raw, key, group, consumer);
   }
 }

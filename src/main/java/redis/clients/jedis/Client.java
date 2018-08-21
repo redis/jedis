@@ -1198,4 +1198,12 @@ public class Client extends BinaryClient implements Commands {
   public void xgroupsetid(String key, String group, String entryId){
     xgroupsetid(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(entryId));
   }
+
+  public void xgroupdestroy(String key, String group){
+    xgroupdestroy(SafeEncoder.encode(key), SafeEncoder.encode(group));
+  }
+
+  public void xgroupdelconsumer(String key, String group, String consumer){
+    xgroupdelconsumer(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumer));
+  }
 }

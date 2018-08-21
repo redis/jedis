@@ -3866,4 +3866,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xgroupsetid(key, group, entryId);
     return client.getBulkReply();
   }
+
+  @Override
+  public long xgroupdestroy(String key, String group) {
+    checkIsInMultiOrPipeline();
+    client.xgroupdestroy(key, group);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long xgroupdelconsumer(String key, String group, String consumer) {
+    checkIsInMultiOrPipeline();
+    client.xgroupdelconsumer(key, group, consumer);
+    return client.getIntegerReply();
+  }
 }

@@ -3843,8 +3843,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public long xtrimWithMaxlen(String key, boolean approx, long maxlen) {
-      checkIsInMultiOrPipeline();
-      client.xtrimWithMaxlen(key, approx, maxlen);
-      return client.getIntegerReply();
+    checkIsInMultiOrPipeline();
+    client.xtrimWithMaxlen(key, approx, maxlen);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public String xgroupcreate(String key, String group, String entryId) {
+    return xgroupcreate(key, group, entryId, false);
+  }
+
+  @Override
+  public String xgroupcreate(String key, String group, String entryId, boolean noack) {
+    checkIsInMultiOrPipeline();
+    client.xgroupcreate(key, group, entryId, noack);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String xgroupsetid(String key, String group, String entryId){
+    checkIsInMultiOrPipeline();
+    client.xgroupsetid(key, group, entryId);
+    return client.getBulkReply();
   }
 }

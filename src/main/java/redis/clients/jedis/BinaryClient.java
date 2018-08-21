@@ -1433,4 +1433,29 @@ public class BinaryClient extends Connection {
       sendCommand(XTRIM, key, MAXLEN.raw, toByteArray(maxlen));
     }
   }
+
+  /**
+   * 发送xgroup create命令
+   * @param key Stream键名
+   * @param group ConsumerGroup名
+   * @param entryId 读取Stream的起始序号
+   * @param noack 是否使用“NOACK”参数
+   */
+  public void xgroupcreate(byte[] key, byte[] group, byte[] entryId, boolean noack){
+    if(noack) {
+      sendCommand(XGROUP, CREATE.raw, key, group, entryId, NOACK.raw);
+    }else{
+      sendCommand(XGROUP, CREATE.raw, key, group, entryId);
+    }
+  }
+
+  /**
+   * 发送xgroup setid命令
+   * @param key Stream键名
+   * @param group ConsumerGroup名
+   * @param entryId 当前读取Stream游标的序号
+   */
+  public void xgroupsetid(byte[] key, byte[] group, byte[] entryId){
+      sendCommand(XGROUP, SETID.raw, key, group, entryId);
+  }
 }

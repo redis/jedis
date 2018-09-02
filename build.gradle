@@ -1,0 +1,29 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'redis.clients'
+version = '3.0.0-SNAPSHOT'
+
+description = """Jedis"""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+configurations.all {
+}
+
+repositories {
+        
+     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.22'
+    compile group: 'org.apache.commons', name: 'commons-pool2', version:'2.4.3'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-core', version:'2.8'
+    testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version:'2.8'
+}

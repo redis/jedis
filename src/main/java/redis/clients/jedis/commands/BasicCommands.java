@@ -26,7 +26,7 @@ public interface BasicCommands {
 
   /**
    * Return the number of keys in the currently-selected database.
-   * @return the number of key in the curr currently-selected database.
+   * @return the number of key in the currently-selected database.
    */
   Long dbSize();
 
@@ -116,7 +116,7 @@ public interface BasicCommands {
    * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication against the old server and start the synchronization against the new one, discarding the old dataset.
    * @param host, listening at the specified hostname
    * @param port, server listening at the specified port
-   * @return result of the commmand.
+   * @return result of the command.
    */
   String slaveof(String host, int port);
 
@@ -138,5 +138,15 @@ public interface BasicCommands {
 
   String configRewrite();
 
+  /**
+   * Blocks until all the previous write commands are successfully transferred and acknowledged by 
+   * at least the specified number of replicas. 
+   * If the timeout, specified in milliseconds, is reached, the command returns 
+   * even if the specified number of replicas were not yet reached.
+   * 
+   * @param replicas successfully transferred and acknowledged by at least the specified number of replicas
+   * @param timeout the time to block in milliseconds, a timeout of 0 means to block forever
+   * @return the number of replicas reached by all the writes performed in the context of the current connection
+   */
   Long waitReplicas(int replicas, long timeout);
 }

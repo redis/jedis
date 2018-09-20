@@ -20,11 +20,17 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.commands.*;
+import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
+import redis.clients.jedis.commands.BasicCommands;
+import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.BinaryScriptingCommands;
+import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -266,8 +272,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
-   * returned. Note that even keys set with an empty string as value will return "1". Time
+   * Test if the specified key exists. The command returns true if the key exists, otherwise false is
+   * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false
@@ -449,7 +455,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
    * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
    * not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining seconds.
@@ -474,9 +480,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * EXPIREAT works exctly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
+   * EXPIREAT works exactly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
    * seconds representing the Time To Live of the key as a second argument (that is a relative way
-   * of specifing the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
+   * of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
    * seconds elapsed since 1 Gen 1970).
    * <p>
    * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
@@ -609,7 +615,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Get the values of all the specified keys. If one or more keys dont exist or is not of type
+   * Get the values of all the specified keys. If one or more keys don't exist or is not of type
    * String, a 'nil' value is returned instead of the value of the specified key, but the operation
    * never fails.
    * <p>
@@ -1016,7 +1022,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
+   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -1289,7 +1295,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Remove the first count occurrences of the value element from the list. If count is zero all the
    * elements are removed. If count is negative elements are removed from tail to head, instead to
    * go from head to tail that is the normal behaviour. So for example LREM with count -2 and hello
-   * as value to remove against the list (a,b,c,hello,x,hello,hello) will have the list
+   * as value to remove against the list (a,b,c,hello,x,hello,hello) will leave the list
    * (a,b,c,hello,x). The number of removed elements is returned as an integer, see below for more
    * information about the returned value. Note that non existing keys are considered like empty
    * lists by LREM, so LREM against non existing keys will always return 0.
@@ -1349,7 +1355,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned. If
    * the srckey and dstkey are the same the operation is equivalent to removing the last element
-   * from the list and pusing it as first element of the list, so it's a "list rotation" command.
+   * from the list and pushing it as first element of the list, so it's a "list rotation" command.
    * <p>
    * Time complexity: O(1)
    * @param srckey
@@ -1479,12 +1485,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Return 1 if member is a member of the set stored at key, otherwise 0 is returned.
+   * Return true if member is a member of the set stored at key, otherwise false is returned.
    * <p>
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
+   * @return Boolean reply, specifically: true if the element is a member of the set false if the element
    *         is not a member of the set OR if the key does not exist
    */
   @Override
@@ -1517,8 +1523,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * This commnad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
-   * the resulting set is sotred as dstkey.
+   * This commanad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
+   * the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
@@ -1635,10 +1641,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Add the specified member having the specifeid score to the sorted set stored at key. If member
+   * Add the specified member having the specified score to the sorted set stored at key. If member
    * is already a member of the sorted set the score is updated, and the element reinserted in the
    * right position to ensure sorting. If key does not exist a new sorted set with the specified
-   * member as sole member is crated. If the key exists but does not hold a sorted set value an
+   * member as sole member is created. If the key exists but does not hold a sorted set value an
    * error is returned.
    * <p>
    * The score value can be the string representation of a double precision floating point number.
@@ -1708,7 +1714,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * position of the element in the sorted set accordingly. If member does not already exist in the
    * sorted set it is added with increment as score (that is, like if the previous score was
    * virtually zero). If key does not exist a new sorted set with the specified member as sole
-   * member is crated. If the key exists but does not hold a sorted set value an error is returned.
+   * member is created. If the key exists but does not hold a sorted set value an error is returned.
    * <p>
    * The score value can be the string representation of a double precision floating point number.
    * It's possible to provide a negative value to perform a decrement.
@@ -2948,12 +2954,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Change the replication settings.
    * <p>
    * The SLAVEOF command can change the replication settings of a slave on the fly. If a Redis
-   * server is arleady acting as slave, the command SLAVEOF NO ONE will turn off the replicaiton
+   * server is already acting as slave, the command SLAVEOF NO ONE will turn off the replication
    * turning the Redis server into a MASTER. In the proper form SLAVEOF hostname port will make the
    * server a slave of the specific server listening at the specified hostname and port.
    * <p>
    * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication
-   * against the old server and start the synchrnonization against the new one discarding the old
+   * against the old server and start the synchronization against the new one discarding the old
    * dataset.
    * <p>
    * The form SLAVEOF no one will stop replication turning the server into a MASTER but will not
@@ -3072,7 +3078,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Redis configuration file, with the following exceptions:
    * <p>
    * <ul>
-   * <li>The save paramter is a list of space-separated integers. Every pair of integers specify the
+   * <li>The save parameter is a list of space-separated integers. Every pair of integers specify the
    * time and number of changes limit to trigger a save. For instance the command CONFIG SET save
    * "3600 10 60 10000" will configure the server to issue a background saving of the RDB file every
    * 3600 seconds if there are at least 10 changes in the dataset, and every 60 seconds if there are
@@ -3452,7 +3458,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
    * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
    * not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining milliseconds.
@@ -3504,24 +3510,42 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
-  public String clientKill(final byte[] client) {
+  @Override
+  public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(client);
+    this.client.clientKill(ipPort);
     return this.client.getStatusCodeReply();
   }
 
-  public String clientGetname() {
+  @Override
+  public String clientKill(final String ip, final int port) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(ip, port);
+    return this.client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long clientKill(ClientKillParams params) {
+    checkIsInMultiOrPipeline();
+    this.client.clientKill(params);
+    return this.client.getIntegerReply();
+  }
+
+  @Override
+  public byte[] clientGetnameBinary() {
     checkIsInMultiOrPipeline();
     client.clientGetname();
-    return client.getBulkReply();
+    return client.getBinaryBulkReply();
   }
 
-  public String clientList() {
+  @Override
+  public byte[] clientListBinary() {
     checkIsInMultiOrPipeline();
     client.clientList();
-    return client.getBulkReply();
+    return client.getBinaryBulkReply();
   }
 
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     client.clientSetname(name);
@@ -3534,10 +3558,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getMultiBulkReply();
   }
 
-  public String migrate(final byte[] host, final int port, final byte[] key,
+  @Override
+  public String migrate(final String host, final int port, final byte[] key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
     client.migrate(host, port, key, destinationDb, timeout);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.migrate(host, port, destinationDB, timeout, params, keys);
     return client.getStatusCodeReply();
   }
 
@@ -3703,6 +3736,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadiusReadonly(key, longitude, latitude, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
@@ -3710,6 +3751,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
+  @Override
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadiusReadonly(key, longitude, latitude, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+  
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit) {
@@ -3719,10 +3768,26 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberReadonly(key, member, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberReadonly(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 

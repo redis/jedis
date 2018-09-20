@@ -1,6 +1,12 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -249,6 +255,8 @@ public interface RedisPipeline {
 
   Response<String> restoreReplace(String key, int ttl, byte[] serializedValue);
 
+  Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);
@@ -266,12 +274,24 @@ public interface RedisPipeline {
   Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit);
+
   Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
+      GeoUnit unit);
+
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 }

@@ -1,7 +1,12 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
-
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -253,6 +258,8 @@ public interface BinaryRedisPipeline {
 
   Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue);
 
+  Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);
@@ -270,13 +277,25 @@ public interface BinaryRedisPipeline {
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit);
+
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusReadonly(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
+      GeoUnit unit);
+  
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);

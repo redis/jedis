@@ -1,6 +1,12 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -276,12 +282,23 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
+      GeoUnit unit);
+
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
 
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit);
+
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
   /**

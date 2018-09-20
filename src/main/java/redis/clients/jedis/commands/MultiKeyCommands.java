@@ -1,6 +1,11 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
+import redis.clients.jedis.BitOP;
+import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.ZParams;
 
 import java.util.List;
 import java.util.Set;

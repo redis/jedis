@@ -132,5 +132,23 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
   }
   
+  @Test
+  public void xack() {
+    
+    List<Entry<String, EntryID>> streamsACK = new ArrayList<Entry<String, EntryID>>();
+    streamsACK.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream1", new EntryID()));
+    
+    Map<String,String> map = new HashMap<String, String>();
+    map.put("f1", "v1");
+    EntryID id1 = jedis.xadd("xack-stream", null, map);
+    
+    // Read only a single Stream
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamsACK); 
+    assertEquals(1, streams1.size());
+
+//   jedis.xack(key, group, ids)
+
+  }
+  
 
 }

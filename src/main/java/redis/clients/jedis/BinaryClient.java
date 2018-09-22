@@ -1297,4 +1297,16 @@ public class BinaryClient extends Connection {
     
     sendCommand(XREAD, params);
  }
+  
+  public void xack(final byte[] key, final byte[] group, final List<byte[]> ids) {
+    final byte[][] params = new byte[2 + ids.size()][];
+    int index = 0;
+    params[index++] = key;
+    params[index++] = group;
+    for (final byte[] id : ids) {
+      params[index++] = id;
+    }
+    sendCommand(XACK, params);
+  }
+
 }

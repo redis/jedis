@@ -380,6 +380,85 @@ public interface JedisCommands {
    * @return
    */
   List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams);
+  
+  
+  int xack(String key, String group,  List<EntryID> ids);
+  
+  /**
+   * XGROUP CREATE <key> <groupname> <id or $>
+   * 
+   * @param key
+   * @param consumer
+   * @param id
+   * @return
+   */
+  boolean xgroupCreate( String key, String consumer, EntryID id);
+  
+  /**
+   * XGROUP SETID <key> <groupname> <id or $>
+   * 
+   * @param key
+   * @param consumer
+   * @param id
+   * @return
+   */
+  boolean xgroupSetID( String key, String consumer, EntryID id);
+  
+  /**
+   * XGROUP DESTROY <key> <groupname>
+   * 
+   * @param key
+   * @param consumer
+   * @return
+   */
+  boolean xgroupDestroy( String key, String consumer);
+  
+  /**
+   * XGROUP DELCONSUMER <key> <groupname> <consumername> 
+   * @param key
+   * @param consumer
+   * @param consumername
+   * @return
+   */
+  boolean xgroupDelConsumer( String key, String consumer, String consumername);
+
 
   
+  
+  // XREVRANGE key end start [COUNT <n>] 
+    
+  
+//  XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+
+  
+//  xpending(String key, String group, EntryID start, EntryID end, int count, String consumer);
+
+ 
+  /* XGROUP CREATE <key> <groupname> <id or $>
+   * XGROUP SETID <key> <id or $>
+   * XGROUP DESTROY <key> <groupname>
+   * XGROUP DELCONSUMER <key> <groupname> <consumername> */
+  
+  
+//  XACK <key> <group> <id> <id> ... <id>
+  
+  /* XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE] [JUSTID]
+   */        
+  
+  // XDEL <key> [<ID1> <ID2> ... <IDN>]
+  
+  //XTRIM <key> [... options ...]
+
+
+  
+  /* XINFO CONSUMERS key group
+   * XINFO GROUPS <key>
+   * XINFO STREAM <key>
+   * XINFO HELP. */
+  
+//  * XCLAIM <key> <group> <consumer> 0 <id> TIME <milliseconds-unix-time>
+//  *        RETRYCOUNT <count> FORCE JUSTID.
+
 }

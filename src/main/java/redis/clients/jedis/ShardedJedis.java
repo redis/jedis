@@ -991,4 +991,34 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return null;
   }
 
+  @Override
+  public int xack(String key, String group, List<EntryID> ids) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public boolean xgroupCreate(String key, String consumer, EntryID id) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public boolean xgroupSetID(String key, String consumer, EntryID id) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public boolean xgroupDestroy(String key, String consumer) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public boolean xgroupDelConsumer(String key, String consumer, String consumername) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
 }

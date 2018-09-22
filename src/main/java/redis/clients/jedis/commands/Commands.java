@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.EntryID;
@@ -363,4 +365,10 @@ public interface Commands {
   void xlen(String key);
 
   void xrange(String key, EntryID start, EntryID end, long count);  
+  
+  void xread(int count, long block, List<Entry<String, EntryID>> streams);
+  
+  void xack(String key, String group, List<EntryID> ids);
+
+
 }

@@ -1177,6 +1177,7 @@ public class Client extends BinaryClient implements Commands {
 	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
   }
 
+  @Override
   public void xread(final int count, final long block, final List<Entry<String, EntryID>> streams) {
     final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.size());
     for (final Entry<String, EntryID> entry : streams) {
@@ -1184,5 +1185,15 @@ public class Client extends BinaryClient implements Commands {
     }
     xread(count, block, bhash);
   }
+  
+  @Override
+  public void xack(final String key, final String group, final List<EntryID> ids) {
+    final List<byte[]> bids = new ArrayList<byte[]>(ids.size());
+    for (final EntryID id : ids) {
+      bids.add(SafeEncoder.encode(id==null ? "0-0" : id.toString()));
+    }
+    xack(SafeEncoder.encode(key), SafeEncoder.encode(group), bids);
+  }
+
   
 }

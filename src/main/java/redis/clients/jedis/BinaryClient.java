@@ -1308,5 +1308,21 @@ public class BinaryClient extends Connection {
     }
     sendCommand(XACK, params);
   }
+   
+  public void xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id) {
+    sendCommand(XGROUP, Keyword.CREATE.raw, key, consumer, id);
+  }
+
+  public void xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id) {
+    sendCommand(XGROUP, Keyword.SETID.raw, key, consumer, id);    
+  }
+
+  public void xgroupDestroy(final byte[] key, final byte[] consumer) {
+    sendCommand(XGROUP, Keyword.DESTROY.raw, key, consumer);    
+  }
+
+  public void xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName) {
+    sendCommand(XGROUP, Keyword.DELCONSUMER.raw, key, consumer, consumerName);    
+  }
 
 }

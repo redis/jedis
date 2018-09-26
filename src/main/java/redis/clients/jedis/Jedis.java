@@ -3697,25 +3697,29 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
 
   @Override
   public boolean xgroupCreate(String key, String consumer, EntryID id) {
-    // TODO Auto-generated method stub
-    return false;
+    checkIsInMultiOrPipeline();
+    client.xgroupCreate(key, consumer, id);
+    return client.getIntegerReply() == 1;
   }
 
   @Override
   public boolean xgroupSetID(String key, String consumer, EntryID id) {
-    // TODO Auto-generated method stub
-    return false;
+    checkIsInMultiOrPipeline();
+    client.xgroupSetID(key, consumer, id);
+    return client.getIntegerReply() == 1;
   }
 
   @Override
   public boolean xgroupDestroy(String key, String consumer) {
-    // TODO Auto-generated method stub
-    return false;
+    checkIsInMultiOrPipeline();
+    client.xgroupDestroy(key, consumer);
+    return client.getIntegerReply() == 1;
   }
 
   @Override
-  public boolean xgroupDelConsumer(String key, String consumer, String consumername) {
-    // TODO Auto-generated method stub
-    return false;
+  public boolean xgroupDelConsumer(String key, String consumer, String consumerName) {
+    checkIsInMultiOrPipeline();
+    client.xgroupDelConsumer(key, consumer, consumerName);
+    return client.getIntegerReply() == 1;
   }
 }

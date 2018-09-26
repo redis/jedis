@@ -1194,6 +1194,24 @@ public class Client extends BinaryClient implements Commands {
     }
     xack(SafeEncoder.encode(key), SafeEncoder.encode(group), bids);
   }
-
   
+  @Override
+  public void xgroupCreate(String key, String consumer, EntryID id) {
+    xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(id==null ? "0-0" : id.toString()));
+  }
+
+  @Override
+  public void xgroupSetID(String key, String consumer, EntryID id) {
+    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(id==null ? "0-0" : id.toString()));    
+  }
+
+  @Override
+  public void xgroupDestroy(String key, String consumer) {
+    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(consumer));    
+  }
+
+  @Override
+  public void xgroupDelConsumer(String key, String consumer, String consumerName) {
+    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(consumerName));    
+  }
 }

@@ -683,6 +683,21 @@ public class JedisClusterTest {
       // expected
     }
   }
+  
+  @Test
+  public void waitReplicas() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(nodeInfo1);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+    
+    jc.set("b", "b");
+    Long replicas = jc.waitReplicas("b", 1, 100);
+    assertEquals(1, replicas.longValue());
+    
+    Long noReplicas = jc.waitReplicas("a", 1, 100);
+    assertEquals(0, noReplicas.longValue());
+  }
 
   private static String getNodeServingSlotRange(String infoOutput) {
     // f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0

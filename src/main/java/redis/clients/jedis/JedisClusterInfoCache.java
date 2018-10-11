@@ -1,10 +1,6 @@
 package redis.clients.jedis;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -15,8 +11,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
-  private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-  private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
+  private Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -44,11 +40,32 @@ public class JedisClusterInfoCache {
     this.clientName = clientName;
   }
 
-  public void discoverClusterNodesAndSlots(Jedis jedis) {
+  public void initialize(Set<HostAndPort> startNodes) {
+    w.lock();
+    try {
+      for (HostAndPort node : startNodes) {
+        try {
+          JedisPool startPool = setupNodeIfNotExist(node);
+          Jedis jedis = startPool.getResource();
+          discoverClusterNodesAndSlots(jedis);
+          break;
+        } catch(JedisException ex) {
+          // try next nodes
+        }
+      }
+    } finally {
+      w.unlock();
+    }
+  }
+
+  private void discoverClusterNodesAndSlots(Jedis jedis) {
     w.lock();
 
     try {
-      reset();
+      Map<String, JedisPool> oldNodeMap = this.nodes;
+      Map<String, JedisPool> newNodeMap = new HashMap<String, JedisPool>();
+      Map<Integer, JedisPool> newSlotMap = new HashMap<Integer, JedisPool>();
+
       List<Object> slots = jedis.clusterSlots();
 
       for (Object slotInfoObj : slots) {
@@ -69,9 +86,27 @@ public class JedisClusterInfoCache {
           }
 
           HostAndPort targetNode = generateHostAndPort(hostInfos);
-          setupNodeIfNotExist(targetNode);
+          JedisPool targetPool = setupNodeIfNotExist(targetNode);
+          newNodeMap.put(getNodeKey(targetNode), targetPool);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
+            for (Integer slot : slotNums) {
+              newSlotMap.put(slot, targetPool);
+            }
+          }
+        }
+      }
+
+      this.nodes = newNodeMap;
+      this.slots = newSlotMap;
+      for (Map.Entry<String, JedisPool> entry : oldNodeMap.entrySet()) {
+        if (!this.nodes.containsKey(entry.getKey())) {
+          JedisPool notInUse = entry.getValue();
+          if (notInUse != null) {
+            try {
+              notInUse.destroy();
+            } catch (Exception e) {
+            }
           }
         }
       }
@@ -89,7 +124,7 @@ public class JedisClusterInfoCache {
 
         if (jedis != null) {
           try {
-            discoverClusterSlots(jedis);
+            discoverClusterNodesAndSlots(jedis);
             return;
           } catch (JedisException e) {
             //try nodes from all pools
@@ -100,7 +135,7 @@ public class JedisClusterInfoCache {
           Jedis j = null;
           try {
             j = jp.getResource();
-            discoverClusterSlots(j);
+            discoverClusterNodesAndSlots(j);
             return;
           } catch (JedisConnectionException e) {
             // try next nodes
@@ -114,31 +149,6 @@ public class JedisClusterInfoCache {
         rediscovering = false;
         w.unlock();
       }
-    }
-  }
-
-  private void discoverClusterSlots(Jedis jedis) {
-    List<Object> slots = jedis.clusterSlots();
-    this.slots.clear();
-
-    for (Object slotInfoObj : slots) {
-      List<Object> slotInfo = (List<Object>) slotInfoObj;
-
-      if (slotInfo.size() <= MASTER_NODE_INDEX) {
-        continue;
-      }
-
-      List<Integer> slotNums = getAssignedSlotArray(slotInfo);
-
-      // hostInfos
-      List<Object> hostInfos = (List<Object>) slotInfo.get(MASTER_NODE_INDEX);
-      if (hostInfos.isEmpty()) {
-        continue;
-      }
-
-      // at this time, we just use master, discard slave information
-      HostAndPort targetNode = generateHostAndPort(hostInfos);
-      assignSlotsToNode(slotNums, targetNode);
     }
   }
 

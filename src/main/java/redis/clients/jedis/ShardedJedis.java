@@ -1021,4 +1021,10 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return false;
   }
 
+  @Override
+  public EntryID xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

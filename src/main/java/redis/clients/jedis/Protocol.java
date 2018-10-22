@@ -75,6 +75,7 @@ public final class Protocol {
 
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
+  public static final byte[] BYTES_TILDE = SafeEncoder.encode("~");
 
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
@@ -277,7 +278,7 @@ public final class Protocol {
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
     GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, BLOCK, STREAMS, KEY, 
-    CREATE, SETID, DESTROY, DELCONSUMER;
+    CREATE, SETID, DESTROY, DELCONSUMER, MAXLEN;
 
     public final byte[] raw;
 

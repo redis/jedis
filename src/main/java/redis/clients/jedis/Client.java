@@ -1159,12 +1159,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xadd(final String key, final  EntryID id, final Map<String, String> hash) {
+  public void xadd(final String key, final  EntryID id, final Map<String, String> hash, long maxLen, boolean exactMaxLen) {
     final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
-    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id==null ? "*" : id.toString()), bhash);
+    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id==null ? "*" : id.toString()), bhash, maxLen, exactMaxLen);
   }
   
   @Override

@@ -1258,10 +1258,27 @@ public class BinaryClient extends Connection {
     sendCommand(HSTRLEN, key, field);
   }
   
-  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash) {
-	  final byte[][] params = new byte[2 + hash.size() * 2][];
+  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen) {
+      int i = 0;
+      if(maxLen < Long.MAX_VALUE) { // optional arguments
+        if(exactMaxLen) {
+          i = 2; // e.g. MAXLEN 1000 
+        } else {
+          i = 3; // e.g. MAXLEN ~ 1000
+        }
+      }
+    
+	  final byte[][] params = new byte[2 + i + hash.size() * 2][];
 	  int index = 0;
 	  params[index++] = key;
+	  if(maxLen < Long.MAX_VALUE) {
+	    params[index++] = Keyword.MAXLEN.raw;
+	    if(!exactMaxLen) {
+	      params[index++] = Protocol.BYTES_TILDE;
+	    }
+	    params[index++] = toByteArray(maxLen);
+	  }
+	  
 	  params[index++] = id;
 	  for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
 	    params[index++] = entry.getKey();

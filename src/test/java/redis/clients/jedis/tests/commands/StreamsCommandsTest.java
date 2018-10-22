@@ -59,7 +59,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map3.put("f4", "v4");
     map3.put("f5", "v5");
     EntryID id5 = jedis.xadd("xadd-stream2", null, map3);
-    assertTrue(id5.compareTo(id4) > 0);
+    assertTrue(id5.compareTo(id4) > 0);    
+    
+    Map<String,String> map6 = new HashMap<String, String>();
+    map3.put("f4", "v4");
+    map3.put("f5", "v5");
+    EntryID id6 = jedis.xadd("xadd-stream2", null, map3, 3, true);
+    assertTrue(id6.compareTo(id5) > 0);
+    assertEquals(3L, jedis.xlen("xadd-stream2").longValue());
   }
 
   @Test

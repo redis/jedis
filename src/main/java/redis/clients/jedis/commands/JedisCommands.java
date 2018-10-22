@@ -3,7 +3,6 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.EntryID;
@@ -337,7 +336,7 @@ public interface JedisCommands {
    * Used for HSTRLEN Redis command
    * @param key 
    * @param field
-   * @return lenth of the value for key
+   * @return length of the value for key
    */
   Long hstrlen(String key, String field);
 
@@ -347,10 +346,22 @@ public interface JedisCommands {
    * @param key
    * @param id
    * @param hash
-   * @return
+   * @return the ID of the added entry
    */
   EntryID xadd(String key, EntryID id, Map<String, String> hash);
 
+  /**
+   * XADD key MAXLEN ~ LEN ID field string [field string ...]
+   * 
+   * @param key
+   * @param id
+   * @param hash
+   * @param maxLen
+   * @param exactMaxLen
+   * @return
+   */
+  EntryID xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  
   /**
    * XLEN key
    * 
@@ -379,7 +390,7 @@ public interface JedisCommands {
    * @param streams
    * @return
    */
-  List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams);
+  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, List<Map.Entry<String, EntryID>> streams);
   
   
   int xack(String key, String group,  List<EntryID> ids);

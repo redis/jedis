@@ -3646,29 +3646,34 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public EntryID xadd(String key, EntryID id, Map<String, String> hash) {
+  public EntryID xadd(final String key, final EntryID id, final Map<String, String> hash) {
+    return xadd(key, id, hash, Long.MAX_VALUE, true);
+  }
+  
+  @Override
+  public EntryID xadd(final String key, EntryID id, final Map<String, String> hash, final long maxLen, final boolean exactMaxLen) {
     checkIsInMultiOrPipeline();
-    client.xadd(key, id, hash);
-    String[] result = client.getBulkReply().split("-");
-    return new EntryID(Long.parseLong(result[0]), Long.parseLong(result[1]));
+    client.xadd(key, id, hash, maxLen, exactMaxLen);
+    String result = client.getBulkReply();
+    return new EntryID(result);
   }
 
   @Override
-  public Long xlen(String key) {
+  public Long xlen(final String key) {
     checkIsInMultiOrPipeline();
     client.xlen(key);
     return client.getIntegerReply();
   }
 
   @Override
-  public List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count) {
+  public List<StreamEntry> xrange(final String key, final EntryID start, final EntryID end, final int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams) {
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final List<Entry<String, EntryID>> streams) {
     checkIsInMultiOrPipeline();
     client.xread(count, block, streams);
 
@@ -3689,35 +3694,35 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public int xack(String key, String group, List<EntryID> ids) {
+  public int xack(final String key, final String group, final List<EntryID> ids) {
     checkIsInMultiOrPipeline();
     client.xack(key, group, ids);
     return client.getIntegerReply().intValue();
   }
 
   @Override
-  public boolean xgroupCreate(String key, String consumer, EntryID id) {
+  public boolean xgroupCreate(final String key, final String consumer, final EntryID id) {
     checkIsInMultiOrPipeline();
     client.xgroupCreate(key, consumer, id);
     return client.getIntegerReply() == 1;
   }
 
   @Override
-  public boolean xgroupSetID(String key, String consumer, EntryID id) {
+  public boolean xgroupSetID(final String key, final String consumer, final EntryID id) {
     checkIsInMultiOrPipeline();
     client.xgroupSetID(key, consumer, id);
     return client.getIntegerReply() == 1;
   }
 
   @Override
-  public boolean xgroupDestroy(String key, String consumer) {
+  public boolean xgroupDestroy(final String key, final String consumer) {
     checkIsInMultiOrPipeline();
     client.xgroupDestroy(key, consumer);
     return client.getIntegerReply() == 1;
   }
 
   @Override
-  public boolean xgroupDelConsumer(String key, String consumer, String consumerName) {
+  public boolean xgroupDelConsumer(final String key, final String consumer, final String consumerName) {
     checkIsInMultiOrPipeline();
     client.xgroupDelConsumer(key, consumer, consumerName);
     return client.getIntegerReply() == 1;

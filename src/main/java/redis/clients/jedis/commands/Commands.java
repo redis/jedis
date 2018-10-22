@@ -360,7 +360,7 @@ public interface Commands {
 
   void clientSetname(String name);
 
-  void xadd(String key, EntryID id, Map<String, String> hash);
+  void xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
   
   void xlen(String key);
 

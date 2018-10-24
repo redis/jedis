@@ -170,6 +170,35 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(3L, jedis.xlen("xtrim-stream").longValue());
   }
   
+  @Test
+  public void xrevrange() {
+    List<StreamEntry> range = jedis.xrevrange("xrevrange-stream", (EntryID)null, (EntryID)null, Integer.MAX_VALUE); 
+    assertEquals(0, range.size());
+        
+    Map<String,String> map = new HashMap<String, String>();
+    map.put("f1", "v1");
+    EntryID id1 = jedis.xadd("xrevrange-stream", null, map);
+    EntryID id2 = jedis.xadd("xrevrange-stream", null, map);
+    List<StreamEntry> range2 = jedis.xrange("xrevrange-stream", (EntryID)null, (EntryID)null, 3); 
+    assertEquals(2, range2.size());
+    
+    List<StreamEntry> range3 = jedis.xrevrange("xrevrange-stream", null, id1, 2); 
+    assertEquals(2, range3.size());
+    
+    List<StreamEntry> range4 = jedis.xrevrange("xrevrange-stream", id2, id1, 2); 
+    assertEquals(2, range4.size());
+
+    List<StreamEntry> range5 = jedis.xrevrange("xrevrange-stream", id2, id1, 1); 
+    assertEquals(1, range5.size());
+    
+    List<StreamEntry> range6 = jedis.xrevrange("xrevrange-stream", null, id2, 4); 
+    assertEquals(1, range6.size());
+    
+    EntryID id3 = jedis.xadd("xrevrange-stream", null, map);
+    List<StreamEntry> range7 = jedis.xrevrange("xrevrange-stream", id2, id2, 4); 
+    assertEquals(1, range7.size());
+
+  }
   
   @Test
   public void xack() {
@@ -188,5 +217,5 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
   }
   
-
+  
 }

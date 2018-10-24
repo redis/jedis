@@ -1294,6 +1294,10 @@ public class BinaryClient extends Connection {
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) { 
      sendCommand(XRANGE, key, start, end, Keyword.COUNT.raw, toByteArray(count));
   }
+  
+  public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
+    sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.raw, toByteArray(count));
+  }
 
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
     final byte[][] params = new byte[5 + streams.size() * 2][];

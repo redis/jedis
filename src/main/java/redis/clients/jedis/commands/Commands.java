@@ -363,7 +363,9 @@ public interface Commands {
   
   void xlen(String key);
 
-  void xrange(String key, EntryID start, EntryID end, long count);  
+  void xrange(String key, EntryID start, EntryID end, long count);
+  
+  void xrevrange(String key, EntryID end, EntryID start, int count);
   
   void xread(int count, long block, Entry<String, EntryID>... streams);
   
@@ -380,6 +382,4 @@ public interface Commands {
   void xdel(String key, EntryID... ids);
 
   void xtrim(String key, long maxLen, boolean exactMaxLen);
-  
-  
 }

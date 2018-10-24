@@ -3671,6 +3671,14 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
     client.xrange(key, start, end, count);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
+  
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final EntryID end, final EntryID start, final int count) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
 
   @Override
   public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, EntryID>... streams) {

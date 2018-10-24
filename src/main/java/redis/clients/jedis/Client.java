@@ -1176,7 +1176,12 @@ public class Client extends BinaryClient implements Commands {
   public void xrange(final String key, final EntryID start, final  EntryID end, final long count) {
 	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
   }
-
+  
+  @Override
+  public void xrevrange(String key, EntryID end, EntryID start, int count) {
+    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end==null ? "+" : end.toString()), SafeEncoder.encode(start==null ? "-" : start.toString()), count);
+  }
+  
   @Override
   public void xread(final int count, final long block, final Entry<String, EntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.length);
@@ -1230,4 +1235,5 @@ public class Client extends BinaryClient implements Commands {
   public void xtrim(String key, long maxLen, boolean exactMaxLen) {
     xtrim(SafeEncoder.encode(key), maxLen, exactMaxLen);    
   }
+
 }

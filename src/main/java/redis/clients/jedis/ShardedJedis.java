@@ -1039,4 +1039,10 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return 0;
   }
 
+  @Override
+  public List<StreamEntry> xrevrange(String key, EntryID end, EntryID start, int count) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

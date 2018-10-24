@@ -382,6 +382,16 @@ public interface JedisCommands {
   List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count);
 
   /**
+   * XREVRANGE key end start [COUNT <n>]
+   * @param key
+   * @param end
+   * @param start
+   * @param count
+   * @return
+   */
+  List<StreamEntry> xrevrange(String key, EntryID end, EntryID start, int count);
+  
+  /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    * 
    * @param key
@@ -392,7 +402,13 @@ public interface JedisCommands {
    */
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, EntryID>... streams);
   
-  
+  /**
+   * XACK key group ID [ID ...]
+   * @param key
+   * @param group
+   * @param ids
+   * @return
+   */
   long xack(String key, String group,  EntryID... ids);
   
   /**
@@ -450,9 +466,10 @@ public interface JedisCommands {
    * @return
    */
   long xtrim( String key, long maxLen, boolean exactMaxLen);
+
   
   
-  // XREVRANGE key end start [COUNT <n>] 
+  //  
     
   
 //  XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

@@ -3734,4 +3734,11 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
     client.xdel(key, ids);
     return client.getIntegerReply();
   }
+
+  @Override
+  public long xtrim(String key, long maxLen, boolean exactMaxLen) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, maxLen, exactMaxLen);
+    return client.getIntegerReply();
+  }
 }

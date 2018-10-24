@@ -1216,6 +1216,7 @@ public class Client extends BinaryClient implements Commands {
     xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(consumerName));    
   }
 
+  @Override
   public void xdel(final String key, final EntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
     for (int i=0 ; i< ids.length; ++i ) {
@@ -1223,5 +1224,10 @@ public class Client extends BinaryClient implements Commands {
       bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
     }
     xdel(SafeEncoder.encode(key), bids);    
+  }
+
+  @Override
+  public void xtrim(String key, long maxLen, boolean exactMaxLen) {
+    xtrim(SafeEncoder.encode(key), maxLen, exactMaxLen);    
   }
 }

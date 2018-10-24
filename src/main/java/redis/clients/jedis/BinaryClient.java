@@ -1351,4 +1351,13 @@ public class BinaryClient extends Connection {
     }
     sendCommand(XDEL, params);
   }
+  
+  public void xtrim(byte[] key, long maxLen, boolean exactMaxLen) {
+    if(exactMaxLen) {
+      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, toByteArray(maxLen));  
+    } else {
+      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, Protocol.BYTES_TILDE ,toByteArray(maxLen));  
+    }
+  }
+
 }

@@ -442,6 +442,15 @@ public interface JedisCommands {
    */
   long xdel( String key, EntryID... ids);
   
+  /**
+   * XTRIM key MAXLEN [~] count
+   * @param key
+   * @param maxLen
+   * @param exactMaxLen
+   * @return
+   */
+  long xtrim( String key, long maxLen, boolean exactMaxLen);
+  
   
   // XREVRANGE key end start [COUNT <n>] 
     

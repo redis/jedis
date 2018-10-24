@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -377,4 +376,10 @@ public interface Commands {
   void xgroupDestroy(String key, String consumer);
 
   void xgroupDelConsumer(String key, String consumer, String consumerName);
+
+  void xdel(String key, EntryID... ids);
+
+  void xtrim(String key, long maxLen, boolean exactMaxLen);
+  
+  
 }

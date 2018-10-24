@@ -1033,4 +1033,10 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return 0;
   }
 
+  @Override
+  public long xtrim(String key, long maxLen, boolean exactMaxLen) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
 }

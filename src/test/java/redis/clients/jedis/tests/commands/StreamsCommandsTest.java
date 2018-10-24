@@ -155,6 +155,23 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
   
   @Test
+  public void xtrim() {
+    Map<String,String> map1 = new HashMap<String, String>();
+    map1.put("f1", "v1");
+    
+    jedis.xadd("xtrim-stream", null, map1);
+    jedis.xadd("xtrim-stream", null, map1);
+    jedis.xadd("xtrim-stream", null, map1);
+    jedis.xadd("xtrim-stream", null, map1);
+    jedis.xadd("xtrim-stream", null, map1);
+    assertEquals(5L, jedis.xlen("xtrim-stream").longValue());
+
+    jedis.xtrim("xtrim-stream", 3, true);
+    assertEquals(3L, jedis.xlen("xtrim-stream").longValue());
+  }
+  
+  
+  @Test
   public void xack() {
     
     Entry<String, EntryID> streamACK = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream1", new EntryID());

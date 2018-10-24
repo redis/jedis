@@ -986,13 +986,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xread(int count, long block, List<Entry<String, EntryID>> streams){
+  public List<Entry<String, List<StreamEntry>>> xread(int count, long block, Entry<String, EntryID>... streams){
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public int xack(String key, String group, List<EntryID> ids) {
+  public long xack(String key, String group, EntryID... ids) {
     // TODO Auto-generated method stub
     return 0;
   }
@@ -1025,6 +1025,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public EntryID xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public long xdel(String ket, EntryID... id) {
+    // TODO Auto-generated method stub
+    return 0;
   }
 
 }

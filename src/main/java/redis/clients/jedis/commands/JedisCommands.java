@@ -390,10 +390,10 @@ public interface JedisCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, List<Map.Entry<String, EntryID>> streams);
+  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, EntryID>... streams);
   
   
-  int xack(String key, String group,  List<EntryID> ids);
+  long xack(String key, String group,  EntryID... ids);
   
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
@@ -434,6 +434,13 @@ public interface JedisCommands {
   boolean xgroupDelConsumer( String key, String consumer, String consumername);
 
 
+  /**
+   * XDEL key ID [ID ...]
+   * @param key
+   * @param id2
+   * @return
+   */
+  long xdel( String key, EntryID... ids);
   
   
   // XREVRANGE key end start [COUNT <n>] 
@@ -458,7 +465,7 @@ public interface JedisCommands {
    *        [FORCE] [JUSTID]
    */        
   
-  // XDEL <key> [<ID1> <ID2> ... <IDN>]
+  // 
   
   //XTRIM <key> [... options ...]
 

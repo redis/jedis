@@ -1178,8 +1178,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xread(final int count, final long block, final List<Entry<String, EntryID>> streams) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.size());
+  public void xread(final int count, final long block, final Entry<String, EntryID>... streams) {
+    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.length);
     for (final Entry<String, EntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
     }
@@ -1187,10 +1187,11 @@ public class Client extends BinaryClient implements Commands {
   }
   
   @Override
-  public void xack(final String key, final String group, final List<EntryID> ids) {
-    final List<byte[]> bids = new ArrayList<byte[]>(ids.size());
-    for (final EntryID id : ids) {
-      bids.add(SafeEncoder.encode(id==null ? "0-0" : id.toString()));
+  public void xack(final String key, final String group, final EntryID... ids) {
+    final byte[][] bids = new byte[ids.length][];
+    for (int i=0 ; i< ids.length; ++i ) {
+      EntryID id = ids[i];
+      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
     }
     xack(SafeEncoder.encode(key), SafeEncoder.encode(group), bids);
   }
@@ -1213,5 +1214,14 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void xgroupDelConsumer(String key, String consumer, String consumerName) {
     xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(consumerName));    
+  }
+
+  public void xdel(final String key, final EntryID... ids) {
+    final byte[][] bids = new byte[ids.length][];
+    for (int i=0 ; i< ids.length; ++i ) {
+      EntryID id = ids[i];
+      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
+    }
+    xdel(SafeEncoder.encode(key), bids);    
   }
 }

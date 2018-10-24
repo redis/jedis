@@ -1315,8 +1315,8 @@ public class BinaryClient extends Connection {
     sendCommand(XREAD, params);
  }
   
-  public void xack(final byte[] key, final byte[] group, final List<byte[]> ids) {
-    final byte[][] params = new byte[2 + ids.size()][];
+  public void xack(final byte[] key, final byte[] group, final byte[]... ids) {
+    final byte[][] params = new byte[2 + ids.length][];
     int index = 0;
     params[index++] = key;
     params[index++] = group;
@@ -1341,5 +1341,14 @@ public class BinaryClient extends Connection {
   public void xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName) {
     sendCommand(XGROUP, Keyword.DELCONSUMER.raw, key, consumer, consumerName);    
   }
-
+   
+  public void xdel(final byte[] key, final byte[]... ids) {
+    final byte[][] params = new byte[1 + ids.length][];
+    int index = 0;
+    params[index++] = key;
+    for (final byte[] id : ids) {
+      params[index++] = id;
+    }
+    sendCommand(XDEL, params);
+  }
 }

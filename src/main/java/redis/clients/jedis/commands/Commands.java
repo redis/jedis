@@ -366,9 +366,9 @@ public interface Commands {
 
   void xrange(String key, EntryID start, EntryID end, long count);  
   
-  void xread(int count, long block, List<Entry<String, EntryID>> streams);
+  void xread(int count, long block, Entry<String, EntryID>... streams);
   
-  void xack(String key, String group, List<EntryID> ids);
+  void xack(String key, String group, EntryID... ids);
   
   void xgroupCreate(String key, String consumer, EntryID id);
 

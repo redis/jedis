@@ -68,6 +68,23 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertTrue(id6.compareTo(id5) > 0);
     assertEquals(3L, jedis.xlen("xadd-stream2").longValue());
   }
+  
+  @Test
+  public void xdel() {
+    Map<String,String> map1 = new HashMap<String, String>();
+    map1.put("f1", "v1");
+    
+    EntryID id1 = jedis.xadd("xdel-stream", null, map1);
+    assertNotNull(id1); 
+    
+    EntryID id2 = jedis.xadd("xdel-stream", null, map1);
+    assertNotNull(id2);
+    assertEquals(2L, jedis.xlen("xdel-stream").longValue());
+
+
+    assertEquals(1L, jedis.xdel("xdel-stream", id1));
+    assertEquals(1L, jedis.xlen("xdel-stream").longValue());
+  }
 
   @Test
   public void xlen() {
@@ -114,11 +131,10 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   @Test
   public void xread() {
     
-    List<Entry<String, EntryID>> streamsQuery1 = new ArrayList<Entry<String, EntryID>>();
-    streamsQuery1.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream1", new EntryID()));
+    Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream1", new EntryID());
 
     // Empty Stream
-    List<Entry<String, List<StreamEntry>>> range = jedis.xread(1, 1L, streamsQuery1); 
+    List<Entry<String, List<StreamEntry>>> range = jedis.xread(1, 1L, streamQeury1); 
     assertEquals(0, range.size());
     
     Map<String,String> map = new HashMap<String, String>();
@@ -127,14 +143,13 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     EntryID id2 = jedis.xadd("xread-stream2", null, map);
     
     // Read only a single Stream
-    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamsQuery1); 
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamQeury1); 
     assertEquals(1, streams1.size());
 
     // Read from two Streams
-    List<Entry<String, EntryID>> streamsQuery2 = new ArrayList<Entry<String, EntryID>>();
-    streamsQuery2.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream1", new EntryID()));
-    streamsQuery2.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream2", new EntryID()));
-    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(2, 1L, streamsQuery2); 
+    Entry<String, EntryID> streamQuery2 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream1", new EntryID());
+    Entry<String, EntryID> streamQuery3 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xread-stream2", new EntryID());
+    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(2, 1L, streamQuery2, streamQuery3); 
     assertEquals(2, streams2.size());
 
   }
@@ -142,15 +157,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   @Test
   public void xack() {
     
-    List<Entry<String, EntryID>> streamsACK = new ArrayList<Entry<String, EntryID>>();
-    streamsACK.add(new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream1", new EntryID()));
+    Entry<String, EntryID> streamACK = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream1", new EntryID());
     
     Map<String,String> map = new HashMap<String, String>();
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xack-stream", null, map);
     
     // Read only a single Stream
-    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamsACK); 
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamACK); 
     assertEquals(1, streams1.size());
 
 //   jedis.xack(key, group, ids)

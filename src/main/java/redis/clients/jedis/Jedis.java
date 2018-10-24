@@ -3673,7 +3673,7 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final List<Entry<String, EntryID>> streams) {
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, EntryID>... streams) {
     checkIsInMultiOrPipeline();
     client.xread(count, block, streams);
 
@@ -3694,10 +3694,10 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public int xack(final String key, final String group, final List<EntryID> ids) {
+  public long xack(final String key, final String group, final EntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xack(key, group, ids);
-    return client.getIntegerReply().intValue();
+    return client.getIntegerReply().longValue();
   }
 
   @Override
@@ -3726,5 +3726,12 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
     checkIsInMultiOrPipeline();
     client.xgroupDelConsumer(key, consumer, consumerName);
     return client.getIntegerReply() == 1;
+  }
+
+  @Override
+  public long xdel(String key, EntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xdel(key, ids);
+    return client.getIntegerReply();
   }
 }

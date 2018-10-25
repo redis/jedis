@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import org.junit.Test;
 import redis.clients.jedis.EntryID;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
@@ -199,6 +200,59 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(1, range7.size());
 
   }
+  
+  @Test
+  public void xgroup() {
+    
+    Map<String,String> map = new HashMap<String, String>();
+    map.put("f1", "v1");
+    EntryID id1 = jedis.xadd("xgroup-stream", null, map);
+    
+    
+    String status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name", null);
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+
+
+    status = jedis.xgroupSetID("xgroup-stream", "consumer-group-name", id1);
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+
+
+    jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
+
+    //TODO test xgroupDelConsumer
+  }
+  
+  @Test
+  public void xreadGroup() {
+    Map<String,String> map = new HashMap<String, String>();
+    map.put("f1", "v1");
+    EntryID id1 = jedis.xadd("xreadGroup-stream1", null, map);
+    String status = jedis.xgroupCreate("xreadGroup-stream1", "xreadGroup-group", null);
+
+    
+    Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xreadGroup-stream1", new EntryID());
+
+    // Empty Stream
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, streamQeury1); 
+    assertEquals(1, range.size());
+    
+    EntryID id2 = jedis.xadd("xreadGroup-stream1", null, map);
+    EntryID id3 = jedis.xadd("xreadGroup-stream2", null, map);
+    status = jedis.xgroupCreate("xreadGroup-stream2", "xreadGroup-group", null);
+
+    
+    // Read only a single Stream
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, streamQeury1); 
+    assertEquals(1, streams1.size());
+
+    // Read from two Streams
+    Entry<String, EntryID> streamQuery2 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xreadGroup-stream1", new EntryID());
+    Entry<String, EntryID> streamQuery3 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xreadGroup-stream2", new EntryID());
+    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, streamQuery2, streamQuery3); 
+    assertEquals(2, streams2.size());
+  }
+
+  
   
   @Test
   public void xack() {

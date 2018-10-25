@@ -415,41 +415,54 @@ public interface JedisCommands {
    * XGROUP CREATE <key> <groupname> <id or $>
    * 
    * @param key
-   * @param consumer
+   * @param groupname
    * @param id
    * @return
    */
-  boolean xgroupCreate( String key, String consumer, EntryID id);
+  String xgroupCreate( String key, String groupname, EntryID id);
   
   /**
    * XGROUP SETID <key> <groupname> <id or $>
    * 
    * @param key
-   * @param consumer
+   * @param groupname
    * @param id
    * @return
    */
-  boolean xgroupSetID( String key, String consumer, EntryID id);
+  String xgroupSetID( String key, String groupname, EntryID id);
   
   /**
    * XGROUP DESTROY <key> <groupname>
    * 
    * @param key
-   * @param consumer
+   * @param groupname
    * @return
    */
-  boolean xgroupDestroy( String key, String consumer);
+  long xgroupDestroy( String key, String groupname);
   
   /**
    * XGROUP DELCONSUMER <key> <groupname> <consumername> 
    * @param key
-   * @param consumer
+   * @param groupname
    * @param consumername
    * @return
    */
-  boolean xgroupDelConsumer( String key, String consumer, String consumername);
+  String xgroupDelConsumer( String key, String groupname, String consumername);
 
+  /**
+   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * 
+   * @param key
+   * @param groupname
+   * @param cosumer
+   * @param count
+   * @param block
+   * @param streams
+   * @return
+   */
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, Map.Entry<String, EntryID>... streams);
 
+  
   /**
    * XDEL key ID [ID ...]
    * @param key
@@ -473,6 +486,9 @@ public interface JedisCommands {
     
   
 //  XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+  
+ 
+
 
   
 //  xpending(String key, String group, EntryID start, EntryID end, int count, String consumer);

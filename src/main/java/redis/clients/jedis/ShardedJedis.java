@@ -998,27 +998,27 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public boolean xgroupCreate(String key, String consumer, EntryID id) {
+  public String xgroupCreate(String key, String consumer, EntryID id) {
     // TODO Auto-generated method stub
-    return false;
+    return "OK";
   }
 
   @Override
-  public boolean xgroupSetID(String key, String consumer, EntryID id) {
+  public String xgroupSetID(String key, String consumer, EntryID id) {
     // TODO Auto-generated method stub
-    return false;
+    return "OK";
   }
 
   @Override
-  public boolean xgroupDestroy(String key, String consumer) {
+  public long xgroupDestroy(String key, String consumer) {
     // TODO Auto-generated method stub
-    return false;
+    return 0;
   }
 
   @Override
-  public boolean xgroupDelConsumer(String key, String consumer, String consumername) {
+  public String xgroupDelConsumer(String key, String consumer, String consumername) {
     // TODO Auto-generated method stub
-    return false;
+    return "OK";
   }
 
   @Override
@@ -1041,6 +1041,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
   @Override
   public List<StreamEntry> xrevrange(String key, EntryID end, EntryID start, int count) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block,
+      Entry<String, EntryID>... streams) {
     // TODO Auto-generated method stub
     return null;
   }

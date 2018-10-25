@@ -1363,5 +1363,29 @@ public class BinaryClient extends Connection {
       sendCommand(XTRIM, key, Keyword.MAXLEN.raw, Protocol.BYTES_TILDE ,toByteArray(maxLen));  
     }
   }
+  
+  public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, Map<byte[], byte[]> streams) {
+    final byte[][] params = new byte[8 + streams.size() * 2][];
+
+    int streamsIndex = 0;
+    params[streamsIndex++] = Keyword.GROUP.raw;
+    params[streamsIndex++] = groupname;
+    params[streamsIndex++] = consumer;
+    params[streamsIndex++] = Keyword.COUNT.raw;
+    params[streamsIndex++] = toByteArray(count);
+    params[streamsIndex++] = Keyword.BLOCK.raw;
+    params[streamsIndex++] = toByteArray(block);
+    
+    params[streamsIndex++] = Keyword.STREAMS.raw;
+    int idsIndex = streamsIndex + streams.size();
+
+    for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
+      params[streamsIndex++] = entry.getKey();
+      params[idsIndex++] = entry.getValue();
+    }
+    
+    sendCommand(XREADGROUP, params);
+  }
+
 
 }

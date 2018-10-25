@@ -1387,5 +1387,13 @@ public class BinaryClient extends Connection {
     sendCommand(XREADGROUP, params);
   }
 
+  
+  public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+    if(consumername == null) {
+      sendCommand(XPENDING, key, groupname, start, end, toByteArray(count));
+    } else {
+      sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
+    }
+  }
 
 }

@@ -3737,22 +3737,22 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public long xdel(String key, EntryID... ids) {
+  public long xdel(final String key, final EntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xdel(key, ids);
     return client.getIntegerReply();
   }
 
   @Override
-  public long xtrim(String key, long maxLen, boolean exactMaxLen) {
+  public long xtrim(final String key, final long maxLen, final boolean exactMaxLen) {
     checkIsInMultiOrPipeline();
     client.xtrim(key, maxLen, exactMaxLen);
     return client.getIntegerReply();
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block,
-      Entry<String, EntryID>... streams) {
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
+      final Entry<String, EntryID>... streams) {
     checkIsInMultiOrPipeline();
     client.xreadGroup(groupname, consumer, count, block, streams);
 
@@ -3767,6 +3767,27 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
       String streamId = SafeEncoder.encode((byte[])stream.get(0));
       List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
       result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+    }
+    return result;
+  }
+
+  @Override
+  public List<PendingEntry> xpending(final String key, final String groupname, final EntryID start, final EntryID end,
+      final int count, final String consumername) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, start, end, count, consumername);
+
+    // TODO handle consumername == NULL case
+    
+    List<Object> streamsEntries = client.getObjectMultiBulkReply();
+    List<PendingEntry> result = new ArrayList<>(streamsEntries.size());
+    for(Object streamObj : streamsEntries) {
+      List<Object> stream = (List<Object>)streamObj;
+      String id = SafeEncoder.encode((byte[])stream.get(0));
+      String consumerName = SafeEncoder.encode((byte[])stream.get(1));
+      long idleTime = BuilderFactory.LONG.build(stream.get(2));      
+      long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
+      result.add(new PendingEntry(new EntryID(id), consumerName, idleTime, deliveredTimes));
     }
     return result;
   }

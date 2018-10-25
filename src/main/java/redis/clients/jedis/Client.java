@@ -1236,11 +1236,20 @@ public class Client extends BinaryClient implements Commands {
     xtrim(SafeEncoder.encode(key), maxLen, exactMaxLen);    
   }
 
-  public void xreadGroup(String groupname, String consumer, int count, long block, Entry<String, EntryID>[] streams) {
+  @Override
+  public void xreadGroup(String groupname, String consumer, int count, long block, Entry<String, EntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.length);
     for (final Entry<String, EntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
     }
     xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, bhash);    
   }
+
+  @Override
+  public void xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
+        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));    
+  }
+
+ 
 }

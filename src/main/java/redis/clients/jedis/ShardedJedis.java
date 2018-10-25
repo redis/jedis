@@ -1052,4 +1052,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return null;
   }
 
+  @Override
+  public List<PendingEntry> xpending(String key, String groupname, EntryID start, EntryID end,
+      int count, String consumername) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

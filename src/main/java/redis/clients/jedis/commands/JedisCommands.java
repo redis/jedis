@@ -10,6 +10,7 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.PendingEntry;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
@@ -464,6 +465,19 @@ public interface JedisCommands {
 
   
   /**
+   * XPENDING key group [start end count] [consumer]
+   * 
+   * @param key
+   * @param groupname
+   * @param start
+   * @param end
+   * @param count
+   * @param consumername
+   * @return
+   */
+  List<PendingEntry> xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername);
+  
+  /**
    * XDEL key ID [ID ...]
    * @param key
    * @param id2
@@ -481,44 +495,26 @@ public interface JedisCommands {
   long xtrim( String key, long maxLen, boolean exactMaxLen);
 
   
-  
-  //  
-    
-  
-//  XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-  
- 
+   
 
 
   
-//  xpending(String key, String group, EntryID start, EntryID end, int count, String consumer);
+  
 
  
-  /* XGROUP CREATE <key> <groupname> <id or $>
-   * XGROUP SETID <key> <id or $>
-   * XGROUP DESTROY <key> <groupname>
-   * XGROUP DELCONSUMER <key> <groupname> <consumername> */
-  
-  
-//  XACK <key> <group> <id> <id> ... <id>
-  
+ 
   /* XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] [JUSTID]
    */        
   
   // 
-  
-  //XTRIM <key> [... options ...]
 
 
   
   /* XINFO CONSUMERS key group
    * XINFO GROUPS <key>
    * XINFO STREAM <key>
-   * XINFO HELP. */
-  
-//  * XCLAIM <key> <group> <consumer> 0 <id> TIME <milliseconds-unix-time>
-//  *        RETRYCOUNT <count> FORCE JUSTID.
+   * XINFO HELP. */  
 
 }

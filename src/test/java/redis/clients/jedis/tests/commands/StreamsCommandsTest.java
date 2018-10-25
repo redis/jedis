@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 import redis.clients.jedis.EntryID;
+import redis.clients.jedis.PendingEntry;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -256,9 +257,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   
   @Test
   public void xack() {
-    
-    Entry<String, EntryID> streamACK = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream1", new EntryID());
-    
+       
     Map<String,String> map = new HashMap<String, String>();
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xack-stream", null, map);
@@ -273,6 +272,26 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     assertEquals(1L, jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
   }
+  
+  @Test
+  public void xpendeing() {
+       
+    Map<String,String> map = new HashMap<String, String>();
+    map.put("f1", "v1");
+    EntryID id1 = jedis.xadd("xpendeing-stream", null, map);
+    
+    String status = jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null);
+    
+    Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xpendeing-stream", new EntryID());
+
+    // Empty Stream
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, streamQeury1); 
+    assertEquals(1, range.size());
+    
+    List<PendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", null, null, 3, "xpendeing-consumer");
+    assertEquals(1, pendingRange.size());
+  }
+
   
   
 }

@@ -263,12 +263,15 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xack-stream", null, map);
     
-    // Read only a single Stream
-    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamACK); 
-    assertEquals(1, streams1.size());
+    String status = jedis.xgroupCreate("xack-stream", "xack-group", null);
+    
+    Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream", new EntryID());
 
-//   jedis.xack(key, group, ids)
+    // Empty Stream
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xack-group", "xack-consumer", 1, 1L, streamQeury1); 
+    assertEquals(1, range.size());
 
+    assertEquals(1L, jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
   }
   
   

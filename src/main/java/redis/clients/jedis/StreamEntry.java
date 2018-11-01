@@ -19,4 +19,8 @@ public class StreamEntry {
   public Map<String, String> getFields() {
     return fields;
   }
+  
+  public String toString() {
+    return id + " " + fields;
+  }
 }

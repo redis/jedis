@@ -3684,21 +3684,26 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, EntryID>... streams) {
     checkIsInMultiOrPipeline();
     client.xread(count, block, streams);
-
-    List<Object> streamsEntries = client.getObjectMultiBulkReply();
-    if(streamsEntries == null) {
-      return new ArrayList<Entry<String, List<StreamEntry>>>();
-    }
+    client.setTimeoutInfinite();
     
-    List<Entry<String, List<StreamEntry>>> result = new ArrayList<Entry<String, List<StreamEntry>>>(streamsEntries.size());
-    for(Object streamObj : streamsEntries) {
-      List<Object> stream = (List<Object>)streamObj;
-      String streamId = SafeEncoder.encode((byte[])stream.get(0));
-      List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-      result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+    try {
+      List<Object> streamsEntries = client.getObjectMultiBulkReply();
+      if(streamsEntries == null) {
+        return new ArrayList<Entry<String, List<StreamEntry>>>();
+      }
+      
+      List<Entry<String, List<StreamEntry>>> result = new ArrayList<Entry<String, List<StreamEntry>>>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String streamId = SafeEncoder.encode((byte[])stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+      }
+      
+      return result;
+    } finally {
+      client.rollbackTimeout();
     }
-    
-    return result;
   }
 
   @Override

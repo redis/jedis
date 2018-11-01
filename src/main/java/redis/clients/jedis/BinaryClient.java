@@ -1300,13 +1300,15 @@ public class BinaryClient extends Connection {
   }
 
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
-    final byte[][] params = new byte[5 + streams.size() * 2][];
+    final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
 
     int streamsIndex = 0;
     params[streamsIndex++] = Keyword.COUNT.raw;
     params[streamsIndex++] = toByteArray(count);
-    params[streamsIndex++] = Keyword.BLOCK.raw;
-    params[streamsIndex++] = toByteArray(block);
+    if(block > 0) {
+      params[streamsIndex++] = Keyword.BLOCK.raw;
+      params[streamsIndex++] = toByteArray(block);
+    }
     
     params[streamsIndex++] = Keyword.STREAMS.raw;
     int idsIndex = streamsIndex + streams.size();

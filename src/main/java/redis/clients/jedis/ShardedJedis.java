@@ -969,20 +969,26 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
   @Override
   public EntryID xadd(String key, EntryID id, Map<String, String> hash) {
-    // TODO Auto-generated method stub
-    return null;
+    Jedis j = getShard(key);
+    return j.xadd(key, id, hash);
+  }
+  
+  @Override
+  public EntryID xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
+    Jedis j = getShard(key);
+    return j.xadd(key, id, hash, maxLen, exactMaxLen);
   }
 
   @Override
   public Long xlen(String key) {
-    // TODO Auto-generated method stub
-    return null;
+    Jedis j = getShard(key);
+    return j.xlen(key);
   }
   
   @Override
   public List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count) {
-    // TODO Auto-generated method stub
-    return null;
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end, count);
   }
 
   @Override
@@ -993,56 +999,51 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
   @Override
   public long xack(String key, String group, EntryID... ids) {
-    // TODO Auto-generated method stub
-    return 0;
+    Jedis j = getShard(key);
+    return j.xack(key, group, ids);
   }
 
   @Override
   public String xgroupCreate(String key, String consumer, EntryID id) {
-    // TODO Auto-generated method stub
-    return "OK";
+    Jedis j = getShard(key);
+    return j.xgroupCreate(key, consumer, id);
   }
 
   @Override
-  public String xgroupSetID(String key, String consumer, EntryID id) {
-    // TODO Auto-generated method stub
-    return "OK";
+  public String xgroupSetID(String key, String groupname, EntryID id) {
+    Jedis j = getShard(key);
+    return j.xgroupSetID(key, groupname, id);
   }
 
   @Override
-  public long xgroupDestroy(String key, String consumer) {
-    // TODO Auto-generated method stub
-    return 0;
+  public long xgroupDestroy(String key, String groupname) {
+    Jedis j = getShard(key);
+    return j.xgroupDestroy(key, groupname);
   }
 
   @Override
-  public String xgroupDelConsumer(String key, String consumer, String consumername) {
-    // TODO Auto-generated method stub
-    return "OK";
+  public String xgroupDelConsumer(String key, String groupname, String consumername) {
+    Jedis j = getShard(key);
+    return j.xgroupDelConsumer(key, groupname, consumername);
   }
 
-  @Override
-  public EntryID xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
   @Override
-  public long xdel(String ket, EntryID... id) {
-    // TODO Auto-generated method stub
-    return 0;
+  public long xdel(String key, EntryID... ids) {
+    Jedis j = getShard(key);
+    return j.xdel(key, ids);
   }
 
   @Override
   public long xtrim(String key, long maxLen, boolean exactMaxLen) {
-    // TODO Auto-generated method stub
-    return 0;
+    Jedis j = getShard(key);
+    return j.xtrim(key, maxLen, exactMaxLen);
   }
 
   @Override
   public List<StreamEntry> xrevrange(String key, EntryID end, EntryID start, int count) {
-    // TODO Auto-generated method stub
-    return null;
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start, count);
   }
 
   @Override
@@ -1055,15 +1056,15 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   @Override
   public List<PendingEntry> xpending(String key, String groupname, EntryID start, EntryID end,
       int count, String consumername) {
-    // TODO Auto-generated method stub
-    return null;
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, start, end, count, consumername);
   }
 
   @Override
   public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, EntryID... ids) {
-    // TODO Auto-generated method stub
-    return null;
+    Jedis j = getShard(key);
+    return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
 
 }

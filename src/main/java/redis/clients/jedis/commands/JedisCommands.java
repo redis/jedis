@@ -480,7 +480,7 @@ public interface JedisCommands {
   /**
    * XDEL key ID [ID ...]
    * @param key
-   * @param id2
+   * @param ids
    * @return
    */
   long xdel( String key, EntryID... ids);

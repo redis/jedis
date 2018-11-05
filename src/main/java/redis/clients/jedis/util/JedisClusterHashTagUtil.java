@@ -24,9 +24,9 @@ public final class JedisClusterHashTagUtil {
   }
 
   private static String extractHashTag(String key, boolean returnKeyOnAbsence) {
-    int s = key.indexOf("{");
+    int s = key.indexOf('{');
     if (s > -1) {
-      int e = key.indexOf("}", s + 1);
+      int e = key.indexOf('}', s + 1);
       if (e > -1 && e != s + 1) {
         return key.substring(s + 1, e);
       }

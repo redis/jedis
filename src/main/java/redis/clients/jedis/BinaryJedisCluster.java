@@ -26,7 +26,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   protected static final int DEFAULT_TIMEOUT = 2000;
   protected static final int DEFAULT_MAX_ATTEMPTS = 5;
 
-  protected int maxAttempts;
+  final protected int maxAttempts;
 
   protected JedisClusterConnectionHandler connectionHandler;
 

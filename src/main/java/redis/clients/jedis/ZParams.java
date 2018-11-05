@@ -21,7 +21,7 @@ public class ZParams {
     }
   }
 
-  private List<byte[]> params = new ArrayList<byte[]>();
+  private List<byte[]> params = new ArrayList<>();
 
   /**
    * Set weights.

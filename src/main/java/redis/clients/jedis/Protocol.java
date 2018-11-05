@@ -204,7 +204,7 @@ public final class Protocol {
     if (num == -1) {
       return null;
     }
-    final List<Object> ret = new ArrayList<Object>(num);
+    final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
         ret.add(process(is));
@@ -241,7 +241,7 @@ public final class Protocol {
     }
   }
 
-  public static enum Command implements ProtocolCommand {
+  public enum Command implements ProtocolCommand {
     PING, SET, GET, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME, RENAMENX,
     RENAMEX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET, SETNX, SETEX,
     MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET, HMGET,
@@ -271,7 +271,7 @@ public final class Protocol {
     }
   }
 
-  public static enum Keyword {
+  public enum Keyword {
     AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,

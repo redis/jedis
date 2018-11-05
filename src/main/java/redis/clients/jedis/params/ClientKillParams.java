@@ -7,11 +7,11 @@ public class ClientKillParams extends Params {
   private static final String ADDR = "ADDR";
   private static final String SKIPME = "SKIPME";
 
-  public static enum Type {
+  public enum Type {
     NORMAL, MASTER, SLAVE, PUBSUB;
   }
 
-  public static enum SkipMe {
+  public enum SkipMe {
     YES, NO;
   }
 

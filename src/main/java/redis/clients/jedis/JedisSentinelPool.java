@@ -26,7 +26,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected String clientName;
 
-  protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
+  protected Set<MasterListener> masterListeners = new HashSet<>();
 
   protected Logger log = LoggerFactory.getLogger(getClass().getName());
 

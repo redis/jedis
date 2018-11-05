@@ -7,11 +7,11 @@ import java.util.Queue;
 
 public class ShardedJedisPipeline extends PipelineBase {
   private BinaryShardedJedis jedis;
-  private List<FutureResult> results = new ArrayList<FutureResult>();
-  private Queue<Client> clients = new LinkedList<Client>();
+  private List<FutureResult> results = new ArrayList<>();
+  private Queue<Client> clients = new LinkedList<>();
 
   private static class FutureResult {
-    private Client client;
+    final private Client client;
 
     public FutureResult(Client client) {
       this.client = client;
@@ -52,7 +52,7 @@ public class ShardedJedisPipeline extends PipelineBase {
    * @return A list of all the responses in the order you executed them.
    */
   public List<Object> syncAndReturnAll() {
-    List<Object> formatted = new ArrayList<Object>();
+    List<Object> formatted = new ArrayList<>();
     for (Client client : clients) {
       formatted.add(generateResponse(client.getOne()).get());
     }

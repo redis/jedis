@@ -191,7 +191,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void hset(final String key, final Map<String, String> hash) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
+    final Map<byte[], byte[]> bhash = new HashMap<>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
@@ -210,7 +210,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void hmset(final String key, final Map<String, String> hash) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
+    final Map<byte[], byte[]> bhash = new HashMap<>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
@@ -487,7 +487,7 @@ public class Client extends BinaryClient implements Commands {
 
   public void blpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
-    List<String> args = new ArrayList<String>(size);
+    List<String> args = new ArrayList<>(size);
     for (String arg : keys) {
       args.add(arg);
     }
@@ -512,7 +512,7 @@ public class Client extends BinaryClient implements Commands {
 
   public void brpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
-    List<String> args = new ArrayList<String>(size);
+    List<String> args = new ArrayList<>(size);
     for (String arg : keys) {
       args.add(arg);
     }
@@ -1132,7 +1132,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   private HashMap<byte[], Double> convertScoreMembersToBinary(final Map<String, Double> scoreMembers) {
-    HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
+    HashMap<byte[], Double> binaryScoreMembers = new HashMap<>();
     for (Entry<String, Double> entry : scoreMembers.entrySet()) {
       binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
     }
@@ -1141,7 +1141,7 @@ public class Client extends BinaryClient implements Commands {
 
   private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(
       final Map<String, GeoCoordinate> memberCoordinateMap) {
-    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<>();
     for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {
       binaryMemberCoordinateMap.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
     }

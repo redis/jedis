@@ -2498,7 +2498,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
     }
-    Set<Tuple> set = new LinkedHashSet<Tuple>(membersWithScores.size() / 2, 1.0f);
+    Set<Tuple> set = new LinkedHashSet<>(membersWithScores.size() / 2, 1.0f);
     Iterator<byte[]> iterator = membersWithScores.iterator();
     while (iterator.hasNext()) {
       set.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
@@ -3624,7 +3624,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    return new ScanResult<byte[]>(newcursor, rawResults);
+    return new ScanResult<>(newcursor, rawResults);
   }
 
   @Override
@@ -3639,13 +3639,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.hscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
-    List<Map.Entry<byte[], byte[]>> results = new ArrayList<Map.Entry<byte[], byte[]>>();
+    List<Map.Entry<byte[], byte[]>> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
       results.add(new AbstractMap.SimpleEntry<byte[], byte[]>(iterator.next(), iterator.next()));
     }
-    return new ScanResult<Map.Entry<byte[], byte[]>>(newcursor, results);
+    return new ScanResult<>(newcursor, results);
   }
 
   @Override
@@ -3660,7 +3660,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    return new ScanResult<byte[]>(newcursor, rawResults);
+    return new ScanResult<>(newcursor, rawResults);
   }
 
   @Override
@@ -3674,13 +3674,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.zscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
-    List<Tuple> results = new ArrayList<Tuple>();
+    List<Tuple> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
       results.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
     }
-    return new ScanResult<Tuple>(newcursor, results);
+    return new ScanResult<>(newcursor, results);
   }
 
   @Override
@@ -3898,7 +3898,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
 
     protected static <E> SetFromList<E> of(List<E> list) {
-      return new SetFromList<E>(list);
+      return new SetFromList<>(list);
     }
   }
 

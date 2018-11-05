@@ -386,4 +386,7 @@ public interface Commands {
   void xreadGroup(String groupname, String consumer, int count, long block, Entry<String, EntryID>... streams);
 
   void xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername);
+
+  void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
+      boolean force, EntryID... ids);
 }

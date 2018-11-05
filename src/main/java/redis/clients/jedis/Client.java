@@ -1251,5 +1251,16 @@ public class Client extends BinaryClient implements Commands {
         SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));    
   }
 
+  @Override
+  public void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
+      boolean force, EntryID... ids) {
+    
+    final byte[][] bids = new byte[ids.length][];
+    for (int i = 0; i < ids.length; i++) {
+      bids[i] = SafeEncoder.encode(ids[i].toString());
+    }
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
+  }
+
  
 }

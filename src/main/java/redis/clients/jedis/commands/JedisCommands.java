@@ -493,22 +493,16 @@ public interface JedisCommands {
    * @return
    */
   long xtrim( String key, long maxLen, boolean exactMaxLen);
-
-  
-   
-
-
-  
-  
-
  
- 
-  /* XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+  /**
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] [JUSTID]
    */        
-  
-  // 
+  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, EntryID... ids);
+
+
 
 
   

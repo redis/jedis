@@ -1059,4 +1059,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return null;
   }
 
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, EntryID... ids) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

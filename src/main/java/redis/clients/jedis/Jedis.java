@@ -3796,4 +3796,14 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
     }
     return result;
   }
+
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, EntryID... ids) {
+    
+    checkIsInMultiOrPipeline();
+    client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
 }

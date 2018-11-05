@@ -1398,4 +1398,30 @@ public class BinaryClient extends Connection {
     }
   }
 
+  public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids) {
+      
+      ArrayList<byte[]> arguments = new ArrayList<>(10 + ids.length);
+
+      arguments.add(key);
+      arguments.add(groupname);
+      arguments.add(consumername);
+      arguments.add(toByteArray(minIdleTime));
+      
+      for(byte[] id : ids) {
+        arguments.add(id);  
+      }
+      if(newIdleTime > 0) {
+        arguments.add(Keyword.IDLE.raw);
+        arguments.add(toByteArray(newIdleTime));
+      }
+      if(retries > 0) {
+        arguments.add(Keyword.RETRYCOUNT.raw);
+        arguments.add(toByteArray(retries));        
+      }
+      if(force) {
+        arguments.add(Keyword.FORCE.raw);        
+      }
+      sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
+  }
+
 }

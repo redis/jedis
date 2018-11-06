@@ -1,11 +1,14 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.EntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.PendingEntry;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -315,4 +318,166 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(String key, String field);
+  
+
+  /**
+   * XADD key ID field string [field string ...]
+   * 
+   * @param key
+   * @param id
+   * @param hash
+   * @return the ID of the added entry
+   */
+  EntryID xadd(String key, EntryID id, Map<String, String> hash);
+
+  /**
+   * XADD key MAXLEN ~ LEN ID field string [field string ...]
+   * 
+   * @param key
+   * @param id
+   * @param hash
+   * @param maxLen
+   * @param exactMaxLen
+   * @return
+   */
+  EntryID xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  
+  /**
+   * XLEN key
+   * 
+   * @param key
+   * @return
+   */
+  Long xlen(String key);
+
+  /**
+   * XRANGE key start end [COUNT count]
+   * 
+   * @param key
+   * @param start
+   * @param end
+   * @param count
+   * @return
+   */
+  List<StreamEntry> xrange(String key, EntryID start, EntryID end, int count);
+
+  /**
+   * XREVRANGE key end start [COUNT <n>]
+   * @param key
+   * @param end
+   * @param start
+   * @param count
+   * @return
+   */
+  List<StreamEntry> xrevrange(String key, EntryID end, EntryID start, int count);
+  
+  /**
+   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * 
+   * @param key
+   * @param count
+   * @param block
+   * @param streams
+   * @return
+   */
+  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, EntryID>... streams);
+  
+  /**
+   * XACK key group ID [ID ...]
+   * @param key
+   * @param group
+   * @param ids
+   * @return
+   */
+  Long xack(String key, String group,  EntryID... ids);
+  
+  /**
+   * XGROUP CREATE <key> <groupname> <id or $>
+   * 
+   * @param key
+   * @param groupname
+   * @param id
+   * @return
+   */
+  String xgroupCreate( String key, String groupname, EntryID id);
+  
+  /**
+   * XGROUP SETID <key> <groupname> <id or $>
+   * 
+   * @param key
+   * @param groupname
+   * @param id
+   * @return
+   */
+  String xgroupSetID( String key, String groupname, EntryID id);
+  
+  /**
+   * XGROUP DESTROY <key> <groupname>
+   * 
+   * @param key
+   * @param groupname
+   * @return
+   */
+  Long xgroupDestroy( String key, String groupname);
+  
+  /**
+   * XGROUP DELCONSUMER <key> <groupname> <consumername> 
+   * @param key
+   * @param groupname
+   * @param consumername
+   * @return
+   */
+  String xgroupDelConsumer( String key, String groupname, String consumername);
+
+  /**
+   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * 
+   * @param key
+   * @param groupname
+   * @param cosumer
+   * @param count
+   * @param block
+   * @param streams
+   * @return
+   */
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, Map.Entry<String, EntryID>... streams);
+
+  
+  /**
+   * XPENDING key group [start end count] [consumer]
+   * 
+   * @param key
+   * @param groupname
+   * @param start
+   * @param end
+   * @param count
+   * @param consumername
+   * @return
+   */
+  List<PendingEntry> xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername);
+  
+  /**
+   * XDEL key ID [ID ...]
+   * @param key
+   * @param ids
+   * @return
+   */
+  Long xdel( String key, EntryID... ids);
+  
+  /**
+   * XTRIM key MAXLEN [~] count
+   * @param key
+   * @param maxLen
+   * @param exactMaxLen
+   * @return
+   */
+  Long xtrim( String key, long maxLen, boolean exactMaxLen);
+ 
+  /**
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE] [JUSTID]
+   */        
+  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, EntryID... ids);
 }

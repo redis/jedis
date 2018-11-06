@@ -3680,6 +3680,15 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
 
+  /**
+   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * 
+   * @param key
+   * @param count
+   * @param block
+   * @param streams
+   * @return
+   */
   @Override
   public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, EntryID>... streams) {
     checkIsInMultiOrPipeline();
@@ -3755,6 +3764,17 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
     return client.getIntegerReply();
   }
 
+  /**
+   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * 
+   * @param key
+   * @param groupname
+   * @param cosumer
+   * @param count
+   * @param block
+   * @param streams
+   * @return
+   */
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
       final Entry<String, EntryID>... streams) {

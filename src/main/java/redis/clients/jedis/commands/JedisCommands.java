@@ -391,18 +391,7 @@ public interface JedisCommands {
    * @return
    */
   List<StreamEntry> xrevrange(String key, EntryID end, EntryID start, int count);
-  
-  /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param key
-   * @param count
-   * @param block
-   * @param streams
-   * @return
-   */
-  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, EntryID>... streams);
-  
+    
   /**
    * XACK key group ID [ID ...]
    * @param key
@@ -451,20 +440,6 @@ public interface JedisCommands {
   String xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param key
-   * @param groupname
-   * @param cosumer
-   * @param count
-   * @param block
-   * @param streams
-   * @return
-   */
-  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, Map.Entry<String, EntryID>... streams);
-
-  
-  /**
    * XPENDING key group [start end count] [consumer]
    * 
    * @param key
@@ -501,14 +476,5 @@ public interface JedisCommands {
    */        
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, EntryID... ids);
-
-
-
-
-  
-  /* XINFO CONSUMERS key group
-   * XINFO GROUPS <key>
-   * XINFO STREAM <key>
-   * XINFO HELP. */  
 
 }

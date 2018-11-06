@@ -1277,7 +1277,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public String echo(final String string) {
-    // note that it'll be run from arbitary node
+    // note that it'll be run from arbitrary node
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
@@ -2017,6 +2017,180 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Long execute(Jedis connection) {
         return connection.hstrlen(key, field);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public EntryID xadd(final String key, final EntryID id, final Map<String, String> hash) {
+    return new JedisClusterCommand<EntryID>(connectionHandler, maxAttempts) {
+      @Override
+      public EntryID execute(Jedis connection) {
+        return connection.xadd(key, id, hash);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public EntryID xadd(final String key, final EntryID id, final Map<String, String> hash, final long maxLen, final boolean exactMaxLen) {
+    return new JedisClusterCommand<EntryID>(connectionHandler, maxAttempts) {
+      @Override
+      public EntryID execute(Jedis connection) {
+        return connection.xadd(key, id, hash, maxLen, exactMaxLen);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long xlen(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xlen(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrange(final String key, final EntryID start, final EntryID end, final int count) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrange(key, start, end, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final EntryID end, final EntryID start, final int count) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrevrange(key, end, start, count);
+      }
+    }.run(key);  
+  }
+
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, EntryID>... streams) {
+    String[] keys = new String[streams.length];
+    for(int i=0; i<streams.length; ++i) {
+      keys[i] = streams[i].getKey();
+    }
+    
+    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
+        return connection.xread(count, block, streams);
+      }
+    }.run(keys.length, keys);  
+  }
+
+  @Override
+  public Long xack(final String key, final String group, final EntryID... ids) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xack(key, group, ids);
+      }
+    }.run(key);   
+  }
+
+  @Override
+  public String xgroupCreate(final String key, final String groupname, final EntryID id) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.xgroupCreate(key, groupname, id);
+      }
+    }.run(key);  
+  }
+
+  @Override
+  public String xgroupSetID(final String key, final String groupname, final EntryID id) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.xgroupSetID(key, groupname, id);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long xgroupDestroy(final String key, final String groupname) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xgroupDestroy(key, groupname);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String xgroupDelConsumer(final String key, final String groupname, final String consumername) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.xgroupDelConsumer(key, groupname, consumername);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
+      final Entry<String, EntryID>... streams) {
+    
+    String[] keys = new String[streams.length];
+    for(int i=0; i<streams.length; ++i) {
+      keys[i] = streams[i].getKey();
+    }
+    
+    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
+        return connection.xreadGroup(groupname, consumer, count, block, streams);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public List<PendingEntry> xpending(final String key, final String groupname, final EntryID start, final EntryID end, final int count,
+      final String consumername) {
+    return new JedisClusterCommand<List<PendingEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<PendingEntry> execute(Jedis connection) {
+        return connection.xpending(key, groupname, start, end, count, consumername);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long xdel(final String key, final EntryID... ids) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xdel(key, ids);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long xtrim(final  String key, final long maxLen, final boolean exactMaxLen) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xtrim(key, maxLen, exactMaxLen);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xclaim(final String key, final String group, final String consumername, final long minIdleTime, final long newIdleTime,
+      final int retries, final boolean force, final EntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
       }
     }.run(key);
   }

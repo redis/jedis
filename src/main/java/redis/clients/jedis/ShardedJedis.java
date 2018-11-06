@@ -992,12 +992,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xread(int count, long block, Entry<String, EntryID>... streams){
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public long xack(String key, String group, EntryID... ids) {
     Jedis j = getShard(key);
     return j.xack(key, group, ids);
@@ -1047,13 +1041,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block,
-      Entry<String, EntryID>... streams) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public List<PendingEntry> xpending(String key, String groupname, EntryID start, EntryID end,
       int count, String consumername) {
     Jedis j = getShard(key);
@@ -1066,5 +1053,4 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
-
 }

@@ -1,8 +1,16 @@
 package redis.clients.jedis;
 
 public class EntryID implements Comparable<EntryID> {
-  final private long time;
-  final private long sequence;
+  
+  public static final EntryID LAST_ENTRY = new EntryID() {
+    @Override
+    public String toString(){
+      return "$";
+    }
+  };
+    
+  private final long time;
+  private final long sequence;
 
   public EntryID() {
     this(0, 0L);

@@ -209,7 +209,6 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xgroup-stream", null, map);
     
-    
     String status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name", null);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
 
@@ -217,7 +216,9 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     status = jedis.xgroupSetID("xgroup-stream", "consumer-group-name", id1);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
 
-
+    status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", EntryID.LAST_ENTRY);
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    
     jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
 
     //TODO test xgroupDelConsumer

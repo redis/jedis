@@ -683,6 +683,7 @@ public class JedisClusterTest {
       // expected
     }
   }
+  
   private static String getNodeServingSlotRange(String infoOutput) {
     // f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0
     // 1394372400827 0 connected 5461-10922

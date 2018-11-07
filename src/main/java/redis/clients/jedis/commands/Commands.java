@@ -383,7 +383,7 @@ public interface Commands {
 
   void xtrim(String key, long maxLen, boolean exactMaxLen);
 
-  void xreadGroup(String groupname, String consumer, int count, long block, Entry<String, EntryID>... streams);
+  void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, EntryID>... streams);
 
   void xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername);
 

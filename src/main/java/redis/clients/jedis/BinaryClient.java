@@ -1366,21 +1366,40 @@ public class BinaryClient extends Connection {
     }
   }
   
-  public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, Map<byte[], byte[]> streams) {
-    final byte[][] params = new byte[8 + streams.size() * 2][];
+  public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
+    
+    int optional = 0;
+    if(count>0) {
+      optional += 2;
+    }
+    if(block > 0) {
+      optional += 2;
+    }
+    if(noAck) {
+      optional += 1;
+    }
+    
+    
+    final byte[][] params = new byte[4 + optional + streams.size() * 2][];
 
     int streamsIndex = 0;
     params[streamsIndex++] = Keyword.GROUP.raw;
     params[streamsIndex++] = groupname;
     params[streamsIndex++] = consumer;
-    params[streamsIndex++] = Keyword.COUNT.raw;
-    params[streamsIndex++] = toByteArray(count);
-    params[streamsIndex++] = Keyword.BLOCK.raw;
-    params[streamsIndex++] = toByteArray(block);
-    
+    if(count>0) {
+      params[streamsIndex++] = Keyword.COUNT.raw;
+      params[streamsIndex++] = toByteArray(count);
+    }
+    if(block > 0) {
+      params[streamsIndex++] = Keyword.BLOCK.raw;
+      params[streamsIndex++] = toByteArray(block);
+    }
+    if(noAck) {
+      params[streamsIndex++] = Keyword.NOACK.raw;
+    }
     params[streamsIndex++] = Keyword.STREAMS.raw;
+    
     int idsIndex = streamsIndex + streams.size();
-
     for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
       params[streamsIndex++] = entry.getKey();
       params[idsIndex++] = entry.getValue();

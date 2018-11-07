@@ -440,7 +440,7 @@ public interface JedisClusterCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, Map.Entry<String, EntryID>... streams);
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, EntryID>... streams);
 
   
   /**

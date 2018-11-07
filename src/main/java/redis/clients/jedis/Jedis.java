@@ -3777,16 +3777,16 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
    */
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
-      final Entry<String, EntryID>... streams) {
+      final boolean noAck, final Entry<String, EntryID>... streams) {
     checkIsInMultiOrPipeline();
-    client.xreadGroup(groupname, consumer, count, block, streams);
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
 
     List<Object> streamsEntries = client.getObjectMultiBulkReply();
     if(streamsEntries == null) {
-      return new ArrayList<Entry<String, List<StreamEntry>>>();
+      return new ArrayList<>();
     }
     
-    List<Entry<String, List<StreamEntry>>> result = new ArrayList<Entry<String, List<StreamEntry>>>(streamsEntries.size());
+    List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
     for(Object streamObj : streamsEntries) {
       List<Object> stream = (List<Object>)streamObj;
       String streamId = SafeEncoder.encode((byte[])stream.get(0));

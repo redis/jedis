@@ -1237,12 +1237,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xreadGroup(String groupname, String consumer, int count, long block, Entry<String, EntryID>... streams) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.length);
+  public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, EntryID>... streams) {
+    final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
     for (final Entry<String, EntryID> entry : streams) {
-      bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
+      bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? ">" : entry.getValue().toString()));
     }
-    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, bhash);    
+    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);    
   }
 
   @Override

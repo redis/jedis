@@ -188,5 +188,5 @@ public interface MultiKeyCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, Map.Entry<String, EntryID>... streams);
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, final boolean noAck, Map.Entry<String, EntryID>... streams);
 }

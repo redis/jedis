@@ -2138,7 +2138,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
-      final Entry<String, EntryID>... streams) {
+      final boolean noAck, final Entry<String, EntryID>... streams) {
     
     String[] keys = new String[streams.length];
     for(int i=0; i<streams.length; ++i) {
@@ -2148,7 +2148,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
       @Override
       public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
-        return connection.xreadGroup(groupname, consumer, count, block, streams);
+        return connection.xreadGroup(groupname, consumer, count, block, noAck, streams);
       }
     }.run(keys.length, keys);
   }

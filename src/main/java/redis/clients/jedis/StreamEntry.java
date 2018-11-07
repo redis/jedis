@@ -4,8 +4,8 @@ import java.util.Map;
 
 public class StreamEntry {
   
-  final private EntryID id;
-  final private Map<String, String> fields;
+  private final EntryID id;
+  private final Map<String, String> fields;
   
   public StreamEntry(EntryID id, Map<String, String> fields) {
     this.id = id;

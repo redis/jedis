@@ -328,5 +328,31 @@ public interface BinaryJedisCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(byte[] key, byte[] field);
+  
+  
+  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen);
 
+  Long xlen(final byte[] key);
+ 
+  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+
+  List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
+
+  Long xack(final byte[] key, final byte[] group, final byte[]... ids);
+ 
+  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id);
+
+  String xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id);
+
+  Long xgroupDestroy(final byte[] key, final byte[] consumer);
+
+  String xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+ 
+  Long xdel(final byte[] key, final byte[]... ids);
+
+  Long xtrim(byte[] key, long maxLen, boolean exactMaxLen);
+
+  List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 }

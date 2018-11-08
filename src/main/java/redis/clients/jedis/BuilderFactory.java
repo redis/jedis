@@ -180,9 +180,7 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      List<byte[]> l = (List<byte[]>) data;
-
-      return l;
+      return (List<byte[]>) data;
     }
 
     @Override
@@ -345,6 +343,7 @@ public final class BuilderFactory {
 
   public static final Builder<List<GeoCoordinate>> GEO_COORDINATE_LIST = new Builder<List<GeoCoordinate>>() {
     @Override
+    @SuppressWarnings("unchecked")
     public List<GeoCoordinate> build(Object data) {
       if (null == data) {
         return null;
@@ -375,6 +374,7 @@ public final class BuilderFactory {
 
   public static final Builder<List<GeoRadiusResponse>> GEORADIUS_WITH_PARAMS_RESULT = new Builder<List<GeoRadiusResponse>>() {
     @Override
+    @SuppressWarnings("unchecked")
     public List<GeoRadiusResponse> build(Object data) {
       if (data == null) {
         return null;
@@ -431,6 +431,7 @@ public final class BuilderFactory {
 
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
+    @SuppressWarnings("unchecked")
     public List<Module> build(Object data) {
       if (data == null) {
         return null;
@@ -473,7 +474,6 @@ public final class BuilderFactory {
     }
 
   };
-
 
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );

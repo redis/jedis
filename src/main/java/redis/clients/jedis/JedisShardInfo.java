@@ -15,13 +15,13 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
 
   private int connectionTimeout;
   private int soTimeout;
-  private String host;
-  private int port;
-  private String password = null;
+  private final String host;
+  private final int port;
+  private String password;
   private String name = null;
   // Default Redis DB
   private int db = 0;
-  private boolean ssl;
+  private final boolean ssl;
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
@@ -38,6 +38,7 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     } else {
       this.host = host;
       this.port = Protocol.DEFAULT_PORT;
+      this.ssl = false;
     }
   }
 
@@ -100,13 +101,11 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name) {
-    this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT);
-    this.name = name;
+    this(host, port, timeout, name, false);
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name, boolean ssl) {
-    this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT, ssl);
-    this.name = name;
+    this(host, port, timeout, name, false, null, null, null);
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name, boolean ssl,
@@ -117,40 +116,34 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   }
 
   public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight) {
-    super(weight);
-    this.host = host;
-    this.port = port;
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
+    this(host, port, connectionTimeout, soTimeout, weight, false);
   }
 
   public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight,
       boolean ssl) {
+    this(host, port, connectionTimeout, soTimeout, weight, ssl, null, null, null);
+  }
+
+  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier) {
     super(weight);
     this.host = host;
     this.port = port;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.ssl = ssl;
-  }
-
-  public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier) {
-    this(host, port, connectionTimeout, soTimeout, weight, ssl);
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
   }
 
   public JedisShardInfo(String host, String name, int port, int timeout, int weight) {
-    this(host, port, timeout, timeout, weight);
-    this.name = name;
+    this(host, name, port, timeout, weight, false);
   }
 
   public JedisShardInfo(String host, String name, int port, int timeout, int weight, boolean ssl) {
-    this(host, port, timeout, timeout, weight, ssl);
-    this.name = name;
+    this(host, name, port, timeout, weight, false, null, null, null);
   }
 
   public JedisShardInfo(String host, String name, int port, int timeout, int weight,

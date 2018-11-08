@@ -124,7 +124,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         internalPool.clear();
       }
 
-      log.info("Created JedisPool to master at " + master);
+      log.info("Created JedisPool to master at {}", master);
     }
   }
 
@@ -161,8 +161,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         // resolves #1036, it should handle JedisException there's another chance
         // of raising JedisDataException
         log.warn(
-          "Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap,
-          e.toString());
+          "Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap, e);
       } finally {
         if (jedis != null) {
           jedis.close();
@@ -182,7 +181,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       }
     }
 
-    log.info("Redis master running at " + master + ", starting Sentinel listeners...");
+    log.info("Redis master running at {}, starting Sentinel listeners...", master);
 
     for (String sentinel : sentinels) {
       final HostAndPort hap = HostAndPort.parseString(sentinel);

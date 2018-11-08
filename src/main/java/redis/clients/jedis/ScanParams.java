@@ -19,8 +19,8 @@ public class ScanParams {
 
   private final Map<Keyword, ByteBuffer> params = new EnumMap<>(Keyword.class);
 
-  public final static String SCAN_POINTER_START = String.valueOf(0);
-  public final static byte[] SCAN_POINTER_START_BINARY = SafeEncoder.encode(SCAN_POINTER_START);
+  public static final String SCAN_POINTER_START = String.valueOf(0);
+  public static final byte[] SCAN_POINTER_START_BINARY = SafeEncoder.encode(SCAN_POINTER_START);
 
   public ScanParams match(final byte[] pattern) {
     params.put(MATCH, ByteBuffer.wrap(pattern));
@@ -55,24 +55,21 @@ public class ScanParams {
   byte[] binaryMatch() {
     if (params.containsKey(MATCH)) {
       return params.get(MATCH).array();
-    } else {
-      return null;
-    }
+    } 
+    return null;
   }
 
   String match() {
     if (params.containsKey(MATCH)) {
       return new String(params.get(MATCH).array());
-    } else {
-      return null;
     }
+    return null;
   }
 
   Integer count() {
     if (params.containsKey(COUNT)) {
       return params.get(COUNT).getInt();
-    } else {
-      return null;
     }
+    return null;
   }
 }

@@ -35,11 +35,7 @@ public final class JedisURIHelper {
   }
 
   public static boolean isValid(URI uri) {
-    if (isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1) {
-      return false;
-    }
-
-    return true;
+    return !(isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1);
   }
 
   private static boolean isEmpty(String value) {

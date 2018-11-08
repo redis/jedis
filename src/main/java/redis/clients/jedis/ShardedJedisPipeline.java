@@ -11,7 +11,7 @@ public class ShardedJedisPipeline extends PipelineBase {
   private Queue<Client> clients = new LinkedList<>();
 
   private static class FutureResult {
-    final private Client client;
+    private final Client client;
 
     public FutureResult(Client client) {
       this.client = client;
@@ -27,7 +27,7 @@ public class ShardedJedisPipeline extends PipelineBase {
   }
 
   public List<Object> getResults() {
-    List<Object> r = new ArrayList<Object>();
+    List<Object> r = new ArrayList<>();
     for (FutureResult fr : results) {
       r.add(fr.get());
     }

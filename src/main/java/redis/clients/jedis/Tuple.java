@@ -7,8 +7,8 @@ import redis.clients.jedis.util.ByteArrayComparator;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class Tuple implements Comparable<Tuple> {
-  final private byte[] element;
-  final private Double score;
+  private final byte[] element;
+  private final Double score;
 
   public Tuple(String element, Double score) {
     this(SafeEncoder.encode(element), score);

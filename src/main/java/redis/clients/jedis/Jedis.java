@@ -6,8 +6,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
-import redis.clients.jedis.params.stream.NewStreamParams;
-import redis.clients.jedis.params.stream.StreamParams;
+import redis.clients.jedis.params.stream.*;
 import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 import redis.clients.util.Slowlog;
@@ -3809,7 +3808,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.xreadBlock(block,keys);
     if(block==0){
-        client.setTimeoutInfinite();
+      client.setTimeoutInfinite();
     }
     NewStreamParams result=null;
     try {
@@ -3880,5 +3879,36 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.xgroupdelconsumer(key, group, consumer);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public StreamInfo xinfostream(String key) {
+    checkIsInMultiOrPipeline();
+    client.xinfostream(key);
+    return BuilderFactory.STREAM_INFO.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GroupInfo> xinfogroups(String key) {
+    checkIsInMultiOrPipeline();
+    client.xinfogroup(key);
+    List<Object> reply = client.getObjectMultiBulkReply();
+    List<GroupInfo> result = new ArrayList<GroupInfo>();
+    for(Object group:reply){
+      result.add(BuilderFactory.GROUP_INFO.build(group));
+    }
+    return result;
+  }
+
+  @Override
+  public List<ConsumerInfo> xinfoconsumers(String key, String group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoconsumers(key, group);
+    List<Object> reply = client.getObjectMultiBulkReply();
+    List<ConsumerInfo> result=new ArrayList<ConsumerInfo>();
+    for(Object consumer:reply){
+      result.add(BuilderFactory.CONSUMER_INFO.build(consumer));
+    }
+    return result;
   }
 }

@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.stream.ConsumerInfo;
+import redis.clients.jedis.params.stream.GroupInfo;
+import redis.clients.jedis.params.stream.StreamInfo;
 import redis.clients.jedis.params.stream.StreamParams;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
@@ -467,22 +470,16 @@ public final class BuilderFactory {
     throw new InstantiationError( "Must not instantiate this class" );
   }
 
-  public static final Builder<StreamParams> STREAM_PARAMS=new Builder<StreamParams>() {
+  public static final Builder<StreamParams> STREAM_PARAMS = new Builder<StreamParams>() {
     @Override
     @SuppressWarnings("unchecked")
     public StreamParams build(Object data) {
-      List<Object> element=(List<Object>)data;
-      byte[] entryId=(byte[])element.get(0);
-      List<Object> pairs=(List<Object>)element.get(1);
-      if(entryId==null || pairs==null || (pairs.size() & 1)>0){
-        return null;
-      }
-      StreamParams streamParams=new StreamParams();
-      streamParams.setEntryId(SafeEncoder.encode(entryId));
-      final Iterator<Object> iterator = pairs.iterator();
-      while (iterator.hasNext()) {
-        streamParams.addPair(SafeEncoder.encode((byte[]) iterator.next())
-                ,SafeEncoder.encode((byte[]) iterator.next()));
+      List<Object> element = (List<Object>)data;
+      StreamParams streamParams = new StreamParams();
+      streamParams.setEntryId(STRING.build(element.get(0)));
+      Map<String,String> map = STRING_MAP.build(element.get(1));
+      for(Map.Entry<String,String> entry:map.entrySet()){
+        streamParams.addPair(entry.getKey(),entry.getValue());
       }
       return streamParams;
     }
@@ -490,6 +487,64 @@ public final class BuilderFactory {
     @Override
     public String toString(){
       return "StreamParams";
+    }
+  };
+
+  public static final Builder<StreamInfo> STREAM_INFO = new Builder<StreamInfo>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamInfo build(Object data) {
+      List<Object> info = (List<Object>)data;
+      StreamInfo infoParams = new StreamInfo();
+      infoParams.setLength(LONG.build(info.get(1)));
+      infoParams.setRadixTreeKeys(LONG.build(info.get(3)));
+      infoParams.setRadixTreeNodes(LONG.build(info.get(5)));
+      infoParams.setGroups(LONG.build(info.get(7)));
+      infoParams.setLastGeneratedId(STRING.build(info.get(9)));
+      infoParams.setFirstEntry(STREAM_PARAMS.build(info.get(11)));
+      infoParams.setLastEntry(STREAM_PARAMS.build(info.get(13)));
+      return infoParams;
+    }
+
+    public String toString(){
+      return "StreamInfo";
+    }
+  };
+
+  public static final Builder<GroupInfo> GROUP_INFO = new Builder<GroupInfo>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public GroupInfo build(Object data) {
+      List<Object> list = (List<Object>)data;
+      GroupInfo groupInfo = new GroupInfo();
+      groupInfo.setName(STRING.build(list.get(1)));
+      groupInfo.setConsumers(LONG.build(list.get(3)));
+      groupInfo.setPending(LONG.build(list.get(5)));
+      groupInfo.setLastDeliveredId(STRING.build(list.get(7)));
+      return groupInfo;
+    }
+
+    public String toString(){
+      return "GroupInfo";
+    }
+  };
+
+  public static final Builder<ConsumerInfo> CONSUMER_INFO = new Builder<ConsumerInfo>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public ConsumerInfo build(Object data) {
+      List<Object> list = (List<Object>)data;
+      ConsumerInfo consumerInfo = new ConsumerInfo();
+      consumerInfo.setName(STRING.build(list.get(1)));
+      consumerInfo.setPending(LONG.build(list.get(3)));
+      if(list.size()>4){
+        consumerInfo.setIdle(LONG.build(list.get(5)));
+      }
+      return consumerInfo;
+    }
+
+    public String toString(){
+      return "ConsumerInfo";
     }
   };
 

@@ -1477,4 +1477,29 @@ public class BinaryClient extends Connection {
   public void xgroupdelconsumer(byte[] key, byte[] group, byte[] consumer){
     sendCommand(XGROUP, DELCONSUMER.raw, key, group, consumer);
   }
+
+  /**
+   * 发送xinfo stream命令
+   * @param key Stream键名
+   */
+  public void xinfostream(byte[] key){
+    sendCommand(XINFO,STREAMS.raw, key);
+  }
+
+  /**
+   * 发送xinfo groups命令
+   * @param key Stream键名
+   */
+  public void xinfogroup(byte[] key){
+    sendCommand(XINFO,GROUPS.raw, key);
+  }
+
+  /**
+   * 发送xinfo consumers命令
+   * @param key Stream键名
+   * @param group ConsumerGroup名
+   */
+  public void xinfoconsumers(byte[] key, byte[] group){
+    sendCommand(XINFO,CONSUMERS.raw, key, group);
+  }
 }

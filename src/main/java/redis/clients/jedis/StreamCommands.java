@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.params.stream.NewStreamParams;
-import redis.clients.jedis.params.stream.StreamParams;
+import redis.clients.jedis.params.stream.*;
 
 import java.util.List;
 import java.util.Map;
@@ -248,8 +247,9 @@ public interface StreamCommands {
 
     /**
      * 设置Consumer当前读取的游标
-     * @param key Stream的键名
-     * @param group ConsumerGroup名
+     *
+     * @param key     Stream的键名
+     * @param group   ConsumerGroup名
      * @param entryId 当前游标序号，接受“0”和“$”
      * @return 成功返回“OK”
      */
@@ -257,7 +257,8 @@ public interface StreamCommands {
 
     /**
      * 销毁ConsumerGroup
-     * @param key Stream的键名
+     *
+     * @param key   Stream的键名
      * @param group ConsumerGroup名
      * @return 删除的Group个数
      */
@@ -265,11 +266,38 @@ public interface StreamCommands {
 
 
     /**
+     * 从ConsumerGroup中删除一个consumer
      *
-     * @param key Stream的键名
-     * @param group ConsumerGroup名
+     * @param key      Stream的键名
+     * @param group    ConsumerGroup名
      * @param consumer Consumer名
      * @return 未确认的消息数
      */
     long xgroupdelconsumer(String key, String group, String consumer);
+
+    /**
+     * 获取取Streams的基本信息
+     *
+     * @param key Stream的键名
+     * @return Stream的基本信息封装
+     */
+    StreamInfo xinfostream(String key);
+
+    /**
+     * 获取与Stream绑定的ConsumerGroup信息
+     *
+     * @param key Stream的键名
+     * @return Consumer信息列表
+     */
+    List<GroupInfo> xinfogroups(String key);
+
+    /**
+     * 获取指定ConsumerGroup中消费者信息列表
+     *
+     * @param key   Stream的键名
+     * @param group ConsumerGroup的名称
+     * @return 消费者信息列表
+     */
+    List<ConsumerInfo> xinfoconsumers(String key, String group);
+
 }

@@ -22,7 +22,7 @@ public class EntryID implements Comparable<EntryID> {
    * XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >
    * </code>
    */
-  public static final EntryID UNRECEVIED_ENTRY = new EntryID() {
+  public static final EntryID UNRECEIVED_ENTRY = new EntryID() {
     @Override
     public String toString(){
       return ">";

@@ -255,7 +255,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     // Read only fresh messages
     EntryID id4 = jedis.xadd("xreadGroup-stream1", null, map);
-    Entry<String, EntryID> streamQeuryFresh = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xreadGroup-stream1", EntryID.UNRECEVIED_ENTRY);
+    Entry<String, EntryID> streamQeuryFresh = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xreadGroup-stream1", EntryID.UNRECEIVED_ENTRY);
     List<Entry<String, List<StreamEntry>>> streams3 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 4, 100L, true, streamQeuryFresh); 
     assertEquals(1, streams3.size());  
     assertEquals(id4, streams3.get(0).getValue().get(0).getID());

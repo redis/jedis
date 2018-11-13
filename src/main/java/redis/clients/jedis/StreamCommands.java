@@ -300,4 +300,38 @@ public interface StreamCommands {
      */
     List<ConsumerInfo> xinfoconsumers(String key, String group);
 
+    /**
+     * 取ConsumerGroup的未确认消息信息
+     *
+     * @param key   Stream的键名
+     * @param group ConsumerGroup的名称
+     * @return ConsumerGroup未确认信息
+     */
+    GroupPendingInfo xpending(String key, String group);
+
+    /**
+     * 取ConsumerGroup下指定范围的所有消费者未确认消息的信息列表
+     *
+     * @param key          Stream的键名
+     * @param group        ConsumerGroup的名称
+     * @param startEntryId 起始的EntryId，接受“-”
+     * @param endEntryId   最大的EntryId，接受“+”
+     * @param count        最大可取的消息数
+     * @return 未确认消息的信息列表
+     */
+    List<PendingInfo> xpending(String key, String group, String startEntryId, String endEntryId, long count);
+
+    /**
+     * 取ConsumerGroup下指定范围的指定消息者未确认消息的信息列表
+     *
+     * @param key          Stream的键名
+     * @param group        ConsumerGroup的名称
+     * @param startEntryId 起始的EntryId，接受“-”
+     * @param endEntryId   最大的EntryId，接受“+”
+     * @param count        最大可取的消息数
+     * @param consumer     消费者名称
+     * @return 指定消费者未确认消息的信息列表
+     */
+    List<PendingInfo> xpending(String key, String group, String startEntryId, String endEntryId, long count, String consumer);
+
 }

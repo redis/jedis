@@ -1502,4 +1502,30 @@ public class BinaryClient extends Connection {
   public void xinfoconsumers(byte[] key, byte[] group){
     sendCommand(XINFO,CONSUMERS.raw, key, group);
   }
+
+  /**
+   * 发送xpending命令
+   * @param key 键名
+   * @param group ConsumerGroup名
+   */
+  public void xpending(byte[] key, byte[] group){
+    sendCommand(XPENDING,key,group);
+  }
+
+  /**
+   * 发送pending命令
+   * @param key 键名
+   * @param group ConsumerGroup名
+   * @param startEntryId 起始id
+   * @param endEntryId 结束id
+   * @param count 最大取元素数
+   * @param consumer 消费者名
+   */
+  public void xpending(byte[] key, byte[] group, byte[] startEntryId, byte[] endEntryId, long count, byte[] consumer){
+    if(consumer==null){
+      sendCommand(XPENDING, key, group, startEntryId, endEntryId, toByteArray(count));
+    }else{
+      sendCommand(XPENDING, key, group, startEntryId, endEntryId, toByteArray(count), consumer);
+    }
+  }
 }

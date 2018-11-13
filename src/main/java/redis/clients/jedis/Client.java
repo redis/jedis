@@ -1218,4 +1218,13 @@ public class Client extends BinaryClient implements Commands {
   public void xinfoconsumers(String key, String group){
     xinfoconsumers(SafeEncoder.encode(key),SafeEncoder.encode(group));
   }
+
+  public void xpending(String key, String group){
+    xpending(SafeEncoder.encode(key),SafeEncoder.encode(group));
+  }
+
+  public void xpending(String key, String group, String startEntryId, String endEntryId, long count, String consumer){
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(group),
+            SafeEncoder.encode(startEntryId), SafeEncoder.encode(endEntryId), count, consumer==null?null:SafeEncoder.encode(consumer));
+  }
 }

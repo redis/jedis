@@ -1,9 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.params.stream.ConsumerInfo;
-import redis.clients.jedis.params.stream.GroupInfo;
-import redis.clients.jedis.params.stream.StreamInfo;
-import redis.clients.jedis.params.stream.StreamParams;
+import redis.clients.jedis.params.stream.*;
 import redis.clients.util.JedisByteHashMap;
 import redis.clients.util.SafeEncoder;
 
@@ -474,7 +471,7 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public StreamParams build(Object data) {
-      List<Object> element = (List<Object>)data;
+      List<Object> element = (List<Object>) data;
       StreamParams streamParams = new StreamParams();
       streamParams.setEntryId(STRING.build(element.get(0)));
       Map<String,String> map = STRING_MAP.build(element.get(1));
@@ -494,7 +491,7 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public StreamInfo build(Object data) {
-      List<Object> info = (List<Object>)data;
+      List<Object> info = (List<Object>) data;
       StreamInfo infoParams = new StreamInfo();
       infoParams.setLength(LONG.build(info.get(1)));
       infoParams.setRadixTreeKeys(LONG.build(info.get(3)));
@@ -515,7 +512,7 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public GroupInfo build(Object data) {
-      List<Object> list = (List<Object>)data;
+      List<Object> list = (List<Object>) data;
       GroupInfo groupInfo = new GroupInfo();
       groupInfo.setName(STRING.build(list.get(1)));
       groupInfo.setConsumers(LONG.build(list.get(3)));
@@ -533,7 +530,7 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public ConsumerInfo build(Object data) {
-      List<Object> list = (List<Object>)data;
+      List<Object> list = (List<Object>) data;
       ConsumerInfo consumerInfo = new ConsumerInfo();
       consumerInfo.setName(STRING.build(list.get(1)));
       consumerInfo.setPending(LONG.build(list.get(3)));
@@ -545,6 +542,52 @@ public final class BuilderFactory {
 
     public String toString(){
       return "ConsumerInfo";
+    }
+  };
+
+  public static final Builder<GroupPendingInfo> GROUP_PENDING_INFO = new Builder<GroupPendingInfo>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public GroupPendingInfo build(Object data) {
+      List<Object> list = (List<Object>) data;
+      GroupPendingInfo groupPendingInfo=new GroupPendingInfo();
+      groupPendingInfo.setCount(LONG.build(list.get(0)));
+      groupPendingInfo.setOldestEntryId(STRING.build(list.get(1)));
+      groupPendingInfo.setNewestEntryId(STRING.build(list.get(2)));
+      List<Object> consumers = (List<Object>) list.get(3);
+      List<ConsumerInfo> consumerInfos = new ArrayList<ConsumerInfo>();
+      ConsumerInfo consumerInfo;
+      for(Object consumer:consumers){
+        List<Object> consumerInfoList = (List<Object>) consumer;
+        consumerInfo=new ConsumerInfo();
+        consumerInfo.setName(STRING.build(consumerInfoList.get(0)));
+        consumerInfo.setPending(LONG.build(consumerInfoList.get(1)));
+        consumerInfos.add(consumerInfo);
+      }
+      groupPendingInfo.setConsumers(consumerInfos);
+      return groupPendingInfo;
+    }
+
+    public String toString(){
+      return "GroupPendingInfo";
+    }
+  };
+
+  public static final Builder<PendingInfo> PENDING_INFO = new Builder<PendingInfo>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public PendingInfo build(Object data) {
+      List<Object> list = (List<Object>) data;
+      PendingInfo pendingInfo=new PendingInfo();
+      pendingInfo.setEntryId(STRING.build(list.get(0)));
+      pendingInfo.setConsumer(STRING.build(list.get(1)));
+      pendingInfo.setIdle(LONG.build(list.get(2)));
+      pendingInfo.setDeliveredTimes(LONG.build(list.get(3)));
+      return pendingInfo;
+    }
+
+    public String toString(){
+      return "PendingInfo";
     }
   };
 

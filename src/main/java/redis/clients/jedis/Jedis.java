@@ -3723,9 +3723,9 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
   }
 
   @Override
-  public String xgroupCreate(final String key, final String groupname, final EntryID id) {
+  public String xgroupCreate(final String key, final String groupname, final EntryID id, final boolean makeStream) {
     checkIsInMultiOrPipeline();
-    client.xgroupCreate(key, groupname, id);
+    client.xgroupCreate(key, groupname, id, makeStream);
     return client.getStatusCodeReply();
   }
 
@@ -3804,17 +3804,7 @@ AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, Sentin
 
     // TODO handle consumername == NULL case
     
-    List<Object> streamsEntries = client.getObjectMultiBulkReply();
-    List<PendingEntry> result = new ArrayList<>(streamsEntries.size());
-    for(Object streamObj : streamsEntries) {
-      List<Object> stream = (List<Object>)streamObj;
-      String id = SafeEncoder.encode((byte[])stream.get(0));
-      String consumerName = SafeEncoder.encode((byte[])stream.get(1));
-      long idleTime = BuilderFactory.LONG.build(stream.get(2));      
-      long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
-      result.add(new PendingEntry(new EntryID(id), consumerName, idleTime, deliveredTimes));
-    }
-    return result;
+    return BuilderFactory.PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override

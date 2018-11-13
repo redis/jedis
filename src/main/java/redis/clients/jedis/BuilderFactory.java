@@ -476,6 +476,22 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<EntryID> ENTRY_ID = new Builder<EntryID>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  EntryID build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return new EntryID((String)data);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamEntry";
+    }
+  };
+  
 
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override
@@ -486,7 +502,7 @@ public final class BuilderFactory {
       }
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
 
-      List<StreamEntry> responses = new ArrayList<StreamEntry>(objectList.size()/2);
+      List<StreamEntry> responses = new ArrayList<>(objectList.size()/2);
       if (objectList.isEmpty()) {
         return responses;
       }
@@ -497,7 +513,7 @@ public final class BuilderFactory {
         List<byte[]> hash = (List<byte[]>)res.get(1);
         
         Iterator<byte[]> hashIterator = hash.iterator();
-        Map<String, String> map = new HashMap<String, String>(hash.size()/2);
+        Map<String, String> map = new HashMap<>(hash.size()/2);
         while(hashIterator.hasNext()) {
           map.put(SafeEncoder.encode((byte[])hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
         }
@@ -512,6 +528,34 @@ public final class BuilderFactory {
       return "List<StreamEntry>";
     }
   };
+  
+  public static final Builder<List<PendingEntry>> PENDING_ENTRY_LIST = new Builder<List<PendingEntry>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<PendingEntry> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      
+      List<Object> streamsEntries = (List<Object>)data;
+      List<PendingEntry> result = new ArrayList<>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String id = SafeEncoder.encode((byte[])stream.get(0));
+        String consumerName = SafeEncoder.encode((byte[])stream.get(1));
+        long idleTime = BuilderFactory.LONG.build(stream.get(2));      
+        long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
+        result.add(new PendingEntry(new EntryID(id), consumerName, idleTime, deliveredTimes));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<PendingEntry>";
+    }
+  };
+
 
 
   private BuilderFactory() {

@@ -998,9 +998,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String xgroupCreate(String key, String consumer, EntryID id) {
+  public String xgroupCreate(String key, String consumer, EntryID id, boolean makeStream) {
     Jedis j = getShard(key);
-    return j.xgroupCreate(key, consumer, id);
+    return j.xgroupCreate(key, consumer, id, makeStream);
   }
 
   @Override

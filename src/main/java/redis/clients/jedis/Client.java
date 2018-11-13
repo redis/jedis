@@ -1202,23 +1202,23 @@ public class Client extends BinaryClient implements Commands {
   }
   
   @Override
-  public void xgroupCreate(String key, String consumer, EntryID id) {
-    xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(id==null ? "0-0" : id.toString()));
+  public void xgroupCreate(String key, String groupname, EntryID id, boolean makeStream) {
+    xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()), makeStream);
   }
 
   @Override
-  public void xgroupSetID(String key, String consumer, EntryID id) {
-    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(id==null ? "0-0" : id.toString()));    
+  public void xgroupSetID(String key, String groupname, EntryID id) {
+    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()));    
   }
 
   @Override
-  public void xgroupDestroy(String key, String consumer) {
-    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(consumer));    
+  public void xgroupDestroy(String key, String groupname) {
+    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(groupname));    
   }
 
   @Override
-  public void xgroupDelConsumer(String key, String consumer, String consumerName) {
-    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encode(consumerName));    
+  public void xgroupDelConsumer(String key, String groupname, String consumerName) {
+    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(consumerName));    
   }
 
   @Override

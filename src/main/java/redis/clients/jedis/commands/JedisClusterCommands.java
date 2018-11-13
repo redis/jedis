@@ -399,7 +399,7 @@ public interface JedisClusterCommands {
    * @param id
    * @return
    */
-  String xgroupCreate( String key, String groupname, EntryID id);
+  String xgroupCreate( String key, String groupname, EntryID id, boolean makeStream);
   
   /**
    * XGROUP SETID <key> <groupname> <id or $>

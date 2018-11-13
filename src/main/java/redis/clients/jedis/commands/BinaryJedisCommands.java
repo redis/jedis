@@ -340,7 +340,7 @@ public interface BinaryJedisCommands {
 
   Long xack(final byte[] key, final byte[] group, final byte[]... ids);
  
-  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id);
+  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id, boolean makeStream);
 
   String xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id);
 

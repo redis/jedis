@@ -2097,11 +2097,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String xgroupCreate(final String key, final String groupname, final EntryID id) {
+  public String xgroupCreate(final String key, final String groupname, final EntryID id, final boolean makeStream) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
-        return connection.xgroupCreate(key, groupname, id);
+        return connection.xgroupCreate(key, groupname, id, makeStream);
       }
     }.run(key);  
   }

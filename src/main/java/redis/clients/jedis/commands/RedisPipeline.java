@@ -1,11 +1,14 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.EntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.PendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.ZAddParams;
@@ -294,4 +297,33 @@ public interface RedisPipeline {
 
   Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
+  
+  Response<EntryID> xadd(String key, EntryID id, Map<String, String> hash);
+
+  Response<EntryID> xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  
+  Response<Long> xlen(String key);
+
+  Response<List<StreamEntry>> xrange(String key, EntryID start, EntryID end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, EntryID end, EntryID start, int count);
+   
+  Response<Long> xack(String key, String group,  EntryID... ids);
+  
+  Response<String> xgroupCreate( String key, String groupname, EntryID id, boolean makeStream);
+  
+  Response<String> xgroupSetID( String key, String groupname, EntryID id);
+  
+  Response<Long> xgroupDestroy( String key, String groupname);
+  
+  Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
+
+  Response<List<PendingEntry>> xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername);
+  
+  Response<Long> xdel( String key, EntryID... ids);
+  
+  Response<Long> xtrim( String key, long maxLen, boolean exactMaxLen);
+ 
+  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, EntryID... ids);
 }

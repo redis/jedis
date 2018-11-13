@@ -1332,20 +1332,24 @@ public class BinaryClient extends Connection {
     sendCommand(XACK, params);
   }
    
-  public void xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id) {
-    sendCommand(XGROUP, Keyword.CREATE.raw, key, consumer, id);
+  public void xgroupCreate(final byte[] key, final byte[] groupname, final byte[] id, boolean makeStream) {
+    if(makeStream) {
+      sendCommand(XGROUP, Keyword.CREATE.raw, key, groupname, id, Keyword.MKSTREAM.raw);  
+    } else {
+      sendCommand(XGROUP, Keyword.CREATE.raw, key, groupname, id);  
+    }
   }
 
-  public void xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id) {
-    sendCommand(XGROUP, Keyword.SETID.raw, key, consumer, id);    
+  public void xgroupSetID(final byte[] key, final byte[] groupname, final byte[] id) {
+    sendCommand(XGROUP, Keyword.SETID.raw, key, groupname, id);    
   }
 
-  public void xgroupDestroy(final byte[] key, final byte[] consumer) {
-    sendCommand(XGROUP, Keyword.DESTROY.raw, key, consumer);    
+  public void xgroupDestroy(final byte[] key, final byte[] groupname) {
+    sendCommand(XGROUP, Keyword.DESTROY.raw, key, groupname);    
   }
 
-  public void xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName) {
-    sendCommand(XGROUP, Keyword.DELCONSUMER.raw, key, consumer, consumerName);    
+  public void xgroupDelConsumer(final byte[] key, final byte[] groupname, final byte[] consumerName) {
+    sendCommand(XGROUP, Keyword.DELCONSUMER.raw, key, groupname, consumerName);    
   }
    
   public void xdel(final byte[] key, final byte[]... ids) {

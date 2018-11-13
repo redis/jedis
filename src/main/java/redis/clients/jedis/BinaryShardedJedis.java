@@ -987,9 +987,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id) {
+  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
     Jedis j = getShard(key);
-    return j.xgroupCreate(key, consumer, id);
+    return j.xgroupCreate(key, consumer, id, makeStream);
   }
 
   @Override

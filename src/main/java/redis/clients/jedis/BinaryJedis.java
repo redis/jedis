@@ -3967,9 +3967,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id) {
+  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
     checkIsInMultiOrPipeline();
-    client.xgroupCreate(key, consumer, id);
+    client.xgroupCreate(key, consumer, id, makeStream);
     return client.getStatusCodeReply();
   }
 

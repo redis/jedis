@@ -209,14 +209,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xgroup-stream", null, map);
     
-    String status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name", null);
+    String status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name", null, false);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
 
 
     status = jedis.xgroupSetID("xgroup-stream", "consumer-group-name", id1);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
 
-    status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", EntryID.LAST_ENTRY);
+    status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", EntryID.LAST_ENTRY, false);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     
     jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
@@ -231,7 +231,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     Map<String,String> map = new HashMap<>();
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xreadGroup-stream1", null, map);
-    String status1 = jedis.xgroupCreate("xreadGroup-stream1", "xreadGroup-group", null);
+    String status1 = jedis.xgroupCreate("xreadGroup-stream1", "xreadGroup-group", null, false);
     Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>("xreadGroup-stream1", new EntryID());
     List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 0, true, streamQeury1); 
     assertEquals(1, range.size());
@@ -239,7 +239,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     
     EntryID id2 = jedis.xadd("xreadGroup-stream1", null, map);
     EntryID id3 = jedis.xadd("xreadGroup-stream2", null, map);
-    String status2 = jedis.xgroupCreate("xreadGroup-stream2", "xreadGroup-group", null);
+    String status2 = jedis.xgroupCreate("xreadGroup-stream2", "xreadGroup-group", null, false);
    
     // Read only a single Stream
     Entry<String, EntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xreadGroup-stream1", range.get(0).getValue().get(0).getID());
@@ -270,7 +270,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xack-stream", null, map);
     
-    String status = jedis.xgroupCreate("xack-stream", "xack-group", null);
+    String status = jedis.xgroupCreate("xack-stream", "xack-group", null, false);
     
     Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xack-stream", new EntryID());
 
@@ -288,7 +288,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map.put("f1", "v1");
     EntryID id1 = jedis.xadd("xpendeing-stream", null, map);
     
-    String status = jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null);
+    String status = jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false);
     
     Entry<String, EntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, EntryID>("xpendeing-stream", new EntryID());
 

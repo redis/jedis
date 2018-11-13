@@ -371,7 +371,7 @@ public interface Commands {
   
   void xack(String key, String group, EntryID... ids);
   
-  void xgroupCreate(String key, String consumer, EntryID id);
+  void xgroupCreate(String key, String consumer, EntryID id, boolean makeStream);
 
   void xgroupSetID(String key, String consumer, EntryID id);
 

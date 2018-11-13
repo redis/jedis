@@ -1764,5 +1764,178 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).hstrlen(key, field);
     return getResponse(BuilderFactory.LONG);
   }
+  
+  @Override
+  public Response<EntryID> xadd(String key, EntryID id, Map<String, String> hash){
+    return xadd(key, id, hash, Long.MAX_VALUE, true);    
+  }
+  
+  @Override
+  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash){
+    return xadd(key, id, hash, Long.MAX_VALUE, true);
+  }
 
+
+  @Override
+  public Response<EntryID> xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen){
+    getClient(key).xadd(key, id, hash, maxLen, exactMaxLen);
+    return getResponse(BuilderFactory.ENTRY_ID);    
+  }
+  
+
+  @Override
+  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen){
+    getClient(key).xadd(key, id, hash, maxLen, exactMaxLen);
+    return getResponse(BuilderFactory.BYTE_ARRAY);        
+  }
+
+  
+  @Override
+  public Response<Long> xlen(String key){
+    getClient(key).xlen(key);
+    return getResponse(BuilderFactory.LONG);
+  }
+  
+  @Override
+  public Response<Long> xlen(byte[] key){
+    getClient(key).xlen(key);
+    return getResponse(BuilderFactory.LONG);    
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrange(String key, EntryID start, EntryID end, int count){
+    getClient(key).xrange(key, start, end, count);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);        
+  }
+
+  @Override
+  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count){
+    getClient(key).xrange(key, start, end, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);            
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, EntryID end, EntryID start, int count){
+    getClient(key).xrevrange(key, start, end, count);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);            
+  }
+
+  @Override
+  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count){
+    getClient(key).xrevrange(key, start, end, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);                
+  }
+
+   
+  @Override
+  public Response<Long> xack(String key, String group,  EntryID... ids){
+    getClient(key).xack(key, group, ids);
+    return getResponse(BuilderFactory.LONG);                
+  }
+  
+  @Override
+  public Response<Long> xack(byte[] key, byte[] group,  byte[]... ids){
+    getClient(key).xack(key, group, ids);
+    return getResponse(BuilderFactory.LONG);                    
+  }
+  
+  @Override
+  public Response<String> xgroupCreate( String key, String groupname, EntryID id, boolean makeStream){
+    getClient(key).xgroupCreate(key, groupname, id, makeStream);
+    return getResponse(BuilderFactory.STRING);
+  }
+  
+  @Override
+  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream){
+    getClient(key).xgroupCreate(key, groupname, id, makeStream);
+    return getResponse(BuilderFactory.STRING);    
+  }
+  
+  @Override
+  public Response<String> xgroupSetID( String key, String groupname, EntryID id){
+    getClient(key).xgroupSetID(key, groupname, id);
+    return getResponse(BuilderFactory.STRING);
+  }
+  
+  @Override
+  public Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id){
+    getClient(key).xgroupSetID(key, groupname, id);
+    return getResponse(BuilderFactory.STRING);    
+  }
+  
+  @Override
+  public Response<Long> xgroupDestroy( String key, String groupname){
+    getClient(key).xgroupDestroy(key, groupname);
+    return getResponse(BuilderFactory.LONG);
+  }
+  
+  @Override
+  public Response<Long> xgroupDestroy(byte[] key, byte[] groupname){
+    getClient(key).xgroupDestroy(key, groupname);
+    return getResponse(BuilderFactory.LONG);
+  }
+  
+  @Override
+  public Response<String> xgroupDelConsumer( String key, String groupname, String consumername){
+    getClient(key).xgroupDelConsumer(key, groupname, consumername);
+    return getResponse(BuilderFactory.STRING);
+  }
+  
+  @Override
+  public Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername){
+    getClient(key).xgroupDelConsumer(key, groupname, consumername);
+    return getResponse(BuilderFactory.STRING);    
+  }
+
+
+  @Override
+  public Response<List<PendingEntry>> xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername){
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.PENDING_ENTRY_LIST);        
+  }
+  
+  @Override
+  public Response<List<PendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername){
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.PENDING_ENTRY_LIST);            
+  }
+
+  
+  @Override
+  public Response<Long> xdel( String key, EntryID... ids){
+    getClient(key).xdel(key, ids);
+    return getResponse(BuilderFactory.LONG);        
+  }
+
+  @Override
+  public Response<Long> xdel(byte[] key, byte[]... ids){
+    getClient(key).xdel(key, ids);
+    return getResponse(BuilderFactory.LONG);            
+  }
+  
+  @Override
+  public Response<Long> xtrim( String key, long maxLen, boolean exactMaxLen){
+    getClient(key).xtrim(key, maxLen, exactMaxLen);
+    return getResponse(BuilderFactory.LONG);        
+  }
+  
+  @Override
+  public Response<Long> xtrim(byte[] key, long maxLen, boolean exactMaxLen){
+    getClient(key).xtrim(key, maxLen, exactMaxLen);
+    return getResponse(BuilderFactory.LONG);            
+  }
+ 
+  @Override
+  public Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, EntryID... ids){
+    getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);        
+  }
+ 
+  @Override
+  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, byte[]... ids){
+    getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);            
+  }
 }

@@ -407,9 +407,10 @@ public interface JedisCommands {
    * @param key
    * @param groupname
    * @param id
+   * @param makeStream
    * @return
    */
-  String xgroupCreate( String key, String groupname, EntryID id);
+  String xgroupCreate( String key, String groupname, EntryID id, boolean makeStream);
   
   /**
    * XGROUP SETID <key> <groupname> <id or $>

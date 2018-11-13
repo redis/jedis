@@ -1,11 +1,15 @@
 package redis.clients.jedis;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Map;
 
-public class StreamEntry {
+public class StreamEntry implements Serializable{
   
-  private final EntryID id;
-  private final Map<String, String> fields;
+  private static final long serialVersionUID = 1L;
+  
+  private EntryID id;
+  private Map<String, String> fields;
   
   public StreamEntry(EntryID id, Map<String, String> fields) {
     this.id = id;
@@ -20,7 +24,18 @@ public class StreamEntry {
     return fields;
   }
   
+  @Override
   public String toString() {
     return id + " " + fields;
+  }
+    
+  private void writeObject(java.io.ObjectOutputStream out) throws IOException{
+    out.writeUnshared(this.id);
+    out.writeUnshared(this.fields);
+  }
+  
+  private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
+    this.id = (EntryID) in.readUnshared();
+    this.fields = (Map<String, String>) in.readUnshared();
   }
 }

@@ -46,6 +46,8 @@ You can download the latest build at:
 
 Or use it as a maven dependency:
 
+### Official Releases
+
 ```xml
 <dependency>
     <groupId>redis.clients</groupId>
@@ -55,6 +57,29 @@ Or use it as a maven dependency:
     <scope>compile</scope>
 </dependency>
 ```
+
+### Snapshots
+
+```xml
+  <repositories>
+    <repository>
+      <id>snapshots-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+  </repositories>
+```
+
+and
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
+
 
 To use it just:
     

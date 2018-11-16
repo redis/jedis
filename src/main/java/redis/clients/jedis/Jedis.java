@@ -3935,4 +3935,65 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
     return result;
   }
+
+  @Override
+  public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, String... params) {
+    checkIsInMultiOrPipeline();
+    if((params.length & 1) > 0){ //奇数个参数，非法
+      throw new JedisDataException("Invalid num of parameters");
+    }
+    client.xreadgroup(group, consumer, params);
+    List<Object> reply = client.getObjectMultiBulkReply();
+    return getXReadResult(reply);
+  }
+
+  @Override
+  public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, Map<String, String> pairs) {
+    checkIsInMultiOrPipeline();
+    client.xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), convertPairsMap(pairs));
+    List<Object> reply = client.getObjectMultiBulkReply();
+    return getXReadResult(reply);
+  }
+
+  @Override
+  public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, String... params) {
+    checkIsInMultiOrPipeline();
+    client.xreadgroup(group, consumer, count, params);
+    List<Object> reply = client.getObjectMultiBulkReply();
+    return getXReadResult(reply);
+  }
+
+  @Override
+  public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, Map<String, String> pairs) {
+    checkIsInMultiOrPipeline();
+    client.xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, convertPairsMap(pairs));
+    List<Object> reply = client.getObjectMultiBulkReply();
+    return getXReadResult(reply);
+  }
+
+  @Override
+  public NewStreamParams xreadgroupBlock(String group, String consumer, long block, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.xreadgroupBlock(group, consumer, block, keys);
+    if(block == 0){
+      client.setTimeoutInfinite();
+    }
+    NewStreamParams result = null;
+    try {
+      List<Object> reply = client.getObjectMultiBulkReply();
+      Map<String,List<StreamParams>> xreadResult = getXReadResult(reply);
+      if(!xreadResult.isEmpty()) {
+        String key = xreadResult.keySet().iterator().next();
+        result = new NewStreamParams(key, xreadResult.remove(key).remove(0));
+      }
+    } finally {
+      client.rollbackTimeout();
+    }
+    return result;
+  }
+
+  @Override
+  public NewStreamParams xreadgroupBlock(String group, String consumer, String... keys) {
+    return xreadgroupBlock(group, consumer, 0, keys);
+  }
 }

@@ -334,4 +334,67 @@ public interface StreamCommands {
      */
     List<PendingInfo> xpending(String key, String group, String startEntryId, String endEntryId, long count, String consumer);
 
+    /**
+     * 通过ConsumerGroup读取Stream中的数据
+     *
+     * @param group    ConsumerGroup名称
+     * @param consumer 消费者名称
+     * @param params   键名组,起始序号ID组。ID接受“>”
+     * @return 每个Stream为一个从起始序号开始的全部元素，相当于count=0（允许redis返回nil，自动处理为空集），返回的是所有监听Stream的结果集的集合，以键名为key
+     */
+    Map<String, List<StreamParams>> xreadgroup(String group, String consumer, String... params);
+
+    /**
+     * 通过ConsumerGroup读取Stream中的数据
+     *
+     * @param group    ConsumerGroup名称
+     * @param consumer 消费者名称
+     * @param pairs    键名-起始序号ID的键值对。ID接受“>”
+     * @return 每个Stream为一个从起始序号开始的全部元素，相当于count=0（允许redis返回nil，自动处理为空集），返回的是所有监听Stream的结果集的集合，以键名为key
+     */
+    Map<String, List<StreamParams>> xreadgroup(String group, String consumer, Map<String, String> pairs);
+
+    /**
+     * 通过ConsumerGroup读取Stream中的数据
+     *
+     * @param group    ConsumerGroup名称
+     * @param consumer 消费者名称
+     * @param count    最大取得的元素数量
+     * @param params   键名组,起始序号ID组。ID接受“>”
+     * @return 每个Stream为一个从起始序号开始的全部元素，相当于count=0（允许redis返回nil，自动处理为空集），返回的是所有监听Stream的结果集的集合，以键名为key
+     */
+    Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, String... params);
+
+    /**
+     * 读取Stream中的数据
+     *
+     * @param group    ConsumerGroup名称
+     * @param consumer 消费者名称
+     * @param count    最大取得的元素数量
+     * @param pairs    键名-起始序号ID的键值对。ID接受“>”
+     * @return 每个Stream为一个从起始序号开始的全部元素，相当于count=0（允许redis返回nil，自动处理为空集），返回的是所有监听Stream的结果集的集合，以键名为key
+     */
+    Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, Map<String, String> pairs);
+
+    /**
+     * 当使用BLOCK参数时，如果entryId不为“>”或大于最大元素的值，block参数不会生效，如果block生效，则只会返回最新的一个元素
+     *
+     * @param group    ConsumerGroup名称
+     * @param consumer 消费者名称
+     * @param keys     键名
+     * @param block    阻塞的时间，单位为毫秒
+     * @return 取得的值, 只会有一个元素，Map的key为第一个取得了元素的Stream的键名。Redis可能返回nil，自动处理为空集合
+     */
+    NewStreamParams xreadgroupBlock(String group, String consumer, long block, String... keys);
+
+    /**
+     * 一直Block直到接收到消息，即BLOCK 0
+     *
+     * @param group    ConsumerGroup名称
+     * @param consumer 消费者名称
+     * @param keys     键名
+     * @return 取得的值
+     */
+    NewStreamParams xreadgroupBlock(String group, String consumer, String... keys);
+
 }

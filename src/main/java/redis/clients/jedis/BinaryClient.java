@@ -1528,4 +1528,42 @@ public class BinaryClient extends Connection {
       sendCommand(XPENDING, key, group, startEntryId, endEntryId, toByteArray(count), consumer);
     }
   }
+
+  /**
+   * 发送xreadgroup命令
+   * @param group ConsumerGroup名
+   * @param consumer 消息者名
+   * @param params 参数组
+   */
+  public void xreadgroup(byte[] group, byte[] consumer, byte[][] params){
+    sendCommand(XREADGROUP, joinParameters(GROUP.raw, joinParameters(group, consumer,joinParameters(STREAMS.raw, params))));
+  }
+
+  /**
+   * 发送xreadgroup命令
+   * @param group ConsumerGroup名
+   * @param consumer 消息者名
+   * @param count 最取大消息数
+   * @param params 参数组
+   */
+  public void xreadgroup(byte[] group, byte[] consumer, long count, byte[][] params){
+    sendCommand(XREADGROUP, joinParameters(GROUP.raw
+            , joinParameters(group, consumer
+                    , joinParameters(COUNT.raw, toByteArray(count)
+                            ,joinParameters(STREAMS.raw, params)))));
+  }
+
+  /**
+   * 发送带有效BLOCK参数的xreadgroup命令
+   * @param group ConsumerGroup名
+   * @param consumer 消息者名
+   * @param block 最阻塞时间，单位毫秒
+   * @param keys 监听的Stream键名组
+   */
+  public void xreadgroupBlock(byte[] group, byte[] consumer, long block, byte[][] keys){
+    sendCommand(XREADGROUP, joinParameters(GROUP.raw
+            ,joinParameters(group, consumer
+                    , joinParameters(BLOCK.raw, toByteArray(block)
+                            , joinParameters(STREAMS.raw, keys)))));
+  }
 }

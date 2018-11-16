@@ -1227,4 +1227,16 @@ public class Client extends BinaryClient implements Commands {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(group),
             SafeEncoder.encode(startEntryId), SafeEncoder.encode(endEntryId), count, consumer==null?null:SafeEncoder.encode(consumer));
   }
+
+  public void xreadgroup(String group, String consumer, String... params){
+    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), SafeEncoder.encodeMany(params));
+  }
+
+  public void xreadgroup(String group, String consumer, long count, String... params){
+    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, SafeEncoder.encodeMany(params));
+  }
+
+  public void xreadgroupBlock(String group, String consumer, long block, String... key){
+    xreadgroupBlock(SafeEncoder.encode(group), SafeEncoder.encode(consumer), block, SafeEncoder.encodeMany(key));
+  }
 }

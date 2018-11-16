@@ -397,4 +397,116 @@ public interface StreamCommands {
      */
     NewStreamParams xreadgroupBlock(String group, String consumer, String... keys);
 
+    /**
+     * 发送xack命令，用于结束消息
+     *
+     * @param key      消息所属的Stream键名
+     * @param group    消息所属的ConsumerGroup组名
+     * @param entryIds 消息Id组
+     * @return 成功标记ACK的消息个数
+     */
+    long xack(String key, String group, String... entryIds);
+
+    /**
+     * 发送xclaim命令，闲置时间为0
+     *
+     * @param key         Stream键名
+     * @param group       consumerGroup名
+     * @param consumer    消息者名称
+     * @param minIdleTime 当满足闲置时间时进行写操作，用于实现分布式锁
+     * @param entryIds    消息Id组
+     * @return 分配的消息信息列表
+     */
+    List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, String... entryIds);
+
+    /**
+     * 发送xclaim命令
+     *
+     * @param key         Stream键名
+     * @param group       consumerGroup名
+     * @param consumer    消息者名称
+     * @param minIdleTime 当满足闲置时间时进行写操作，用于实现分布式锁
+     * @param idleTime    将闲置时间设置为指定的毫秒数
+     * @param entryIds    消息Id组
+     * @return 分配的消息信息列表
+     */
+    List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, String... entryIds);
+
+    /**
+     * 发送xclaim命令
+     *
+     * @param key         Stream键名
+     * @param group       consumerGroup名
+     * @param consumer    消息者名称
+     * @param minIdleTime 当满足闲置时间时进行写操作，用于实现分布式锁
+     * @param idleTime    将闲置时间设置为指定的毫秒数
+     * @param entryIds    消息Id组
+     * @return 分配的消息信息列表
+     */
+    List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds);
+
+    /**
+     * 发送带FORCE参数的xclaim命令
+     * <p>
+     * 当使用FORCE标记时，会忽略minIdle的配置，，主要用于AOF和主从同步，创建不存在旧consumer的pending信息（首次分配），因此RETRYCOUNT应强制为1，TIME为当前时间戳
+     *
+     * @param key      Stream键名
+     * @param group    consumerGroup名
+     * @param consumer 消息者名称
+     * @param entryIds 消息Id组
+     * @return 分配的消息信息列表
+     */
+    List<StreamParams> xclaimForce(String key, String group, String consumer, String... entryIds);
+
+    /**
+     * 发送带JUSTID参数的xclaim命令
+     *
+     * @param key         Stream键名
+     * @param group       consumerGroup名
+     * @param consumer    消息者名称
+     * @param minIdleTime 当满足闲置时间时进行写操作，用于实现分布式锁
+     * @param entryIds    消息Id组
+     * @return 分配的消息Id列表
+     */
+    List<String> xclaimJustid(String key, String group, String consumer, long minIdleTime, String... entryIds);
+
+    /**
+     * 发送带JUSTID参数的xclaim命令
+     *
+     * @param key         Stream键名
+     * @param group       consumerGroup名
+     * @param consumer    消息者名称
+     * @param minIdleTime 当满足闲置时间时进行写操作，用于实现分布式锁
+     * @param idleTime    将闲置时间设置为指定的毫秒数
+     * @param entryIds    消息Id组
+     * @return 分配的消息Id列表
+     */
+    List<String> xclaimJustid(String key, String group, String consumer, long minIdleTime, long idleTime, String... entryIds);
+
+    /**
+     * 发送带JUSTID参数的xclaim命令
+     *
+     * @param key         Stream键名
+     * @param group       consumerGroup名
+     * @param consumer    消息者名称
+     * @param minIdleTime 当满足闲置时间时进行写操作，用于实现分布式锁
+     * @param idleTime    将闲置时间设置为指定的毫秒数
+     * @param entryIds    消息Id组
+     * @return 分配的消息Id列表
+     */
+    List<String> xclaimJustid(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds);
+
+    /**
+     * 发送带FORCE和JUSTID参数的xclaim命令
+     * <p>
+     * 当使用FORCE标记时，会忽略minIdle的配置，，主要用于AOF和主从同步，创建不存在旧consumer的pending信息（首次分配），因此RETRYCOUNT应强制为1，TIME为当前时间戳
+     *
+     * @param key      Stream键名
+     * @param group    consumerGroup名
+     * @param consumer 消息者名称
+     * @param entryIds 消息Id组
+     * @return 分配的消息Id列表
+     */
+    List<String> xclaimForceAndJustid(String key, String group, String consumer, String... entryIds);
+
 }

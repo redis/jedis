@@ -1566,4 +1566,47 @@ public class BinaryClient extends Connection {
                     , joinParameters(BLOCK.raw, toByteArray(block)
                             , joinParameters(STREAMS.raw, keys)))));
   }
+
+  /**
+   * 发送xack命令
+   * @param key Stream键名
+   * @param group ConsumerGroup名
+   * @param entryIds 消息Id组
+   */
+  public void xack(byte[] key, byte[] group, byte[][] entryIds){
+    sendCommand(XACK, joinParameters(key, group, entryIds));
+  }
+
+  public void xclaim(boolean force, boolean justid, byte[] key, byte[] group, byte[] consumer, long minIdleTime, long idleTime, long retryCount, byte[][] entryIds){
+    int len = 6;
+    if(retryCount > 0){
+      len +=2;
+    }
+    if(force){
+      len++;
+    }
+    if(justid){
+      len++;
+    }
+    byte[][] args = new byte[entryIds.length + len][];
+    len = entryIds.length + 4;
+    args[0] = key;
+    args[1] = group;
+    args[2] = consumer;
+    args[3] = toByteArray(minIdleTime);
+    System.arraycopy(entryIds, 0, args, 4, entryIds.length);
+    args[len++] = IDLE.raw;
+    args[len++] = toByteArray(idleTime);
+    if(retryCount > 0){
+      args[len++] = RETRYCOUNT.raw;
+      args[len++] = toByteArray(retryCount);
+    }
+    if(force){
+      args[len++] = FORCE.raw;
+    }
+    if(justid){
+      args[len] = JUSTID.raw;
+    }
+    sendCommand(XCLAIM, args);
+  }
 }

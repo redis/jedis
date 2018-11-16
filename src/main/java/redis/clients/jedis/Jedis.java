@@ -3741,7 +3741,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public List<StreamParams> xrevrange(String key, String startEntryId, String endEntryId, long count) {
     checkIsInMultiOrPipeline();
-    client.xrevrange(key,startEntryId,endEntryId,count);
+    client.xrevrange(key, startEntryId, endEntryId, count);
     List<Object> reply = client.getObjectMultiBulkReply();
     return getXRangeResult(reply);
   }
@@ -3806,7 +3806,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public NewStreamParams xreadBlock(long block, String... keys) {
     checkIsInMultiOrPipeline();
-    client.xreadBlock(block,keys);
+    client.xreadBlock(block, keys);
     if(block == 0){
       client.setTimeoutInfinite();
     }
@@ -3995,5 +3995,62 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public NewStreamParams xreadgroupBlock(String group, String consumer, String... keys) {
     return xreadgroupBlock(group, consumer, 0, keys);
+  }
+
+  @Override
+  public long xack(String key, String group, String... entryIds) {
+    checkIsInMultiOrPipeline();
+    client.xack(key, group, entryIds);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, String... entryIds) {
+    return xclaim(key, group, consumer, minIdleTime, 0, entryIds);
+  }
+
+  @Override
+  public List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, String... entryIds) {
+    return xclaim(key, group, consumer, minIdleTime, idleTime, -1, entryIds);
+  }
+
+  @Override
+  public List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(false, key, group, consumer, minIdleTime, idleTime, retryCount, entryIds);
+    List<Object> reply = client.getObjectMultiBulkReply();
+    return getXRangeResult(reply);
+  }
+
+  @Override
+  public List<StreamParams> xclaimForce(String key, String group, String consumer, String... entryIds) {
+    checkIsInMultiOrPipeline();
+    client.xclaimForce(false, key, group, consumer, entryIds);
+    List<Object> reply = client.getObjectMultiBulkReply();
+    return getXRangeResult(reply);
+  }
+
+  @Override
+  public List<String> xclaimJustid(String key, String group, String consumer, long minIdleTime, String... entryIds) {
+    return xclaimJustid(key, group, consumer, minIdleTime, 0, entryIds);
+  }
+
+  @Override
+  public List<String> xclaimJustid(String key, String group, String consumer, long minIdleTime, long idleTime, String... entryIds) {
+    return xclaimJustid(key, group, consumer, minIdleTime, idleTime, -1, entryIds);
+  }
+
+  @Override
+  public List<String> xclaimJustid(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(true, key, group, consumer, minIdleTime, idleTime, retryCount, entryIds);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public List<String> xclaimForceAndJustid(String key, String group, String consumer, String... entryIds) {
+    checkIsInMultiOrPipeline();
+    client.xclaimForce(true, key, group, consumer, entryIds);
+    return client.getMultiBulkReply();
   }
 }

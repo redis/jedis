@@ -1239,4 +1239,18 @@ public class Client extends BinaryClient implements Commands {
   public void xreadgroupBlock(String group, String consumer, long block, String... key){
     xreadgroupBlock(SafeEncoder.encode(group), SafeEncoder.encode(consumer), block, SafeEncoder.encodeMany(key));
   }
+
+  public void xack(String key, String consumer, String... entryIds){
+    xack(SafeEncoder.encode(key), SafeEncoder.encode(consumer), SafeEncoder.encodeMany(entryIds));
+  }
+
+  public void xclaim(boolean justid, String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds){
+    xclaim(false, justid, SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumer)
+            , minIdleTime, idleTime, retryCount, SafeEncoder.encodeMany(entryIds));
+  }
+
+  public void xclaimForce(boolean justid, String key, String group, String consumer, String... entryId){
+    xclaim(true, justid, SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumer)
+            , 0, 0, 1, SafeEncoder.encodeMany(entryId));
+  }
 }

@@ -487,6 +487,49 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<StreamParams>> STREAM_PARAMS_LIST = new Builder<List<StreamParams>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<StreamParams> build(Object data) {
+      List<Object> element = (List<Object>) data;
+      List<StreamParams> listResult = new ArrayList<StreamParams>();
+      for (Object obj : element) {//命令只会返回空集合，不会有nil
+        listResult.add(BuilderFactory.STREAM_PARAMS.build(obj));
+      }
+      return listResult;
+    }
+
+    @Override
+    public String toString(){
+      return "List<StreamParams>";
+    }
+  };
+
+  public static final Builder<Map<String, List<StreamParams>>> STREAM_PARAMS_MAPLIST = new Builder<Map<String, List<StreamParams>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, List<StreamParams>> build(Object data) {
+      List<Object> element = (List<Object>) data;
+      Map<String,List<StreamParams>> result = new HashMap<String, List<StreamParams>>();
+      for(Object obj : element){
+        List<Object> streamReply = (List<Object>) obj;
+        String key = (String) streamReply.get(0);
+        List<Object> streamData = (List<Object>) streamReply.get(1);
+        streamReply.clear();
+        if(key == null || streamData == null){
+          continue;
+        }
+        result.put(key , BuilderFactory.STREAM_PARAMS_LIST.build(streamData));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString(){
+      return "Map<String, List<StreamParams>>";
+    }
+  };
+
   public static final Builder<StreamInfo> STREAM_INFO = new Builder<StreamInfo>() {
     @Override
     @SuppressWarnings("unchecked")

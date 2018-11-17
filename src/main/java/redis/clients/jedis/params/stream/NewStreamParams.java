@@ -1,7 +1,5 @@
 package redis.clients.jedis.params.stream;
 
-import com.sun.istack.internal.NotNull;
-
 /**
  * 接收到的Stream新消息
  * Created by WangXiao on 8/10/18.
@@ -30,7 +28,7 @@ public class NewStreamParams {
      * 设置键名
      * @param key 键名
      */
-    public void setKey(@NotNull String key) {
+    public void setKey(String key) {
         this.key = key;
     }
 

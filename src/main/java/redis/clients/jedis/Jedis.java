@@ -3707,19 +3707,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
-  /**
-   * 从返回的字节流中组装出Stream元素
-   * @param reply 初步解析的数组
-   * @return Stream元素集合
-   */
-  private List<StreamParams> getXRangeResult(List<Object> reply){
-    List<StreamParams> listResult = new ArrayList<StreamParams>();
-    for (Object obj : reply) {//命令只会返回空集合，不会有nil
-      listResult.add(BuilderFactory.STREAM_PARAMS.build(obj));
-    }
-    return listResult;
-  }
-
   @Override
   public List<StreamParams> xrange(String key, String startEntryId, String endEntryId) {
     return xrange(key, startEntryId, endEntryId, 0);
@@ -3729,8 +3716,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<StreamParams> xrange(String key, String startEntryId, String endEntryId, long count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, startEntryId, endEntryId, count);
-        List<Object> reply = client.getObjectMultiBulkReply();
-    return getXRangeResult(reply);
+    return BuilderFactory.STREAM_PARAMS_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
@@ -3742,30 +3728,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<StreamParams> xrevrange(String key, String startEntryId, String endEntryId, long count) {
     checkIsInMultiOrPipeline();
     client.xrevrange(key, startEntryId, endEntryId, count);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXRangeResult(reply);
-  }
-
-    /**
-     * 组装XREAD的返回信息
-     * @param reply 初步解析的数组
-     * @return 带Stream键名分组的Stream元素集合
-     */
-    @SuppressWarnings("unchecked")
-  private Map<String, List<StreamParams>> getXReadResult(List<Object> reply){
-      Map<String,List<StreamParams>> result = new HashMap<String, List<StreamParams>>();
-      for(Object obj : reply){
-          List<Object> streamReply = (List<Object>) obj;
-          String key = (String) streamReply.get(0);
-          List<Object> streamData = (List<Object>) streamReply.get(1);
-          streamReply.clear();
-          if(key == null || streamData == null){
-              continue;
-          }
-          result.put(key,getXRangeResult(streamData));
-      }
-      reply.clear();
-      return result;
+    return BuilderFactory.STREAM_PARAMS_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
@@ -3775,32 +3738,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
         throw new JedisDataException("Invalid num of parameters");
     }
     client.xread(params);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public Map<String, List<StreamParams>> xread(Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
     client.xread(convertPairsMap(pairs));
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public Map<String, List<StreamParams>> xread(long count, String... params) {
       checkIsInMultiOrPipeline();
       client.xread(count, params);
-      List<Object> reply = client.getObjectMultiBulkReply();
-      return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public Map<String, List<StreamParams>> xread(long count, Map<String, String> pairs) {
       checkIsInMultiOrPipeline();
       client.xread(count, convertPairsMap(pairs));
-      List<Object> reply = client.getObjectMultiBulkReply();
-      return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
@@ -3812,8 +3771,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
     NewStreamParams result = null;
     try {
-      List<Object> reply = client.getObjectMultiBulkReply();
-      Map<String,List<StreamParams>> xreadResult = getXReadResult(reply);
+      Map<String,List<StreamParams>> xreadResult = BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
       if(!xreadResult.isEmpty()) {
         String key = xreadResult.keySet().iterator().next();
         result = new NewStreamParams(key, xreadResult.remove(key).remove(0));
@@ -3943,32 +3901,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       throw new JedisDataException("Invalid num of parameters");
     }
     client.xreadgroup(group, consumer, params);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
     client.xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), convertPairsMap(pairs));
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, String... params) {
     checkIsInMultiOrPipeline();
     client.xreadgroup(group, consumer, count, params);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
     client.xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, convertPairsMap(pairs));
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXReadResult(reply);
+    return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
@@ -3980,8 +3934,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
     NewStreamParams result = null;
     try {
-      List<Object> reply = client.getObjectMultiBulkReply();
-      Map<String,List<StreamParams>> xreadResult = getXReadResult(reply);
+      Map<String,List<StreamParams>> xreadResult = BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());;
       if(!xreadResult.isEmpty()) {
         String key = xreadResult.keySet().iterator().next();
         result = new NewStreamParams(key, xreadResult.remove(key).remove(0));
@@ -4018,16 +3971,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<StreamParams> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds) {
     checkIsInMultiOrPipeline();
     client.xclaim(false, key, group, consumer, minIdleTime, idleTime, retryCount, entryIds);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXRangeResult(reply);
+    return BuilderFactory.STREAM_PARAMS_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public List<StreamParams> xclaimForce(String key, String group, String consumer, String... entryIds) {
     checkIsInMultiOrPipeline();
     client.xclaimForce(false, key, group, consumer, entryIds);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    return getXRangeResult(reply);
+    return BuilderFactory.STREAM_PARAMS_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override

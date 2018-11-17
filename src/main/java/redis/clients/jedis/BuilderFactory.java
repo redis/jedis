@@ -513,9 +513,8 @@ public final class BuilderFactory {
       Map<String,List<StreamParams>> result = new HashMap<String, List<StreamParams>>();
       for(Object obj : element){
         List<Object> streamReply = (List<Object>) obj;
-        String key = (String) streamReply.get(0);
-        List<Object> streamData = (List<Object>) streamReply.get(1);
-        streamReply.clear();
+        String key = STRING.build(streamReply.get(0));
+        Object streamData = streamReply.get(1);
         if(key == null || streamData == null){
           continue;
         }

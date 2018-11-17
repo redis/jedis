@@ -3638,20 +3638,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerMultiBulkReply();
   }
 
-    /**
-     * 将map按键值对转换为数组
-     * @param map 键值对集合
-     * @return 转换后的数组
-     */
-  private byte[][] convertPairsMap(Map<String,String> map){
-      List<byte[]> pairs = new ArrayList<byte[]>();
-      for(Map.Entry<String,String> entry : map.entrySet()){
-          pairs.add(SafeEncoder.encode(entry.getKey()));
-          pairs.add(SafeEncoder.encode(entry.getValue()));
-      }
-      return pairs.toArray(new byte[map.size()*2][]);
-  }
-
   @Override
   public String xaddDefault(String key, String... pairs) {
     return xadd(key,"*",pairs);
@@ -3672,7 +3658,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String xadd(String key, String entryId, Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
-    client.xadd(SafeEncoder.encode(key), SafeEncoder.encode(entryId), convertPairsMap(pairs));
+    client.xadd(key, entryId, pairs);
     return client.getBulkReply();
   }
 
@@ -3696,7 +3682,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String xaddWithMaxlen(String key, boolean approx, long maxLen, String entryId, Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
-    client.xadd(SafeEncoder.encode(key), approx, maxLen, SafeEncoder.encode(entryId), convertPairsMap(pairs));
+    client.xadd(key, approx, maxLen, entryId, pairs);
     return client.getBulkReply();
   }
 
@@ -3744,7 +3730,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Map<String, List<StreamParams>> xread(Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
-    client.xread(convertPairsMap(pairs));
+    client.xread(pairs);
     return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
@@ -3758,7 +3744,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Map<String, List<StreamParams>> xread(long count, Map<String, String> pairs) {
       checkIsInMultiOrPipeline();
-      client.xread(count, convertPairsMap(pairs));
+      client.xread(count, pairs);
     return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
@@ -3907,7 +3893,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
-    client.xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), convertPairsMap(pairs));
+    client.xreadgroup(group, consumer, pairs);
     return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 
@@ -3921,7 +3907,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Map<String, List<StreamParams>> xreadgroup(String group, String consumer, long count, Map<String, String> pairs) {
     checkIsInMultiOrPipeline();
-    client.xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, convertPairsMap(pairs));
+    client.xreadgroup(group, consumer, count, pairs);
     return BuilderFactory.STREAM_PARAMS_MAPLIST.build(client.getObjectMultiBulkReply());
   }
 

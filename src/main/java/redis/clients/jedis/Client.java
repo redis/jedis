@@ -1141,18 +1141,29 @@ public class Client extends BinaryClient implements Commands {
     bitfield(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
   }
 
-  /**
-   * 发送XADD命令
-   * @param key 键名
-   * @param entryId 序号
-   * @param pairs 字段信息
-   */
+  private byte[][] convertPairsMap(Map<String,String> map){
+    List<byte[]> pairs = new ArrayList<byte[]>();
+    for(Map.Entry<String,String> entry : map.entrySet()){
+      pairs.add(SafeEncoder.encode(entry.getKey()));
+      pairs.add(SafeEncoder.encode(entry.getValue()));
+    }
+    return pairs.toArray(new byte[map.size()*2][]);
+  }
+
   public void xadd(String key, String entryId, String... pairs) {
-    xadd(SafeEncoder.encode(key),SafeEncoder.encode(entryId),SafeEncoder.encodeMany(pairs));
+    xadd(SafeEncoder.encode(key), SafeEncoder.encode(entryId), SafeEncoder.encodeMany(pairs));
+  }
+
+  public void xadd(String key, String entryId, Map<String, String> pairs){
+    xadd(SafeEncoder.encode(key), SafeEncoder.encode(entryId), convertPairsMap(pairs));
   }
 
   public void xadd(String key, boolean approx, long maxLen, String entryId, String... pairs){
-    xadd(SafeEncoder.encode(key),approx,maxLen,SafeEncoder.encode(entryId),SafeEncoder.encodeMany(pairs));
+    xadd(SafeEncoder.encode(key), approx, maxLen, SafeEncoder.encode(entryId), SafeEncoder.encodeMany(pairs));
+  }
+
+  public void xadd(String key, boolean approx, long maxLen, String entryId, Map<String, String> pairs){
+    xadd(SafeEncoder.encode(key), approx, maxLen, SafeEncoder.encode(entryId), convertPairsMap(pairs));
   }
 
   public void xlen(String key){
@@ -1160,15 +1171,19 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void xrange(String key,String startEntryId,String endEntryId,long count){
-    xrange(SafeEncoder.encode(key),SafeEncoder.encode(startEntryId),SafeEncoder.encode(endEntryId),count);
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(startEntryId), SafeEncoder.encode(endEntryId), count);
   }
 
   public void xrevrange(String key,String startEntryId,String endEntryId,long count){
-    xrevrange(SafeEncoder.encode(key),SafeEncoder.encode(startEntryId),SafeEncoder.encode(endEntryId),count);
+    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(startEntryId), SafeEncoder.encode(endEntryId), count);
   }
 
   public void xread(String... params){
     xread(SafeEncoder.encodeMany(params));
+  }
+
+  public void xread(Map<String, String> pairs){
+    xread(convertPairsMap(pairs));
   }
 
   public void xread(long count,String...params){
@@ -1177,6 +1192,10 @@ public class Client extends BinaryClient implements Commands {
     }else {
       xread(count, SafeEncoder.encodeMany(params));
     }
+  }
+
+  public void xread(long count, Map<String, String> pairs){
+    xread(count, convertPairsMap(pairs));
   }
 
   public void xreadBlock(long block,String... keys){
@@ -1232,8 +1251,16 @@ public class Client extends BinaryClient implements Commands {
     xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), SafeEncoder.encodeMany(params));
   }
 
+  public void xreadgroup(String group, String consumer, Map<String, String> pairs){
+    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), convertPairsMap(pairs));
+  }
+
   public void xreadgroup(String group, String consumer, long count, String... params){
     xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, SafeEncoder.encodeMany(params));
+  }
+
+  public void xreadgroup(String group, String consumer, long count, Map<String, String> pairs){
+    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, convertPairsMap(pairs));
   }
 
   public void xreadgroupBlock(String group, String consumer, long block, String... key){

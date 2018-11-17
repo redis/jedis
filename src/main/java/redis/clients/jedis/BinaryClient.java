@@ -1561,10 +1561,18 @@ public class BinaryClient extends Connection {
    * @param keys 监听的Stream键名组
    */
   public void xreadgroupBlock(byte[] group, byte[] consumer, long block, byte[][] keys){
-    sendCommand(XREADGROUP, joinParameters(GROUP.raw
-            ,joinParameters(group, consumer
-                    , joinParameters(BLOCK.raw, toByteArray(block)
-                            , joinParameters(STREAMS.raw, keys)))));
+    int keyNum=keys.length;
+    byte[][] params=new byte[5 + keyNum * 2][];
+    params[0] = GROUP.raw;
+    params[1] = group;
+    params[2] = consumer;
+    params[3] = BLOCK.raw;
+    params[4] = toByteArray(block);
+    System.arraycopy(keys,0,params,5, keyNum);
+    for(int i = keyNum + 5;i < params.length;i++){
+      params[i] = SafeEncoder.encode(">");
+    }
+    sendCommand(XREADGROUP, params);
   }
 
   /**

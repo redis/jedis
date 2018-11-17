@@ -1230,8 +1230,8 @@ public class Client extends BinaryClient implements Commands {
     xinfostream(SafeEncoder.encode(key));
   }
 
-  public void xinfogroup(String key){
-    xinfogroup(SafeEncoder.encode(key));
+  public void xinfogroups(String key){
+    xinfogroups(SafeEncoder.encode(key));
   }
 
   public void xinfoconsumers(String key, String group){

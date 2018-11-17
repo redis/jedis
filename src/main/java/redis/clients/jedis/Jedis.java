@@ -3645,7 +3645,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String xaddDefault(String key, Map<String, String> pairs) {
-    return xadd(key,"*",pairs);
+    return xadd(key,"*", pairs);
   }
 
   @Override
@@ -3835,25 +3835,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public List<GroupInfo> xinfogroups(String key) {
     checkIsInMultiOrPipeline();
-    client.xinfogroup(key);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    List<GroupInfo> result = new ArrayList<GroupInfo>();
-    for(Object group : reply){
-      result.add(BuilderFactory.GROUP_INFO.build(group));
-    }
-    return result;
+    client.xinfogroups(key);
+    return BuilderFactory.GROUP_INFO_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
   public List<ConsumerInfo> xinfoconsumers(String key, String group) {
     checkIsInMultiOrPipeline();
     client.xinfoconsumers(key, group);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    List<ConsumerInfo> result = new ArrayList<ConsumerInfo>();
-    for(Object consumer : reply){
-      result.add(BuilderFactory.CONSUMER_INFO.build(consumer));
-    }
-    return result;
+    return BuilderFactory.CONSUMER_INFO_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
@@ -3872,12 +3862,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<PendingInfo> xpending(String key, String group, String startEntryId, String endEntryId, long count, String consumer) {
     checkIsInMultiOrPipeline();
     client.xpending(key, group, startEntryId, endEntryId, count, consumer);
-    List<Object> reply = client.getObjectMultiBulkReply();
-    List<PendingInfo> result = new ArrayList<PendingInfo>();
-    for(Object pending : reply){
-      result.add(BuilderFactory.PENDING_INFO.build(pending));
-    }
-    return result;
+    return BuilderFactory.PENDING_INFO_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override

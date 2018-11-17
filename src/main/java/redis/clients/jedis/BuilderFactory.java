@@ -546,6 +546,7 @@ public final class BuilderFactory {
       return infoParams;
     }
 
+    @Override
     public String toString(){
       return "StreamInfo";
     }
@@ -564,8 +565,27 @@ public final class BuilderFactory {
       return groupInfo;
     }
 
+    @Override
     public String toString(){
       return "GroupInfo";
+    }
+  };
+
+  public static final Builder<List<GroupInfo>> GROUP_INFO_LIST = new Builder<List<GroupInfo>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<GroupInfo> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      List<GroupInfo> result = new ArrayList<GroupInfo>();
+      for(Object group : list){
+        result.add(BuilderFactory.GROUP_INFO.build(group));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString(){
+      return "List<GroupInfo>";
     }
   };
 
@@ -583,8 +603,27 @@ public final class BuilderFactory {
       return consumerInfo;
     }
 
+    @Override
     public String toString(){
       return "ConsumerInfo";
+    }
+  };
+
+  public static final Builder<List<ConsumerInfo>> CONSUMER_INFO_LIST = new Builder<List<ConsumerInfo>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ConsumerInfo> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      List<ConsumerInfo> result = new ArrayList<ConsumerInfo>();
+      for(Object consumer : list){
+        result.add(BuilderFactory.CONSUMER_INFO.build(consumer));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString(){
+      return "List<ConsumerInfo>";
     }
   };
 
@@ -611,6 +650,7 @@ public final class BuilderFactory {
       return groupPendingInfo;
     }
 
+    @Override
     public String toString(){
       return "GroupPendingInfo";
     }
@@ -629,9 +669,27 @@ public final class BuilderFactory {
       return pendingInfo;
     }
 
+    @Override
     public String toString(){
       return "PendingInfo";
     }
   };
 
+  public static final Builder<List<PendingInfo>> PENDING_INFO_LIST = new Builder<List<PendingInfo>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<PendingInfo> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      List<PendingInfo> result = new ArrayList<PendingInfo>();
+      for(Object pending : list){
+        result.add(BuilderFactory.PENDING_INFO.build(pending));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString(){
+      return "List<PendingInfo>";
+    }
+  };
 }

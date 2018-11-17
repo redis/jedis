@@ -1490,7 +1490,7 @@ public class BinaryClient extends Connection {
    * 发送xinfo groups命令
    * @param key Stream键名
    */
-  public void xinfogroup(byte[] key){
+  public void xinfogroups(byte[] key){
     sendCommand(XINFO,GROUPS.raw, key);
   }
 

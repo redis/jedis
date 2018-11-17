@@ -1,12 +1,14 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.params.stream.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public abstract class MultiKeyPipelineBase extends PipelineBase implements BasicRedisPipeline,
     MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
-    BinaryScriptingCommandsPipeline {
+    BinaryScriptingCommandsPipeline, StreamCommandsPipline{
 
   protected Client client = null;
 
@@ -603,4 +605,254 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements Basic
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
+  public Response<String> xaddDefault(String key, String... pairs) {
+    return xadd(key,"*", pairs);
+  }
+
+  @Override
+  public Response<String> xaddDefault(String key, Map<String, String> pairs) {
+    return xadd(key,"*", pairs);
+  }
+
+  @Override
+  public Response<String> xadd(String key, String entryId, String... pairs) {
+    client.xadd(key, entryId, pairs);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> xadd(String key, String entryId, Map<String, String> pairs) {
+    client.xadd(key, entryId, pairs);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> xaddWithMaxlen(String key, long maxLen, String entryId, String... pairs) {
+    return xaddWithMaxlen(key,false, maxLen, entryId, pairs);
+  }
+
+  @Override
+  public Response<String> xaddWithMaxlen(String key, long maxLen, String entryId, Map<String, String> pairs) {
+    return xaddWithMaxlen(key, false, maxLen, entryId, pairs);
+  }
+
+  @Override
+  public Response<String> xaddWithMaxlen(String key, boolean approx, long maxLen, String entryId, String... pairs) {
+    client.xadd(key, approx, maxLen, entryId, pairs);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> xaddWithMaxlen(String key, boolean approx, long maxLen, String entryId, Map<String, String> pairs) {
+    client.xadd(key, approx, maxLen, entryId, pairs);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<Long> xlen(String key) {
+    client.xlen(key);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xrange(String key, String startEntryId, String endEntryId) {
+    return xrange(key, startEntryId, endEntryId, 0);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xrange(String key, String startEntryId, String endEntryId, long count) {
+    client.xrange(key, startEntryId, endEntryId, count);
+    return getResponse(BuilderFactory.STREAM_PARAMS_LIST);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xrevrange(String key, String startEntryId, String endEntryId) {
+    return xrevrange(key, startEntryId, endEntryId,0);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xrevrange(String key, String startEntryId, String endEntryId, long count) {
+    client.xrevrange(key, startEntryId, endEntryId, count);
+    return getResponse(BuilderFactory.STREAM_PARAMS_LIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xread(String... params) {
+    client.xread(params);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xread(Map<String, String> pairs) {
+    client.xread(pairs);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xread(long count, String... params) {
+    client.xread(count, params);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xread(long count, Map<String, String> pairs) {
+    client.xread(count, pairs);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Long> xdel(String key, String entryId) {
+    client.xdel(key, entryId);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xtrimWithMaxlen(String key, long maxlen) {
+    return xtrimWithMaxlen(key, false, maxlen);
+  }
+
+  @Override
+  public Response<Long> xtrimWithMaxlen(String key, boolean approx, long maxlen) {
+    client.xtrimWithMaxlen(key, approx, maxlen);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<String> xgroupcreate(String key, String group, String entryId) {
+    return xgroupcreate(key, group, entryId, false);
+  }
+
+  @Override
+  public Response<String> xgroupcreate(String key, String group, String entryId, boolean noack) {
+    client.xgroupcreate(key, group, entryId, noack);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> xgroupsetid(String key, String group, String entryId) {
+    client.xgroupsetid(key, group, entryId);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<Long> xgroupdestroy(String key, String group) {
+    client.xgroupdestroy(key, group);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xgroupdelconsumer(String key, String group, String consumer) {
+    client.xgroupdelconsumer(key, group, consumer);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<StreamInfo> xinfostream(String key) {
+    client.xinfostream(key);
+    return getResponse(BuilderFactory.STREAM_INFO);
+  }
+
+  @Override
+  public Response<List<GroupInfo>> xinfogroups(String key) {
+    client.xinfogroups(key);
+    return getResponse(BuilderFactory.GROUP_INFO_LIST);
+  }
+
+  @Override
+  public Response<List<ConsumerInfo>> xinfoconsumers(String key, String group) {
+    client.xinfoconsumers(key, group);
+    return getResponse(BuilderFactory.CONSUMER_INFO_LIST);
+  }
+
+  @Override
+  public Response<GroupPendingInfo> xpending(String key, String group) {
+    client.xpending(key, group);
+    return getResponse(BuilderFactory.GROUP_PENDING_INFO);
+  }
+
+  @Override
+  public Response<List<PendingInfo>> xpending(String key, String group, String startEntryId, String endEntryId, long count) {
+    return xpending(key, group, startEntryId, endEntryId, count, null);
+  }
+
+  @Override
+  public Response<List<PendingInfo>> xpending(String key, String group, String startEntryId, String endEntryId, long count, String consumer) {
+    client.xpending(key, group, startEntryId, endEntryId, count, consumer);
+    return getResponse(BuilderFactory.PENDING_INFO_LIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xreadgroup(String group, String consumer, String... params) {
+    client.xreadgroup(group, consumer, params);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xreadgroup(String group, String consumer, Map<String, String> pairs) {
+    client.xreadgroup(group, consumer, pairs);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xreadgroup(String group, String consumer, long count, String... params) {
+    client.xreadgroup(group, consumer, count, params);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Map<String, List<StreamParams>>> xreadgroup(String group, String consumer, long count, Map<String, String> pairs) {
+    client.xreadgroup(group, consumer, count, pairs);
+    return getResponse(BuilderFactory.STREAM_PARAMS_MAPLIST);
+  }
+
+  @Override
+  public Response<Long> xack(String key, String group, String... entryIds) {
+    client.xack(key, group, entryIds);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xclaim(String key, String group, String consumer, long minIdleTime, String... entryIds) {
+    return xclaim(key, group, consumer, minIdleTime, 0, entryIds);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, String... entryIds) {
+    return xclaim(key, group, consumer, minIdleTime, idleTime, -1, entryIds);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xclaim(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds) {
+    client.xclaim(false, key, group, consumer, minIdleTime, idleTime, retryCount, entryIds);
+    return getResponse(BuilderFactory.STREAM_PARAMS_LIST);
+  }
+
+  @Override
+  public Response<List<StreamParams>> xclaimForce(String key, String group, String consumer, String... entryIds) {
+    client.xclaimForce(false, key, group, consumer, entryIds);
+    return getResponse(BuilderFactory.STREAM_PARAMS_LIST);
+  }
+
+  @Override
+  public Response<List<String>> xclaimJustid(String key, String group, String consumer, long minIdleTime, String... entryIds) {
+    return xclaimJustid(key, group, consumer, minIdleTime, 0, entryIds);
+  }
+
+  @Override
+  public Response<List<String>> xclaimJustid(String key, String group, String consumer, long minIdleTime, long idleTime, String... entryIds) {
+    return xclaimJustid(key, group, consumer, minIdleTime, idleTime, -1, entryIds);
+  }
+
+  @Override
+  public Response<List<String>> xclaimJustid(String key, String group, String consumer, long minIdleTime, long idleTime, long retryCount, String... entryIds) {
+    client.xclaim(true, key, group, consumer, minIdleTime, idleTime, retryCount, entryIds);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<List<String>> xclaimForceAndJustid(String key, String group, String consumer, String... entryIds) {
+    client.xclaimForce(true, key, group, consumer, entryIds);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
 }

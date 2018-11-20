@@ -127,12 +127,10 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     
     try {
       jc.get("foo");
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
+      Assert.fail("The code did not throw the expected JedisClusterMaxAttemptsException.");
+    } catch (JedisClusterMaxAttemptsException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
-      Assert.assertEquals("The JedisConnectionException does not contain the expected message.",
-          "Could not get a resource from the pool", e.getMessage());
     }
     jc.close();
   }
@@ -180,13 +178,11 @@ public class SSLJedisClusterTest extends JedisClusterTest {
         DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, 
         null, null, hostnameVerifier, portMap);;
     try {
+      jc.get("foo");
+      Assert.fail("The code did not throw the expected JedisClusterMaxAttemptsException.");
+    } catch (JedisClusterMaxAttemptsException e) {
       // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
       // which causes custom hostname verification to fail
-      jc.get("foo");
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-      Assert.assertEquals("The JedisConnectionException does not contain the expected message.",
-          "Could not get a resource from the pool", e.getMessage());
     }
     jc.close();
 

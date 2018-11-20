@@ -168,7 +168,7 @@ public class JedisClusterInfoCache {
     int port = ((Long) hostInfos.get(1)).intValue();
     if (ssl && hostAndPortMap != null) {
       HostAndPort hostAndPort = hostAndPortMap.getSSLHostAndPort(host, port);
-      if (hostAndPortMap != null) {
+      if (hostAndPort != null) {
         return hostAndPort;
       }
     }

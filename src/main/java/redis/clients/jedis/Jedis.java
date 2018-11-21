@@ -3719,7 +3719,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public long xack(final String key, final String group, final EntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xack(key, group, ids);
-    return client.getIntegerReply().longValue();
+    return client.getIntegerReply();
   }
 
   @Override

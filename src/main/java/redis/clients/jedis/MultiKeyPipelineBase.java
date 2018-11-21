@@ -701,5 +701,6 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
       final int timeout, final MigrateParams params, final byte[]... keys) {
     client.migrate(host, port, destinationDB, timeout, params, keys);
     return getResponse(BuilderFactory.STRING);
-  }  
+  }
+  
 }

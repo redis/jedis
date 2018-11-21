@@ -8,6 +8,24 @@ public class EntryID implements Comparable<EntryID>, Serializable{
   private static final long serialVersionUID = 1L;
 
   /**
+  * Should be used only with XADD  
+  * 
+  * <code>
+  * XADD mystream * field1 value1 
+  * </code>
+  */
+  public static final EntryID NEW_ENTRY = new EntryID() {
+    
+    private static final long serialVersionUID = 1L;
+    
+    @Override
+    public String toString(){
+      return "*";
+    }
+  };
+  
+  
+  /**
   * Should be used only with XGROUP CREATE  
   * 
   * <code>

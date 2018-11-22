@@ -8,6 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
@@ -56,7 +57,12 @@ public abstract class Pool<T> implements Closeable {
       // Otherwise, the exception was caused by the implemented activateObject() or ValidateObject()
       throw new JedisException("Could not get a resource from the pool", nse);
     } catch (Exception e) {
-      throw new JedisConnectionException("Could not get a resource from the pool", e);
+      if(e.getMessage().contains("ERR Client sent AUTH, but no password is set")) {	
+    	  throw new JedisDataException("Could not get a resource from the pool", e);
+      }else {
+    	  throw new JedisConnectionException("Could not get a resource from the pool", e);
+      }
+      
     }
   }
 

@@ -1334,7 +1334,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
-    if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
+    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
       throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
           + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }

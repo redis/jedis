@@ -1141,13 +1141,24 @@ public class Client extends BinaryClient implements Commands {
     bitfield(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
   }
 
-  private byte[][] convertPairsMap(Map<String,String> map){
+  private byte[][] convertPairsMap(Map<String, String> map){
     List<byte[]> pairs = new ArrayList<byte[]>();
     for(Map.Entry<String,String> entry : map.entrySet()){
       pairs.add(SafeEncoder.encode(entry.getKey()));
       pairs.add(SafeEncoder.encode(entry.getValue()));
     }
     return pairs.toArray(new byte[map.size()*2][]);
+  }
+
+  private byte[][] convertParamsMap(Map<String, String> map){
+    byte[][] pairs = new byte[map.size()*2][];
+    int keyIdx = 0;
+    int entryIdx = map.size();
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      pairs[keyIdx++] = SafeEncoder.encode(entry.getKey());
+      pairs[entryIdx++] = SafeEncoder.encode(entry.getValue());
+    }
+    return pairs;
   }
 
   public void xadd(String key, String entryId, String... pairs) {
@@ -1183,7 +1194,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void xread(Map<String, String> pairs){
-    xread(convertPairsMap(pairs));
+    xread(convertParamsMap(pairs));
   }
 
   public void xread(long count,String...params){
@@ -1195,7 +1206,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void xread(long count, Map<String, String> pairs){
-    xread(count, convertPairsMap(pairs));
+    xread(count, convertParamsMap(pairs));
   }
 
   public void xreadBlock(long block,String... keys){
@@ -1252,7 +1263,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void xreadgroup(String group, String consumer, Map<String, String> pairs){
-    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), convertPairsMap(pairs));
+    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), convertParamsMap(pairs));
   }
 
   public void xreadgroup(String group, String consumer, long count, String... params){
@@ -1260,7 +1271,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void xreadgroup(String group, String consumer, long count, Map<String, String> pairs){
-    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, convertPairsMap(pairs));
+    xreadgroup(SafeEncoder.encode(group), SafeEncoder.encode(consumer), count, convertParamsMap(pairs));
   }
 
   public void xreadgroupBlock(String group, String consumer, long block, String... key){

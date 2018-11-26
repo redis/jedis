@@ -167,19 +167,4 @@ public class JedisTest extends JedisCommandTestBase {
     assertEquals(1, (long)res.get(0));
   }
 
-  @Test
-  public void bfMExistsForJedisCluster(){
-    Set<HostAndPort> jedisClusterNodes = new HashSet<>();
-    jedisClusterNodes.add(new HostAndPort("bf01.jianshu.int", 6379));
-    jedisClusterNodes.add(new HostAndPort("bf02.jianshu.int", 6379));
-    jedisClusterNodes.add(new HostAndPort("bf03.jianshu.int", 6379));
-    jedisClusterNodes.add(new HostAndPort("bf04.jianshu.int", 6379));
-    jedisClusterNodes.add(new HostAndPort("bf05.jianshu.int", 6379));
-
-    JedisCluster jc = new JedisCluster(jedisClusterNodes);
-    List<Long> res = jc.bfMExists("user:12861009:push_history:bf", new String[]{"35599876", "36675537","123"});
-    System.out.println(res);
-
-  }
-
 }

@@ -271,6 +271,24 @@ public final class Protocol {
     }
   }
 
+  public static enum BFCommand implements ProtocolCommand{
+    BFEXISTS("BF.EXISTS"),
+    BFMEXISTS("BF.MEXISTS"),
+    BFADD("BF.ADD"),
+    BFMADD("BF.MADD");
+
+    private final byte[] raw;
+
+    BFCommand(String name){
+        raw = SafeEncoder.encode(name);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+  }
+
   public static enum Keyword {
     AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,

@@ -3645,4 +3645,32 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long bfAdd(String key, String value) {
+    checkIsInMultiOrPipeline();
+    client.bfAdd(key, value);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<Long> bfMAdd(String key, String... values) {
+    checkIsInMultiOrPipeline();
+    client.bfMAdd(key, values);
+    return client.getIntegerMultiBulkReply();
+  }
+
+  @Override
+  public Long bfExists(String key, String value) {
+    checkIsInMultiOrPipeline();
+    client.bfExists(key, value);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<Long> bfMExists(String key, String... values) {
+    checkIsInMultiOrPipeline();
+    client.bfMExists(key, values);
+    return client.getIntegerMultiBulkReply();
+  }
+
 }

@@ -315,4 +315,18 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(String key, String field);
+
+  /**
+   * Executes Redis BloomFilter command
+   * @param key
+   * @param value
+   */
+  Long bfAdd(String key, String value);
+
+  List<Long> bfMAdd(String key, String values);
+
+  Long bfExists(String key, String value);
+
+  List<Long> bfMExists(String key, String... values);
+
 }

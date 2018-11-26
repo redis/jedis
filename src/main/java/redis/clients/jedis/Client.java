@@ -895,6 +895,26 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void bfAdd(String key, String value) {
+    bfAdd(SafeEncoder.encode(key), SafeEncoder.encode(value));
+  }
+
+  @Override
+  public void bfMAdd(String key, String... values) {
+    bfMAdd(SafeEncoder.encode(key), SafeEncoder.encodeMany(values));
+  }
+
+  @Override
+  public void bfExists(String key, String value) {
+    bfExists(SafeEncoder.encode(key), SafeEncoder.encode(value));
+  }
+
+  @Override
+  public void bfMExists(String key, String... values) {
+    bfMExists(SafeEncoder.encode(key), SafeEncoder.encodeMany(values));
+  }
+
+  @Override
   public void migrate(final String host, final int port, final String key,
       final int destinationDb, final int timeout) {
     migrate(host, port, SafeEncoder.encode(key), destinationDb, timeout);

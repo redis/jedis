@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.BFCommand.*;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.ENCODING;
@@ -1045,6 +1046,23 @@ public class BinaryClient extends Connection {
 
   public void clientSetname(final byte[] name) {
     sendCommand(CLIENT, Keyword.SETNAME.raw, name);
+  }
+
+
+  public void bfAdd(final byte[] key, final byte[] value){
+    sendCommand(BFADD, key, value);
+  }
+
+  public void bfMAdd(final byte[] key, final byte[]... values){
+    sendCommand(BFMADD, joinParameters(key, values));
+  }
+
+  public void bfExists(final byte[] key, final byte[] value){
+    sendCommand(BFEXISTS, key, value);
+  }
+
+  public void bfMExists(final byte[] key, final byte[]... values){
+    sendCommand(BFMEXISTS, joinParameters(key, values));
   }
 
   public void time() {

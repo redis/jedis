@@ -357,4 +357,13 @@ public interface Commands {
 
   void clientSetname(String name);
 
+
+  void bfAdd(String key, String value);
+
+  void bfMAdd(String key, String... values);
+
+  void bfExists(String key, String value);
+
+  void bfMExists(String key, String... values);
+
 }

@@ -7,15 +7,12 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import redis.clients.jedis.BinaryJedis;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -152,6 +149,37 @@ public class JedisTest extends JedisCommandTestBase {
   public void checkDisconnectOnQuit() {
     jedis.quit();
     assertFalse(jedis.getClient().isConnected());
+  }
+
+  @Test
+  public void bfMAdd(){
+    Jedis jedis = new Jedis("localhost", 6379);
+    List<Long> res = jedis.bfMAdd("bf:filter", new String[]{"33443277", "31183775","123"});
+    assertEquals(3, res.size());
+    assertEquals(1, (long)res.get(0));
+  }
+
+  @Test
+  public void bfMExists(){
+    Jedis jedis = new Jedis("localhost", 6379);
+    List<Long> res = jedis.bfMExists("bf:filter", new String[]{"33443277", "31183775","123"});
+    assertEquals(3, res.size());
+    assertEquals(1, (long)res.get(0));
+  }
+
+  @Test
+  public void bfMExistsForJedisCluster(){
+    Set<HostAndPort> jedisClusterNodes = new HashSet<>();
+    jedisClusterNodes.add(new HostAndPort("bf01.jianshu.int", 6379));
+    jedisClusterNodes.add(new HostAndPort("bf02.jianshu.int", 6379));
+    jedisClusterNodes.add(new HostAndPort("bf03.jianshu.int", 6379));
+    jedisClusterNodes.add(new HostAndPort("bf04.jianshu.int", 6379));
+    jedisClusterNodes.add(new HostAndPort("bf05.jianshu.int", 6379));
+
+    JedisCluster jc = new JedisCluster(jedisClusterNodes);
+    List<Long> res = jc.bfMExists("user:12861009:push_history:bf", new String[]{"35599876", "36675537","123"});
+    System.out.println(res);
+
   }
 
 }

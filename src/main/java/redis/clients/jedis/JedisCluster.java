@@ -2020,4 +2020,44 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+
+  @Override
+  public Long bfAdd(final String key, final String value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts){
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bfAdd(key, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Long> bfMAdd(final String key, final String values) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts){
+      @Override
+      public List<Long> execute(Jedis connection) {
+        return connection.bfMAdd(key, values);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long bfExists(final String key, final String value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts){
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bfExists(key, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Long> bfMExists(final String key, final String... values) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts){
+      @Override
+      public List<Long> execute(Jedis connection) {
+        return connection.bfMExists(key, values);
+      }
+    }.run(key);
+  }
 }

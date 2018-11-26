@@ -966,4 +966,28 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.hstrlen(key, field);
   }
+
+  @Override
+  public Long bfAdd(final String key, final String value) {
+    Jedis j = getShard(key);
+    return j.bfAdd(key, value);
+  }
+
+  @Override
+  public List<Long> bfMAdd(final String key, final String... values) {
+    Jedis j = getShard(key);
+    return j.bfMAdd(key, values);
+  }
+
+  @Override
+  public Long bfExists(final String key, final String value) {
+    Jedis j = getShard(key);
+    return j.bfExists(key, value);
+  }
+
+  @Override
+  public List<Long> bfMExists(final String key, final String... values) {
+    Jedis j = getShard(key);
+    return j.bfMExists(key, values);
+  }
 }

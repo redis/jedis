@@ -150,21 +150,21 @@ public class JedisTest extends JedisCommandTestBase {
     jedis.quit();
     assertFalse(jedis.getClient().isConnected());
   }
-
-  @Test
-  public void bfMAdd(){
-    Jedis jedis = new Jedis("localhost", 6379);
-    List<Long> res = jedis.bfMAdd("bf:filter", new String[]{"33443277", "31183775","123"});
-    assertEquals(3, res.size());
-    assertEquals(1, (long)res.get(0));
-  }
-
-  @Test
-  public void bfMExists(){
-    Jedis jedis = new Jedis("localhost", 6379);
-    List<Long> res = jedis.bfMExists("bf:filter", new String[]{"33443277", "31183775","123"});
-    assertEquals(3, res.size());
-    assertEquals(1, (long)res.get(0));
-  }
+//  // this need to add rebloom(https://github.com/RedisLabsModules/rebloom) for redis server
+////  @Test
+////  public void bfMAdd(){
+////    Jedis jedis = new Jedis("localhost", 6379);
+////    List<Long> res = jedis.bfMAdd("bf:filter", new String[]{"33443277", "31183775","123"});
+////    assertEquals(3, res.size());
+////    assertEquals(1, (long)res.get(0));
+////  }
+////
+////  @Test
+////  public void bfMExists(){
+////    Jedis jedis = new Jedis("localhost", 6379);
+////    List<Long> res = jedis.bfMExists("bf:filter", new String[]{"33443277", "31183775","123"});
+////    assertEquals(3, res.size());
+////    assertEquals(1, (long)res.get(0));
+////  }
 
 }

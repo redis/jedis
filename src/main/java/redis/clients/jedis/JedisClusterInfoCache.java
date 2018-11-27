@@ -89,33 +89,38 @@ public class JedisClusterInfoCache {
     if (!rediscovering) {
       try {
         w.lock();
-        rediscovering = true;
+        if (!rediscovering) {
+          rediscovering = true;
 
-        if (jedis != null) {
           try {
-            discoverClusterSlots(jedis);
-            return;
-          } catch (JedisException e) {
-            //try nodes from all pools
-          }
-        }
-
-        for (JedisPool jp : getShuffledNodesPool()) {
-          Jedis j = null;
-          try {
-            j = jp.getResource();
-            discoverClusterSlots(j);
-            return;
-          } catch (JedisConnectionException e) {
-            // try next nodes
-          } finally {
-            if (j != null) {
-              j.close();
+            if (jedis != null) {
+              try {
+                discoverClusterSlots(jedis);
+                return;
+              } catch (JedisException e) {
+                //try nodes from all pools
+              }
             }
+
+            for (JedisPool jp : getShuffledNodesPool()) {
+              Jedis j = null;
+              try {
+                j = jp.getResource();
+                discoverClusterSlots(j);
+                return;
+              } catch (JedisConnectionException e) {
+                // try next nodes
+              } finally {
+                if (j != null) {
+                  j.close();
+                }
+              }
+            }
+          } finally {
+            rediscovering = false;      
           }
         }
       } finally {
-        rediscovering = false;
         w.unlock();
       }
     }

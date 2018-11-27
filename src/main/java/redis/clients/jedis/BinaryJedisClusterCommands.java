@@ -321,4 +321,5 @@ public interface BinaryJedisClusterCommands {
    */
   Long hstrlen(byte[] key, byte[] field);
 
+  Long waitReplicas(byte[] key, final int replicas, final long timeout);
 }

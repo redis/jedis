@@ -315,4 +315,6 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(String key, String field);
+
+  Long waitReplicas(final String key, final int replicas, final long timeout);
 }

@@ -316,6 +316,8 @@ public interface JedisClusterCommands {
    */
   Long hstrlen(String key, String field);
 
+  Long waitReplicas(final String key, final int replicas, final long timeout);
+
   /**
    * Executes Redis BloomFilter command
    * @param key

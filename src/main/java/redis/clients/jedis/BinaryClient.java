@@ -1065,6 +1065,10 @@ public class BinaryClient extends Connection {
     sendCommand(BFMEXISTS, joinParameters(key, values));
   }
 
+  public void clientPause(final long timeout) {
+    sendCommand(CLIENT, Keyword.PAUSE.raw, toByteArray(timeout));
+  }
+
   public void time() {
     sendCommand(TIME);
   }

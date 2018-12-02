@@ -58,6 +58,18 @@ Or use it as a maven dependency:
 </dependency>
 ```
 
+### Milstones
+
+```xml
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>3.0.0-m1</version>
+    <type>jar</type>
+    <scope>compile</scope>
+</dependency>
+```
+
 ### Snapshots
 
 ```xml

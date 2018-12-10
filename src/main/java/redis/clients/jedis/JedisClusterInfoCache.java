@@ -245,6 +245,15 @@ public class JedisClusterInfoCache {
     }
   }
 
+  public int getSlotSize() {
+    r.lock();
+    try {
+      return slots.size();
+    } finally {
+      r.unlock();
+    }
+  }
+
   public static String getNodeKey(HostAndPort hnp) {
     return hnp.getHost() + ":" + hnp.getPort();
   }

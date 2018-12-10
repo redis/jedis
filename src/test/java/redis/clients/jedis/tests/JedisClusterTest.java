@@ -632,6 +632,18 @@ public class JedisClusterTest {
   }
 
   @Test
+  public void testSkipNodesWithNoSlot() {
+    Set<HostAndPort> jedisClusterNode = new LinkedHashSet<HostAndPort>();
+    jedisClusterNode.add(nodeInfo4);
+    jedisClusterNode.add(nodeInfo1);
+    JedisPoolConfig config = new JedisPoolConfig();
+    JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, DEFAULT_REDIRECTIONS, "cluster",
+                                       config);
+    Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
+    assertEquals(3, clusterNodes.size());
+  }
+
+  @Test
   public void nullKeys() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));

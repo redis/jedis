@@ -108,7 +108,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     return currentHostMaster;
   }
 
-  private void initPool(HostAndPort master) {
+  private synchronized void initPool(HostAndPort master) {
     if (!master.equals(currentHostMaster)) {
       currentHostMaster = master;
       if (factory == null) {

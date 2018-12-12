@@ -1221,8 +1221,8 @@ public class Client extends BinaryClient implements Commands {
     xtrimWithMaxlen(SafeEncoder.encode(key), approx, maxlen);
   }
 
-  public void xgroupcreate(String key, String group, String entryId, boolean noack){
-    xgroupcreate(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(entryId), noack);
+  public void xgroupcreate(String key, String group, String entryId, boolean mkstream){
+    xgroupcreate(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(entryId), mkstream);
   }
 
   public void xgroupsetid(String key, String group, String entryId){

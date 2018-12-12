@@ -1439,11 +1439,11 @@ public class BinaryClient extends Connection {
    * @param key Stream键名
    * @param group ConsumerGroup名
    * @param entryId 读取Stream的起始序号
-   * @param noack 是否使用“NOACK”参数
+   * @param mkstream 是否使用“MKSTREAM”参数
    */
-  public void xgroupcreate(byte[] key, byte[] group, byte[] entryId, boolean noack){
-    if(noack) {
-      sendCommand(XGROUP, CREATE.raw, key, group, entryId, NOACK.raw);
+  public void xgroupcreate(byte[] key, byte[] group, byte[] entryId, boolean mkstream){
+    if(mkstream) {
+      sendCommand(XGROUP, CREATE.raw, key, group, entryId, MKSTREAM.raw);
     }else{
       sendCommand(XGROUP, CREATE.raw, key, group, entryId);
     }

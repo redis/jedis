@@ -236,14 +236,13 @@ public interface StreamCommands {
 
     /**
      * 创建consumergroup
-     *
      * @param key     读取的Stream键名
      * @param group   consumergroup的名字
      * @param entryId 读取Stream的起始序号
-     * @param noack   是否使用“NOACK”参数
-     * @return 成功返回“OK”，失败主要是由于Stream不存在，会返回“ERR no such key”
+     * @param mkstream 是否使用“MKSTREAM”参数
+     * @return 成功返回“OK”，由于使用了“MKSTREAM”参数，不会返回“ERR no such key”
      */
-    String xgroupcreate(String key, String group, String entryId, boolean noack);
+    String xgroupcreate(String key, String group, String entryId, boolean mkstream);
 
     /**
      * 设置Consumer当前读取的游标

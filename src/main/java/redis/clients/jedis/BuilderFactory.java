@@ -474,9 +474,11 @@ public final class BuilderFactory {
       List<Object> element = (List<Object>) data;
       StreamParams streamParams = new StreamParams();
       streamParams.setEntryId(STRING.build(element.get(0)));
-      Map<String,String> map = STRING_MAP.build(element.get(1));
-      for(Map.Entry<String,String> entry:map.entrySet()){
-        streamParams.addPair(entry.getKey(),entry.getValue());
+      if(element.get(1)!=null) {
+        Map<String, String> map = STRING_MAP.build(element.get(1));
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+          streamParams.addPair(entry.getKey(), entry.getValue());
+        }
       }
       return streamParams;
     }
@@ -493,6 +495,9 @@ public final class BuilderFactory {
     public List<StreamParams> build(Object data) {
       List<Object> element = (List<Object>) data;
       List<StreamParams> listResult = new ArrayList<StreamParams>();
+      if(element == null){
+        return listResult;
+      }
       for (Object obj : element) {//命令只会返回空集合，不会有nil
         listResult.add(BuilderFactory.STREAM_PARAMS.build(obj));
       }
@@ -511,6 +516,9 @@ public final class BuilderFactory {
     public Map<String, List<StreamParams>> build(Object data) {
       List<Object> element = (List<Object>) data;
       Map<String,List<StreamParams>> result = new HashMap<String, List<StreamParams>>();
+      if(element == null){
+        return result;
+      }
       for(Object obj : element){
         List<Object> streamReply = (List<Object>) obj;
         String key = STRING.build(streamReply.get(0));
@@ -576,6 +584,9 @@ public final class BuilderFactory {
     public List<GroupInfo> build(Object data) {
       List<Object> list = (List<Object>) data;
       List<GroupInfo> result = new ArrayList<GroupInfo>();
+      if(list == null){
+        return result;
+      }
       for(Object group : list){
         result.add(BuilderFactory.GROUP_INFO.build(group));
       }
@@ -614,6 +625,9 @@ public final class BuilderFactory {
     public List<ConsumerInfo> build(Object data) {
       List<Object> list = (List<Object>) data;
       List<ConsumerInfo> result = new ArrayList<ConsumerInfo>();
+      if(list == null){
+        return result;
+      }
       for(Object consumer : list){
         result.add(BuilderFactory.CONSUMER_INFO.build(consumer));
       }
@@ -680,6 +694,9 @@ public final class BuilderFactory {
     public List<PendingInfo> build(Object data) {
       List<Object> list = (List<Object>) data;
       List<PendingInfo> result = new ArrayList<PendingInfo>();
+      if(list == null){
+        return result;
+      }
       for(Object pending : list){
         result.add(BuilderFactory.PENDING_INFO.build(pending));
       }

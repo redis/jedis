@@ -3798,9 +3798,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String xgroupcreate(String key, String group, String entryId, boolean noack) {
+  public String xgroupcreate(String key, String group, String entryId, boolean mkstream) {
     checkIsInMultiOrPipeline();
-    client.xgroupcreate(key, group, entryId, noack);
+    client.xgroupcreate(key, group, entryId, mkstream);
     return client.getBulkReply();
   }
 

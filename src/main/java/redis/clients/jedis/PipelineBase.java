@@ -181,19 +181,23 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.BOOLEAN);
   }
 
+  @Override
   public Response<Long> bitpos(final String key, final boolean value) {
     return bitpos(key, value, new BitPosParams());
   }
 
+  @Override
   public Response<Long> bitpos(final String key, final boolean value, final BitPosParams params) {
     getClient(key).bitpos(key, value, params);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> bitpos(final byte[] key, final boolean value) {
     return bitpos(key, value, new BitPosParams());
   }
 
+  @Override
   public Response<Long> bitpos(final byte[] key, final boolean value, final BitPosParams params) {
     getClient(key).bitpos(key, value, params);
     return getResponse(BuilderFactory.LONG);
@@ -619,11 +623,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<String> set(final String key, final String value, SetParams params) {
     getClient(key).set(key, value, params);
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<String> set(final byte[] key, final byte[] value, SetParams params) {
     getClient(key).set(key, value, params);
     return getResponse(BuilderFactory.STRING);
@@ -755,6 +761,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<List<String>> srandmember(final String key, final int count) {
     getClient(key).srandmember(key, count);
     return getResponse(BuilderFactory.STRING_LIST);
@@ -766,6 +773,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
+  @Override
   public Response<List<byte[]>> srandmember(final byte[] key, final int count) {
     getClient(key).srandmember(key, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
@@ -1021,6 +1029,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
+  @Override
   public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final String min, final String max) {
     getClient(key).zrangeByScoreWithScores(key, min, max);
     return getResponse(BuilderFactory.TUPLE_ZSET);
@@ -1045,6 +1054,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
+  @Override
   public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
     getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
@@ -1415,31 +1425,37 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<Long> objectRefcount(final String key) {
     getClient(key).objectRefcount(key);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> objectRefcount(final byte[] key) {
     getClient(key).objectRefcount(key);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<String> objectEncoding(final String key) {
     getClient(key).objectEncoding(key);
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<byte[]> objectEncoding(final byte[] key) {
     getClient(key).objectEncoding(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
+  @Override
   public Response<Long> objectIdletime(final String key) {
     getClient(key).objectIdletime(key);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> objectIdletime(final byte[] key) {
     getClient(key).objectIdletime(key);
     return getResponse(BuilderFactory.LONG);
@@ -1469,11 +1485,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> pttl(final String key) {
     getClient(key).pttl(key);
     return getResponse(BuilderFactory.LONG);
   }
 
+  @Override
   public Response<Long> pttl(final byte[] key) {
     getClient(key).pttl(key);
     return getResponse(BuilderFactory.LONG);
@@ -1503,31 +1521,37 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<Double> incrByFloat(final String key, final double increment) {
     getClient(key).incrByFloat(key, increment);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
+  @Override
   public Response<Double> incrByFloat(final byte[] key, final double increment) {
     getClient(key).incrByFloat(key, increment);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
+  @Override
   public Response<String> psetex(final String key, final long milliseconds, final String value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<String> psetex(final byte[] key, final long milliseconds, final byte[] value) {
     getClient(key).psetex(key, milliseconds, value);
     return getResponse(BuilderFactory.STRING);
   }
 
+  @Override
   public Response<Double> hincrByFloat(final String key, final String field, final double increment) {
     getClient(key).hincrByFloat(key, field, increment);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
+  @Override
   public Response<Double> hincrByFloat(final byte[] key, final byte[] field, final double increment) {
     getClient(key).hincrByFloat(key, field, increment);
     return getResponse(BuilderFactory.DOUBLE);

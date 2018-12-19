@@ -439,7 +439,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List srandmember(final byte[] key, final int count) {
+  public List<byte[]> srandmember(final byte[] key, final int count) {
     Jedis j = getShard(key);
     return j.srandmember(key, count);
   }

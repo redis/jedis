@@ -1334,7 +1334,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
-    if (JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
+    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
       throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
           + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
@@ -2191,6 +2191,15 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+      }
+    }.run(key);
+  }
+
+  public Long waitReplicas(final String key, final int replicas, final long timeout) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.waitReplicas(replicas, timeout);
       }
     }.run(key);
   }

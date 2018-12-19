@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
@@ -9,6 +10,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 
@@ -331,4 +333,24 @@ public interface BinaryRedisPipeline {
  
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  Response<Long> bitpos(byte[] key, boolean value);
+
+  Response<Long> bitpos(byte[] key, boolean value, BitPosParams params);
+
+  Response<String> set(byte[] key, byte[] value, SetParams params);
+
+  Response<List<byte[]>> srandmember(byte[] key, int count);
+
+  Response<Long> objectRefcount(byte[] key);
+
+  Response<byte[]> objectEncoding(byte[] key);
+
+  Response<Long> objectIdletime(byte[] key);
+
+  Response<Double> incrByFloat(byte[] key, double increment);
+
+  Response<String> psetex(byte[] key, long milliseconds, byte[] value);
+
+  Response<Double> hincrByFloat(byte[] key, byte[] field, double increment);
 }

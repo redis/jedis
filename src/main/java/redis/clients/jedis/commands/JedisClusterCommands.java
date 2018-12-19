@@ -317,8 +317,7 @@ public interface JedisClusterCommands {
    * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(String key, String field);
-  
+  Long hstrlen(String key, String field); 
 
   /**
    * XADD key ID field string [field string ...]
@@ -480,4 +479,6 @@ public interface JedisClusterCommands {
    */        
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, EntryID... ids);
+
+  Long waitReplicas(final String key, final int replicas, final long timeout);
 }

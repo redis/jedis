@@ -3629,10 +3629,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void close() {
     if (dataSource != null) {
+      Pool<Jedis> pool = this.dataSource;
+      this.dataSource = null;
       if (client.isBroken()) {
-        this.dataSource.returnBrokenResource(this);
+        pool.returnBrokenResource(this);
       } else {
-        this.dataSource.returnResource(this);
+        pool.returnResource(this);
       }
       this.dataSource = null;
     } else {

@@ -42,6 +42,19 @@ public class JedisSentinelPoolTest {
     sentinelJedis1 = new Jedis(sentinel1);
     sentinelJedis2 = new Jedis(sentinel2);
   }
+  
+  @Test
+  public void repeatedSentinelPoolInitialization() {
+
+     for(int i=0; i<20 ; ++i) {
+      GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+
+       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+          "foobared", 2);
+      pool.getResource().close();
+      pool.destroy();
+    }
+  }
 
   @Test(expected = JedisConnectionException.class)
   public void initializeWithNotAvailableSentinelsShouldThrowException() {

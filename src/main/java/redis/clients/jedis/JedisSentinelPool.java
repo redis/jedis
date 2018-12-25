@@ -33,6 +33,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
+  
+  private final Object initPoolLock = new Object();
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig) {
@@ -110,22 +112,24 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   private void initPool(HostAndPort master) {
-    if (!master.equals(currentHostMaster)) {
-      currentHostMaster = master;
-      if (factory == null) {
-        factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-            soTimeout, password, database, clientName);
-        initPool(poolConfig, factory);
-      } else {
-        factory.setHostAndPort(currentHostMaster);
-        // although we clear the pool, we still have to check the
-        // returned object
-        // in getResource, this call only clears idle instances, not
-        // borrowed instances
-        internalPool.clear();
+    synchronized(initPoolLock){
+      if (!master.equals(currentHostMaster)) {
+        currentHostMaster = master;
+        if (factory == null) {
+          factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
+              soTimeout, password, database, clientName);
+          initPool(poolConfig, factory);
+        } else {
+          factory.setHostAndPort(currentHostMaster);
+          // although we clear the pool, we still have to check the
+          // returned object
+          // in getResource, this call only clears idle instances, not
+          // borrowed instances
+          internalPool.clear();
+        }
+  
+        log.info("Created JedisPool to master at " + master);
       }
-
-      log.info("Created JedisPool to master at " + master);
     }
   }
 

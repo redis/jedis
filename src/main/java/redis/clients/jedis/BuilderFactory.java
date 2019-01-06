@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
@@ -136,7 +134,7 @@ public final class BuilderFactory {
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-            String.valueOf((Long) iterator.next()));
+          String.valueOf((Long) iterator.next()));
       }
 
       return hash;
@@ -476,14 +474,14 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<EntryID> ENTRY_ID = new Builder<EntryID>() {
+  public static final Builder<StreamnEntryID> ENTRY_ID = new Builder<StreamnEntryID>() {
     @Override
     @SuppressWarnings("unchecked")
-    public  EntryID build(Object data) {
+    public  StreamnEntryID build(Object data) {
       if (null == data) {
         return null;
       }
-      return new EntryID((String)data);
+      return new StreamnEntryID((String)data);
     }
 
     @Override
@@ -509,7 +507,7 @@ public final class BuilderFactory {
 
       for(ArrayList<Object> res : objectList) {
         String entryIdString = SafeEncoder.encode((byte[])res.get(0));
-        EntryID entryID = new EntryID(entryIdString);
+        StreamnEntryID entryID = new StreamnEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>)res.get(1);
         
         Iterator<byte[]> hashIterator = hash.iterator();
@@ -529,23 +527,23 @@ public final class BuilderFactory {
     }
   };
   
-  public static final Builder<List<PendingEntry>> PENDING_ENTRY_LIST = new Builder<List<PendingEntry>>() {
+  public static final Builder<List<StreamPendingEntry>> PENDING_ENTRY_LIST = new Builder<List<StreamPendingEntry>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public  List<PendingEntry> build(Object data) {
+    public  List<StreamPendingEntry> build(Object data) {
       if (null == data) {
         return null;
       }
       
       List<Object> streamsEntries = (List<Object>)data;
-      List<PendingEntry> result = new ArrayList<>(streamsEntries.size());
+      List<StreamPendingEntry> result = new ArrayList<>(streamsEntries.size());
       for(Object streamObj : streamsEntries) {
         List<Object> stream = (List<Object>)streamObj;
         String id = SafeEncoder.encode((byte[])stream.get(0));
         String consumerName = SafeEncoder.encode((byte[])stream.get(1));
         long idleTime = BuilderFactory.LONG.build(stream.get(2));      
         long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
-        result.add(new PendingEntry(new EntryID(id), consumerName, idleTime, deliveredTimes));
+        result.add(new StreamPendingEntry(new StreamnEntryID(id), consumerName, idleTime, deliveredTimes));
       }
       return result;
     }

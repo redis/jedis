@@ -1,7 +1,7 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
-import redis.clients.jedis.EntryID;
+import redis.clients.jedis.StreamnEntryID;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
@@ -175,7 +175,7 @@ public interface MultiKeyCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, EntryID>... streams);
+  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamnEntryID>... streams);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
@@ -188,5 +188,5 @@ public interface MultiKeyCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, final boolean noAck, Map.Entry<String, EntryID>... streams);
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, final boolean noAck, Map.Entry<String, StreamnEntryID>... streams);
 }

@@ -1,15 +1,12 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
-import redis.clients.jedis.EntryID;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.MigrateParams;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**

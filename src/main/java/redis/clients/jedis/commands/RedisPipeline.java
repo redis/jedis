@@ -1,12 +1,12 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.EntryID;
+import redis.clients.jedis.StreamnEntryID;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.PendingEntry;
+import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
@@ -300,34 +300,34 @@ public interface RedisPipeline {
   Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
   
-  Response<EntryID> xadd(String key, EntryID id, Map<String, String> hash);
+  Response<StreamnEntryID> xadd(String key, StreamnEntryID id, Map<String, String> hash);
 
-  Response<EntryID> xadd(String key, EntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  Response<StreamnEntryID> xadd(String key, StreamnEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
   
   Response<Long> xlen(String key);
 
-  Response<List<StreamEntry>> xrange(String key, EntryID start, EntryID end, int count);
+  Response<List<StreamEntry>> xrange(String key, StreamnEntryID start, StreamnEntryID end, int count);
 
-  Response<List<StreamEntry>> xrevrange(String key, EntryID end, EntryID start, int count);
+  Response<List<StreamEntry>> xrevrange(String key, StreamnEntryID end, StreamnEntryID start, int count);
    
-  Response<Long> xack(String key, String group,  EntryID... ids);
+  Response<Long> xack(String key, String group,  StreamnEntryID... ids);
   
-  Response<String> xgroupCreate( String key, String groupname, EntryID id, boolean makeStream);
+  Response<String> xgroupCreate( String key, String groupname, StreamnEntryID id, boolean makeStream);
   
-  Response<String> xgroupSetID( String key, String groupname, EntryID id);
+  Response<String> xgroupSetID( String key, String groupname, StreamnEntryID id);
   
   Response<Long> xgroupDestroy( String key, String groupname);
   
   Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
 
-  Response<List<PendingEntry>> xpending(String key, String groupname, EntryID start, EntryID end, int count, String consumername);
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamnEntryID start, StreamnEntryID end, int count, String consumername);
   
-  Response<Long> xdel( String key, EntryID... ids);
+  Response<Long> xdel( String key, StreamnEntryID... ids);
   
   Response<Long> xtrim( String key, long maxLen, boolean exactMaxLen);
  
   Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
-      long newIdleTime, int retries, boolean force, EntryID... ids);
+      long newIdleTime, int retries, boolean force, StreamnEntryID... ids);
 
   Response<Long> bitpos(String key, boolean value);
 

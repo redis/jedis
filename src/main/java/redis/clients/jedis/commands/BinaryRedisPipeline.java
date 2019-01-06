@@ -5,7 +5,7 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.PendingEntry;
+import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
@@ -303,7 +303,7 @@ public interface BinaryRedisPipeline {
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
-  Response<Long> hstrlen(byte[] key, byte[] field); 
+  Response<Long> hstrlen(byte[] key, byte[] field);
   
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
 
@@ -325,7 +325,7 @@ public interface BinaryRedisPipeline {
   
   Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
-  Response<List<PendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
   
   Response<Long> xdel(byte[] key, byte[]... ids);
   

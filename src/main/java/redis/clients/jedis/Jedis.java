@@ -3647,16 +3647,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public EntryID xadd(final String key, final EntryID id, final Map<String, String> hash) {
+  public StreamnEntryID xadd(final String key, final StreamnEntryID id, final Map<String, String> hash) {
     return xadd(key, id, hash, Long.MAX_VALUE, true);
   }
   
   @Override
-  public EntryID xadd(final String key, EntryID id, final Map<String, String> hash, final long maxLen, final boolean exactMaxLen) {
+  public StreamnEntryID xadd(final String key, StreamnEntryID id, final Map<String, String> hash, final long maxLen, final boolean exactMaxLen) {
     checkIsInMultiOrPipeline();
     client.xadd(key, id, hash, maxLen, exactMaxLen);
     String result = client.getBulkReply();
-    return new EntryID(result);
+    return new StreamnEntryID(result);
   }
 
   @Override
@@ -3667,14 +3667,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<StreamEntry> xrange(final String key, final EntryID start, final EntryID end, final int count) {
+  public List<StreamEntry> xrange(final String key, final StreamnEntryID start, final StreamnEntryID end, final int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
   
   @Override
-  public List<StreamEntry> xrevrange(final String key, final EntryID end, final EntryID start, final int count) {
+  public List<StreamEntry> xrevrange(final String key, final StreamnEntryID end, final StreamnEntryID start, final int count) {
     checkIsInMultiOrPipeline();
     client.xrevrange(key, end, start, count);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
@@ -3691,7 +3691,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return
    */
   @Override
-  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, EntryID>... streams) {
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, StreamnEntryID>... streams) {
     checkIsInMultiOrPipeline();
     client.xread(count, block, streams);
     client.setTimeoutInfinite();
@@ -3717,21 +3717,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xack(final String key, final String group, final EntryID... ids) {
+  public long xack(final String key, final String group, final StreamnEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xack(key, group, ids);
     return client.getIntegerReply();
   }
 
   @Override
-  public String xgroupCreate(final String key, final String groupname, final EntryID id, final boolean makeStream) {
+  public String xgroupCreate(final String key, final String groupname, final StreamnEntryID id, final boolean makeStream) {
     checkIsInMultiOrPipeline();
     client.xgroupCreate(key, groupname, id, makeStream);
     return client.getStatusCodeReply();
   }
 
   @Override
-  public String xgroupSetID(final String key, final String groupname, final EntryID id) {
+  public String xgroupSetID(final String key, final String groupname, final StreamnEntryID id) {
     checkIsInMultiOrPipeline();
     client.xgroupSetID(key, groupname, id);
     return client.getStatusCodeReply();
@@ -3752,7 +3752,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xdel(final String key, final EntryID... ids) {
+  public long xdel(final String key, final StreamnEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xdel(key, ids);
     return client.getIntegerReply();
@@ -3778,7 +3778,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
-      final boolean noAck, final Entry<String, EntryID>... streams) {
+      final boolean noAck, final Entry<String, StreamnEntryID>... streams) {
     checkIsInMultiOrPipeline();
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
 
@@ -3798,7 +3798,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<PendingEntry> xpending(final String key, final String groupname, final EntryID start, final EntryID end,
+  public List<StreamPendingEntry> xpending(final String key, final String groupname, final StreamnEntryID start, final StreamnEntryID end,
       final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
@@ -3810,7 +3810,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
-      int retries, boolean force, EntryID... ids) {
+      int retries, boolean force, StreamnEntryID... ids) {
     
     checkIsInMultiOrPipeline();
     client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);

@@ -3,7 +3,7 @@ package redis.clients.jedis;
 import java.io.IOException;
 import java.io.Serializable;
 
-public class EntryID implements Comparable<EntryID>, Serializable{
+public class StreamnEntryID implements Comparable<StreamnEntryID>, Serializable{
   
   private static final long serialVersionUID = 1L;
 
@@ -14,7 +14,7 @@ public class EntryID implements Comparable<EntryID>, Serializable{
   * XADD mystream * field1 value1 
   * </code>
   */
-  public static final EntryID NEW_ENTRY = new EntryID() {
+  public static final StreamnEntryID NEW_ENTRY = new StreamnEntryID() {
     
     private static final long serialVersionUID = 1L;
     
@@ -32,7 +32,7 @@ public class EntryID implements Comparable<EntryID>, Serializable{
   * XGROUP CREATE mystream consumer-group-name $
   * </code>
   */
-  public static final EntryID LAST_ENTRY = new EntryID() {
+  public static final StreamnEntryID LAST_ENTRY = new StreamnEntryID() {
     
     private static final long serialVersionUID = 1L;
     
@@ -48,7 +48,7 @@ public class EntryID implements Comparable<EntryID>, Serializable{
    * XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >
    * </code>
    */
-  public static final EntryID UNRECEIVED_ENTRY = new EntryID() {
+  public static final StreamnEntryID UNRECEIVED_ENTRY = new StreamnEntryID() {
     
     private static final long serialVersionUID = 1L;
     
@@ -61,17 +61,17 @@ public class EntryID implements Comparable<EntryID>, Serializable{
   private long time;
   private long sequence;
 
-  public EntryID() {
+  public StreamnEntryID() {
     this(0, 0L);
   }
   
-  public EntryID(String id) {
+  public StreamnEntryID(String id) {
     String[] split = id.split("-");    
     this.time = Long.parseLong(split[0]);
     this.sequence = Long.parseLong(split[1]);
   }
   
-  public EntryID(long time, long sequence) {
+  public StreamnEntryID(long time, long sequence) {
     this.time = time;
     this.sequence = sequence;
   }
@@ -86,7 +86,7 @@ public class EntryID implements Comparable<EntryID>, Serializable{
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    EntryID other = (EntryID) obj;
+    StreamnEntryID other = (StreamnEntryID) obj;
     return this.time == other.time && this.sequence == other.sequence;
   }
   
@@ -96,7 +96,7 @@ public class EntryID implements Comparable<EntryID>, Serializable{
   }
 
   @Override
-  public int compareTo(EntryID other) {
+  public int compareTo(StreamnEntryID other) {
     int timeComapre = Long.compare(this.time, other.time);
     return timeComapre != 0 ? timeComapre : Long.compare(this.sequence, other.sequence);
   }

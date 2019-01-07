@@ -375,25 +375,27 @@ public interface JedisCommands {
    * XRANGE key start end [COUNT count]
    * 
    * @param key
-   * @param start
-   * @param end
-   * @param count
-   * @return
+   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream  
+   * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
+   * @param count maximum number of entries returned 
+   * @return The entries with IDs matching the specified range. 
    */
   List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
   /**
    * XREVRANGE key end start [COUNT <n>]
+   * 
    * @param key
-   * @param end
-   * @param start
-   * @param count
-   * @return
+   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream  
+   * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
+   * @param count The entries with IDs matching the specified range. 
+   * @return the entries with IDs matching the specified range, from the higher ID to the lower ID matching.
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
     
   /**
    * XACK key group ID [ID ...]
+   * 
    * @param key
    * @param group
    * @param ids

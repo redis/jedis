@@ -3666,6 +3666,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end, final int count) {
     checkIsInMultiOrPipeline();
@@ -3673,6 +3676,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
   
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end, final StreamEntryID start, final int count) {
     checkIsInMultiOrPipeline();
@@ -3682,13 +3688,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param key
-   * @param count
-   * @param block
-   * @param streams
-   * @return
+   * {@inheritDoc}
    */
   @Override
   public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
@@ -3716,6 +3716,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public long xack(final String key, final String group, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
@@ -3766,15 +3769,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param key
-   * @param groupname
-   * @param cosumer
-   * @param count
-   * @param block
-   * @param streams
-   * @return
+   * {@inheritDoc}
    */
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,

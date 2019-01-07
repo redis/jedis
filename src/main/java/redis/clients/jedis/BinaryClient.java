@@ -1263,16 +1263,16 @@ public class BinaryClient extends Connection {
   }
   
   public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen) {
-      int i = 0;
+      int maxLexArgs = 0;
       if(maxLen < Long.MAX_VALUE) { // optional arguments
         if(exactMaxLen) {
-          i = 2; // e.g. MAXLEN 1000 
+          maxLexArgs = 2; // e.g. MAXLEN 1000 
         } else {
-          i = 3; // e.g. MAXLEN ~ 1000
+          maxLexArgs = 3; // e.g. MAXLEN ~ 1000
         }
       }
     
-	  final byte[][] params = new byte[2 + i + hash.size() * 2][];
+	  final byte[][] params = new byte[2 + maxLexArgs + hash.size() * 2][];
 	  int index = 0;
 	  params[index++] = key;
 	  if(maxLen < Long.MAX_VALUE) {

@@ -8,15 +8,15 @@ public class StreamEntry implements Serializable{
   
   private static final long serialVersionUID = 1L;
   
-  private StreamnEntryID id;
+  private StreamEntryID id;
   private Map<String, String> fields;
   
-  public StreamEntry(StreamnEntryID id, Map<String, String> fields) {
+  public StreamEntry(StreamEntryID id, Map<String, String> fields) {
     this.id = id;
     this.fields = fields;
   }
   
-  public StreamnEntryID getID() {
+  public StreamEntryID getID() {
     return id;
   }
   
@@ -35,7 +35,7 @@ public class StreamEntry implements Serializable{
   }
   
   private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
-    this.id = (StreamnEntryID) in.readUnshared();
+    this.id = (StreamEntryID) in.readUnshared();
     this.fields = (Map<String, String>) in.readUnshared();
   }
 }

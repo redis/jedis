@@ -1790,7 +1790,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<StreamnEntryID> xadd(String key, StreamnEntryID id, Map<String, String> hash){
+  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash){
     return xadd(key, id, hash, Long.MAX_VALUE, true);    
   }
   
@@ -1801,7 +1801,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
 
   @Override
-  public Response<StreamnEntryID> xadd(String key, StreamnEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen){
+  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen){
     getClient(key).xadd(key, id, hash, maxLen, exactMaxLen);
     return getResponse(BuilderFactory.ENTRY_ID);    
   }
@@ -1827,7 +1827,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<StreamEntry>> xrange(String key, StreamnEntryID start, StreamnEntryID end, int count){
+  public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count){
     getClient(key).xrange(key, start, end, count);
     return getResponse(BuilderFactory.STREAM_ENTRY_LIST);        
   }
@@ -1839,7 +1839,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<StreamEntry>> xrevrange(String key, StreamnEntryID end, StreamnEntryID start, int count){
+  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count){
     getClient(key).xrevrange(key, start, end, count);
     return getResponse(BuilderFactory.STREAM_ENTRY_LIST);            
   }
@@ -1852,7 +1852,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
    
   @Override
-  public Response<Long> xack(String key, String group,  StreamnEntryID... ids){
+  public Response<Long> xack(String key, String group,  StreamEntryID... ids){
     getClient(key).xack(key, group, ids);
     return getResponse(BuilderFactory.LONG);                
   }
@@ -1864,7 +1864,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<String> xgroupCreate( String key, String groupname, StreamnEntryID id, boolean makeStream){
+  public Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream){
     getClient(key).xgroupCreate(key, groupname, id, makeStream);
     return getResponse(BuilderFactory.STRING);
   }
@@ -1876,7 +1876,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<String> xgroupSetID( String key, String groupname, StreamnEntryID id){
+  public Response<String> xgroupSetID( String key, String groupname, StreamEntryID id){
     getClient(key).xgroupSetID(key, groupname, id);
     return getResponse(BuilderFactory.STRING);
   }
@@ -1913,7 +1913,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamnEntryID start, StreamnEntryID end, int count, String consumername){
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername){
     getClient(key).xpending(key, groupname, start, end, count, consumername);
     return getResponse(BuilderFactory.PENDING_ENTRY_LIST);        
   }
@@ -1926,7 +1926,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
   
   @Override
-  public Response<Long> xdel( String key, StreamnEntryID... ids){
+  public Response<Long> xdel( String key, StreamEntryID... ids){
     getClient(key).xdel(key, ids);
     return getResponse(BuilderFactory.LONG);        
   }
@@ -1951,7 +1951,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
  
   @Override
   public Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
-      long newIdleTime, int retries, boolean force, StreamnEntryID... ids){
+      long newIdleTime, int retries, boolean force, StreamEntryID... ids){
     getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
     return getResponse(BuilderFactory.STREAM_ENTRY_LIST);        
   }

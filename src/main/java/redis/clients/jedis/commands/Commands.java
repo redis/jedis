@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
-import redis.clients.jedis.StreamnEntryID;
+import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
@@ -359,34 +359,34 @@ public interface Commands {
 
   void clientSetname(String name);
 
-  void xadd(String key, StreamnEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
   
   void xlen(String key);
 
-  void xrange(String key, StreamnEntryID start, StreamnEntryID end, long count);
+  void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
   
-  void xrevrange(String key, StreamnEntryID end, StreamnEntryID start, int count);
+  void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
   
-  void xread(int count, long block, Entry<String, StreamnEntryID>... streams);
+  void xread(int count, long block, Entry<String, StreamEntryID>... streams);
   
-  void xack(String key, String group, StreamnEntryID... ids);
+  void xack(String key, String group, StreamEntryID... ids);
   
-  void xgroupCreate(String key, String consumer, StreamnEntryID id, boolean makeStream);
+  void xgroupCreate(String key, String consumer, StreamEntryID id, boolean makeStream);
 
-  void xgroupSetID(String key, String consumer, StreamnEntryID id);
+  void xgroupSetID(String key, String consumer, StreamEntryID id);
 
   void xgroupDestroy(String key, String consumer);
 
   void xgroupDelConsumer(String key, String consumer, String consumerName);
 
-  void xdel(String key, StreamnEntryID... ids);
+  void xdel(String key, StreamEntryID... ids);
 
   void xtrim(String key, long maxLen, boolean exactMaxLen);
 
-  void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamnEntryID>... streams);
+  void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
 
-  void xpending(String key, String groupname, StreamnEntryID start, StreamnEntryID end, int count, String consumername);
+  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
-      boolean force, StreamnEntryID... ids);
+      boolean force, StreamEntryID... ids);
 }

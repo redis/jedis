@@ -1159,7 +1159,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xadd(final String key, final  StreamnEntryID id, final Map<String, String> hash, long maxLen, boolean exactMaxLen) {
+  public void xadd(final String key, final  StreamEntryID id, final Map<String, String> hash, long maxLen, boolean exactMaxLen) {
     final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
@@ -1173,41 +1173,41 @@ public class Client extends BinaryClient implements Commands {
   }
   
   @Override
-  public void xrange(final String key, final StreamnEntryID start, final  StreamnEntryID end, final long count) {
+  public void xrange(final String key, final StreamEntryID start, final  StreamEntryID end, final long count) {
 	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
   }
   
   @Override
-  public void xrevrange(String key, StreamnEntryID end, StreamnEntryID start, int count) {
+  public void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
     xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end==null ? "+" : end.toString()), SafeEncoder.encode(start==null ? "-" : start.toString()), count);
   }
   
   @Override
-  public void xread(final int count, final long block, final Entry<String, StreamnEntryID>... streams) {
+  public void xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.length);
-    for (final Entry<String, StreamnEntryID> entry : streams) {
+    for (final Entry<String, StreamEntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
     }
     xread(count, block, bhash);
   }
   
   @Override
-  public void xack(final String key, final String group, final StreamnEntryID... ids) {
+  public void xack(final String key, final String group, final StreamEntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
     for (int i=0 ; i< ids.length; ++i ) {
-      StreamnEntryID id = ids[i];
+      StreamEntryID id = ids[i];
       bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
     }
     xack(SafeEncoder.encode(key), SafeEncoder.encode(group), bids);
   }
   
   @Override
-  public void xgroupCreate(String key, String groupname, StreamnEntryID id, boolean makeStream) {
+  public void xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
     xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()), makeStream);
   }
 
   @Override
-  public void xgroupSetID(String key, String groupname, StreamnEntryID id) {
+  public void xgroupSetID(String key, String groupname, StreamEntryID id) {
     xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()));    
   }
 
@@ -1222,10 +1222,10 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xdel(final String key, final StreamnEntryID... ids) {
+  public void xdel(final String key, final StreamEntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
     for (int i=0 ; i< ids.length; ++i ) {
-      StreamnEntryID id = ids[i];
+      StreamEntryID id = ids[i];
       bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
     }
     xdel(SafeEncoder.encode(key), bids);    
@@ -1237,23 +1237,23 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamnEntryID>... streams) {
+  public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
-    for (final Entry<String, StreamnEntryID> entry : streams) {
+    for (final Entry<String, StreamEntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? ">" : entry.getValue().toString()));
     }
     xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);    
   }
 
   @Override
-  public void xpending(String key, String groupname, StreamnEntryID start, StreamnEntryID end, int count, String consumername) {
+  public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
         SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));    
   }
 
   @Override
   public void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
-      boolean force, StreamnEntryID... ids) {
+      boolean force, StreamEntryID... ids) {
     
     final byte[][] bids = new byte[ids.length][];
     for (int i = 0; i < ids.length; i++) {

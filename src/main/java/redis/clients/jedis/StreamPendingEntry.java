@@ -7,19 +7,19 @@ public class StreamPendingEntry implements Serializable{
   
   private static final long serialVersionUID = 1L;
   
-  private StreamnEntryID id;
+  private StreamEntryID id;
   private String consumerName;
   private long idleTime;
   private long deliveredTimes;
   
-  public StreamPendingEntry(StreamnEntryID id, String consumerName, long idleTime, long deliveredTimes) {
+  public StreamPendingEntry(StreamEntryID id, String consumerName, long idleTime, long deliveredTimes) {
     this.id = id;
     this.consumerName = consumerName;
     this.idleTime = idleTime;
     this.deliveredTimes = deliveredTimes;
   }
   
-  public StreamnEntryID getID() {
+  public StreamEntryID getID() {
     return id;
   }
 
@@ -48,7 +48,7 @@ public class StreamPendingEntry implements Serializable{
   }
   
   private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException{
-    this.id = (StreamnEntryID) in.readUnshared();
+    this.id = (StreamEntryID) in.readUnshared();
     this.consumerName = in.readUTF();
     this.idleTime = in.readLong();
     this.deliveredTimes = in.readLong();

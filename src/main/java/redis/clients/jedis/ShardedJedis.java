@@ -968,13 +968,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamnEntryID xadd(String key, StreamnEntryID id, Map<String, String> hash) {
+  public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash) {
     Jedis j = getShard(key);
     return j.xadd(key, id, hash);
   }
   
   @Override
-  public StreamnEntryID xadd(String key, StreamnEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
+  public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
     Jedis j = getShard(key);
     return j.xadd(key, id, hash, maxLen, exactMaxLen);
   }
@@ -986,25 +986,25 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
   
   @Override
-  public List<StreamEntry> xrange(String key, StreamnEntryID start, StreamnEntryID end, int count) {
+  public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
     Jedis j = getShard(key);
     return j.xrange(key, start, end, count);
   }
 
   @Override
-  public long xack(String key, String group, StreamnEntryID... ids) {
+  public long xack(String key, String group, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xack(key, group, ids);
   }
 
   @Override
-  public String xgroupCreate(String key, String consumer, StreamnEntryID id, boolean makeStream) {
+  public String xgroupCreate(String key, String consumer, StreamEntryID id, boolean makeStream) {
     Jedis j = getShard(key);
     return j.xgroupCreate(key, consumer, id, makeStream);
   }
 
   @Override
-  public String xgroupSetID(String key, String groupname, StreamnEntryID id) {
+  public String xgroupSetID(String key, String groupname, StreamEntryID id) {
     Jedis j = getShard(key);
     return j.xgroupSetID(key, groupname, id);
   }
@@ -1023,7 +1023,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
 
   @Override
-  public long xdel(String key, StreamnEntryID... ids) {
+  public long xdel(String key, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xdel(key, ids);
   }
@@ -1035,13 +1035,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<StreamEntry> xrevrange(String key, StreamnEntryID end, StreamnEntryID start, int count) {
+  public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
     Jedis j = getShard(key);
     return j.xrevrange(key, end, start, count);
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(String key, String groupname, StreamnEntryID start, StreamnEntryID end,
+  public List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
       int count, String consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
@@ -1049,7 +1049,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
   @Override
   public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
-      int retries, boolean force, StreamnEntryID... ids) {
+      int retries, boolean force, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }

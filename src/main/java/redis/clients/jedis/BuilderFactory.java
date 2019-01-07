@@ -474,14 +474,14 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<StreamnEntryID> ENTRY_ID = new Builder<StreamnEntryID>() {
+  public static final Builder<StreamEntryID> ENTRY_ID = new Builder<StreamEntryID>() {
     @Override
     @SuppressWarnings("unchecked")
-    public  StreamnEntryID build(Object data) {
+    public  StreamEntryID build(Object data) {
       if (null == data) {
         return null;
       }
-      return new StreamnEntryID((String)data);
+      return new StreamEntryID((String)data);
     }
 
     @Override
@@ -507,7 +507,7 @@ public final class BuilderFactory {
 
       for(ArrayList<Object> res : objectList) {
         String entryIdString = SafeEncoder.encode((byte[])res.get(0));
-        StreamnEntryID entryID = new StreamnEntryID(entryIdString);
+        StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>)res.get(1);
         
         Iterator<byte[]> hashIterator = hash.iterator();
@@ -543,7 +543,7 @@ public final class BuilderFactory {
         String consumerName = SafeEncoder.encode((byte[])stream.get(1));
         long idleTime = BuilderFactory.LONG.build(stream.get(2));      
         long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
-        result.add(new StreamPendingEntry(new StreamnEntryID(id), consumerName, idleTime, deliveredTimes));
+        result.add(new StreamPendingEntry(new StreamEntryID(id), consumerName, idleTime, deliveredTimes));
       }
       return result;
     }

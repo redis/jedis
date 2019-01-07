@@ -550,7 +550,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "List<PendingEntry>";
+      return "List<StreamPendingEntry>";
     }
   };
 

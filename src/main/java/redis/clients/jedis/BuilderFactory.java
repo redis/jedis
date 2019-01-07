@@ -486,7 +486,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "StreamEntry";
+      return "StreamEntryID";
     }
   };
   

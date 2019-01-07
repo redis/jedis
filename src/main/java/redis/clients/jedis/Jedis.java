@@ -3070,7 +3070,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String sentinelMonitor(final String masterName, final String ip, final int port, final int quorum) {
     client.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip, String.valueOf(port),
-        String.valueOf(quorum));
+      String.valueOf(quorum));
     return client.getStatusCodeReply();
   }
 
@@ -3699,10 +3699,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     try {
       List<Object> streamsEntries = client.getObjectMultiBulkReply();
       if(streamsEntries == null) {
-        return new ArrayList<Entry<String, List<StreamEntry>>>();
+        return new ArrayList<>();
       }
       
-      List<Entry<String, List<StreamEntry>>> result = new ArrayList<Entry<String, List<StreamEntry>>>(streamsEntries.size());
+      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
       for(Object streamObj : streamsEntries) {
         List<Object> stream = (List<Object>)streamObj;
         String streamId = SafeEncoder.encode((byte[])stream.get(0));

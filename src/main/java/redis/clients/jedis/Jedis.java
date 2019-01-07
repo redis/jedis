@@ -3784,7 +3784,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     List<Object> streamsEntries = client.getObjectMultiBulkReply();
     if(streamsEntries == null) {
-      return new ArrayList<>();
+      return null;
     }
     
     List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());

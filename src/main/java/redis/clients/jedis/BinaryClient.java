@@ -1312,24 +1312,10 @@ public class BinaryClient extends Connection {
     sendCommand(BITFIELD, joinParameters(key, value));
   }
 
-  /**
-   * 发送xadd命令
-   * @param key 键名
-   * @param entryId 序号，接受“*”
-   * @param pairs 元素的键值对集合
-   */
   public void xadd(byte[] key, byte[] entryId, byte[][] pairs) {
     sendCommand(XADD,joinParameters(key,entryId,pairs));
   }
 
-  /**
-   * 发送带Count参数的xadd命令
-   * @param key 键名
-   * @param approx 是否使用“~”参数
-   * @param maxLen 最大元素数
-   * @param entryId 序号
-   * @param pairs 元素的键值对集合
-   */
   public void xadd(byte[] key,boolean approx, long maxLen, byte[] entryId, byte[][] pairs){
     if(maxLen<=0){
       xadd(key,entryId,pairs);
@@ -1346,21 +1332,10 @@ public class BinaryClient extends Connection {
     sendCommand(XADD,joinParameters(key,params));
   }
 
-  /**
-   * 发送xlen命令
-   * @param key 键名
-   */
   public void xlen(byte[] key){
     sendCommand(XLEN,key);
   }
 
-  /**
-   * 发送xrange命令
-   * @param key 键名
-   * @param startEntryId 起始id
-   * @param endEntryId 结束id
-   * @param count 最大取元素数
-   */
   public void xrange(byte[] key, byte[] startEntryId, byte[] endEntryId, long count){
     if (count < 0) {
       sendCommand(XRANGE, key, startEntryId, endEntryId);
@@ -1369,13 +1344,6 @@ public class BinaryClient extends Connection {
     }
   }
 
-  /**
-   * 发送xrevrange命令
-   * @param key 键名
-   * @param startEntryId 起始id
-   * @param endEntryId 结束id
-   * @param count 最大取元素数
-   */
   public void xrevrange(byte[] key, byte[] startEntryId, byte[] endEntryId, long count){
     if (count < 0) {
       sendCommand(XREVRANGE, key, startEntryId, endEntryId);
@@ -1384,28 +1352,14 @@ public class BinaryClient extends Connection {
     }
   }
 
-  /**
-   * 发送xread命令
-   * @param pairs 参数组
-   */
   public void xread(byte[][] pairs){
     sendCommand(XREAD,joinParameters(STREAMS.raw,pairs));
   }
 
-  /**
-   * 发送带count限定的xread命令
-   * @param count 最大取元素数
-   * @param pairs 参数组
-   */
   public void xread(long count, byte[][] pairs){
     sendCommand(XREAD,joinParameters(COUNT.raw,toByteArray(count),joinParameters(STREAMS.raw,pairs)));
   }
 
-  /**
-   * 发送带block的xread命令
-   * @param block 阻塞时间
-   * @param keys 键名
-   */
   public void xreadBlock(long block,byte[][] keys){
     int keyNum=keys.length;
     byte[][] params=new byte[2 + keyNum * 2][];
@@ -1418,21 +1372,10 @@ public class BinaryClient extends Connection {
     sendCommand(XREAD,params);
   }
 
-  /**
-   * 发送xdel命令
-   * @param key 键名
-   * @param entryId 序号
-   */
   public void xdel(byte[] key, byte[] entryId){
     sendCommand(XDEL, key, entryId);
   }
 
-  /**
-   * 按maxlen裁剪Stream
-   * @param key 键名
-   * @param approx 是否使用“~”参数
-   * @param maxlen 最大元素数
-   */
   public void xtrimWithMaxlen(byte[] key, boolean approx, long maxlen) {
     byte[][] params;
     if(approx){
@@ -1442,13 +1385,6 @@ public class BinaryClient extends Connection {
     }
   }
 
-  /**
-   * 发送xgroup create命令
-   * @param key Stream键名
-   * @param group ConsumerGroup名
-   * @param entryId 读取Stream的起始序号
-   * @param mkstream 是否使用“MKSTREAM”参数
-   */
   public void xgroupcreate(byte[] key, byte[] group, byte[] entryId, boolean mkstream){
     if(mkstream) {
       sendCommand(XGROUP, CREATE.raw, key, group, entryId, MKSTREAM.raw);
@@ -1457,78 +1393,34 @@ public class BinaryClient extends Connection {
     }
   }
 
-  /**
-   * 发送xgroup setid命令
-   * @param key Stream键名
-   * @param group ConsumerGroup名
-   * @param entryId 当前读取Stream游标的序号
-   */
   public void xgroupsetid(byte[] key, byte[] group, byte[] entryId){
     sendCommand(XGROUP, SETID.raw, key, group, entryId);
   }
 
-  /**
-   * 发送xgroup destroy命令
-   * @param key Stream键名
-   * @param group ConsumerGroup名
-   */
   public void xgroupdestroy(byte[] key, byte[] group){
     sendCommand(XGROUP, DESTROY.raw, key, group);
   }
 
-  /**
-   * 发送xgroup delconsumer命令
-   * @param key Stream键名
-   * @param group ConsumerGroup名
-   * @param consumer Consumer名
-   */
   public void xgroupdelconsumer(byte[] key, byte[] group, byte[] consumer){
     sendCommand(XGROUP, DELCONSUMER.raw, key, group, consumer);
   }
 
-  /**
-   * 发送xinfo stream命令
-   * @param key Stream键名
-   */
   public void xinfostream(byte[] key){
     sendCommand(XINFO,STREAMS.raw, key);
   }
 
-  /**
-   * 发送xinfo groups命令
-   * @param key Stream键名
-   */
   public void xinfogroups(byte[] key){
     sendCommand(XINFO,GROUPS.raw, key);
   }
 
-  /**
-   * 发送xinfo consumers命令
-   * @param key Stream键名
-   * @param group ConsumerGroup名
-   */
   public void xinfoconsumers(byte[] key, byte[] group){
     sendCommand(XINFO,CONSUMERS.raw, key, group);
   }
 
-  /**
-   * 发送xpending命令
-   * @param key 键名
-   * @param group ConsumerGroup名
-   */
   public void xpending(byte[] key, byte[] group){
     sendCommand(XPENDING,key,group);
   }
 
-  /**
-   * 发送pending命令
-   * @param key 键名
-   * @param group ConsumerGroup名
-   * @param startEntryId 起始id
-   * @param endEntryId 结束id
-   * @param count 最大取元素数
-   * @param consumer 消费者名
-   */
   public void xpending(byte[] key, byte[] group, byte[] startEntryId, byte[] endEntryId, long count, byte[] consumer){
     if(consumer==null){
       sendCommand(XPENDING, key, group, startEntryId, endEntryId, toByteArray(count));
@@ -1537,23 +1429,10 @@ public class BinaryClient extends Connection {
     }
   }
 
-  /**
-   * 发送xreadgroup命令
-   * @param group ConsumerGroup名
-   * @param consumer 消息者名
-   * @param params 参数组
-   */
   public void xreadgroup(byte[] group, byte[] consumer, byte[][] params){
     sendCommand(XREADGROUP, joinParameters(GROUP.raw, joinParameters(group, consumer,joinParameters(STREAMS.raw, params))));
   }
 
-  /**
-   * 发送xreadgroup命令
-   * @param group ConsumerGroup名
-   * @param consumer 消息者名
-   * @param count 最取大消息数
-   * @param params 参数组
-   */
   public void xreadgroup(byte[] group, byte[] consumer, long count, byte[][] params){
     sendCommand(XREADGROUP, joinParameters(GROUP.raw
             , joinParameters(group, consumer
@@ -1561,13 +1440,6 @@ public class BinaryClient extends Connection {
                             ,joinParameters(STREAMS.raw, params)))));
   }
 
-  /**
-   * 发送带有效BLOCK参数的xreadgroup命令
-   * @param group ConsumerGroup名
-   * @param consumer 消息者名
-   * @param block 最阻塞时间，单位毫秒
-   * @param keys 监听的Stream键名组
-   */
   public void xreadgroupBlock(byte[] group, byte[] consumer, long block, byte[][] keys){
     int keyNum=keys.length;
     byte[][] params=new byte[5 + keyNum * 2][];
@@ -1583,12 +1455,6 @@ public class BinaryClient extends Connection {
     sendCommand(XREADGROUP, params);
   }
 
-  /**
-   * 发送xack命令
-   * @param key Stream键名
-   * @param group ConsumerGroup名
-   * @param entryIds 消息Id组
-   */
   public void xack(byte[] key, byte[] group, byte[][] entryIds){
     sendCommand(XACK, joinParameters(key, group, entryIds));
   }

@@ -1131,7 +1131,7 @@ public class BinaryClient extends Connection {
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long)
    * And will be removed on next major release
-   * @see https://github.com/xetorthio/jedis/issues/531 
+   * @see https://github.com/xetorthio/jedis/issues/531
    */
   public void hscan(final byte[] key, int cursor, final ScanParams params) {
     final List<byte[]> args = new ArrayList<byte[]>();
@@ -1145,7 +1145,7 @@ public class BinaryClient extends Connection {
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long)
    * And will be removed on next major release
-   * @see https://github.com/xetorthio/jedis/issues/531 
+   * @see https://github.com/xetorthio/jedis/issues/531
    */
   public void sscan(final byte[] key, int cursor, final ScanParams params) {
     final List<byte[]> args = new ArrayList<byte[]>();
@@ -1159,7 +1159,7 @@ public class BinaryClient extends Connection {
   /**
    * This method is deprecated due to bug (scan cursor should be unsigned long)
    * And will be removed on next major release
-   * @see https://github.com/xetorthio/jedis/issues/531 
+   * @see https://github.com/xetorthio/jedis/issues/531
    */
   public void zscan(final byte[] key, int cursor, final ScanParams params) {
     final List<byte[]> args = new ArrayList<byte[]>();
@@ -1337,11 +1337,11 @@ public class BinaryClient extends Connection {
     }
     byte[][] params;
     if(approx){
-      params=joinParameters(MAXLEN.raw,joinParameters(toByteArray(maxLen)
+      params=joinParameters(MAXLEN.raw,SafeEncoder.encode("~"), joinParameters(toByteArray(maxLen)
               ,entryId,pairs));
     }else{
-      params=joinParameters(MAXLEN.raw,SafeEncoder.encode("~"), joinParameters(toByteArray(maxLen)
-                      ,entryId,pairs));
+      params=joinParameters(MAXLEN.raw,joinParameters(toByteArray(maxLen)
+              ,entryId,pairs));
     }
     sendCommand(XADD,joinParameters(key,params));
   }
@@ -1362,7 +1362,11 @@ public class BinaryClient extends Connection {
    * @param count 最大取元素数
    */
   public void xrange(byte[] key, byte[] startEntryId, byte[] endEntryId, long count){
-    sendCommand(XRANGE,key,startEntryId,endEntryId,COUNT.raw,toByteArray(count));
+    if (count < 0) {
+      sendCommand(XRANGE, key, startEntryId, endEntryId);
+    } else {
+      sendCommand(XRANGE, key, startEntryId, endEntryId, COUNT.raw, toByteArray(count));
+    }
   }
 
   /**
@@ -1373,7 +1377,11 @@ public class BinaryClient extends Connection {
    * @param count 最大取元素数
    */
   public void xrevrange(byte[] key, byte[] startEntryId, byte[] endEntryId, long count){
-    sendCommand(XREVRANGE,key,startEntryId,endEntryId,COUNT.raw,toByteArray(count));
+    if (count < 0) {
+      sendCommand(XREVRANGE, key, startEntryId, endEntryId);
+    } else {
+      sendCommand(XREVRANGE, key, startEntryId, endEntryId, COUNT.raw, toByteArray(count));
+    }
   }
 
   /**

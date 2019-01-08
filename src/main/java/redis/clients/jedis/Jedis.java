@@ -3695,7 +3695,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public List<StreamParams> xrange(String key, String startEntryId, String endEntryId) {
-    return xrange(key, startEntryId, endEntryId, 0);
+    return xrange(key, startEntryId, endEntryId, -1);
   }
 
   @Override
@@ -3707,7 +3707,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public List<StreamParams> xrevrange(String key, String startEntryId, String endEntryId) {
-    return xrevrange(key, startEntryId, endEntryId,0);
+    return xrevrange(key, startEntryId, endEntryId,-1);
   }
 
   @Override

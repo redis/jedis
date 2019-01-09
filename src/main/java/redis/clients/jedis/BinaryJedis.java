@@ -3872,13 +3872,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     @Override
     public boolean equals(Object o) {
-      if (o == this) {
-        return true;
-      }
-
-      if (!(o instanceof Set)) {
-        return false;
-      }
+      if (o == null) return false;
+      if (o == this) return true;
+      if (!(o instanceof Set)) return false;
 
       Collection<?> c = (Collection<?>) o;
       if (c.size() != size()) {

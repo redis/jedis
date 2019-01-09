@@ -12,6 +12,7 @@ import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
@@ -172,4 +173,12 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     jedis2.close();
   }
 
+  @Test
+  public void role() {
+    List<Object> roleInfo = jedis.role();
+    assertNotNull(roleInfo);
+    assertEquals("master", SafeEncoder.encode((byte[])roleInfo.get(0)));
+    assertTrue(roleInfo.get(1) instanceof Long);
+
+  }
 }

@@ -3558,6 +3558,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBulkReply();
   }
 
+  public List<Object> role() {
+    checkIsInMultiOrPipeline();
+    client.role();
+    return client.getObjectMultiBulkReply();
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     client.time();

@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+
 import redis.clients.jedis.DebugParams;
 
 public interface BasicCommands {
@@ -137,6 +139,8 @@ public interface BasicCommands {
   String configResetStat();
 
   String configRewrite();
+
+  List<Object> role();
 
   /**
    * Blocks until all the previous write commands are successfully transferred and acknowledged by 

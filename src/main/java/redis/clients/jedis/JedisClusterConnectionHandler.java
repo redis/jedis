@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +39,11 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
                                     int connectionTimeout, int soTimeout, String password, String clientName) {
-    for (HostAndPort hostAndPort : startNodes) {
+    
+	  List<HostAndPort> startNodeList = new ArrayList<HostAndPort>(startNodes);
+	  Collections.shuffle(startNodeList);
+	  
+	  for (HostAndPort hostAndPort : startNodeList) {
       Jedis jedis = null;
       try {
         jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, soTimeout);

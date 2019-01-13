@@ -3646,4 +3646,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public String memoryDoctor() {
+    checkIsInMultiOrPipeline();
+    client.memoryDoctor();
+    return client.getBulkReply();
+  }
 }

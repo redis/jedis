@@ -357,4 +357,5 @@ public interface Commands {
 
   void clientSetname(String name);
 
+  void memoryDoctor();
 }

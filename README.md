@@ -55,7 +55,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>2.10.0</version>
+    <version>3.0.1</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -65,7 +65,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.0.0</version>
+    <version>2.10.2</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -88,7 +88,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```

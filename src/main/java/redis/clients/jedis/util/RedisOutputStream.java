@@ -36,7 +36,7 @@ public final class RedisOutputStream extends FilterOutputStream {
           't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
   public RedisOutputStream(final OutputStream out) {
-    this(out, 8192);
+    this(out, 16384);
   }
 
   public RedisOutputStream(final OutputStream out, final int size) {

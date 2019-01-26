@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ public final class HostAndPortUtil {
   private static List<HostAndPort> redisHostAndPortList = new ArrayList<HostAndPort>();
   private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<HostAndPort>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<HostAndPort>();
+  private static List<File> redisUDSList = new ArrayList<File>();
 
   private HostAndPortUtil(){
     throw new InstantiationError( "Must not instantiate this class" );
@@ -36,13 +38,17 @@ public final class HostAndPortUtil {
     clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
 
+    redisUDSList.add(new File("/tmp/redis_6379.sock"));
+
     String envRedisHosts = System.getProperty("redis-hosts");
     String envSentinelHosts = System.getProperty("sentinel-hosts");
     String envClusterHosts = System.getProperty("cluster-hosts");
+    String envUDSHosts = System.getProperty("uds-hosts");
 
     redisHostAndPortList = parseHosts(envRedisHosts, redisHostAndPortList);
     sentinelHostAndPortList = parseHosts(envSentinelHosts, sentinelHostAndPortList);
     clusterHostAndPortList = parseHosts(envClusterHosts, clusterHostAndPortList);
+    redisUDSList = parseUDSHosts(envUDSHosts, redisUDSList);
   }
 
   public static List<HostAndPort> parseHosts(String envHosts,
@@ -80,6 +86,19 @@ public final class HostAndPortUtil {
     return existingHostsAndPorts;
   }
 
+  public static List<File> parseUDSHosts(String envHosts, List<File> existingUDSHosts) {
+    if (null != envHosts && 0 < envHosts.length()) {
+
+      String[] hostDefs = envHosts.split(",");
+
+      List<File> envUDSHosts = new ArrayList<>();
+      for (String hostDef : hostDefs) {
+        envUDSHosts.add(new File(hostDef));
+      }
+    }
+    return existingUDSHosts;
+  }
+
   public static List<HostAndPort> getRedisServers() {
     return redisHostAndPortList;
   }
@@ -90,5 +109,9 @@ public final class HostAndPortUtil {
 
   public static List<HostAndPort> getClusterServers() {
     return clusterHostAndPortList;
+  }
+
+  public static List<File> getUDSServers() {
+    return redisUDSList;
   }
 }

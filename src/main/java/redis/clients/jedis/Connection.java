@@ -1,9 +1,11 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,8 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -37,12 +41,17 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private File unixDomainSocket;
 
   public Connection() {
   }
 
   public Connection(final String host) {
     this.host = host;
+  }
+
+  public Connection(final File unixDomainSocket) {
+    this.unixDomainSocket = unixDomainSocket;
   }
 
   public Connection(final String host, final int port) {
@@ -166,19 +175,27 @@ public class Connection implements Closeable {
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = new Socket();
-        // ->@wjw_add
-        socket.setReuseAddress(true);
-        socket.setKeepAlive(true); // Will monitor the TCP connection is
-        // valid
-        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
-        // ensure timely delivery of data
-        socket.setSoLinger(true, 0); // Control calls close () method,
-        // the underlying socket is closed
-        // immediately
-        // <-@wjw_add
+        SocketAddress socketAddress;
+        if (unixDomainSocket == null) {
+          socket = new Socket();
+          // ->@wjw_add
+          socket.setReuseAddress(true);
+          socket.setKeepAlive(true); // Will monitor the TCP connection is
+          // valid
+          socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
+          // ensure timely delivery of data
+          socket.setSoLinger(true, 0); // Control calls close () method,
+          // the underlying socket is closed
+          // immediately
+          // <-@wjw_add
+          socketAddress = new InetSocketAddress(host, port);
+        } else {
+          // unix domain socket doesn't support above options
+          socket = AFUNIXSocket.newStrictInstance();
+          socketAddress = new AFUNIXSocketAddress(unixDomainSocket);
+        }
 
-        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
+        socket.connect(socketAddress, connectionTimeout);
         socket.setSoTimeout(soTimeout);
 
         if (ssl) {
@@ -201,8 +218,13 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to host " 
-            + host + ":" + port, ex);
+        if (unixDomainSocket == null) {
+          throw new JedisConnectionException("Failed connecting to host "
+                  + host + ":" + port, ex);
+        } else {
+          throw new JedisConnectionException("Failed connecting to socket "
+                  + unixDomainSocket, ex);
+        }
       }
     }
   }

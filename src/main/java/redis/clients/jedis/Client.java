@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,10 @@ public class Client extends BinaryClient implements Commands {
 
   public Client(final String host) {
     super(host);
+  }
+
+  public Client(final File unixDomainSocket) {
+    super(unixDomainSocket);
   }
 
   public Client(final String host, final int port) {

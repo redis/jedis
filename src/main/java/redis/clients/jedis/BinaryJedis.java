@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.AbstractMap;
@@ -54,6 +55,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     } else {
       client = new Client(host);
     }
+  }
+
+  public BinaryJedis(final File unixDomainSocket) {
+    client = new Client(unixDomainSocket);
   }
 
   public BinaryJedis(final HostAndPort hp) {

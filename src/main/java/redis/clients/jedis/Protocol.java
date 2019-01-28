@@ -25,6 +25,7 @@ public final class Protocol {
   private static final String BUSY_PREFIX = "BUSY ";
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
 
+  public static final String DEFAULT_PASSWORD = null;
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 6379;
   public static final int DEFAULT_SENTINEL_PORT = 26379;

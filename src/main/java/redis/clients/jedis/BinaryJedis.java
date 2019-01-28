@@ -96,6 +96,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final String password) {
+    client = new Client(host, port);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
+    client.setPassword(password);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl) {
     client = new Client(host, port, ssl);
     client.setConnectionTimeout(connectionTimeout);

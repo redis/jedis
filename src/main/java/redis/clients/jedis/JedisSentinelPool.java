@@ -87,26 +87,26 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
-      final String password, final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, Protocol.DEFAULT_TIMEOUT,
-        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_PASSWORD, database, clientName);
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout, final String password,
+	   final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout, final String password,
-      final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelPassword,
-      final int database, final String clientName) {
+       final int database, final String clientName,
+       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelPassword) {
 
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.password = password;
+    this.database = database;
+    this.clientName = clientName;
     this.sentinelConnectionTimeout = sentinelConnectionTimeout;
     this.sentinelSoTimeout = sentinelSoTimeout;
     this.sentinelPassword = sentinelPassword;
-    this.database = database;
-    this.clientName = clientName;
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initPool(master);
@@ -161,12 +161,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       Jedis jedis = null;
       try {
-        // Being explicit here, although this null check is likely not required as the underlying client ignores 'null' password anyway.
-        if (sentinelPassword == null) {
-          jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
-        } else {
-          jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout, sentinelPassword);
-        }
+        jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout, sentinelPassword);
 
         List<String> masterAddr = jedis.sentinelGetMasterAddrByName(masterName);
 

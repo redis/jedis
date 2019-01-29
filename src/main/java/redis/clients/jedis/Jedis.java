@@ -79,11 +79,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final String password) {
-    super(host, port, connectionTimeout, soTimeout, password);
-  }
-
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final boolean ssl) {
     super(host, port, connectionTimeout, soTimeout, ssl);
   }

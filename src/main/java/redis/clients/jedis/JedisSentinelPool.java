@@ -21,13 +21,14 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected int soTimeout;
   protected String password;
 
+  protected int database;
+
+  protected String clientName;
+
   protected int sentinelConnectionTimeout;
   protected int sentinelSoTimeout;
   protected String sentinelPassword;
 
-  protected int database;
-
-  protected String clientName;
   protected String sentinelClientName;
 
   protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
@@ -91,15 +92,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout, final String password,
       final int database, final String clientName) {
     this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
-        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null);
-  }
-
-  public JedisSentinelPool(String masterName, Set<String> sentinels,
-	  final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout, final String password,
-	  final int database, final String clientName,
-	  final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelPassword) {
-	this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
-        sentinelConnectionTimeout, sentinelSoTimeout, sentinelPassword, null);
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -175,10 +168,10 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
         if (sentinelPassword != null) {
           jedis.auth(sentinelPassword);
-		}
-	    if (sentinelClientName != null) {
-		  jedis.clientSetname(sentinelClientName);
-		}
+        }
+        if (sentinelClientName != null) {
+          jedis.clientSetname(sentinelClientName);
+        }
 
         List<String> masterAddr = jedis.sentinelGetMasterAddrByName(masterName);
 

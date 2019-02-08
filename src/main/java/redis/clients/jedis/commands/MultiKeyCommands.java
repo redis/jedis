@@ -111,6 +111,9 @@ public interface MultiKeyCommands {
 
   /**
    * @see #scan(String, ScanParams)
+   * 
+   * @param cursor
+   * @return 
    */
   ScanResult<String> scan(String cursor);
 

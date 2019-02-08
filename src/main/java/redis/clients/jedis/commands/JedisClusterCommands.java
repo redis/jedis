@@ -305,6 +305,7 @@ public interface JedisClusterCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
+   * @return 
    */
   List<Long> bitfield(String key, String...arguments);
   

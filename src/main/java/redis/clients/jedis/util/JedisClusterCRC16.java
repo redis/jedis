@@ -75,6 +75,8 @@ public final class JedisClusterCRC16 {
    * Create a CRC16 checksum from the bytes. implementation is from mp911de/lettuce, modified with
    * some more optimizations
    * @param bytes
+   * @param s
+   * @param e
    * @return CRC16 as integer value See <a
    *         href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">Issue 733</a>
    */

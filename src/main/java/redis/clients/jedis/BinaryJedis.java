@@ -2351,6 +2351,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @param min
    * @param max
+   * @param offset
+   * @param count
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
@@ -2475,6 +2477,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @param min
    * @param max
+   * @param offset
+   * @param count
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
@@ -2575,6 +2579,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
    * and M the number of elements removed by the operation
+   * @param key
+   * @param start
+   * @param stop
+   * @return
    */
   @Override
   public Long zremrangeByRank(final byte[] key, final long start, final long stop) {
@@ -3277,6 +3285,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   /**
    * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
    * <p>
+   * @param script
+   * @param keys
+   * @param args
    * @return Script result
    */
   @Override
@@ -3468,7 +3479,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * {@link #persist(byte[]) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <ahref="http://redis.io/commands/pexpire">PEXPIRE Command</a>
+   * @see <a href="http://redis.io/commands/pexpire">PEXPIRE Command</a>
    * @param key
    * @param milliseconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -3504,6 +3515,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param value
    * @return Status code reply
    */
+  @Override
   public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.psetex(key, milliseconds, value);

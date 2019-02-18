@@ -106,9 +106,10 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
 
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof ByteArrayWrapper)) {
-        return false;
-      }
+      if (other == null) return false;
+      if (other == this) return true;
+      if (!(other instanceof ByteArrayWrapper)) return false;
+
       return Arrays.equals(data, ((ByteArrayWrapper) other).data);
     }
 

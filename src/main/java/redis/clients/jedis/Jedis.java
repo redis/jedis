@@ -2108,6 +2108,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @param key
    * @param min
    * @param max
+   * @param offset
+   * @param count
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
@@ -2234,6 +2236,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @param key
    * @param min
    * @param max
+   * @param offset
+   * @param count
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
@@ -2325,6 +2329,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
    * and M the number of elements removed by the operation
+   * @param key
+   * @param start
+   * @param stop
+   * @return 
    */
   @Override
   public Long zremrangeByRank(final String key, final long start, final long stop) {
@@ -3451,14 +3459,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void close() {
     if (dataSource != null) {
-      if (client.isBroken()) {
-        this.dataSource.returnBrokenResource(this);
-      } else {
-        this.dataSource.returnResource(this);
-      }
+      JedisPoolAbstract pool = this.dataSource;
       this.dataSource = null;
+      if (client.isBroken()) {
+        pool.returnBrokenResource(this);
+      } else {
+        pool.returnResource(this);
+      }
     } else {
-      client.close();
+      super.close();
     }
   }
 

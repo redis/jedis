@@ -138,7 +138,7 @@ public abstract class JedisClusterCommand<T> {
 
       return runWithRetries(slot, attempts - 1, tryRandomNode, asking);
     } catch (JedisRedirectionException jre) {
-      LOG.warning("should request to : " + jre.getTargetNode());
+      LOG.fine("should request to : " + jre.getTargetNode());
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
         // it rebuilds cluster's slot cache

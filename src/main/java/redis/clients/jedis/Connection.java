@@ -270,13 +270,18 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
+  /**
+   * This method is used by JedisPubSub::process and must not interact
+   * with the Connection outputStream in order to prevent protocol
+   * desynchronization.
+   */
   @SuppressWarnings("unchecked")
   public List<Object> getRawObjectMultiBulkReply() {
-    flush();
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
+    flush();
     return getRawObjectMultiBulkReply();
   }
 

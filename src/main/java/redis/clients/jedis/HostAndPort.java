@@ -102,10 +102,10 @@ public class HostAndPort implements Serializable {
          * at the beginning of processing and then not used again.  So even if the DNS
          * lookup needs to be done then the cost is miniscule.
          */
-      InetAddress inetAddress = InetAddress.getByName(host);
+      InetAddress.getByName(host);
 
       // isLoopbackAddress() handles both IPV4 and IPV6
-      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254"))
+      if (host.equals("0.0.0.0") || host.startsWith("169.254"))
         return getLocalhost();
       else
         return host;

@@ -1,13 +1,11 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Test;
-
-import java.util.Arrays;
-
-import redis.clients.jedis.HostAndPort;
-
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import redis.clients.jedis.HostAndPort;
 
 public class HostAndPortTest {
   @Test
@@ -52,6 +50,10 @@ public class HostAndPortTest {
   @Test
   public void checkConvertHost() {
     String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e";
+    assertEquals(host, HostAndPort.convertHost(host));
+    host = "127.0.0.1";
+    assertEquals(host, HostAndPort.convertHost(host));
+    host = "localhost";
     assertEquals(host, HostAndPort.convertHost(host));
   }
 }

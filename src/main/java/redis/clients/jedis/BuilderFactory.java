@@ -474,7 +474,7 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<StreamEntryID> ENTRY_ID = new Builder<StreamEntryID>() {
+  public static final Builder<StreamEntryID> STREAM_ENTRY_ID = new Builder<StreamEntryID>() {
     @Override
     @SuppressWarnings("unchecked")
     public  StreamEntryID build(Object data) {

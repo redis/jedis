@@ -1803,7 +1803,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen){
     getClient(key).xadd(key, id, hash, maxLen, exactMaxLen);
-    return getResponse(BuilderFactory.ENTRY_ID);    
+    return getResponse(BuilderFactory.STREAM_ENTRY_ID);    
   }
   
 
@@ -1910,7 +1910,6 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).xgroupDelConsumer(key, groupname, consumername);
     return getResponse(BuilderFactory.STRING);    
   }
-
 
   @Override
   public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername){

@@ -527,7 +527,7 @@ public final class BuilderFactory {
     }
   };
   
-  public static final Builder<List<StreamPendingEntry>> PENDING_ENTRY_LIST = new Builder<List<StreamPendingEntry>>() {
+  public static final Builder<List<StreamPendingEntry>> STREAM_PENDING_ENTRY_LIST = new Builder<List<StreamPendingEntry>>() {
     @Override
     @SuppressWarnings("unchecked")
     public  List<StreamPendingEntry> build(Object data) {

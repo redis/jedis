@@ -3800,7 +3800,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     // TODO handle consumername == NULL case
     
-    return BuilderFactory.PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override

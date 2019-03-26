@@ -335,7 +335,7 @@ release:
 	make stop
 
 travis-install:
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
+	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch 5.0 --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git -j4
 

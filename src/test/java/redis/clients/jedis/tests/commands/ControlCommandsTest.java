@@ -5,6 +5,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -138,40 +144,48 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void clientPause() throws InterruptedException {
-    assertEquals("PONG", jedis.ping());
-    jedis.clientPause(600);
+  public void clientPause() throws InterruptedException, ExecutionException {
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
     try {
-      jedis.ping();
-    } catch (Exception e) {
-      assertEquals("java.net.SocketTimeoutException: Read timed out", e.getMessage());
-    }
-    Thread.sleep(100);
-    assertEquals("PONG", jedis.ping());
+      final Jedis jedisToPause1 = createJedis();
+      final Jedis jedisToPause2 = createJedis();
 
-    Jedis jedis1 = createJedis();
-    Jedis jedis2 = createJedis();
-    assertEquals("PONG", jedis1.ping());
-    assertEquals("PONG", jedis2.ping());
-    jedis.clientPause(1200);
-    try {
-      jedis1.ping();
-    } catch (Exception e) {
-      assertEquals("java.net.SocketTimeoutException: Read timed out", e.getMessage());
-    }
-    try {
-      jedis2.ping();
-    } catch (Exception e) {
-      assertEquals("java.net.SocketTimeoutException: Read timed out", e.getMessage());
-    }
-    Thread.sleep(200);
-    assertEquals("PONG", jedis1.ping());
-    assertEquals("PONG", jedis2.ping());
+      int pauseMillis = 1250;
+      jedis.clientPause(pauseMillis);
 
-    jedis1.close();
-    jedis2.close();
+      Future<Long> latency1 = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          assertEquals("PONG", jedisToPause1.ping());
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+      Future<Long> latency2 = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          assertEquals("PONG", jedisToPause2.ping());
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+
+      long latencyMillis1 = latency1.get();
+      long latencyMillis2 = latency2.get();
+
+      int pauseMillisDelta = 100;
+      assertTrue(pauseMillis <= latencyMillis1 && latencyMillis1 <= pauseMillis + pauseMillisDelta);
+      assertTrue(pauseMillis <= latencyMillis2 && latencyMillis2 <= pauseMillis + pauseMillisDelta);
+
+      jedisToPause1.close();
+      jedisToPause2.close();
+    } finally {
+      executorService.shutdown();
+      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+        executorService.shutdownNow();
+      }
+    }
   }
-
 
   @Test
   public void memoryDoctorString() {
@@ -184,6 +198,4 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     byte[] memoryInfo = jedis.memoryDoctorBinary();
     assertNotNull(memoryInfo);
   }
-
-
 }

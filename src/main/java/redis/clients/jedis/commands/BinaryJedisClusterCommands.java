@@ -311,6 +311,7 @@ public interface BinaryJedisClusterCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
+   * @return 
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
   
@@ -318,6 +319,7 @@ public interface BinaryJedisClusterCommands {
    * Used for HSTRLEN Redis command
    * @param key 
    * @param field
+   * @return 
    */
   Long hstrlen(byte[] key, byte[] field);
 

@@ -1,6 +1,7 @@
 [![GitHub issues](https://img.shields.io/github/release/xetorthio/jedis.svg)](https://github.com/xetorthio/jedis/releases/latest)
 [![Build Status](https://travis-ci.org/xetorthio/jedis.png?branch=master)](https://travis-ci.org/xetorthio/jedis)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
+[![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 
 # Jedis
@@ -55,7 +56,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>2.10.0</version>
+    <version>3.0.1</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -65,7 +66,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.0.0</version>
+    <version>2.10.2</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -88,7 +89,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.0.1-SNAPSHOT</version>
+      <version>3.1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```

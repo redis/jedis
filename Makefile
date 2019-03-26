@@ -17,6 +17,7 @@ define REDIS2_CONF
 daemonize yes
 protected-mode no
 port 6380
+requirepass foobared
 pidfile /tmp/redis2.pid
 logfile /tmp/redis2.log
 save ""
@@ -84,6 +85,16 @@ logfile /tmp/redis7.log
 save ""
 appendonly no
 slaveof localhost 6384
+endef
+
+define REDIS_NOAUTH1_CONF
+daemonize yes
+protected-mode no
+port 6600
+pidfile /tmp/noauth1.pid
+logfile /tmp/noauth1.log
+save ""
+appendonly no
 endef
 
 # SENTINELS

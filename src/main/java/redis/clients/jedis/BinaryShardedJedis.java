@@ -957,9 +957,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen) {
+  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
-    return j.xadd(key, id, hash, maxLen, exactMaxLen);
+    return j.xadd(key, id, hash, maxLen, approximateLength);
   }
 
   @Override
@@ -1017,9 +1017,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long xtrim(byte[] key, long maxLen, boolean exactMaxLen) {
+  public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
-    return j.xtrim(key, maxLen, exactMaxLen);
+    return j.xtrim(key, maxLen, approximateLength);
   }
 
   @Override

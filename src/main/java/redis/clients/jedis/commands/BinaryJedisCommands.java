@@ -330,7 +330,7 @@ public interface BinaryJedisCommands {
   Long hstrlen(byte[] key, byte[] field);
   
   
-  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen);
+  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(final byte[] key);
  
@@ -350,7 +350,7 @@ public interface BinaryJedisCommands {
  
   Long xdel(final byte[] key, final byte[]... ids);
 
-  Long xtrim(byte[] key, long maxLen, boolean exactMaxLen);
+  Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
   List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 

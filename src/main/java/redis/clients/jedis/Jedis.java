@@ -3648,13 +3648,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
-    return xadd(key, id, hash, Long.MAX_VALUE, true);
+    return xadd(key, id, hash, Long.MAX_VALUE, false);
   }
   
   @Override
-  public StreamEntryID xadd(final String key, StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean exactMaxLen) {
+  public StreamEntryID xadd(final String key, StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
-    client.xadd(key, id, hash, maxLen, exactMaxLen);
+    client.xadd(key, id, hash, maxLen, approximateLength);
     String result = client.getBulkReply();
     return new StreamEntryID(result);
   }
@@ -3762,9 +3762,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xtrim(final String key, final long maxLen, final boolean exactMaxLen) {
+  public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
-    client.xtrim(key, maxLen, exactMaxLen);
+    client.xtrim(key, maxLen, approximateLength);
     return client.getIntegerReply();
   }
 

@@ -358,10 +358,10 @@ public interface JedisCommands {
    * @param id
    * @param hash
    * @param maxLen
-   * @param exactMaxLen
+   * @param approximateLength
    * @return
    */
-  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
   
   /**
    * XLEN key
@@ -467,10 +467,10 @@ public interface JedisCommands {
    * XTRIM key MAXLEN [~] count
    * @param key
    * @param maxLen
-   * @param exactMaxLen
+   * @param approximate
    * @return
    */
-  long xtrim( String key, long maxLen, boolean exactMaxLen);
+  long xtrim( String key, long maxLen, boolean approximate);
  
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>

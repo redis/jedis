@@ -1262,13 +1262,13 @@ public class BinaryClient extends Connection {
     sendCommand(HSTRLEN, key, field);
   }
   
-  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen) {
+  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
       int maxLexArgs = 0;
       if(maxLen < Long.MAX_VALUE) { // optional arguments
-        if(exactMaxLen) {
-          maxLexArgs = 2; // e.g. MAXLEN 1000 
+        if(approximateLength) {
+          maxLexArgs = 3; // e.g. MAXLEN ~ 1000 
         } else {
-          maxLexArgs = 3; // e.g. MAXLEN ~ 1000
+          maxLexArgs = 2; // e.g. MAXLEN 1000
         }
       }
     
@@ -1277,7 +1277,7 @@ public class BinaryClient extends Connection {
 	  params[index++] = key;
 	  if(maxLen < Long.MAX_VALUE) {
 	    params[index++] = Keyword.MAXLEN.raw;
-	    if(!exactMaxLen) {
+	    if(approximateLength) {
 	      params[index++] = Protocol.BYTES_TILDE;
 	    }
 	    params[index++] = toByteArray(maxLen);
@@ -1366,11 +1366,11 @@ public class BinaryClient extends Connection {
     sendCommand(XDEL, params);
   }
   
-  public void xtrim(byte[] key, long maxLen, boolean exactMaxLen) {
-    if(exactMaxLen) {
-      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, toByteArray(maxLen));  
+  public void xtrim(byte[] key, long maxLen, boolean approximateLength) {
+    if(approximateLength) {
+      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, Protocol.BYTES_TILDE ,toByteArray(maxLen));
     } else {
-      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, Protocol.BYTES_TILDE ,toByteArray(maxLen));  
+      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, toByteArray(maxLen));
     }
   }
   

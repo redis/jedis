@@ -2032,11 +2032,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean exactMaxLen) {
+  public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
     return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
       @Override
       public StreamEntryID execute(Jedis connection) {
-        return connection.xadd(key, id, hash, maxLen, exactMaxLen);
+        return connection.xadd(key, id, hash, maxLen, approximateLength);
       }
     }.run(key);
   }
@@ -2175,11 +2175,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xtrim(final  String key, final long maxLen, final boolean exactMaxLen) {
+  public Long xtrim(final  String key, final long maxLen, final boolean approximateLength) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.xtrim(key, maxLen, exactMaxLen);
+        return connection.xtrim(key, maxLen, approximateLength);
       }
     }.run(key);
   }

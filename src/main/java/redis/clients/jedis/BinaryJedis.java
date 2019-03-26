@@ -3938,9 +3938,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen) {
+  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
     checkIsInMultiOrPipeline();
-    client.xadd(key, id, hash, maxLen, exactMaxLen);
+    client.xadd(key, id, hash, maxLen, approximateLength);
     return client.getBinaryBulkReply();  
   }
 
@@ -4008,9 +4008,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long xtrim(byte[] key, long maxLen, boolean exactMaxLen) {
+  public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
     checkIsInMultiOrPipeline();
-    client.xtrim(key, maxLen, exactMaxLen);
+    client.xtrim(key, maxLen, approximateLength);
     return client.getIntegerReply();
   }
 

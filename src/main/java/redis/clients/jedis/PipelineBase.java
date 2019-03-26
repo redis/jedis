@@ -1801,15 +1801,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
 
 
   @Override
-  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen){
-    getClient(key).xadd(key, id, hash, maxLen, exactMaxLen);
+  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength){
+    getClient(key).xadd(key, id, hash, maxLen, approximateLength);
     return getResponse(BuilderFactory.STREAM_ENTRY_ID);    
   }
   
 
   @Override
-  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen){
-    getClient(key).xadd(key, id, hash, maxLen, exactMaxLen);
+  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength){
+    getClient(key).xadd(key, id, hash, maxLen, approximateLength);
     return getResponse(BuilderFactory.BYTE_ARRAY);        
   }
 
@@ -1937,14 +1937,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<Long> xtrim( String key, long maxLen, boolean exactMaxLen){
-    getClient(key).xtrim(key, maxLen, exactMaxLen);
+  public Response<Long> xtrim( String key, long maxLen, boolean approximateLength){
+    getClient(key).xtrim(key, maxLen, approximateLength);
     return getResponse(BuilderFactory.LONG);        
   }
   
   @Override
-  public Response<Long> xtrim(byte[] key, long maxLen, boolean exactMaxLen){
-    getClient(key).xtrim(key, maxLen, exactMaxLen);
+  public Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength){
+    getClient(key).xtrim(key, maxLen, approximateLength);
     return getResponse(BuilderFactory.LONG);            
   }
  

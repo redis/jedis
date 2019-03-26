@@ -336,10 +336,10 @@ public interface JedisClusterCommands {
    * @param id
    * @param hash
    * @param maxLen
-   * @param exactMaxLen
+   * @param approximateLength
    * @return
    */
-  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
   
   /**
    * XLEN key
@@ -467,10 +467,10 @@ public interface JedisClusterCommands {
    * XTRIM key MAXLEN [~] count
    * @param key
    * @param maxLen
-   * @param exactMaxLen
+   * @param approximateLength
    * @return
    */
-  Long xtrim( String key, long maxLen, boolean exactMaxLen);
+  Long xtrim( String key, long maxLen, boolean approximateLength);
  
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>

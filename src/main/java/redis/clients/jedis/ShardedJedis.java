@@ -974,9 +974,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
   
   @Override
-  public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen) {
+  public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
-    return j.xadd(key, id, hash, maxLen, exactMaxLen);
+    return j.xadd(key, id, hash, maxLen, approximateLength);
   }
 
   @Override
@@ -1029,9 +1029,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public long xtrim(String key, long maxLen, boolean exactMaxLen) {
+  public long xtrim(String key, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
-    return j.xtrim(key, maxLen, exactMaxLen);
+    return j.xtrim(key, maxLen, approximateLength);
   }
 
   @Override

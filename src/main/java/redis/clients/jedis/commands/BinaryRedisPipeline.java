@@ -307,7 +307,7 @@ public interface BinaryRedisPipeline {
   
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
 
-  Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean exactMaxLen);
+  Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
   
   Response<Long> xlen(byte[] key);
 
@@ -329,7 +329,7 @@ public interface BinaryRedisPipeline {
   
   Response<Long> xdel(byte[] key, byte[]... ids);
   
-  Response<Long> xtrim(byte[] key, long maxLen, boolean exactMaxLen);
+  Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
  
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, byte[]... ids);

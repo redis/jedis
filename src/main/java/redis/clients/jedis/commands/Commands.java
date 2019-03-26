@@ -359,7 +359,7 @@ public interface Commands {
 
   void clientSetname(String name);
 
-  void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean exactMaxLen);
+  void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
   
   void xlen(String key);
 
@@ -381,7 +381,7 @@ public interface Commands {
 
   void xdel(String key, StreamEntryID... ids);
 
-  void xtrim(String key, long maxLen, boolean exactMaxLen);
+  void xtrim(String key, long maxLen, boolean approximateLength);
 
   void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
 

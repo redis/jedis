@@ -474,6 +474,87 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<StreamEntryID> STREAM_ENTRY_ID = new Builder<StreamEntryID>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  StreamEntryID build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return new StreamEntryID((String)data);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamEntryID";
+    }
+  };
+  
+
+  public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<StreamEntry> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
+
+      List<StreamEntry> responses = new ArrayList<>(objectList.size()/2);
+      if (objectList.isEmpty()) {
+        return responses;
+      }
+
+      for(ArrayList<Object> res : objectList) {
+        String entryIdString = SafeEncoder.encode((byte[])res.get(0));
+        StreamEntryID entryID = new StreamEntryID(entryIdString);
+        List<byte[]> hash = (List<byte[]>)res.get(1);
+        
+        Iterator<byte[]> hashIterator = hash.iterator();
+        Map<String, String> map = new HashMap<>(hash.size()/2);
+        while(hashIterator.hasNext()) {
+          map.put(SafeEncoder.encode((byte[])hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
+        }
+        responses.add(new StreamEntry(entryID, map));
+      }
+
+      return responses;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamEntry>";
+    }
+  };
+  
+  public static final Builder<List<StreamPendingEntry>> STREAM_PENDING_ENTRY_LIST = new Builder<List<StreamPendingEntry>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<StreamPendingEntry> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      
+      List<Object> streamsEntries = (List<Object>)data;
+      List<StreamPendingEntry> result = new ArrayList<>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String id = SafeEncoder.encode((byte[])stream.get(0));
+        String consumerName = SafeEncoder.encode((byte[])stream.get(1));
+        long idleTime = BuilderFactory.LONG.build(stream.get(2));      
+        long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
+        result.add(new StreamPendingEntry(new StreamEntryID(id), consumerName, idleTime, deliveredTimes));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamPendingEntry>";
+    }
+  };
+
+
 
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );

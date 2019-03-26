@@ -242,7 +242,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     String status2 = jedis.xgroupCreate("xreadGroup-stream2", "xreadGroup-group", null, false);
    
     // Read only a single Stream
-    Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xreadGroup-stream1", range.get(0).getValue().get(0).getID());
+    Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
     List<Entry<String, List<StreamEntry>>> streams1 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, true, streamQeury11); 
     assertEquals(1, streams1.size());
     assertEquals(1, streams1.get(0).getValue().size());

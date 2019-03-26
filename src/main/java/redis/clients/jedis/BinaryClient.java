@@ -1023,6 +1023,10 @@ public class BinaryClient extends Connection {
     sendCommand(SRANDMEMBER, key, toByteArray(count));
   }
 
+  public void memoryDoctor() {
+    sendCommand(MEMORY, Keyword.DOCTOR.raw);
+  }
+
   public void clientKill(final byte[] ipPort) {
     sendCommand(CLIENT, Keyword.KILL.raw, ipPort);
   }

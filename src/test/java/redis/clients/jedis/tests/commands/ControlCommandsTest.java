@@ -172,4 +172,18 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     jedis2.close();
   }
 
+
+  @Test
+  public void memoryDoctorString() {
+    String memoryInfo = jedis.memoryDoctor();
+    assertNotNull(memoryInfo);
+  }
+
+  @Test
+  public void memoryDoctorBinary() {
+    byte[] memoryInfo = jedis.memoryDoctorBinary();
+    assertNotNull(memoryInfo);
+  }
+
+
 }

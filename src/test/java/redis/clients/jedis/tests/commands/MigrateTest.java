@@ -46,7 +46,7 @@ public class MigrateTest extends JedisCommandTestBase {
 
     dest.select(destDB);
     pass = dest.configGet("requirepass").get(1);
-    dest.configSet("requirepass", "");
+    dest.configSet("requirepass", null);
   }
 
   @After
@@ -59,7 +59,6 @@ public class MigrateTest extends JedisCommandTestBase {
 
   @Test
   public void nokey() {
-    assertEquals("", dest.configGet("requirepass").get(1));
     assertEquals("NOKEY", jedis.migrate(host, port, "foo", destDB, timeout));
     assertEquals("NOKEY", jedis.migrate(host, port, bfoo, destDB, timeout));
     assertEquals("NOKEY", jedis.migrate(host, port, destDB, timeout, new MigrateParams(), "foo1", "foo2", "foo3"));

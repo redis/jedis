@@ -270,14 +270,19 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
-  @SuppressWarnings("unchecked")
+  @Deprecated
   public List<Object> getRawObjectMultiBulkReply() {
-    flush();
+    return getUnflushedObjectMultiBulkReply();
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<Object> getUnflushedObjectMultiBulkReply() {
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
-    return getRawObjectMultiBulkReply();
+    flush();
+    return getUnflushedObjectMultiBulkReply();
   }
 
   @SuppressWarnings("unchecked")

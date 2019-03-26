@@ -46,7 +46,7 @@ public class MigrateTest extends JedisCommandTestBase {
 
     dest.select(destDB);
     pass = dest.configGet("requirepass").get(1);
-    dest.configSet("requirepass", null);
+    dest.configSet("requirepass", "");
   }
 
   @After

@@ -17,7 +17,6 @@ define REDIS2_CONF
 daemonize yes
 protected-mode no
 port 6380
-requirepass foobared
 pidfile /tmp/redis2.pid
 logfile /tmp/redis2.log
 save ""

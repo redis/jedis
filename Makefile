@@ -87,16 +87,6 @@ appendonly no
 slaveof localhost 6384
 endef
 
-define REDIS_NOAUTH1_CONF
-daemonize yes
-protected-mode no
-port 6600
-pidfile /tmp/noauth1.pid
-logfile /tmp/noauth1.log
-save ""
-appendonly no
-endef
-
 # SENTINELS
 define REDIS_SENTINEL1
 port 26379

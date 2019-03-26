@@ -3654,4 +3654,170 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
+    return xadd(key, id, hash, Long.MAX_VALUE, false);
+  }
+  
+  @Override
+  public StreamEntryID xadd(final String key, StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
+    checkIsInMultiOrPipeline();
+    client.xadd(key, id, hash, maxLen, approximateLength);
+    String result = client.getBulkReply();
+    return new StreamEntryID(result);
+  }
+
+  @Override
+  public Long xlen(final String key) {
+    checkIsInMultiOrPipeline();
+    client.xlen(key);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end, final int count) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+  
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end, final StreamEntryID start, final int count) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(count, block, streams);
+    client.setTimeoutInfinite();
+    
+    try {
+      List<Object> streamsEntries = client.getObjectMultiBulkReply();
+      if(streamsEntries == null) {
+        return new ArrayList<>();
+      }
+      
+      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String streamId = SafeEncoder.encode((byte[])stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+      }
+      
+      return result;
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public long xack(final String key, final String group, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xack(key, group, ids);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public String xgroupCreate(final String key, final String groupname, final StreamEntryID id, final boolean makeStream) {
+    checkIsInMultiOrPipeline();
+    client.xgroupCreate(key, groupname, id, makeStream);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String xgroupSetID(final String key, final String groupname, final StreamEntryID id) {
+    checkIsInMultiOrPipeline();
+    client.xgroupSetID(key, groupname, id);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public long xgroupDestroy(final String key, final String groupname) {
+    checkIsInMultiOrPipeline();
+    client.xgroupDestroy(key, groupname);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public String xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
+    checkIsInMultiOrPipeline();
+    client.xgroupDelConsumer(key, groupname, consumerName);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public long xdel(final String key, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xdel(key, ids);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, maxLen, approximateLength);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
+      final boolean noAck, final Entry<String, StreamEntryID>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+
+    List<Object> streamsEntries = client.getObjectMultiBulkReply();
+    if(streamsEntries == null) {
+      return null;
+    }
+    
+    List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
+    for(Object streamObj : streamsEntries) {
+      List<Object> stream = (List<Object>)streamObj;
+      String streamId = SafeEncoder.encode((byte[])stream.get(0));
+      List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+      result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+    }
+    return result;
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(final String key, final String groupname, final StreamEntryID start, final StreamEntryID end,
+      final int count, final String consumername) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, start, end, count, consumername);
+
+    // TODO handle consumername == NULL case
+    
+    return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, StreamEntryID... ids) {
+    
+    checkIsInMultiOrPipeline();
+    client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
 }

@@ -822,13 +822,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
           break;
         }
       }
-
-      if (broken) {
-        dataSource.returnBrokenResource(this);
-      } else {
-        dataSource.returnResource(this);
-      }
+      ShardedJedisPool pool = this.dataSource;
       this.dataSource = null;
+      if (broken) {
+        pool.returnBrokenResource(this);
+      } else {
+        pool.returnResource(this);
+      }
 
     } else {
       disconnect();

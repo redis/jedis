@@ -898,6 +898,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> zpopmax(final byte[] key) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.zpopmax(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> zpopmax(final byte[] key, final int count) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.zpopmax(key, count);
+      }
+    }.runBinary(key);
+  }
+  
+  @Override
   public Double zscore(final byte[] key, final byte[] member) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override

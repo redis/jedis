@@ -166,6 +166,10 @@ public interface RedisPipeline {
   Response<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
   Response<Long> zcard(String key);
+  
+  Response<List<String>> zpopmax(String key);
+  
+  Response<List<String>> zpopmax(String key, int count);
 
   Response<Long> zcount(String key, double min, double max);
 

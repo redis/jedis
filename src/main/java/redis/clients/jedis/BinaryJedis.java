@@ -1846,6 +1846,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> zpopmax(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.zpopmax(key);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> zpopmax(final byte[] key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.zpopmax(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
   public Set<Tuple> zpopmin(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key);

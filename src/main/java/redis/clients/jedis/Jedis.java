@@ -1677,6 +1677,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<String> zpopmax(final String key) {
+    checkIsInMultiOrPipeline();
+    client.zpopmax(key);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public List<String> zpopmax(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.zpopmax(key, count);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
   public Set<Tuple> zpopmin(final String key) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key);

@@ -184,6 +184,10 @@ public interface BinaryJedisCommands {
 
   Double zscore(byte[] key, byte[] member);
 
+  List<byte[]> zpopmax(byte[] key);
+
+  List<byte[]> zpopmax(byte[] key, int count);
+
   Set<Tuple> zpopmin(byte[] key);
 
   Set<Tuple> zpopmin(byte[] key, long count);

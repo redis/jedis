@@ -176,6 +176,10 @@ public interface BinaryJedisClusterCommands {
   Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
   Long zcard(byte[] key);
+  
+  List<byte[]> zpopmax(byte[] key);
+  
+  List<byte[]> zpopmax(byte[] key, int count);
 
   Double zscore(byte[] key, byte[] member);
 

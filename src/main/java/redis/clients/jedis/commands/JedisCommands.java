@@ -185,6 +185,10 @@ public interface JedisCommands {
 
   Long zcard(String key);
 
+  List<String> zpopmax(String key);
+  
+  List<String> zpopmax(String key, int count);
+  
   Double zscore(String key, String member);
 
   Set<Tuple> zpopmin(String key);

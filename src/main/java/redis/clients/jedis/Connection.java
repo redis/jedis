@@ -129,6 +129,7 @@ public class Connection implements Closeable {
     try {
       listener.commandStarted(this, cmd, args);
       connect();
+      listener.commandConnected(this, cmd);
       Protocol.sendCommand(outputStream, cmd, args);
       listener.commandFinished(this, cmd);
     } catch (JedisConnectionException ex) {

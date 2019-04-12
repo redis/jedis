@@ -26,6 +26,13 @@ public interface JedisCommandListener {
   void commandStarted(Connection connection, ProtocolCommand event, byte[]... args);
 
   /**
+   * Called after connection has been established to Redis, but before the command has executed
+   * @param connection the connection on which the command the executed
+   * @param event the executable command, see {@link Protocol.Command}
+   */
+  void commandConnected(Connection connection, ProtocolCommand event);
+
+  /**
    * Called for every successfully executed command
    *
    * @param connection the connection on which the command the executed

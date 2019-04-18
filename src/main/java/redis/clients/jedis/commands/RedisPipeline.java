@@ -1,12 +1,15 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -296,6 +299,35 @@ public interface RedisPipeline {
 
   Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
+  
+  Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash);
+
+  Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+  
+  Response<Long> xlen(String key);
+
+  Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+   
+  Response<Long> xack(String key, String group,  StreamEntryID... ids);
+  
+  Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
+  
+  Response<String> xgroupSetID( String key, String groupname, StreamEntryID id);
+  
+  Response<Long> xgroupDestroy( String key, String groupname);
+  
+  Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
+
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  
+  Response<Long> xdel( String key, StreamEntryID... ids);
+  
+  Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
+ 
+  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   Response<Long> bitpos(String key, boolean value);
 

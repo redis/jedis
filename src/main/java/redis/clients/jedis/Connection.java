@@ -270,14 +270,19 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
-  @SuppressWarnings("unchecked")
+  @Deprecated
   public List<Object> getRawObjectMultiBulkReply() {
-    flush();
+    return getUnflushedObjectMultiBulkReply();
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<Object> getUnflushedObjectMultiBulkReply() {
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
-    return getRawObjectMultiBulkReply();
+    flush();
+    return getUnflushedObjectMultiBulkReply();
   }
 
   @SuppressWarnings("unchecked")
@@ -305,6 +310,10 @@ public class Connection implements Closeable {
   }
 
   protected Object readProtocolWithCheckingBroken() {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to read from a broken connection");
+    }
+
     try {
       return Protocol.read(inputStream);
     } catch (JedisConnectionException exc) {

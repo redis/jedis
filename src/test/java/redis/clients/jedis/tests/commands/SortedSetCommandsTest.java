@@ -662,7 +662,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(expected, actual);
 
     // Second
-
     actual = jedis.zpopmax(bfoo, 1);
 
     expected.clear();

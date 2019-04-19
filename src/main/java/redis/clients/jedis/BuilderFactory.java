@@ -289,10 +289,10 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public Tuple build(Object data) {
-      if (null == data) {
+      List<byte[]> l = (List<byte[]>) data; // never null
+      if (l.isEmpty()) {
         return null;
       }
-      List<byte[]> l = (List<byte[]>) data;
       return new Tuple(l.get(0), DOUBLE.build(l.get(1)));
     }
 

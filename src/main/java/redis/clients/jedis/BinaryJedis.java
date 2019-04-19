@@ -1849,8 +1849,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Tuple zpopmax(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.zpopmax(key);
-    List<byte[]> l = client.getBinaryMultiBulkReply();
-    return l.isEmpty() ? null : new Tuple(l.get(0), BuilderFactory.DOUBLE.build(l.get(1)));
+    return BuilderFactory.TUPLE.build(client.getBinaryMultiBulkReply());
   }
 
   @Override

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -552,38 +551,29 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 10d, "b");
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "d");
-    
-    Tuple wrapper = jedis.zpopmax("foo");
-    String member = wrapper.getElement();
-    Double score = wrapper.getScore();
 
-    assertEquals("b", member);
-    assertEquals((Double) 10d, score);
-  
-    wrapper = jedis.zpopmax("foo");
-    member = wrapper.getElement();
-    score = wrapper.getScore();
+    Tuple actual = jedis.zpopmax("foo");
+    Tuple expected = new Tuple("b", 10d);
+    assertEquals(expected, actual);
+
+    actual = jedis.zpopmax("foo");
+    expected = new Tuple("d", 2d);
     
-    assertEquals("d", member);
-    assertEquals((Double) 2d, score);
+    assertEquals(expected, actual);
+
+    actual = jedis.zpopmax("foo");
+    expected = new Tuple("a", 1d);
     
-    wrapper = jedis.zpopmax("foo");
-    member = wrapper.getElement();
-    score = wrapper.getScore();
+    assertEquals(expected, actual);
     
-    assertEquals("a", member);
-    assertEquals((Double) 1d, score);
+    actual = jedis.zpopmax("foo");
+    expected = new Tuple("c", 0.1d);
     
-    wrapper = jedis.zpopmax("foo");
-    member = wrapper.getElement();
-    score = wrapper.getScore();
-    
-    assertEquals("c", member);
-    assertEquals((Double) 0.1d, score);
+    assertEquals(expected, actual);
     
     // Empty
-    wrapper = jedis.zpopmax("foo");
-    assertTrue(wrapper == null);
+    actual = jedis.zpopmax("foo");
+    assertNull(actual);
     
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -592,9 +582,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 2d, ba);
 
     // First
-    Tuple actual = jedis.zpopmax(bfoo);
-
-    Tuple expected = new Tuple(bb, 10d);
+    actual = jedis.zpopmax(bfoo);
+    expected = new Tuple(bb, 10d);
     
     assertEquals(expected, actual);
 
@@ -612,7 +601,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     
     // Empty
     actual = jedis.zpopmax(bfoo);
-    assertNull(actual);
+    expected = null;
+
+    assertEquals(expected, actual);
   }
 
   @Test
@@ -633,10 +624,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(expected, actual);
 
     actual = jedis.zpopmax("foo", 3);
-    assertEquals(3, actual.size()); // 3x [member, score]
+    assertEquals(3, actual.size());
     
     expected.clear();
-    
     expected.add(new Tuple("a", 1d));
     expected.add(new Tuple("c", 0.1d));
     expected.add(new Tuple("e", 0.03d));
@@ -669,8 +659,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     
     assertEquals(expected, actual);
     
-    assertEquals(expected, actual);
-    
     // Last 2 (just 1, because 1 was overwritten)
     actual = jedis.zpopmax(bfoo, 1);
 
@@ -681,8 +669,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     
     // Empty
     actual = jedis.zpopmax(bfoo, 1);
-    
     expected.clear();
+    
     assertEquals(expected, actual);
   }
   

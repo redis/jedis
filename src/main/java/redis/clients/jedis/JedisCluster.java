@@ -936,20 +936,20 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
   
   @Override
-  public List<String> zpopmax(final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+  public Tuple zpopmax(final String key) {
+    return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
       @Override
-      public List<String> execute(Jedis connection) {
+      public Tuple execute(Jedis connection) {
         return connection.zpopmax(key);
       }
     }.run(key);
   }
 
   @Override
-  public List<String> zpopmax(final String key, final int count) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+  public Set<Tuple> zpopmax(final String key, final int count) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
       @Override
-      public List<String> execute(Jedis connection) {
+      public Set<Tuple> execute(Jedis connection) {
         return connection.zpopmax(key, count);
       }
     }.run(key);

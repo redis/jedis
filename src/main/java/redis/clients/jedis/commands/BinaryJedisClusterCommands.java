@@ -177,9 +177,9 @@ public interface BinaryJedisClusterCommands {
 
   Long zcard(byte[] key);
   
-  List<byte[]> zpopmax(byte[] key);
+  Tuple zpopmax(byte[] key);
   
-  List<byte[]> zpopmax(byte[] key, int count);
+  Set<Tuple> zpopmax(byte[] key, int count);
 
   Double zscore(byte[] key, byte[] member);
 

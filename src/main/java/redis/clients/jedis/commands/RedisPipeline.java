@@ -167,9 +167,9 @@ public interface RedisPipeline {
 
   Response<Long> zcard(String key);
   
-  Response<List<String>> zpopmax(String key);
+  Response<Tuple> zpopmax(String key);
   
-  Response<List<String>> zpopmax(String key, int count);
+  Response<Set<Tuple>> zpopmax(String key, int count);
 
   Response<Long> zcount(String key, double min, double max);
 

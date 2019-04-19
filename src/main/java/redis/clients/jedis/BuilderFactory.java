@@ -285,6 +285,24 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<Tuple> TUPLE = new Builder<Tuple>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Tuple build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> l = (List<byte[]>) data;
+      return new Tuple(l.get(0), DOUBLE.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "Tuple";
+    }
+
+  };
+  
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
 
     @Override

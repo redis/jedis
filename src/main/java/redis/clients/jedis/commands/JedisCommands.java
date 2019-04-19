@@ -185,9 +185,9 @@ public interface JedisCommands {
 
   Long zcard(String key);
 
-  List<String> zpopmax(String key);
+  Tuple zpopmax(String key);
   
-  List<String> zpopmax(String key, int count);
+  Set<Tuple> zpopmax(String key, int count);
   
   Double zscore(String key, String member);
 

@@ -167,9 +167,9 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zcard(byte[] key);
   
-  Response<List<byte[]>> zpopmax(byte[] key);
+  Response<Tuple> zpopmax(byte[] key);
   
-  Response<List<byte[]>> zpopmax(byte[] key, int count);
+  Response<Set<Tuple>> zpopmax(byte[] key, int count);
 
   Response<Long> zcount(byte[] key, double min, double max);
 

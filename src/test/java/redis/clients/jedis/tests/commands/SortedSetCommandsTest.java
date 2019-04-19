@@ -553,37 +553,37 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "d");
     
-    List<String> wrapper = jedis.zpopmax("foo");
-    String member = wrapper.get(0);
-    Double score = Double.parseDouble(wrapper.get(1));
-    
+    Tuple wrapper = jedis.zpopmax("foo");
+    String member = wrapper.getElement();
+    Double score = wrapper.getScore();
+
     assertEquals("b", member);
     assertEquals((Double) 10d, score);
   
     wrapper = jedis.zpopmax("foo");
-    member = wrapper.get(0);
-    score = Double.parseDouble(wrapper.get(1));
+    member = wrapper.getElement();
+    score = wrapper.getScore();
     
     assertEquals("d", member);
     assertEquals((Double) 2d, score);
     
     wrapper = jedis.zpopmax("foo");
-    member = wrapper.get(0);
-    score = Double.parseDouble(wrapper.get(1));
+    member = wrapper.getElement();
+    score = wrapper.getScore();
     
     assertEquals("a", member);
     assertEquals((Double) 1d, score);
     
     wrapper = jedis.zpopmax("foo");
-    member = wrapper.get(0);
-    score = Double.parseDouble(wrapper.get(1));
+    member = wrapper.getElement();
+    score = wrapper.getScore();
     
     assertEquals("c", member);
     assertEquals((Double) 0.1d, score);
     
     // Empty
     wrapper = jedis.zpopmax("foo");
-    assertTrue(wrapper.isEmpty());
+    assertTrue(wrapper == null);
     
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -592,56 +592,27 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 2d, ba);
 
     // First
-    List<byte[]> bwrapper = jedis.zpopmax(bfoo);
-    byte[] bmember = bwrapper.get(0);
-    byte[] bscore = bwrapper.get(1);
-    
-    HashSet<byte[]> expected = new LinkedHashSet<byte[]>();
-    HashSet<byte[]> actual = new LinkedHashSet<byte[]>();
+    Tuple actual = jedis.zpopmax(bfoo);
 
-    expected.add(bb);
-    expected.add(SafeEncoder.encode("10"));
+    Tuple expected = new Tuple(bb, 10d);
     
-    actual.add(bmember);
-    actual.add(bscore);
-    
-    assertByteArraySetEquals(expected, actual);
+    assertEquals(expected, actual);
 
     // Second
-    bwrapper = jedis.zpopmax(bfoo);
-    bmember = bwrapper.get(0);
-    bscore = bwrapper.get(1);
+    actual = jedis.zpopmax(bfoo);
+    expected = new Tuple(ba, 2d);
     
-    expected.clear();
-    actual.clear();
-
-    expected.add(ba);
-    expected.add(SafeEncoder.encode("2"));
-    
-    actual.add(bmember);
-    actual.add(bscore);
-    
-    assertByteArraySetEquals(expected, actual);
+    assertEquals(expected, actual);
     
     // Third
-    bwrapper = jedis.zpopmax(bfoo);
-    bmember = bwrapper.get(0);
-    bscore = bwrapper.get(1);
+    actual = jedis.zpopmax(bfoo);
+    expected = new Tuple(bc, 0.1d);
     
-    expected.clear();
-    actual.clear();
-
-    expected.add(bc);
-    expected.add(SafeEncoder.encode("0.1"));
-    
-    actual.add(bmember);
-    actual.add(bscore);
-    
-    assertByteArraySetEquals(expected, actual);
+    assertEquals(expected, actual);
     
     // Empty
-    bwrapper = jedis.zpopmax(bfoo);
-    assertTrue(bwrapper.isEmpty());
+    actual = jedis.zpopmax(bfoo);
+    assertNull(actual);
   }
 
   @Test
@@ -652,94 +623,68 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 2d, "d");
     jedis.zadd("foo", 0.03, "e");
 
-    List<String> wrapper = jedis.zpopmax("foo", 2);
-    assertEquals(4, wrapper.size()); // 2x [member, score]
+    Set<Tuple> actual = jedis.zpopmax("foo", 2);
+    assertEquals(2, actual.size());
     
-    String member = wrapper.get(0);
-    Double score = Double.parseDouble(wrapper.get(1));
+    Set<Tuple> expected = new HashSet<Tuple>();
+    expected.add(new Tuple("b", 10d));
+    expected.add(new Tuple("d", 2d));
     
-    assertEquals("b", member);
-    assertEquals((Double) 10d, score);
-    
-    member = wrapper.get(2);
-    score = Double.parseDouble(wrapper.get(3));
-    
-    assertEquals("d", member);
-    assertEquals((Double) 2d, score);    
+    assertEquals(expected, actual);
 
-    wrapper = jedis.zpopmax("foo", 3);
-    assertEquals(6, wrapper.size()); // 3x [member, score]
+    actual = jedis.zpopmax("foo", 3);
+    assertEquals(3, actual.size()); // 3x [member, score]
     
-    member = wrapper.get(0);
-    score = Double.parseDouble(wrapper.get(1));
+    expected.clear();
     
-    assertEquals("a", member);
-    assertEquals((Double) 1d, score);
-
-    member = wrapper.get(2);
-    score = Double.parseDouble(wrapper.get(3));
+    expected.add(new Tuple("a", 1d));
+    expected.add(new Tuple("c", 0.1d));
+    expected.add(new Tuple("e", 0.03d));
     
-    assertEquals("c", member);
-    assertEquals((Double) 0.1d, score);
-
-    member = wrapper.get(4);
-    score = Double.parseDouble(wrapper.get(5));
-    
-    assertEquals("e", member);
-    assertEquals((Double) 0.03d, score);
+    assertEquals(expected, actual);
     
     // Empty
-    wrapper = jedis.zpopmax("foo");
-    assertTrue(wrapper.isEmpty());
+    actual = jedis.zpopmax("foo", 1);
+    assertTrue(actual.isEmpty());
     
-    // First 2
-    List<byte[]> bwrapper = jedis.zpopmax(bfoo, 2);
-    byte[] bmember = bwrapper.get(0);
-    byte[] bscore = bwrapper.get(1);
-    
-    HashSet<byte[]> expected = new LinkedHashSet<byte[]>();
-    HashSet<byte[]> actual = new LinkedHashSet<byte[]>();
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
 
     // First
-    expected.add(bb);
-    expected.add(SafeEncoder.encode("10"));
+    actual = jedis.zpopmax(bfoo, 1);
+
+    expected.clear();
+    expected.add(new Tuple(bb, 10d));
     
-    actual.add(bmember);
-    actual.add(bscore);
-    
-    assertByteArraySetEquals(expected, actual);
+    assertEquals(expected, actual);
 
     // Second
-    expected.clear();
-    actual.clear();
 
-    expected.add(ba);
-    expected.add(SafeEncoder.encode("2"));
+    actual = jedis.zpopmax(bfoo, 1);
+
+    expected.clear();
+    expected.add(new Tuple(ba, 2d));
     
-    actual.add(bmember);
-    actual.add(bscore);
+    assertEquals(expected, actual);
     
-    assertByteArraySetEquals(expected, actual);
+    assertEquals(expected, actual);
     
     // Last 2 (just 1, because 1 was overwritten)
-    bwrapper = jedis.zpopmax(bfoo, 2);
-    bmember = bwrapper.get(0);
-    bscore = bwrapper.get(1);
-    
-    expected.clear();
-    actual.clear();
+    actual = jedis.zpopmax(bfoo, 1);
 
-    expected.add(bc);
-    expected.add(SafeEncoder.encode("0.1"));
+    expected.clear();
+    expected.add(new Tuple(bc, 0.1d));
     
-    actual.add(bmember);
-    actual.add(bscore);
-    
-    assertByteArraySetEquals(expected, actual);
+    assertEquals(expected, actual);
     
     // Empty
-    bwrapper = jedis.zpopmax(bfoo);
-    assertTrue(bwrapper.isEmpty());
+    actual = jedis.zpopmax(bfoo, 1);
+    
+    expected.clear();
+    assertEquals(expected, actual);
   }
   
   @Test

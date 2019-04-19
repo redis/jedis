@@ -907,27 +907,27 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<List<String>> zpopmax(final String key) {
+  public Response<Tuple> zpopmax(final String key) {
     getClient(key).zpopmax(key);
-    return getResponse(BuilderFactory.STRING_LIST);
+    return getResponse(BuilderFactory.TUPLE);
   }
   
   @Override
-  public Response<List<byte[]>> zpopmax(final byte[] key) {
+  public Response<Tuple> zpopmax(final byte[] key) {
     getClient(key).zpopmax(key);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    return getResponse(BuilderFactory.TUPLE);
   }
 
   @Override
-  public Response<List<String>> zpopmax(final String key, final int count) {
+  public Response<Set<Tuple>> zpopmax(final String key, final int count) {
     getClient(key).zpopmax(key, count);
-    return getResponse(BuilderFactory.STRING_LIST);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
   }
   
   @Override
-  public Response<List<byte[]>> zpopmax(final byte[] key, final int count) {
+  public Response<Set<Tuple>> zpopmax(final byte[] key, final int count) {
     getClient(key).zpopmax(key, count);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
   }
   
   @Override

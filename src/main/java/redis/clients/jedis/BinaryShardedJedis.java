@@ -533,13 +533,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<byte[]> zpopmax(final byte[] key) {
+  public Tuple zpopmax(final byte[] key) {
     Jedis j = getShard(key);
     return j.zpopmax(key);
   }
 
   @Override
-  public List<byte[]> zpopmax(final byte[] key, final int count) {
+  public Set<Tuple> zpopmax(final byte[] key, final int count) {
     Jedis j = getShard(key);
     return j.zpopmax(key, count);
   }

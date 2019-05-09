@@ -5,15 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-<<<<<<< HEAD
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-=======
 import java.util.concurrent.ConcurrentHashMap;
->>>>>>> dd086515... the slots info refreshed by MOVED . not by cluster slots.
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -115,7 +110,7 @@ public class JedisClusterInfoCache {
     JedisPool existingPool = nodes.get(nodeKey);
     if (existingPool != null) return existingPool;
 
-    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort()
+    JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
             connectionTimeout, soTimeout, password, 0, clientName,
             ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     nodes.put(nodeKey, nodePool);

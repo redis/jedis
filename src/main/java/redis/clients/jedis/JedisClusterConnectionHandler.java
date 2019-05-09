@@ -70,14 +70,6 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     }
   }
 
-  public void renewSlotCache() {
-    cache.renewClusterSlots(null);
-  }
-
-  public void renewSlotCache(Jedis jedis) {
-    cache.renewClusterSlots(jedis);
-  }
-
   @Override
   public void close() {
     cache.reset();

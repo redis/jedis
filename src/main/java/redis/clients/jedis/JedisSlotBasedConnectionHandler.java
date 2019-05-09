@@ -8,10 +8,13 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 
 public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandler {
+  private static Logger LOGGER = LoggerFactory.getLogger(JedisSlotBasedConnectionHandler.class);
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       final GenericObjectPoolConfig poolConfig, int timeout) {
@@ -76,15 +79,10 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
       // It can't guaranteed to get valid connection because of node
       // assignment
       return connectionPool.getResource();
-    } else {
-      renewSlotCache(); //It's abnormal situation for cluster mode, that we have just nothing for slot, try to rediscover state
-      connectionPool = cache.getSlotPool(slot);
-      if (connectionPool != null) {
-        return connectionPool.getResource();
-      } else {
-        //no choice, fallback to new connection to random node
-        return getConnection();
-      }
+    }  else {
+      // the connectPool only may be null when the cache is initing or before that
+      LOGGER.info("get from slot:{} jedis pool is null,get a random node", slot);
+      return getConnection();
     }
   }
 }

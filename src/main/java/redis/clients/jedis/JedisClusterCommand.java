@@ -8,8 +8,12 @@ import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class JedisClusterCommand<T> {
+  private static Logger LOGGER = LoggerFactory.getLogger(JedisClusterCommand.class);
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
@@ -22,6 +26,9 @@ public abstract class JedisClusterCommand<T> {
   public abstract T execute(Jedis connection);
 
   public T run(String key) {
+    if (this.maxAttempts == 1) {
+      throw new JedisException("the maxAttempts must be set bigger than 1");
+    }
     return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
   }
 
@@ -96,6 +103,12 @@ public abstract class JedisClusterCommand<T> {
           connection.asking();
         }
       } else {
+        // the last retry should be randomnode
+        // so the maxAttempts must bigger than 1
+        // or one node may disappear forever
+        if (attempts == 1 && this.maxAttempts != 1) {
+          tryRandomNode = true;
+        }
         if (tryRandomNode) {
           connection = connectionHandler.getConnection();
         } else {
@@ -111,22 +124,18 @@ public abstract class JedisClusterCommand<T> {
       // release current connection before recursion
       releaseConnection(connection);
       connection = null;
-
-      if (attempts <= 1) {
-        //We need this because if node is not reachable anymore - we need to finally initiate slots
-        //renewing, or we can stuck with cluster state without one node in opposite case.
-        //But now if maxAttempts = [1 or 2] we will do it too often.
-        //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-        //if there were no successful responses from this node last few seconds
-        this.connectionHandler.renewSlotCache();
-      }
-
       return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
-        // it rebuilds cluster's slot cache recommended by Redis cluster specification
-        this.connectionHandler.renewSlotCache(connection);
+        // 1. maybe the node will be alive after a while
+        // 2. maybe the redis cluster rehash then the client update slots info by JedisMovedDataException
+        // 3. maybe the node is doing failover then the client update slots info by JedisMovedDataExceptio
+        // so the maxAttempts must be bigger than one
+        int directSlot = jre.getSlot();
+        HostAndPort hostAndPort = jre.getTargetNode();
+        this.connectionHandler.cache.assignSlotToNode(directSlot, hostAndPort);
+        LOGGER.info("the source slot {} has moved to slot {} host:{}", slot, directSlot, hostAndPort.toString());
       }
 
       // release current connection before recursion

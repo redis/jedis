@@ -4,6 +4,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisCommandListener;
 import redis.clients.jedis.Protocol.Command;
@@ -108,7 +111,7 @@ public class ConnectionTest {
   @Test
   public void notifiesListenerOnSuccessfulCommand() {
     TrackingCommandListener listener = new TrackingCommandListener();
-    this.client.setListener(listener);
+    this.client.addListener(listener);
     this.client.setHost("localhost");
     this.client.setPort(6379);
 
@@ -123,7 +126,7 @@ public class ConnectionTest {
   @Test
   public void notifiesListenerOnConnectionError() {
     TrackingCommandListener listener = new TrackingCommandListener();
-    this.client.setListener(listener);
+    this.client.addListener(listener);
     this.client.setHost("someunknownhost");
 
     try {
@@ -149,7 +152,7 @@ public class ConnectionTest {
 
     TrackingCommandListener listener = new TrackingCommandListener();
     this.client = new UnexpectedBrokenConnection();
-    this.client.setListener(listener);
+    this.client.addListener(listener);
 
     try {
       this.client.sendCommand(Command.PING);
@@ -161,6 +164,42 @@ public class ConnectionTest {
     assertTrue(listener.isCommandFailed());
     assertFalse(listener.isCommandConnected());
     assertFalse(listener.isCommandFinished());
+  }
+
+  @Test
+  public void supportsMultipleListeners() {
+    TrackingCommandListener listener1 = new TrackingCommandListener();
+    TrackingCommandListener listener2 = new TrackingCommandListener();
+    List<JedisCommandListener> listeners = new LinkedList<>();
+    listeners.add(listener1);
+    listeners.add(listener2);
+
+    this.client.setListeners(listeners);
+    this.client.setHost("localhost");
+    this.client.setPort(6379);
+
+    this.client.sendCommand(Command.PING);
+
+    assertTrue(listener1.isCommandStarted());
+    assertTrue(listener1.isCommandConnected());
+    assertTrue(listener1.isCommandFinished());
+    assertFalse(listener1.isCommandFailed());
+    assertTrue(listener2.isCommandStarted());
+    assertTrue(listener2.isCommandConnected());
+    assertTrue(listener2.isCommandFinished());
+    assertFalse(listener2.isCommandFailed());
+  }
+
+  @Test
+  public void interpretsNullListenerListAsEmptyList() {
+    try {
+      this.client.setListeners(null);
+      this.client.setHost("localhost");
+      this.client.setPort(6379);
+      this.client.sendCommand(Command.PING);
+    } catch (NullPointerException e) {
+      fail("A null listener list wasn't properly coerced to empty list.");
+    }
   }
 
   class TrackingCommandListener implements JedisCommandListener {

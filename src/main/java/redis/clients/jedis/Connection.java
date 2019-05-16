@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -37,7 +38,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
-  private JedisCommandListener listener = NoopJedisCommandListener.INSTANCE;
+  private List<JedisCommandListener> listeners = new LinkedList<>();
 
   public Connection() {
   }
@@ -88,8 +89,46 @@ public class Connection implements Closeable {
     this.soTimeout = soTimeout;
   }
 
-  public void setListener(JedisCommandListener listener) {
-    this.listener = listener;
+  public void setListeners(List<JedisCommandListener> listeners) {
+    if (listeners == null) {
+      if (!this.listeners.isEmpty()) { // No reason to re-create an already empty list
+        this.listeners = new LinkedList<>();
+      }
+    } else {
+      this.listeners = listeners;
+    }
+  }
+
+  public void addListener(JedisCommandListener listener) {
+    this.listeners.add(listener);
+  }
+
+  public  void removeListener(JedisCommandListener listener) {
+    this.listeners.remove(listener);
+  }
+
+  private void notifyCommandStarted(final ProtocolCommand cmd, final byte[]... args) {
+    for (JedisCommandListener listener : listeners) {
+      listener.commandStarted(this, cmd, args);
+    }
+  }
+
+  private void notifyCommandConnected(final ProtocolCommand cmd) {
+    for (JedisCommandListener listener : listeners) {
+      listener.commandConnected(this, cmd);
+    }
+  }
+
+  private void notifyCommandFinished(final ProtocolCommand cmd) {
+    for (JedisCommandListener listener : listeners) {
+      listener.commandFinished(this, cmd);
+    }
+  }
+
+  private void notifyCommandFailed(final ProtocolCommand cmd, Throwable t) {
+    for (JedisCommandListener listener : listeners) {
+      listener.commandFailed(this, cmd, t);
+    }
   }
 
   public void setTimeoutInfinite() {
@@ -127,11 +166,11 @@ public class Connection implements Closeable {
 
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
-      listener.commandStarted(this, cmd, args);
+      notifyCommandStarted(cmd, args);
       connect();
-      listener.commandConnected(this, cmd);
+      notifyCommandConnected(cmd);
       Protocol.sendCommand(outputStream, cmd, args);
-      listener.commandFinished(this, cmd);
+      notifyCommandFinished(cmd);
     } catch (JedisConnectionException ex) {
       /*
        * When client send request which formed by invalid protocol, Redis send back error message
@@ -151,10 +190,10 @@ public class Connection implements Closeable {
       }
       // Any other exceptions related to connection?
       broken = true;
-      listener.commandFailed(this, cmd, ex);
+      notifyCommandFailed(cmd, ex);
       throw ex;
     } catch (Throwable t) {
-      listener.commandFailed(this, cmd, t);
+      notifyCommandFailed(cmd, t);
       throw t;
     }
   }

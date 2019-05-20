@@ -174,7 +174,7 @@ public class ConnectionTest {
     listeners.add(listener1);
     listeners.add(listener2);
 
-    this.client.setListeners(listeners);
+    this.client.addListeners(listeners);
     this.client.setHost("localhost");
     this.client.setPort(6379);
 
@@ -193,13 +193,60 @@ public class ConnectionTest {
   @Test
   public void interpretsNullListenerListAsEmptyList() {
     try {
-      this.client.setListeners(null);
+      this.client.addListeners(null);
       this.client.setHost("localhost");
       this.client.setPort(6379);
       this.client.sendCommand(Command.PING);
     } catch (NullPointerException e) {
       fail("A null listener list wasn't properly coerced to empty list.");
     }
+  }
+
+  @Test
+  public void addingListenersDoesntRemovePreexistingOnes() {
+    TrackingCommandListener listener1 = new TrackingCommandListener();
+    TrackingCommandListener listener2 = new TrackingCommandListener();
+
+    this.client.addListener(listener1);
+    this.client.addListener(listener2);
+    this.client.setHost("localhost");
+    this.client.setPort(6379);
+
+    this.client.sendCommand(Command.PING);
+
+    assertTrue(listener1.isCommandStarted());
+    assertTrue(listener1.isCommandConnected());
+    assertTrue(listener1.isCommandFinished());
+    assertFalse(listener1.isCommandFailed());
+    assertTrue(listener2.isCommandStarted());
+    assertTrue(listener2.isCommandConnected());
+    assertTrue(listener2.isCommandFinished());
+    assertFalse(listener2.isCommandFailed());
+  }
+
+  @Test
+  public void batchAddingListenersDoesntRemovePreexistingOnes() {
+    TrackingCommandListener listener1 = new TrackingCommandListener();
+
+    TrackingCommandListener listener2 = new TrackingCommandListener();
+    List<JedisCommandListener> listeners = new LinkedList<>();
+    listeners.add(listener2);
+
+    this.client.addListener(listener1);
+    this.client.addListeners(listeners);
+    this.client.setHost("localhost");
+    this.client.setPort(6379);
+
+    this.client.sendCommand(Command.PING);
+
+    assertTrue(listener1.isCommandStarted());
+    assertTrue(listener1.isCommandConnected());
+    assertTrue(listener1.isCommandFinished());
+    assertFalse(listener1.isCommandFailed());
+    assertTrue(listener2.isCommandStarted());
+    assertTrue(listener2.isCommandConnected());
+    assertTrue(listener2.isCommandFinished());
+    assertFalse(listener2.isCommandFailed());
   }
 
   class TrackingCommandListener implements JedisCommandListener {

@@ -117,7 +117,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
-    client.setListeners(listeners);
+    client.addListeners(listeners);
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {

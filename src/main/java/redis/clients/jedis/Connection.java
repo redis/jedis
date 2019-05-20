@@ -38,7 +38,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
-  private List<JedisCommandListener> listeners = new LinkedList<>();
+  private final List<JedisCommandListener> listeners = new LinkedList<>();
 
   public Connection() {
   }
@@ -89,13 +89,11 @@ public class Connection implements Closeable {
     this.soTimeout = soTimeout;
   }
 
-  public void setListeners(List<JedisCommandListener> listeners) {
-    if (listeners == null) {
-      if (!this.listeners.isEmpty()) { // No reason to re-create an already empty list
-        this.listeners = new LinkedList<>();
+  public void addListeners(List<JedisCommandListener> listeners) {
+    if (listeners != null) {
+      for (JedisCommandListener listener : listeners) {
+        addListener(listener);
       }
-    } else {
-      this.listeners = listeners;
     }
   }
 

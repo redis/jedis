@@ -197,6 +197,10 @@ public interface Commands {
 
   void zscore(String key, String member);
 
+  void zpopmin(String key);
+
+  void zpopmin(String key, long count);
+
   void watch(String... keys);
 
   void sort(String key);

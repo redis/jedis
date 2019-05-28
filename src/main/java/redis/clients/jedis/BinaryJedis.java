@@ -1841,6 +1841,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return (score != null ? new Double(score) : null);
   }
 
+
+
+  @Override
+  public byte[] zpopmin(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.zpopmin(key);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public Set<byte[]> zpopmin(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zpopmin(key, count);
+    return SetFromList.of(client.getBinaryMultiBulkReply());
+  }
+
   public Transaction multi() {
     client.multi();
     client.getOne(); // expected OK

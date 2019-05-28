@@ -187,6 +187,10 @@ public interface JedisCommands {
 
   Double zscore(String key, String member);
 
+  String zpopmin(String key);
+
+  Set<String> zpopmin(String key, long count);
+
   List<String> sort(String key);
 
   List<String> sort(String key, SortingParams sortingParameters);

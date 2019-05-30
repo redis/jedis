@@ -467,12 +467,12 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void zpopmin(final String key) {
-    spop(SafeEncoder.encode(key));
+    zpopmin(SafeEncoder.encode(key));
   }
 
   @Override
   public void zpopmin(final String key, final long count) {
-    spop(SafeEncoder.encode(key), count);
+    zpopmin(SafeEncoder.encode(key), count);
   }
 
   @Override

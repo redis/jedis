@@ -1675,18 +1675,17 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
 
   @Override
-  public String zpopmin(final String key) {
+  public Set<Tuple> zpopmin(final String key) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key);
-    return client.getBulkReply();
+    return getTupledSet();
   }
 
   @Override
-  public Set<String> zpopmin(final String key, final long count) {
+  public Set<Tuple> zpopmin(final String key, final long count) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key, count);
-    final List<String> members = client.getMultiBulkReply();
-    return SetFromList.of(members);
+    return getTupledSet();
   }
 
   @Override

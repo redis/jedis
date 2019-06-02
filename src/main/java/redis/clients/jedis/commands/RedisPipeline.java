@@ -228,6 +228,14 @@ public interface RedisPipeline {
 
   Response<Double> zscore(String key, String member);
 
+  Response<Set<Tuple>> zpopmin(String key);
+
+  Response<Set<Tuple>> zpopmin(String key, long count);
+
+  Response<Set<Tuple>> zpopmax(String key);
+
+  Response<Set<Tuple>> zpopmax(String key, long count);
+
   Response<Long> zlexcount(String key, String min, String max);
 
   Response<Set<String>> zrangeByLex(String key, String min, String max);

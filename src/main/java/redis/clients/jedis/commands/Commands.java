@@ -201,10 +201,6 @@ public interface Commands {
 
   void zpopmin(String key, long count);
 
-  void zpopmax(String key);
-
-  void zpopmax(String key, long count);
-
   void watch(String... keys);
 
   void sort(String key);

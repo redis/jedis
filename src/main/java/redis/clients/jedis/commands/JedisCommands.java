@@ -191,10 +191,6 @@ public interface JedisCommands {
 
   Set<Tuple> zpopmin(String key, long count);
 
-  Set<Tuple> zpopmax(String key);
-
-  Set<Tuple> zpopmax(String key, long count);
-
   List<String> sort(String key);
 
   List<String> sort(String key, SortingParams sortingParameters);

@@ -183,10 +183,6 @@ public interface BinaryJedisClusterCommands {
 
   Set<Tuple> zpopmin(byte[] key, long count);
 
-  Set<Tuple> zpopmax(byte[] key);
-
-  Set<Tuple> zpopmax(byte[] key, long count);
-
   List<byte[]> sort(byte[] key);
 
   List<byte[]> sort(byte[] key, SortingParams sortingParameters);

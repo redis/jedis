@@ -511,14 +511,6 @@ public class BinaryClient extends Connection {
     sendCommand(ZPOPMIN, key, toByteArray(count));
   }
 
-  public void zpopmax(final byte[] key) {
-    sendCommand(ZPOPMAX, key);
-  }
-
-  public void zpopmax(final byte[] key, final long count) {
-    sendCommand(ZPOPMAX, key, toByteArray(count));
-  }
-
   public void multi() {
     sendCommand(MULTI);
     isInMulti = true;

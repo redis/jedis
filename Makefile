@@ -342,7 +342,7 @@ release:
 travis-install:
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git -j4
+	$(MAKE) -C redis-git
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

@@ -81,13 +81,14 @@ public class MigrateTest extends JedisCommandTestBase {
   @Test
   public void migrateMulti() {
     jedis.mset("foo1", "bar1", "foo2", "bar2", "foo3", "bar3");
-    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, new MigrateParams(), "foo1", "foo2", "foo3"));
+    MigrateParams params = MigrateParams.migrateParams().auth("");
+    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, params, "foo1", "foo2", "foo3"));
     assertEquals("bar1", dest.get("foo1"));
     assertEquals("bar2", dest.get("foo2"));
     assertEquals("bar3", dest.get("foo3"));
 
     jedis.mset(bfoo1, bbar1, bfoo2, bbar2, bfoo3, bbar3);
-    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3));
+    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, params, bfoo1, bfoo2, bfoo3));
     assertArrayEquals(bbar1, dest.get(bfoo1));
     assertArrayEquals(bbar2, dest.get(bfoo2));
     assertArrayEquals(bbar3, dest.get(bfoo3));

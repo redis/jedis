@@ -340,6 +340,8 @@ release:
 	make stop
 
 travis-install:
+	g++ --version
+	sudo apt-get install -y build-essential
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git

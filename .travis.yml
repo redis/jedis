@@ -1,12 +1,7 @@
 dist: xenial
 sudo: required
 language: java
-addons:
-  apt:
-    packages:
-      - openjdk-7-jdk
 jdk:
-  - openjdk7
   - oraclejdk8
 before_install:
     - wget -O stunnel.tar.gz ftp://ftp.stunnel.org/stunnel/archive/5.x/stunnel-5.29.tar.gz

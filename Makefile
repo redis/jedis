@@ -340,8 +340,12 @@ release:
 	make stop
 
 travis-install:
-	g++ --version
-	sudo apt-get install -y build-essential
+	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+	sudo apt-get -y update
+	sudo apt-get install -y gcc-8 g++-8
+	cd /usr/bin ;\
+	sudo ln -sf gcc-8 gcc ;\
+	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git

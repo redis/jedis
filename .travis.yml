@@ -1,6 +1,10 @@
 dist: xenial
 sudo: required
 language: java
+addons:
+  apt:
+    packages:
+      - openjdk-7-jdk
 jdk:
   - openjdk7
   - oraclejdk8

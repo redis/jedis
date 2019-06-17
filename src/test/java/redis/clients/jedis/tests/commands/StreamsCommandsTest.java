@@ -14,9 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Test;
-import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.StreamPendingEntry;
-import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.*;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -306,5 +304,41 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
     
     jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, pendingRange.get(0).getID());
-  }  
+  }
+
+  @Test
+  public void pipeline() {
+    Map<String,String> map = new HashMap<>();
+    map.put("a", "b");
+    Pipeline p = jedis.pipelined();
+    Response<StreamEntryID> id1 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<StreamEntryID> id2 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<List<StreamEntry>> results = p.xrange("stream1", null, null, 2);
+    p.sync();
+
+    List<StreamEntry> entries = results.get();
+    assertEquals(2, entries.size());
+    assertEquals(id1.get(), entries.get(0).getID());
+    assertEquals(map, entries.get(0).getFields());
+    assertEquals(id2.get(), entries.get(1).getID());
+    assertEquals(map, entries.get(1).getFields());
+  }
+
+  @Test
+  public void transaction() {
+    Map<String,String> map = new HashMap<>();
+    map.put("a", "b");
+    Transaction t = jedis.multi();
+    Response<StreamEntryID> id1 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<StreamEntryID> id2 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<List<StreamEntry>> results = t.xrange("stream1", null, null, 2);
+    t.exec();
+
+    List<StreamEntry> entries = results.get();
+    assertEquals(2, entries.size());
+    assertEquals(id1.get(), entries.get(0).getID());
+    assertEquals(map, entries.get(0).getFields());
+    assertEquals(id2.get(), entries.get(1).getID());
+    assertEquals(map, entries.get(1).getFields());
+  }
 }

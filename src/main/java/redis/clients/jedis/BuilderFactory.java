@@ -481,7 +481,8 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      return new StreamEntryID((String)data);
+      String id = SafeEncoder.encode((byte[])data);
+      return new StreamEntryID(id);
     }
 
     @Override

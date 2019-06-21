@@ -3823,9 +3823,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * return Set result.
    * @param <E>
    */
-  protected static class SetFromList<E> extends AbstractSet<E> implements Serializable {
+  protected static class SetFromList<E extends Serializable> extends AbstractSet<E> implements Serializable {
     private static final long serialVersionUID = -2850347066962734052L;
-    private final transient List<E> list;
+    private final List<E> list;
 
     private SetFromList(List<E> list) {
       if (list == null) {
@@ -3918,7 +3918,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       return list.retainAll(c);
     }
 
-    protected static <E> SetFromList<E> of(List<E> list) {
+    protected static <E extends Serializable> SetFromList<E> of(List<E> list) {
       return new SetFromList<>(list);
     }
   }

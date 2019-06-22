@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,11 +82,7 @@ public class SetFromListTest {
   @Test
   public void iteration() throws Exception {
 
-    List<String> list = new ArrayList<String>();
-
-    for (int i = 'a'; i <= 'z'; i++) {
-      list.add(String.valueOf((char) i));
-    }
+    List<String> list = a2z();
 
     Set<String> cut = setFromList(list);
 
@@ -99,15 +96,23 @@ public class SetFromListTest {
   @Test
   public void equals() throws Exception {
 
+    List<String> list = a2z();
+
+    Set<String> hashSet = new HashSet<String>(list);
+
+    Set<String> cut = setFromList(list);
+
+    assertEquals(hashSet, cut);
+  }
+
+  private List<String> a2z() {
     List<String> list = new ArrayList<String>();
 
     for (int i = 'a'; i <= 'z'; i++) {
       list.add(String.valueOf((char) i));
     }
 
-    Set<String> hashSet = new HashSet<String>(list);
-    Set<String> cut = setFromList(list);
-
-    assertEquals(hashSet, cut);
+    Collections.shuffle(list);
+    return list;
   }
 }

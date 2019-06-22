@@ -123,7 +123,7 @@ public class SetFromListTest {
   }
 
   @Test
-  public void seriliaze() throws Exception {
+  public void serialize() throws Exception {
 
     Set<String> set = setFromList(a2z());
 

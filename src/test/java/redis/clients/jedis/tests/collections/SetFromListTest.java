@@ -99,13 +99,14 @@ public class SetFromListTest {
   @Test
   public void equals() throws Exception {
 
-    Set<String> hashSet = new HashSet<String>();
+    List<String> list = new ArrayList<String>();
 
     for (int i = 'a'; i <= 'z'; i++) {
-      hashSet.add(String.valueOf((char) i));
+      list.add(String.valueOf((char) i));
     }
 
-    Set<String> cut = setFromList(new ArrayList<String>(hashSet));
+    Set<String> hashSet = new HashSet<String>(list);
+    Set<String> cut = setFromList(list);
 
     assertEquals(hashSet, cut);
   }

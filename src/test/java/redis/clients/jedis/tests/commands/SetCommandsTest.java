@@ -158,6 +158,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     members = jedis.spop("foo", 2);
     assertEquals(superSet, members);
 
+    assertNull(jedis);
     assertNull(jedis.spop("foo", 2));
 
     // Binary

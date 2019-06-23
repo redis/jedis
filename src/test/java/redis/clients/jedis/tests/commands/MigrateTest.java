@@ -100,13 +100,13 @@ public class MigrateTest extends JedisCommandTestBase {
   public void migrateReplace() {
     jedis.set("foo", "bar1");
     dest.set("foo", "bar2");
-    assertEquals("OK", jedis.migrate(host, port, db, timeout, new MigrateParams().copy().replace(), "foo"));
+    assertEquals("OK", jedis.migrate(host, port, db, timeout, new MigrateParams().replace(), "foo"));
     assertEquals("bar1", dest.get("foo"));
     assertNull(jedis.get("foo"));
 
     jedis.set(bfoo, bbar1);
     dest.set(bfoo, bbar2);
-    assertEquals("OK", jedis.migrate(host, port, db, timeout, new MigrateParams().copy().replace(), bfoo));
+    assertEquals("OK", jedis.migrate(host, port, db, timeout, new MigrateParams().replace(), bfoo));
     assertArrayEquals(bbar1, dest.get(bfoo));
     assertNull(jedis.get(bfoo));
   }

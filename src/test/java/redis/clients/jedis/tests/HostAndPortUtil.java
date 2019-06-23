@@ -23,6 +23,7 @@ public final class HostAndPortUtil {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 4));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 5));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 6));
+    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 7));
 
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));

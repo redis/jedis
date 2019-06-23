@@ -68,76 +68,75 @@ public class MigrateTest extends JedisCommandTestBase {
     assertEquals("NOKEY", jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), "foo1", "foo2", "foo3"));
     assertEquals("NOKEY", jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), bfoo1, bfoo2, bfoo3));
   }
-/*
+
   @Test
   public void migrate() {
     jedis.set("foo", "bar");
-    assertEquals("OK", jedis.migrate(host, portNoauth, "foo", destDB, timeout));
-    assertEquals("bar", dest.get("foo"));
+    assertEquals("OK", jedis.migrate(host, portNoauth, "foo", dbNoauth, timeout));
+    assertEquals("bar", destNoauth.get("foo"));
     assertNull(jedis.get("foo"));
 
     jedis.set(bfoo, bbar);
-    assertEquals("OK", jedis.migrate(host, portNoauth, bfoo, destDB, timeout));
-    assertArrayEquals(bbar, dest.get(bfoo));
+    assertEquals("OK", jedis.migrate(host, portNoauth, bfoo, dbNoauth, timeout));
+    assertArrayEquals(bbar, destNoauth.get(bfoo));
     assertNull(jedis.get(bfoo));
   }
 
   @Test
   public void migrateMulti() {
     jedis.mset("foo1", "bar1", "foo2", "bar2", "foo3", "bar3");
-    MigrateParams params = MigrateParams.migrateParams().auth("");
-    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, params, "foo1", "foo2", "foo3"));
-    assertEquals("bar1", dest.get("foo1"));
-    assertEquals("bar2", dest.get("foo2"));
-    assertEquals("bar3", dest.get("foo3"));
+    assertEquals("OK", jedis.migrate(host, portNoauth, dbNoauth, timeout, new MigrateParams(), "foo1", "foo2", "foo3"));
+    assertEquals("bar1", destNoauth.get("foo1"));
+    assertEquals("bar2", destNoauth.get("foo2"));
+    assertEquals("bar3", destNoauth.get("foo3"));
 
     jedis.mset(bfoo1, bbar1, bfoo2, bbar2, bfoo3, bbar3);
-    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, params, bfoo1, bfoo2, bfoo3));
-    assertArrayEquals(bbar1, dest.get(bfoo1));
-    assertArrayEquals(bbar2, dest.get(bfoo2));
-    assertArrayEquals(bbar3, dest.get(bfoo3));
+    assertEquals("OK", jedis.migrate(host, portNoauth, dbNoauth, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3));
+    assertArrayEquals(bbar1, destNoauth.get(bfoo1));
+    assertArrayEquals(bbar2, destNoauth.get(bfoo2));
+    assertArrayEquals(bbar3, destNoauth.get(bfoo3));
   }
 
   @Test
   public void migrateConflict() {
     jedis.mset("foo1", "bar1", "foo2", "bar2", "foo3", "bar3");
-    dest.set("foo2", "bar");
+    destNoauth.set("foo2", "bar");
     try {
-      jedis.migrate(host, port, destDB, timeout, new MigrateParams(), "foo1", "foo2", "foo3");
+      jedis.migrate(host, portNoauth, dbNoauth, timeout, new MigrateParams(), "foo1", "foo2", "foo3");
       fail("Should get BUSYKEY error");
     } catch(JedisDataException jde) {
       assertTrue(jde.getMessage().contains("BUSYKEY"));
     }
-    assertEquals("bar1", dest.get("foo1"));
-    assertEquals("bar", dest.get("foo2"));
-    assertEquals("bar3", dest.get("foo3"));
+    assertEquals("bar1", destNoauth.get("foo1"));
+    assertEquals("bar", destNoauth.get("foo2"));
+    assertEquals("bar3", destNoauth.get("foo3"));
 
     jedis.mset(bfoo1, bbar1, bfoo2, bbar2, bfoo3, bbar3);
-    dest.set(bfoo2, bbar);
+    destNoauth.set(bfoo2, bbar);
     try {
-      jedis.migrate(host, port, destDB, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3);
+      jedis.migrate(host, portNoauth, dbNoauth, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3);
       fail("Should get BUSYKEY error");
     } catch(JedisDataException jde) {
       assertTrue(jde.getMessage().contains("BUSYKEY"));
     }
-    assertArrayEquals(bbar1, dest.get(bfoo1));
-    assertArrayEquals(bbar, dest.get(bfoo2));
-    assertArrayEquals(bbar3, dest.get(bfoo3));
+    assertArrayEquals(bbar1, destNoauth.get(bfoo1));
+    assertArrayEquals(bbar, destNoauth.get(bfoo2));
+    assertArrayEquals(bbar3, destNoauth.get(bfoo3));
   }
 
   @Test
   public void migrateCopyReplace() {
     jedis.set("foo", "bar1");
-    dest.set("foo", "bar2");
-    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, new MigrateParams().copy().replace(), "foo"));
+    destNoauth.set("foo", "bar2");
+    assertEquals("OK", jedis.migrate(host, portNoauth, dbNoauth, timeout, new MigrateParams().copy().replace(), "foo"));
     assertEquals("bar1", jedis.get("foo"));
-    assertEquals("bar1", dest.get("foo"));
+    assertEquals("bar1", destNoauth.get("foo"));
 
     jedis.set(bfoo, bbar1);
-    dest.set(bfoo, bbar2);
-    assertEquals("OK", jedis.migrate(host, port, destDB, timeout, new MigrateParams().copy().replace(), bfoo));
+    destNoauth.set(bfoo, bbar2);
+    assertEquals("OK", jedis.migrate(host, portNoauth, dbNoauth, timeout, new MigrateParams().copy().replace(), bfoo));
     assertArrayEquals(bbar1, jedis.get(bfoo));
-    assertArrayEquals(bbar1, dest.get(bfoo));
+    assertArrayEquals(bbar1, destNoauth.get(bfoo));
   }
-*/
+
 }

@@ -1441,7 +1441,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<byte[]> spop(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
     client.spop(key, count);
-    return SetFromList.of(client.getBinaryMultiBulkReply());
+    List<byte[]> members = client.getBinaryMultiBulkReply();
+    if (members == null) return null;
+    return SetFromList.of(members);
   }
 
   /**

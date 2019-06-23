@@ -1269,6 +1269,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.spop(key, count);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) return null;
     return SetFromList.of(members);
   }
 

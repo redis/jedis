@@ -145,37 +145,43 @@ public class SetCommandsTest extends JedisCommandTestBase {
     jedis.sadd("foo", "c");
 
     Set<String> superSet = new HashSet<String>();
-    superSet.add("a");
-    superSet.add("b");
     superSet.add("c");
+    superSet.add("b");
+    superSet.add("a");
 
     Set<String> members = jedis.spop("foo", 2);
-    assertEquals(2, members.size());
 
+    assertEquals(2, members.size());
     assertTrue(superSet.containsAll(members));
     superSet.removeAll(members);
 
     members = jedis.spop("foo", 2);
+    assertEquals(1, members.size());
     assertEquals(superSet, members);
 
-    assertNull(jedis);
     assertNull(jedis.spop("foo", 2));
 
     // Binary
     jedis.sadd(bfoo, ba);
     jedis.sadd(bfoo, bb);
+    jedis.sadd(bfoo, bc);
 
-    Set<byte[]> bexpected = new HashSet<byte[]>();
-    bexpected.add(bb);
-    bexpected.add(ba);
+    Set<byte[]> bsuperSet = new HashSet<byte[]>();
+    bsuperSet.add(bc);
+    bsuperSet.add(bb);
+    bsuperSet.add(ba);
 
     Set<byte[]> bmembers = jedis.spop(bfoo, 2);
 
     assertEquals(2, bmembers.size());
-    assertByteArraySetEquals(bexpected, bmembers);
+    assertTrue(bsuperSet.containsAll(bmembers));
+    bsuperSet.removeAll(bmembers);
 
     bmembers = jedis.spop(bfoo, 2);
-    assertTrue(bmembers.isEmpty());
+    assertEquals(1, bmembers.size());
+    assertEquals(bsuperSet, bmembers);
+
+    assertNull(jedis.spop(bfoo, 2));
   }
 
   @Test

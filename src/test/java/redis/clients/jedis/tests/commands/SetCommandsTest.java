@@ -7,7 +7,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayCollectionContainsAll;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContainsAll;
+import static redis.clients.jedis.tests.utils.ByteArrayUtil.byteArrayCollectionRemoveAll;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -152,7 +155,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     Set<String> members = jedis.spop("foo", 2);
 
     assertEquals(2, members.size());
-    assertTrue(superSet.containsAll(members));
+    assertCollectionContainsAll(superSet, members);
     superSet.removeAll(members);
 
     members = jedis.spop("foo", 2);
@@ -174,12 +177,12 @@ public class SetCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bmembers = jedis.spop(bfoo, 2);
 
     assertEquals(2, bmembers.size());
-    assertTrue(bsuperSet.containsAll(bmembers));
-    bsuperSet.removeAll(bmembers);
+    assertByteArrayCollectionContainsAll(bsuperSet, bmembers);
+    byteArrayCollectionRemoveAll(bsuperSet, bmembers);
 
     bmembers = jedis.spop(bfoo, 2);
     assertEquals(1, bmembers.size());
-    assertEquals(bsuperSet, bmembers);
+    assertByteArraySetEquals(bsuperSet, bmembers);
 
     assertNull(jedis.spop(bfoo, 2));
   }

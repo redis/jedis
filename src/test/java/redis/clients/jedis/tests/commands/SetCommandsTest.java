@@ -142,18 +142,23 @@ public class SetCommandsTest extends JedisCommandTestBase {
   public void spopWithCount() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
+    jedis.sadd("foo", "c");
 
-    Set<String> expected = new HashSet<String>();
-    expected.add("a");
-    expected.add("b");
+    Set<String> superSet = new HashSet<String>();
+    superSet.add("a");
+    superSet.add("b");
+    superSet.add("c");
 
     Set<String> members = jedis.spop("foo", 2);
-
     assertEquals(2, members.size());
-    assertEquals(expected, members);
+
+    assertTrue(superSet.containsAll(members));
+    superSet.removeAll(members);
 
     members = jedis.spop("foo", 2);
-    assertTrue(members.isEmpty());
+    assertEquals(superSet, members);
+
+    assertNull(jedis.spop("foo", 2));
 
     // Binary
     jedis.sadd(bfoo, ba);

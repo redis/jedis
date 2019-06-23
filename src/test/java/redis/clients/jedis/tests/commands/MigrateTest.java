@@ -27,9 +27,12 @@ public class MigrateTest extends JedisCommandTestBase {
   private static final byte[] bbar3 = {0x09, 0x00, 0x03};
 
   private Jedis dest;
+  private Jedis destAuth;
   private static final String host = hnp.getHost();
   private static final int port = 6386;
+  private static final int portAuth = hnp.getPort() + 1;
   private static final int db = 2;
+  private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
 
   @Before
@@ -40,12 +43,18 @@ public class MigrateTest extends JedisCommandTestBase {
     dest = new Jedis(host, port, 500);
     dest.flushAll();
     dest.select(db);
+
+    destAuth = new Jedis(host, portAuth, 500);
+    destAuth.auth("foobared");
+    destAuth.flushAll();
+    destAuth.select(dbAuth);
   }
 
   @After
   @Override
   public void tearDown() {
     dest.close();
+    destAuth.close();
     super.tearDown();
   }
 
@@ -122,6 +131,34 @@ public class MigrateTest extends JedisCommandTestBase {
     jedis.set(bfoo, bbar1);
     dest.set(bfoo, bbar2);
     assertEquals("OK", jedis.migrate(host, port, db, timeout, new MigrateParams().copy().replace(), bfoo));
+    assertArrayEquals(bbar1, dest.get(bfoo));
+    assertArrayEquals(bbar1, jedis.get(bfoo));
+  }
+
+  @Test
+  public void migrateAuth() {
+    jedis.set("foo", "bar");
+    assertEquals("OK", jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), "foo"));
+    assertEquals("bar", destAuth.get("foo"));
+    assertNull(jedis.get("foo"));
+
+    jedis.set(bfoo, bbar);
+    assertEquals("OK", jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), bfoo));
+    assertArrayEquals(bbar, destAuth.get(bfoo));
+    assertNull(jedis.get(bfoo));
+  }
+
+  @Test
+  public void migrateCopyReplaceAuth() {
+    jedis.set("foo", "bar1");
+    dest.set("foo", "bar2");
+    assertEquals("OK", jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().copy().replace().auth("foobared"), "foo"));
+    assertEquals("bar1", dest.get("foo"));
+    assertEquals("bar1", jedis.get("foo"));
+
+    jedis.set(bfoo, bbar1);
+    dest.set(bfoo, bbar2);
+    assertEquals("OK", jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().copy().replace().auth("foobared"), bfoo));
     assertArrayEquals(bbar1, dest.get(bfoo));
     assertArrayEquals(bbar1, jedis.get(bfoo));
   }

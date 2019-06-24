@@ -1,8 +1,13 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.LRANGE;
+import static redis.clients.jedis.Protocol.Command.RPUSH;
+import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
@@ -15,6 +20,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -280,5 +286,27 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   public void strlen() {
     jedis.set(bfoo, binaryValue);
     assertEquals(binaryValue.length, jedis.strlen(bfoo).intValue());
+  }
+
+  public void sendCommandTest(){
+    Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
+    String returnValue = SafeEncoder.encode((byte[]) obj);
+    assertEquals("OK", returnValue);
+    obj = jedis.sendCommand(GET, "x".getBytes());
+    returnValue = SafeEncoder.encode((byte[]) obj);
+    assertEquals("1", returnValue);
+
+    jedis.sendCommand(RPUSH,"foo".getBytes(), "a".getBytes());
+    jedis.sendCommand(RPUSH,"foo".getBytes(), "b".getBytes());
+    jedis.sendCommand(RPUSH,"foo".getBytes(), "c".getBytes());
+
+    obj = jedis.sendCommand(LRANGE,"foo".getBytes(), "0".getBytes(), "2".getBytes());
+    List<byte[]> list = (List<byte[]>) obj;
+    List<byte[]> expected = new ArrayList<>(3);
+    expected.add("a".getBytes());
+    expected.add("b".getBytes());
+    expected.add("c".getBytes());
+    for (int i = 0; i < 3; i++)
+      assertArrayEquals(expected.get(i), list.get(i));
   }
 }

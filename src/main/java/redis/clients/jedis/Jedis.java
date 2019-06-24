@@ -19,6 +19,7 @@ import redis.clients.jedis.commands.ClusterCommands;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ModuleCommands;
 import redis.clients.jedis.commands.MultiKeyCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -3826,5 +3827,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
     
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Object sendCommand(ProtocolCommand cmd, String... args) {
+    client.sendCommand(cmd, args);
+    return client.getOne();
   }
 }

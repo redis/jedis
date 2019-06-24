@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -1033,5 +1034,14 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       int retries, boolean force, byte[][] ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
-  }  
+  }
+
+  @Override
+  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(args[0]);
+    return j.sendCommand(cmd, args);
+  }
+
 }

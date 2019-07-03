@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -2200,5 +2201,15 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.waitReplicas(replicas, timeout);
       }
     }.runBinary(key);
+  }
+
+  @Override
+  public Object sendCommand(final byte[] sampleKey, final ProtocolCommand cmd, final byte[]... args) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
+      @Override
+      public Object execute(Jedis connection){
+        return connection.sendCommand(cmd, args);
+      }
+    }.runBinary(sampleKey);
   }
 }

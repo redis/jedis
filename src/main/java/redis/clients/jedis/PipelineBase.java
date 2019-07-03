@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.commands.BinaryRedisPipeline;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisPipeline;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -1960,5 +1961,19 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
       long newIdleTime, int retries, boolean force, byte[]... ids){
     getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);            
+  }
+
+  @Override
+  public Response<Object> sendCommand(ProtocolCommand cmd, String... args){
+    String key = args.length > 0 ? args[0] : cmd.toString();
+    getClient(key).sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
+  }
+
+  @Override
+  public Response<Object> sendCommand(ProtocolCommand cmd, byte[]... args){
+    byte[] key = args.length > 0 ? args[0] : cmd.getRaw();
+    getClient(key).sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
   }
 }

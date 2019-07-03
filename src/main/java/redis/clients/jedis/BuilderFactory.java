@@ -555,6 +555,17 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Object> OBJECT = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      return data;
+    }
+    @Override
+    public String toString() {
+      return "Object";
+    }
+  };
+
 
 
   private BuilderFactory() {

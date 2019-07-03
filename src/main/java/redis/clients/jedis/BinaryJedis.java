@@ -25,6 +25,7 @@ import redis.clients.jedis.commands.BasicCommands;
 import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.commands.BinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -4040,5 +4041,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
     return client.getBinaryMultiBulkReply();  
+  }
+
+  @Override
+  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    client.sendCommand(cmd, args);
+    return client.getOne();
   }
 }

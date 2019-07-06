@@ -109,17 +109,6 @@ public class SetFromListTest {
     assertEquals(hashSet, cut);
   }
 
-  private List<String> a2z() {
-    List<String> list = new ArrayList<String>();
-
-    for (int i = 'a'; i <= 'z'; i++) {
-      list.add(String.valueOf((char) i));
-    }
-
-    Collections.shuffle(list);
-    return list;
-  }
-
   @Test
   public void serialize() throws Exception {
 

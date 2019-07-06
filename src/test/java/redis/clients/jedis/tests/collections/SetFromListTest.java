@@ -4,6 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +107,34 @@ public class SetFromListTest {
     Set<String> cut = setFromList(list);
 
     assertEquals(hashSet, cut);
+  }
+
+  private List<String> a2z() {
+    List<String> list = new ArrayList<String>();
+
+    for (int i = 'a'; i <= 'z'; i++) {
+      list.add(String.valueOf((char) i));
+    }
+
+    Collections.shuffle(list);
+    return list;
+  }
+
+  @Test
+  public void serialize() throws Exception {
+
+    Set<String> set = setFromList(a2z());
+
+    ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+    ObjectOutputStream objOut = new ObjectOutputStream(byteOut);
+    objOut.writeObject(set);
+
+    ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
+    ObjectInputStream objIn = new ObjectInputStream(byteIn);
+
+    Set<String> setRead = (Set<String>) objIn.readObject();
+
+    assertEquals(set, setRead);
   }
 
   private List<String> a2z() {

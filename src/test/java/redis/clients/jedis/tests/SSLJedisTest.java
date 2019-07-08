@@ -318,6 +318,7 @@ public class SSLJedisTest {
       String subjectDN = peerCertificate.getSubjectDN().getName();
       String[] dnComponents = subjectDN.split(",");
       for (String dnComponent : dnComponents) {
+        dnComponent = dnComponent.trim();
         if (dnComponent.startsWith(COMMON_NAME_RDN_PREFIX)) {
           return dnComponent.substring(COMMON_NAME_RDN_PREFIX.length());
         }

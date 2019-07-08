@@ -308,7 +308,7 @@ public class SSLJedisTest {
       try {
         peerCertificate = (X509Certificate) session.getPeerCertificates()[0];
       } catch (SSLPeerUnverifiedException e) {
-        throw new IllegalStateException("The session does not contain a peer X.509 certificate.");
+        throw new IllegalStateException("The session does not contain a peer X.509 certificate.",  e);
       }
       String peerCertificateCN = getCommonName(peerCertificate);
       return hostname.equals(peerCertificateCN);

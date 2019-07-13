@@ -309,6 +309,7 @@ stop:
 	kill `cat /tmp/redis5.pid`
 	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
+	kill `cat /tmp/redis8.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`

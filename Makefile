@@ -232,6 +232,21 @@ pid = /tmp/stunnel.pid
 [redis]
 accept = 127.0.0.1:6390
 connect = 127.0.0.1:6379
+[redis_cluster_1]
+accept = 127.0.0.1:8379
+connect = 127.0.0.1:7379
+[redis_cluster_2]
+accept = 127.0.0.1:8380
+connect = 127.0.001:7380
+[redis_cluster_3]
+accept = 127.0.0.1:8381
+connect = 127.0.001:7381
+[redis_cluster_4]
+accept = 127.0.0.1:8382
+connect = 127.0.0.1:7382
+[redis_cluster_5]
+accept = 127.0.0.1:8383
+connect = 127.0.0.1:7383
 endef
 
 export REDIS1_CONF
@@ -298,6 +313,7 @@ stop:
 	kill `cat /tmp/redis5.pid`
 	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
+	kill `cat /tmp/redis8.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
@@ -341,9 +357,15 @@ release:
 	make stop
 
 travis-install:
+	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+	sudo apt-get -y update
+	sudo apt-get install -y gcc-8 g++-8
+	cd /usr/bin ;\
+	sudo ln -sf gcc-8 gcc ;\
+	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git -j4
+	$(MAKE) -C redis-git
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

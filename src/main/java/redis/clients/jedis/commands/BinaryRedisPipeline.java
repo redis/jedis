@@ -1,8 +1,16 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
-
+import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamPendingEntry;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 
@@ -253,6 +261,8 @@ public interface BinaryRedisPipeline {
 
   Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue);
 
+  Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);
@@ -270,16 +280,79 @@ public interface BinaryRedisPipeline {
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit);
+
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusReadonly(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
+      GeoUnit unit);
+  
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
   Response<Long> hstrlen(byte[] key, byte[] field);
+  
+  Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
+
+  Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+  
+  Response<Long> xlen(byte[] key);
+
+  Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
+   
+  Response<Long> xack(byte[] key, byte[] group,  byte[]... ids);
+  
+  Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
+  
+  Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id);
+  
+  Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
+  
+  Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
+
+  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  
+  Response<Long> xdel(byte[] key, byte[]... ids);
+  
+  Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
+ 
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  Response<Long> bitpos(byte[] key, boolean value);
+
+  Response<Long> bitpos(byte[] key, boolean value, BitPosParams params);
+
+  Response<String> set(byte[] key, byte[] value, SetParams params);
+
+  Response<List<byte[]>> srandmember(byte[] key, int count);
+
+  Response<Long> objectRefcount(byte[] key);
+
+  Response<byte[]> objectEncoding(byte[] key);
+
+  Response<Long> objectIdletime(byte[] key);
+
+  Response<Double> incrByFloat(byte[] key, double increment);
+
+  Response<String> psetex(byte[] key, long milliseconds, byte[] value);
+
+  Response<Double> hincrByFloat(byte[] key, byte[] field, double increment);
+
+  Response<Object> sendCommand(ProtocolCommand cmd, byte[]... args);
 }

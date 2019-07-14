@@ -1,5 +1,7 @@
 package redis.clients.jedis.util;
 
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
+
 /**
  * CRC16 Implementation according to CCITT standard Polynomial : 1021 (x^16 + x^12 + x^5 + 1) See <a
  * href="http://redis.io/topics/cluster-spec">Appendix A. CRC16 reference implementation in ANSI
@@ -36,13 +38,20 @@ public final class JedisClusterCRC16 {
   }
 
   public static int getSlot(String key) {
+    if (key == null) {
+      throw new JedisClusterOperationException("Slot calculation of null is impossible");
+    }
+
     key = JedisClusterHashTagUtil.getHashTag(key);
-    // optimization with modulo operator with power of 2
-    // equivalent to getCRC16(key) % 16384
+    // optimization with modulo operator with power of 2 equivalent to getCRC16(key) % 16384
     return getCRC16(key) & (16384 - 1);
   }
 
   public static int getSlot(byte[] key) {
+    if (key == null) {
+      throw new JedisClusterOperationException("Slot calculation of null is impossible");
+    }
+
     int s = -1;
     int e = -1;
     boolean sFound = false;
@@ -66,6 +75,8 @@ public final class JedisClusterCRC16 {
    * Create a CRC16 checksum from the bytes. implementation is from mp911de/lettuce, modified with
    * some more optimizations
    * @param bytes
+   * @param s
+   * @param e
    * @return CRC16 as integer value See <a
    *         href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">Issue 733</a>
    */

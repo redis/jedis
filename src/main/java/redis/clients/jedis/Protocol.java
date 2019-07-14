@@ -75,6 +75,7 @@ public final class Protocol {
 
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
+  public static final byte[] BYTES_TILDE = SafeEncoder.encode("~");
 
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
@@ -151,20 +152,20 @@ public final class Protocol {
   }
 
   private static Object process(final RedisInputStream is) {
-
     final byte b = is.readByte();
-    if (b == PLUS_BYTE) {
+    switch(b) {
+    case PLUS_BYTE:
       return processStatusCodeReply(is);
-    } else if (b == DOLLAR_BYTE) {
+    case DOLLAR_BYTE:
       return processBulkReply(is);
-    } else if (b == ASTERISK_BYTE) {
+    case ASTERISK_BYTE:
       return processMultiBulkReply(is);
-    } else if (b == COLON_BYTE) {
+    case COLON_BYTE:
       return processInteger(is);
-    } else if (b == MINUS_BYTE) {
+    case MINUS_BYTE:
       processError(is);
       return null;
-    } else {
+    default:
       throw new JedisConnectionException("Unknown reply: " + (char) b);
     }
   }
@@ -256,8 +257,9 @@ public final class Protocol {
     DEBUG, BRPOPLPUSH, SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG,
     OBJECT, BITCOUNT, BITOP, SENTINEL, DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT,
     PSETEX, CLIENT, TIME, MIGRATE, HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING,
-    PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS,
-    GEORADIUSBYMEMBER, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB;
+    PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO,
+    GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB, MEMORY,
+    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM;
 
     private byte[] raw;
 
@@ -279,7 +281,9 @@ public final class Protocol {
     AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
-    GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE;
+    GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR, 
+    BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, 
+    IDLE, TIME, RETRYCOUNT, FORCE;
 
     public final byte[] raw;
 

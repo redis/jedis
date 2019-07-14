@@ -1,7 +1,18 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
+import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamPendingEntry;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 
@@ -249,6 +260,8 @@ public interface RedisPipeline {
 
   Response<String> restoreReplace(String key, int ttl, byte[] serializedValue);
 
+  Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
+
   // Geo Commands
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);
@@ -266,12 +279,80 @@ public interface RedisPipeline {
   Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
       double radius, GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit);
+
   Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit);
 
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
+      GeoUnit unit);
+
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
+
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+  
+  Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash);
+
+  Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+  
+  Response<Long> xlen(String key);
+
+  Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+   
+  Response<Long> xack(String key, String group,  StreamEntryID... ids);
+  
+  Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
+  
+  Response<String> xgroupSetID( String key, String groupname, StreamEntryID id);
+  
+  Response<Long> xgroupDestroy( String key, String groupname);
+  
+  Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
+
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  
+  Response<Long> xdel( String key, StreamEntryID... ids);
+  
+  Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
+ 
+  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  Response<Long> bitpos(String key, boolean value);
+
+  Response<Long> bitpos(String key, boolean value, BitPosParams params);
+
+  Response<String> set(String key, String value, SetParams params);
+
+  Response<List<String>> srandmember(String key, int count);
+
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max);
+
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset,
+      int count);
+
+  Response<Long> objectRefcount(String key);
+
+  Response<String> objectEncoding(String key);
+
+  Response<Long> objectIdletime(String key);
+
+  Response<Double> incrByFloat(String key, double increment);
+
+  Response<String> psetex(String key, long milliseconds, String value);
+
+  Response<Double> hincrByFloat(String key, String field, double increment);
+
+  Response<Object> sendCommand(ProtocolCommand cmd, String... args);
 }

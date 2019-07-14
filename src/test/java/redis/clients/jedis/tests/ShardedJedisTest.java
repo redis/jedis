@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.SET;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -321,6 +322,35 @@ public class ShardedJedisTest {
     for (Jedis jedis : jedisShard.getAllShards()) {
       assertTrue(!jedis.isConnected());
     }
+  }
+
+  @Test
+  public void testGeneralCommand(){
+
+    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    JedisShardInfo si = new JedisShardInfo(redis1);
+    si.setPassword("foobared");
+    shards.add(si);
+    si = new JedisShardInfo(redis2);
+    si.setPassword("foobared");
+    shards.add(si);
+    ShardedJedis jedis = new ShardedJedis(shards);
+    jedis.sendCommand(SET, "a", "bar");
+    JedisShardInfo s1 = jedis.getShardInfo("a");
+    jedis.sendCommand(SET, "b", "bar1");
+    JedisShardInfo s2 = jedis.getShardInfo("b");
+    jedis.disconnect();
+
+    Jedis j = new Jedis(s1);
+    j.auth("foobared");
+    assertEquals("bar", j.get("a"));
+    j.disconnect();
+
+    j = new Jedis(s2);
+    j.auth("foobared");
+    assertEquals("bar1", j.get("b"));
+    j.disconnect();
+
   }
 
 }

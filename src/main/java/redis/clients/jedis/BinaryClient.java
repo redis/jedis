@@ -22,12 +22,14 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
 
@@ -1021,8 +1023,20 @@ public class BinaryClient extends Connection {
     sendCommand(SRANDMEMBER, key, toByteArray(count));
   }
 
-  public void clientKill(final byte[] client) {
-    sendCommand(CLIENT, Keyword.KILL.raw, client);
+  public void memoryDoctor() {
+    sendCommand(MEMORY, Keyword.DOCTOR.raw);
+  }
+
+  public void clientKill(final byte[] ipPort) {
+    sendCommand(CLIENT, Keyword.KILL.raw, ipPort);
+  }
+
+  public void clientKill(final String ip, final int port) {
+    sendCommand(CLIENT, Keyword.KILL.name(), ip + ':' + port);
+  }
+
+  public void clientKill(ClientKillParams params) {
+    sendCommand(CLIENT, joinParameters(Keyword.KILL.raw, params.getByteParams()));
   }
 
   public void clientGetname() {
@@ -1037,14 +1051,36 @@ public class BinaryClient extends Connection {
     sendCommand(CLIENT, Keyword.SETNAME.raw, name);
   }
 
+  public void clientPause(final long timeout) {
+    sendCommand(CLIENT, Keyword.PAUSE.raw, toByteArray(timeout));
+  }
+
   public void time() {
     sendCommand(TIME);
   }
 
-  public void migrate(final byte[] host, final int port, final byte[] key, final int destinationDb,
+  public void migrate(final String host, final int port, final byte[] key, final int destinationDb,
       final int timeout) {
-    sendCommand(MIGRATE, host, toByteArray(port), key, toByteArray(destinationDb),
-      toByteArray(timeout));
+    sendCommand(MIGRATE, SafeEncoder.encode(host), toByteArray(port), key,
+        toByteArray(destinationDb), toByteArray(timeout));
+  }
+
+  public void migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final byte[]... keys) {
+    byte[][] bparams = params.getByteParams();
+    int len = 5 + bparams.length + 1 + keys.length;
+    byte[][] args = new byte[len][];
+    int i = 0;
+    args[i++] = SafeEncoder.encode(host);
+    args[i++] = toByteArray(port);
+    args[i++] = new byte[0];
+    args[i++] = toByteArray(destinationDB);
+    args[i++] = toByteArray(timeout);
+    System.arraycopy(bparams, 0, args, i, bparams.length);
+    i += bparams.length;
+    args[i++] = Keyword.KEYS.raw;
+    System.arraycopy(keys, 0, args, i, keys.length);
+    sendCommand(MIGRATE, args);
   }
 
   public void hincrByFloat(final byte[] key, final byte[] field, final double increment) {
@@ -1150,9 +1186,20 @@ public class BinaryClient extends Connection {
       unit.raw);
   }
 
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+    sendCommand(GEORADIUS_RO, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
+      unit.raw);
+  }
+
   public void georadius(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
+      toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
+    sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
       toByteArray(radius), unit.raw));
   }
 
@@ -1160,9 +1207,18 @@ public class BinaryClient extends Connection {
     sendCommand(GEORADIUSBYMEMBER, key, member, toByteArray(radius), unit.raw);
   }
 
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
+    sendCommand(GEORADIUSBYMEMBER_RO, key, member, toByteArray(radius), unit.raw);
+  }
+
   public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
+    sendCommand(GEORADIUSBYMEMBER_RO, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 
   public void moduleLoad(final byte[] path) {
@@ -1209,4 +1265,194 @@ public class BinaryClient extends Connection {
   public void hstrlen(final byte[] key, final byte[] field) {
     sendCommand(HSTRLEN, key, field);
   }
+  
+  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
+      int maxLexArgs = 0;
+      if(maxLen < Long.MAX_VALUE) { // optional arguments
+        if(approximateLength) {
+          maxLexArgs = 3; // e.g. MAXLEN ~ 1000 
+        } else {
+          maxLexArgs = 2; // e.g. MAXLEN 1000
+        }
+      }
+    
+	  final byte[][] params = new byte[2 + maxLexArgs + hash.size() * 2][];
+	  int index = 0;
+	  params[index++] = key;
+	  if(maxLen < Long.MAX_VALUE) {
+	    params[index++] = Keyword.MAXLEN.raw;
+	    if(approximateLength) {
+	      params[index++] = Protocol.BYTES_TILDE;
+	    }
+	    params[index++] = toByteArray(maxLen);
+	  }
+	  
+	  params[index++] = id;
+	  for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+	    params[index++] = entry.getKey();
+	    params[index++] = entry.getValue();
+	  }
+	  sendCommand(XADD, params);
+  }
+  
+  public void xlen(final byte[] key) {
+     sendCommand(XLEN, key);
+  }
+  
+  public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) { 
+     sendCommand(XRANGE, key, start, end, Keyword.COUNT.raw, toByteArray(count));
+  }
+  
+  public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
+    sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.raw, toByteArray(count));
+  }
+
+  public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
+    final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
+
+    int streamsIndex = 0;
+    params[streamsIndex++] = Keyword.COUNT.raw;
+    params[streamsIndex++] = toByteArray(count);
+    if(block > 0) {
+      params[streamsIndex++] = Keyword.BLOCK.raw;
+      params[streamsIndex++] = toByteArray(block);
+    }
+    
+    params[streamsIndex++] = Keyword.STREAMS.raw;
+    int idsIndex = streamsIndex + streams.size();
+
+    for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
+      params[streamsIndex++] = entry.getKey();
+      params[idsIndex++] = entry.getValue();
+    }
+    
+    sendCommand(XREAD, params);
+ }
+  
+  public void xack(final byte[] key, final byte[] group, final byte[]... ids) {
+    final byte[][] params = new byte[2 + ids.length][];
+    int index = 0;
+    params[index++] = key;
+    params[index++] = group;
+    for (final byte[] id : ids) {
+      params[index++] = id;
+    }
+    sendCommand(XACK, params);
+  }
+   
+  public void xgroupCreate(final byte[] key, final byte[] groupname, final byte[] id, boolean makeStream) {
+    if(makeStream) {
+      sendCommand(XGROUP, Keyword.CREATE.raw, key, groupname, id, Keyword.MKSTREAM.raw);  
+    } else {
+      sendCommand(XGROUP, Keyword.CREATE.raw, key, groupname, id);  
+    }
+  }
+
+  public void xgroupSetID(final byte[] key, final byte[] groupname, final byte[] id) {
+    sendCommand(XGROUP, Keyword.SETID.raw, key, groupname, id);    
+  }
+
+  public void xgroupDestroy(final byte[] key, final byte[] groupname) {
+    sendCommand(XGROUP, Keyword.DESTROY.raw, key, groupname);    
+  }
+
+  public void xgroupDelConsumer(final byte[] key, final byte[] groupname, final byte[] consumerName) {
+    sendCommand(XGROUP, Keyword.DELCONSUMER.raw, key, groupname, consumerName);    
+  }
+   
+  public void xdel(final byte[] key, final byte[]... ids) {
+    final byte[][] params = new byte[1 + ids.length][];
+    int index = 0;
+    params[index++] = key;
+    for (final byte[] id : ids) {
+      params[index++] = id;
+    }
+    sendCommand(XDEL, params);
+  }
+  
+  public void xtrim(byte[] key, long maxLen, boolean approximateLength) {
+    if(approximateLength) {
+      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, Protocol.BYTES_TILDE ,toByteArray(maxLen));
+    } else {
+      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, toByteArray(maxLen));
+    }
+  }
+  
+  public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
+    
+    int optional = 0;
+    if(count>0) {
+      optional += 2;
+    }
+    if(block > 0) {
+      optional += 2;
+    }
+    if(noAck) {
+      optional += 1;
+    }
+    
+    
+    final byte[][] params = new byte[4 + optional + streams.size() * 2][];
+
+    int streamsIndex = 0;
+    params[streamsIndex++] = Keyword.GROUP.raw;
+    params[streamsIndex++] = groupname;
+    params[streamsIndex++] = consumer;
+    if(count>0) {
+      params[streamsIndex++] = Keyword.COUNT.raw;
+      params[streamsIndex++] = toByteArray(count);
+    }
+    if(block > 0) {
+      params[streamsIndex++] = Keyword.BLOCK.raw;
+      params[streamsIndex++] = toByteArray(block);
+    }
+    if(noAck) {
+      params[streamsIndex++] = Keyword.NOACK.raw;
+    }
+    params[streamsIndex++] = Keyword.STREAMS.raw;
+    
+    int idsIndex = streamsIndex + streams.size();
+    for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
+      params[streamsIndex++] = entry.getKey();
+      params[idsIndex++] = entry.getValue();
+    }
+    
+    sendCommand(XREADGROUP, params);
+  }
+
+  
+  public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+    if(consumername == null) {
+      sendCommand(XPENDING, key, groupname, start, end, toByteArray(count));
+    } else {
+      sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
+    }
+  }
+
+  public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids) {
+      
+      ArrayList<byte[]> arguments = new ArrayList<>(10 + ids.length);
+
+      arguments.add(key);
+      arguments.add(groupname);
+      arguments.add(consumername);
+      arguments.add(toByteArray(minIdleTime));
+      
+      for(byte[] id : ids) {
+        arguments.add(id);  
+      }
+      if(newIdleTime > 0) {
+        arguments.add(Keyword.IDLE.raw);
+        arguments.add(toByteArray(newIdleTime));
+      }
+      if(retries > 0) {
+        arguments.add(Keyword.RETRYCOUNT.raw);
+        arguments.add(toByteArray(retries));        
+      }
+      if(force) {
+        arguments.add(Keyword.FORCE.raw);        
+      }
+      sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
+  }
+
 }

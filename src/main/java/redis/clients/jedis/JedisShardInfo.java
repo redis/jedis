@@ -25,7 +25,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
-  
+  private InetSocketAddressResolver addressResolver;
+   
   public JedisShardInfo(String host) {
     super(Sharded.DEFAULT_WEIGHT);
     URI uri = URI.create(host);
@@ -181,6 +182,20 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
   }
+  
+  public JedisShardInfo(InetSocketAddressResolver addressResolver) {
+    this(addressResolver, false, null, null, null);
+  }
+  
+  public JedisShardInfo(InetSocketAddressResolver addressResolver, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+    super(Sharded.DEFAULT_WEIGHT);
+    this.addressResolver = addressResolver;
+    this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
+  }
 
   @Override
   public String toString() {
@@ -247,6 +262,14 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   @Override
   public Jedis createResource() {
     return new Jedis(this);
+  }
+
+  public InetSocketAddressResolver getAddressResolver() {
+    return addressResolver;
+  }
+
+  public void setAddressResolver(InetSocketAddressResolver resolver) {
+    this.addressResolver = resolver;
   }
   
 }

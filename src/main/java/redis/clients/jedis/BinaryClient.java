@@ -63,6 +63,11 @@ public class BinaryClient extends Connection {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public BinaryClient(InetSocketAddressResolver addressResolver, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+    super(addressResolver, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
   public boolean isInMulti() {
     return isInMulti;
   }

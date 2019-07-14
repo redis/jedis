@@ -112,9 +112,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
-    client = new Client(shardInfo.getHost(), shardInfo.getPort(), shardInfo.getSsl(),
-        shardInfo.getSslSocketFactory(), shardInfo.getSslParameters(),
-        shardInfo.getHostnameVerifier());
+    InetSocketAddressResolver addressResolver = shardInfo.getAddressResolver();
+    if(addressResolver == null) {
+      client = new Client(shardInfo.getHost(), shardInfo.getPort(), shardInfo.getSsl(),
+          shardInfo.getSslSocketFactory(), shardInfo.getSslParameters(),
+          shardInfo.getHostnameVerifier());
+    } else {
+      client = new Client(addressResolver, shardInfo.getSsl(),
+          shardInfo.getSslSocketFactory(), shardInfo.getSslParameters(),
+          shardInfo.getHostnameVerifier());
+    }
+    
     client.setConnectionTimeout(shardInfo.getConnectionTimeout());
     client.setSoTimeout(shardInfo.getSoTimeout());
     client.setPassword(shardInfo.getPassword());

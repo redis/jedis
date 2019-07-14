@@ -37,6 +37,7 @@ public class Connection implements Closeable {
   private SSLSocketFactory sslSocketFactory;
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
+  private InetSocketAddressResolver addressResolver;
 
   public Connection() {
   }
@@ -61,6 +62,15 @@ public class Connection implements Closeable {
       HostnameVerifier hostnameVerifier) {
     this.host = host;
     this.port = port;
+    this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
+  }
+
+  public Connection(InetSocketAddressResolver addressResolver, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+    this.addressResolver = addressResolver;
     this.ssl = ssl;
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
@@ -165,6 +175,8 @@ public class Connection implements Closeable {
 
   public void connect() {
     if (!isConnected()) {
+      InetSocketAddress address = (this.addressResolver == null) ? 
+          new InetSocketAddress(host, port) : this.addressResolver.resolve();
       try {
         socket = new Socket();
         // ->@wjw_add
@@ -178,21 +190,21 @@ public class Connection implements Closeable {
         // immediately
         // <-@wjw_add
 
-        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
+        socket.connect(address, connectionTimeout);
         socket.setSoTimeout(soTimeout);
 
         if (ssl) {
           if (null == sslSocketFactory) {
             sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
           }
-          socket = sslSocketFactory.createSocket(socket, host, port, true);
+          socket = sslSocketFactory.createSocket(socket, address.getHostString(), address.getPort(), true);
           if (null != sslParameters) {
             ((SSLSocket) socket).setSSLParameters(sslParameters);
           }
           if ((null != hostnameVerifier) &&
-              (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
+              (!hostnameVerifier.verify(address.getHostString(), ((SSLSocket) socket).getSession()))) {
             String message = String.format(
-                "The connection to '%s' failed ssl/tls hostname verification.", host);
+                "The connection to '%s' failed ssl/tls hostname verification.", address.getHostString());
             throw new JedisConnectionException(message);
           }
         }
@@ -202,7 +214,7 @@ public class Connection implements Closeable {
       } catch (IOException ex) {
         broken = true;
         throw new JedisConnectionException("Failed connecting to host " 
-            + host + ":" + port, ex);
+            + address.getHostString() + ":" + address.getPort(), ex);
       }
     }
   }

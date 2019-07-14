@@ -43,6 +43,12 @@ public class Client extends BinaryClient implements Commands {
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
+  
+  public Client(InetSocketAddressResolver addressResolver, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(addressResolver, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
 
   @Override
   public void ping(final String message) {

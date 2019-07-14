@@ -2,12 +2,12 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-public interface JedisClusterBinaryScriptingCommands {
-  Object eval(byte[] script, byte[] keyCount, byte[]... params);
+public interface JedisClusterBinaryScriptingCommands extends BinaryScriptingCommands {
 
-  Object eval(byte[] script, int keyCount, byte[]... params);
-
-  Object eval(byte[] script, List<byte[]> keys, List<byte[]> args);
+  @Override
+  default Object eval(byte[] script) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @param script
@@ -16,6 +16,11 @@ public interface JedisClusterBinaryScriptingCommands {
    */
   Object eval(byte[] script, byte[] sampleKey);
 
+  @Override
+  default Object evalsha(byte[] sha1) {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * @param sha1
    * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
@@ -23,9 +28,10 @@ public interface JedisClusterBinaryScriptingCommands {
    */
   Object evalsha(byte[] sha1, byte[] sampleKey);
 
-  Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args);
-
-  Object evalsha(byte[] sha1, int keyCount, byte[]... params);
+  @Override
+  default List<Long> scriptExists(byte[]... sha1) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
@@ -34,6 +40,11 @@ public interface JedisClusterBinaryScriptingCommands {
    */
   List<Long> scriptExists(byte[] sampleKey, byte[]... sha1);
 
+  @Override
+  default byte[] scriptLoad(byte[] script) {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * @param script
    * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
@@ -41,11 +52,21 @@ public interface JedisClusterBinaryScriptingCommands {
    */
   byte[] scriptLoad(byte[] script, byte[] sampleKey);
 
+  @Override
+  default String scriptFlush() {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
    * @return 
    */
   String scriptFlush(byte[] sampleKey);
+
+  @Override
+  default String scriptKill() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to

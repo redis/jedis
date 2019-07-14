@@ -3737,7 +3737,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * {@inheritDoc}
    */
   @Override
-  public long xack(final String key, final String group, final StreamEntryID... ids) {
+  public Long xack(final String key, final String group, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xack(key, group, ids);
     return client.getIntegerReply();
@@ -3758,7 +3758,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xgroupDestroy(final String key, final String groupname) {
+  public Long xgroupDestroy(final String key, final String groupname) {
     checkIsInMultiOrPipeline();
     client.xgroupDestroy(key, groupname);
     return client.getIntegerReply();
@@ -3772,14 +3772,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xdel(final String key, final StreamEntryID... ids) {
+  public Long xdel(final String key, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xdel(key, ids);
     return client.getIntegerReply();
   }
 
   @Override
-  public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
+  public Long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
     client.xtrim(key, maxLen, approximateLength);
     return client.getIntegerReply();

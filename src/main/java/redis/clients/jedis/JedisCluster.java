@@ -224,6 +224,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String restoreReplace(String key, int ttl, byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restoreReplace(key, ttl, serializedValue);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long expire(final String key, final int seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -529,6 +539,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Long execute(Jedis connection) {
         return connection.hincrBy(key, field, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Double hincrByFloat(String key, String field, double value) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.hincrByFloat(key, field, value);
       }
     }.run(key);
   }
@@ -1338,6 +1358,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long bitpos(String key, boolean value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long bitpos(String key, boolean value, BitPosParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Set<String> keys(final String pattern) {
     if (pattern == null || pattern.isEmpty()) {
       throw new IllegalArgumentException(this.getClass().getSimpleName()
@@ -1377,7 +1417,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(matchPattern);
   }
-  
+
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
@@ -1385,6 +1425,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<Entry<String, String>> execute(Jedis connection) {
+        return connection.hscan(key, cursor, params);
       }
     }.run(key);
   }
@@ -1400,11 +1450,31 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<String> execute(Jedis connection) {
+        return connection.sscan(key, cursor, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public ScanResult<Tuple> zscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<Tuple> execute(Jedis connection) {
         return connection.zscan(key, cursor);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
+    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public ScanResult<Tuple> execute(Jedis connection) {
+        return connection.zscan(key, cursor, params);
       }
     }.run(key);
   }
@@ -2245,5 +2315,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(sampleKey);
   }
 
-
+  @Override
+  public String unwatch() {
+    return MultiKeyJedisClusterCommands.super.unwatch();
+  }
 }

@@ -993,7 +993,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public long xack(String key, String group, StreamEntryID... ids) {
+  public Long xack(String key, String group, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xack(key, group, ids);
   }
@@ -1011,7 +1011,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public long xgroupDestroy(String key, String groupname) {
+  public Long xgroupDestroy(String key, String groupname) {
     Jedis j = getShard(key);
     return j.xgroupDestroy(key, groupname);
   }
@@ -1024,13 +1024,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
 
   @Override
-  public long xdel(String key, StreamEntryID... ids) {
+  public Long xdel(String key, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xdel(key, ids);
   }
 
   @Override
-  public long xtrim(String key, long maxLen, boolean approximateLength) {
+  public Long xtrim(String key, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
     return j.xtrim(key, maxLen, approximateLength);
   }

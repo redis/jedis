@@ -1,81 +1,39 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.BitOP;
-import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.ZParams;
 
 import java.util.List;
-import java.util.Set;
 
-public interface MultiKeyJedisClusterCommands {
-  Long del(String... keys);
+public interface MultiKeyJedisClusterCommands extends MultiKeyCommands {
 
-  Long unlink(String... keys);
+  @Override
+  default ScanResult<String> scan(String cursor) {
+    throw new UnsupportedOperationException();
+  }
 
-  Long exists(String... keys);
+  @Override
+  default String randomKey() {
+    throw new UnsupportedOperationException();
+  }
 
-  List<String> blpop(int timeout, String... keys);
+  @Override
+  default List<String> blpop(String... args) {
+    throw new UnsupportedOperationException();
+  }
 
-  List<String> brpop(int timeout, String... keys);
+  @Override
+  default List<String> brpop(String... args) {
+    throw new UnsupportedOperationException();
+  }
 
-  List<String> mget(String... keys);
+  @Override
+  default String watch(String... keys) {
+    throw new UnsupportedOperationException();
+  }
 
-  String mset(String... keysvalues);
+  @Override
+  default String unwatch() {
+    throw new UnsupportedOperationException();
+  }
 
-  Long msetnx(String... keysvalues);
-
-  String rename(String oldkey, String newkey);
-
-  Long renamenx(String oldkey, String newkey);
-
-  String rpoplpush(String srckey, String dstkey);
-
-  Set<String> sdiff(String... keys);
-
-  Long sdiffstore(String dstkey, String... keys);
-
-  Set<String> sinter(String... keys);
-
-  Long sinterstore(String dstkey, String... keys);
-
-  Long smove(String srckey, String dstkey, String member);
-
-  Long sort(String key, SortingParams sortingParameters, String dstkey);
-
-  Long sort(String key, String dstkey);
-
-  Set<String> sunion(String... keys);
-
-  Long sunionstore(String dstkey, String... keys);
-
-  Long zinterstore(String dstkey, String... sets);
-
-  Long zinterstore(String dstkey, ZParams params, String... sets);
-
-  Long zunionstore(String dstkey, String... sets);
-
-  Long zunionstore(String dstkey, ZParams params, String... sets);
-
-  String brpoplpush(String source, String destination, int timeout);
-
-  Long publish(String channel, String message);
-
-  void subscribe(JedisPubSub jedisPubSub, String... channels);
-
-  void psubscribe(JedisPubSub jedisPubSub, String... patterns);
-
-  Long bitop(BitOP op, String destKey, String... srcKeys);
-
-  String pfmerge(String destkey, String... sourcekeys);
-
-  long pfcount(String... keys);
-
-  Long touch(String... keys);
-
-  ScanResult<String> scan(String cursor, ScanParams params);
-
-  Set<String> keys(String pattern);
 }

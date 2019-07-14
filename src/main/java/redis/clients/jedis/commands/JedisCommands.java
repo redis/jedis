@@ -402,7 +402,7 @@ public interface JedisCommands {
    * @param ids
    * @return
    */
-  long xack(String key, String group,  StreamEntryID... ids);
+  Long xack(String key, String group,  StreamEntryID... ids);
   
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
@@ -432,7 +432,7 @@ public interface JedisCommands {
    * @param groupname
    * @return
    */
-  long xgroupDestroy( String key, String groupname);
+  Long xgroupDestroy( String key, String groupname);
   
   /**
    * XGROUP DELCONSUMER <key> <groupname> <consumername> 
@@ -462,7 +462,7 @@ public interface JedisCommands {
    * @param ids
    * @return
    */
-  long xdel( String key, StreamEntryID... ids);
+  Long xdel( String key, StreamEntryID... ids);
   
   /**
    * XTRIM key MAXLEN [~] count
@@ -471,7 +471,7 @@ public interface JedisCommands {
    * @param approximate
    * @return
    */
-  long xtrim( String key, long maxLen, boolean approximate);
+  Long xtrim( String key, long maxLen, boolean approximate);
  
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>

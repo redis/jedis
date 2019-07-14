@@ -186,6 +186,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restoreReplace(key, ttl, serializedValue);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Long expire(final byte[] key, final int seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

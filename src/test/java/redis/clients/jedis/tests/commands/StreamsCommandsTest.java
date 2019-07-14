@@ -82,7 +82,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(2L, jedis.xlen("xdel-stream").longValue());
 
 
-    assertEquals(1L, jedis.xdel("xdel-stream", id1));
+    assertEquals(1L, jedis.xdel("xdel-stream", id1).longValue());
     assertEquals(1L, jedis.xlen("xdel-stream").longValue());
   }
 
@@ -276,7 +276,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xack-group", "xack-consumer", 1, 1L, false, streamQeury1); 
     assertEquals(1, range.size());
 
-    assertEquals(1L, jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
+    assertEquals(1L, jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()).longValue());
   }
   
   @Test

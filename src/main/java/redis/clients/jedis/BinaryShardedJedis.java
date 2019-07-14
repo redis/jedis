@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -955,5 +956,92 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     Jedis j = getShard(key);
     return j.hstrlen(key, field);
   }
-  
+
+  @Override
+  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
+    Jedis j = getShard(key);
+    return j.xadd(key, id, hash, maxLen, approximateLength);
+  }
+
+  @Override
+  public Long xlen(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xlen(key);
+  }
+
+  @Override
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end, count);
+  }
+
+  @Override
+  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start, count);
+  }
+
+  @Override
+  public Long xack(byte[] key, byte[] group, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xack(key, group, ids);
+  }
+
+  @Override
+  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
+    Jedis j = getShard(key);
+    return j.xgroupCreate(key, consumer, id, makeStream);
+  }
+
+  @Override
+  public String xgroupSetID(byte[] key, byte[] consumer, byte[] id) {
+    Jedis j = getShard(key);
+    return j.xgroupSetID(key, consumer, id);
+  }
+
+  @Override
+  public Long xgroupDestroy(byte[] key, byte[] consumer) {
+    Jedis j = getShard(key);
+    return j.xgroupDestroy(key, consumer);
+  }
+
+  @Override
+  public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+    Jedis j = getShard(key);
+    return j.xgroupDelConsumer(key, consumer, consumerName);
+  }
+
+  @Override
+  public Long xdel(byte[] key, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xdel(key, ids);
+  }
+
+  @Override
+  public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, maxLen, approximateLength);
+  }
+
+  @Override
+  public List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, byte[][] ids) {
+    Jedis j = getShard(key);
+    return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  @Override
+  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(args[0]);
+    return j.sendCommand(cmd, args);
+  }
+
 }

@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static redis.clients.jedis.Protocol.Command.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ClusterBinaryJedisCommandsTest {
   private Jedis node1;
@@ -173,6 +175,25 @@ public class ClusterBinaryJedisCommandsTest {
     jedisCluster.set("{f}oo3".getBytes(), "bar".getBytes());
     assertEquals(3, jedisCluster.keys("{f}o*".getBytes()).size());
   }
+
+  @Test
+  public void testBinaryGeneralCommand(){
+    byte[] key = "x".getBytes();
+    byte[] value = "1".getBytes();
+    jedisCluster.sendCommand("z".getBytes(), SET, key, value);
+    jedisCluster.sendCommand("y".getBytes(), INCR, key);
+    Object returnObj = jedisCluster.sendCommand("w".getBytes(), GET, key);
+    assertEquals("2", SafeEncoder.encode((byte[])returnObj));
+  }
+
+  @Test
+  public void testGeneralCommand(){
+    jedisCluster.sendCommand("z", SET, "x", "1");
+    jedisCluster.sendCommand("y", INCR, "x");
+    Object returnObj = jedisCluster.sendCommand("w", GET, "x");
+    assertEquals("2", SafeEncoder.encode((byte[])returnObj));
+  }
+
 
   @Test(expected = IllegalArgumentException.class)
   public void failKeys() {

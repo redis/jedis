@@ -7,13 +7,19 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.LRANGE;
+import static redis.clients.jedis.Protocol.Command.RPUSH;
+import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -834,4 +840,28 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     long bttl = jedis.ttl(bworld);
     assertTrue(bttl > 0 && bttl <= expireSeconds);
   }
+
+  @Test
+  public void sendCommandTest(){
+    Object obj = jedis.sendCommand(SET, "x", "1");
+    String returnValue = SafeEncoder.encode((byte[]) obj);
+    assertEquals("OK", returnValue);
+    obj = jedis.sendCommand(GET, "x");
+    returnValue = SafeEncoder.encode((byte[]) obj);
+    assertEquals("1", returnValue);
+
+    jedis.sendCommand(RPUSH,"foo", "a");
+    jedis.sendCommand(RPUSH,"foo", "b");
+    jedis.sendCommand(RPUSH,"foo", "c");
+
+    obj = jedis.sendCommand(LRANGE,"foo", "0", "2");
+    List<byte[]> list = (List<byte[]>) obj;
+    List<byte[]> expected = new ArrayList<>(3);
+    expected.add("a".getBytes());
+    expected.add("b".getBytes());
+    expected.add("c".getBytes());
+    for (int i = 0; i < 3; i++)
+      assertArrayEquals(expected.get(i), list.get(i));
+  }
+
 }

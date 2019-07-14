@@ -87,6 +87,16 @@ appendonly no
 slaveof localhost 6384
 endef
 
+define REDIS8_CONF
+daemonize yes
+protected-mode no
+port 6386
+pidfile /tmp/redis8.pid
+logfile /tmp/redis8.log
+save ""
+appendonly no
+endef
+
 # SENTINELS
 define REDIS_SENTINEL1
 port 26379
@@ -218,6 +228,21 @@ pid = /tmp/stunnel.pid
 [redis]
 accept = 127.0.0.1:6390
 connect = 127.0.0.1:6379
+[redis_cluster_1]
+accept = 127.0.0.1:8379
+connect = 127.0.0.1:7379
+[redis_cluster_2]
+accept = 127.0.0.1:8380
+connect = 127.0.001:7380
+[redis_cluster_3]
+accept = 127.0.0.1:8381
+connect = 127.0.001:7381
+[redis_cluster_4]
+accept = 127.0.0.1:8382
+connect = 127.0.0.1:7382
+[redis_cluster_5]
+accept = 127.0.0.1:8383
+connect = 127.0.0.1:7383
 endef
 
 export REDIS1_CONF
@@ -227,6 +252,7 @@ export REDIS4_CONF
 export REDIS5_CONF
 export REDIS6_CONF
 export REDIS7_CONF
+export REDIS8_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
@@ -253,6 +279,7 @@ start: stunnel cleanup
 	echo "$$REDIS5_CONF" | redis-server -
 	echo "$$REDIS6_CONF" | redis-server -
 	echo "$$REDIS7_CONF" | redis-server -
+	echo "$$REDIS8_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
@@ -282,6 +309,7 @@ stop:
 	kill `cat /tmp/redis5.pid`
 	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
+	kill `cat /tmp/redis8.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
@@ -325,9 +353,15 @@ release:
 	make stop
 
 travis-install:
+	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+	sudo apt-get -y update
+	sudo apt-get install -y gcc-8 g++-8
+	cd /usr/bin ;\
+	sudo ln -sf gcc-8 gcc ;\
+	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git -j4
+	$(MAKE) -C redis-git
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

@@ -40,4 +40,6 @@ public interface AdvancedJedisCommands {
   String clientList();
 
   String clientSetname(String name);
+
+  String memoryDoctor();
 }

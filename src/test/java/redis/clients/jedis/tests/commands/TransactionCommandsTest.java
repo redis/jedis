@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -23,6 +24,7 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -346,6 +348,57 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
       assertTrue(e.getMessage().contains("EXEC without MULTI"));
       // pass
     }
+  }
+
+
+  @Test
+  public void testTransactionWithGeneralCommand(){
+    Transaction t = jedis.multi();
+    t.set("string", "foo");
+    t.lpush("list", "foo");
+    t.hset("hash", "foo", "bar");
+    t.zadd("zset", 1, "foo");
+    t.sendCommand(SET, "x", "1");
+    t.sadd("set", "foo");
+    t.sendCommand(INCR, "x");
+    Response<String> string = t.get("string");
+    Response<String> list = t.lpop("list");
+    Response<String> hash = t.hget("hash", "foo");
+    Response<Set<String>> zset = t.zrange("zset", 0, -1);
+    Response<String> set = t.spop("set");
+    Response<Object> x = t.sendCommand(GET, "x");
+    t.exec();
+
+
+    assertEquals("foo", string.get());
+    assertEquals("foo", list.get());
+    assertEquals("bar", hash.get());
+    assertEquals("foo", zset.get().iterator().next());
+    assertEquals("foo", set.get());
+    assertEquals("2", SafeEncoder.encode((byte[]) x.get()));
+
+  }
+
+
+  @Test
+  public void transactionResponseWithErrorWithGeneralCommand() {
+    Transaction t = jedis.multi();
+    t.set("foo", "bar");
+    t.sendCommand(SET, "x", "1");
+    Response<Set<String>> error = t.smembers("foo");
+    Response<String> r = t.get("foo");
+    Response<Object> x = t.sendCommand(GET, "x");
+    t.sendCommand(INCR, "x");
+    List<Object> l = t.exec();
+    assertEquals(JedisDataException.class, l.get(2).getClass());
+    try {
+      error.get();
+      fail("We expect exception here!");
+    } catch (JedisDataException e) {
+      // that is fine we should be here
+    }
+    assertEquals(r.get(), "bar");
+    assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
   }
 
 }

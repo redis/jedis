@@ -35,6 +35,11 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this(host, port, connectionTimeout, soTimeout, password, database, clientName,
         false, null, null, null);
   }
+  JedisFactory(final String host, final int port, final int connectionTimeout,
+               final int soTimeout, final String password, final int database, final String clientName, final boolean isRedisSslEnabled) {
+    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
+            isRedisSslEnabled, null, null, null);
+  }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,

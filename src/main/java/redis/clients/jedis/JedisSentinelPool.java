@@ -19,7 +19,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   protected int soTimeout = Protocol.DEFAULT_TIMEOUT;
-
+  protected Boolean isRedisSslEnabled;
   protected String password;
 
   protected int database = Protocol.DEFAULT_DATABASE;
@@ -41,9 +41,23 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         Protocol.DEFAULT_DATABASE);
   }
 
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+       final GenericObjectPoolConfig poolConfig, final Boolean isRedisSslEnabled) {
+    this(masterName, sentinels, poolConfig, Protocol.DEFAULT_TIMEOUT, null,
+            Protocol.DEFAULT_DATABASE, isRedisSslEnabled);
+  }
+
   public JedisSentinelPool(String masterName, Set<String> sentinels) {
     this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, null,
         Protocol.DEFAULT_DATABASE);
+  }
+  public JedisSentinelPool(String masterName, Set<String> sentinels, final Boolean isRedisSslEnabled) {
+    this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, null,
+            Protocol.DEFAULT_DATABASE, isRedisSslEnabled);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels, String password, final Boolean isRedisSslEnabled) {
+    this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, password);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels, String password) {
@@ -68,30 +82,49 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database);
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, false);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
+       final int database, final Boolean isRedisSslEnabled) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, isRedisSslEnabled);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName);
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName, false);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
+       final int database, final String clientName, final Boolean isRedisSslEnabled) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName, isRedisSslEnabled);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+       final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
+       final String password, final int database) {
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null, false);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
-      final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null);
+      final String password, final int database, final Boolean isRedisSslEnabled) {
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null, isRedisSslEnabled);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
-      final String password, final int database, final String clientName) {
+      final String password, final int database, final String clientName, final Boolean isRedisSslEnabled) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.password = password;
     this.database = database;
     this.clientName = clientName;
+    this.isRedisSslEnabled = isRedisSslEnabled;
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initPool(master);
@@ -117,6 +150,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         if (factory == null) {
           factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
               soTimeout, password, database, clientName);
+          factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
+                  soTimeout, password, database, clientName, isRedisSslEnabled);
           initPool(poolConfig, factory);
         } else {
           factory.setHostAndPort(currentHostMaster);

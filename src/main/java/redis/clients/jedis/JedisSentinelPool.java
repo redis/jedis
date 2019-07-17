@@ -149,8 +149,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         currentHostMaster = master;
         if (factory == null) {
           factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-              soTimeout, password, database, clientName);
-          factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
                   soTimeout, password, database, clientName, isRedisSslEnabled);
           initPool(poolConfig, factory);
         } else {

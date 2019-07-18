@@ -493,7 +493,7 @@ public final class BuilderFactory {
   };
   
 
-  public static final Builder<List<StreamEntr STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
+  public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override
     @SuppressWarnings("unchecked")
     public  List<StreamEntry> build(Object data) {

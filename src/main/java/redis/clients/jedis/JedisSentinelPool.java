@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
 public class JedisSentinelPool extends JedisPoolAbstract {
 
   protected GenericObjectPoolConfig poolConfig;
@@ -20,6 +24,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   protected int soTimeout = Protocol.DEFAULT_TIMEOUT;
   protected Boolean isRedisSslEnabled;
+  protected SSLSocketFactory sslSocketFactory;
+  protected SSLParameters sslParameters;
+  protected HostnameVerifier hostnameVerifier;
   protected String password;
 
   protected int database = Protocol.DEFAULT_DATABASE;
@@ -94,30 +101,35 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName, false);
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName, false,
+      null, null, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
        final GenericObjectPoolConfig poolConfig, int timeout, final String password,
        final int database, final String clientName, final Boolean isRedisSslEnabled) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName, isRedisSslEnabled);
+    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName, isRedisSslEnabled,
+      null, null, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
        final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
        final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null, false);
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null, false,
+      null, null, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
       final String password, final int database, final Boolean isRedisSslEnabled) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null, isRedisSslEnabled);
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null, isRedisSslEnabled,
+      null, null, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
-      final String password, final int database, final String clientName, final Boolean isRedisSslEnabled) {
+      final String password, final int database, final String clientName, final Boolean isRedisSslEnabled,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -125,6 +137,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     this.database = database;
     this.clientName = clientName;
     this.isRedisSslEnabled = isRedisSslEnabled;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initPool(master);
@@ -149,7 +164,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         currentHostMaster = master;
         if (factory == null) {
           factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-                  soTimeout, password, database, clientName, isRedisSslEnabled);
+                  soTimeout, password, database, clientName, isRedisSslEnabled,
+                  sslSocketFactory, sslParameters, hostnameVerifier);
           initPool(poolConfig, factory);
         } else {
           factory.setHostAndPort(currentHostMaster);

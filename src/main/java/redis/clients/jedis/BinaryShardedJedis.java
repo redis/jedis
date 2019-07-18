@@ -18,6 +18,9 @@ import redis.clients.jedis.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
+
+  private final byte[][] dummyArray = new byte[0][];
+
   public BinaryShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
   }
@@ -1046,7 +1049,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
 
   @Override
   public Object sendCommand(ProtocolCommand cmd) {
-    return sendCommand(cmd, new byte[0][]);
+    return sendCommand(cmd, dummyArray);
   }
 
 }

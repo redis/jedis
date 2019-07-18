@@ -43,6 +43,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   protected Client client = null;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
+  private final byte[][] dummyArray = new byte[0][];
 
   public BinaryJedis() {
     client = new Client();
@@ -4053,6 +4054,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object sendCommand(ProtocolCommand cmd) {
-    return sendCommand(cmd, new byte[0][]);
+    return sendCommand(cmd, dummyArray);
   }
 }

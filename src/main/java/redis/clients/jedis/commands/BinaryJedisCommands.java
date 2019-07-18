@@ -359,5 +359,5 @@ public interface BinaryJedisCommands {
 
   Object sendCommand(ProtocolCommand cmd, byte[]... args);
 
-    Object sendCommand(ProtocolCommand cmd);
+  Object sendCommand(ProtocolCommand cmd);
 }

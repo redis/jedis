@@ -203,13 +203,13 @@ public class SetCommandsTest extends JedisCommandTestBase {
     expectedDst.add("c");
     expectedDst.add("a");
 
-    assertEquals(status, 1);
+    assertEquals(1, status);
     assertEquals(expectedSrc, jedis.smembers("foo"));
     assertEquals(expectedDst, jedis.smembers("bar"));
 
     status = jedis.smove("foo", "bar", "a");
 
-    assertEquals(status, 0);
+    assertEquals(0, status);
 
     // Binary
     jedis.sadd(bfoo, ba);
@@ -226,12 +226,12 @@ public class SetCommandsTest extends JedisCommandTestBase {
     bexpectedDst.add(bc);
     bexpectedDst.add(ba);
 
-    assertEquals(bstatus, 1);
+    assertEquals(1, bstatus);
     assertByteArraySetEquals(bexpectedSrc, jedis.smembers(bfoo));
     assertByteArraySetEquals(bexpectedDst, jedis.smembers(bbar));
 
     bstatus = jedis.smove(bfoo, bbar, ba);
-    assertEquals(bstatus, 0);
+    assertEquals(0, bstatus);
 
   }
 

@@ -230,7 +230,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     } catch (JedisDataException e) {
       // that is fine we should be here
     }
-    assertEquals(r.get(), "bar");
+    assertEquals("bar", r.get());
   }
 
   @Test
@@ -397,7 +397,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     } catch (JedisDataException e) {
       // that is fine we should be here
     }
-    assertEquals(r.get(), "bar");
+    assertEquals("bar", r.get());
     assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
   }
 

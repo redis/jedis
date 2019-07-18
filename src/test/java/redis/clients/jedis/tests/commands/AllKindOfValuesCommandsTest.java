@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.LRANGE;
+import static redis.clients.jedis.Protocol.Command.PING;
 import static redis.clients.jedis.Protocol.Command.RPUSH;
 import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
@@ -862,6 +863,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     expected.add("c".getBytes());
     for (int i = 0; i < 3; i++)
       assertArrayEquals(expected.get(i), list.get(i));
+
+    assertEquals("PONG", SafeEncoder.encode((byte[]) jedis.sendCommand(PING)));
   }
 
 }

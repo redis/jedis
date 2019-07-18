@@ -358,4 +358,6 @@ public interface BinaryJedisCommands {
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
   Object sendCommand(ProtocolCommand cmd, byte[]... args);
+
+    Object sendCommand(ProtocolCommand cmd);
 }

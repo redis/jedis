@@ -4050,4 +4050,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.sendCommand(cmd, args);
     return client.getOne();
   }
+
+  @Override
+  public Object sendCommand(ProtocolCommand cmd) {
+    return sendCommand(cmd, new byte[0][]);
+  }
 }

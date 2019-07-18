@@ -1044,4 +1044,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.sendCommand(cmd, args);
   }
 
+  @Override
+  public Object sendCommand(ProtocolCommand cmd) {
+    return sendCommand(cmd, new byte[0][]);
+  }
+
 }

@@ -288,6 +288,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(binaryValue.length, jedis.strlen(bfoo).intValue());
   }
 
+  @Test
   public void sendCommandTest(){
     Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
     String returnValue = SafeEncoder.encode((byte[]) obj);

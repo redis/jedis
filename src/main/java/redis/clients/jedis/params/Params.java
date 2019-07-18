@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class Params {
@@ -29,6 +30,14 @@ public abstract class Params {
       if (value != null) {
         if (value instanceof byte[]) {
           byteParams.add((byte[]) value);
+        } else if (value instanceof Boolean) {
+          byteParams.add(Protocol.toByteArray((boolean) value));
+        } else if (value instanceof Integer) {
+          byteParams.add(Protocol.toByteArray((int) value));
+        } else if (value instanceof Long) {
+          byteParams.add(Protocol.toByteArray((long) value));
+        } else if (value instanceof Double) {
+          byteParams.add(Protocol.toByteArray((double) value));
         } else {
           byteParams.add(SafeEncoder.encode(String.valueOf(value)));
         }

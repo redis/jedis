@@ -65,7 +65,7 @@ public class GeoRadiusParam extends Params {
 
     if (contains(COUNT)) {
       byteParams.add(SafeEncoder.encode(COUNT));
-      byteParams.add(Protocol.toByteArray((Integer) getParam(COUNT)));
+      byteParams.add(Protocol.toByteArray((int) getParam(COUNT)));
     }
 
     if (contains(ASC)) {

@@ -32,6 +32,7 @@ public class Connection implements Closeable {
   private RedisInputStream inputStream;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int soTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int infiniteSoTimeout = 0;
   private boolean broken = false;
   private boolean ssl;
   private SSLSocketFactory sslSocketFactory;
@@ -75,16 +76,20 @@ public class Connection implements Closeable {
     return connectionTimeout;
   }
 
-  public int getSoTimeout() {
-    return soTimeout;
-  }
-
   public void setConnectionTimeout(int connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
 
+  public int getSoTimeout() {
+    return soTimeout;
+  }
+
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
+  }
+
+  public void setInfiniteSoTimeout(int infiniteSoTimeout) {
+    this.infiniteSoTimeout = infiniteSoTimeout;
   }
 
   public void setTimeoutInfinite() {
@@ -92,7 +97,7 @@ public class Connection implements Closeable {
       if (!isConnected()) {
         connect();
       }
-      socket.setSoTimeout(0);
+      socket.setSoTimeout(infiniteSoTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);

@@ -98,6 +98,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final int infiniteSoTimeout) {
+    client = new Client(host, port);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
+    client.setInfiniteSoTimeout(infiniteSoTimeout);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl) {
     client = new Client(host, port, ssl);
     client.setConnectionTimeout(connectionTimeout);
@@ -110,6 +118,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
+  }
+
+  public BinaryJedis(final String host, final int port, final int connectionTimeout,
+      final int soTimeout, final int infiniteSoTimeout, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
+    client.setInfiniteSoTimeout(infiniteSoTimeout);
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
@@ -153,6 +171,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
+  }
+
+  public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
+      final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    client.setConnectionTimeout(connectionTimeout);
+    client.setSoTimeout(soTimeout);
+    client.setInfiniteSoTimeout(infiniteSoTimeout);
   }
 
   private void initializeClientFromURI(URI uri) {

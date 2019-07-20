@@ -31,9 +31,19 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
     super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
   }
 
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String password, String clientName) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, password, clientName);
+  }
+
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout,
                                          String user, String password, String clientName) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName);
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName,
@@ -45,6 +55,12 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
                                          String user, String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
                                          SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
   @Override

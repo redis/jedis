@@ -3830,7 +3830,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     client.sendCommand(cmd, args);
     return client.getOne();

@@ -1963,14 +1963,12 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);            
   }
 
-  @Override
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args){
     String key = args.length > 0 ? args[0] : cmd.toString();
     getClient(key).sendCommand(cmd, args);
     return getResponse(BuilderFactory.OBJECT);
   }
 
-  @Override
   public Response<Object> sendCommand(ProtocolCommand cmd, byte[]... args){
     byte[] key = args.length > 0 ? args[0] : cmd.getRaw();
     getClient(key).sendCommand(cmd, args);

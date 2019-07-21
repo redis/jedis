@@ -4046,13 +4046,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryMultiBulkReply();  
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     client.sendCommand(cmd, args);
     return client.getOne();
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd) {
     return sendCommand(cmd, dummyArray);
   }

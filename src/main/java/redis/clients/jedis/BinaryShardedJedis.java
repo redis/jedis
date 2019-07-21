@@ -1039,7 +1039,6 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     // default since no sample key provided in JedisCommands interface
     byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
@@ -1047,9 +1046,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.sendCommand(cmd, args);
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd) {
     return sendCommand(cmd, dummyArray);
   }
-
 }

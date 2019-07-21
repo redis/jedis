@@ -353,6 +353,4 @@ public interface BinaryRedisPipeline {
   Response<String> psetex(byte[] key, long milliseconds, byte[] value);
 
   Response<Double> hincrByFloat(byte[] key, byte[] field, double increment);
-
-  Response<Object> sendCommand(ProtocolCommand cmd, byte[]... args);
 }

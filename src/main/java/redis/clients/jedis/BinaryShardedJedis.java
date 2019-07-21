@@ -18,6 +18,9 @@ import redis.clients.jedis.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
+
+  private final byte[][] dummyArray = new byte[0][];
+
   public BinaryShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
   }
@@ -1036,12 +1039,14 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     // default since no sample key provided in JedisCommands interface
     byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
-    Jedis j = getShard(args[0]);
+    Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
   }
 
+  public Object sendCommand(ProtocolCommand cmd) {
+    return sendCommand(cmd, dummyArray);
+  }
 }

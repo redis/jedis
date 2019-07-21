@@ -43,6 +43,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   protected Client client = null;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
+  private final byte[][] dummyArray = new byte[0][];
 
   public BinaryJedis() {
     client = new Client();
@@ -4045,9 +4046,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryMultiBulkReply();  
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     client.sendCommand(cmd, args);
     return client.getOne();
+  }
+
+  public Object sendCommand(ProtocolCommand cmd) {
+    return sendCommand(cmd, dummyArray);
   }
 }

@@ -353,6 +353,4 @@ public interface RedisPipeline {
   Response<String> psetex(String key, long milliseconds, String value);
 
   Response<Double> hincrByFloat(String key, String field, double increment);
-
-  Response<Object> sendCommand(ProtocolCommand cmd, String... args);
 }

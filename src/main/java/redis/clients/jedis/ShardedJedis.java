@@ -1055,7 +1055,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
 
-  @Override
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     // default since no sample key provided in JedisCommands interface
     String sampleKey = args.length > 0 ? args[0] : cmd.toString();

@@ -482,6 +482,4 @@ public interface JedisClusterCommands {
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   Long waitReplicas(final String key, final int replicas, final long timeout);
-
-  Object sendCommand(final String sampleKey, ProtocolCommand cmd, String... args);
 }

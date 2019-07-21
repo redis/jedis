@@ -1,11 +1,13 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.PING;
 import static redis.clients.jedis.Protocol.Command.SET;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.util.Hashing;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Sharded;
 
 public class ShardedJedisTest {
@@ -350,6 +353,8 @@ public class ShardedJedisTest {
     j.auth("foobared");
     assertEquals("bar1", j.get("b"));
     j.disconnect();
+
+    assertEquals("PONG", SafeEncoder.encode((byte[]) jedis.sendCommand(PING)));
 
   }
 

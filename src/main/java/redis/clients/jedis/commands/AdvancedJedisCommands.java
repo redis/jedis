@@ -42,4 +42,6 @@ public interface AdvancedJedisCommands {
   String clientSetname(String name);
 
   String memoryDoctor();
+
+  List<Object> role();
 }

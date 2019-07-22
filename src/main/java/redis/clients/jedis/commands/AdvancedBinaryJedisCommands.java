@@ -42,4 +42,6 @@ public interface AdvancedBinaryJedisCommands {
   String clientSetname(byte[] name);
 
   byte[] memoryDoctorBinary();
+
+  List<byte[]> binaryRole();
 }

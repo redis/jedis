@@ -799,6 +799,10 @@ public class BinaryClient extends Connection {
     sendCommand(INFO, section);
   }
 
+  public void role() {
+    sendCommand(ROLE);
+  }
+
   public void monitor() {
     sendCommand(MONITOR);
   }

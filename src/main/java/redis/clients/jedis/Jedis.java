@@ -2771,6 +2771,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  /**
+   * The ROLE command returns information on the role of a Redis instance in the context of replication,
+   * by returning if the instance is currently a master, slave, or sentinel. The command also returns additional
+   * information about the state of the replication (if the role is master or slave) or the list of monitored master
+   * names (if the role is sentinel).
+   * @return result of the command.
+   */
+  @Override
+  public List<Object> role() {
+    client.role();
+    return client.getObjectMultiBulkReply();
+  }
+
   @Override
   public Object eval(final String script, final int keyCount, final String... params) {
     client.setTimeoutInfinite();

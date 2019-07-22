@@ -124,6 +124,14 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void testRole() {
+    List<Object> role = jedis.role();
+    assertNotNull(role);
+    List<byte[]> bytes = jedis.binaryRole();
+    assertNotNull(bytes);
+  }
+
+  @Test
   public void sync() {
     jedis.sync();
   }

@@ -2949,6 +2949,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * The ROLE command returns information on the role of a Redis instance in the context of replication,
+   * by returning if the instance is currently a master, slave, or sentinel. The command also returns additional
+   * information about the state of the replication (if the role is master or slave) or the list of monitored master
+   * names (if the role is sentinel).
+   * @return result of the command.
+   */
+  @Override
+  public List<byte[]> binaryRole() {
+    client.role();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  /**
    * Dump all the received requests in real time.
    * <p>
    * MONITOR is a debugging command that outputs the whole sequence of commands received by the

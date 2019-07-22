@@ -1889,12 +1889,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public String watch(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
     client.watch(keys);
     return client.getStatusCodeReply();
   }
 
   @Override
   public String unwatch() {
+    checkIsInMultiOrPipeline();
     client.unwatch();
     return client.getStatusCodeReply();
   }
@@ -3142,6 +3144,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public Long persist(final byte[] key) {
+    checkIsInMultiOrPipeline();
     client.persist(key);
     return client.getIntegerReply();
   }
@@ -3187,6 +3190,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public byte[] brpoplpush(final byte[] source, final byte[] destination, final int timeout) {
+    checkIsInMultiOrPipeline();
     client.brpoplpush(source, destination, timeout);
     client.setTimeoutInfinite();
     try {
@@ -3315,6 +3319,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
+    checkIsInMultiOrPipeline();
     client.setTimeoutInfinite();
     try {
       client.eval(script, keyCount, params);
@@ -3346,6 +3351,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Object evalsha(final byte[] sha1, final int keyCount, final byte[]... params) {
+    checkIsInMultiOrPipeline();
     client.setTimeoutInfinite();
     try {
       client.evalsha(sha1, keyCount, params);
@@ -4047,6 +4053,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    checkIsInMultiOrPipeline();
     client.sendCommand(cmd, args);
     return client.getOne();
   }

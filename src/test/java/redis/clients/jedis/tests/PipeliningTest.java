@@ -308,6 +308,24 @@ public class PipeliningTest {
     assertEquals("world", r3.get());
   }
 
+  @Test
+  public void multiWithWatch() {
+    String key = "foo";
+    String val = "bar";
+    List<Object> expect = new ArrayList<>();
+    List<Object> expMulti = new ArrayList<>();
+
+    Pipeline pipe = jedis.pipelined();
+    pipe.set(key, val); expect.add("OK");
+    pipe.watch(key);    expect.add("OK");
+    pipe.multi();       expect.add("OK");
+    pipe.unwatch();     expect.add("QUEUED");   expMulti.add("OK");
+    pipe.get(key);      expect.add("QUEUED");   expMulti.add(val);
+    pipe.exec();        expect.add(expMulti);
+
+    assertEquals(expect, pipe.syncAndReturnAll());
+  }
+
   @Test(expected = JedisDataException.class)
   public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();

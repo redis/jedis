@@ -31,16 +31,15 @@ public class HostAndPort implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof HostAndPort) {
-      HostAndPort hp = (HostAndPort) obj;
+    if (obj == null) return false;
+    if (obj == this) return true;
+    if (!(obj instanceof HostAndPort)) return false;
 
-      String thisHost = convertHost(host);
-      String hpHost = convertHost(hp.host);
-      return port == hp.port && thisHost.equals(hpHost);
+    HostAndPort hp = (HostAndPort) obj;
 
-    }
-
-    return false;
+    String thisHost = convertHost(host);
+    String hpHost = convertHost(hp.host);
+    return port == hp.port && thisHost.equals(hpHost);
   }
 
   @Override

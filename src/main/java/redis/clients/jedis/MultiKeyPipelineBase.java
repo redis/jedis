@@ -702,5 +702,11 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     client.migrate(host, port, destinationDB, timeout, params, keys);
     return getResponse(BuilderFactory.STRING);
   }
+
+  @Override
+  public Response<Object> sendCommand(ProtocolCommand cmd, String... args){
+    client.sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
+  }
   
 }

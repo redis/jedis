@@ -5,6 +5,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -135,5 +141,61 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   public void waitReplicas() {
     Long replicas = jedis.waitReplicas(1, 100);
     assertEquals(1, replicas.longValue());
+  }
+
+  @Test
+  public void clientPause() throws InterruptedException, ExecutionException {
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    try {
+      final Jedis jedisToPause1 = createJedis();
+      final Jedis jedisToPause2 = createJedis();
+
+      int pauseMillis = 1250;
+      jedis.clientPause(pauseMillis);
+
+      Future<Long> latency1 = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          assertEquals("PONG", jedisToPause1.ping());
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+      Future<Long> latency2 = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          assertEquals("PONG", jedisToPause2.ping());
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+
+      long latencyMillis1 = latency1.get();
+      long latencyMillis2 = latency2.get();
+
+      int pauseMillisDelta = 100;
+      assertTrue(pauseMillis <= latencyMillis1 && latencyMillis1 <= pauseMillis + pauseMillisDelta);
+      assertTrue(pauseMillis <= latencyMillis2 && latencyMillis2 <= pauseMillis + pauseMillisDelta);
+
+      jedisToPause1.close();
+      jedisToPause2.close();
+    } finally {
+      executorService.shutdown();
+      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+        executorService.shutdownNow();
+      }
+    }
+  }
+
+  @Test
+  public void memoryDoctorString() {
+    String memoryInfo = jedis.memoryDoctor();
+    assertNotNull(memoryInfo);
+  }
+
+  @Test
+  public void memoryDoctorBinary() {
+    byte[] memoryInfo = jedis.memoryDoctorBinary();
+    assertNotNull(memoryInfo);
   }
 }

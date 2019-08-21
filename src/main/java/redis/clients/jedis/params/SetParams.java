@@ -2,6 +2,7 @@ package redis.clients.jedis.params;
 
 import java.util.ArrayList;
 
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class SetParams extends Params {
@@ -71,13 +72,11 @@ public class SetParams extends Params {
 
     if (contains(EX)) {
       byteParams.add(SafeEncoder.encode(EX));
-      final Object param = getParam(EX);
-      byteParams.add(SafeEncoder.encode(String.valueOf(param)));
+      byteParams.add(Protocol.toByteArray((int) getParam(EX)));
     }
     if (contains(PX)) {
       byteParams.add(SafeEncoder.encode(PX));
-      final Object param = getParam(PX);
-      byteParams.add(SafeEncoder.encode(String.valueOf(param)));
+      byteParams.add(Protocol.toByteArray((long) getParam(PX)));
     }
 
     return byteParams.toArray(new byte[byteParams.size()][]);

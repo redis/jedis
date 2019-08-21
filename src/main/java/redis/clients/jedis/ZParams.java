@@ -26,6 +26,7 @@ public class ZParams {
   /**
    * Set weights.
    * @param weights weights.
+   * @return 
    */
   public ZParams weights(final double... weights) {
     params.add(WEIGHTS.raw);

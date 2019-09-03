@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.Pool;
+import redis.clients.util.wait.ExponentialWait;
+import redis.clients.util.wait.IWaitStrategy;
+import redis.clients.util.wait.SentinelUpEvaluator;
 
 public class JedisSentinelPool extends Pool<Jedis> {
 
@@ -258,24 +261,37 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected String masterName;
     protected String host;
     protected int port;
-    protected long subscribeRetryWaitTimeMillis = 5000;
+
+    //Replace hardcoded subscribeRetryWaitTimeMillis by WaitStrategy
+    protected IWaitStrategy waitStrategy;
+
+
     protected volatile Jedis j;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
     protected MasterListener() {
     }
 
-    public MasterListener(String masterName, String host, int port) {
+    /**
+     * Ctor which gets the wait strategy passed
+     * @param masterName
+     * @param host
+     * @param port
+     * @param waitStrategy
+     */
+    public MasterListener(String masterName, String host, int port, IWaitStrategy waitStrategy) {
       super(String.format("MasterListener-%s-[%s:%d]", masterName, host, port));
       this.masterName = masterName;
       this.host = host;
       this.port = port;
+      this.waitStrategy = waitStrategy;
     }
 
-    public MasterListener(String masterName, String host, int port,
-        long subscribeRetryWaitTimeMillis) {
-      this(masterName, host, port);
-      this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
+    /**
+     * Ctor which uses an exponential wait strategy by waiting between 1s and 2mins
+     */
+    public MasterListener(String masterName, String host, int port) {
+      this(masterName, host, port, new ExponentialWait(new SentinelUpEvaluator(host, port)));
     }
 
     @Override
@@ -334,7 +350,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
             log.error("Lost connection to Sentinel at {}:{}. Sleeping 5000ms and retrying.", host,
               port, e);
             try {
-              Thread.sleep(subscribeRetryWaitTimeMillis);
+              waitStrategy.waitFor();
             } catch (InterruptedException e1) {
               log.error("Sleep interrupted: ", e1);
             }

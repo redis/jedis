@@ -6,6 +6,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -51,6 +52,15 @@ public class JedisPool extends JedisPoolAbstract {
           Protocol.DEFAULT_DATABASE, null, false, null, null, null), new GenericObjectPoolConfig());
     }
   }
+
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, final int port,
+			final int connectionTimeout, final int soTimeout, final String password, final int database,
+			final String clientName, final boolean ssl, AbandonedConfig abandonedConfig) {
+		this.internalPool = new GenericObjectPool<Jedis>(
+					new JedisFactory(host, port, connectionTimeout, soTimeout,
+							password, database, clientName, ssl, null, null, null),
+					poolConfig, abandonedConfig);
+	}
 
   public JedisPool(final URI uri) {
     this(new GenericObjectPoolConfig(), uri);

@@ -10,6 +10,7 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEqua
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -128,9 +129,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     range = jedis.lrange("foo", 1, 2);
     assertEquals(expected, range);
 
-    expected = new ArrayList<String>();
     range = jedis.lrange("foo", 2, 1);
-    assertEquals(expected, range);
+    assertEquals(Collections.<String>emptyList(), range);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -155,9 +155,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     brange = jedis.lrange(bfoo, 1, 2);
     assertByteArrayListEquals(bexpected, brange);
 
-    bexpected = new ArrayList<byte[]>();
     brange = jedis.lrange(bfoo, 2, 1);
-    assertByteArrayListEquals(bexpected, brange);
+    assertByteArrayListEquals(Collections.<byte[]>emptyList(), brange);
 
   }
 

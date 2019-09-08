@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -128,7 +129,9 @@ public class ListCommandsTest extends JedisCommandTestBase {
     range = jedis.lrange("foo", 1, 2);
     assertEquals(expected, range);
 
-    assertNull(jedis.lrange("foo", 2, 1));
+    expected = new ArrayList<String>();
+    range = jedis.lrange("foo", 2, 1);
+    assertEquals(expected, range);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -153,7 +156,9 @@ public class ListCommandsTest extends JedisCommandTestBase {
     brange = jedis.lrange(bfoo, 1, 2);
     assertByteArrayListEquals(bexpected, brange);
 
-    assertNull(jedis.lrange(bfoo, 2, 1));
+    bexpected = new ArrayList<byte[]>();
+    brange = jedis.lrange(bfoo, 2, 1);
+    assertByteArrayListEquals(bexpected, brange);
 
   }
 

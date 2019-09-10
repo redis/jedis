@@ -480,4 +480,14 @@ public interface JedisCommands {
    */        
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  /**
+   * Introspection command used in order to retrieve different information about the streams
+   * and associated consumer groups.
+   * @param key
+   * @param type
+   * @return
+   */
+  String xinfo (String key, String type);
+  //TODO add an enum to select stream/group/consumers
 }

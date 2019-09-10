@@ -3830,6 +3830,67 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
+  @Override
+  public String xinfo(String key, String type) {
+
+    client.xinfo(key,type);
+    StringBuilder sb = new StringBuilder();
+    List<Object> streamsEntries = client.getObjectMultiBulkReply();
+    if(streamsEntries == null) {
+      return null;
+    }
+
+    List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
+    Iterator<Object> iterator = streamsEntries.iterator();
+
+    while (iterator.hasNext()) {
+      Object object = iterator.next();
+      if (object instanceof byte[]) {
+
+        String mapKey  = SafeEncoder.encode((byte[]) object);
+        if (mapKey.equals("first-entry")|| mapKey.equals("last-entry")) {
+          sb.append(mapKey).append(" ");
+          ArrayList<Object> list = (ArrayList<Object>)iterator.next();
+          sb.append(SafeEncoder.encode((byte[]) ((ArrayList) list).get(0))).append(" ");
+          ArrayList<byte[]> innerList = (ArrayList<byte[]>) list.get(1);
+          sb.append(SafeEncoder.encode((byte[]) innerList.get(0))).append(" ");
+          sb.append(SafeEncoder.encode((byte[]) innerList.get(1))).append(" ");
+
+        } else if (mapKey.equals("last-generated-id")) {
+          sb.append(mapKey).append(" ");
+          sb.append(SafeEncoder.encode((byte[]) iterator.next())).append(" ");
+
+        } else {
+          sb.append(mapKey).append(" ");
+          sb.append((Long)iterator.next()).append(" ");
+        }
+        /*sb.append(SafeEncoder.encode((byte[]) object)).append(" ");
+        sb.append((Long)iterator.next()).append(" ");
+      } else if (object instanceof ArrayList ) {
+
+      }*/
+    }
+    /*for(Object streamObj : streamsEntries) {
+      if (streamObj instanceof byte[]) {
+        sb.append(SafeEncoder.encode((byte[]) streamObj)).append(" ");
+      } else if (streamObj instanceof Long) {
+        sb.append((Long)streamObj).append(" ");
+      } else {
+        ArrayList<Object> list = (ArrayList<Object>) streamObj;
+        sb.append(SafeEncoder.encode((byte[]) ((ArrayList) list).get(0))).append(" ");
+        ArrayList<byte[]> innerList = (ArrayList<byte[]>) list.get(1);
+        sb.append(SafeEncoder.encode((byte[]) innerList.get(0))).append(" ");
+        sb.append(SafeEncoder.encode((byte[]) innerList.get(1))).append(" ");
+      }*/
+      /*List<Object> stream = (List<Object>)streamObj;
+      String streamId = SafeEncoder.encode((byte[])stream.get(0));
+      List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+      result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));*/
+    }
+    return sb.toString();
+    //return "";
+  }
+
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     client.sendCommand(cmd, args);
     return client.getOne();

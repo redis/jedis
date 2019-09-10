@@ -14,6 +14,7 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.util.Hashing;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
@@ -1053,6 +1054,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       int retries, boolean force, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  @Override
+  public String xinfo(String key, String type) {
+
+    throw new NotImplementedException();
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {

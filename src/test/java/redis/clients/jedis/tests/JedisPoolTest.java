@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -399,6 +400,36 @@ public class JedisPoolTest {
       assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
 
+  }
+
+  @Test
+  public void testNooptPreparePoolWhenMinIdleIsZero() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
+    assertEquals(pool.getNumIdle(), 0);
+    pool.prepareInternalPool();
+    assertEquals(pool.getNumIdle(), 0);
+  }
+
+  @Test
+  public void testPreparePoolCatchesExceptions() {
+    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    jedisPoolConfig.setMinIdle(8);
+
+    JedisPool pool = new JedisPool(jedisPoolConfig, "invalid", hnp.getPort(), 2000);
+    assertEquals(pool.getNumIdle(), 0);
+    pool.prepareInternalPool(); // catches and logs exception
+    assertEquals(pool.getNumIdle(), 0);
+  }
+
+  @Test
+  public void testPreparePoolWhenMinIdleIsNonZero() {
+    JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    jedisPoolConfig.setMinIdle(8);
+
+    JedisPool pool = new JedisPool(jedisPoolConfig, hnp.getHost(), hnp.getPort(), 2000);
+    assertEquals(pool.getNumIdle(), 0);
+    pool.prepareInternalPool();
+    assertEquals(pool.getNumIdle(), 8);
   }
 
   private int getClientCount(final String clientList) {

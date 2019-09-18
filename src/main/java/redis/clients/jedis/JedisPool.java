@@ -30,11 +30,11 @@ public class JedisPool extends JedisPoolAbstract {
     URI uri = URI.create(host);
     if (JedisURIHelper.isValid(uri)) {
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null), new GenericObjectPoolConfig());
+          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null), new GenericObjectPoolConfig<Jedis>());
     } else {
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(host,
           Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null,
-          Protocol.DEFAULT_DATABASE, null), new GenericObjectPoolConfig());
+          Protocol.DEFAULT_DATABASE, null), new GenericObjectPoolConfig<Jedis>());
     }
   }
 
@@ -44,11 +44,11 @@ public class JedisPool extends JedisPoolAbstract {
     if (JedisURIHelper.isValid(uri)) {
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(uri,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory, sslParameters,
-          hostnameVerifier), new GenericObjectPoolConfig());
+          hostnameVerifier), new GenericObjectPoolConfig<Jedis>());
     } else {
       this.internalPool = new GenericObjectPool<Jedis>(new JedisFactory(host,
           Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null,
-          Protocol.DEFAULT_DATABASE, null, false, null, null, null), new GenericObjectPoolConfig());
+          Protocol.DEFAULT_DATABASE, null, false, null, null, null), new GenericObjectPoolConfig<Jedis>());
     }
   }
 

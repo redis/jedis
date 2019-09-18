@@ -12,7 +12,7 @@ import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 /**
  * This implementation is based on the facts that class "redis.clients.jedis.PipelineBase" is
@@ -242,9 +242,7 @@ public class JedisClusterPipeline extends PipelineBase implements CommandListene
           retries.add(operation);
         } catch (JedisException e) {
           operation.setError(e);
-
-          // No more retries, connection may corrupt
-          releaseConnection(operation.getConnection());
+          break;
         }
       }
 

@@ -19,10 +19,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.JedisCluster.Reset;
 import redis.clients.jedis.JedisClusterPipeline;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Response;
@@ -36,7 +36,6 @@ public class JedisClusterPipelineTest {
   private static Jedis node3;
   private static Jedis node4;
   private static Jedis nodeSlave2;
-  private String localHost = "127.0.0.1";
 
   private static final int DEFAULT_TIMEOUT = 2000;
   private static final int DEFAULT_REDIRECTIONS = 5;
@@ -73,8 +72,8 @@ public class JedisClusterPipelineTest {
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet(localHost, nodeInfo2.getPort());
-    node1.clusterMeet(localHost, nodeInfo3.getPort());
+    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
 
     // split available slots across the three nodes
     int slotsPerNode = JedisCluster.HASHSLOTS / 3;
@@ -104,10 +103,10 @@ public class JedisClusterPipelineTest {
     node2.flushDB();
     node3.flushDB();
     node4.flushDB();
-    node1.clusterReset(Reset.SOFT);
-    node2.clusterReset(Reset.SOFT);
-    node3.clusterReset(Reset.SOFT);
-    node4.clusterReset(Reset.SOFT);
+    node1.clusterReset(ClusterReset.SOFT);
+    node2.clusterReset(ClusterReset.SOFT);
+    node3.clusterReset(ClusterReset.SOFT);
+    node4.clusterReset(ClusterReset.SOFT);
   }
 
   @After

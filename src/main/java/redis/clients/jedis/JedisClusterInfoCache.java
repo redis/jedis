@@ -20,6 +20,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public class JedisClusterInfoCache {
   private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
   private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private Map<Integer, HostAndPort> mapping = new HashMap<Integer, HostAndPort>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -146,6 +147,7 @@ public class JedisClusterInfoCache {
   private void discoverClusterSlots(Jedis jedis) {
     List<Object> slots = jedis.clusterSlots();
     this.slots.clear();
+    this.mapping.clear();
 
     for (Object slotInfoObj : slots) {
       List<Object> slotInfo = (List<Object>) slotInfoObj;
@@ -202,6 +204,7 @@ public class JedisClusterInfoCache {
     try {
       JedisPool targetPool = setupNodeIfNotExist(targetNode);
       slots.put(slot, targetPool);
+      mapping.put(slot, targetNode);
     } finally {
       w.unlock();
     }
@@ -213,6 +216,7 @@ public class JedisClusterInfoCache {
       JedisPool targetPool = setupNodeIfNotExist(targetNode);
       for (Integer slot : targetSlots) {
         slots.put(slot, targetPool);
+        mapping.put(slot, targetNode);
       }
     } finally {
       w.unlock();
@@ -274,6 +278,7 @@ public class JedisClusterInfoCache {
       }
       nodes.clear();
       slots.clear();
+      mapping.clear();
     } finally {
       w.unlock();
     }
@@ -298,5 +303,14 @@ public class JedisClusterInfoCache {
       slotNums.add(slot);
     }
     return slotNums;
+  }
+
+  public HostAndPort getSlotNode(int slot) {
+    r.lock();
+    try {
+      return mapping.get(slot);
+    } finally {
+      r.unlock();
+    }
   }
 }

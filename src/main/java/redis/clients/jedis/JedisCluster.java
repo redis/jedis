@@ -133,6 +133,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  public JedisClusterPipeline pipelined() {
+    return new JedisClusterPipeline(connectionHandler);
+  }
+
   @Override
   public String set(final String key, final String value) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {

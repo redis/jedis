@@ -45,6 +45,14 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     return cache.getNodes();
   }
 
+  public HostAndPort getSlotNode(int slot) {
+    return cache.getSlotNode(slot);
+  }
+
+  public void assignSlotToNode(int slot, HostAndPort targetNode) {
+    cache.assignSlotToNode(slot, targetNode);
+  }
+
   private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {

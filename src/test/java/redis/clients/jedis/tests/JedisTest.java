@@ -1,17 +1,6 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Test;
-
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
@@ -22,6 +11,15 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class JedisTest extends JedisCommandTestBase {
   @Test
@@ -179,4 +177,9 @@ public class JedisTest extends JedisCommandTestBase {
     assertFalse(jedis.getClient().isConnected());
   }
 
+  @Test public void shouldReturnListWithNullValueWhenGettingEmptyStringKeys() {
+    final List<String> mget = jedis.mget(new String[0]);
+    assertEquals(1, mget.size());
+    assertNull(mget.get(0));
+  }
 }

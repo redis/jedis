@@ -1,34 +1,16 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import redis.clients.jedis.commands.*;
+import redis.clients.jedis.params.*;
+import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.Slowlog;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-
-import redis.clients.jedis.commands.AdvancedJedisCommands;
-import redis.clients.jedis.commands.BasicCommands;
-import redis.clients.jedis.commands.ClusterCommands;
-import redis.clients.jedis.commands.JedisCommands;
-import redis.clients.jedis.commands.ModuleCommands;
-import redis.clients.jedis.commands.MultiKeyCommands;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.ScriptingCommands;
-import redis.clients.jedis.commands.SentinelCommands;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.util.Slowlog;
+import java.net.URI;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
@@ -464,6 +446,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public List<String> mget(final String... keys) {
+    if (keys == null || keys.length == 0) {
+      return Collections.singletonList(null);
+    }
     checkIsInMultiOrPipeline();
     client.mget(keys);
     return client.getMultiBulkReply();
@@ -2988,7 +2973,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     final List<Map<String, String>> masters = new ArrayList<Map<String, String>>();
     for (Object obj : reply) {
-      masters.add(BuilderFactory.STRING_MAP.build((List) obj));
+      masters.add(BuilderFactory.STRING_MAP.build(obj));
     }
     return masters;
   }
@@ -3066,7 +3051,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     final List<Map<String, String>> slaves = new ArrayList<Map<String, String>>();
     for (Object obj : reply) {
-      slaves.add(BuilderFactory.STRING_MAP.build((List) obj));
+      slaves.add(BuilderFactory.STRING_MAP.build(obj));
     }
     return slaves;
   }

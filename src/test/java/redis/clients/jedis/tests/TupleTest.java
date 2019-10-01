@@ -18,8 +18,8 @@ public class TupleTest {
 
     assertEquals(0, t1.compareTo(t2));
     assertEquals(0, t2.compareTo(t1));
-    assertTrue(t1.equals(t2));
-    assertTrue(t2.equals(t1));
+    assertTrue(t1.equals(t2)); // directly calling Tuple.equals()
+    assertTrue(t2.equals(t1)); // directly calling Tuple.equals()
   }
 
   @Test
@@ -29,8 +29,8 @@ public class TupleTest {
 
     assertEquals(1, t1.compareTo(t2));
     assertEquals(-1, t2.compareTo(t1));
-    assertFalse(t1.equals(t2));
-    assertFalse(t2.equals(t1));
+    assertFalse(t1.equals(t2)); // directly calling Tuple.equals()
+    assertFalse(t2.equals(t1)); // directly calling Tuple.equals()
   }
 
   @Test
@@ -41,8 +41,8 @@ public class TupleTest {
 
     assertEquals(1, t1.compareTo(t2));
     assertEquals(-1, t2.compareTo(t1));
-    assertFalse(t1.equals(t2));
-    assertFalse(t2.equals(t1));
+    assertFalse(t1.equals(t2)); // directly calling Tuple.equals()
+    assertFalse(t2.equals(t1)); // directly calling Tuple.equals()
   }
 
   @Test
@@ -52,8 +52,8 @@ public class TupleTest {
 
     assertEquals(-1, t1.compareTo(t2));
     assertEquals(1, t2.compareTo(t1));
-    assertFalse(t1.equals(t2));
-    assertFalse(t2.equals(t1));
+    assertFalse(t1.equals(t2)); // directly calling Tuple.equals()
+    assertFalse(t2.equals(t1)); // directly calling Tuple.equals()
   }
 
   @Test
@@ -62,8 +62,8 @@ public class TupleTest {
     Tuple t2 = new Tuple("user1", 5.0);
 
     // Intentionally skipping compareTo.
-    assertFalse(t1.equals(t2));
-    assertFalse(t2.equals(t1));
+    assertFalse(t1.equals(t2)); // directly calling Tuple.equals()
+    assertFalse(t2.equals(t1)); // directly calling Tuple.equals()
 
     HashSet<Tuple> hashSet = new HashSet<Tuple>();
     hashSet.add(t1);

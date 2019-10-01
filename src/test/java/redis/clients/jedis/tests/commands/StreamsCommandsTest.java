@@ -307,6 +307,33 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void xinfo() {
+
+
+    try {
+      Map<String,String> map1 = new HashMap<String, String>();
+      jedis.xadd("stream1", null, map1);
+      fail();
+    } catch (JedisDataException expected) {
+      assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
+    }
+
+    Map<String,String> map1 = new HashMap<String, String>();
+    map1.put("f1", "v1");
+    StreamEntryID id1 = jedis.xadd("xadd-stream1", null, map1);
+    assertNotNull(id1);
+
+    Map<String, Object> xinfo =jedis.xinfo("xadd-stream1", "stream");
+    assertEquals(1L,xinfo.get("length"));
+    assertEquals(1L,xinfo.get("radix-tree-keys"));
+    assertEquals(2L,xinfo.get("radix-tree-nodes"));
+    assertEquals(0L,xinfo.get("groups"));
+    assertTrue(xinfo.get("first-entry") instanceof StreamEntry );
+    assertTrue(xinfo.get("last-entry") instanceof StreamEntry );
+
+  }
+
+  @Test
   public void pipeline() {
     Map<String,String> map = new HashMap<>();
     map.put("a", "b");

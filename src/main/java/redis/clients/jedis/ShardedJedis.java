@@ -1057,7 +1057,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String xinfo(String key, String type) {
+  public Map<String, Object> xinfo(String key, String type) {
 
     throw new NotImplementedException();
   }

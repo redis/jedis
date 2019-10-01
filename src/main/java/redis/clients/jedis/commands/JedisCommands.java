@@ -488,6 +488,6 @@ public interface JedisCommands {
    * @param type
    * @return
    */
-  String xinfo (String key, String type);
+  Map<String, Object> xinfo (String key, String type);
   //TODO add an enum to select stream/group/consumers
 }

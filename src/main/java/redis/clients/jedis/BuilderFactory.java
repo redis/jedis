@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -527,6 +528,41 @@ public final class BuilderFactory {
       return "List<StreamEntry>";
     }
   };
+
+  public static final Builder<StreamEntry> STREAM_ENTRY = new Builder<StreamEntry>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  StreamEntry build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      ArrayList<Object> objectList = (ArrayList<Object>) data;
+
+      if (objectList.isEmpty()) {
+        return null;
+      }
+
+      String entryIdString = SafeEncoder.encode((byte[]) objectList.get(0));
+      StreamEntryID entryID = new StreamEntryID(entryIdString);
+      List<byte[]> hash = (List<byte[]>) objectList.get(1);
+
+      Iterator<byte[]> hashIterator = hash.iterator();
+      Map<String, String> map = new HashMap<>(hash.size() / 2);
+      while (hashIterator.hasNext()) {
+        map.put(SafeEncoder.encode((byte[]) hashIterator.next()),
+            SafeEncoder.encode((byte[]) hashIterator.next()));
+      }
+      StreamEntry streamEntry = new StreamEntry(entryID, map);
+
+
+      return streamEntry;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamEntry>";
+    }
+  };
   
   public static final Builder<List<StreamPendingEntry>> STREAM_PENDING_ENTRY_LIST = new Builder<List<StreamPendingEntry>>() {
     @Override
@@ -552,6 +588,61 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<StreamPendingEntry>";
+    }
+  };
+
+  public static final Builder<Map<String,Object>> STREAM_INFO = new Builder<Map<String,Object>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  Map<String,Object> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      Map<String,Builder> mappingFunctions = new HashMap<>();
+      mappingFunctions.put("last-generated-id",STRING);
+      mappingFunctions.put("first-entry",STREAM_ENTRY);
+      mappingFunctions.put("length", LONG);
+      mappingFunctions.put("radix-tree-keys", LONG);
+      mappingFunctions.put("radix-tree-nodes", LONG);
+      mappingFunctions.put("last-generated-id", STRING);
+      mappingFunctions.put("last-entry",STREAM_ENTRY);
+      mappingFunctions.put("groups", LONG);
+
+
+      Map<String, Object> resultMap = new HashMap<>();
+      List<Object> streamsEntries = (List<Object>)data;
+      Iterator<Object> iterator = streamsEntries.iterator();
+
+      while (iterator.hasNext()) {
+
+          String mapKey = STRING.build(iterator.next());
+          resultMap.put(mapKey,mappingFunctions.get(mapKey).build(iterator.next()));
+
+      }
+      return resultMap;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<Key,Object>";
+    }
+  };
+
+  public static final Builder<Map<String,Object>> STREAM_GROUP_INFO = new Builder<Map<String,Object>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  Map<String,Object> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public String toString() {
+      return "Map<Key,StreamInfoElement>";
     }
   };
 

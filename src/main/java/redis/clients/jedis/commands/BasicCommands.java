@@ -114,8 +114,8 @@ public interface BasicCommands {
   /**
    * The SLAVEOF command can change the replication settings of a slave on the fly. In the proper form SLAVEOF hostname port will make the server a slave of another server listening at the specified hostname and port.
    * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication against the old server and start the synchronization against the new one, discarding the old dataset.
-   * @param host, listening at the specified hostname
-   * @param port, server listening at the specified port
+   * @param host listening at the specified hostname
+   * @param port server listening at the specified port
    * @return result of the command.
    */
   String slaveof(String host, int port);

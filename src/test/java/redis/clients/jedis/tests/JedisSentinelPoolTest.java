@@ -88,20 +88,6 @@ public class JedisSentinelPoolTest {
   }
 
   @Test
-  public void ensureSafeTwiceFailover() throws InterruptedException {
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-        new GenericObjectPoolConfig(), 1000, "foobared", 2);
-
-    forceFailover(pool);
-    // after failover sentinel needs a bit of time to stabilize before a new
-    // failover
-    Thread.sleep(100);
-    forceFailover(pool);
-
-    // you can test failover as much as possible
-  }
-
-  @Test
   public void returnResourceShouldResetState() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
@@ -176,6 +162,19 @@ public class JedisSentinelPoolTest {
     assertTrue(pool.isClosed());
   }
 
+  @Test
+  public void ensureSafeTwiceFailover() throws InterruptedException {
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+        new GenericObjectPoolConfig(), 1000, "foobared", 2, "twice-failover-client");
+
+    forceFailover(pool);
+    // after failover sentinel needs a bit of time to stabilize before a new failover
+    Thread.sleep(100);
+    forceFailover(pool);
+
+    // you can test failover as much as possible
+  }
+
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
     HostAndPort oldMaster = pool.getCurrentHostMaster();
 
@@ -187,8 +186,8 @@ public class JedisSentinelPoolTest {
 
     Jedis afterFailoverJedis = pool.getResource();
     assertEquals("PONG", afterFailoverJedis.ping());
-    assertEquals("foobared", afterFailoverJedis.configGet("requirepass").get(1));
     assertEquals(2, afterFailoverJedis.getDB());
+    assertEquals("twice-failover-client", afterFailoverJedis.clientGetname());
 
     // returning both connections to the pool should not throw
     beforeFailoverJedis.close();

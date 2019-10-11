@@ -13,15 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.commands.AdvancedJedisCommands;
-import redis.clients.jedis.commands.BasicCommands;
-import redis.clients.jedis.commands.ClusterCommands;
-import redis.clients.jedis.commands.JedisCommands;
-import redis.clients.jedis.commands.ModuleCommands;
-import redis.clients.jedis.commands.MultiKeyCommands;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.ScriptingCommands;
-import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
@@ -31,7 +23,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
+    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands, ACLCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
@@ -3640,6 +3632,41 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<Module> moduleList() {
     client.moduleList();
     return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclSetUser(final String name) {
+    client.aclSetUser(name);
+    return client.getStatusCodeReply();
+  }
+
+  public String aclSetUser(String name, String... params) {
+    client.aclSetUser(name, params);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long aclDelUser(final String name) {
+    client.aclDelUser(name);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public UserACL aclGetUser(final String name) {
+    client.aclGetUser(name);
+    return BuilderFactory.USER_INFO.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclList() {
+    client.aclList();
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclWhoAmI() {
+    client.aclWhoAmi();
+    return client.getStatusCodeReply();
   }
 
   @Override

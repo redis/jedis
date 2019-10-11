@@ -457,6 +457,52 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * Create a UserACL object from the ACL GETUSER < > result
+   */
+  public static final Builder<UserACL> USER_INFO = new Builder<UserACL>() {
+    @Override
+    public UserACL build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<List<Object>> objectList = (List<List<Object>>) data;
+      if (objectList.isEmpty()) { return null; }
+
+      UserACL userACL = new UserACL();
+
+      // flags
+      List<Object> flags = objectList.get(1);
+      for (Object f : flags) {
+        userACL.addFlag(SafeEncoder.encode((byte[]) f));
+      };
+
+      // passwords
+      List<Object> passwords = objectList.get(3);
+      for (Object p : passwords) {
+        userACL.addPassword(SafeEncoder.encode((byte[]) p));
+      };
+
+      // commands
+      userACL.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
+
+      // keys
+      List<Object> keys = objectList.get(7);
+      for (Object k : keys) {
+        userACL.addKey(SafeEncoder.encode((byte[]) k));
+      };
+
+      return userACL;
+    }
+
+    @Override
+    public String toString() {
+      return "UserACL";
+    }
+
+  };
+
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -490,7 +536,6 @@ public final class BuilderFactory {
       return "StreamEntryID";
     }
   };
-  
 
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override

@@ -2229,6 +2229,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  /**
+   * Request for authentication with a Redis Server that is using ACL where user are authenticated with
+   * username and password.
+   * See https://redis.io/topics/acl
+   * @param user
+   * @param password
+   * @return
+   */
+  @Override
+  public String auth(final String user, final String password) {
+    checkIsInMultiOrPipeline();
+    client.auth(user, password);
+    return client.getStatusCodeReply();
+  }
+
   public Pipeline pipelined() {
     pipeline = new Pipeline();
     pipeline.setClient(client);

@@ -35,6 +35,7 @@ public class BinaryClient extends Connection {
 
   private boolean isInMulti;
 
+  private String user;
   private String password;
 
   private int db;
@@ -86,6 +87,8 @@ public class BinaryClient extends Connection {
     return result;
   }
 
+  public void setUser(final String user) { this.user = user; }
+
   public void setPassword(final String password) {
     this.password = password;
   }
@@ -98,7 +101,10 @@ public class BinaryClient extends Connection {
   public void connect() {
     if (!isConnected()) {
       super.connect();
-      if (password != null) {
+      if (user != null) {
+        auth(user, password);
+        getStatusCodeReply();
+      } else if (password != null) {
         auth(password);
         getStatusCodeReply();
       }
@@ -583,6 +589,12 @@ public class BinaryClient extends Connection {
   public void auth(final String password) {
     setPassword(password);
     sendCommand(AUTH, password);
+  }
+
+  public void auth(final String user, final String password) {
+    setUser(user);
+    setPassword(password);
+    sendCommand(AUTH, user, password);
   }
 
   public void subscribe(final byte[]... channels) {
@@ -1242,6 +1254,37 @@ public class BinaryClient extends Connection {
     }
 
     return args;
+  }
+
+  public void aclWhoAmi() {
+    sendCommand(ACL, Keyword.WHOAMI.raw);
+  }
+
+  public void aclList() {
+    sendCommand(ACL, Keyword.LIST.raw);
+  }
+
+  public void aclSetUser(final byte[] name) {
+    sendCommand(ACL, Keyword.SETUSER.raw, name);
+  }
+
+  public void aclGetUser(final byte[] name) {
+    sendCommand(ACL, Keyword.GETUSER.raw, name);
+  }
+
+  public void aclSetUser(final byte[] name, byte[][] parameters) {
+    final byte[][] cmdParams = new byte[2 + parameters.length][];
+    int index = 0;
+    cmdParams[index++] = Keyword.SETUSER.raw;
+    cmdParams[index++] = name;
+    for (final byte[] key : parameters) {
+      cmdParams[index++] = key;
+    }
+    sendCommand(ACL, cmdParams);
+  }
+
+  public void aclDelUser(final byte[] name) {
+    sendCommand(ACL, Keyword.DELUSER.raw, name);
   }
 
   private List<byte[]> convertGeoCoordinateMapToByteArrays(

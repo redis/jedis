@@ -6,18 +6,15 @@ import java.util.List;
 import java.util.Locale;
 
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisBusyException;
-import redis.clients.jedis.exceptions.JedisClusterException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.exceptions.JedisNoScriptException;
+import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class Protocol {
+
+  public static final String WRONGPASS_PREFIX = "WRONGPASS";
+  public static final String NOPERM_PREFIX = "NOPERM";
 
   private static final String ASK_PREFIX = "ASK ";
   private static final String MOVED_PREFIX = "MOVED ";
@@ -126,8 +123,12 @@ public final class Protocol {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_PREFIX)) {
       throw new JedisBusyException(message);
-    } else if (message.startsWith(NOSCRIPT_PREFIX) ) {
+    } else if (message.startsWith(NOSCRIPT_PREFIX)) {
       throw new JedisNoScriptException(message);
+    } else if (message.startsWith(WRONGPASS_PREFIX)) {
+      throw new JedisAuthenticationException(message);
+    } else if (message.startsWith(NOPERM_PREFIX)) {
+      throw new JedisPermissionException(message);
     }
     throw new JedisDataException(message);
   }
@@ -153,7 +154,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
-    switch(b) {
+    switch (b) {
     case PLUS_BYTE:
       return processStatusCodeReply(is);
     case DOLLAR_BYTE:
@@ -259,7 +260,8 @@ public final class Protocol {
     PSETEX, CLIENT, TIME, MIGRATE, HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING,
     PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO,
     GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB, MEMORY,
-    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM;
+    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
+    ACL;
 
     private final byte[] raw;
 
@@ -277,9 +279,9 @@ public final class Protocol {
     AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
-    GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR, 
-    BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, 
-    IDLE, TIME, RETRYCOUNT, FORCE;
+    GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR, BLOCK,
+    NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, IDLE, TIME,
+    RETRYCOUNT, FORCE, SETUSER, GETUSER, DELUSER, WHOAMI;
 
     public final byte[] raw;
 

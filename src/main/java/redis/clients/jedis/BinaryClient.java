@@ -1256,12 +1256,18 @@ public class BinaryClient extends Connection {
     return args;
   }
 
-  public void aclWhoAmi() {
-    sendCommand(ACL, Keyword.WHOAMI.raw);
-  }
+  public void aclWhoAmi() { sendCommand(ACL, Keyword.WHOAMI.raw); }
 
-  public void aclList() {
-    sendCommand(ACL, Keyword.LIST.raw);
+  public void aclGenPass() { sendCommand(ACL, Keyword.GENPASS.raw); }
+
+  public void aclList() { sendCommand(ACL, Keyword.LIST.raw); }
+
+  public void aclUsers() { sendCommand(ACL, Keyword.USERS.raw); }
+
+  public void aclCat() { sendCommand(ACL, Keyword.CAT.raw); }
+
+  public void aclCat(final byte[] category) {
+    sendCommand(ACL, Keyword.CAT.raw, category);
   }
 
   public void aclSetUser(final byte[] name) {

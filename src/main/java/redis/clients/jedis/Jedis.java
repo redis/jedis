@@ -3658,6 +3658,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<String> aclUsers() {
+    client.aclUsers();
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<String> aclList() {
     client.aclList();
     return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
@@ -3666,6 +3672,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String aclWhoAmI() {
     client.aclWhoAmi();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public List<String> aclCat() {
+    client.aclCat();
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclCat(String category) {
+    client.aclCat(category);
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclGenPass() {
+    client.aclGenPass();
     return client.getStatusCodeReply();
   }
 

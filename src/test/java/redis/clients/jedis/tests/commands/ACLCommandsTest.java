@@ -1,6 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
-import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.*;
 import org.junit.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.UserACL;
@@ -80,9 +80,9 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     jedis.aclSetUser(USER_ZZZ, "reset", "+@all", "~*", "-@string", "+incr", "-debug",
       "+debug|digest");
     userInfo = jedis.aclGetUser(USER_ZZZ);
-    Assert.assertThat(userInfo.getCommands(), CoreMatchers.containsString("+@all"));
-    Assert.assertThat(userInfo.getCommands(), CoreMatchers.containsString("-@string"));
-    Assert.assertThat(userInfo.getCommands(), CoreMatchers.containsString("+debug|digest"));
+    Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
+    Assert.assertThat(userInfo.getCommands(), containsString("-@string"));
+    Assert.assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_ZZZ);
 
@@ -259,9 +259,6 @@ public class ACLCommandsTest extends JedisCommandTestBase {
 
     // allow user to access a subset of the key
     result = jedis.aclSetUser(USER_ZZZ, "allcommands", "~foo:*", "~bar:*"); // TODO : Define a DSL
-                                                                            // Like for permisson
-                                                                            // and more to avoid
-                                                                            // confusion
 
     // create key foo, bar and zap
     result = jedis2.set("foo:1", "a");
@@ -283,6 +280,46 @@ public class ACLCommandsTest extends JedisCommandTestBase {
 
     // remove user
     jedis.aclDelUser(USER_ZZZ); // delete the user
+
+  }
+
+  @Test
+  public void aclCatTest() {
+    List<String> categories = jedis.aclCat();
+    assertTrue( !categories.isEmpty() );
+
+    // test commands in a category
+    assertTrue(!jedis.aclCat("scripting").isEmpty());
+
+    try {
+      jedis.aclCat("testcategory");
+      fail("Should throw a ERR exception");
+    } catch (Exception e) {
+      assertEquals("ERR Unknown category 'testcategory'", e.getMessage());
+    }
+  }
+
+  @Test
+  public void aclGenPass() {
+    assertNotNull( jedis.aclGenPass() );
+  }
+
+  @Test public void aclUsers() {
+    List<String> users = jedis.aclUsers();
+    assertEquals( 1, users.size() );
+    assertEquals( "default", users.get(0) );
+
+    //add new user
+    jedis.aclSetUser(USER_ZZZ);
+    users = jedis.aclUsers();
+    assertEquals( 2, users.size() );
+    assertEquals( "default", users.get(0) );
+    assertEquals( USER_ZZZ, users.get(1) );
+
+    //delete user
+    jedis.aclDelUser(USER_ZZZ);
+
+
 
   }
 

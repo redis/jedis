@@ -1143,6 +1143,10 @@ public class Client extends BinaryClient implements Commands {
     aclSetUser(SafeEncoder.encode(name), SafeEncoder.encodeMany(parameters));
   }
 
+  public void aclCat(final String category) {
+    aclCat(SafeEncoder.encode(category));
+  }
+
   public void aclDelUser(final String name) {
     aclDelUser(SafeEncoder.encode(name));
   }

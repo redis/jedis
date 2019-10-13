@@ -18,4 +18,13 @@ public interface ACLCommands {
 
   UserACL aclGetUser(String name);
 
+  List<String> aclCat();
+
+  List<String> aclCat(String category);
+
+  String aclGenPass();
+
+  List<String> aclUsers();
+
+  // TODO: Implements ACL LOAD/SAVE commands
 }

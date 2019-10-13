@@ -6,6 +6,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.UserACL;
 import redis.clients.jedis.exceptions.JedisAuthenticationException;
 import redis.clients.jedis.exceptions.JedisPermissionException;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.util.List;
 
@@ -15,23 +16,10 @@ import static org.junit.Assert.*;
 
 public class ACLCommandsTest extends JedisCommandTestBase {
 
-  private String redisVersion = null;
 
   public static String USER_YYY = "yyy";
   public static String USER_ZZZ = "zzz";
   public static String USER_ZZZ_PASSWORD = "secret";
-
-  private int getRedisMajorVersionNumber() {
-    if (redisVersion == null) {
-      return 0;
-    } else {
-      return Integer.parseInt(redisVersion.substring(0, redisVersion.indexOf(".")));
-    }
-  }
-
-  private boolean runACLTest() {
-    return (getRedisMajorVersionNumber() >= 6);
-  }
 
   /**
    * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
@@ -40,17 +28,9 @@ public class ACLCommandsTest extends JedisCommandTestBase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    String info = jedis.info("server");
-    String[] splitted = info.split("\\s+|:");
-    for (int i = 0; i < splitted.length; i++) {
-      if (splitted[i].equalsIgnoreCase("redis_version")) {
-        redisVersion = splitted[i + 1];
-        i = splitted.length; // out of the loop
-      }
-    }
-    // run the test only
-    if (!runACLTest()) {
-      org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", runACLTest());
+    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
+    if ( shouldNotRun ) {
+      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
     }
   }
 
@@ -120,6 +100,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     // the user is just created without any permission the authentication should fail
     try {
       authResult = jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
+      fail("Should throw a WRONGPASS exception");
     } catch (JedisAuthenticationException e) {
       assertNull(authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
@@ -136,6 +117,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
 
     try {
       authResult = jedis2.auth(USER_ZZZ, "wrong-password");
+      fail("Should throw a WRONGPASS exception");
     } catch (JedisAuthenticationException e) {
       assertEquals("OK", authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
@@ -145,6 +127,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     status = jedis.aclSetUser(USER_ZZZ, "<" + USER_ZZZ_PASSWORD);
     try {
       authResult = jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
+      fail("Should throw a WRONGPASS exception");
     } catch (JedisAuthenticationException e) {
       assertEquals("OK", authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
@@ -153,6 +136,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     jedis.aclDelUser(USER_ZZZ); // delete the user
     try {
       authResult = jedis2.auth(USER_ZZZ, "wrong-password");
+      fail("Should throw a WRONGPASS exception");
     } catch (JedisAuthenticationException e) {
       assertEquals("OK", authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
@@ -205,6 +189,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     String result = null;
     try {
       result = jedis2.ping();
+      fail("Should throw a NOPERM exception");
     } catch (JedisPermissionException e) {
       assertNull(result);
       assertEquals(
@@ -246,6 +231,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     String result = null;
     try {
       result = jedis2.set("foo", "bar");
+      fail("Should throw a NOPERM exception");
     } catch (JedisPermissionException e) {
       assertNull(result);
       assertEquals(
@@ -263,6 +249,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     result = null;
     try {
       result = jedis2.set("foo", "bar");
+      fail("Should throw a NOPERM exception");
     } catch (JedisPermissionException e) {
       assertNull(result);
       assertEquals(
@@ -286,6 +273,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     result = null;
     try {
       result = jedis2.set("zap:3", "c");
+      fail("Should throw a NOPERM exception");
     } catch (JedisPermissionException e) {
       assertNull(result);
       assertEquals(

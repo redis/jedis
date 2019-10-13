@@ -20,6 +20,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   protected int soTimeout = Protocol.DEFAULT_TIMEOUT;
 
+  protected String user;
   protected String password;
 
   protected int database = Protocol.DEFAULT_DATABASE;
@@ -68,27 +69,54 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database);
+    this(masterName, sentinels, poolConfig, timeout, timeout, null, password, database);
   }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+                           final GenericObjectPoolConfig poolConfig, int timeout, final String user,
+                           final String password, final int database) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, user, password, database);
+  }
+
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName);
+    this(masterName, sentinels, poolConfig, timeout, timeout, null, password, database, clientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+                           final GenericObjectPoolConfig poolConfig, int timeout,
+                           final String user, final String password,
+                           final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, user,  password, database, clientName);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
       final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null);
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, null, password, database, null);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+                           final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
+                           final String user, final String password, final int database) {
+    this(masterName, sentinels, poolConfig, timeout, soTimeout, user, password, database, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, null, password, database, clientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+                           final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+                           final String user, final String password, final int database, final String clientName) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.user = user;
     this.password = password;
     this.database = database;
     this.clientName = clientName;

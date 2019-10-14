@@ -23,7 +23,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands, ACLCommands {
+    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands, AccessControlListCommands {
 
   protected JedisPoolAbstract dataSource = null;
 
@@ -3654,7 +3654,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public UserACL aclGetUser(final String name) {
     client.aclGetUser(name);
-    return BuilderFactory.USER_INFO.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.USER_ACL.build(client.getObjectMultiBulkReply());
   }
 
   @Override

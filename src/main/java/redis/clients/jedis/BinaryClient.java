@@ -1279,14 +1279,7 @@ public class BinaryClient extends Connection {
   }
 
   public void aclSetUser(final byte[] name, byte[][] parameters) {
-    final byte[][] cmdParams = new byte[2 + parameters.length][];
-    int index = 0;
-    cmdParams[index++] = Keyword.SETUSER.raw;
-    cmdParams[index++] = name;
-    for (final byte[] key : parameters) {
-      cmdParams[index++] = key;
-    }
-    sendCommand(ACL, cmdParams);
+    sendCommand(ACL, joinParameters(Keyword.SETUSER.raw,name, parameters));
   }
 
   public void aclDelUser(final byte[] name) {

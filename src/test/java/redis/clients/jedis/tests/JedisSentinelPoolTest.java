@@ -186,7 +186,7 @@ public class JedisSentinelPoolTest {
 
     Jedis afterFailoverJedis = pool.getResource();
     assertEquals("PONG", afterFailoverJedis.ping());
-    assertNotNull(afterFailoverJedis.configGet("requirepass").get(1));
+    assertEquals("foobared", afterFailoverJedis.configGet("requirepass").get(1));
     assertEquals(2, afterFailoverJedis.getDB());
 
     // returning both connections to the pool should not throw

@@ -13,14 +13,13 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public final class Protocol {
 
-  public static final String WRONGPASS_PREFIX = "WRONGPASS";
-  public static final String NOPERM_PREFIX = "NOPERM";
-
   private static final String ASK_PREFIX = "ASK ";
   private static final String MOVED_PREFIX = "MOVED ";
   private static final String CLUSTERDOWN_PREFIX = "CLUSTERDOWN ";
   private static final String BUSY_PREFIX = "BUSY ";
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
+  public static final String WRONGPASS_PREFIX = "WRONGPASS";
+  public static final String NOPERM_PREFIX = "NOPERM";
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 6379;
@@ -126,9 +125,9 @@ public final class Protocol {
     } else if (message.startsWith(NOSCRIPT_PREFIX)) {
       throw new JedisNoScriptException(message);
     } else if (message.startsWith(WRONGPASS_PREFIX)) {
-      throw new JedisAuthenticationException(message);
+      throw new JedisAccessControlException(message);
     } else if (message.startsWith(NOPERM_PREFIX)) {
-      throw new JedisPermissionException(message);
+      throw new JedisAccessControlException(message);
     }
     throw new JedisDataException(message);
   }

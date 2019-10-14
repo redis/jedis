@@ -4,8 +4,7 @@ import static org.hamcrest.CoreMatchers.*;
 import org.junit.*;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.UserACL;
-import redis.clients.jedis.exceptions.JedisAuthenticationException;
-import redis.clients.jedis.exceptions.JedisPermissionException;
+import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import static org.junit.Assert.*;
 
 // TODO :properly define and test exceptions
 
-public class ACLCommandsTest extends JedisCommandTestBase {
+public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
 
   public static String USER_YYY = "yyy";
@@ -101,7 +100,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       authResult = jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
       fail("Should throw a WRONGPASS exception");
-    } catch (JedisAuthenticationException e) {
+    } catch (JedisAccessControlException e) {
       assertNull(authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
     }
@@ -118,7 +117,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       authResult = jedis2.auth(USER_ZZZ, "wrong-password");
       fail("Should throw a WRONGPASS exception");
-    } catch (JedisAuthenticationException e) {
+    } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
     }
@@ -128,7 +127,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       authResult = jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
       fail("Should throw a WRONGPASS exception");
-    } catch (JedisAuthenticationException e) {
+    } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
     }
@@ -137,7 +136,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       authResult = jedis2.auth(USER_ZZZ, "wrong-password");
       fail("Should throw a WRONGPASS exception");
-    } catch (JedisAuthenticationException e) {
+    } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
       assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
     }
@@ -190,7 +189,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       result = jedis2.ping();
       fail("Should throw a NOPERM exception");
-    } catch (JedisPermissionException e) {
+    } catch (JedisAccessControlException e) {
       assertNull(result);
       assertEquals(
         "NOPERM this user has no permissions to run the 'ping' command or its subcommand",
@@ -232,7 +231,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       result = jedis2.set("foo", "bar");
       fail("Should throw a NOPERM exception");
-    } catch (JedisPermissionException e) {
+    } catch (JedisAccessControlException e) {
       assertNull(result);
       assertEquals(
         "NOPERM this user has no permissions to run the 'set' command or its subcommand",
@@ -250,7 +249,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       result = jedis2.set("foo", "bar");
       fail("Should throw a NOPERM exception");
-    } catch (JedisPermissionException e) {
+    } catch (JedisAccessControlException e) {
       assertNull(result);
       assertEquals(
         "NOPERM this user has no permissions to access one of the keys used as arguments",
@@ -271,7 +270,7 @@ public class ACLCommandsTest extends JedisCommandTestBase {
     try {
       result = jedis2.set("zap:3", "c");
       fail("Should throw a NOPERM exception");
-    } catch (JedisPermissionException e) {
+    } catch (JedisAccessControlException e) {
       assertNull(result);
       assertEquals(
         "NOPERM this user has no permissions to access one of the keys used as arguments",

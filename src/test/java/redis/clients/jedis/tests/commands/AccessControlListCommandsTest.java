@@ -40,19 +40,31 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void aclWhoAmiBinary() {
+    byte[] returnValue = jedis.aclWhoAmIBinary();
+    assertNotNull(returnValue);
+  }
+
+  @Test
   public void aclListDefault() {
-    List<String> listOfACL = jedis.aclList();
-    assertEquals(1, listOfACL.size());
+    assertEquals(1, jedis.aclList().size());
+  }
+
+  @Test
+  public void aclListBinaryDefault() {
+    assertEquals(1, jedis.aclListBinary().size());
   }
 
   @Test
   public void addAndRemoveUser() {
     String status = jedis.aclSetUser(USER_ZZZ);
     assertEquals("OK", status);
-    List<String> listOfACL = jedis.aclList();
-    assertEquals(2, listOfACL.size());
+    assertEquals(2, jedis.aclList().size());
+    assertEquals(2, jedis.aclListBinary().size()); // test binary
+
     jedis.aclDelUser(USER_ZZZ);
     assertEquals(1, jedis.aclList().size());
+    assertEquals(1, jedis.aclListBinary().size()); // test binary
   }
 
   @Test
@@ -287,6 +299,11 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     List<String> categories = jedis.aclCat();
     assertTrue( !categories.isEmpty() );
 
+    // test binary
+    List<byte[]> categoriesBinary = jedis.aclCatBinary();
+    assertTrue( !categories.isEmpty() );
+    assertEquals( categories.size() , categoriesBinary.size());
+
     // test commands in a category
     assertTrue(!jedis.aclCat("scripting").isEmpty());
 
@@ -303,10 +320,18 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertNotNull( jedis.aclGenPass() );
   }
 
-  @Test public void aclUsers() {
+  @Test
+  public void aclGenPassBinary() {
+    assertNotNull( jedis.aclGenPassBinary() );
+  }
+
+  @Test
+  public void aclUsers() {
     List<String> users = jedis.aclUsers();
     assertEquals( 1, users.size() );
     assertEquals( "default", users.get(0) );
+
+    assertEquals( 1, jedis.aclUsersBinary().size() ); // Test binary
 
     //add new user
     jedis.aclSetUser(USER_ZZZ);
@@ -315,11 +340,37 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals( "default", users.get(0) );
     assertEquals( USER_ZZZ, users.get(1) );
 
+    assertEquals( 2, jedis.aclUsersBinary().size() ); // Test binary
+
     //delete user
     jedis.aclDelUser(USER_ZZZ);
 
+  }
 
+  @Test
+  public void aclBinaryCommandsTest() {
+    jedis.aclSetUser(USER_ZZZ.getBytes());
+    assertEquals(2, jedis.aclList().size());
+    assertNotNull( jedis.aclGetUser(USER_ZZZ) );
 
+    assertEquals( new Long(1) , jedis.aclDelUser(USER_ZZZ.getBytes()) );
+
+    jedis.aclSetUser(USER_ZZZ.getBytes(),
+            "reset".getBytes(),
+            "+@all".getBytes(),
+            "~*".getBytes(),
+            "-@string".getBytes(),
+            "+incr".getBytes(),
+            "-debug".getBytes(),
+            "+debug|digest".getBytes());
+
+    UserACL userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
+
+    Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
+    Assert.assertThat(userInfo.getCommands(), containsString("-@string"));
+    Assert.assertThat(userInfo.getCommands(), containsString("+debug|digest"));
+
+    jedis.aclDelUser(USER_ZZZ.getBytes());
   }
 
 }

@@ -3549,6 +3549,76 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public byte[] aclWhoAmIBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclWhoAmi();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] aclGenPassBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclGenPass();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclListBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclList();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclUsersBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclUsers();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public UserACL aclGetUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclGetUser(name);
+    return BuilderFactory.USER_ACL.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclSetUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclSetUser(name);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSetUser(byte[] name, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.aclSetUser(name, keys);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long aclDelUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclDelUser(name);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<byte[]> aclCatBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclCat();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclCat(byte[] category) {
+    checkIsInMultiOrPipeline();
+    client.aclCat(category);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
   public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
     this.client.clientKill(ipPort);

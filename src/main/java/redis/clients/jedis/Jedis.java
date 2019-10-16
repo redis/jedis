@@ -1673,7 +1673,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
-
   @Override
   public Set<Tuple> zpopmin(final String key) {
     checkIsInMultiOrPipeline();

@@ -1841,8 +1841,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return (score != null ? new Double(score) : null);
   }
 
-
-
   @Override
   public Set<Tuple> zpopmin(final byte[] key) {
     checkIsInMultiOrPipeline();

@@ -709,10 +709,14 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }
 
-  @Override
-  public Response<Object> sendCommand(ProtocolCommand cmd, String... args){
+  public Response<Object> sendCommand(final ProtocolCommand cmd, final String... args) {
     client.sendCommand(cmd, args);
     return getResponse(BuilderFactory.OBJECT);
   }
-  
+
+  public Response<Object> sendCommand(final ProtocolCommand cmd, final byte[]... args) {
+    client.sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
+  }
+
 }

@@ -466,6 +466,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zpopmin(final String key) {
+    zpopmin(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void zpopmin(final String key, final long count) {
+    zpopmin(SafeEncoder.encode(key), count);
+  }
+
+  @Override
   public void watch(final String... keys) {
     watch(SafeEncoder.encodeMany(keys));
   }

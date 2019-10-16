@@ -503,6 +503,14 @@ public class BinaryClient extends Connection {
     sendCommand(ZSCORE, key, member);
   }
 
+  public void zpopmin(final byte[] key) {
+    sendCommand(ZPOPMIN, key);
+  }
+
+  public void zpopmin(final byte[] key, final long count) {
+    sendCommand(ZPOPMIN, key, toByteArray(count));
+  }
+
   public void multi() {
     sendCommand(MULTI);
     isInMulti = true;

@@ -179,6 +179,10 @@ public interface BinaryJedisClusterCommands {
 
   Double zscore(byte[] key, byte[] member);
 
+  Set<Tuple> zpopmin(byte[] key);
+
+  Set<Tuple> zpopmin(byte[] key, long count);
+
   List<byte[]> sort(byte[] key);
 
   List<byte[]> sort(byte[] key, SortingParams sortingParameters);

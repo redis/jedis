@@ -544,6 +544,52 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zpopmin() {
+
+    jedis.zadd("foo", 1d, "a",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 0.1d, "c",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 2d, "a",ZAddParams.zAddParams().nx());
+
+    Set<Tuple> range = jedis.zpopmin("foo",  2);
+
+    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    expected.add(new Tuple("c", 0.1d));
+    expected.add(new Tuple("a", 1d));
+
+    assertEquals(expected, range);
+
+    range = jedis.zpopmin("foo");
+
+    expected = new LinkedHashSet<Tuple>();
+    expected.add(new Tuple("b", 10d));
+
+    assertEquals(expected, range);
+
+    // Binary
+
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    Set<Tuple> brange = jedis.zpopmin(bfoo, 2);
+
+    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    bexpected.add(new Tuple(bc, 0.1d));
+    bexpected.add(new Tuple(ba, 2d));
+
+    assertEquals(bexpected, brange);
+
+    brange = jedis.zpopmin(bfoo);
+
+    bexpected = new LinkedHashSet<Tuple>();
+    bexpected.add(new Tuple(bb, 10d));
+
+    assertEquals(bexpected, brange);
+  }
+
+    @Test
   public void zcount() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 10d, "b");

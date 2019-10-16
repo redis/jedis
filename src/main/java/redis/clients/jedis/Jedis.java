@@ -252,6 +252,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long unlink(final String key) {
+    checkIsInMultiOrPipeline();
     client.unlink(key);
     return client.getIntegerReply();
   }
@@ -1677,6 +1678,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String watch(final String... keys) {
+    checkIsInMultiOrPipeline();
     client.watch(keys);
     return client.getStatusCodeReply();
   }
@@ -2592,6 +2594,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public Long persist(final String key) {
+    checkIsInMultiOrPipeline();
     client.persist(key);
     return client.getIntegerReply();
   }
@@ -2627,6 +2630,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public String brpoplpush(final String source, final String destination, final int timeout) {
+    checkIsInMultiOrPipeline();
     client.brpoplpush(source, destination, timeout);
     client.setTimeoutInfinite();
     try {
@@ -2732,6 +2736,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public List<String> configGet(final String pattern) {
+    checkIsInMultiOrPipeline();
     client.configGet(pattern);
     return client.getMultiBulkReply();
   }
@@ -2767,19 +2772,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public String configSet(final String parameter, final String value) {
+    checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getStatusCodeReply();
-  }
-
-  @Override
-  public Object eval(final String script, final int keyCount, final String... params) {
-    client.setTimeoutInfinite();
-    try {
-      client.eval(script, keyCount, params);
-      return getEvalResult();
-    } finally {
-      client.rollbackTimeout();
-    }
   }
 
   @Override
@@ -2824,6 +2819,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       params[keyCount + i] = args.get(i);
 
     return params;
+  }
+
+  @Override
+  public Object eval(final String script, final int keyCount, final String... params) {
+    checkIsInMultiOrPipeline();
+    client.eval(script, keyCount, params);
+    client.setTimeoutInfinite();
+    try {
+      return getEvalResult();
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   @Override
@@ -3298,6 +3305,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String readonly() {
+    checkIsInMultiOrPipeline();
     client.readonly();
     return client.getStatusCodeReply();
   }
@@ -3626,18 +3634,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String moduleLoad(final String path) {
+    checkIsInMultiOrPipeline();
     client.moduleLoad(path);
     return client.getStatusCodeReply();
   }
 
   @Override
   public String moduleUnload(final String name) {
+    checkIsInMultiOrPipeline();
     client.moduleUnload(name);
     return client.getStatusCodeReply();
   }
 
   @Override
   public List<Module> moduleList() {
+    checkIsInMultiOrPipeline();
     client.moduleList();
     return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
   }
@@ -3823,7 +3834,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, StreamEntryID... ids) {
-    
     checkIsInMultiOrPipeline();
     client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
     
@@ -3831,6 +3841,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {
+    checkIsInMultiOrPipeline();
     client.sendCommand(cmd, args);
     return client.getOne();
   }

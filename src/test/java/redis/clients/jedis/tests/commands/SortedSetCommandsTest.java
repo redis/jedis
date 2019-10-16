@@ -559,15 +559,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     assertEquals(expected, range);
 
-
     range = jedis.zpopmin("foo");
 
     expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("b", 10d));
 
     assertEquals(expected, range);
-
-
 
     // Binary
 

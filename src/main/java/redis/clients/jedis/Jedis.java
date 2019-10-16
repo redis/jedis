@@ -2790,7 +2790,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Long publish(final String channel, final String message) {
     checkIsInMultiOrPipeline();
-    connect();
     client.publish(channel, message);
     return client.getIntegerReply();
   }
@@ -3804,20 +3803,25 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final boolean noAck, final Entry<String, StreamEntryID>... streams) {
     checkIsInMultiOrPipeline();
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    client.setTimeoutInfinite();
 
-    List<Object> streamsEntries = client.getObjectMultiBulkReply();
-    if(streamsEntries == null) {
-      return null;
+    try {
+      List<Object> streamsEntries = client.getObjectMultiBulkReply();
+      if(streamsEntries == null) {
+        return null;
+      }
+      
+      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String streamId = SafeEncoder.encode((byte[])stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+      }
+      return result;
+    } finally {
+      client.rollbackTimeout();
     }
-    
-    List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
-    for(Object streamObj : streamsEntries) {
-      List<Object> stream = (List<Object>)streamObj;
-      String streamId = SafeEncoder.encode((byte[])stream.get(0));
-      List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-      result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
-    }
-    return result;
   }
 
   @Override

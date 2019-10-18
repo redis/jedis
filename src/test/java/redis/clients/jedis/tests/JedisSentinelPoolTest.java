@@ -1,5 +1,8 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,8 +17,6 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
-
-import static org.junit.Assert.*;
 
 public class JedisSentinelPoolTest {
   private static final String MASTER_NAME = "mymaster";

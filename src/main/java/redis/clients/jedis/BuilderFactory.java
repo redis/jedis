@@ -536,7 +536,7 @@ public final class BuilderFactory {
       return "StreamEntryID";
     }
   };
-
+  
 
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override

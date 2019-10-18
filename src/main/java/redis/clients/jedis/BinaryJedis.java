@@ -3580,7 +3580,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public AccessControlUser aclGetUser(byte[] name) {
     checkIsInMultiOrPipeline();
     client.aclGetUser(name);
-    return BuilderFactory.USER_ACL.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_USER.build(client.getObjectMultiBulkReply());
   }
 
   @Override

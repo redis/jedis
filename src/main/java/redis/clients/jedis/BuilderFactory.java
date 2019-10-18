@@ -460,7 +460,7 @@ public final class BuilderFactory {
   /**
    * Create a AccessControlUser object from the ACL GETUSER < > result
    */
-  public static final Builder<AccessControlUser> USER_ACL = new Builder<AccessControlUser>() {
+  public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
     @Override
     public AccessControlUser build(Object data) {
       if (data == null) {
@@ -536,7 +536,7 @@ public final class BuilderFactory {
       return "StreamEntryID";
     }
   };
-
+  
 
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override

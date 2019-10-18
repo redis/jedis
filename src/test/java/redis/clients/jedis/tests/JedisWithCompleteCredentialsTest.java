@@ -90,7 +90,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
     // reset config
     jedis = new Jedis("localhost", 6379);
-    jedis.auth("foobared");
+    jedis.auth("default", "foobared");
     jedis.configSet("timeout", timeout);
     jedis.close();
   }

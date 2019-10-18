@@ -29,6 +29,7 @@ public class JedisClusterInfoCache {
 
   private int connectionTimeout;
   private int soTimeout;
+  private String user;
   private String password;
   private String clientName;
 
@@ -50,12 +51,25 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+                               final int connectionTimeout, final int soTimeout, final String user, final String password, final String clientName) {
+    this(poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
       final int connectionTimeout, final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+    this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier,  hostAndPortMap);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+                               final int connectionTimeout, final int soTimeout, final String user, final String password,
+                               final String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+                               HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.user = user;
     this.password = password;
     this.clientName = clientName;
     this.ssl = ssl;

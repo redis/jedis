@@ -3551,7 +3551,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public byte[] aclWhoAmIBinary() {
     checkIsInMultiOrPipeline();
-    client.aclWhoAmi();
+    client.aclWhoAmI();
     return client.getBinaryBulkReply();
   }
 
@@ -3577,7 +3577,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public UserACL aclGetUser(byte[] name) {
+  public AccessControlUser aclGetUser(byte[] name) {
     checkIsInMultiOrPipeline();
     client.aclGetUser(name);
     return BuilderFactory.USER_ACL.build(client.getObjectMultiBulkReply());

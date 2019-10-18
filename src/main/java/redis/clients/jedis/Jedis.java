@@ -3652,7 +3652,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public UserACL aclGetUser(final String name) {
+  public AccessControlUser aclGetUser(final String name) {
     client.aclGetUser(name);
     return BuilderFactory.USER_ACL.build(client.getObjectMultiBulkReply());
   }
@@ -3671,7 +3671,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String aclWhoAmI() {
-    client.aclWhoAmi();
+    client.aclWhoAmI();
     return client.getStatusCodeReply();
   }
 

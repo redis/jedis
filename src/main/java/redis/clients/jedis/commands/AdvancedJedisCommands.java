@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.UserACL;
+import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
@@ -52,7 +52,7 @@ public interface AdvancedJedisCommands {
 
   List<String> aclUsers();
 
-  UserACL aclGetUser(String name);
+  AccessControlUser aclGetUser(String name);
 
   String aclSetUser(String name);
 

@@ -3,14 +3,14 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserACL {
+public class AccessControlUser {
 
   private List<String> flags = new ArrayList<String>();
   private List<String> keys = new ArrayList<String>();
   private List<String> passwords = new ArrayList<String>();
   private String commands;
 
-  public UserACL() {
+  public AccessControlUser() {
   }
 
   public void addFlag(String flag) {
@@ -47,7 +47,7 @@ public class UserACL {
 
   @Override
   public String toString() {
-    return "UserACL{" + "flags=" + flags + ", keys=" + keys + ", passwords=" + passwords
+    return "AccessControlUser{" + "flags=" + flags + ", keys=" + keys + ", passwords=" + passwords
         + ", commands='" + commands + '\'' + '}';
   }
 }

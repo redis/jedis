@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.UserACL;
+import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -52,7 +52,7 @@ public interface AdvancedBinaryJedisCommands {
 
   List<byte[]> aclUsersBinary();
 
-  UserACL aclGetUser(byte[] name);
+  AccessControlUser aclGetUser(byte[] name);
 
   String aclSetUser(byte[] name);
 

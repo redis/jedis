@@ -39,7 +39,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName) {
-    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
+    this(host, port, connectionTimeout, soTimeout, user, password, database, clientName,
             false, null, null, null);
   }
 
@@ -48,7 +48,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, null, password, database, clientName,
-            false, null, null, null);
+            ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,

@@ -2,8 +2,8 @@ package redis.clients.jedis.tests.commands;
 
 import static org.hamcrest.CoreMatchers.*;
 import org.junit.*;
+import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.UserACL;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
@@ -34,13 +34,13 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void aclWhoAmi() {
+  public void aclWhoAmI() {
     String returnValue = jedis.aclWhoAmI();
     assertEquals("default", returnValue);
   }
 
   @Test
-  public void aclWhoAmiBinary() {
+  public void aclWhoAmIBinary() {
     byte[] returnValue = jedis.aclWhoAmIBinary();
     assertNotNull(returnValue);
   }
@@ -71,7 +71,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   public void aclGetUser() {
 
     // get default user information
-    UserACL userInfo = jedis.aclGetUser("default");
+    AccessControlUser userInfo = jedis.aclGetUser("default");
 
     assertEquals(3, userInfo.getFlags().size());
     assertEquals(1, userInfo.getPassword().size());
@@ -364,7 +364,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
             "-debug".getBytes(),
             "+debug|digest".getBytes());
 
-    UserACL userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
+    AccessControlUser userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
 
     Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
     Assert.assertThat(userInfo.getCommands(), containsString("-@string"));

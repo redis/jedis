@@ -16,7 +16,11 @@ public final class JedisURIHelper {
   public static String getUser(URI uri) {
     String userInfo = uri.getUserInfo();
     if (userInfo != null) {
-      return userInfo.split(":", 2)[0];
+      String user = userInfo.split(":", 2)[0];
+      if (user.isEmpty()) {
+        user = null; //return null user is not specified
+      }
+      return user;
     }
     return null;
   }

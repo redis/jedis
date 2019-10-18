@@ -140,6 +140,18 @@ public class JedisPoolWithCompleteCredentialsTest {
   }
 
   @Test
+  public void securePoolNonSSL() {
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setTestOnBorrow(true);
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "default","foobared", false);
+    Jedis jedis = pool.getResource();
+    jedis.set("foo", "bar");
+    jedis.close();
+    pool.destroy();
+    assertTrue(pool.isClosed());
+  }
+
+  @Test
   public void nonDefaultDatabase() {
     JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "default",
         "foobared");
@@ -152,6 +164,26 @@ public class JedisPoolWithCompleteCredentialsTest {
 
     JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
         "foobared", 1);
+    Jedis jedis1 = pool1.getResource();
+    assertNull(jedis1.get("foo"));
+    jedis1.close();
+    pool1.destroy();
+    assertTrue(pool1.isClosed());
+  }
+
+  @Test
+  public void nonDefaultDatabaseNonSSL() {
+    JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "default",
+            "foobared", false);
+    Jedis jedis0 = pool0.getResource();
+    jedis0.set("foo", "bar");
+    assertEquals("bar", jedis0.get("foo"));
+    jedis0.close();
+    pool0.destroy();
+    assertTrue(pool0.isClosed());
+
+    JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "foobared", 1, false);
     Jedis jedis1 = pool1.getResource();
     assertNull(jedis1.get("foo"));
     jedis1.close();
@@ -197,7 +229,7 @@ public class JedisPoolWithCompleteCredentialsTest {
   @Test
   public void selectDatabaseOnActivation() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "user", "foobared");
+        "default", "foobared");
 
     Jedis jedis0 = pool.getResource();
     assertEquals(0, jedis0.getDB());
@@ -219,11 +251,25 @@ public class JedisPoolWithCompleteCredentialsTest {
   @Test
   public void customClientName() {
     JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "user", "foobared", 0, "my_shiny_client_name");
+        "default", "foobared", 0, "my_shiny_client_name");
 
     Jedis jedis = pool0.getResource();
 
     assertEquals("my_shiny_client_name", jedis.clientGetname());
+
+    jedis.close();
+    pool0.destroy();
+    assertTrue(pool0.isClosed());
+  }
+
+  @Test
+  public void customClientNameNoSSL() {
+    JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+           "default", "foobared", 0, "my_shiny_client_name_no_ssl", false);
+
+    Jedis jedis = pool0.getResource();
+
+    assertEquals("my_shiny_client_name_no_ssl", jedis.clientGetname());
 
     jedis.close();
     pool0.destroy();
@@ -287,7 +333,7 @@ public class JedisPoolWithCompleteCredentialsTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "user", "foobared");
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "default", "foobared");
 
     Jedis jedis = pool.getResource();
     try {

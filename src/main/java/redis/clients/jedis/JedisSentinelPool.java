@@ -93,15 +93,15 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, null, password, database, null);
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, null, password, database, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-                           final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
+                           final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
                            final String user, final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, user, password, database, null);
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, user, password, database, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,

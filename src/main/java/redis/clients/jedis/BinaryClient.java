@@ -1256,7 +1256,7 @@ public class BinaryClient extends Connection {
     return args;
   }
 
-  public void aclWhoAmi() { sendCommand(ACL, Keyword.WHOAMI.raw); }
+  public void aclWhoAmI() { sendCommand(ACL, Keyword.WHOAMI.raw); }
 
   public void aclGenPass() { sendCommand(ACL, Keyword.GENPASS.raw); }
 

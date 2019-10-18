@@ -458,11 +458,11 @@ public final class BuilderFactory {
   };
 
   /**
-   * Create a UserACL object from the ACL GETUSER < > result
+   * Create a AccessControlUser object from the ACL GETUSER < > result
    */
-  public static final Builder<UserACL> USER_ACL = new Builder<UserACL>() {
+  public static final Builder<AccessControlUser> USER_ACL = new Builder<AccessControlUser>() {
     @Override
-    public UserACL build(Object data) {
+    public AccessControlUser build(Object data) {
       if (data == null) {
         return null;
       }
@@ -470,35 +470,35 @@ public final class BuilderFactory {
       List<List<Object>> objectList = (List<List<Object>>) data;
       if (objectList.isEmpty()) { return null; }
 
-      UserACL userACL = new UserACL();
+      AccessControlUser accessControlUser = new AccessControlUser();
 
       // flags
       List<Object> flags = objectList.get(1);
       for (Object f : flags) {
-        userACL.addFlag(SafeEncoder.encode((byte[]) f));
+        accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
       };
 
       // passwords
       List<Object> passwords = objectList.get(3);
       for (Object p : passwords) {
-        userACL.addPassword(SafeEncoder.encode((byte[]) p));
+        accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
       };
 
       // commands
-      userACL.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
+      accessControlUser.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
 
       // keys
       List<Object> keys = objectList.get(7);
       for (Object k : keys) {
-        userACL.addKey(SafeEncoder.encode((byte[]) k));
+        accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
       };
 
-      return userACL;
+      return accessControlUser;
     }
 
     @Override
     public String toString() {
-      return "UserACL";
+      return "AccessControlUser";
     }
 
   };

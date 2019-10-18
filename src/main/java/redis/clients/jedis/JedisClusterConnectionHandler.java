@@ -24,6 +24,11 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, false, null, null, null, null);
   }
 
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String user, String password, String clientName) {
+    this(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
+  }
+
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -31,6 +36,15 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, password, clientName,
         ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
     initializeSlotsCache(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
+                                       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout,
+                                       String user, String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
+                                       SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, user, password, clientName,
+            ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+    initializeSlotsCache(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   abstract Jedis getConnection();
@@ -46,13 +60,22 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
-      int connectionTimeout, int soTimeout, String password, String clientName,
+                                    int connectionTimeout, int soTimeout, String password, String clientName,
+                                    boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+    initializeSlotsCache(startNodes, poolConfig, connectionTimeout, soTimeout,
+            null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String user, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     for (HostAndPort hostAndPort : startNodes) {
       Jedis jedis = null;
       try {
         jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-        if (password != null) {
+        if (user != null) {
+          jedis.auth(user, password);
+        } else if (password != null) {
           jedis.auth(password);
         }
         if (clientName != null) {

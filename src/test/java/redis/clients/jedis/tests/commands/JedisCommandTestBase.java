@@ -51,6 +51,7 @@ public abstract class JedisCommandTestBase {
   }
 
   private void resetConfigs() {
+    if (configMap == null) return;
     for (Map.Entry<String, String> entry : configMap.entrySet()) {
       String config = entry.getKey();
       String value = entry.getValue();

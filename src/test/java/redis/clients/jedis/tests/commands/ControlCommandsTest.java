@@ -116,11 +116,9 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void configSet() {
-    List<String> info = jedis.configGet("maxmemory");
-    String memory = info.get(1);
+    backupConfigs("maxmemory");
     String status = jedis.configSet("maxmemory", "200");
     assertEquals("OK", status);
-    jedis.configSet("maxmemory", memory);
   }
 
   @Test

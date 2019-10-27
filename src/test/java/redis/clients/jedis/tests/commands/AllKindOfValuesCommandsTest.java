@@ -15,6 +15,7 @@ import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -232,8 +233,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     Set<byte[]> bkeys = jedis.keys(bfoostar);
     assertEquals(2, bkeys.size());
-    assertTrue(setContains(bkeys, bfoo));
-    assertTrue(setContains(bkeys, bfoobar));
+    assertCollectionContains(bkeys, bfoo);
+    assertCollectionContains(bkeys, bfoobar);
 
     bkeys = jedis.keys(bbarstar);
 

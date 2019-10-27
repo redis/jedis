@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,6 +46,11 @@ public class PipeliningTest {
     jedis.connect();
     jedis.auth("foobared");
     jedis.flushAll();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    jedis.close();
   }
 
   @Test
@@ -632,6 +638,7 @@ public class PipeliningTest {
     // it shouldn't meet any exception
     retFuture1.get();
     retFuture2.get();
+    jedis2.close();
   }
 
   @Test
@@ -662,6 +669,7 @@ public class PipeliningTest {
     // it shouldn't meet any exception
     retFuture1.get();
     retFuture2.get();
+    jedis2.close();
   }
 
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {

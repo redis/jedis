@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +41,13 @@ public class JedisSentinelPoolTest {
     sentinelJedis1 = new Jedis(sentinel1);
     sentinelJedis2 = new Jedis(sentinel2);
   }
-  
+
+  @After
+  public void tearDown() throws Exception {
+    sentinelJedis1.close();
+    sentinelJedis2.close();
+  }
+
   @Test
   public void repeatedSentinelPoolInitialization() {
 

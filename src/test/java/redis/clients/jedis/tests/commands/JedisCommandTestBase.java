@@ -1,9 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertArrayEquals;
-
-import java.util.List;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +28,8 @@ public abstract class JedisCommandTestBase {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
+    resetConfigs();
     jedis.disconnect();
   }
 
@@ -42,27 +41,20 @@ public abstract class JedisCommandTestBase {
     return j;
   }
 
-  protected boolean arrayContains(List<byte[]> array, byte[] expected) {
-    for (byte[] a : array) {
-      try {
-        assertArrayEquals(a, expected);
-        return true;
-      } catch (AssertionError e) {
+  private Map<String, String> configMap = null;
 
-      }
+  protected void backupConfigs(String... configs) {
+    configMap = new LinkedHashMap<>(configs.length);
+    for (String config : configs) {
+      configMap.put(config, jedis.configGet(config).get(1));
     }
-    return false;
   }
 
-  protected boolean setContains(Set<byte[]> set, byte[] expected) {
-    for (byte[] a : set) {
-      try {
-        assertArrayEquals(a, expected);
-        return true;
-      } catch (AssertionError e) {
-
-      }
+  private void resetConfigs() {
+    for (Map.Entry<String, String> entry : configMap.entrySet()) {
+      String config = entry.getKey();
+      String value = entry.getValue();
+      jedis.configSet(config, value);
     }
-    return false;
   }
 }

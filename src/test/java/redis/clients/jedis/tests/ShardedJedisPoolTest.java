@@ -188,10 +188,12 @@ public class ShardedJedisPoolTest {
     Jedis j = new Jedis("localhost", 6380);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     j = new Jedis("localhost", 6379);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo("redis://:foobared@localhost:6380"));
@@ -216,10 +218,12 @@ public class ShardedJedisPoolTest {
     Jedis j = new Jedis("localhost", 6380);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     j = new Jedis("localhost", 6379);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));

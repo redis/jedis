@@ -29,7 +29,6 @@ public abstract class JedisCommandTestBase {
 
   @After
   public void tearDown() throws Exception {
-    resetConfigs();
     jedis.disconnect();
   }
 
@@ -39,23 +38,5 @@ public abstract class JedisCommandTestBase {
     j.auth("foobared");
     j.flushAll();
     return j;
-  }
-
-  private Map<String, String> configMap = null;
-
-  protected void backupConfigs(String... configs) {
-    configMap = new LinkedHashMap<>(configs.length);
-    for (String config : configs) {
-      configMap.put(config, jedis.configGet(config).get(1));
-    }
-  }
-
-  private void resetConfigs() {
-    if (configMap == null) return;
-    for (Map.Entry<String, String> entry : configMap.entrySet()) {
-      String config = entry.getKey();
-      String value = entry.getValue();
-      jedis.configSet(config, value);
-    }
   }
 }

@@ -14,7 +14,8 @@ public class SlowlogCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void slowlog() {
-    backupConfigs("slowlog-log-slower-than");
+    final String slowlogTimeParam = "slowlog-log-slower-than";
+    final String slowlogTimeValue = jedis.configGet(slowlogTimeParam).get(1);
 
     jedis.configSet("slowlog-log-slower-than", "0");
     jedis.set("foo", "bar");
@@ -49,5 +50,7 @@ public class SlowlogCommandsTest extends JedisCommandTestBase {
     assertTrue(len1 > len2);
     assertTrue(log1.size() > log2.size());
     assertTrue(blog1.size() > blog2.size());
+
+    jedis.configSet(slowlogTimeParam, slowlogTimeValue);
   }
 }

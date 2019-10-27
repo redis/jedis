@@ -58,10 +58,9 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void timeoutConnection() throws Exception {
-    backupConfigs("timeout");
-
     Jedis jedis = new Jedis("localhost", 6379, 15000);
     jedis.auth("foobared");
+    String timeout = jedis.configGet("timeout").get(1);
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
     try {
@@ -73,7 +72,10 @@ public class JedisTest extends JedisCommandTestBase {
     jedis.close();
 
     // reset config
-    // done in resetConfigs() from tearDown()
+    jedis = new Jedis("localhost", 6379);
+    jedis.auth("foobared");
+    jedis.configSet("timeout", timeout);
+    jedis.close();
   }
 
   @Test

@@ -8,6 +8,7 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
@@ -78,4 +79,8 @@ public interface MultiKeyBinaryJedisClusterCommands {
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
   Set<byte[]> keys(byte[] pattern);
+  
+  List<byte[]> xread(final int count, final long block, final Map<byte[], byte[]> streams);
+  
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams);
 }

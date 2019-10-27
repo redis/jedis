@@ -19,6 +19,7 @@ import redis.clients.jedis.commands.ClusterCommands;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ModuleCommands;
 import redis.clients.jedis.commands.MultiKeyCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -251,6 +252,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public Long unlink(final String key) {
+    checkIsInMultiOrPipeline();
     client.unlink(key);
     return client.getIntegerReply();
   }
@@ -1269,6 +1271,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.spop(key, count);
     final List<String> members = client.getMultiBulkReply();
+    if (members == null) return null;
     return SetFromList.of(members);
   }
 
@@ -1674,7 +1677,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Set<Tuple> zpopmin(final String key) {
+    checkIsInMultiOrPipeline();
+    client.zpopmin(key);
+    return getTupledSet();
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zpopmin(key, count);
+    return getTupledSet();
+  }
+
+  @Override
   public String watch(final String... keys) {
+    checkIsInMultiOrPipeline();
     client.watch(keys);
     return client.getStatusCodeReply();
   }
@@ -2109,6 +2127,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @param key
    * @param min
    * @param max
+   * @param offset
+   * @param count
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
@@ -2235,6 +2255,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @param key
    * @param min
    * @param max
+   * @param offset
+   * @param count
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
@@ -2326,6 +2348,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
    * and M the number of elements removed by the operation
+   * @param key
+   * @param start
+   * @param stop
+   * @return 
    */
   @Override
   public Long zremrangeByRank(final String key, final long start, final long stop) {
@@ -2582,6 +2608,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public Long persist(final String key) {
+    checkIsInMultiOrPipeline();
     client.persist(key);
     return client.getIntegerReply();
   }
@@ -2617,6 +2644,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public String brpoplpush(final String source, final String destination, final int timeout) {
+    checkIsInMultiOrPipeline();
     client.brpoplpush(source, destination, timeout);
     client.setTimeoutInfinite();
     try {
@@ -2722,6 +2750,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public List<String> configGet(final String pattern) {
+    checkIsInMultiOrPipeline();
     client.configGet(pattern);
     return client.getMultiBulkReply();
   }
@@ -2757,19 +2786,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public String configSet(final String parameter, final String value) {
+    checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getStatusCodeReply();
-  }
-
-  @Override
-  public Object eval(final String script, final int keyCount, final String... params) {
-    client.setTimeoutInfinite();
-    try {
-      client.eval(script, keyCount, params);
-      return getEvalResult();
-    } finally {
-      client.rollbackTimeout();
-    }
   }
 
   @Override
@@ -2785,7 +2804,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public Long publish(final String channel, final String message) {
     checkIsInMultiOrPipeline();
-    connect();
     client.publish(channel, message);
     return client.getIntegerReply();
   }
@@ -2814,6 +2832,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       params[keyCount + i] = args.get(i);
 
     return params;
+  }
+
+  @Override
+  public Object eval(final String script, final int keyCount, final String... params) {
+    checkIsInMultiOrPipeline();
+    client.eval(script, keyCount, params);
+    client.setTimeoutInfinite();
+    try {
+      return getEvalResult();
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   @Override
@@ -3288,6 +3318,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String readonly() {
+    checkIsInMultiOrPipeline();
     client.readonly();
     return client.getStatusCodeReply();
   }
@@ -3452,14 +3483,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void close() {
     if (dataSource != null) {
-      if (client.isBroken()) {
-        this.dataSource.returnBrokenResource(this);
-      } else {
-        this.dataSource.returnResource(this);
-      }
+      JedisPoolAbstract pool = this.dataSource;
       this.dataSource = null;
+      if (client.isBroken()) {
+        pool.returnBrokenResource(this);
+      } else {
+        pool.returnResource(this);
+      }
     } else {
-      client.close();
+      super.close();
     }
   }
 
@@ -3615,18 +3647,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String moduleLoad(final String path) {
+    checkIsInMultiOrPipeline();
     client.moduleLoad(path);
     return client.getStatusCodeReply();
   }
 
   @Override
   public String moduleUnload(final String name) {
+    checkIsInMultiOrPipeline();
     client.moduleUnload(name);
     return client.getStatusCodeReply();
   }
 
   @Override
   public List<Module> moduleList() {
+    checkIsInMultiOrPipeline();
     client.moduleList();
     return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
   }
@@ -3645,4 +3680,187 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public String memoryDoctor() {
+    checkIsInMultiOrPipeline();
+    client.memoryDoctor();
+    return client.getBulkReply();
+  }
+      
+  @Override
+  public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
+    return xadd(key, id, hash, Long.MAX_VALUE, false);
+  }
+  
+  @Override
+  public StreamEntryID xadd(final String key, StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
+    checkIsInMultiOrPipeline();
+    client.xadd(key, id, hash, maxLen, approximateLength);
+    String result = client.getBulkReply();
+    return new StreamEntryID(result);
+  }
+
+  @Override
+  public Long xlen(final String key) {
+    checkIsInMultiOrPipeline();
+    client.xlen(key);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end, final int count) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+  
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end, final StreamEntryID start, final int count) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(count, block, streams);
+    client.setTimeoutInfinite();
+    
+    try {
+      List<Object> streamsEntries = client.getObjectMultiBulkReply();
+      if(streamsEntries == null) {
+        return new ArrayList<>();
+      }
+      
+      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String streamId = SafeEncoder.encode((byte[])stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+      }
+      
+      return result;
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public long xack(final String key, final String group, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xack(key, group, ids);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public String xgroupCreate(final String key, final String groupname, final StreamEntryID id, final boolean makeStream) {
+    checkIsInMultiOrPipeline();
+    client.xgroupCreate(key, groupname, id, makeStream);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String xgroupSetID(final String key, final String groupname, final StreamEntryID id) {
+    checkIsInMultiOrPipeline();
+    client.xgroupSetID(key, groupname, id);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public long xgroupDestroy(final String key, final String groupname) {
+    checkIsInMultiOrPipeline();
+    client.xgroupDestroy(key, groupname);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public String xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
+    checkIsInMultiOrPipeline();
+    client.xgroupDelConsumer(key, groupname, consumerName);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public long xdel(final String key, final StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xdel(key, ids);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, maxLen, approximateLength);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
+      final boolean noAck, final Entry<String, StreamEntryID>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    client.setTimeoutInfinite();
+
+    try {
+      List<Object> streamsEntries = client.getObjectMultiBulkReply();
+      if(streamsEntries == null) {
+        return null;
+      }
+      
+      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
+      for(Object streamObj : streamsEntries) {
+        List<Object> stream = (List<Object>)streamObj;
+        String streamId = SafeEncoder.encode((byte[])stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+      }
+      return result;
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(final String key, final String groupname, final StreamEntryID start, final StreamEntryID end,
+      final int count, final String consumername) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, start, end, count, consumername);
+
+    // TODO handle consumername == NULL case
+    
+    return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  public Object sendCommand(ProtocolCommand cmd, String... args) {
+    checkIsInMultiOrPipeline();
+    client.sendCommand(cmd, args);
+    return client.getOne();
+  }
 }

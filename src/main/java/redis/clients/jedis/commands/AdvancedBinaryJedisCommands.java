@@ -40,4 +40,6 @@ public interface AdvancedBinaryJedisCommands {
   byte[] clientListBinary();
 
   String clientSetname(byte[] name);
+
+  byte[] memoryDoctorBinary();
 }

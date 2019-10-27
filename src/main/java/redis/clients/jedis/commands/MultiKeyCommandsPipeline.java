@@ -57,6 +57,8 @@ public interface MultiKeyCommandsPipeline {
 
   Response<String> watch(String... keys);
 
+  Response<String> unwatch();
+
   Response<Long> zinterstore(String dstkey, String... sets);
 
   Response<Long> zinterstore(String dstkey, ZParams params, String... sets);

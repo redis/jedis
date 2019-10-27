@@ -308,6 +308,12 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<String> unwatch() {
+    client.unwatch();
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
   public Response<Long> zinterstore(String dstkey, String... sets) {
     client.zinterstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);
@@ -701,6 +707,12 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
       final int timeout, final MigrateParams params, final byte[]... keys) {
     client.migrate(host, port, destinationDB, timeout, params, keys);
     return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<Object> sendCommand(ProtocolCommand cmd, String... args){
+    client.sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
   }
   
 }

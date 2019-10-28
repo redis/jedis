@@ -13,6 +13,7 @@ import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
+
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
@@ -32,6 +33,7 @@ public final class BuilderFactory {
       return "double";
     }
   };
+
   public static final Builder<Boolean> BOOLEAN = new Builder<Boolean>() {
     @Override
     public Boolean build(Object data) {
@@ -43,10 +45,11 @@ public final class BuilderFactory {
       return "boolean";
     }
   };
+
   public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
     @Override
     public byte[] build(Object data) {
-      return ((byte[]) data); // deleted == 1
+      return (byte[]) data;
     }
 
     @Override
@@ -65,8 +68,24 @@ public final class BuilderFactory {
     public String toString() {
       return "long";
     }
-
   };
+
+  public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Long> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return (List<Long>) data;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Long>";
+    }
+  };
+
   public static final Builder<String> STRING = new Builder<String>() {
     @Override
     public String build(Object data) {
@@ -77,8 +96,8 @@ public final class BuilderFactory {
     public String toString() {
       return "string";
     }
-
   };
+
   public static final Builder<List<String>> STRING_LIST = new Builder<List<String>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -102,49 +121,6 @@ public final class BuilderFactory {
     public String toString() {
       return "List<String>";
     }
-
-  };
-  public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Map<String, String> build(Object data) {
-      final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<String, String> hash = new HashMap<>(flatHash.size()/2, 1);
-      final Iterator<byte[]> iterator = flatHash.iterator();
-      while (iterator.hasNext()) {
-        hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
-      }
-
-      return hash;
-    }
-
-    @Override
-    public String toString() {
-      return "Map<String, String>";
-    }
-
-  };
-
-  public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Map<String, String> build(Object data) {
-      final List<Object> flatHash = (List<Object>) data;
-      final Map<String, String> hash = new HashMap<>(flatHash.size()/2, 1);
-      final Iterator<Object> iterator = flatHash.iterator();
-      while (iterator.hasNext()) {
-        hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-          String.valueOf((Long) iterator.next()));
-      }
-
-      return hash;
-    }
-
-    @Override
-    public String toString() {
-      return "PUBSUB_NUMSUB_MAP<String, String>";
-    }
-
   };
 
   public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
@@ -155,7 +131,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new HashSet<>(l.size(), 1);
+      final Set<String> result = new HashSet<String>(l.size(), 1);
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -170,7 +146,51 @@ public final class BuilderFactory {
     public String toString() {
       return "Set<String>";
     }
+  };
 
+  public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<String> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> l = (List<byte[]>) data;
+      final Set<String> result = new LinkedHashSet<String>(l.size(), 1);
+      for (final byte[] barray : l) {
+        if (barray == null) {
+          result.add(null);
+        } else {
+          result.add(SafeEncoder.encode(barray));
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "ZSet<String>";
+    }
+  };
+
+  public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, String> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
+      }
+
+      return hash;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, String>";
+    }
   };
 
   public static final Builder<List<byte[]>> BYTE_ARRAY_LIST = new Builder<List<byte[]>>() {
@@ -236,47 +256,23 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<String> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new LinkedHashSet<>(l.size(), 1);
-      for (final byte[] barray : l) {
-        if (barray == null) {
-          result.add(null);
-        } else {
-          result.add(SafeEncoder.encode(barray));
-        }
-      }
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "ZSet<String>";
-    }
-
-  };
-
   public static final Builder<Tuple> TUPLE = new Builder<Tuple>() {
     @Override
     @SuppressWarnings("unchecked")
     public Tuple build(Object data) {
-      if (null == data) return null;
+      if (null == data) { // *Never* null. Still it doesn't hurt to be safe for future.
+        return null;
+      }
       List<byte[]> l = (List<byte[]>) data;
-      if (l.isEmpty()) return null;
-      return new Tuple(l.get(0), DOUBLE.build(l.get(1)));
+      Iterator<byte[]> i = l.iterator();
+      if (i.hasNext()) return new Tuple(i.next(), DOUBLE.build(i.next()));
+      return null;
     }
 
     @Override
     public String toString() {
       return "Tuple";
     }
-
   };
 
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
@@ -299,7 +295,27 @@ public final class BuilderFactory {
     public String toString() {
       return "ZSet<Tuple>";
     }
+  };
 
+  public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, String> build(Object data) {
+      final List<Object> flatHash = (List<Object>) data;
+      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
+      final Iterator<Object> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        hash.put(SafeEncoder.encode((byte[]) iterator.next()),
+          String.valueOf((Long) iterator.next()));
+      }
+
+      return hash;
+    }
+
+    @Override
+    public String toString() {
+      return "PUBSUB_NUMSUB_MAP<String, String>";
+    }
   };
 
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
@@ -366,16 +382,8 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      return interpretGeoposResult((List<Object>) data);
-    }
-
-    @Override
-    public String toString() {
-      return "List<GeoCoordinate>";
-    }
-
-    private List<GeoCoordinate> interpretGeoposResult(List<Object> responses) {
-      List<GeoCoordinate> responseCoordinate = new ArrayList<>(responses.size());
+      List<Object> responses = (List<Object>) data;
+      List<GeoCoordinate> responseCoordinate = new ArrayList<GeoCoordinate>(responses.size());
       for (Object response : responses) {
         if (response == null) {
           responseCoordinate.add(null);
@@ -387,6 +395,11 @@ public final class BuilderFactory {
         }
       }
       return responseCoordinate;
+    }
+
+    @Override
+    public String toString() {
+      return "List<GeoCoordinate>";
     }
   };
 
@@ -441,7 +454,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "GeoRadiusWithParamsResult";
+      return "List<GeoRadiusResponse>";
     }
   };
 
@@ -472,23 +485,6 @@ public final class BuilderFactory {
     public String toString() {
       return "List<Module>";
     }
-  };
-
-  public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Long> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      return (List<Long>) data;
-    }
-
-    @Override
-    public String toString() {
-      return "List<Long>";
-    }
-
   };
 
   public static final Builder<StreamEntryID> STREAM_ENTRY_ID = new Builder<StreamEntryID>() {
@@ -582,8 +578,6 @@ public final class BuilderFactory {
       return "Object";
     }
   };
-
-
 
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );

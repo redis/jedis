@@ -167,9 +167,4 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<String> unwatch() {
-    client.unwatch();
-    return getResponse(BuilderFactory.STRING);
-  }
-
 }

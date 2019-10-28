@@ -55,6 +55,8 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> sunionstore(String dstkey, String... keys);
 
+  Response<String> unwatch();
+
   Response<Long> zinterstore(String dstkey, String... sets);
 
   Response<Long> zinterstore(String dstkey, ZParams params, String... sets);

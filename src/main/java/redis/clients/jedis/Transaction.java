@@ -91,9 +91,4 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   public void close() {
     clear();
   }
-
-  public Response<String> unwatch() {
-    client.unwatch();
-    return getResponse(BuilderFactory.STRING);
-  }
 }

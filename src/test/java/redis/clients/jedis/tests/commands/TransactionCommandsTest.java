@@ -110,10 +110,10 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void unwatch() throws UnknownHostException, IOException {
+  public void unwatch() {
     jedis.watch("mykey");
-    String val = jedis.get("mykey");
-    val = "foo";
+    jedis.get("mykey");
+    String val = "foo";
     String status = jedis.unwatch();
     assertEquals("OK", status);
     Transaction t = jedis.multi();
@@ -130,8 +130,8 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     // Binary
     jedis.watch(bmykey);
-    byte[] bval = jedis.get(bmykey);
-    bval = bfoo;
+    jedis.get(bmykey);
+    byte[] bval = bfoo;
     status = jedis.unwatch();
     assertEquals(Keyword.OK.name(), status);
     t = jedis.multi();

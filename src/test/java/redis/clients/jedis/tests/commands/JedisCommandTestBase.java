@@ -38,7 +38,6 @@ public abstract class JedisCommandTestBase {
     Jedis j = new Jedis(hnp);
     j.connect();
     j.auth("foobared");
-    j.flushAll();
     return j;
   }
 

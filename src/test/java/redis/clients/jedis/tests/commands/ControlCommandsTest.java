@@ -198,4 +198,18 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     byte[] memoryInfo = jedis.memoryDoctorBinary();
     assertNotNull(memoryInfo);
   }
+  
+  @Test
+  public void memoryUsageString() {
+    jedis.set("foo", "ba");
+    Long usage = jedis.memoryUsage("foo");
+    assertEquals(49, (long)usage);
+    
+    jedis.lpush("loo", "ba", "da", "sha");
+    usage = jedis.memoryUsage("loo", 2);    
+    assertEquals(141, (long)usage);
+    
+    usage = jedis.memoryUsage("roo", 2);    
+    assertEquals(null, usage);
+  }
 }

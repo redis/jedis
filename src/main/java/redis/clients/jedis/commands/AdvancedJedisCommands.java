@@ -42,4 +42,8 @@ public interface AdvancedJedisCommands {
   String clientSetname(String name);
 
   String memoryDoctor();
+  
+  Long memoryUsage(String key);
+  
+  Long memoryUsage(String key, int samples);
 }

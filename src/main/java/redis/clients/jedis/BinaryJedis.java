@@ -3552,6 +3552,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.memoryDoctor();
     return client.getBinaryBulkReply();
   }
+  
+  @Override
+  public byte[] memoryUsageBinary(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key);
+    return client.getBinaryBulkReply();
+  }
+  
+  @Override
+  public byte[] memoryUsageBinary(final byte[] key, final int samples) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key, samples);
+    return client.getBinaryBulkReply();
+  }
 
   @Override
   public String clientKill(final byte[] ipPort) {

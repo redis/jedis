@@ -3554,17 +3554,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
   
   @Override
-  public byte[] memoryUsageBinary(final byte[] key) {
+  public Long memoryUsage(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.memoryUsage(key);
-    return client.getBinaryBulkReply();
+    return client.getIntegerReply();
   }
   
   @Override
-  public byte[] memoryUsageBinary(final byte[] key, final int samples) {
+  public Long memoryUsage(final byte[] key, final int samples) {
     checkIsInMultiOrPipeline();
     client.memoryUsage(key, samples);
-    return client.getBinaryBulkReply();
+    return client.getIntegerReply();
   }
 
   @Override

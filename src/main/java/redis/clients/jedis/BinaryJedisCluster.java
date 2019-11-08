@@ -2056,6 +2056,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
   
   @Override
+  public Long memoryUsage(final byte[] key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.memoryUsage(key);
+      }
+    }.runBinary(key);
+  }
+  
+  @Override
+  public Long memoryUsage(final byte[] key, final int samples) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.memoryUsage(key, samples);
+      }
+    }.runBinary(key);
+  }
+  
+  @Override
   public byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, final long maxLen, final boolean approximateLength){
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override

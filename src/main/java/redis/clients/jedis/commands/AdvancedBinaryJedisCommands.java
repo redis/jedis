@@ -43,8 +43,8 @@ public interface AdvancedBinaryJedisCommands {
 
   byte[] memoryDoctorBinary();
   
-  byte[] memoryUsageBinary(byte[] key);
+  Long memoryUsage(byte[] key);
 
-  byte[] memoryUsageBinary(byte[] key, int samples);
+  Long memoryUsage(byte[] key, int samples);
 
 }

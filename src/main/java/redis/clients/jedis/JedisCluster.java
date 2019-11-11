@@ -10,6 +10,7 @@ import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.Collections;
 import java.util.List;
@@ -2244,5 +2245,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(sampleKey);
   }
 
-
+  public Pipeline pipelined(final String sampleKey) {
+    return pipelined(SafeEncoder.encode(sampleKey));
+  }
 }

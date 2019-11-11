@@ -2231,4 +2231,14 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(sampleKey);
   }
+  
+
+  public Pipeline pipelined(final byte[] sampleKey) {
+    return new JedisClusterCommand<Pipeline>(connectionHandler, maxAttempts) {
+      @Override
+      public Pipeline execute(Jedis connection){
+        return connection.pipelined();
+      }
+    }.runBinary(sampleKey);
+  }
 }

@@ -216,12 +216,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foobar", "bar");
 
     Set<String> keys = jedis.keys("foo*");
-    Set<String> expected = new HashSet<String>();
+    Set<String> expected = new HashSet<>();
     expected.add("foo");
     expected.add("foobar");
     assertEquals(expected, keys);
 
-    expected = new HashSet<String>();
+    expected = new HashSet<>();
     keys = jedis.keys("bar*");
 
     assertEquals(expected, keys);
@@ -636,7 +636,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis2.set("foo", "bar");
 
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     map.put("a", "A");
     map.put("b", "B");
 

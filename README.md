@@ -5,6 +5,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/xetorthio/jedis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/xetorthio/jedis/context:java)
 [![Gitter](https://badges.gitter.im/xetorthio/jedis.svg)](https://gitter.im/xetorthio/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fxetorthio%2Fjedis.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fxetorthio%2Fjedis?ref=badge_shield)
 
 # Jedis
 
@@ -177,3 +178,6 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fxetorthio%2Fjedis.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fxetorthio%2Fjedis?ref=badge_large)

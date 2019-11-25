@@ -30,7 +30,7 @@ public class ClusterScriptingCommandsTest {
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
   private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-  private final Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+  private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
   JedisCluster jedisCluster;
 
   @Before
@@ -105,10 +105,10 @@ public class ClusterScriptingCommandsTest {
   @Test(expected = JedisClusterOperationException.class)
   public void testJedisClusterException() {
     String script = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2],ARGV[3]}";
-    List<String> keys = new ArrayList<String>();
+    List<String> keys = new ArrayList<>();
     keys.add("key1");
     keys.add("key2");
-    List<String> args = new ArrayList<String>();
+    List<String> args = new ArrayList<>();
     args.add("first");
     args.add("second");
     args.add("third");

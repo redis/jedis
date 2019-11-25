@@ -2870,7 +2870,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     if (result instanceof List<?>) {
       List<?> list = (List<?>) result;
-      List<Object> listResult = new ArrayList<Object>(list.size());
+      List<Object> listResult = new ArrayList<>(list.size());
       for (Object bin : list) {
         listResult.add(evalResult(bin));
       }
@@ -3240,7 +3240,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.scan(cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     String newcursor = new String((byte[]) result.get(0));
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     for (byte[] bs : rawResults) {
       results.add(SafeEncoder.encode(bs));
@@ -3281,7 +3281,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.sscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     String newcursor = new String((byte[]) result.get(0));
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     for (byte[] bs : rawResults) {
       results.add(SafeEncoder.encode(bs));

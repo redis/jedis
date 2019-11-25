@@ -87,7 +87,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final ArrayList<String> result = new ArrayList<String>(l.size());
+      final ArrayList<String> result = new ArrayList<>(l.size());
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -109,7 +109,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
+      final Map<String, String> hash = new HashMap<>(flatHash.size()/2, 1);
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
@@ -130,7 +130,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<Object> flatHash = (List<Object>) data;
-      final Map<String, String> hash = new HashMap<String, String>(flatHash.size()/2, 1);
+      final Map<String, String> hash = new HashMap<>(flatHash.size()/2, 1);
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()),
@@ -155,7 +155,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new HashSet<String>(l.size(), 1);
+      final Set<String> result = new HashSet<>(l.size(), 1);
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -199,7 +199,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<byte[]> result = new LinkedHashSet<byte[]>(l);
+      final Set<byte[]> result = new LinkedHashSet<>(l);
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -244,7 +244,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new LinkedHashSet<String>(l.size(), 1);
+      final Set<String> result = new LinkedHashSet<>(l.size(), 1);
       for (final byte[] barray : l) {
         if (barray == null) {
           result.add(null);
@@ -270,7 +270,7 @@ public final class BuilderFactory {
         return null;
       }
       List<byte[]> l = (List<byte[]>) data;
-      final Set<Tuple> result = new LinkedHashSet<Tuple>(l.size()/2, 1);
+      final Set<Tuple> result = new LinkedHashSet<>(l.size()/2, 1);
       Iterator<byte[]> iterator = l.iterator();
       while (iterator.hasNext()) {
         result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
@@ -302,7 +302,7 @@ public final class BuilderFactory {
 
       if (result instanceof List<?>) {
         List<?> list = (List<?>) result;
-        List<Object> listResult = new ArrayList<Object>(list.size());
+        List<Object> listResult = new ArrayList<>(list.size());
         for (Object bin : list) {
           listResult.add(evalResult(bin));
         }
@@ -330,7 +330,7 @@ public final class BuilderFactory {
     private Object evalResult(Object result) {
       if (result instanceof List<?>) {
         List<?> list = (List<?>) result;
-        List<Object> listResult = new ArrayList<Object>(list.size());
+        List<Object> listResult = new ArrayList<>(list.size());
         for (Object bin : list) {
           listResult.add(evalResult(bin));
         }
@@ -358,7 +358,7 @@ public final class BuilderFactory {
     }
 
     private List<GeoCoordinate> interpretGeoposResult(List<Object> responses) {
-      List<GeoCoordinate> responseCoordinate = new ArrayList<GeoCoordinate>(responses.size());
+      List<GeoCoordinate> responseCoordinate = new ArrayList<>(responses.size());
       for (Object response : responses) {
         if (response == null) {
           responseCoordinate.add(null);
@@ -382,7 +382,7 @@ public final class BuilderFactory {
 
       List<Object> objectList = (List<Object>) data;
 
-      List<GeoRadiusResponse> responses = new ArrayList<GeoRadiusResponse>(objectList.size());
+      List<GeoRadiusResponse> responses = new ArrayList<>(objectList.size());
       if (objectList.isEmpty()) {
         return responses;
       }
@@ -438,7 +438,7 @@ public final class BuilderFactory {
 
       List<List<Object>> objectList = (List<List<Object>>) data;
 
-      List<Module> responses = new ArrayList<Module>(objectList.size());
+      List<Module> responses = new ArrayList<>(objectList.size());
       if (objectList.isEmpty()) {
         return responses;
       }

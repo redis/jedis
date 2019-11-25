@@ -163,7 +163,6 @@ public class ClusterBinaryJedisCommandsTest {
     jedisCluster.del(key);
     jedisCluster.rpush(key, value1);
     jedisCluster.rpush(key, value2);
-    long num = 2L;
     assertEquals(2, (long) jedisCluster.llen(key));
   }
 

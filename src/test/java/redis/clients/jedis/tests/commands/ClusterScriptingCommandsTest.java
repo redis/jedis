@@ -167,7 +167,7 @@ public class ClusterScriptingCommandsTest {
   @Test
   public void testBinaryScriptFlush() {
     byte[] byteKey = "key1".getBytes();
-    byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
+    jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     assertEquals("OK", jedisCluster.scriptFlush(byteKey));
   }
 

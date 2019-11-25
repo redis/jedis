@@ -188,9 +188,9 @@ public interface BinaryJedisCommands {
 
   Set<Tuple> zpopmax(byte[] key, int count);
 
-  Set<Tuple> zpopmin(byte[] key);
+  Tuple zpopmin(byte[] key);
 
-  Set<Tuple> zpopmin(byte[] key, long count);
+  Set<Tuple> zpopmin(byte[] key, int count);
 
   List<byte[]> sort(byte[] key);
 

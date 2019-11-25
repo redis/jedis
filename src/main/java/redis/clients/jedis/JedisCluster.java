@@ -934,7 +934,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
+  @Override
+  public Double zscore(final String key, final String member) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.zscore(key, member);
+      }
+    }.run(key);
+  }
+
   @Override
   public Tuple zpopmax(final String key) {
     return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
@@ -954,13 +964,23 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
-  public Double zscore(final String key, final String member) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+  public Tuple zpopmin(final String key) {
+    return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
       @Override
-      public Double execute(Jedis connection) {
-        return connection.zscore(key, member);
+      public Tuple execute(Jedis connection) {
+        return connection.zpopmin(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(final String key, final int count) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zpopmin(key, count);
       }
     }.run(key);
   }

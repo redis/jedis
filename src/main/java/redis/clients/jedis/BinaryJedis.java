@@ -1860,14 +1860,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key) {
+  public Tuple zpopmin(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key);
-    return getTupledSet();
+    return BuilderFactory.TUPLE.build(client.getBinaryMultiBulkReply());
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key, final long count) {
+  public Set<Tuple> zpopmin(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key, count);
     return getTupledSet();

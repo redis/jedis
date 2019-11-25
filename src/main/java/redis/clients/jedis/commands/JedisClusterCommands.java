@@ -175,12 +175,16 @@ public interface JedisClusterCommands {
   Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
   Long zcard(String key);
-  
-  Tuple zpopmax(String key);
-  
-  Set<Tuple> zpopmax(String key, int count);
 
   Double zscore(String key, String member);
+
+  Tuple zpopmax(String key);
+
+  Set<Tuple> zpopmax(String key, int count);
+
+  Tuple zpopmin(String key);
+
+  Set<Tuple> zpopmin(String key, int count);
 
   List<String> sort(String key);
 

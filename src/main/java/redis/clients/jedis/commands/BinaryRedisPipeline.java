@@ -166,10 +166,6 @@ public interface BinaryRedisPipeline {
   Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
   Response<Long> zcard(byte[] key);
-  
-  Response<Tuple> zpopmax(byte[] key);
-  
-  Response<Set<Tuple>> zpopmax(byte[] key, int count);
 
   Response<Long> zcount(byte[] key, double min, double max);
 
@@ -236,6 +232,14 @@ public interface BinaryRedisPipeline {
   Response<Long> zrevrank(byte[] key, byte[] member);
 
   Response<Double> zscore(byte[] key, byte[] member);
+
+  Response<Tuple> zpopmax(byte[] key);
+
+  Response<Set<Tuple>> zpopmax(byte[] key, int count);
+
+  Response<Tuple> zpopmin(byte[] key);
+
+  Response<Set<Tuple>> zpopmin(byte[] key, int count);
 
   Response<Long> zlexcount(byte[] key, byte[] min, byte[] max);
 

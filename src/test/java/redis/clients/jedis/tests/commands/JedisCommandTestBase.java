@@ -1,9 +1,7 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertArrayEquals;
-
-import java.util.List;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +28,7 @@ public abstract class JedisCommandTestBase {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     jedis.disconnect();
   }
 
@@ -39,29 +37,5 @@ public abstract class JedisCommandTestBase {
     j.connect();
     j.auth("foobared");
     return j;
-  }
-
-  protected boolean arrayContains(List<byte[]> array, byte[] expected) {
-    for (byte[] a : array) {
-      try {
-        assertArrayEquals(a, expected);
-        return true;
-      } catch (AssertionError e) {
-
-      }
-    }
-    return false;
-  }
-
-  protected boolean setContains(Set<byte[]> set, byte[] expected) {
-    for (byte[] a : set) {
-      try {
-        assertArrayEquals(a, expected);
-        return true;
-      } catch (AssertionError e) {
-
-      }
-    }
-    return false;
   }
 }

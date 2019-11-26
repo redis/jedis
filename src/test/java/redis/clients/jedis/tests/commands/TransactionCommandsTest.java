@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import org.junit.After;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   Jedis nj;
 
   @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
 
@@ -44,6 +46,13 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     nj.connect();
     nj.auth("foobared");
     nj.flushAll();
+  }
+
+  @After
+  @Override
+  public void tearDown() throws Exception {
+    nj.close();
+    super.tearDown();
   }
 
   @Test

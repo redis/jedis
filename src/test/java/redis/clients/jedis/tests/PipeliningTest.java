@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
@@ -33,6 +34,11 @@ import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class PipeliningTest extends JedisCommandTestBase {
+
+  @After
+  public void tearDown() throws Exception {
+    jedis.close();
+  }
 
   @Test
   public void pipeline() {
@@ -651,6 +657,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     // it shouldn't meet any exception
     retFuture1.get();
     retFuture2.get();
+    jedis2.close();
   }
 
   @Test
@@ -681,6 +688,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     // it shouldn't meet any exception
     retFuture1.get();
     retFuture2.get();
+    jedis2.close();
   }
 
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {

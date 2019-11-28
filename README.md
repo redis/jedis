@@ -14,8 +14,6 @@ Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.8.x, 3.x.x and above*.
 
-*There are still couple of new functionalities added Redis 5 missing in Jedis like Streams.
-
 ## Community
 
 Meet us on IRC: ##jedis on freenode.net

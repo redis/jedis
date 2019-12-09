@@ -93,8 +93,8 @@ public final class BuilderFactory {
     public String toString() {
       return "string";
     }
-  };
 
+  };
   public static final Builder<List<String>> STRING_LIST = new Builder<List<String>>() {
     @Override
     @SuppressWarnings("unchecked")

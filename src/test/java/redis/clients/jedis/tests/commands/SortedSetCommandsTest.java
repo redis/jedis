@@ -673,7 +673,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(expected, range);
 
     Tuple tuple = jedis.zpopmin("foo");
-
     assertEquals(new Tuple("b", 10d), tuple);
 
     // Binary
@@ -692,7 +691,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(expected, range);
 
     tuple = jedis.zpopmin(bfoo);
-
     assertEquals(new Tuple(bb, 10d), tuple);
   }
 

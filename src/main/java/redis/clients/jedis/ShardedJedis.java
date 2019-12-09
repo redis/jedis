@@ -574,13 +574,25 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<Tuple> zpopmin(final String key) {
+  public Tuple zpopmax(final String key) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key, count);
+  }
+
+  @Override
+  public Tuple zpopmin(final String key) {
     Jedis j = getShard(key);
     return j.zpopmin(key);
   }
 
   @Override
-  public Set<Tuple> zpopmin(final String key, final long count) {
+  public Set<Tuple> zpopmin(final String key, final int count) {
     Jedis j = getShard(key);
     return j.zpopmin(key, count);
   }

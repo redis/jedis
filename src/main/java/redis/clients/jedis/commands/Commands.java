@@ -196,6 +196,10 @@ public interface Commands {
   void zcard(String key);
 
   void zscore(String key, String member);
+  
+  void zpopmax(String key);
+  
+  void zpopmax(String key, int count);
 
   void zpopmin(String key);
 

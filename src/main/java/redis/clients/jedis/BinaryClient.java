@@ -503,6 +503,14 @@ public class BinaryClient extends Connection {
     sendCommand(ZSCORE, key, member);
   }
 
+  public void zpopmax(final byte[] key) {
+    sendCommand(ZPOPMAX, key);
+  }
+
+  public void zpopmax(final byte[] key, final int count) {
+    sendCommand(ZPOPMAX, key, toByteArray(count));
+  }
+
   public void zpopmin(final byte[] key) {
     sendCommand(ZPOPMIN, key);
   }

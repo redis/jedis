@@ -233,6 +233,14 @@ public interface BinaryRedisPipeline {
 
   Response<Double> zscore(byte[] key, byte[] member);
 
+  Response<Tuple> zpopmax(byte[] key);
+
+  Response<Set<Tuple>> zpopmax(byte[] key, int count);
+
+  Response<Tuple> zpopmin(byte[] key);
+
+  Response<Set<Tuple>> zpopmin(byte[] key, int count);
+
   Response<Long> zlexcount(byte[] key, byte[] min, byte[] max);
 
   Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max);

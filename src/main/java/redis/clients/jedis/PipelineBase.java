@@ -1301,13 +1301,49 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmin(final String key) {
-    getClient(key).zpopmin(key);
+  public Response<Tuple> zpopmax(final String key) {
+    getClient(key).zpopmax(key);
+    return getResponse(BuilderFactory.TUPLE);
+  }
+
+  @Override
+  public Response<Tuple> zpopmax(final byte[] key) {
+    getClient(key).zpopmax(key);
+    return getResponse(BuilderFactory.TUPLE);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zpopmax(final String key, final int count) {
+    getClient(key).zpopmax(key, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmin(final String key, final long count) {
+  public Response<Set<Tuple>> zpopmax(final byte[] key, final int count) {
+    getClient(key).zpopmax(key, count);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Tuple> zpopmin(final String key) {
+    getClient(key).zpopmin(key);
+    return getResponse(BuilderFactory.TUPLE);
+  }
+
+  @Override
+  public Response<Tuple> zpopmin(final byte[] key) {
+    getClient(key).zpopmin(key);
+    return getResponse(BuilderFactory.TUPLE);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zpopmin(final byte[] key, final int count) {
+    getClient(key).zpopmin(key, count);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zpopmin(final String key, final int count) {
     getClient(key).zpopmin(key, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }

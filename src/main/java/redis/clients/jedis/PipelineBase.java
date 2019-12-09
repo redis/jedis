@@ -1337,13 +1337,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmin(final String key, final int count) {
+  public Response<Set<Tuple>> zpopmin(final byte[] key, final int count) {
     getClient(key).zpopmin(key, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmin(final byte[] key, final int count) {
+  public Response<Set<Tuple>> zpopmin(final String key, final int count) {
     getClient(key).zpopmin(key, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }

@@ -13,7 +13,6 @@ import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
-
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
@@ -33,7 +32,6 @@ public final class BuilderFactory {
       return "double";
     }
   };
-
   public static final Builder<Boolean> BOOLEAN = new Builder<Boolean>() {
     @Override
     public Boolean build(Object data) {
@@ -45,7 +43,6 @@ public final class BuilderFactory {
       return "boolean";
     }
   };
-
   public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
     @Override
     public byte[] build(Object data) {

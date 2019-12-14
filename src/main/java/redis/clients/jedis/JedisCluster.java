@@ -2284,5 +2284,13 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(sampleKey);
   }
 
+  public Object sendCommand(final ProtocolCommand cmd, final String... keys) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.sendCommand(cmd, keys);
+      }
+    }.run(keys.length, keys);
+  }
 
 }

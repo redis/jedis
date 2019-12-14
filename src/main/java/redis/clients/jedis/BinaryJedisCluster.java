@@ -2251,4 +2251,13 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(sampleKey);
   }
+
+  public Object sendCommand(final ProtocolCommand cmd, final byte[]... keys) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.sendCommand(cmd, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
 }

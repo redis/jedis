@@ -187,6 +187,14 @@ public interface JedisCommands {
 
   Double zscore(String key, String member);
 
+  Tuple zpopmax(String key);
+
+  Set<Tuple> zpopmax(String key, int count);
+
+  Tuple zpopmin(String key);
+
+  Set<Tuple> zpopmin(String key, int count);
+
   List<String> sort(String key);
 
   List<String> sort(String key, SortingParams sortingParameters);
@@ -480,5 +488,4 @@ public interface JedisCommands {
    */        
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
-
 }

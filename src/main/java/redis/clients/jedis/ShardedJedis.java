@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import redis.clients.jedis.commands.JedisCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -573,6 +574,30 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Tuple zpopmax(final String key) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key, count);
+  }
+
+  @Override
+  public Tuple zpopmin(final String key) {
+    Jedis j = getShard(key);
+    return j.zpopmin(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.zpopmin(key, count);
+  }
+
+  @Override
   public List<String> sort(final String key) {
     Jedis j = getShard(key);
     return j.sort(key);
@@ -1052,5 +1077,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       int retries, boolean force, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  public Object sendCommand(ProtocolCommand cmd, String... args) {
+    // default since no sample key provided in JedisCommands interface
+    String sampleKey = args.length > 0 ? args[0] : cmd.toString();
+    Jedis j = getShard(sampleKey);
+    return j.sendCommand(cmd, args);
   }
 }

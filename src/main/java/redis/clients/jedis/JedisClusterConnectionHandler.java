@@ -30,7 +30,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, password, clientName,
         ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
-    initializeSlotsCache(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    initializeSlotsCache(nodes, connectionTimeout, soTimeout, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   abstract Jedis getConnection();
@@ -45,7 +45,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     return cache.getNodes();
   }
 
-  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
+  private void initializeSlotsCache(Set<HostAndPort> startNodes,
       int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     for (HostAndPort hostAndPort : startNodes) {

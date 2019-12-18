@@ -10,11 +10,11 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEqua
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -129,9 +129,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     range = jedis.lrange("foo", 1, 2);
     assertEquals(expected, range);
 
-    expected = new ArrayList<String>();
     range = jedis.lrange("foo", 2, 1);
-    assertEquals(expected, range);
+    assertEquals(Collections.<String>emptyList(), range);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -156,9 +155,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     brange = jedis.lrange(bfoo, 1, 2);
     assertByteArrayListEquals(bexpected, brange);
 
-    bexpected = new ArrayList<byte[]>();
     brange = jedis.lrange(bfoo, 2, 1);
-    assertByteArrayListEquals(bexpected, brange);
+    assertByteArrayListEquals(Collections.<byte[]>emptyList(), brange);
 
   }
 
@@ -549,17 +547,19 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void brpoplpush() {
-    (new Thread(new Runnable() {
+
+    new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(100);
           Jedis j = createJedis();
           j.lpush("foo", "a");
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          org.apache.logging.log4j.LogManager.getLogger().error("Interruption in string lpush", e);
         }
       }
-    })).start();
+    }).start();
 
     String element = jedis.brpoplpush("foo", "bar", 0);
 
@@ -567,23 +567,26 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertEquals(1, jedis.llen("bar").longValue());
     assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
 
-    (new Thread(new Runnable() {
+    // Binary
+
+    new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(100);
           Jedis j = createJedis();
-          j.lpush("foo", "a");
+          j.lpush(bfoo, bA);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          org.apache.logging.log4j.LogManager.getLogger().error("Interruption in binary lpush", e);
         }
       }
-    })).start();
+    }).start();
 
-    byte[] brpoplpush = jedis.brpoplpush("foo".getBytes(), "bar".getBytes(), 0);
+    byte[] belement = jedis.brpoplpush(bfoo, bbar, 0);
 
-    assertTrue(Arrays.equals("a".getBytes(), brpoplpush));
+    assertArrayEquals(bA, belement);
     assertEquals(1, jedis.llen("bar").longValue());
-    assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
+    assertArrayEquals(bA, jedis.lrange(bbar, 0, -1).get(0));
 
   }
 }

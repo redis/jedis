@@ -37,7 +37,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @After
   @Override
-  public void tearDown() {
+  public void tearDown() throws Exception {
     client.close();
     super.tearDown();
   }

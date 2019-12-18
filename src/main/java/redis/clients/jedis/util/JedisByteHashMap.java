@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Serializable {
   private static final long serialVersionUID = -6971431362627219416L;
-  private transient Map<ByteArrayWrapper, byte[]> internalMap = new HashMap<ByteArrayWrapper, byte[]>();
+  private final Map<ByteArrayWrapper, byte[]> internalMap = new HashMap<ByteArrayWrapper, byte[]>();
 
   @Override
   public void clear() {
@@ -94,7 +94,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
     return internalMap.values();
   }
 
-  private static final class ByteArrayWrapper {
+  private static final class ByteArrayWrapper implements Serializable {
     private final byte[] data;
 
     public ByteArrayWrapper(byte[] data) {

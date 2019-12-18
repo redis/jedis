@@ -3,6 +3,8 @@
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/xetorthio/jedis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/xetorthio/jedis/context:java)
+[![Gitter](https://badges.gitter.im/xetorthio/jedis.svg)](https://gitter.im/xetorthio/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Jedis
 
@@ -11,8 +13,6 @@ Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Red
 Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.8.x, 3.x.x and above*.
-
-*There are still couple of new functionalities added Redis 5 missing in Jedis like Streams.
 
 ## Community
 
@@ -56,7 +56,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -89,7 +89,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.1.0-SNAPSHOT</version>
+      <version>3.2.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```

@@ -149,10 +149,13 @@ public class JedisPoolTest {
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
+    j.close();
+
     JedisPool pool = new JedisPool("redis://:foobared@localhost:6380/2");
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
+    jedis.close();
   }
 
   @Test
@@ -161,6 +164,8 @@ public class JedisPoolTest {
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
+    j.close();
+
     JedisPool pool = new JedisPool(new URI("redis://:foobared@localhost:6380/2"));
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
@@ -398,7 +403,7 @@ public class JedisPoolTest {
     } catch (Exception e) {
       assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
-
+    jedis.close();
   }
 
   private int getClientCount(final String clientList) {

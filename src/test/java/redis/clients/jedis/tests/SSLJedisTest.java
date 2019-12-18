@@ -308,7 +308,7 @@ public class SSLJedisTest {
       try {
         peerCertificate = (X509Certificate) session.getPeerCertificates()[0];
       } catch (SSLPeerUnverifiedException e) {
-        throw new IllegalStateException("The session does not contain a peer X.509 certificate.");
+        throw new IllegalStateException("The session does not contain a peer X.509 certificate.",  e);
       }
       String peerCertificateCN = getCommonName(peerCertificate);
       return hostname.equals(peerCertificateCN);
@@ -318,6 +318,7 @@ public class SSLJedisTest {
       String subjectDN = peerCertificate.getSubjectDN().getName();
       String[] dnComponents = subjectDN.split(",");
       for (String dnComponent : dnComponents) {
+        dnComponent = dnComponent.trim();
         if (dnComponent.startsWith(COMMON_NAME_RDN_PREFIX)) {
           return dnComponent.substring(COMMON_NAME_RDN_PREFIX.length());
         }

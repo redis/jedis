@@ -5,11 +5,14 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
@@ -488,6 +491,10 @@ public interface JedisCommands {
    * @param type
    * @return
    */
-  Map<String, Object> xinfo (String key, String type);
+  StreamInfo xinfo (String key, StreamInfo.StreamInfoType type);
   //TODO add an enum to select stream/group/consumers
+
+  List<StreamGroupInfo> xinfo (String key, StreamGroupInfo.StreamGroupInfoType type);
+
+  List<StreamConsumersInfo> xinfo (String key, String group, StreamConsumersInfo.StreamConsumersInfoType type);
 }

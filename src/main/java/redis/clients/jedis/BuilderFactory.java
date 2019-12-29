@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
@@ -591,23 +592,22 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String,Object>> STREAM_INFO = new Builder<Map<String,Object>>() {
+  public static final Builder<StreamInfo> STREAM_INFO = new Builder<StreamInfo>() {
     @Override
     @SuppressWarnings("unchecked")
-    public  Map<String,Object> build(Object data) {
+    public StreamInfo build(Object data) {
       if (null == data) {
         return null;
       }
 
       Map<String,Builder> mappingFunctions = new HashMap<>();
-      mappingFunctions.put("last-generated-id",STRING);
-      mappingFunctions.put("first-entry",STREAM_ENTRY);
-      mappingFunctions.put("length", LONG);
-      mappingFunctions.put("radix-tree-keys", LONG);
-      mappingFunctions.put("radix-tree-nodes", LONG);
-      mappingFunctions.put("last-generated-id", STRING);
-      mappingFunctions.put("last-entry",STREAM_ENTRY);
-      mappingFunctions.put("groups", LONG);
+      mappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STRING);
+      mappingFunctions.put(StreamInfo.FIRST_ENTRY,STREAM_ENTRY);
+      mappingFunctions.put(StreamInfo.LENGHT, LONG);
+      mappingFunctions.put(StreamInfo.RADIX_TREE_KEYS, LONG);
+      mappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
+      mappingFunctions.put(StreamInfo.LAST_ENTRY,STREAM_ENTRY);
+      mappingFunctions.put(StreamInfo.GROUPS, LONG);
 
 
       Map<String, Object> resultMap = new HashMap<>();
@@ -620,24 +620,107 @@ public final class BuilderFactory {
           resultMap.put(mapKey,mappingFunctions.get(mapKey).build(iterator.next()));
 
       }
-      return resultMap;
+      StreamInfo streamInfo = new StreamInfo(resultMap);
+      return streamInfo;
     }
 
     @Override
     public String toString() {
-      return "Map<Key,Object>";
+      return "StreamInfo";
     }
   };
 
-  public static final Builder<Map<String,Object>> STREAM_GROUP_INFO = new Builder<Map<String,Object>>() {
+  public static final Builder<List<StreamGroupInfo>> STREAM_GROUP_INFO = new Builder<List<StreamGroupInfo>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public  Map<String,Object> build(Object data) {
+    public  List<StreamGroupInfo> build(Object data) {
       if (null == data) {
         return null;
       }
 
-      throw new RuntimeException("Not implemented yet");
+      Map<String,Builder> mappingFunctions = new HashMap<>();
+      mappingFunctions.put(StreamGroupInfo.NAME,STRING);
+      mappingFunctions.put(StreamGroupInfo.CONSUMERS, LONG);
+      mappingFunctions.put(StreamGroupInfo.PENDING, LONG);
+      mappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
+
+      List<StreamGroupInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>)data;
+      Iterator<Object> groupsArray = streamsEntries.iterator();
+
+      while (groupsArray.hasNext()) {
+
+        Map<String, Object> resultMap = new HashMap<>();
+        List<Object> groupInfo = (List<Object>) groupsArray.next();
+
+        Iterator<Object> groupInfoIterator = groupInfo.iterator();
+
+        while (groupInfoIterator.hasNext()) {
+
+          String mapKey = STRING.build(groupInfoIterator.next());
+          resultMap.put(mapKey, mappingFunctions.get(mapKey).build(groupInfoIterator.next()));
+        }
+        StreamGroupInfo streamGroupInfo = new StreamGroupInfo(resultMap);
+        list.add(streamGroupInfo);
+
+      }
+      //StreamGroupInfo streamInfo = new StreamGroupInfo(resultMap);
+      return list;
+
+
+
+
+      //throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public String toString() {
+      return "Map<Key,StreamInfoElement>";
+    }
+  };
+
+
+  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO = new Builder<List<StreamConsumersInfo>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<StreamConsumersInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      Map<String,Builder> mappingFunctions = new HashMap<>();
+      mappingFunctions.put(StreamConsumersInfo.NAME,STRING);
+      mappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
+      mappingFunctions.put(StreamGroupInfo.PENDING, LONG);
+      mappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
+
+      List<StreamConsumersInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>)data;
+      Iterator<Object> groupsArray = streamsEntries.iterator();
+
+      while (groupsArray.hasNext()) {
+
+        Map<String, Object> resultMap = new HashMap<>();
+        List<Object> groupInfo = (List<Object>) groupsArray.next();
+
+        Iterator<Object> groupInfoIterator = groupInfo.iterator();
+
+        while (groupInfoIterator.hasNext()) {
+
+          String mapKey = STRING.build(groupInfoIterator.next());
+          resultMap.put(mapKey, mappingFunctions.get(mapKey).build(groupInfoIterator.next()));
+        }
+        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(resultMap);
+        list.add(streamGroupInfo);
+
+      }
+      //StreamGroupInfo streamInfo = new StreamGroupInfo(resultMap);
+      return list;
+
+
+
+
+      //throw new RuntimeException("Not implemented yet");
     }
 
     @Override

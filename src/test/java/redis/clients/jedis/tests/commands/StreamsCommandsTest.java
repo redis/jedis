@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -322,16 +321,29 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map1.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xadd-stream1", null, map1);
     assertNotNull(id1);
+    StreamInfo xinfo =jedis.xinfo("xadd-stream1", StreamInfo.StreamInfoType.getStreamInfoType());
+    assertEquals(1L,xinfo.getLength().longValue());
+    assertEquals(1L,xinfo.getRadixTreeKeys().longValue());
+    assertEquals(2L,xinfo.getRadixTreeNodes().longValue());
+    assertEquals(0L,xinfo.getGroups().longValue());
+    assertEquals("v1",xinfo.getFirstEntry().getFields().get("f1"));
+    assertEquals("v1",xinfo.getLastEntry().getFields().get("f1"));
 
-    Map<String, Object> xinfo =jedis.xinfo("xadd-stream1", "stream");
-    assertEquals(1L,xinfo.get("length"));
-    assertEquals(1L,xinfo.get("radix-tree-keys"));
-    assertEquals(2L,xinfo.get("radix-tree-nodes"));
-    assertEquals(0L,xinfo.get("groups"));
-    assertTrue(xinfo.get("first-entry") instanceof StreamEntry );
-    assertTrue(xinfo.get("last-entry") instanceof StreamEntry );
+    jedis.xgroupCreate("xadd-stream1","G1", StreamEntryID.LAST_ENTRY,false);
+    jedis.xgroupCreate("xadd-stream1","G2", StreamEntryID.LAST_ENTRY,false);
+
+    Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xadd-stream1", new StreamEntryID("0-0"));
+
+    jedis.xreadGroup("G1", "myConsumer",1,0,false,streamQeury11);
+
+
+    List<StreamGroupInfo> info = jedis.xinfo("xadd-stream1", StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType());
+    List<StreamConsumersInfo> consumersInfos = jedis.xinfo("xadd-stream1", "G1",
+        StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType());
 
   }
+
+
 
   @Test
   public void pipeline() {

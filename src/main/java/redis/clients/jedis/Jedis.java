@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import java.net.URI;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -3832,19 +3831,43 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Map<String, Object> xinfo(String key, String type) {
-    Map<String, Object> resultMap;
+  public StreamInfo xinfo(String key, StreamInfo.StreamInfoType type) {
+    StreamInfo resultMap;
     client.xinfo(key,type);
     List<Object> streamsEntries = client.getObjectMultiBulkReply();
     if(streamsEntries == null) {
       return null;
     }
+    resultMap = BuilderFactory.STREAM_INFO.build(streamsEntries);
 
-    if ("stream".equalsIgnoreCase(type)) {
-      resultMap = BuilderFactory.STREAM_INFO.build(streamsEntries);
-    } else {
-      throw new RuntimeException("Not implemented yet");
+
+    return resultMap;
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfo(String key, StreamGroupInfo.StreamGroupInfoType type) {
+    List<StreamGroupInfo> resultMap;
+    client.xinfo(key,type);
+    List<Object> streamsEntries = client.getObjectMultiBulkReply();
+    if(streamsEntries == null) {
+      return null;
     }
+    resultMap = BuilderFactory.STREAM_GROUP_INFO.build(streamsEntries);
+
+
+    return resultMap;
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfo(String key, String group, StreamConsumersInfo.StreamConsumersInfoType type) {
+    List<StreamConsumersInfo> resultMap;
+    client.xinfo(key,group,type);
+    List<Object> streamsEntries = client.getObjectMultiBulkReply();
+    if(streamsEntries == null) {
+      return null;
+    }
+    resultMap = BuilderFactory.STREAM_CONSUMERS_INFO.build(streamsEntries);
+
 
     return resultMap;
   }

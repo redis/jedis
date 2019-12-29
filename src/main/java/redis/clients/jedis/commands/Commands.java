@@ -4,10 +4,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -391,5 +394,7 @@ public interface Commands {
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
       boolean force, StreamEntryID... ids);
-  void xinfo (String key, String type);
+  void xinfo (String key, StreamInfo.StreamInfoType type);
+  void xinfo (String key, StreamGroupInfo.StreamGroupInfoType type);
+  void xinfo (String key, String group, StreamConsumersInfo.StreamConsumersInfoType type);
 }

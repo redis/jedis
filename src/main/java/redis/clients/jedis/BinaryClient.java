@@ -1464,4 +1464,13 @@ public class BinaryClient extends Connection {
 
   }
 
+  public void xinfo (byte[] key, byte[] group, byte[] type) {
+
+    ArrayList<byte[]> arguments = new ArrayList<>(10);
+    arguments.add(type);
+    arguments.add(key);
+    arguments.add(group);
+    sendCommand(XINFO,arguments.toArray(new byte[arguments.size()][]));
+  }
+
 }

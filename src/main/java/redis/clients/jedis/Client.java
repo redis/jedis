@@ -1263,8 +1263,26 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xinfo(String key, String type) {
-    xinfo(SafeEncoder.encode(key),SafeEncoder.encode(type));
+  public void xinfo(String key, StreamInfo.StreamInfoType type) {
+
+
+    xinfo(SafeEncoder.encode(key),SafeEncoder.encode(StreamInfo.STREAM_INFO));
+
+  }
+
+  @Override
+  public void xinfo(String key, StreamGroupInfo.StreamGroupInfoType type) {
+
+
+    xinfo(SafeEncoder.encode(key),SafeEncoder.encode(StreamGroupInfo.GROUP_INFO));
+
+  }
+
+  @Override
+  public void xinfo(String key, String group, StreamConsumersInfo.StreamConsumersInfoType type) {
+
+
+    xinfo(SafeEncoder.encode(key),SafeEncoder.encode(group),SafeEncoder.encode(StreamConsumersInfo.CONSUMERS_INFO));
 
   }
 

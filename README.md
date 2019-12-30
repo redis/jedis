@@ -14,8 +14,6 @@ Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.8.x, 3.x.x and above*.
 
-*There are still couple of new functionalities added Redis 5 missing in Jedis like Streams.
-
 ## Community
 
 Meet us on IRC: ##jedis on freenode.net
@@ -58,7 +56,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -91,7 +89,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.2.0-SNAPSHOT</version>
+      <version>3.3.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```

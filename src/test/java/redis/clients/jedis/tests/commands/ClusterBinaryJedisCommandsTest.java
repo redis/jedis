@@ -32,7 +32,7 @@ public class ClusterBinaryJedisCommandsTest {
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
   private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
-  private final Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+  private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
   JedisCluster jedisCluster;
 
   @Before
@@ -131,7 +131,7 @@ public class ClusterBinaryJedisCommandsTest {
     byte[][] listLanguages = { firstLanguage, secondLanguage };
     jedisCluster.sadd(byteKey, listLanguages);
     Set<byte[]> setLanguages = jedisCluster.smembers(byteKey);
-    List<String> languages = new ArrayList<String>();
+    List<String> languages = new ArrayList<>();
     for (byte[] language : setLanguages) {
       languages.add(new String(language));
     }
@@ -163,7 +163,6 @@ public class ClusterBinaryJedisCommandsTest {
     jedisCluster.del(key);
     jedisCluster.rpush(key, value1);
     jedisCluster.rpush(key, value2);
-    long num = 2L;
     assertEquals(2, (long) jedisCluster.llen(key));
   }
 

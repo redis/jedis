@@ -7,8 +7,8 @@ import java.util.Queue;
 
 public class ShardedJedisPipeline extends PipelineBase {
   private BinaryShardedJedis jedis;
-  private List<FutureResult> results = new ArrayList<FutureResult>();
-  private Queue<Client> clients = new LinkedList<Client>();
+  private List<FutureResult> results = new ArrayList<>();
+  private Queue<Client> clients = new LinkedList<>();
 
   private static class FutureResult {
     private Client client;

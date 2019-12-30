@@ -127,7 +127,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void mget() {
     List<byte[]> values = jedis.mget(bfoo, bbar);
-    List<byte[]> expected = new ArrayList<byte[]>();
+    List<byte[]> expected = new ArrayList<>();
     expected.add(null);
     expected.add(null);
 
@@ -135,7 +135,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo, binaryValue);
 
-    expected = new ArrayList<byte[]>();
+    expected = new ArrayList<>();
     expected.add(binaryValue);
     expected.add(null);
     values = jedis.mget(bfoo, bbar);
@@ -144,7 +144,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bbar, bfoo);
 
-    expected = new ArrayList<byte[]>();
+    expected = new ArrayList<>();
     expected.add(binaryValue);
     expected.add(bfoo);
     values = jedis.mget(bfoo, bbar);

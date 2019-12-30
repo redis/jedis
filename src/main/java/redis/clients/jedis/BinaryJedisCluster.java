@@ -928,6 +928,46 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Tuple zpopmax(final byte[] key) {
+    return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
+      @Override
+      public Tuple execute(Jedis connection) {
+        return connection.zpopmax(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(final byte[] key, final int count) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zpopmax(key, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Tuple zpopmin(final byte[] key) {
+    return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
+      @Override
+      public Tuple execute(Jedis connection) {
+        return connection.zpopmin(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(final byte[] key, final int count) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zpopmin(key, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public List<byte[]> sort(final byte[] key) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override

@@ -57,6 +57,18 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void clientId() {
+    Long clientId = client.clientId();
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);
+    matcher.find();
+
+    Long longId = Long.parseLong(matcher.group(1));
+
+    assertEquals(clientId, longId);
+  }
+
+  @Test
   public void killIdString() {
     String info = findInClientList();
     Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);

@@ -3831,45 +3831,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public StreamInfo xinfo(String key, StreamInfo.StreamInfoType type) {
-    StreamInfo resultMap;
-    client.xinfo(key,type);
-    List<Object> streamsEntries = client.getObjectMultiBulkReply();
-    if(streamsEntries == null) {
-      return null;
-    }
-    resultMap = BuilderFactory.STREAM_INFO.build(streamsEntries);
+  public StreamInfo xinfo(StreamInfo.StreamInfoType type, String key) {
+    client.xinfo(type,key);
 
+    return BuilderFactory.STREAM_INFO.build(client.getObjectMultiBulkReply());
 
-    return resultMap;
   }
 
   @Override
-  public List<StreamGroupInfo> xinfo(String key, StreamGroupInfo.StreamGroupInfoType type) {
-    List<StreamGroupInfo> resultMap;
-    client.xinfo(key,type);
-    List<Object> streamsEntries = client.getObjectMultiBulkReply();
-    if(streamsEntries == null) {
-      return null;
-    }
-    resultMap = BuilderFactory.STREAM_GROUP_INFO.build(streamsEntries);
+  public List<StreamGroupInfo> xinfo(StreamGroupInfo.StreamGroupInfoType type, String key) {
+    client.xinfo(type,key);
 
+    return BuilderFactory.STREAM_GROUP_INFO.build(client.getObjectMultiBulkReply());
 
-    return resultMap;
   }
 
   @Override
-  public List<StreamConsumersInfo> xinfo(String key, String group, StreamConsumersInfo.StreamConsumersInfoType type) {
-    List<StreamConsumersInfo> resultMap;
-    client.xinfo(key,group,type);
-    List<Object> streamsEntries = client.getObjectMultiBulkReply();
-    if(streamsEntries == null) {
-      return null;
-    }
-    resultMap = BuilderFactory.STREAM_CONSUMERS_INFO.build(streamsEntries);
+  public List<StreamConsumersInfo> xinfo(StreamConsumersInfo.StreamConsumersInfoType type, String key, String group) {
+    client.xinfo(type,key,group);
 
+    return BuilderFactory.STREAM_CONSUMERS_INFO.build(client.getObjectMultiBulkReply());
 
-    return resultMap;
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {

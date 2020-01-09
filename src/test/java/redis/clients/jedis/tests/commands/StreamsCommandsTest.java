@@ -321,13 +321,13 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map1.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xadd-stream1", null, map1);
     assertNotNull(id1);
-    StreamInfo xinfo =jedis.xinfo("xadd-stream1", StreamInfo.StreamInfoType.getStreamInfoType());
-    assertEquals(1L,xinfo.getLength().longValue());
-    assertEquals(1L,xinfo.getRadixTreeKeys().longValue());
-    assertEquals(2L,xinfo.getRadixTreeNodes().longValue());
-    assertEquals(0L,xinfo.getGroups().longValue());
-    assertEquals("v1",xinfo.getFirstEntry().getFields().get("f1"));
-    assertEquals("v1",xinfo.getLastEntry().getFields().get("f1"));
+    StreamInfo xinfo =jedis.xinfo(StreamInfo.StreamInfoType.getStreamInfoType(), "xadd-stream1");
+    assertEquals(1L,(long)xinfo.getStreamInfo().get("length"));
+    assertEquals(1L,xinfo.getStreamInfo().get("radix-tree-keys"));
+    assertEquals(2L,xinfo.getStreamInfo().get("radix-tree-nodes"));
+    assertEquals(0L,xinfo.getStreamInfo().get("groups"));
+    assertEquals("v1",((StreamEntry)xinfo.getStreamInfo().get("first-entry")).getFields().get("f1"));
+    assertEquals("v1",((StreamEntry)xinfo.getStreamInfo().get("last-entry")).getFields().get("f1"));
 
     jedis.xgroupCreate("xadd-stream1","G1", StreamEntryID.LAST_ENTRY,false);
     jedis.xgroupCreate("xadd-stream1","G2", StreamEntryID.LAST_ENTRY,false);
@@ -337,9 +337,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     jedis.xreadGroup("G1", "myConsumer",1,0,false,streamQeury11);
 
 
-    List<StreamGroupInfo> info = jedis.xinfo("xadd-stream1", StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType());
-    List<StreamConsumersInfo> consumersInfos = jedis.xinfo("xadd-stream1", "G1",
-        StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType());
+    List<StreamGroupInfo> info = jedis.xinfo(StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType(),"xadd-stream1");
+    List<StreamConsumersInfo> consumersInfos = jedis.xinfo(StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType(),
+        "xadd-stream1", "G1");
+
+    System.out.println(info.get(0).getGroupInfo().get("name"));
 
   }
 

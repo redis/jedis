@@ -487,14 +487,14 @@ public interface JedisCommands {
   /**
    * Introspection command used in order to retrieve different information about the streams
    * and associated consumer groups.
-   * @param key
    * @param type
+   * @param key
    * @return
    */
-  StreamInfo xinfo (String key, StreamInfo.StreamInfoType type);
+  StreamInfo xinfo (StreamInfo.StreamInfoType type,String key);
   //TODO add an enum to select stream/group/consumers
 
-  List<StreamGroupInfo> xinfo (String key, StreamGroupInfo.StreamGroupInfoType type);
+  List<StreamGroupInfo> xinfo (StreamGroupInfo.StreamGroupInfoType type,String key);
 
-  List<StreamConsumersInfo> xinfo (String key, String group, StreamConsumersInfo.StreamConsumersInfoType type);
+  List<StreamConsumersInfo> xinfo (StreamConsumersInfo.StreamConsumersInfoType type, String key, String group);
 }

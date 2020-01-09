@@ -14,30 +14,26 @@ public class StreamInfo implements Serializable {
   public static final String LAST_ENTRY = "last-entry";
   public static final String STREAM_INFO = "stream";
 
-  private final Long length;
+  /*private final Long length;
   private final Long radixTreeKeys;
 
   private final Long radixTreeNodes;
   private final Long groups;
   private final String lastGeneratedId;
   private final StreamEntry firstEntry;
-  private final StreamEntry lastEntry;
+  private final StreamEntry lastEntry;*/
+  private final Map<String,Object> streamInfo;
+
 
   public StreamInfo(Map<String,Object> map) {
 
     if (map!= null) {
-      length = (Long) map.get(LENGHT);
-      radixTreeKeys = (Long) map.get(RADIX_TREE_KEYS);
-      radixTreeNodes = (Long) map.get(RADIX_TREE_NODES);
-      groups = (Long) map.get(GROUPS);
-      lastGeneratedId = (String) map.get(LAST_GENERATED_ID);
-      firstEntry = (StreamEntry) map.get(FIRST_ENTRY);
-      lastEntry = (StreamEntry) map.get(LAST_ENTRY);
+     streamInfo = map;
 
     } else throw  new IllegalArgumentException("InfoMap can not be null");
   }
 
-  public Long getLength() {
+  /*public Long getLength() {
     return length;
   }
 
@@ -63,6 +59,10 @@ public class StreamInfo implements Serializable {
 
   public StreamEntry getLastEntry() {
     return lastEntry;
+  }*/
+
+  public Map<String,Object> getStreamInfo() {
+    return streamInfo;
   }
 
   public static class StreamInfoType {

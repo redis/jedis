@@ -1455,22 +1455,22 @@ public class BinaryClient extends Connection {
       sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
   }
 
-  public void xinfo(byte[] key, byte[] type) {
+  public void xinfo(byte[] type, byte[] key) {
 
     ArrayList<byte[]> arguments = new ArrayList<>(10);
     arguments.add(type);
     arguments.add(key);
-    sendCommand(XINFO,arguments.toArray(new byte[arguments.size()][]));
+    sendCommand(XINFO,type,key);
 
   }
 
-  public void xinfo (byte[] key, byte[] group, byte[] type) {
+  public void xinfo ( byte[] type, byte[] key, byte[] group) {
 
     ArrayList<byte[]> arguments = new ArrayList<>(10);
     arguments.add(type);
     arguments.add(key);
     arguments.add(group);
-    sendCommand(XINFO,arguments.toArray(new byte[arguments.size()][]));
+    sendCommand(XINFO,type,key,group);
   }
 
 }

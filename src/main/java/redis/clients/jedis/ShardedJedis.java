@@ -14,7 +14,6 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.util.Hashing;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
@@ -1057,23 +1056,23 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamInfo xinfo(String key, StreamInfo.StreamInfoType streamInfoType) {
+  public StreamInfo xinfo(StreamInfo.StreamInfoType streamInfoType, String key) {
 
     Jedis j = getShard(key);
-    return j.xinfo(key,streamInfoType);
+    return j.xinfo(streamInfoType, key);
   }
 
   @Override
-  public List<StreamGroupInfo> xinfo(String key, StreamGroupInfo.StreamGroupInfoType streamInfoType) {
+  public List<StreamGroupInfo> xinfo(StreamGroupInfo.StreamGroupInfoType streamInfoType, String key) {
 
     Jedis j = getShard(key);
-    return j.xinfo(key,streamInfoType);
+    return j.xinfo(streamInfoType, key);
   }
 
   @Override
-  public List<StreamConsumersInfo> xinfo (String key, String group, StreamConsumersInfo.StreamConsumersInfoType streamConsumersInfoType){
+  public List<StreamConsumersInfo> xinfo (StreamConsumersInfo.StreamConsumersInfoType streamConsumersInfoType, String key, String group){
     Jedis j = getShard(key);
-    return  j.xinfo(key,group,streamConsumersInfoType);
+    return  j.xinfo(streamConsumersInfoType, key, group);
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {

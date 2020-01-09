@@ -394,7 +394,7 @@ public interface Commands {
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
       boolean force, StreamEntryID... ids);
-  void xinfo (String key, StreamInfo.StreamInfoType type);
-  void xinfo (String key, StreamGroupInfo.StreamGroupInfoType type);
-  void xinfo (String key, String group, StreamConsumersInfo.StreamConsumersInfoType type);
+  void xinfo (StreamInfo.StreamInfoType type, String key);
+  void xinfo (StreamGroupInfo.StreamGroupInfoType type, String key);
+  void xinfo (StreamConsumersInfo.StreamConsumersInfoType type, String key, String group);
 }

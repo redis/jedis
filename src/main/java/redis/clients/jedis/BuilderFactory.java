@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,7 +8,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
@@ -561,7 +559,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "List<StreamEntry>";
+      return "StreamEntry";
     }
   };
   
@@ -593,22 +591,30 @@ public final class BuilderFactory {
   };
 
   public static final Builder<StreamInfo> STREAM_INFO = new Builder<StreamInfo>() {
+
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STRING);
+      tempMappingFunctions.put(StreamInfo.FIRST_ENTRY,STREAM_ENTRY);
+      tempMappingFunctions.put(StreamInfo.LENGHT, LONG);
+      tempMappingFunctions.put(StreamInfo.RADIX_TREE_KEYS, LONG);
+      tempMappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
+      tempMappingFunctions.put(StreamInfo.LAST_ENTRY,STREAM_ENTRY);
+      tempMappingFunctions.put(StreamInfo.GROUPS, LONG);
+
+      return  tempMappingFunctions;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public StreamInfo build(Object data) {
       if (null == data) {
         return null;
       }
-
-      Map<String,Builder> mappingFunctions = new HashMap<>();
-      mappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STRING);
-      mappingFunctions.put(StreamInfo.FIRST_ENTRY,STREAM_ENTRY);
-      mappingFunctions.put(StreamInfo.LENGHT, LONG);
-      mappingFunctions.put(StreamInfo.RADIX_TREE_KEYS, LONG);
-      mappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
-      mappingFunctions.put(StreamInfo.LAST_ENTRY,STREAM_ENTRY);
-      mappingFunctions.put(StreamInfo.GROUPS, LONG);
-
 
       Map<String, Object> resultMap = new HashMap<>();
       List<Object> streamsEntries = (List<Object>)data;
@@ -617,7 +623,20 @@ public final class BuilderFactory {
       while (iterator.hasNext()) {
 
           String mapKey = STRING.build(iterator.next());
-          resultMap.put(mapKey,mappingFunctions.get(mapKey).build(iterator.next()));
+          if (mappingFunctions.containsKey(mapKey)) {
+            resultMap.put(mapKey, mappingFunctions.get(mapKey).build(iterator.next()));
+          } else {   //For future - if we don't find an element in our builder map
+            Object unknownData = iterator.next();
+            for (Builder b:mappingFunctions.values()) {
+              try {
+                resultMap.put(mapKey,b.build(unknownData));
+                break;
+              } catch (ClassCastException e) {
+                //We continue with next builder
+
+              }
+            }
+          }
 
       }
       StreamInfo streamInfo = new StreamInfo(resultMap);
@@ -631,18 +650,27 @@ public final class BuilderFactory {
   };
 
   public static final Builder<List<StreamGroupInfo>> STREAM_GROUP_INFO = new Builder<List<StreamGroupInfo>>() {
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamGroupInfo.NAME,STRING);
+      tempMappingFunctions.put(StreamGroupInfo.CONSUMERS, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
+
+      return  tempMappingFunctions;
+    }
+
+
     @Override
     @SuppressWarnings("unchecked")
     public  List<StreamGroupInfo> build(Object data) {
       if (null == data) {
         return null;
       }
-
-      Map<String,Builder> mappingFunctions = new HashMap<>();
-      mappingFunctions.put(StreamGroupInfo.NAME,STRING);
-      mappingFunctions.put(StreamGroupInfo.CONSUMERS, LONG);
-      mappingFunctions.put(StreamGroupInfo.PENDING, LONG);
-      mappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
 
       List<StreamGroupInfo> list = new ArrayList<>();
       List<Object> streamsEntries = (List<Object>)data;
@@ -658,7 +686,20 @@ public final class BuilderFactory {
         while (groupInfoIterator.hasNext()) {
 
           String mapKey = STRING.build(groupInfoIterator.next());
-          resultMap.put(mapKey, mappingFunctions.get(mapKey).build(groupInfoIterator.next()));
+          if (mappingFunctions.containsKey(mapKey)) {
+            resultMap.put(mapKey, mappingFunctions.get(mapKey).build(groupInfoIterator.next()));
+          } else {   //For future - if we don't find an element in our builder map
+            Object unknownData = groupInfoIterator.next();
+            for (Builder b:mappingFunctions.values()) {
+              try {
+                resultMap.put(mapKey,b.build(unknownData));
+                break;
+              } catch (ClassCastException e) {
+                //We continue with next builder
+
+              }
+            }
+          }
         }
         StreamGroupInfo streamGroupInfo = new StreamGroupInfo(resultMap);
         list.add(streamGroupInfo);
@@ -675,24 +716,32 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "Map<Key,StreamInfoElement>";
+      return "List<StreamGroupInfo>";
     }
   };
 
 
   public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO = new Builder<List<StreamConsumersInfo>>() {
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamConsumersInfo.NAME,STRING);
+      tempMappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
+      return tempMappingFunctions;
+
+    }
+
+
     @Override
     @SuppressWarnings("unchecked")
     public  List<StreamConsumersInfo> build(Object data) {
       if (null == data) {
         return null;
       }
-
-      Map<String,Builder> mappingFunctions = new HashMap<>();
-      mappingFunctions.put(StreamConsumersInfo.NAME,STRING);
-      mappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
-      mappingFunctions.put(StreamGroupInfo.PENDING, LONG);
-      mappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
 
       List<StreamConsumersInfo> list = new ArrayList<>();
       List<Object> streamsEntries = (List<Object>)data;
@@ -703,29 +752,37 @@ public final class BuilderFactory {
         Map<String, Object> resultMap = new HashMap<>();
         List<Object> groupInfo = (List<Object>) groupsArray.next();
 
-        Iterator<Object> groupInfoIterator = groupInfo.iterator();
+        Iterator<Object> consumerInfoIterator = groupInfo.iterator();
 
-        while (groupInfoIterator.hasNext()) {
+        while (consumerInfoIterator.hasNext()) {
 
-          String mapKey = STRING.build(groupInfoIterator.next());
-          resultMap.put(mapKey, mappingFunctions.get(mapKey).build(groupInfoIterator.next()));
+          String mapKey = STRING.build(consumerInfoIterator.next());
+          if (mappingFunctions.containsKey(mapKey)) {
+            resultMap.put(mapKey, mappingFunctions.get(mapKey).build(consumerInfoIterator.next()));
+          } else {   //For future - if we don't find an element in our builder map
+            Object unknownData = consumerInfoIterator.next();
+            for (Builder b:mappingFunctions.values()) {
+              try {
+                resultMap.put(mapKey,b.build(unknownData));
+                break;
+              } catch (ClassCastException e) {
+                //We continue with next builder
+
+              }
+            }
+          }
         }
         StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(resultMap);
         list.add(streamGroupInfo);
 
       }
-      //StreamGroupInfo streamInfo = new StreamGroupInfo(resultMap);
       return list;
 
-
-
-
-      //throw new RuntimeException("Not implemented yet");
     }
 
     @Override
     public String toString() {
-      return "Map<Key,StreamInfoElement>";
+      return "List<StreamConsumersInfo>";
     }
   };
 

@@ -705,13 +705,8 @@ public final class BuilderFactory {
         list.add(streamGroupInfo);
 
       }
-      //StreamGroupInfo streamInfo = new StreamGroupInfo(resultMap);
       return list;
 
-
-
-
-      //throw new RuntimeException("Not implemented yet");
     }
 
     @Override

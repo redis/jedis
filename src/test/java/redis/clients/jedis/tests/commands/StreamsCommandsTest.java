@@ -16,6 +16,7 @@ import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
 
@@ -308,40 +309,60 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   @Test
   public void xinfo() {
 
-
-    try {
-      Map<String,String> map1 = new HashMap<String, String>();
-      jedis.xadd("stream1", null, map1);
-      fail();
-    } catch (JedisDataException expected) {
-      assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
-    }
-
     Map<String,String> map1 = new HashMap<String, String>();
     map1.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xadd-stream1", null, map1);
+    map1.put("f1", "v2");
+    StreamEntryID id2 = jedis.xadd("xadd-stream1", null, map1);
     assertNotNull(id1);
-    StreamInfo xinfo =jedis.xinfo(StreamInfo.StreamInfoType.getStreamInfoType(), "xadd-stream1");
-    assertEquals(1L,(long)xinfo.getStreamInfo().get("length"));
-    assertEquals(1L,xinfo.getStreamInfo().get("radix-tree-keys"));
-    assertEquals(2L,xinfo.getStreamInfo().get("radix-tree-nodes"));
-    assertEquals(0L,xinfo.getStreamInfo().get("groups"));
-    assertEquals("v1",((StreamEntry)xinfo.getStreamInfo().get("first-entry")).getFields().get("f1"));
-    assertEquals("v1",((StreamEntry)xinfo.getStreamInfo().get("last-entry")).getFields().get("f1"));
+    StreamInfo streamInfo =jedis.xinfo(StreamInfo.StreamInfoType.getStreamInfoType(), "xadd-stream1");
+    assertNotNull(id2);
 
     jedis.xgroupCreate("xadd-stream1","G1", StreamEntryID.LAST_ENTRY,false);
-    jedis.xgroupCreate("xadd-stream1","G2", StreamEntryID.LAST_ENTRY,false);
-
     Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xadd-stream1", new StreamEntryID("0-0"));
-
     jedis.xreadGroup("G1", "myConsumer",1,0,false,streamQeury11);
-
-
-    List<StreamGroupInfo> info = jedis.xinfo(StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType(),"xadd-stream1");
-    List<StreamConsumersInfo> consumersInfos = jedis.xinfo(StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType(),
+    List<StreamGroupInfo> groupInfo = jedis.xinfo(StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType(),"xadd-stream1");
+    List<StreamConsumersInfo> consumersInfo = jedis.xinfo(StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType(),
         "xadd-stream1", "G1");
 
-    System.out.println(info.get(0).getGroupInfo().get("name"));
+    //Stream info test
+    assertEquals(2L,(long)streamInfo.getStreamInfo().get("length"));
+    assertEquals(1L,streamInfo.getStreamInfo().get("radix-tree-keys"));
+    assertEquals(2L,streamInfo.getStreamInfo().get("radix-tree-nodes"));
+    assertEquals(0L,streamInfo.getStreamInfo().get("groups"));
+    assertEquals("v1",((StreamEntry)streamInfo.getStreamInfo().get("first-entry")).getFields().get("f1"));
+    assertEquals("v2",((StreamEntry)streamInfo.getStreamInfo().get("last-entry")).getFields().get("f1"));
+
+    //Group info test
+    assertEquals(1,groupInfo.size());
+    assertEquals("G1",groupInfo.get(0).getGroupInfo().get("name"));
+    assertEquals(1L,groupInfo.get(0).getGroupInfo().get("consumers"));
+    assertEquals(0L,groupInfo.get(0).getGroupInfo().get("pending"));
+
+    //Consumer info test
+    assertEquals("myConsumer",consumersInfo.get(0).getConsumerInfo().get("name"));
+    assertEquals(0L,consumersInfo.get(0).getConsumerInfo().get("pending"));
+    assertTrue((Long)consumersInfo.get(0).getConsumerInfo().get("idle")>0);
+
+    //test with more groups and consumers
+    jedis.xgroupCreate("xadd-stream1","G2", StreamEntryID.LAST_ENTRY,false);
+    jedis.xreadGroup("G1", "myConsumer2",1,0,false,streamQeury11);
+    jedis.xreadGroup("G2", "myConsumer",1,0,false,streamQeury11);
+    jedis.xreadGroup("G2", "myConsumer2",1,0,false,streamQeury11);
+
+    List<StreamGroupInfo> manyGroupsInfo = jedis.xinfo(StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType(),"xadd-stream1");
+    List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfo(StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType(),"xadd-stream1", "G2");
+
+    assertEquals(2,manyGroupsInfo.size());
+    assertEquals(2,manyConsumersInfo.size());
+
+    //Not existing key - redis cli return error so we expect exception
+    try {
+      jedis.xinfo(StreamInfo.StreamInfoType.getStreamInfoType(), "random");
+      fail("Command should fail");
+    } catch (JedisException e) {
+      assertEquals("ERR no such key", e.getMessage());
+    }
 
   }
 

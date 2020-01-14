@@ -616,30 +616,11 @@ public final class BuilderFactory {
         return null;
       }
 
-      Map<String, Object> resultMap = new HashMap<>();
       List<Object> streamsEntries = (List<Object>)data;
       Iterator<Object> iterator = streamsEntries.iterator();
 
-      while (iterator.hasNext()) {
-
-          String mapKey = STRING.build(iterator.next());
-          if (mappingFunctions.containsKey(mapKey)) {
-            resultMap.put(mapKey, mappingFunctions.get(mapKey).build(iterator.next()));
-          } else {   //For future - if we don't find an element in our builder map
-            Object unknownData = iterator.next();
-            for (Builder b:mappingFunctions.values()) {
-              try {
-                resultMap.put(mapKey,b.build(unknownData));
-                break;
-              } catch (ClassCastException e) {
-                //We continue with next builder
-
-              }
-            }
-          }
-
-      }
-      StreamInfo streamInfo = new StreamInfo(resultMap);
+      StreamInfo streamInfo = new StreamInfo(
+          createMapFromDecodingFunctions(iterator,mappingFunctions));
       return streamInfo;
     }
 
@@ -664,7 +645,6 @@ public final class BuilderFactory {
       return  tempMappingFunctions;
     }
 
-
     @Override
     @SuppressWarnings("unchecked")
     public  List<StreamGroupInfo> build(Object data) {
@@ -678,30 +658,12 @@ public final class BuilderFactory {
 
       while (groupsArray.hasNext()) {
 
-        Map<String, Object> resultMap = new HashMap<>();
         List<Object> groupInfo = (List<Object>) groupsArray.next();
 
         Iterator<Object> groupInfoIterator = groupInfo.iterator();
 
-        while (groupInfoIterator.hasNext()) {
-
-          String mapKey = STRING.build(groupInfoIterator.next());
-          if (mappingFunctions.containsKey(mapKey)) {
-            resultMap.put(mapKey, mappingFunctions.get(mapKey).build(groupInfoIterator.next()));
-          } else {   //For future - if we don't find an element in our builder map
-            Object unknownData = groupInfoIterator.next();
-            for (Builder b:mappingFunctions.values()) {
-              try {
-                resultMap.put(mapKey,b.build(unknownData));
-                break;
-              } catch (ClassCastException e) {
-                //We continue with next builder
-
-              }
-            }
-          }
-        }
-        StreamGroupInfo streamGroupInfo = new StreamGroupInfo(resultMap);
+        StreamGroupInfo streamGroupInfo = new StreamGroupInfo(
+            createMapFromDecodingFunctions(groupInfoIterator,mappingFunctions));
         list.add(streamGroupInfo);
 
       }
@@ -714,7 +676,6 @@ public final class BuilderFactory {
       return "List<StreamGroupInfo>";
     }
   };
-
 
   public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST = new Builder<List<StreamConsumersInfo>>() {
 
@@ -730,7 +691,6 @@ public final class BuilderFactory {
 
     }
 
-
     @Override
     @SuppressWarnings("unchecked")
     public  List<StreamConsumersInfo> build(Object data) {
@@ -744,30 +704,12 @@ public final class BuilderFactory {
 
       while (groupsArray.hasNext()) {
 
-        Map<String, Object> resultMap = new HashMap<>();
         List<Object> groupInfo = (List<Object>) groupsArray.next();
 
         Iterator<Object> consumerInfoIterator = groupInfo.iterator();
 
-        while (consumerInfoIterator.hasNext()) {
-
-          String mapKey = STRING.build(consumerInfoIterator.next());
-          if (mappingFunctions.containsKey(mapKey)) {
-            resultMap.put(mapKey, mappingFunctions.get(mapKey).build(consumerInfoIterator.next()));
-          } else {   //For future - if we don't find an element in our builder map
-            Object unknownData = consumerInfoIterator.next();
-            for (Builder b:mappingFunctions.values()) {
-              try {
-                resultMap.put(mapKey,b.build(unknownData));
-                break;
-              } catch (ClassCastException e) {
-                //We continue with next builder
-
-              }
-            }
-          }
-        }
-        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(resultMap);
+        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(
+            createMapFromDecodingFunctions(consumerInfoIterator,mappingFunctions));
         list.add(streamGroupInfo);
 
       }
@@ -796,6 +738,30 @@ public final class BuilderFactory {
 
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );
+  }
+
+  private static Map<String,Object> createMapFromDecodingFunctions( Iterator<Object> iterator, Map<String,Builder> mappingFunctions) {
+
+    Map<String,Object> resultMap = new HashMap<>();
+    while (iterator.hasNext()) {
+
+      String mapKey = STRING.build(iterator.next());
+      if (mappingFunctions.containsKey(mapKey)) {
+        resultMap.put(mapKey, mappingFunctions.get(mapKey).build(iterator.next()));
+      } else {   //For future - if we don't find an element in our builder map
+        Object unknownData = iterator.next();
+        for (Builder b:mappingFunctions.values()) {
+          try {
+            resultMap.put(mapKey,b.build(unknownData));
+            break;
+          } catch (ClassCastException e) {
+            //We continue with next builder
+
+          }
+        }
+      }
+    }
+    return resultMap;
   }
 
 }

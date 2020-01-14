@@ -1457,19 +1457,12 @@ public class BinaryClient extends Connection {
 
   public void xinfo(byte[] type, byte[] key) {
 
-    ArrayList<byte[]> arguments = new ArrayList<>(10);
-    arguments.add(type);
-    arguments.add(key);
     sendCommand(XINFO,type,key);
 
   }
 
   public void xinfo ( byte[] type, byte[] key, byte[] group) {
 
-    ArrayList<byte[]> arguments = new ArrayList<>(10);
-    arguments.add(type);
-    arguments.add(key);
-    arguments.add(group);
     sendCommand(XINFO,type,key,group);
   }
 

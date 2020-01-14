@@ -514,7 +514,7 @@ public final class BuilderFactory {
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<String, String> map = new HashMap<>(hash.size()/2);
         while(hashIterator.hasNext()) {
-          map.put(SafeEncoder.encode((byte[])hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
+          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
         }
         responses.add(new StreamEntry(entryID, map));
       }
@@ -535,7 +535,7 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      ArrayList<Object> objectList = (ArrayList<Object>) data;
+      List<Object> objectList = (List<Object>) data;
 
       if (objectList.isEmpty()) {
         return null;
@@ -548,8 +548,8 @@ public final class BuilderFactory {
       Iterator<byte[]> hashIterator = hash.iterator();
       Map<String, String> map = new HashMap<>(hash.size() / 2);
       while (hashIterator.hasNext()) {
-        map.put(SafeEncoder.encode((byte[]) hashIterator.next()),
-            SafeEncoder.encode((byte[]) hashIterator.next()));
+        map.put(SafeEncoder.encode(hashIterator.next()),
+            SafeEncoder.encode(hashIterator.next()));
       }
       StreamEntry streamEntry = new StreamEntry(entryID, map);
 
@@ -600,7 +600,7 @@ public final class BuilderFactory {
       Map<String,Builder> tempMappingFunctions = new HashMap<>();
       tempMappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STRING);
       tempMappingFunctions.put(StreamInfo.FIRST_ENTRY,STREAM_ENTRY);
-      tempMappingFunctions.put(StreamInfo.LENGHT, LONG);
+      tempMappingFunctions.put(StreamInfo.LENGTH, LONG);
       tempMappingFunctions.put(StreamInfo.RADIX_TREE_KEYS, LONG);
       tempMappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
       tempMappingFunctions.put(StreamInfo.LAST_ENTRY,STREAM_ENTRY);
@@ -649,7 +649,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamGroupInfo>> STREAM_GROUP_INFO = new Builder<List<StreamGroupInfo>>() {
+  public static final Builder<List<StreamGroupInfo>> STREAM_GROUP_INFO_LIST = new Builder<List<StreamGroupInfo>>() {
 
     Map<String,Builder> mappingFunctions = createDecoderMap();
 
@@ -716,7 +716,7 @@ public final class BuilderFactory {
   };
 
 
-  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO = new Builder<List<StreamConsumersInfo>>() {
+  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST = new Builder<List<StreamConsumersInfo>>() {
 
     Map<String,Builder> mappingFunctions = createDecoderMap();
 

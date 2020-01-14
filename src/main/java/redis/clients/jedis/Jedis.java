@@ -3842,7 +3842,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<StreamGroupInfo> xinfo(StreamGroupInfo.StreamGroupInfoType type, String key) {
     client.xinfo(type,key);
 
-    return BuilderFactory.STREAM_GROUP_INFO.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.STREAM_GROUP_INFO_LIST.build(client.getObjectMultiBulkReply());
 
   }
 
@@ -3850,7 +3850,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<StreamConsumersInfo> xinfo(StreamConsumersInfo.StreamConsumersInfoType type, String key, String group) {
     client.xinfo(type,key,group);
 
-    return BuilderFactory.STREAM_CONSUMERS_INFO.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getObjectMultiBulkReply());
 
   }
 

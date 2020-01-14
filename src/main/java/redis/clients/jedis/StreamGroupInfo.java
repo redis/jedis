@@ -12,22 +12,25 @@ public class StreamGroupInfo implements Serializable {
   public static final String GROUP_INFO = "groups";
 
 
-  /*private final String name;
+  private final String name;
   private final long consumers;
   private final long pending;
-  private final String lastDeliveredId;*/
+  private final String lastDeliveredId;
   private final Map<String,Object> groupInfo;
 
 
   public StreamGroupInfo(Map<String, Object> map) {
     if (map!= null && map.size()>0) {
      groupInfo = map;
-
+     name = (String) map.get(NAME);
+     consumers = (long) map.get(CONSUMERS);
+     pending = (long) map.get(PENDING);
+     lastDeliveredId = (String) map.get(LAST_DELIVERED);
 
     } else throw new IllegalArgumentException();
   }
 
- /* public String getName() {
+  public String getName() {
     return name;
   }
 
@@ -41,7 +44,7 @@ public class StreamGroupInfo implements Serializable {
 
   public String getLastDeliveredId() {
     return lastDeliveredId;
-  }*/
+  }
 
  public Map<String, Object> getGroupInfo() {
    return groupInfo;

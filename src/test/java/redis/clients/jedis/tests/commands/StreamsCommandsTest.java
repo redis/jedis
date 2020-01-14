@@ -5,6 +5,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.StreamGroupInfo.CONSUMERS;
+import static redis.clients.jedis.StreamGroupInfo.LAST_DELIVERED;
+import static redis.clients.jedis.StreamGroupInfo.NAME;
+import static redis.clients.jedis.StreamGroupInfo.PENDING;
+import static redis.clients.jedis.StreamInfo.FIRST_ENTRY;
+import static redis.clients.jedis.StreamInfo.GROUPS;
+import static redis.clients.jedis.StreamInfo.LAST_ENTRY;
+import static redis.clients.jedis.StreamInfo.LENGTH;
+import static redis.clients.jedis.StreamInfo.RADIX_TREE_KEYS;
+import static redis.clients.jedis.StreamInfo.RADIX_TREE_NODES;
+import static redis.clients.jedis.StreamConsumersInfo.IDLE;
+
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -326,23 +338,44 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
         "xadd-stream1", "G1");
 
     //Stream info test
-    assertEquals(2L,(long)streamInfo.getStreamInfo().get("length"));
-    assertEquals(1L,streamInfo.getStreamInfo().get("radix-tree-keys"));
-    assertEquals(2L,streamInfo.getStreamInfo().get("radix-tree-nodes"));
-    assertEquals(0L,streamInfo.getStreamInfo().get("groups"));
-    assertEquals("v1",((StreamEntry)streamInfo.getStreamInfo().get("first-entry")).getFields().get("f1"));
-    assertEquals("v2",((StreamEntry)streamInfo.getStreamInfo().get("last-entry")).getFields().get("f1"));
+    assertEquals(2L,streamInfo.getStreamInfo().get(LENGTH));
+    assertEquals(1L,streamInfo.getStreamInfo().get(RADIX_TREE_KEYS));
+    assertEquals(2L,streamInfo.getStreamInfo().get(RADIX_TREE_NODES));
+    assertEquals(0L,streamInfo.getStreamInfo().get(GROUPS));
+    assertEquals("v1",((StreamEntry)streamInfo.getStreamInfo().get(FIRST_ENTRY)).getFields().get("f1"));
+    assertEquals("v2",((StreamEntry)streamInfo.getStreamInfo().get(LAST_ENTRY)).getFields().get("f1"));
+
+    //Using getters
+    assertEquals(2,streamInfo.getLength());
+    assertEquals(1,streamInfo.getRadixTreeKeys());
+    assertEquals(2,streamInfo.getRadixTreeNodes());
+    assertEquals(0,streamInfo.getGroups());
+    assertEquals("v1",streamInfo.getFirstEntry().getFields().get("f1"));
+    assertEquals("v2",streamInfo.getLastEntry().getFields().get("f1"));
 
     //Group info test
     assertEquals(1,groupInfo.size());
-    assertEquals("G1",groupInfo.get(0).getGroupInfo().get("name"));
-    assertEquals(1L,groupInfo.get(0).getGroupInfo().get("consumers"));
-    assertEquals(0L,groupInfo.get(0).getGroupInfo().get("pending"));
+    assertEquals("G1",groupInfo.get(0).getGroupInfo().get(NAME));
+    assertEquals(1L,groupInfo.get(0).getGroupInfo().get(CONSUMERS));
+    assertEquals(0L,groupInfo.get(0).getGroupInfo().get(PENDING));
+    assertNotNull(groupInfo.get(0).getGroupInfo().get(LAST_DELIVERED));
+
+    //Using getters
+    assertEquals(1,groupInfo.size());
+    assertEquals("G1",groupInfo.get(0).getName());
+    assertEquals(1,groupInfo.get(0).getConsumers());
+    assertEquals(0,groupInfo.get(0).getPending());
+    assertNotNull(groupInfo.get(0).getLastDeliveredId());
 
     //Consumer info test
-    assertEquals("myConsumer",consumersInfo.get(0).getConsumerInfo().get("name"));
-    assertEquals(0L,consumersInfo.get(0).getConsumerInfo().get("pending"));
-    assertTrue((Long)consumersInfo.get(0).getConsumerInfo().get("idle")>0);
+    assertEquals("myConsumer",consumersInfo.get(0).getConsumerInfo().get(redis.clients.jedis.StreamConsumersInfo.NAME));
+    assertEquals(0L,consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.PENDING));
+    assertTrue((Long)consumersInfo.get(0).getConsumerInfo().get(IDLE)>0);
+
+    //Using getters
+    assertEquals("myConsumer",consumersInfo.get(0).getName());
+    assertEquals(0L,consumersInfo.get(0).getPending());
+    assertTrue(consumersInfo.get(0).getIdle()>0);
 
     //test with more groups and consumers
     jedis.xgroupCreate("xadd-stream1","G2", StreamEntryID.LAST_ENTRY,false);

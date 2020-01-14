@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class StreamInfo implements Serializable {
 
-  public static final String LENGHT = "length";
+  public static final String LENGTH = "length";
   public static final String RADIX_TREE_KEYS = "radix-tree-keys";
   public static final String RADIX_TREE_NODES = "radix-tree-nodes";
   public static final String GROUPS = "groups";
@@ -14,14 +14,14 @@ public class StreamInfo implements Serializable {
   public static final String LAST_ENTRY = "last-entry";
   public static final String STREAM_INFO = "stream";
 
-  /*private final Long length;
-  private final Long radixTreeKeys;
+  private final long length;
+  private final long radixTreeKeys;
 
-  private final Long radixTreeNodes;
-  private final Long groups;
+  private final long radixTreeNodes;
+  private final long groups;
   private final String lastGeneratedId;
   private final StreamEntry firstEntry;
-  private final StreamEntry lastEntry;*/
+  private final StreamEntry lastEntry;
   private final Map<String,Object> streamInfo;
 
 
@@ -29,23 +29,30 @@ public class StreamInfo implements Serializable {
 
     if (map!= null) {
      streamInfo = map;
+     length = (Long) map.get(LENGTH);
+     radixTreeKeys = (Long) map.get(RADIX_TREE_KEYS);
+     radixTreeNodes = (Long) map.get(RADIX_TREE_NODES);
+     groups = (Long) map.get(GROUPS);
+     lastGeneratedId = (String) map.get(LAST_GENERATED_ID);
+     firstEntry = (StreamEntry) map.get(FIRST_ENTRY);
+     lastEntry = (StreamEntry) map.get(LAST_ENTRY);
 
     } else throw  new IllegalArgumentException("InfoMap can not be null");
   }
 
-  /*public Long getLength() {
+  public long getLength() {
     return length;
   }
 
-  public Long getRadixTreeKeys() {
+  public long getRadixTreeKeys() {
     return radixTreeKeys;
   }
 
-  public Long getRadixTreeNodes() {
+  public long getRadixTreeNodes() {
     return radixTreeNodes;
   }
 
-  public Long getGroups() {
+  public long getGroups() {
     return groups;
   }
 
@@ -59,7 +66,7 @@ public class StreamInfo implements Serializable {
 
   public StreamEntry getLastEntry() {
     return lastEntry;
-  }*/
+  }
 
   public Map<String,Object> getStreamInfo() {
     return streamInfo;

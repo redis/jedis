@@ -514,7 +514,7 @@ public final class BuilderFactory {
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<String, String> map = new HashMap<>(hash.size()/2);
         while(hashIterator.hasNext()) {
-          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
+          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
         }
         responses.add(new StreamEntry(entryID, map));
       }

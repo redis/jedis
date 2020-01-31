@@ -3,6 +3,14 @@ package redis.clients.jedis;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * This class holds information about stream
+ * They can be access via getters.
+ * For future purpose there is also {@link #getStreamInfo} method
+ * that returns a generic {@code Map} - in case where more info is returned from a server
+ *
+ */
+
 public class StreamInfo implements Serializable {
 
   public static final String LENGTH = "length";
@@ -12,7 +20,6 @@ public class StreamInfo implements Serializable {
   public static final String LAST_GENERATED_ID = "last-generated-id";
   public static final String FIRST_ENTRY = "first-entry";
   public static final String LAST_ENTRY = "last-entry";
-  public static final String STREAM_INFO = "stream";
 
   private final long length;
   private final long radixTreeKeys;
@@ -25,6 +32,10 @@ public class StreamInfo implements Serializable {
   private final Map<String,Object> streamInfo;
 
 
+  /**
+   * @param map contains key-value pairs with stream info
+   *
+   */
   public StreamInfo(Map<String,Object> map) {
 
     if (map!= null) {
@@ -68,6 +79,9 @@ public class StreamInfo implements Serializable {
     return lastEntry;
   }
 
+  /**
+   * @return Generic map containing all key-value pairs returned by the server
+   */
   public Map<String,Object> getStreamInfo() {
     return streamInfo;
   }

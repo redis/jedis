@@ -3,13 +3,19 @@ package redis.clients.jedis;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * This class holds information about a stream group
+ * They can be access via getters.
+ * For future purpose there is also {@link #getGroupInfo()}  method
+ * that returns a generic {@code Map} - in case where more info is returned from a server
+ *
+ */
 public class StreamGroupInfo implements Serializable {
 
   public final static String NAME = "name";
   public final static String CONSUMERS = "consumers";
   public final static String PENDING = "pending";
   public final static String LAST_DELIVERED = "last-delivered-id";
-  public static final String GROUP_INFO = "groups";
 
 
   private final String name;
@@ -18,7 +24,10 @@ public class StreamGroupInfo implements Serializable {
   private final String lastDeliveredId;
   private final Map<String,Object> groupInfo;
 
-
+  /**
+   * @param map contains key-value pairs with group info
+   *
+   */
   public StreamGroupInfo(Map<String, Object> map) {
     if (map!= null && map.size()>0) {
      groupInfo = map;
@@ -46,7 +55,10 @@ public class StreamGroupInfo implements Serializable {
     return lastDeliveredId;
   }
 
- public Map<String, Object> getGroupInfo() {
+  /**
+   * @return Generic map containing all key-value pairs returned by the server
+   */
+  public Map<String, Object> getGroupInfo() {
    return groupInfo;
  }
 

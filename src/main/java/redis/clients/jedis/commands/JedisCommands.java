@@ -487,11 +487,23 @@ public interface JedisCommands {
   /**
    * Introspection command used in order to retrieve different information about the stream
    * @param key Stream name
-   * @return
+   * @return {@link StreamInfo} that contains information about the stream
    */
   StreamInfo xinfoStream (String key);
 
+  /**
+   * Introspection command used in order to retrieve different information about groups in the stream
+   * @param key Stream name
+   * @return List of {@link StreamGroupInfo} containing information about groups
+   */
   List<StreamGroupInfo> xinfoGroup (String key);
 
+  /**
+   * Introspection command used in order to retrieve different information about consumers in the group
+   * @param key Stream name
+   * @param group Group name
+   * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
+   * to the the group
+   */
   List<StreamConsumersInfo> xinfoConsumers (String key, String group);
 }

@@ -72,15 +72,4 @@ public class StreamInfo implements Serializable {
     return streamInfo;
   }
 
-  public static class StreamInfoType {
-
-    private static final StreamInfoType streamInfoType = new StreamInfoType();
-    private StreamInfoType() {
-      //Should not be used
-    };
-
-    public static StreamInfoType getStreamInfoType() {
-      return streamInfoType;
-    }
-  }
 }

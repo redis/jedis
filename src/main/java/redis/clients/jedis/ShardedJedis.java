@@ -1056,23 +1056,23 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamInfo xinfo(StreamInfo.StreamInfoType streamInfoType, String key) {
+  public StreamInfo xinfoStream(String key) {
 
     Jedis j = getShard(key);
-    return j.xinfo(streamInfoType, key);
+    return j.xinfoStream(key);
   }
 
   @Override
-  public List<StreamGroupInfo> xinfo(StreamGroupInfo.StreamGroupInfoType streamInfoType, String key) {
+  public List<StreamGroupInfo> xinfoGroup(String key) {
 
     Jedis j = getShard(key);
-    return j.xinfo(streamInfoType, key);
+    return j.xinfoGroup(key);
   }
 
   @Override
-  public List<StreamConsumersInfo> xinfo (StreamConsumersInfo.StreamConsumersInfoType streamConsumersInfoType, String key, String group){
+  public List<StreamConsumersInfo> xinfoConsumers(String key, String group){
     Jedis j = getShard(key);
-    return  j.xinfo(streamConsumersInfoType, key, group);
+    return  j.xinfoConsumers(key, group);
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {

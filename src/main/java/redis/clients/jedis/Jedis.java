@@ -3831,24 +3831,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public StreamInfo xinfo(StreamInfo.StreamInfoType type, String key) {
-    client.xinfo(type,key);
+  public StreamInfo xinfoStream(String key) {
+    client.xinfoStream(key);
 
     return BuilderFactory.STREAM_INFO.build(client.getObjectMultiBulkReply());
 
   }
 
   @Override
-  public List<StreamGroupInfo> xinfo(StreamGroupInfo.StreamGroupInfoType type, String key) {
-    client.xinfo(type,key);
+  public List<StreamGroupInfo> xinfoGroup(String key) {
+    client.xinfoGroup(key);
 
     return BuilderFactory.STREAM_GROUP_INFO_LIST.build(client.getObjectMultiBulkReply());
 
   }
 
   @Override
-  public List<StreamConsumersInfo> xinfo(StreamConsumersInfo.StreamConsumersInfoType type, String key, String group) {
-    client.xinfo(type,key,group);
+  public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
+    client.xinfoConsumers(key,group);
 
     return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getObjectMultiBulkReply());
 

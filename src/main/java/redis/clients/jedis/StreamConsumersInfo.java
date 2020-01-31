@@ -44,15 +44,4 @@ public class StreamConsumersInfo {
     return consumerInfo;
   }
 
-  public static class StreamConsumersInfoType {
-
-    private static final StreamConsumersInfoType streamConsumersInfoType = new StreamConsumersInfoType();
-    private StreamConsumersInfoType() {
-      //Should not be used
-    };
-
-    public static StreamConsumersInfoType getStreamGroupInfoType() {
-      return streamConsumersInfoType;
-    }
-  }
 }

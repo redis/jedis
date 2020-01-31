@@ -4051,6 +4051,30 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getOne();
   }
 
+  @Override
+  public byte[] xinfoStream(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoStream(key);
+
+    return client.getBinaryBulkReply();
+
+  }
+
+  @Override
+  public List<byte[]> xinfoGroup (byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoGroup(key);
+
+    return client.getBinaryMultiBulkReply();
+  }
+  @Override
+  public List<byte[]> xinfoConsumers (byte[] key, byte[] group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoConsumers(key,group);
+
+    return client.getBinaryMultiBulkReply();
+  }
+
   public Object sendCommand(ProtocolCommand cmd) {
     return sendCommand(cmd, dummyArray);
   }

@@ -327,15 +327,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map1.put("f1", "v2");
     StreamEntryID id2 = jedis.xadd("xadd-stream1", null, map1);
     assertNotNull(id1);
-    StreamInfo streamInfo =jedis.xinfo(StreamInfo.StreamInfoType.getStreamInfoType(), "xadd-stream1");
+    StreamInfo streamInfo =jedis.xinfoStream("xadd-stream1");
     assertNotNull(id2);
 
     jedis.xgroupCreate("xadd-stream1","G1", StreamEntryID.LAST_ENTRY,false);
     Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xadd-stream1", new StreamEntryID("0-0"));
     jedis.xreadGroup("G1", "myConsumer",1,0,false,streamQeury11);
-    List<StreamGroupInfo> groupInfo = jedis.xinfo(StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType(),"xadd-stream1");
-    List<StreamConsumersInfo> consumersInfo = jedis.xinfo(StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType(),
-        "xadd-stream1", "G1");
+    List<StreamGroupInfo> groupInfo = jedis.xinfoGroup("xadd-stream1");
+    List<StreamConsumersInfo> consumersInfo = jedis.xinfoConsumers("xadd-stream1", "G1");
 
     //Stream info test
     assertEquals(2L,streamInfo.getStreamInfo().get(LENGTH));
@@ -383,15 +382,15 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     jedis.xreadGroup("G2", "myConsumer",1,0,false,streamQeury11);
     jedis.xreadGroup("G2", "myConsumer2",1,0,false,streamQeury11);
 
-    List<StreamGroupInfo> manyGroupsInfo = jedis.xinfo(StreamGroupInfo.StreamGroupInfoType.getStreamGroupInfoType(),"xadd-stream1");
-    List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfo(StreamConsumersInfo.StreamConsumersInfoType.getStreamGroupInfoType(),"xadd-stream1", "G2");
+    List<StreamGroupInfo> manyGroupsInfo = jedis.xinfoGroup("xadd-stream1");
+    List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfoConsumers("xadd-stream1", "G2");
 
     assertEquals(2,manyGroupsInfo.size());
     assertEquals(2,manyConsumersInfo.size());
 
     //Not existing key - redis cli return error so we expect exception
     try {
-      jedis.xinfo(StreamInfo.StreamInfoType.getStreamInfoType(), "random");
+      jedis.xinfoStream("random");
       fail("Command should fail");
     } catch (JedisException e) {
       assertEquals("ERR no such key", e.getMessage());

@@ -50,15 +50,4 @@ public class StreamGroupInfo implements Serializable {
    return groupInfo;
  }
 
-  public static class StreamGroupInfoType {
-
-    private static final StreamGroupInfoType streamInfoType = new StreamGroupInfoType();
-    private StreamGroupInfoType() {
-      //Should not be used
-    };
-
-    public static StreamGroupInfoType getStreamGroupInfoType() {
-      return streamInfoType;
-    }
-  }
 }

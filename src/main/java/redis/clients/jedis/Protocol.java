@@ -80,6 +80,9 @@ public final class Protocol {
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
 
+  public static final String STREAM = "STREAM";
+  public static final String GROUPS = "GROUPS";
+  public static final String CONSUMERS = "CONSUMERS";
   private Protocol() {
     // this prevent the class from instantiation
   }

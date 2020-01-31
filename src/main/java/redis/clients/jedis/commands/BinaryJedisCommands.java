@@ -356,4 +356,10 @@ public interface BinaryJedisCommands {
   List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
+
+  byte[] xinfoStream (byte[] key);
+
+  List<byte[]> xinfoGroup (byte[] key);
+
+  List<byte[]> xinfoConsumers (byte[] key, byte[] group);
 }

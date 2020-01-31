@@ -485,16 +485,13 @@ public interface JedisCommands {
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   /**
-   * Introspection command used in order to retrieve different information about the streams
-   * and associated consumer groups.
-   * @param type
-   * @param key
+   * Introspection command used in order to retrieve different information about the stream
+   * @param key Stream name
    * @return
    */
-  StreamInfo xinfo (StreamInfo.StreamInfoType type,String key);
-  //TODO add an enum to select stream/group/consumers
+  StreamInfo xinfoStream (String key);
 
-  List<StreamGroupInfo> xinfo (StreamGroupInfo.StreamGroupInfoType type,String key);
+  List<StreamGroupInfo> xinfoGroup (String key);
 
-  List<StreamConsumersInfo> xinfo (StreamConsumersInfo.StreamConsumersInfoType type, String key, String group);
+  List<StreamConsumersInfo> xinfoConsumers (String key, String group);
 }

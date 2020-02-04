@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.CONSUMERS;
-import static redis.clients.jedis.Protocol.GROUPS;
-import static redis.clients.jedis.Protocol.STREAM;
+import static redis.clients.jedis.Protocol.XINFO_CONSUMERS;
+import static redis.clients.jedis.Protocol.XINFO_GROUPS;
+import static redis.clients.jedis.Protocol.XINFO_STREAM;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.ENCODING;
@@ -1460,19 +1460,19 @@ public class BinaryClient extends Connection {
 
   public void xinfoStream(byte[] key) {
 
-    sendCommand(XINFO,SafeEncoder.encode(STREAM),key);
+    sendCommand(XINFO,SafeEncoder.encode(XINFO_STREAM),key);
 
   }
 
   public void xinfoGroup(byte[] key) {
 
-    sendCommand(XINFO,SafeEncoder.encode(GROUPS),key);
+    sendCommand(XINFO,SafeEncoder.encode(XINFO_GROUPS),key);
 
   }
 
   public void xinfoConsumers (byte[] key, byte[] group) {
 
-    sendCommand(XINFO,SafeEncoder.encode(CONSUMERS),key,group);
+    sendCommand(XINFO,SafeEncoder.encode(XINFO_CONSUMERS),key,group);
   }
 
 }

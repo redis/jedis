@@ -1040,19 +1040,19 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public byte[] xinfoStream(byte[] key) {
+  public StreamInfo xinfoStream(byte[] key) {
     Jedis j = getShard(key);
     return j.xinfoStream(key);
   }
 
   @Override
-  public List<byte[]> xinfoGroup(byte[] key) {
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
     Jedis j = getShard(key);
     return j.xinfoGroup(key);
   }
 
   @Override
-  public List<byte[]> xinfoConsumers(byte[] key, byte[] group) {
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
     Jedis j = getShard(key);
     return j.xinfoConsumers(key, group);
   }

@@ -4052,27 +4052,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public byte[] xinfoStream(byte[] key) {
+  public StreamInfo xinfoStream(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoStream(key);
 
-    return client.getBinaryBulkReply();
+    return BuilderFactory.STREAM_INFO.build(client.getOne());
 
   }
 
   @Override
-  public List<byte[]> xinfoGroup (byte[] key) {
+  public List<StreamGroupInfo> xinfoGroup (byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoGroup(key);
 
-    return client.getBinaryMultiBulkReply();
+    return BuilderFactory.STREAM_GROUP_INFO_LIST.build(client.getBinaryMultiBulkReply());
   }
   @Override
-  public List<byte[]> xinfoConsumers (byte[] key, byte[] group) {
+  public List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group) {
     checkIsInMultiOrPipeline();
     client.xinfoConsumers(key,group);
 
-    return client.getBinaryMultiBulkReply();
+    return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getBinaryMultiBulkReply());
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

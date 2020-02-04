@@ -12,6 +12,9 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamConsumersInfo;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -357,9 +360,9 @@ public interface BinaryJedisCommands {
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
-  byte[] xinfoStream (byte[] key);
+  StreamInfo xinfoStream (byte[] key);
 
-  List<byte[]> xinfoGroup (byte[] key);
+  List<StreamGroupInfo> xinfoGroup (byte[] key);
 
-  List<byte[]> xinfoConsumers (byte[] key, byte[] group);
+  List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group);
 }

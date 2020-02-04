@@ -73,6 +73,10 @@ public final class Protocol {
   public static final String PUBSUB_NUMSUB = "numsub";
   public static final String PUBSUB_NUM_PAT = "numpat";
 
+  public static final String XINFO_STREAM = "STREAM";
+  public static final String XINFO_GROUPS = "GROUPS";
+  public static final String XINFO_CONSUMERS = "CONSUMERS";
+
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
   public static final byte[] BYTES_TILDE = SafeEncoder.encode("~");
@@ -80,9 +84,6 @@ public final class Protocol {
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
 
-  public static final String STREAM = "STREAM";
-  public static final String GROUPS = "GROUPS";
-  public static final String CONSUMERS = "CONSUMERS";
   private Protocol() {
     // this prevent the class from instantiation
   }

@@ -253,6 +253,45 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
   }
 
   @Test
+  public void connectWithURICredentials() throws URISyntaxException {
+    Jedis j1 = new Jedis("localhost", 6380);
+    j1.auth("default", "foobared");
+    j1.set("foo", "bar");
+
+    // create user in shard 1
+    j1.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+
+    Jedis j2 = new Jedis("localhost", 6379);
+    j2.auth("default", "foobared");
+    j2.set("foo", "bar");
+
+    // create user in shard 2
+    j2.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    shards.add(new JedisShardInfo(new URI("redis://alice:alicePassword@localhost:6380")));
+    shards.add(new JedisShardInfo(new URI("redis://alice:alicePassword@localhost:6379")));
+
+    GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
+    ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+
+    Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
+
+    Jedis jedis = jedises[0];
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    jedis = jedises[1];
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    // delete user
+    j1.aclDelUser("alice");
+    j2.aclDelUser("alice");
+  }
+
+  @Test
   public void returnResourceShouldResetState() throws URISyntaxException {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);

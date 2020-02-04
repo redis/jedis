@@ -221,6 +221,29 @@ public class JedisPoolWithCompleteCredentialsTest {
   }
 
   @Test
+  public void connectWithURICredentials() throws URISyntaxException {
+    JedisPool pool = new JedisPool("localhost", 6380);
+    Jedis j = pool.getResource();
+
+    j.auth("default", "foobared");
+    j.set("foo", "bar");
+
+    // create new user
+    j.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+    Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6380"));
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    Jedis jedis2 = new Jedis(new URI("redis://alice:alicePassword@localhost:6380"));
+    assertEquals("PONG", jedis2.ping());
+    assertEquals("bar", jedis2.get("foo"));
+
+    // delete user
+    j.aclDelUser("alice");
+  }
+
+  @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
     new JedisPool("redis://localhost:6380");
     new JedisPool(new URI("redis://localhost:6380"));

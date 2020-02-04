@@ -118,6 +118,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         shardInfo.getHostnameVerifier());
     client.setConnectionTimeout(shardInfo.getConnectionTimeout());
     client.setSoTimeout(shardInfo.getSoTimeout());
+    client.setUser(shardInfo.getUser());
     client.setPassword(shardInfo.getPassword());
     client.setDb(shardInfo.getDb());
   }
@@ -170,7 +171,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     String password = JedisURIHelper.getPassword(uri);
     if (password != null) {
-      client.auth(password);
+      String user = JedisURIHelper.getUser(uri);
+      if (user == null) {
+        client.auth(password);
+      } else {
+        client.auth(user, password);
+      }
       client.getStatusCodeReply();
     }
 

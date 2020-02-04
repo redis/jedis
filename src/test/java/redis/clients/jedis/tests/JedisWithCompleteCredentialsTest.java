@@ -171,6 +171,27 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void connectWithURICredentials() throws URISyntaxException {
+    Jedis j = new Jedis("localhost");
+    j.auth("default", "foobared");
+    j.set("foo", "bar");
+
+    // create new user
+    j.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+    Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6379"));
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    Jedis jedis2 = new Jedis(new URI("redis://alice:alicePassword@localhost:6379"));
+    assertEquals("PONG", jedis2.ping());
+    assertEquals("bar", jedis2.get("foo"));
+
+    // delete user
+    j.aclDelUser("alice");
+  }
+
+  @Test
   public void allowUrlWithNoDBAndNoPassword() {
     Jedis jedis = new Jedis("redis://localhost:6380");
     jedis.auth("default", "foobared");

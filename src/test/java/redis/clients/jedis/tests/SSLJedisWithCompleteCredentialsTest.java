@@ -74,6 +74,26 @@ public class SSLJedisWithCompleteCredentialsTest {
   }
 
   /**
+   * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
+   */
+  @Test
+  public void connectWithUrlAndCompleteCredentials() {
+    // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
+    Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390");
+    assertEquals("PONG", jedis.ping());
+
+    // create user
+    jedis.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+    Jedis jedis2 = new Jedis("rediss://alice:alicePassword@localhost:6390");
+    assertEquals("PONG", jedis2.ping());
+
+    jedis.aclDelUser("alice");
+    jedis.close();
+  }
+
+
+  /**
    * Tests opening a default SSL/TLS connection to redis.
    */
   @Test

@@ -3609,6 +3609,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBulkReply();
   }
 
+  @Override
   public Long clientId() {
     checkIsInMultiOrPipeline();
     client.clientId();

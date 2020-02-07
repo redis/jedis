@@ -8,9 +8,9 @@ import redis.clients.jedis.Jedis;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests to test multiple client
+ * Tests related to clientId
  */
-public class MultiClientCommandsTest extends JedisCommandTestBase {
+public class ClientIdCommandsTest extends JedisCommandTestBase {
     private final String clientName = "fancy_jedis_name";
     private final String clientName2 = "fancy_jedis_another_name";
 

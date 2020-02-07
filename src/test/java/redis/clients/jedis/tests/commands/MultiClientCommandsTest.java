@@ -56,6 +56,7 @@ public class MultiClientCommandsTest extends JedisCommandTestBase {
      * the caller can be sure that the underlying client did not disconnect and reconnect the connection,
      * but it is still the same connection.
      */
+    @Test
     public void clientReconnectTest() {
         long clientId1 = client.clientId();
         client.close();

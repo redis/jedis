@@ -18,7 +18,7 @@ import redis.clients.jedis.util.JedisURIHelper;
 /**
  * PoolableObjectFactory custom impl.
  */
-class JedisFactory implements PooledObjectFactory<Jedis> {
+public class JedisFactory implements PooledObjectFactory<Jedis> {
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
   private final int connectionTimeout;
   private final int soTimeout;
@@ -79,6 +79,10 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
     this.hostAndPort.set(hostAndPort);
+  }
+
+  public AtomicReference<HostAndPort> getHostAndPort() {
+    return hostAndPort;
   }
 
   @Override

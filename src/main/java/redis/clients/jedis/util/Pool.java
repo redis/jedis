@@ -12,7 +12,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
-  protected GenericObjectPool<T> internalPool;
+  public GenericObjectPool<T> internalPool;
 
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.

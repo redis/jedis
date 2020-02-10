@@ -246,6 +246,15 @@ public class JedisClusterInfoCache {
     }
   }
 
+  public Map<Integer, JedisPool> getSlots() {
+    r.lock();
+    try {
+      return new HashMap<Integer, JedisPool>(slots);
+    } finally {
+      r.unlock();
+    }
+  }
+
   public List<JedisPool> getShuffledNodesPool() {
     r.lock();
     try {

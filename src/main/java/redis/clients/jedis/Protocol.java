@@ -73,10 +73,6 @@ public final class Protocol {
   public static final String PUBSUB_NUMSUB = "numsub";
   public static final String PUBSUB_NUM_PAT = "numpat";
 
-  public static final String XINFO_STREAM = "STREAM";
-  public static final String XINFO_GROUPS = "GROUPS";
-  public static final String XINFO_CONSUMERS = "CONSUMERS";
-
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
   public static final byte[] BYTES_TILDE = SafeEncoder.encode("~");
@@ -284,7 +280,7 @@ public final class Protocol {
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
     GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR, 
     BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, 
-    IDLE, TIME, RETRYCOUNT, FORCE;
+    IDLE, TIME, RETRYCOUNT, FORCE, STREAM, GROUPS, CONSUMERS;
 
     public final byte[] raw;
 

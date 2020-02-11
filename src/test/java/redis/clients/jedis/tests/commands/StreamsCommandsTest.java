@@ -12,6 +12,7 @@ import static redis.clients.jedis.StreamGroupInfo.PENDING;
 import static redis.clients.jedis.StreamInfo.FIRST_ENTRY;
 import static redis.clients.jedis.StreamInfo.GROUPS;
 import static redis.clients.jedis.StreamInfo.LAST_ENTRY;
+import static redis.clients.jedis.StreamInfo.LAST_GENERATED_ID;
 import static redis.clients.jedis.StreamInfo.LENGTH;
 import static redis.clients.jedis.StreamInfo.RADIX_TREE_KEYS;
 import static redis.clients.jedis.StreamInfo.RADIX_TREE_NODES;
@@ -353,6 +354,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(0L,streamInfo.getStreamInfo().get(GROUPS));
     assertEquals(V1,((StreamEntry)streamInfo.getStreamInfo().get(FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2,((StreamEntry)streamInfo.getStreamInfo().get(LAST_ENTRY)).getFields().get(F1));
+    assertNotNull(streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
 
     //Using getters
     assertEquals(2,streamInfo.getLength());
@@ -361,6 +363,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(0,streamInfo.getGroups());
     assertEquals(V1,streamInfo.getFirstEntry().getFields().get(F1));
     assertEquals(V2,streamInfo.getLastEntry().getFields().get(F1));
+    assertNotNull(streamInfo.getLastGeneratedId());
 
     //Group info test
     assertEquals(1,groupInfo.size());
@@ -442,6 +445,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(0L,streamInfo.getStreamInfo().get(GROUPS));
     assertEquals(V1,((StreamEntry)streamInfo.getStreamInfo().get(FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2,((StreamEntry)streamInfo.getStreamInfo().get(LAST_ENTRY)).getFields().get(F1));
+    assertNotNull(streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
 
     //Group info test
     assertEquals(1,groupInfo.size());

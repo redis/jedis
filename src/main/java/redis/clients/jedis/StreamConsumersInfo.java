@@ -15,7 +15,6 @@ public class StreamConsumersInfo {
   public final static String IDLE = "idle";
   public final static String PENDING = "pending";
 
-
   private final String name;
   private final long idle;
   private final long pending;
@@ -27,14 +26,10 @@ public class StreamConsumersInfo {
    */
   public StreamConsumersInfo(Map<String,Object> map) {
 
-    if (map!= null && map.size()>0) {
-      consumerInfo = map;
-      name = (String) map.get(NAME);
-      idle = (long) map.get(IDLE);
-      pending = (long) map.get(PENDING);
-
-
-    } else throw new IllegalArgumentException();
+    consumerInfo = map;
+    name = (String) map.get(NAME);
+    idle = (long) map.get(IDLE);
+    pending = (long) map.get(PENDING);
 
   }
 

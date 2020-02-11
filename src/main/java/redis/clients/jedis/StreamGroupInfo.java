@@ -29,14 +29,13 @@ public class StreamGroupInfo implements Serializable {
    *
    */
   public StreamGroupInfo(Map<String, Object> map) {
-    if (map!= null && map.size()>0) {
-     groupInfo = map;
-     name = (String) map.get(NAME);
-     consumers = (long) map.get(CONSUMERS);
-     pending = (long) map.get(PENDING);
-     lastDeliveredId = (String) map.get(LAST_DELIVERED);
 
-    } else throw new IllegalArgumentException();
+    groupInfo = map;
+    name = (String) map.get(NAME);
+    consumers = (long) map.get(CONSUMERS);
+    pending = (long) map.get(PENDING);
+    lastDeliveredId = (String) map.get(LAST_DELIVERED);
+
   }
 
   public String getName() {

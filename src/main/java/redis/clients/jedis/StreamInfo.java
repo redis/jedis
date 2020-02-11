@@ -25,7 +25,7 @@ public class StreamInfo implements Serializable {
   private final long radixTreeKeys;
   private final long radixTreeNodes;
   private final long groups;
-  private final String lastGeneratedId;
+  private final StreamEntryID lastGeneratedId;
   private final StreamEntry firstEntry;
   private final StreamEntry lastEntry;
   private final Map<String,Object> streamInfo;
@@ -41,7 +41,7 @@ public class StreamInfo implements Serializable {
     radixTreeKeys = (Long) map.get(RADIX_TREE_KEYS);
     radixTreeNodes = (Long) map.get(RADIX_TREE_NODES);
     groups = (Long) map.get(GROUPS);
-    lastGeneratedId = (String) map.get(LAST_GENERATED_ID);
+    lastGeneratedId = (StreamEntryID) map.get(LAST_GENERATED_ID);
     firstEntry = (StreamEntry) map.get(FIRST_ENTRY);
     lastEntry = (StreamEntry) map.get(LAST_ENTRY);
 
@@ -63,7 +63,7 @@ public class StreamInfo implements Serializable {
     return groups;
   }
 
-  public String getLastGeneratedId() {
+  public StreamEntryID getLastGeneratedId() {
     return lastGeneratedId;
   }
 

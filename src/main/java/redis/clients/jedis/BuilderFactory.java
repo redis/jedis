@@ -598,7 +598,7 @@ public final class BuilderFactory {
     private Map<String, Builder> createDecoderMap() {
 
       Map<String,Builder> tempMappingFunctions = new HashMap<>();
-      tempMappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STRING);
+      tempMappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STREAM_ENTRY_ID);
       tempMappingFunctions.put(StreamInfo.FIRST_ENTRY,STREAM_ENTRY);
       tempMappingFunctions.put(StreamInfo.LENGTH, LONG);
       tempMappingFunctions.put(StreamInfo.RADIX_TREE_KEYS, LONG);

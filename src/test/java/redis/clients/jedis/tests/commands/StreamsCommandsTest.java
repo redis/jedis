@@ -354,7 +354,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(0L,streamInfo.getStreamInfo().get(GROUPS));
     assertEquals(V1,((StreamEntry)streamInfo.getStreamInfo().get(FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2,((StreamEntry)streamInfo.getStreamInfo().get(LAST_ENTRY)).getFields().get(F1));
-    assertEquals(id2.toString(),streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
+    assertEquals(id2,streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
 
     //Using getters
     assertEquals(2,streamInfo.getLength());
@@ -363,7 +363,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(0,streamInfo.getGroups());
     assertEquals(V1,streamInfo.getFirstEntry().getFields().get(F1));
     assertEquals(V2,streamInfo.getLastEntry().getFields().get(F1));
-    assertEquals(id2.toString(),streamInfo.getLastGeneratedId());
+    assertEquals(id2,streamInfo.getLastGeneratedId());
 
     //Group info test
     assertEquals(1,groupInfo.size());

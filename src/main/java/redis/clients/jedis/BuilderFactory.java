@@ -532,7 +532,7 @@ public final class BuilderFactory {
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<String, String> map = new HashMap<>(hash.size()/2);
         while(hashIterator.hasNext()) {
-          map.put(SafeEncoder.encode((byte[])hashIterator.next()), SafeEncoder.encode((byte[])hashIterator.next()));
+          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
         }
         responses.add(new StreamEntry(entryID, map));
       }
@@ -543,6 +543,41 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<StreamEntry>";
+    }
+  };
+
+  public static final Builder<StreamEntry> STREAM_ENTRY = new Builder<StreamEntry>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public  StreamEntry build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<Object> objectList = (List<Object>) data;
+
+      if (objectList.isEmpty()) {
+        return null;
+      }
+
+      String entryIdString = SafeEncoder.encode((byte[]) objectList.get(0));
+      StreamEntryID entryID = new StreamEntryID(entryIdString);
+      List<byte[]> hash = (List<byte[]>) objectList.get(1);
+
+      Iterator<byte[]> hashIterator = hash.iterator();
+      Map<String, String> map = new HashMap<>(hash.size() / 2);
+      while (hashIterator.hasNext()) {
+        map.put(SafeEncoder.encode(hashIterator.next()),
+            SafeEncoder.encode(hashIterator.next()));
+      }
+      StreamEntry streamEntry = new StreamEntry(entryID, map);
+
+
+      return streamEntry;
+    }
+
+    @Override
+    public String toString() {
+      return "StreamEntry";
     }
   };
   
@@ -573,6 +608,139 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<StreamInfo> STREAM_INFO = new Builder<StreamInfo>() {
+
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamInfo.LAST_GENERATED_ID,STREAM_ENTRY_ID);
+      tempMappingFunctions.put(StreamInfo.FIRST_ENTRY,STREAM_ENTRY);
+      tempMappingFunctions.put(StreamInfo.LENGTH, LONG);
+      tempMappingFunctions.put(StreamInfo.RADIX_TREE_KEYS, LONG);
+      tempMappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
+      tempMappingFunctions.put(StreamInfo.LAST_ENTRY,STREAM_ENTRY);
+      tempMappingFunctions.put(StreamInfo.GROUPS, LONG);
+
+      return  tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamInfo build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> streamsEntries = (List<Object>)data;
+      Iterator<Object> iterator = streamsEntries.iterator();
+
+      StreamInfo streamInfo = new StreamInfo(
+          createMapFromDecodingFunctions(iterator,mappingFunctions));
+      return streamInfo;
+    }
+
+    @Override
+    public String toString() {
+      return "StreamInfo";
+    }
+  };
+
+  public static final Builder<List<StreamGroupInfo>> STREAM_GROUP_INFO_LIST = new Builder<List<StreamGroupInfo>>() {
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamGroupInfo.NAME,STRING);
+      tempMappingFunctions.put(StreamGroupInfo.CONSUMERS, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STREAM_ENTRY_ID);
+
+      return  tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<StreamGroupInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<StreamGroupInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>)data;
+      Iterator<Object> groupsArray = streamsEntries.iterator();
+
+      while (groupsArray.hasNext()) {
+
+        List<Object> groupInfo = (List<Object>) groupsArray.next();
+
+        Iterator<Object> groupInfoIterator = groupInfo.iterator();
+
+        StreamGroupInfo streamGroupInfo = new StreamGroupInfo(
+            createMapFromDecodingFunctions(groupInfoIterator,mappingFunctions));
+        list.add(streamGroupInfo);
+
+      }
+      return list;
+
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamGroupInfo>";
+    }
+  };
+
+  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST = new Builder<List<StreamConsumersInfo>>() {
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamConsumersInfo.NAME,STRING);
+      tempMappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
+      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
+      return tempMappingFunctions;
+
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public  List<StreamConsumersInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<StreamConsumersInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>)data;
+      Iterator<Object> groupsArray = streamsEntries.iterator();
+
+      while (groupsArray.hasNext()) {
+
+        List<Object> groupInfo = (List<Object>) groupsArray.next();
+
+        Iterator<Object> consumerInfoIterator = groupInfo.iterator();
+
+        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(
+            createMapFromDecodingFunctions(consumerInfoIterator,mappingFunctions));
+        list.add(streamGroupInfo);
+
+      }
+      return list;
+
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamConsumersInfo>";
+    }
+  };
+
   public static final Builder<Object> OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
@@ -588,6 +756,30 @@ public final class BuilderFactory {
 
   private BuilderFactory() {
     throw new InstantiationError( "Must not instantiate this class" );
+  }
+
+  private static Map<String,Object> createMapFromDecodingFunctions( Iterator<Object> iterator, Map<String,Builder> mappingFunctions) {
+
+    Map<String,Object> resultMap = new HashMap<>();
+    while (iterator.hasNext()) {
+
+      String mapKey = STRING.build(iterator.next());
+      if (mappingFunctions.containsKey(mapKey)) {
+        resultMap.put(mapKey, mappingFunctions.get(mapKey).build(iterator.next()));
+      } else {   //For future - if we don't find an element in our builder map
+        Object unknownData = iterator.next();
+        for (Builder b:mappingFunctions.values()) {
+          try {
+            resultMap.put(mapKey,b.build(unknownData));
+            break;
+          } catch (ClassCastException e) {
+            //We continue with next builder
+
+          }
+        }
+      }
+    }
+    return resultMap;
   }
 
 }

@@ -1282,5 +1282,25 @@ public class Client extends BinaryClient implements Commands {
     xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
   }
 
+  @Override
+  public void xinfoStream(String key) {
+
+    xinfoStream(SafeEncoder.encode(key));
+
+  }
+
+  @Override
+  public void xinfoGroup(String key) {
+
+    xinfoGroup(SafeEncoder.encode(key));
+
+  }
+
+  @Override
+  public void xinfoConsumers(String key, String group) {
+
+    xinfoConsumers(SafeEncoder.encode(key),SafeEncoder.encode(group));
+
+  }
  
 }

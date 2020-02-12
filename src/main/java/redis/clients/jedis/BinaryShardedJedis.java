@@ -1063,6 +1063,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
 
+  @Override
+  public StreamInfo xinfoStream(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoStream(key);
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoGroup(key);
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    Jedis j = getShard(key);
+    return j.xinfoConsumers(key, group);
+  }
+
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     // default since no sample key provided in JedisCommands interface
     byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();

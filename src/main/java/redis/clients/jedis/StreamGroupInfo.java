@@ -21,7 +21,7 @@ public class StreamGroupInfo implements Serializable {
   private final String name;
   private final long consumers;
   private final long pending;
-  private final String lastDeliveredId;
+  private final StreamEntryID lastDeliveredId;
   private final Map<String,Object> groupInfo;
 
   /**
@@ -34,7 +34,7 @@ public class StreamGroupInfo implements Serializable {
     name = (String) map.get(NAME);
     consumers = (long) map.get(CONSUMERS);
     pending = (long) map.get(PENDING);
-    lastDeliveredId = (String) map.get(LAST_DELIVERED);
+    lastDeliveredId = (StreamEntryID) map.get(LAST_DELIVERED);
 
   }
 
@@ -50,7 +50,7 @@ public class StreamGroupInfo implements Serializable {
     return pending;
   }
 
-  public String getLastDeliveredId() {
+  public StreamEntryID getLastDeliveredId() {
     return lastDeliveredId;
   }
 

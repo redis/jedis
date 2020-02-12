@@ -640,7 +640,7 @@ public final class BuilderFactory {
       tempMappingFunctions.put(StreamGroupInfo.NAME,STRING);
       tempMappingFunctions.put(StreamGroupInfo.CONSUMERS, LONG);
       tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
-      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STRING);
+      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED,STREAM_ENTRY_ID);
 
       return  tempMappingFunctions;
     }

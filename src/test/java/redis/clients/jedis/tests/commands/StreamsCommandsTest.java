@@ -321,7 +321,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void xinfo() {
+  public void xinfo() throws InterruptedException {
 
     final String STREAM_NAME = "xadd-stream1";
     final String F1 = "f1";
@@ -344,6 +344,9 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     jedis.xgroupCreate(STREAM_NAME,G1, StreamEntryID.LAST_ENTRY,false);
     Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>(STREAM_NAME, new StreamEntryID("0-0"));
     jedis.xreadGroup(G1, MY_CONSUMER,1,0,false,streamQeury11);
+
+    Thread.sleep(1);
+
     List<StreamGroupInfo> groupInfo = jedis.xinfoGroup(STREAM_NAME);
     List<StreamConsumersInfo> consumersInfo = jedis.xinfoConsumers(STREAM_NAME, G1);
 
@@ -365,19 +368,20 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(V2,streamInfo.getLastEntry().getFields().get(F1));
     assertEquals(id2,streamInfo.getLastGeneratedId());
 
+
     //Group info test
     assertEquals(1,groupInfo.size());
     assertEquals(G1,groupInfo.get(0).getGroupInfo().get(NAME));
     assertEquals(1L,groupInfo.get(0).getGroupInfo().get(CONSUMERS));
     assertEquals(0L,groupInfo.get(0).getGroupInfo().get(PENDING));
-    assertNotNull(groupInfo.get(0).getGroupInfo().get(LAST_DELIVERED));
+    assertEquals(id2,groupInfo.get(0).getGroupInfo().get(LAST_DELIVERED));
 
     //Using getters
     assertEquals(1,groupInfo.size());
     assertEquals(G1,groupInfo.get(0).getName());
     assertEquals(1,groupInfo.get(0).getConsumers());
     assertEquals(0,groupInfo.get(0).getPending());
-    assertNotNull(groupInfo.get(0).getLastDeliveredId());
+    assertEquals(id2,groupInfo.get(0).getLastDeliveredId());
 
     //Consumer info test
     assertEquals(MY_CONSUMER,consumersInfo.get(0).getConsumerInfo().get(redis.clients.jedis.StreamConsumersInfo.NAME));
@@ -412,7 +416,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void xinfoBinary() {
+  public void xinfoBinary() throws InterruptedException {
 
     final String STREAM_NAME = "xadd-stream1";
     final String F1 = "f1";
@@ -435,6 +439,9 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     jedis.xgroupCreate(STREAM_NAME,G1, StreamEntryID.LAST_ENTRY,false);
     Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>(STREAM_NAME, new StreamEntryID("0-0"));
     jedis.xreadGroup(G1, MY_CONSUMER,1,0,false,streamQeury11);
+
+    Thread.sleep(1);
+
     List<StreamGroupInfo> groupInfo = jedis.xinfoGroup(SafeEncoder.encode(STREAM_NAME));
     List<StreamConsumersInfo> consumersInfo = jedis.xinfoConsumers(SafeEncoder.encode(STREAM_NAME), SafeEncoder.encode(G1));
 
@@ -445,14 +452,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(0L,streamInfo.getStreamInfo().get(GROUPS));
     assertEquals(V1,((StreamEntry)streamInfo.getStreamInfo().get(FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2,((StreamEntry)streamInfo.getStreamInfo().get(LAST_ENTRY)).getFields().get(F1));
-    assertNotNull(streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
+    assertEquals(id2,streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
 
     //Group info test
     assertEquals(1,groupInfo.size());
     assertEquals(G1,groupInfo.get(0).getGroupInfo().get(NAME));
     assertEquals(1L,groupInfo.get(0).getGroupInfo().get(CONSUMERS));
     assertEquals(0L,groupInfo.get(0).getGroupInfo().get(PENDING));
-    assertNotNull(groupInfo.get(0).getGroupInfo().get(LAST_DELIVERED));
+    assertEquals(id2,groupInfo.get(0).getGroupInfo().get(LAST_DELIVERED));
 
     //Consumer info test
     assertEquals(MY_CONSUMER,consumersInfo.get(0).getConsumerInfo().get(redis.clients.jedis.StreamConsumersInfo.NAME));

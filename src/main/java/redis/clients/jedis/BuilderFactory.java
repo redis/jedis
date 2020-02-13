@@ -418,10 +418,13 @@ public final class BuilderFactory {
             Object info = informations.get(idx);
             if (info instanceof List<?>) {
               // coordinate
-              List<Object> coord = (List<Object>) info;
+              List<Object> coord = (List<Object>)info;
 
               resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
                   DOUBLE.build(coord.get(1))));
+            } else if (info instanceof Long) {
+              // score
+              resp.setScore(LONG.build(info));
             } else {
               // distance
               resp.setDistance(DOUBLE.build(info));

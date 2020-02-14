@@ -1897,6 +1897,18 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Long georadiusStore(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    byte[][] keys = param.getByteKeys(key);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.georadiusStore(key, longitude, latitude, radius, unit, param);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
@@ -1938,6 +1950,18 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.georadiusByMember(key, member, radius, unit, param);
       }
     }.runBinary(key);
+  }
+
+  @Override
+  public Long georadiusByMemberStore(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    byte[][] keys = param.getByteKeys(key);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.georadiusByMemberStore(key, member, radius, unit, param);
+      }
+    }.runBinary(keys.length, keys);
   }
 
   @Override

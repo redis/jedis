@@ -1213,6 +1213,12 @@ public class BinaryClient extends Connection {
       toByteArray(radius), unit.raw));
   }
 
+  public void georadiusStore(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
+    sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
+        toByteArray(radius), unit.raw));
+  }
+
   public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
@@ -1228,6 +1234,11 @@ public class BinaryClient extends Connection {
   }
 
   public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
+    sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusByMemberStore(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }

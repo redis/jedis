@@ -1,10 +1,14 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import redis.clients.jedis.util.SafeEncoder;
+
+import java.util.List;
 
 public class ObjectCommandsTest extends JedisCommandTestBase {
 
@@ -44,5 +48,25 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
     // Binary
     time = jedis.objectIdletime(binaryKey);
     assertEquals(new Long(0), time);
+  }
+
+  @Test
+  public void objectHelp() {
+    List<String> helpTexts = jedis.objectHelp();
+    assertNotNull(helpTexts);
+  }
+
+  @Test
+  public void objectFreq() {
+    jedis.set(key, "test1");
+    jedis.configSet("maxmemory-policy", "allkeys-lfu");
+    jedis.get(key);
+    // String
+    Long count = jedis.objectFreq(key);
+    assertTrue(count > 0);
+
+    // Binary
+    count = jedis.objectFreq(binaryKey);
+    assertTrue(count > 0);
   }
 }

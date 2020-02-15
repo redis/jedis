@@ -2963,6 +2963,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<String> objectHelp() {
+    client.objectHelp();
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public Long objectFreq(final String key) {
+    client.objectFreq(key);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public Long bitcount(final String key) {
     checkIsInMultiOrPipeline();
     client.bitcount(key);

@@ -318,6 +318,10 @@ public interface Commands {
 
   void objectEncoding(String key);
 
+  void objectHelp();
+
+  void objectFreq(String key);
+
   void bitcount(String key);
 
   void bitcount(String key, long start, long end);

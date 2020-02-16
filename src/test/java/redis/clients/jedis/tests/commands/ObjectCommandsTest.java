@@ -29,7 +29,6 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
     jedis1 = new Jedis(hnp.getHost(), port, 500);
     jedis1.connect();
-    jedis1.auth("foobared");
     jedis1.flushAll();
   }
 

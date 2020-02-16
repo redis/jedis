@@ -59,6 +59,7 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
   @Test
   public void objectFreq() {
     jedis.set(key, "test1");
+    // Before we test objectFreq command, we must config maxmemory-policy or will throw "An LFU maxmemory policy is not selected, access frequency not tracked. Please note that when switching between policies at runtime LRU and LFU data will take some time to adjust."
     jedis.configSet("maxmemory-policy", "allkeys-lfu");
     jedis.get(key);
     // String
@@ -68,5 +69,7 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
     // Binary
     count = jedis.objectFreq(binaryKey);
     assertTrue(count > 0);
+    // Reset default config for other test case.
+    jedis.configSet("maxmemory-policy", "noeviction");
   }
 }

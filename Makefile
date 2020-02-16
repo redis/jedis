@@ -355,8 +355,8 @@ release:
 
 travis-install:
 	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	apt-get install curl
-	curl --version
+	sudo apt-get install curl
+	sudo curl --version
 	sudo apt-get -y update
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\

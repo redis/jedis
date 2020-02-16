@@ -25,8 +25,6 @@ public interface AdvancedBinaryJedisCommands {
 
   Long objectIdletime(byte[] key);
 
-  List<String> objectHelp();
-
   List<byte[]> objectHelpBinary();
 
   Long objectFreq(byte[] key);

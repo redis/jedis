@@ -3462,12 +3462,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<String> objectHelp() {
-    client.objectHelp();
-    return client.getMultiBulkReply();
-  }
-
-  @Override
   public List<byte[]> objectHelpBinary() {
     client.objectHelp();
     return client.getBinaryMultiBulkReply();

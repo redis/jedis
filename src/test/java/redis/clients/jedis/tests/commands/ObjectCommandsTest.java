@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.List;
@@ -14,6 +17,27 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   private String key = "mylist";
   private byte[] binaryKey = SafeEncoder.encode(key);
+  private int port = 6386;
+  private Jedis jedis1;
+
+  @Before
+  public void setUp() throws Exception {
+    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis.connect();
+    jedis.auth("foobared");
+    jedis.flushAll();
+
+    jedis1 = new Jedis(hnp.getHost(), port, 500);
+    jedis1.connect();
+    jedis1.auth("foobared");
+    jedis1.flushAll();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    jedis.disconnect();
+    jedis1.disconnect();
+  }
 
   @Test
   public void objectRefcount() {
@@ -52,24 +76,25 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void objectHelp() {
+    // String
     List<String> helpTexts = jedis.objectHelp();
     assertNotNull(helpTexts);
+
+    // Binary
+    List<byte[]> helpBinaryTexts = jedis.objectHelpBinary();
+    assertNotNull(helpBinaryTexts);
   }
 
   @Test
   public void objectFreq() {
-    jedis.set(key, "test1");
-    // Before we test objectFreq command, we must config maxmemory-policy or will throw "An LFU maxmemory policy is not selected, access frequency not tracked. Please note that when switching between policies at runtime LRU and LFU data will take some time to adjust."
-    jedis.configSet("maxmemory-policy", "allkeys-lfu");
-    jedis.get(key);
+    jedis1.set(key, "test1");
+    jedis1.get(key);
     // String
-    Long count = jedis.objectFreq(key);
+    Long count = jedis1.objectFreq(key);
     assertTrue(count > 0);
 
     // Binary
-    count = jedis.objectFreq(binaryKey);
+    count = jedis1.objectFreq(binaryKey);
     assertTrue(count > 0);
-    // Reset default config for other test case.
-    jedis.configSet("maxmemory-policy", "noeviction");
   }
 }

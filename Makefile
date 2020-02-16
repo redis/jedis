@@ -355,8 +355,6 @@ release:
 
 travis-install:
 	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	echo "deb http://www.apache.org/dist/cassandra/debian 311x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
-	sudo curl --version
 	sudo apt-get -y update
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\

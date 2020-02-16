@@ -95,7 +95,6 @@ pidfile /tmp/redis8.pid
 logfile /tmp/redis8.log
 save ""
 appendonly no
-maxmemory-policy allkeys-lfu
 endef
 
 # SENTINELS

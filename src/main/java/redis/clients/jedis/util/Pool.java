@@ -7,11 +7,16 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
+  private Logger logger = LoggerFactory.getLogger(getClass().getName());
+
   protected GenericObjectPool<T> internalPool;
 
   /**
@@ -34,7 +39,6 @@ public abstract class Pool<T> implements Closeable {
   }
 
   public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
-
     if (this.internalPool != null) {
       try {
         closeInternalPool();
@@ -43,6 +47,14 @@ public abstract class Pool<T> implements Closeable {
     }
 
     this.internalPool = new GenericObjectPool<T>(factory, poolConfig);
+  }
+
+  public void prepareInternalPool() {
+    try {
+      this.internalPool.preparePool();
+    } catch (Exception e) {
+      logger.warn("failed to initialize minIdle connections in the internal jedis connection pool", e);
+    }
   }
 
   public T getResource() {

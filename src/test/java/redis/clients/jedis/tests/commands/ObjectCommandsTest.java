@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -20,7 +19,7 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   private String key = "mylist";
   private byte[] binaryKey = SafeEncoder.encode(key);
-  private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(Protocol.DEFAULT_PORT + 8);
+  private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(8);
   private Jedis lfuJedis;
 
   @Before

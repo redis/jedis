@@ -8,7 +8,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.List;
@@ -17,25 +20,22 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   private String key = "mylist";
   private byte[] binaryKey = SafeEncoder.encode(key);
-  private int port = 6386;
-  private Jedis jedis1;
+  private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(Protocol.DEFAULT_PORT + 8);
+  private Jedis lfuJedis;
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    jedis.flushAll();
+    super.setUp();
 
-    jedis1 = new Jedis(hnp.getHost(), port, 500);
-    jedis1.connect();
-    jedis1.flushAll();
+    lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
+    lfuJedis.connect();
+    lfuJedis.flushAll();
   }
 
   @After
   public void tearDown() throws Exception {
-    jedis.disconnect();
-    jedis1.disconnect();
+    super.tearDown();
+    lfuJedis.disconnect();
   }
 
   @Test
@@ -86,14 +86,14 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void objectFreq() {
-    jedis1.set(key, "test1");
-    jedis1.get(key);
+    lfuJedis.set(key, "test1");
+    lfuJedis.get(key);
     // String
-    Long count = jedis1.objectFreq(key);
+    Long count = lfuJedis.objectFreq(key);
     assertTrue(count > 0);
 
     // Binary
-    count = jedis1.objectFreq(binaryKey);
+    count = lfuJedis.objectFreq(binaryKey);
     assertTrue(count > 0);
   }
 }

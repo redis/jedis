@@ -155,7 +155,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
     assertTrue(equalsWithinEpsilon(15.087269, response.getCoordinate().getLongitude()));
     assertTrue(equalsWithinEpsilon(37.502669, response.getCoordinate().getLatitude()));
-    assertEquals("3479447370796909", Long.toString(response.getScore()));
+    assertEquals(3479447370796909L, response.getScore());
 
     // sort, count 1, with hash
     members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()

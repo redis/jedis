@@ -19,7 +19,7 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   private String key = "mylist";
   private byte[] binaryKey = SafeEncoder.encode(key);
-  private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(8);
+  private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(7);
   private Jedis lfuJedis;
 
   @Before

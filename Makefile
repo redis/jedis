@@ -95,16 +95,6 @@ pidfile /tmp/redis8.pid
 logfile /tmp/redis8.log
 save ""
 appendonly no
-endef
-
-define REDIS9_CONF
-daemonize yes
-protected-mode no
-port 6387
-pidfile /tmp/redis9.pid
-logfile /tmp/redis9.log
-save ""
-appendonly no
 maxmemory-policy allkeys-lfu
 endef
 
@@ -264,7 +254,6 @@ export REDIS5_CONF
 export REDIS6_CONF
 export REDIS7_CONF
 export REDIS8_CONF
-export REDIS9_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
@@ -292,7 +281,6 @@ start: stunnel cleanup
 	echo "$$REDIS6_CONF" | redis-server -
 	echo "$$REDIS7_CONF" | redis-server -
 	echo "$$REDIS8_CONF" | redis-server -
-	echo "$$REDIS9_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
@@ -323,7 +311,6 @@ stop:
 	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
 	kill `cat /tmp/redis8.pid`
-	kill `cat /tmp/redis9.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`

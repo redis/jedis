@@ -33,8 +33,8 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
 
   @After
   public void tearDown() throws Exception {
-    super.tearDown();
     lfuJedis.disconnect();
+    super.tearDown();
   }
 
   @Test

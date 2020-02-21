@@ -162,7 +162,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
         .sortAscending().count(1).withHash());
     assertEquals(1, members.size());
     response = members.get(0);
-    assertEquals("3479447370796909", Long.toString(response.getScore()));
+    assertEquals(3479447370796909L, response.getScore());
   }
 
   @Test

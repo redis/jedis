@@ -1033,7 +1033,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+  public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
     Jedis j = getShard(key);
     return j.xgroupDelConsumer(key, consumer, consumerName);
   }

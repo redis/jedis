@@ -434,7 +434,7 @@ public interface JedisClusterCommands {
    * @param consumername
    * @return
    */
-  String xgroupDelConsumer( String key, String groupname, String consumername);
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

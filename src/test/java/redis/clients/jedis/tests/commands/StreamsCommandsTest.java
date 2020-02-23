@@ -310,7 +310,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", null, null, 3, "xpendeing-consumer");
     assertEquals(1, pendingRange.size());
-    
+
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
@@ -318,6 +318,8 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
     
     jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, pendingRange.get(0).getID());
+
+    jedis.xclaimIDs("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, pendingRange.get(0).getID());
   }
 
   @Test

@@ -487,5 +487,15 @@ public interface JedisClusterCommands {
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
+  /**
+   *  Return just an array of IDs of messages successfully claimed
+   *
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE] [JUSTID]
+   */
+  List<StreamEntryID> xclaimIDs( String key, String group, String consumername, long minIdleTime,
+                            long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
   Long waitReplicas(final String key, final int replicas, final long timeout);
 }

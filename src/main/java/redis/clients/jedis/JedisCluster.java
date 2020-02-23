@@ -2266,6 +2266,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+  @Override
+  public List<StreamEntryID> xclaimIDs(final String key, final String group, final String consumername, final long minIdleTime, final long newIdleTime,
+                                  final int retries, final boolean force, final StreamEntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntryID>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntryID> execute(Jedis connection) {
+        return connection.xclaimIDs(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+      }
+    }.run(key);
+  }
+
   public Long waitReplicas(final String key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

@@ -1273,13 +1273,13 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
-      boolean force, StreamEntryID... ids) {
+      boolean force, boolean justId, StreamEntryID... ids) {
     
     final byte[][] bids = new byte[ids.length][];
     for (int i = 0; i < ids.length; i++) {
       bids[i] = SafeEncoder.encode(ids[i].toString());
     }
-    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids, justId);
   }
 
   @Override

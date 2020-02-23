@@ -493,6 +493,16 @@ public interface JedisCommands {
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   /**
+   *  Return just an array of IDs of messages successfully claimed
+   *
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE] [JUSTID]
+   */
+  List<StreamEntryID> xclaimIDs( String key, String group, String consumername, long minIdleTime,
+                            long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  /**
    * Introspection command used in order to retrieve different information about the stream
    * @param key Stream name
    * @return {@link StreamInfo} that contains information about the stream

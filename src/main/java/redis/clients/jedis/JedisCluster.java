@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.commands.AdvancedClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -23,7 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
-    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
+    MultiKeyJedisClusterCommands, JedisClusterScriptingCommands, AdvancedClusterCommands {
 
   public JedisCluster(HostAndPort node) {
     this(Collections.singleton(node));
@@ -2262,6 +2263,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String objectEncoding(String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.objectEncoding(key);
       }
     }.run(key);
   }

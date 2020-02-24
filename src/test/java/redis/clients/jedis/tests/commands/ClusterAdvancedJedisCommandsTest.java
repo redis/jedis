@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 
 public class ClusterAdvancedJedisCommandsTest {
 
-
   private Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
@@ -31,6 +30,7 @@ public class ClusterAdvancedJedisCommandsTest {
 
   @Before
   public void setUp() throws InterruptedException {
+
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
     node1.flushAll();
@@ -77,12 +77,14 @@ public class ClusterAdvancedJedisCommandsTest {
 
   @AfterClass
   public static void cleanUp() {
+
     int slotTest = JedisClusterCRC16.getSlot("test");
     int slot51 = JedisClusterCRC16.getSlot("51");
     String node3Id = getNodeId(node3.clusterNodes());
     node2.clusterSetSlotNode(slotTest, node3Id);
     node2.clusterSetSlotNode(slot51, node3Id);
     node2.clusterDelSlots(slotTest, slot51);
+
   }
 
   @After
@@ -95,17 +97,20 @@ public class ClusterAdvancedJedisCommandsTest {
     node1.clusterDelSlots(slotsToDelete);
     node2.clusterDelSlots(slotsToDelete);
     node3.clusterDelSlots(slotsToDelete);
-  }
 
+  }
 
   @Test
   public void objectEncoding() {
+
     jedisCluster.set("myKey","1");
     assertEquals("int",jedisCluster.objectEncoding("myKey"));
     jedisCluster.del("myKey");
+
   }
 
   private void waitForClusterReady() throws InterruptedException {
+
     boolean clusterOk = false;
     while (!clusterOk) {
       if (node1.clusterInfo().split("\n")[0].contains("ok")
@@ -115,16 +120,18 @@ public class ClusterAdvancedJedisCommandsTest {
       }
       Thread.sleep(50);
     }
+
   }
 
   private static String getNodeId(String infoOutput) {
+
     for (String infoLine : infoOutput.split("\n")) {
       if (infoLine.contains("myself")) {
         return infoLine.split(" ")[0];
       }
     }
     return "";
+    
   }
-
 
 }

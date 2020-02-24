@@ -2268,7 +2268,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String objectEncoding(String key) {
+  public String objectEncoding(final String key) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {

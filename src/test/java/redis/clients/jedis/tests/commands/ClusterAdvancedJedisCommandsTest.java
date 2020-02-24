@@ -101,8 +101,8 @@ public class ClusterAdvancedJedisCommandsTest {
   @Test
   public void objectEncoding() {
     jedisCluster.set("myKey","1");
-    assertEquals("int",jedisCluster.objectEncoding("raz"));
-    jedisCluster.del("raz");
+    assertEquals("int",jedisCluster.objectEncoding("myKey"));
+    jedisCluster.del("myKey");
   }
 
   private void waitForClusterReady() throws InterruptedException {

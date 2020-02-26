@@ -44,6 +44,10 @@ public class Client extends BinaryClient implements Commands {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public Client(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
+  }
+
   @Override
   public void ping(final String message) {
     ping(SafeEncoder.encode(message));

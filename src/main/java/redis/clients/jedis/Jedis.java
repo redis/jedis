@@ -123,6 +123,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(uri, connectionTimeout, soTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public Jedis(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
+  }
+
   /**
    * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
    * @param message

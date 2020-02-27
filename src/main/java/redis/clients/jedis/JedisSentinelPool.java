@@ -34,7 +34,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
-  
+
   private final Object initPoolLock = new Object();
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -89,7 +89,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database, final String clientName) {
     this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
-        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null);
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, password, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -163,7 +163,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       Jedis jedis = null;
       try {
         jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
-        if (sentinelPassword != null) {
+        if (sentinelPassword != null && !sentinelPassword.isEmpty())   {
           jedis.auth(sentinelPassword);
         }
         if (sentinelClientName != null) {
@@ -302,6 +302,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       while (running.get()) {
 
         j = new Jedis(host, port);
+        if (null != sentinelPassword && !sentinelPassword.isEmpty()) {
+          j.auth(sentinelPassword);
+        }
 
         try {
           // double check that it is not being shutdown

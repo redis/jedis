@@ -53,17 +53,13 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels, String password, String sentinelPassword) {
-    this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, password, sentinelPassword);
+    this(masterName, sentinels,  new GenericObjectPoolConfig(),  Protocol.DEFAULT_TIMEOUT,  Protocol.DEFAULT_TIMEOUT,
+        password,Protocol.DEFAULT_DATABASE, null, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, sentinelPassword, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password) {
     this(masterName, sentinels, poolConfig, timeout, password, Protocol.DEFAULT_DATABASE);
-  }
-
-  public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, int timeout, final String password, final String sentinelPassword) {
-    this(masterName, sentinels, poolConfig, timeout, password, sentinelPassword, Protocol.DEFAULT_DATABASE);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -83,12 +79,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, int timeout, final String password,final String sentinelPassword,
-      final int database) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, sentinelPassword, database);
-  }
-
-  public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database, final String clientName) {
     this(masterName, sentinels, poolConfig, timeout, timeout, password, database, clientName);
@@ -101,24 +91,11 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
-      final String password, final String sentinelPassword, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, sentinelPassword, database, null);
-  }
-
-  public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database, final String clientName) {
     this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
         Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null);
   }
-  public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
-      final String password, final String sentinelPassword, final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password,database, clientName,
-        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, sentinelPassword, null);
-  }
-
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
@@ -191,7 +168,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       Jedis jedis = null;
       try {
         jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
-        if (sentinelPassword != null && !sentinelPassword.isEmpty())   {
+        if (sentinelPassword != null)   {
           jedis.auth(sentinelPassword);
         }
         if (sentinelClientName != null) {
@@ -330,7 +307,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       while (running.get()) {
 
         j = new Jedis(host, port);
-        if (null != sentinelPassword && !sentinelPassword.isEmpty()) {
+        if (null != sentinelPassword) {
           j.auth(sentinelPassword);
         }
 

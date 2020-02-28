@@ -168,7 +168,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       Jedis jedis = null;
       try {
         jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
-        if (sentinelPassword != null)   {
+        if (sentinelPassword != null) {
           jedis.auth(sentinelPassword);
         }
         if (sentinelClientName != null) {

@@ -34,7 +34,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
-
+  
   private final Object initPoolLock = new Object();
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,

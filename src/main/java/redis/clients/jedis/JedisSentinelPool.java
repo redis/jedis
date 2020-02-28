@@ -110,7 +110,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database, final String clientName) {
     this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
-        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, password, null);
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null);
   }
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,

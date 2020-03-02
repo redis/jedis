@@ -31,6 +31,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -3815,6 +3816,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Long georadiusStore(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
@@ -3844,6 +3853,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Long georadiusByMemberStore(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return client.getIntegerReply();
   }
 
   @Override

@@ -424,7 +424,7 @@ public final class BuilderFactory {
                   DOUBLE.build(coord.get(1))));
             } else if (info instanceof Long) {
               // score
-              resp.setScore(LONG.build(info));
+              resp.setRawScore(LONG.build(info));
             } else {
               // distance
               resp.setDistance(DOUBLE.build(info));

@@ -113,7 +113,7 @@ And you are done!
 
 ## Jedis Cluster
 
-Redis cluster [specification](http://redis.io/topics/cluster-spec) (still under development) is implemented
+Redis cluster support [specification](http://redis.io/topics/cluster-spec) 
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();

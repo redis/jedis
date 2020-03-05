@@ -5,11 +5,14 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
@@ -488,4 +491,27 @@ public interface JedisCommands {
    */        
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  /**
+   * Introspection command used in order to retrieve different information about the stream
+   * @param key Stream name
+   * @return {@link StreamInfo} that contains information about the stream
+   */
+  StreamInfo xinfoStream (String key);
+
+  /**
+   * Introspection command used in order to retrieve different information about groups in the stream
+   * @param key Stream name
+   * @return List of {@link StreamGroupInfo} containing information about groups
+   */
+  List<StreamGroupInfo> xinfoGroup (String key);
+
+  /**
+   * Introspection command used in order to retrieve different information about consumers in the group
+   * @param key Stream name
+   * @param group Group name
+   * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
+   * to the the group
+   */
+  List<StreamConsumersInfo> xinfoConsumers (String key, String group);
 }

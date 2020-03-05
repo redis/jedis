@@ -303,8 +303,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
         j = new Jedis(host, port, sentinelConnectionTimeout, sentinelSoTimeout);
         if (sentinelPassword != null) {
-	      j.auth(sentinelPassword);
-	    }
+          j.auth(sentinelPassword);
+        }
         if (sentinelClientName != null) {
           j.clientSetname(sentinelClientName);
         }

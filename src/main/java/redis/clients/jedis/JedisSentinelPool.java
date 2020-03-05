@@ -301,7 +301,13 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       while (running.get()) {
 
-        j = new Jedis(host, port);
+        j = new Jedis(host, port, sentinelConnectionTimeout, sentinelSoTimeout);
+        if (sentinelPassword != null) {
+	      j.auth(sentinelPassword);
+	    }
+        if (sentinelClientName != null) {
+          j.clientSetname(sentinelClientName);
+        }
 
         try {
           // double check that it is not being shutdown

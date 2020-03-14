@@ -452,7 +452,7 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  String xgroupDelConsumer( String key, String groupname, String consumername);
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XPENDING key group [start end count] [consumer]

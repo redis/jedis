@@ -326,7 +326,7 @@ public interface RedisPipeline {
   
   Response<Long> xgroupDestroy( String key, String groupname);
   
-  Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
+  Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
   

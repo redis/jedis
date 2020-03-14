@@ -2187,10 +2187,10 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public String xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+  public Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
-      public String execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.xgroupDelConsumer(key, consumer, consumerName);
       }
     }.runBinary(key);

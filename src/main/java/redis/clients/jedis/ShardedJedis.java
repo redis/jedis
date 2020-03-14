@@ -1041,7 +1041,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String xgroupDelConsumer(String key, String groupname, String consumername) {
+  public Long xgroupDelConsumer(String key, String groupname, String consumername) {
     Jedis j = getShard(key);
     return j.xgroupDelConsumer(key, groupname, consumername);
   }

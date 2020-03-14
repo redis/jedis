@@ -4148,10 +4148,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+  public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
     checkIsInMultiOrPipeline();
     client.xgroupDelConsumer(key, consumer, consumerName);
-    return client.getStatusCodeReply();  
+    return client.getIntegerReply();
   }
 
   @Override

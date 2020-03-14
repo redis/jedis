@@ -357,7 +357,7 @@ public interface BinaryJedisCommands {
 
   Long xgroupDestroy(final byte[] key, final byte[] consumer);
 
-  String xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
  
   Long xdel(final byte[] key, final byte[]... ids);
 

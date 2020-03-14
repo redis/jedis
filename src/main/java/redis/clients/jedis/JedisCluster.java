@@ -2235,10 +2235,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String xgroupDelConsumer(final String key, final String groupname, final String consumername) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+  public Long xgroupDelConsumer(final String key, final String groupname, final String consumername) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
-      public String execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.xgroupDelConsumer(key, groupname, consumername);
       }
     }.run(key);

@@ -3862,10 +3862,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
+  public Long xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
     checkIsInMultiOrPipeline();
     client.xgroupDelConsumer(key, groupname, consumerName);
-    return client.getStatusCodeReply();
+    return client.getIntegerReply();
   }
 
   @Override

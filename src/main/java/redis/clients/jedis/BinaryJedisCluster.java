@@ -13,7 +13,6 @@ import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.Closeable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -566,10 +565,10 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Collection<byte[]> hvals(final byte[] key) {
-    return new JedisClusterCommand<Collection<byte[]>>(connectionHandler, maxAttempts) {
+  public List<byte[]> hvals(final byte[] key) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
-      public Collection<byte[]> execute(Jedis connection) {
+      public List<byte[]> execute(Jedis connection) {
         return connection.hvals(key);
       }
     }.runBinary(key);

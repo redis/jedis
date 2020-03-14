@@ -13,7 +13,6 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +104,7 @@ public interface BinaryJedisClusterCommands {
 
   Set<byte[]> hkeys(byte[] key);
 
-  Collection<byte[]> hvals(byte[] key);
+  List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 

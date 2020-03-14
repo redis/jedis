@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -113,7 +112,7 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> hkeys(byte[] key);
 
-  Collection<byte[]> hvals(byte[] key);
+  List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 

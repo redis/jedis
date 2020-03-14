@@ -318,7 +318,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
       e.printStackTrace();
     }
     
-    jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, pendingRange.get(0).getID());
+    List<StreamEntry> claimRange = jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, pendingRange.get(0).getID());
+    assertEquals(1, pendingRange.size());
+    
+    Long pendingMessageNum = jedis.xgroupDelConsumer("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2");
+    assertEquals(1L, pendingMessageNum.longValue()); 
   }
 
   @Test

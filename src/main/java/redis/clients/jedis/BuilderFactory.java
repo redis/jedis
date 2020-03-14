@@ -422,6 +422,9 @@ public final class BuilderFactory {
 
               resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
                   DOUBLE.build(coord.get(1))));
+            } else if (info instanceof Long) {
+              // score
+              resp.setRawScore(LONG.build(info));
             } else {
               // distance
               resp.setDistance(DOUBLE.build(info));

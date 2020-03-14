@@ -478,6 +478,52 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * Create a AccessControlUser object from the ACL GETUSER < > result
+   */
+  public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
+    @Override
+    public AccessControlUser build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<List<Object>> objectList = (List<List<Object>>) data;
+      if (objectList.isEmpty()) { return null; }
+
+      AccessControlUser accessControlUser = new AccessControlUser();
+
+      // flags
+      List<Object> flags = objectList.get(1);
+      for (Object f : flags) {
+        accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
+      };
+
+      // passwords
+      List<Object> passwords = objectList.get(3);
+      for (Object p : passwords) {
+        accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
+      };
+
+      // commands
+      accessControlUser.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
+
+      // keys
+      List<Object> keys = objectList.get(7);
+      for (Object k : keys) {
+        accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
+      };
+
+      return accessControlUser;
+    }
+
+    @Override
+    public String toString() {
+      return "AccessControlUser";
+    }
+
+  };
+
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
     @Override
     @SuppressWarnings("unchecked")

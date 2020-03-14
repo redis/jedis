@@ -118,6 +118,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         shardInfo.getHostnameVerifier());
     client.setConnectionTimeout(shardInfo.getConnectionTimeout());
     client.setSoTimeout(shardInfo.getSoTimeout());
+    client.setUser(shardInfo.getUser());
     client.setPassword(shardInfo.getPassword());
     client.setDb(shardInfo.getDb());
   }
@@ -170,7 +171,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     String password = JedisURIHelper.getPassword(uri);
     if (password != null) {
-      client.auth(password);
+      String user = JedisURIHelper.getUser(uri);
+      if (user == null) {
+        client.auth(password);
+      } else {
+        client.auth(user, password);
+      }
       client.getStatusCodeReply();
     }
 
@@ -2259,6 +2265,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  /**
+   * Request for authentication with a Redis Server that is using ACL where user are authenticated with
+   * username and password.
+   * See https://redis.io/topics/acl
+   * @param user
+   * @param password
+   * @return
+   */
+  @Override
+  public String auth(final String user, final String password) {
+    checkIsInMultiOrPipeline();
+    client.auth(user, password);
+    return client.getStatusCodeReply();
+  }
+
   public Pipeline pipelined() {
     pipeline = new Pipeline();
     pipeline.setClient(client);
@@ -3565,6 +3586,76 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.memoryDoctor();
     return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] aclWhoAmIBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclWhoAmI();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] aclGenPassBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclGenPass();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclListBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclList();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclUsersBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclUsers();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public AccessControlUser aclGetUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclGetUser(name);
+    return BuilderFactory.ACCESS_CONTROL_USER.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclSetUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclSetUser(name);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSetUser(byte[] name, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.aclSetUser(name, keys);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long aclDelUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclDelUser(name);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<byte[]> aclCatBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclCat();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclCat(byte[] category) {
+    checkIsInMultiOrPipeline();
+    client.aclCat(category);
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override

@@ -3681,6 +3681,65 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public String aclSetUser(final String name) {
+    client.aclSetUser(name);
+    return client.getStatusCodeReply();
+  }
+
+  public String aclSetUser(String name, String... params) {
+    client.aclSetUser(name, params);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long aclDelUser(final String name) {
+    client.aclDelUser(name);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public AccessControlUser aclGetUser(final String name) {
+    client.aclGetUser(name);
+    return BuilderFactory.ACCESS_CONTROL_USER.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclUsers() {
+    client.aclUsers();
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclList() {
+    client.aclList();
+    return client.getMultiBulkReply();
+  }
+
+  @Override
+  public String aclWhoAmI() {
+    client.aclWhoAmI();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public List<String> aclCat() {
+    client.aclCat();
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclCat(String category) {
+    client.aclCat(category);
+    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclGenPass() {
+    client.aclGenPass();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public List<Long> bitfield(final String key, final String...arguments) {
     checkIsInMultiOrPipeline();
     client.bitfield(key, arguments);

@@ -234,7 +234,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
 
     Long pendingMessageNum = jedis.xgroupDelConsumer("xgroup-stream", "consumer-group-name1", "myconsumer1");
-    assertNotNull(pendingMessageNum);
+    assertEquals(0L, pendingMessageNum.longValue());  
   }
   
   @Test

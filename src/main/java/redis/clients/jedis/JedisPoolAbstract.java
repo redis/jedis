@@ -2,8 +2,6 @@ package redis.clients.jedis;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.util.Pool;
 

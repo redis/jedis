@@ -53,7 +53,7 @@ public abstract class Pool<T> implements Closeable {
     try {
       this.internalPool.preparePool();
     } catch (Exception e) {
-      logger.warn("failed to initialize minIdle connections in the internal jedis connection pool", e);
+      logger.warn("Could not initialize minimum number of idle resources", e);
     }
   }
 

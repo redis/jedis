@@ -416,6 +416,7 @@ public class JedisPoolTest {
     JedisPool pool = new JedisPool(jedisPoolConfig, "invalid", hnp.getPort(), 2000);
     assertEquals(pool.getNumIdle(), 0);
     pool.prepareInternalPool(); // catches and logs exception
+    // TODO: mock logger and check logs
     assertEquals(pool.getNumIdle(), 0);
   }
 

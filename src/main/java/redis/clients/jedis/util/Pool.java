@@ -15,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
-  private Logger logger = LoggerFactory.getLogger(getClass().getName());
+  private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
   protected GenericObjectPool<T> internalPool;
 

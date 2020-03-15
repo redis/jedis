@@ -2918,7 +2918,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<Boolean> scriptExists(final String... sha1) {
     client.scriptExists(sha1);
     List<Long> result = client.getIntegerMultiBulkReply();
-    List<Boolean> exists = new ArrayList<Boolean>();
+    List<Boolean> exists = new ArrayList<>();
 
     for (Long value : result)
       exists.add(value == 1);
@@ -3020,7 +3020,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.sentinel(Protocol.SENTINEL_MASTERS);
     final List<Object> reply = client.getObjectMultiBulkReply();
 
-    final List<Map<String, String>> masters = new ArrayList<Map<String, String>>();
+    final List<Map<String, String>> masters = new ArrayList<>();
     for (Object obj : reply) {
       masters.add(BuilderFactory.STRING_MAP.build((List) obj));
     }
@@ -3098,7 +3098,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
     final List<Object> reply = client.getObjectMultiBulkReply();
 
-    final List<Map<String, String>> slaves = new ArrayList<Map<String, String>>();
+    final List<Map<String, String>> slaves = new ArrayList<>();
     for (Object obj : reply) {
       slaves.add(BuilderFactory.STRING_MAP.build((List) obj));
     }
@@ -3259,7 +3259,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     for (byte[] bs : rawResults) {
       results.add(SafeEncoder.encode(bs));
     }
-    return new ScanResult<String>(newcursor, results);
+    return new ScanResult<>(newcursor, results);
   }
 
   @Override
@@ -3274,14 +3274,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.hscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     String newcursor = new String((byte[]) result.get(0));
-    List<Map.Entry<String, String>> results = new ArrayList<Map.Entry<String, String>>();
+    List<Map.Entry<String, String>> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
       results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder.encode(iterator.next()),
           SafeEncoder.encode(iterator.next())));
     }
-    return new ScanResult<Map.Entry<String, String>>(newcursor, results);
+    return new ScanResult<>(newcursor, results);
   }
 
   @Override
@@ -3300,7 +3300,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     for (byte[] bs : rawResults) {
       results.add(SafeEncoder.encode(bs));
     }
-    return new ScanResult<String>(newcursor, results);
+    return new ScanResult<>(newcursor, results);
   }
 
   @Override
@@ -3314,13 +3314,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.zscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     String newcursor = new String((byte[]) result.get(0));
-    List<Tuple> results = new ArrayList<Tuple>();
+    List<Tuple> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
       results.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
     }
-    return new ScanResult<Tuple>(newcursor, results);
+    return new ScanResult<>(newcursor, results);
   }
 
   @Override

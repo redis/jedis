@@ -497,13 +497,13 @@ public final class BuilderFactory {
       List<Object> flags = objectList.get(1);
       for (Object f : flags) {
         accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
-      };
+      }
 
       // passwords
       List<Object> passwords = objectList.get(3);
       for (Object p : passwords) {
         accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
-      };
+      }
 
       // commands
       accessControlUser.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
@@ -512,7 +512,7 @@ public final class BuilderFactory {
       List<Object> keys = objectList.get(7);
       for (Object k : keys) {
         accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
-      };
+      }
 
       return accessControlUser;
     }

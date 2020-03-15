@@ -60,7 +60,7 @@ public class HostAndPort implements Serializable {
    * @return array of host and port strings
      */
   public static String[] extractParts(String from){
-    int idx     = from.lastIndexOf(":");
+    int idx     = from.lastIndexOf(':');
     String host = idx != -1 ? from.substring(0, idx)  : from;
     String port = idx != -1 ? from.substring(idx + 1) : "";
     return new String[] { host, port };

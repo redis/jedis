@@ -413,7 +413,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     jedis.set(key, val);
     jedis.watch(key);
 
-    List exp = new ArrayList();
+    List<String> exp = new ArrayList<>();
     Transaction t = jedis.multi();
     t.get(key);     exp.add(val);
     t.unwatch();    exp.add("OK");

@@ -148,7 +148,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       throw je;
     }
 
-    return new DefaultPooledObject<Jedis>(jedis);
+    return new DefaultPooledObject<>(jedis);
 
   }
 

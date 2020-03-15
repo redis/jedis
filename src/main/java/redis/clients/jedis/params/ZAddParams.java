@@ -46,7 +46,7 @@ public class ZAddParams extends Params {
   }
 
   public byte[][] getByteParams(byte[] key, byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    ArrayList<byte[]> byteParams = new ArrayList<>();
     byteParams.add(key);
 
     if (contains(NX)) {

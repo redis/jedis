@@ -54,7 +54,7 @@ public class GeoRadiusParam extends Params {
   }
 
   public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    ArrayList<byte[]> byteParams = new ArrayList<>();
     for (byte[] arg : args) {
       byteParams.add(arg);
     }

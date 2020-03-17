@@ -1199,6 +1199,18 @@ public class Client extends BinaryClient implements Commands {
     aclCat(SafeEncoder.encode(category));
   }
 
+  public void aclLog() {
+    aclLog();
+  }
+
+  public void aclLog(final int limit) {
+    aclLog(toByteArray(limit));
+  }
+
+  public void aclLog(final String options) {
+    aclLog(SafeEncoder.encode(options));
+  }
+
   public void aclDelUser(final String name) {
     aclDelUser(SafeEncoder.encode(name));
   }

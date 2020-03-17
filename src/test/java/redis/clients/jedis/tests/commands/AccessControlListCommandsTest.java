@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.*;
 import org.junit.*;
 import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
@@ -315,6 +316,84 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     } catch (Exception e) {
       assertEquals("ERR Unknown category 'testcategory'", e.getMessage());
     }
+  }
+
+  @Test
+  public void aclLogTest() {
+    jedis.aclLog("RESET");
+    assertNotNull(jedis.aclLog()); // after reset the log should be null
+
+    // create new user and cconnect
+    jedis.aclSetUser("antirez", ">foo", "on", "+set", "~object:1234");
+    jedis.aclSetUser("antirez", "+eval", "+multi", "+exec");
+    jedis.auth("antirez", "foo");
+
+    // generate an error (antirez user does not have the permission to access foo)
+    try { jedis.get("foo");  } catch(JedisAccessControlException e) {}
+
+    // test the ACL Log
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals("1", jedis.aclLog().get(0).get("count"));
+    assertEquals("antirez", jedis.aclLog().get(0).get("username"));
+    assertEquals("toplevel", jedis.aclLog().get(0).get("context"));
+    assertEquals("command", jedis.aclLog().get(0).get("reason"));
+    assertEquals("get", jedis.aclLog().get(0).get("object"));
+
+    // Capture similar event
+    jedis.aclLog("RESET");
+    assertNotNull(jedis.aclLog()); // after reset the log should be null
+    jedis.auth("antirez", "foo");
+
+    for(int i = 0; i < 10 ; i++ ) {
+      // generate an error (antirez user does not have the permission to access foo)
+      try { jedis.get("foo"); } catch (JedisAccessControlException e) {}
+    }
+
+    // test the ACL Log
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals("10", jedis.aclLog().get(0).get("count"));
+    assertEquals("get", jedis.aclLog().get(0).get("object"));
+
+    // Generate another type of error
+    jedis.auth("antirez", "foo");
+    try { jedis.set("somekeynotallowed", "1234");} catch (JedisAccessControlException e) {}
+
+    // test the ACL Log
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 2, jedis.aclLog().size());
+    assertEquals("1", jedis.aclLog().get(0).get("count"));
+    assertEquals("somekeynotallowed", jedis.aclLog().get(0).get("object"));
+    assertEquals("key", jedis.aclLog().get(0).get("reason"));
+
+    jedis.aclLog("RESET");
+    assertNotNull(jedis.aclLog()); // after reset the log should be null
+
+    jedis.auth("antirez", "foo");
+    Transaction t = jedis.multi();
+    try{ t.incr("foo");} catch (Exception e){}
+    try{ t.exec();} catch (Exception e){}
+    t.close();
+
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals("1", jedis.aclLog().get(0).get("count"));
+    assertEquals("multi", jedis.aclLog().get(0).get("context"));
+    assertEquals("incr", jedis.aclLog().get(0).get("object"));
+
+    // ACL LOG can accept a numerical argument to show less entries
+    jedis.auth("antirez", "foo");
+    for (int i = 0; i < 5; i++) {
+      try{ jedis.incr("foo");} catch (Exception e){}
+    }
+    try{ jedis.set("foo-2", "bar");} catch (Exception e){}
+
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 3, jedis.aclLog().size());
+    assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
+
+    jedis.aclDelUser("antirez");
   }
 
   @Test

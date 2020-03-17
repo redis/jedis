@@ -3773,6 +3773,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<Map<String,String>> aclLog() {
+    client.aclLog();
+    return BuilderFactory.LIST_STRING_MAP.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<Map<String,String>> aclLog(int limit) {
+    client.aclLog(limit);
+    return BuilderFactory.LIST_STRING_MAP.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclLog(String options) {
+    client.aclLog(options);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public String aclGenPass() {
     client.aclGenPass();
     return client.getStatusCodeReply();

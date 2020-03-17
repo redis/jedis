@@ -524,6 +524,52 @@ public final class BuilderFactory {
 
   };
 
+  /**
+   * Create a list of Map that represent for example the ACL LOG return values
+   */
+  public static final Builder<List<Map<String, String>>> LIST_STRING_MAP = new Builder<List<Map<String, String>>>() {
+
+    @Override
+    public  List<Map<String, String>> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<ArrayList<byte[]>> objectList = (List<ArrayList<byte[]>>) data;
+      List<Map<String, String>> result = new ArrayList<>();
+
+      for (int i = 0; i <  objectList.size() ; i++) {
+
+        final List<byte[]> flatHash = (List<byte[]>) objectList.get(i);
+        final Map<String, String> hash = new HashMap<>(flatHash.size()/2, 1);
+        final Iterator<byte[]> iterator = flatHash.iterator();
+        while (iterator.hasNext()) {
+          String key = SafeEncoder.encode(iterator.next());
+          String value = null;
+          Object o = iterator.next();
+          if ( o instanceof Long ) {
+            value = o.toString();
+          } else {
+            value = SafeEncoder.encode((byte[])o);
+          }
+          hash.put(key, value);
+        }
+        result.add(hash);
+      }
+
+
+      return result;
+
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map<String, String>>";
+    }
+
+  };
+
+
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
     @Override
     @SuppressWarnings("unchecked")

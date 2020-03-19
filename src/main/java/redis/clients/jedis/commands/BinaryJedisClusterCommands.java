@@ -13,7 +13,6 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +104,7 @@ public interface BinaryJedisClusterCommands {
 
   Set<byte[]> hkeys(byte[] key);
 
-  Collection<byte[]> hvals(byte[] key);
+  List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
@@ -179,9 +178,13 @@ public interface BinaryJedisClusterCommands {
 
   Double zscore(byte[] key, byte[] member);
 
-  Set<Tuple> zpopmin(byte[] key);
+  Tuple zpopmax(byte[] key);
 
-  Set<Tuple> zpopmin(byte[] key, long count);
+  Set<Tuple> zpopmax(byte[] key, int count);
+
+  Tuple zpopmin(byte[] key);
+
+  Set<Tuple> zpopmin(byte[] key, int count);
 
   List<byte[]> sort(byte[] key);
 
@@ -343,7 +346,7 @@ public interface BinaryJedisClusterCommands {
 
   Long xgroupDestroy(final byte[] key, final byte[] consumer);
 
-  String xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
  
   Long xdel(final byte[] key, final byte[]... ids);
 

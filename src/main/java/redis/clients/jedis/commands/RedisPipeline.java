@@ -228,9 +228,13 @@ public interface RedisPipeline {
 
   Response<Double> zscore(String key, String member);
 
-  Response<Set<Tuple>> zpopmin(String key);
+  Response<Tuple> zpopmax(String key);
 
-  Response<Set<Tuple>> zpopmin(String key, long count);
+  Response<Set<Tuple>> zpopmax(String key, int count);
+
+  Response<Tuple> zpopmin(String key);
+
+  Response<Set<Tuple>> zpopmin(String key, int count);
 
   Response<Long> zlexcount(String key, String min, String max);
 
@@ -322,7 +326,7 @@ public interface RedisPipeline {
   
   Response<Long> xgroupDestroy( String key, String groupname);
   
-  Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
+  Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
   

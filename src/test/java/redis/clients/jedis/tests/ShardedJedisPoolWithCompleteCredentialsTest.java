@@ -1,28 +1,28 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.*;
+import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.ShardedJedis;
-import redis.clients.jedis.ShardedJedisPipeline;
-import redis.clients.jedis.ShardedJedisPool;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
-
-public class ShardedJedisPoolTest {
+/**
+ * This test class is a copy of @ShardedJedisPoolTest
+ * where all authentications are made with
+ * default:foobared credentialsinformation
+ *
+ * This test is only executed when the server/cluster is Redis 6. or more.
+ */
+public class ShardedJedisPoolWithCompleteCredentialsTest {
+  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);
 
@@ -30,10 +30,23 @@ public class ShardedJedisPoolTest {
 
   @Before
   public void startUp() {
+
+    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis.connect();
+    jedis.auth("foobared");
+    // run the test only if the verison support ACL (6 or later)
+    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
+
+    if ( shouldNotRun ) {
+      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
+    }
+
     shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo(redis1));
     shards.add(new JedisShardInfo(redis2));
+    shards.get(0).setUser("default");
     shards.get(0).setPassword("foobared");
+    shards.get(1).setUser("default");
     shards.get(1).setPassword("foobared");
     Jedis j = new Jedis(shards.get(0));
     j.connect();
@@ -186,18 +199,16 @@ public class ShardedJedisPoolTest {
   @Test
   public void startWithUrlString() {
     Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.set("foo", "bar");
-    j.disconnect();
 
     j = new Jedis("localhost", 6379);
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.set("foo", "bar");
-    j.disconnect();
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo("redis://:foobared@localhost:6380"));
-    shards.add(new JedisShardInfo("redis://:foobared@localhost:6379"));
+    shards.add(new JedisShardInfo("redis://default:foobared@localhost:6380"));
+    shards.add(new JedisShardInfo("redis://default:foobared@localhost:6379"));
 
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
     ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
@@ -216,18 +227,16 @@ public class ShardedJedisPoolTest {
   @Test
   public void startWithUrl() throws URISyntaxException {
     Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.set("foo", "bar");
-    j.disconnect();
 
     j = new Jedis("localhost", 6379);
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.set("foo", "bar");
-    j.disconnect();
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
+    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6380")));
+    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6379")));
 
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
     ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
@@ -244,14 +253,53 @@ public class ShardedJedisPoolTest {
   }
 
   @Test
+  public void connectWithURICredentials() throws URISyntaxException {
+    Jedis j1 = new Jedis("localhost", 6380);
+    j1.auth("default", "foobared");
+    j1.set("foo", "bar");
+
+    // create user in shard 1
+    j1.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+
+    Jedis j2 = new Jedis("localhost", 6379);
+    j2.auth("default", "foobared");
+    j2.set("foo", "bar");
+
+    // create user in shard 2
+    j2.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    shards.add(new JedisShardInfo(new URI("redis://alice:alicePassword@localhost:6380")));
+    shards.add(new JedisShardInfo(new URI("redis://alice:alicePassword@localhost:6379")));
+
+    GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
+    ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
+
+    Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
+
+    Jedis jedis = jedises[0];
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    jedis = jedises[1];
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    // delete user
+    j1.aclDelUser("alice");
+    j2.aclDelUser("alice");
+  }
+
+  @Test
   public void returnResourceShouldResetState() throws URISyntaxException {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
+    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6380")));
+    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6379")));
 
     ShardedJedisPool pool = new ShardedJedisPool(config, shards);
 
@@ -283,8 +331,8 @@ public class ShardedJedisPoolTest {
     config.setBlockWhenExhausted(false);
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
+    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6380")));
+    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6379")));
 
     ShardedJedisPool pool = new ShardedJedisPool(config, shards);
 

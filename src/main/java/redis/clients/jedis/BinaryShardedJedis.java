@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -299,7 +298,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Collection<byte[]> hvals(final byte[] key) {
+  public List<byte[]> hvals(final byte[] key) {
     Jedis j = getShard(key);
     return j.hvals(key);
   }
@@ -539,13 +538,25 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key) {
+  public Tuple zpopmax(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key, count);
+  }
+
+  @Override
+  public Tuple zpopmin(final byte[] key) {
     Jedis j = getShard(key);
     return j.zpopmin(key);
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key, final long count) {
+  public Set<Tuple> zpopmin(final byte[] key, final int count) {
     Jedis j = getShard(key);
     return j.zpopmin(key, count);
   }
@@ -1022,7 +1033,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+  public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
     Jedis j = getShard(key);
     return j.xgroupDelConsumer(key, consumer, consumerName);
   }
@@ -1050,6 +1061,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       int retries, boolean force, byte[][] ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  @Override
+  public StreamInfo xinfoStream(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoStream(key);
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoGroup(key);
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    Jedis j = getShard(key);
+    return j.xinfoConsumers(key, group);
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {

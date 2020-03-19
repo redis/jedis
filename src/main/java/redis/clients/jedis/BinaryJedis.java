@@ -118,6 +118,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         shardInfo.getHostnameVerifier());
     client.setConnectionTimeout(shardInfo.getConnectionTimeout());
     client.setSoTimeout(shardInfo.getSoTimeout());
+    client.setUser(shardInfo.getUser());
     client.setPassword(shardInfo.getPassword());
     client.setDb(shardInfo.getDb());
   }
@@ -170,7 +171,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
     String password = JedisURIHelper.getPassword(uri);
     if (password != null) {
-      client.auth(password);
+      String user = JedisURIHelper.getUser(uri);
+      if (user == null) {
+        client.auth(password);
+      } else {
+        client.auth(user, password);
+      }
       client.getStatusCodeReply();
     }
 
@@ -1846,14 +1852,28 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key) {
+  public Tuple zpopmax(final byte[] key) {
     checkIsInMultiOrPipeline();
-    client.zpopmin(key);
+    client.zpopmax(key);
+    return BuilderFactory.TUPLE.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(final byte[] key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.zpopmax(key, count);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key, final long count) {
+  public Tuple zpopmin(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.zpopmin(key);
+    return BuilderFactory.TUPLE.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
     client.zpopmin(key, count);
     return getTupledSet();
@@ -2076,7 +2096,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #brpop(int, byte[]...)
    * @param timeout
    * @param keys
-   * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
+   * @return BLPOP returns a two-elements array via a multi bulk reply in order to r sazzad16 eturn both the
    *         unblocking key and the popped value.
    *         <p>
    *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
@@ -2119,7 +2139,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Sort a Set or a List and Store the Result at dstkey.
    * <p>
    * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
-   * at dstkey. By default sorting is numeric with elements being compared as double precision
+   * at dstkey. By default sorting is numeric with elements being compared as double sazzad16  precision
    * floating point numbers. This is the simplest form of SORT.
    * @see #sort(byte[])
    * @see #sort(byte[], SortingParams)
@@ -2193,10 +2213,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
-   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+   *         When a non-zero timeout is specified,  sazzad16 and the BLPOP operation timed out, the return
    *         value is a nil multi bulk reply. Most client values will return false or nil
    *         accordingly to the programming language used.
-   */
+   */ sazzad16 
   @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return brpop(getArgsAddTimeout(timeout, keys));
@@ -2210,11 +2230,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     try {
       return client.getBinaryMultiBulkReply();
     } finally {
-      client.rollbackTimeout();
+      client.rollbackTimeout(); sazzad16 
     }
   }
 
-  @Override
+  @Override sazzad16 
   public List<byte[]> brpop(final byte[]... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
@@ -2245,12 +2265,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  /**
+   * Request for authentication with a Redis Server that is using ACL where user are authenticated with
+   * username and password.
+   * See https://redis.io/topics/acl
+   * @param user
+   * @param password
+   * @return
+   */
+  @Override
+  public String auth(final String user, final String password) {
+    checkIsInMultiOrPipeline();
+    client.auth(user, password);
+    return client.getStatusCodeReply();
+  }
+      
   @Override
   public Pipeline pipelined() {
     pipeline = new Pipeline();
     pipeline.setClient(client);
     return pipeline;
-  }
+  } sazzad16 
 
   @Override
   public Long zcount(final byte[] key, final double min, final double max) {
@@ -3555,6 +3590,76 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public byte[] aclWhoAmIBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclWhoAmI();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] aclGenPassBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclGenPass();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclListBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclList();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclUsersBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclUsers();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public AccessControlUser aclGetUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclGetUser(name);
+    return BuilderFactory.ACCESS_CONTROL_USER.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclSetUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclSetUser(name);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSetUser(byte[] name, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.aclSetUser(name, keys);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public Long aclDelUser(byte[] name) {
+    checkIsInMultiOrPipeline();
+    client.aclDelUser(name);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<byte[]> aclCatBinary() {
+    checkIsInMultiOrPipeline();
+    client.aclCat();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> aclCat(byte[] category) {
+    checkIsInMultiOrPipeline();
+    client.aclCat(category);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
   public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
     this.client.clientKill(ipPort);
@@ -3674,7 +3779,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    return new ScanResult<byte[]>(newcursor, rawResults);
+    return new ScanResult<>(newcursor, rawResults);
   }
 
   @Override
@@ -3689,7 +3794,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.hscan(key, cursor, params);
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
-    List<Map.Entry<byte[], byte[]>> results = new ArrayList<Map.Entry<byte[], byte[]>>();
+    List<Map.Entry<byte[], byte[]>> results = new ArrayList<>();
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
@@ -4044,10 +4149,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public String xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+  public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
     checkIsInMultiOrPipeline();
     client.xgroupDelConsumer(key, consumer, consumerName);
-    return client.getStatusCodeReply();  
+    return client.getIntegerReply();
   }
 
   @Override
@@ -4081,6 +4186,30 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.sendCommand(cmd, args);
     return client.getOne();
+  }
+
+  @Override
+  public StreamInfo xinfoStream(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoStream(key);
+
+    return BuilderFactory.STREAM_INFO.build(client.getOne());
+
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup (byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoGroup(key);
+
+    return BuilderFactory.STREAM_GROUP_INFO_LIST.build(client.getBinaryMultiBulkReply());
+  }
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoConsumers(key,group);
+
+    return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getBinaryMultiBulkReply());
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

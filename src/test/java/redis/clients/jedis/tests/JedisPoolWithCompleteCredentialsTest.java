@@ -1,37 +1,53 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.Before;
+import org.junit.Test;
+import redis.clients.jedis.*;
+import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Transaction;
-import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
-
-public class JedisPoolTest {
+/**
+ * This test class is a copy of @JedisPoolTest where all authentications are made with
+ * default:foobared credentialsinformation
+ *
+ * This test is only executed when the server/cluster is Redis 6. or more.
+ */
+public class JedisPoolWithCompleteCredentialsTest {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
+
+  /**
+   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+   * @throws Exception
+   */
+  @Before
+  public void setUp() throws Exception {
+    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis.connect();
+    jedis.auth("foobared");
+    // run the test only if the verison support ACL (6 or later)
+    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
+
+    if ( shouldNotRun ) {
+      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
+    }
+  }
 
   @Test
   public void checkConnections() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
@@ -43,7 +59,7 @@ public class JedisPoolTest {
   public void checkCloseableConnections() throws Exception {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
@@ -55,7 +71,7 @@ public class JedisPoolTest {
   public void checkConnectionWithDefaultPort() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
@@ -68,7 +84,7 @@ public class JedisPoolTest {
 
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.set("foo", "0");
     jedis.close();
 
@@ -84,12 +100,12 @@ public class JedisPoolTest {
   public void checkPoolRepairedWhenJedisIsBroken() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.quit();
     jedis.close();
 
     jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default", "foobared");
     jedis.incr("foo");
     jedis.close();
     pool.destroy();
@@ -103,11 +119,11 @@ public class JedisPoolTest {
     config.setBlockWhenExhausted(false);
     JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort());
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default", "foobared");
     jedis.set("foo", "0");
 
     Jedis newJedis = pool.getResource();
-    newJedis.auth("foobared");
+    newJedis.auth("default", "foobared");
     newJedis.incr("foo");
   }
 
@@ -115,7 +131,19 @@ public class JedisPoolTest {
   public void securePool() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "default","foobared");
+    Jedis jedis = pool.getResource();
+    jedis.set("foo", "bar");
+    jedis.close();
+    pool.destroy();
+    assertTrue(pool.isClosed());
+  }
+
+  @Test
+  public void securePoolNonSSL() {
+    JedisPoolConfig config = new JedisPoolConfig();
+    config.setTestOnBorrow(true);
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "default","foobared", false);
     Jedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     jedis.close();
@@ -125,7 +153,7 @@ public class JedisPoolTest {
 
   @Test
   public void nonDefaultDatabase() {
-    JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+    JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "default",
         "foobared");
     Jedis jedis0 = pool0.getResource();
     jedis0.set("foo", "bar");
@@ -144,29 +172,44 @@ public class JedisPoolTest {
   }
 
   @Test
+  public void nonDefaultDatabaseNonSSL() {
+    JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "default",
+            "foobared", false);
+    Jedis jedis0 = pool0.getResource();
+    jedis0.set("foo", "bar");
+    assertEquals("bar", jedis0.get("foo"));
+    jedis0.close();
+    pool0.destroy();
+    assertTrue(pool0.isClosed());
+
+    JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "foobared", 1, false);
+    Jedis jedis1 = pool1.getResource();
+    assertNull(jedis1.get("foo"));
+    jedis1.close();
+    pool1.destroy();
+    assertTrue(pool1.isClosed());
+  }
+
+  @Test
   public void startWithUrlString() {
     Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.select(2);
     j.set("foo", "bar");
-    j.close();
-
-    JedisPool pool = new JedisPool("redis://:foobared@localhost:6380/2");
+    JedisPool pool = new JedisPool("redis://default:foobared@localhost:6380/2");
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
-    jedis.close();
   }
 
   @Test
   public void startWithUrl() throws URISyntaxException {
     Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.select(2);
     j.set("foo", "bar");
-    j.close();
-
-    JedisPool pool = new JedisPool(new URI("redis://:foobared@localhost:6380/2"));
+    JedisPool pool = new JedisPool(new URI("redis://default:foobared@localhost:6380/2"));
     Jedis jedis = pool.getResource();
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
@@ -178,6 +221,29 @@ public class JedisPoolTest {
   }
 
   @Test
+  public void connectWithURICredentials() throws URISyntaxException {
+    JedisPool pool = new JedisPool("localhost", 6380);
+    Jedis j = pool.getResource();
+
+    j.auth("default", "foobared");
+    j.set("foo", "bar");
+
+    // create new user
+    j.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+
+    Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6380"));
+    assertEquals("PONG", jedis.ping());
+    assertEquals("bar", jedis.get("foo"));
+
+    Jedis jedis2 = new Jedis(new URI("redis://alice:alicePassword@localhost:6380"));
+    assertEquals("PONG", jedis2.ping());
+    assertEquals("bar", jedis2.get("foo"));
+
+    // delete user
+    j.aclDelUser("alice");
+  }
+
+  @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
     new JedisPool("redis://localhost:6380");
     new JedisPool(new URI("redis://localhost:6380"));
@@ -186,7 +252,7 @@ public class JedisPoolTest {
   @Test
   public void selectDatabaseOnActivation() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared");
+        "default", "foobared");
 
     Jedis jedis0 = pool.getResource();
     assertEquals(0, jedis0.getDB());
@@ -208,11 +274,25 @@ public class JedisPoolTest {
   @Test
   public void customClientName() {
     JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared", 0, "my_shiny_client_name");
+        "default", "foobared", 0, "my_shiny_client_name");
 
     Jedis jedis = pool0.getResource();
 
     assertEquals("my_shiny_client_name", jedis.clientGetname());
+
+    jedis.close();
+    pool0.destroy();
+    assertTrue(pool0.isClosed());
+  }
+
+  @Test
+  public void customClientNameNoSSL() {
+    JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+           "default", "foobared", 0, "my_shiny_client_name_no_ssl", false);
+
+    Jedis jedis = pool0.getResource();
+
+    assertEquals("my_shiny_client_name_no_ssl", jedis.clientGetname());
 
     jedis.close();
     pool0.destroy();
@@ -259,7 +339,7 @@ public class JedisPoolTest {
 
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "user", "foobared");
     pool.initPool(config, new CrashingJedisPooledObjectFactory());
     Jedis crashingJedis = pool.getResource();
 
@@ -276,7 +356,7 @@ public class JedisPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "default", "foobared");
 
     Jedis jedis = pool.getResource();
     try {
@@ -304,7 +384,7 @@ public class JedisPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "default", "foobared");
 
     Jedis jedis = pool.getResource();
     try {
@@ -324,7 +404,7 @@ public class JedisPoolTest {
   @Test
   public void getNumActiveIsNegativeWhenPoolIsClosed() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared", 0, "my_shiny_client_name");
+        "user", "foobared", 0, "my_shiny_client_name");
 
     pool.destroy();
     assertTrue(pool.getNumActive() < 0);
@@ -334,14 +414,14 @@ public class JedisPoolTest {
   public void getNumActiveReturnsTheCorrectNumber() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
 
     assertEquals(1, pool.getNumActive());
 
     Jedis jedis2 = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default","foobared");
     jedis.set("foo", "bar");
 
     assertEquals(2, pool.getNumActive());
@@ -368,34 +448,20 @@ public class JedisPoolTest {
   public void closeResourceTwice() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
     Jedis j = pool.getResource();
-    j.auth("foobared");
+    j.auth("default", "foobared");
     j.ping();
     j.close();
     j.close();
   }
 
-  @Test
-  public void closeBrokenResourceTwice() {
-    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
-    Jedis j = pool.getResource();
-    try {
-      // make connection broken
-      j.getClient().getOne();
-      fail();
-    } catch (Exception e) {
-    }
-    assertTrue(j.getClient().isBroken());
-    j.close();
-    j.close();
-  }
 
   @Test
   public void testCloseConnectionOnMakeObject() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "wrong pass");
-    Jedis jedis = new Jedis("redis://:foobared@localhost:6379/");
+        "default", "wrong pass");
+    Jedis jedis = new Jedis("redis://default:foobared@localhost:6379/");
     int currentClientCount = getClientCount(jedis.clientList());
     try {
       pool.getResource();
@@ -403,7 +469,7 @@ public class JedisPoolTest {
     } catch (Exception e) {
       assertEquals(currentClientCount, getClientCount(jedis.clientList()));
     }
-    jedis.close();
+
   }
 
   private int getClientCount(final String clientList) {

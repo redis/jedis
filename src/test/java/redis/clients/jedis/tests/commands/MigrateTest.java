@@ -52,7 +52,7 @@ public class MigrateTest extends JedisCommandTestBase {
 
   @After
   @Override
-  public void tearDown() {
+  public void tearDown() throws Exception {
     dest.close();
     destAuth.close();
     super.tearDown();

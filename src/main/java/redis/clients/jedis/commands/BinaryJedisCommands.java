@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +11,9 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamConsumersInfo;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -113,7 +115,7 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> hkeys(byte[] key);
 
-  Collection<byte[]> hvals(byte[] key);
+  List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
@@ -187,9 +189,13 @@ public interface BinaryJedisCommands {
 
   Double zscore(byte[] key, byte[] member);
 
-  Set<Tuple> zpopmin(byte[] key);
+  Tuple zpopmax(byte[] key);
 
-  Set<Tuple> zpopmin(byte[] key, long count);
+  Set<Tuple> zpopmax(byte[] key, int count);
+
+  Tuple zpopmin(byte[] key);
+
+  Set<Tuple> zpopmin(byte[] key, int count);
 
   List<byte[]> sort(byte[] key);
 
@@ -354,7 +360,7 @@ public interface BinaryJedisCommands {
 
   Long xgroupDestroy(final byte[] key, final byte[] consumer);
 
-  String xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
  
   Long xdel(final byte[] key, final byte[]... ids);
 
@@ -363,4 +369,10 @@ public interface BinaryJedisCommands {
   List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
+
+  StreamInfo xinfoStream (byte[] key);
+
+  List<StreamGroupInfo> xinfoGroup (byte[] key);
+
+  List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group);
 }

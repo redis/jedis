@@ -2096,7 +2096,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #brpop(int, byte[]...)
    * @param timeout
    * @param keys
-   * @return BLPOP returns a two-elements array via a multi bulk reply in order to r sazzad16 eturn both the
+   * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
    *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
@@ -2139,7 +2139,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Sort a Set or a List and Store the Result at dstkey.
    * <p>
    * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
-   * at dstkey. By default sorting is numeric with elements being compared as double sazzad16  precision
+   * at dstkey. By default sorting is numeric with elements being compared as double precision
    * floating point numbers. This is the simplest form of SORT.
    * @see #sort(byte[])
    * @see #sort(byte[], SortingParams)
@@ -2213,7 +2213,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
-   *         When a non-zero timeout is specified,  sazzad16 and the BLPOP operation timed out, the return
+   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
    *         value is a nil multi bulk reply. Most client values will return false or nil
    *         accordingly to the programming language used.
    */ 

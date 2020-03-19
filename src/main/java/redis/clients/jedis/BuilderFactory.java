@@ -523,50 +523,53 @@ public final class BuilderFactory {
   };
 
   /**
-   * Create a list of Map that represent for example the ACL LOG return values
+   * Create an Access Control Log Entry
+   * Result of ACL LOG command
    */
-  public static final Builder<List<Map<String, String>>> LIST_STRING_MAP = new Builder<List<Map<String, String>>>() {
+  public static final Builder<List<AccessControlLogEntry>> ACCESS_CONTROL_LOG_ENTRY_LIST = new Builder<List<AccessControlLogEntry>>() {
+
+    Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(AccessControlLogEntry.COUNT ,LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.REASON ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.CONTEXT ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.OBJECT ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.USERNAME,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO,STRING);
+
+      return  tempMappingFunctions;
+    }
 
     @Override
-    public  List<Map<String, String>> build(Object data) {
+    public List<AccessControlLogEntry> build(Object data) {
+
       if (null == data) {
         return null;
       }
 
-      List<ArrayList<byte[]>> objectList = (List<ArrayList<byte[]>>) data;
-      List<Map<String, String>> result = new ArrayList<>();
+      List<AccessControlLogEntry> list = new ArrayList<>();
+      List<Object> logEntries = (List<Object>)data;
+      Iterator<Object> logsArray = logEntries.iterator();
 
-      for (int i = 0; i <  objectList.size() ; i++) {
-
-        final List<byte[]> flatHash = (List<byte[]>) objectList.get(i);
-        final Map<String, String> hash = new HashMap<>(flatHash.size()/2, 1);
-        final Iterator<byte[]> iterator = flatHash.iterator();
-        while (iterator.hasNext()) {
-          String key = SafeEncoder.encode(iterator.next());
-          String value = null;
-          Object o = iterator.next();
-          if ( o instanceof Long ) {
-            value = o.toString();
-          } else {
-            value = SafeEncoder.encode((byte[])o);
-          }
-          hash.put(key, value);
-        }
-        result.add(hash);
+      while (logsArray.hasNext()) {
+        List<Object> logEntryData = (List<Object>) logsArray.next();
+        Iterator<Object> logEntryDataIterator = logEntryData.iterator();
+        AccessControlLogEntry accessControlLogEntry = new AccessControlLogEntry(
+                createMapFromDecodingFunctions(logEntryDataIterator,mappingFunctions));
+        list.add(accessControlLogEntry);
       }
-
-
-      return result;
-
+      return list;
     }
 
     @Override
     public String toString() {
-      return "List<Map<String, String>>";
+      return "List<AccessControlLogEntry>";
     }
-
   };
-
 
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
     @Override

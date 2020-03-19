@@ -3734,15 +3734,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<Map<String,String>> aclLog() {
+  public List<AccessControlLogEntry> aclLog() {
     client.aclLog();
-    return BuilderFactory.LIST_STRING_MAP.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<Map<String,String>> aclLog(int limit) {
+  public List<AccessControlLogEntry> aclLog(int limit) {
     client.aclLog(limit);
-    return BuilderFactory.LIST_STRING_MAP.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override

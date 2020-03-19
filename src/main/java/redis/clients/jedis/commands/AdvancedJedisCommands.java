@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -65,9 +66,9 @@ public interface AdvancedJedisCommands {
 
   List<String> aclCat(String category);
 
-  List<Map<String,String>> aclLog();
+  List<AccessControlLogEntry> aclLog();
 
-  List<Map<String,String>> aclLog(int limit);
+  List<AccessControlLogEntry> aclLog(int limit);
 
   String aclLog(String options);
 

@@ -3659,20 +3659,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> aclLogBinary() {
-    checkIsInMultiOrPipeline();
-    client.aclLog();
-    return client.getBinaryMultiBulkReply();
-  }
-
-  @Override
-  public List<byte[]> aclLogBinary(final int limit) {
-    checkIsInMultiOrPipeline();
-    client.aclLog(limit);
-    return client.getBinaryMultiBulkReply();
-  }
-
-  @Override
   public String aclLog(byte[] options) {
     checkIsInMultiOrPipeline();
     client.aclLog(options);

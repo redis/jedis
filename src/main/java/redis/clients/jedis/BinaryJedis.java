@@ -2216,7 +2216,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
    *         value is a nil multi bulk reply. Most client values will return false or nil
    *         accordingly to the programming language used.
-   */ 
+   */
   @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return brpop(getArgsAddTimeout(timeout, keys));
@@ -2230,11 +2230,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     try {
       return client.getBinaryMultiBulkReply();
     } finally {
-      client.rollbackTimeout(); 
+      client.rollbackTimeout();
     }
   }
 
-  @Override 
+  @Override
   public List<byte[]> brpop(final byte[]... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
@@ -2285,7 +2285,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     pipeline = new Pipeline();
     pipeline.setClient(client);
     return pipeline;
-  } 
+  }
 
   @Override
   public Long zcount(final byte[] key, final double min, final double max) {

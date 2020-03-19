@@ -37,6 +37,8 @@ import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
@@ -681,6 +683,48 @@ public class JedisClusterTest {
       fail();
     } catch (JedisClusterOperationException coe) {
       // expected
+    }
+  }
+  
+  @Test
+  public void testPipeline() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+    try(JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG)){
+
+      cluster.set("foo1", "bar1");
+      cluster.set("foo2", "bar2");
+      cluster.set("foo3{foo1}", "bar3");
+      cluster.set("foo4{foo2}", "bar4");
+      
+      Pipeline pipeline = cluster.pipelined("foo1");
+      Response<String> response1 = pipeline.get("foo1");
+      Response<String> response3 = pipeline.get("foo3{foo1}");
+     
+      pipeline.sync();
+      
+      assertEquals("bar1", response1.get());
+      assertEquals("bar3", response3.get());
+      
+      // Should throw JedisMovedDataException since foo2 on a different HashSlot
+      Response<String> response2 = pipeline.get("foo2");
+      try {
+        pipeline.sync();
+        assertEquals("bar2", response2.get());
+        fail();
+      }catch(JedisMovedDataException e) {
+      }
+      
+      // Open another pipeline
+      Pipeline pipeline2 = cluster.pipelined("foo2");
+      Response<String> response22 = pipeline2.get("foo2");
+      Response<String> response24 = pipeline2.get("foo4{foo2}");
+     
+      pipeline2.sync();
+      
+      assertEquals("bar2", response22.get());
+      assertEquals("bar4", response24.get());
     }
   }
 

@@ -2279,8 +2279,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.auth(user, password);
     return client.getStatusCodeReply();
   }
-      
-  @Override
+
   public Pipeline pipelined() {
     pipeline = new Pipeline();
     pipeline.setClient(client);

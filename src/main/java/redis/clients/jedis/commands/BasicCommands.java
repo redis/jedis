@@ -3,9 +3,6 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.DebugParams;
 
 public interface BasicCommands {
-  
-  RedisPipeline pipelined();
-
 
   /**
    * This command is often used to test if a connection is still alive, or to measure latency.

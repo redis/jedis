@@ -24,9 +24,6 @@ import redis.clients.jedis.params.ZIncrByParams;
  * Common interface for sharded and non-sharded BinaryJedis
  */
 public interface BinaryJedisCommands {
-  
-  BinaryRedisPipeline pipelined();
-  
   String set(byte[] key, byte[] value);
 
   String set(byte[] key, byte[] value, SetParams params);

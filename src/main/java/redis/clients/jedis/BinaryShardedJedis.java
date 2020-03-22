@@ -746,7 +746,6 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.linsert(key, where, pivot, value);
   }
 
-  @Override
   public ShardedJedisPipeline pipelined() {
     ShardedJedisPipeline pipeline = new ShardedJedisPipeline();
     pipeline.setShardedJedis(this);

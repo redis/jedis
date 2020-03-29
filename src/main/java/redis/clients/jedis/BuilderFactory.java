@@ -530,7 +530,7 @@ public final class BuilderFactory {
    */
   public static final Builder<List<AccessControlLogEntry>> ACCESS_CONTROL_LOG_ENTRY_LIST = new Builder<List<AccessControlLogEntry>>() {
 
-    Map<String,Builder> mappingFunctions = createDecoderMap();
+    private final Map<String,Builder> mappingFunctions = createDecoderMap();
 
     private Map<String, Builder> createDecoderMap() {
 
@@ -554,11 +554,8 @@ public final class BuilderFactory {
       }
 
       List<AccessControlLogEntry> list = new ArrayList<>();
-      List<Object> logEntries = (List<Object>)data;
-      Iterator<Object> logsArray = logEntries.iterator();
-
-      while (logsArray.hasNext()) {
-        List<Object> logEntryData = (List<Object>) logsArray.next();
+      List<List<Object>> logEntries = (List<List<Object>>)data;
+      for  (List<Object> logEntryData : logEntries) {
         Iterator<Object> logEntryDataIterator = logEntryData.iterator();
         AccessControlLogEntry accessControlLogEntry = new AccessControlLogEntry(
                 createMapFromDecodingFunctions(logEntryDataIterator,mappingFunctions));

@@ -65,7 +65,11 @@ public interface AdvancedBinaryJedisCommands {
 
   List<byte[]> aclCat(byte[] category);
 
-  String aclLog(byte[] options);
+  List<byte[]> aclLogBinary();
+
+  List<byte[]> aclLogBinary(int limit);
+
+  byte[] aclLog(byte[] options);
 
   // TODO: Implements ACL LOAD/SAVE commands
 }

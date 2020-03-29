@@ -344,7 +344,6 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("command", jedis.aclLog().get(0).getReason());
     assertEquals("get", jedis.aclLog().get(0).getObject());
 
-
     // Capture similar event
     jedis.aclLog("RESET");
     assertTrue(jedis.aclLog().isEmpty());
@@ -365,9 +364,6 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals(10, jedis.aclLog().get(0).getCount());
     assertEquals("get", jedis.aclLog().get(0).getObject());
 
-
-
-
     // Generate another type of error
     jedis.auth("antirez", "foo");
     try {
@@ -381,7 +377,6 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
     assertEquals("key", jedis.aclLog().get(0).getReason());
-
 
     jedis.aclLog("RESET");
     assertTrue(jedis.aclLog().isEmpty());
@@ -419,7 +414,10 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
 
      // Binary tests
-    jedis.aclLog("RESET".getBytes());
+    assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
+    assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
+    byte[] status = jedis.aclLog("RESET".getBytes());
+    assertNotNull(status);
     assertTrue(jedis.aclLog().isEmpty());
 
     jedis.aclDelUser("antirez");

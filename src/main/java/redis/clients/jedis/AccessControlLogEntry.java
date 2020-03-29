@@ -86,9 +86,9 @@ public class AccessControlLogEntry implements Serializable {
      * @return A Map with all client info
      */
     private Map<String,String> getMapFromRawClientInfo( String clientInfo) {
-        Map<String,String> clientInfoMap =  new LinkedHashMap<>();
-        List<String> myList = new ArrayList<String>(Arrays.asList(clientInfo.split(" ")));
-        for (String entry : myList) {
+        String[] entries = clientInfo.split(" ");
+        Map<String,String> clientInfoMap =  new LinkedHashMap<>(entries.length);
+        for (String entry : entries) {
             String[] kvArray = entry.split("=");
             clientInfoMap.put(kvArray[0], (kvArray.length ==2)?kvArray[1]:"" );
         }

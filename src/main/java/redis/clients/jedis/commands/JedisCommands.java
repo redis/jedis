@@ -345,6 +345,8 @@ public interface JedisCommands {
    */
   List<Long> bitfield(String key, String...arguments);
 
+  List<Long> bitfieldReadonly(String key, String...arguments);
+
   /**
    * Used for HSTRLEN Redis command
    * @param key 

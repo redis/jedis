@@ -259,6 +259,8 @@ public interface RedisPipeline {
   Response<Long> pfcount(String key);
   
   Response<List<Long>> bitfield(String key, String... arguments);
+
+  Response<List<Long>> bitfieldReadonly(String key, String... arguments);
   
   Response<Long> hstrlen(String key, String field);
 

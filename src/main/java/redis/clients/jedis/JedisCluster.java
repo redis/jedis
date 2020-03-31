@@ -2120,6 +2120,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<Long> bitfieldReadonly(final String key, final String... arguments) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Long> execute(Jedis connection) {
+        return connection.bitfieldReadonly(key, arguments);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long hstrlen(final String key, final String field) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

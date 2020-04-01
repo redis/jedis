@@ -1320,8 +1320,8 @@ public class BinaryClient extends Connection {
     sendCommand(BITFIELD, joinParameters(key, value));
   }
 
-  public void bitfieldReadonly(final byte[] key, final byte[]... value) {
-    sendCommand(BITFIELD_RO, joinParameters(key, value));
+  public void bitfieldReadonly(final byte[] key, final byte[]... arguments) {
+    sendCommand(BITFIELD_RO, joinParameters(key, arguments));
   }
 
   public void hstrlen(final byte[] key, final byte[] field) {

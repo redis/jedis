@@ -2,7 +2,9 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -10,6 +12,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -94,5 +97,13 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
     // Binary
     count = lfuJedis.objectFreq(binaryKey);
     assertTrue(count > 0);
+    
+    assertNull(lfuJedis.objectFreq("no_such_key"));
+    
+    try {
+      jedis.set(key, "test2");
+      jedis.objectFreq(key);
+      fail("Freq is only allowed with LFU policy");
+    }catch(JedisDataException e) {}
   }
 }

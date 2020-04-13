@@ -5,9 +5,9 @@ import java.util.List;
 
 public class AccessControlUser {
 
-  private final List<String> flags = new ArrayList<String>();
-  private final List<String> keys = new ArrayList<String>();
-  private final List<String> passwords = new ArrayList<String>();
+  private final List<String> flags = new ArrayList<>();
+  private final List<String> keys = new ArrayList<>();
+  private final List<String> passwords = new ArrayList<>();
   private String commands;
 
   public AccessControlUser() {

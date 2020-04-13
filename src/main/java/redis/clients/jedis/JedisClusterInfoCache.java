@@ -99,7 +99,7 @@ public class JedisClusterInfoCache {
         int size = slotInfo.size();
         for (int i = MASTER_NODE_INDEX; i < size; i++) {
           List<Object> hostInfos = (List<Object>) slotInfo.get(i);
-          if (hostInfos.size() <= 0) {
+          if (hostInfos.isEmpty()) {
             continue;
           }
 
@@ -254,7 +254,7 @@ public class JedisClusterInfoCache {
   public Map<String, JedisPool> getNodes() {
     r.lock();
     try {
-      return new HashMap<String, JedisPool>(nodes);
+      return new HashMap<>(nodes);
     } finally {
       r.unlock();
     }
@@ -263,7 +263,7 @@ public class JedisClusterInfoCache {
   public List<JedisPool> getShuffledNodesPool() {
     r.lock();
     try {
-      List<JedisPool> pools = new ArrayList<JedisPool>(nodes.values());
+      List<JedisPool> pools = new ArrayList<>(nodes.values());
       Collections.shuffle(pools);
       return pools;
     } finally {
@@ -306,7 +306,7 @@ public class JedisClusterInfoCache {
   }
 
   private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {
-    List<Integer> slotNums = new ArrayList<Integer>();
+    List<Integer> slotNums = new ArrayList<>();
     for (int slot = ((Long) slotInfo.get(0)).intValue(); slot <= ((Long) slotInfo.get(1))
         .intValue(); slot++) {
       slotNums.add(slot);

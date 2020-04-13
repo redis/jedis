@@ -3747,6 +3747,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<Long> bitfieldReadonly(final String key, final String... arguments) {
+    checkIsInMultiOrPipeline();
+    client.bitfieldReadonly(key, arguments);
+    return client.getIntegerMultiBulkReply();
+  }
+
+  @Override
   public Long hstrlen(final String key, final String field) {
     checkIsInMultiOrPipeline();
     client.hstrlen(key, field);

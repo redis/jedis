@@ -1194,6 +1194,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void bitfieldReadonly(String key, final String... arguments) {
+    bitfieldReadonly(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
+  }
+
+  @Override
   public void hstrlen(final String key, final String field) {
     hstrlen(SafeEncoder.encode(key), SafeEncoder.encode(field));
   }

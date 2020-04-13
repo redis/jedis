@@ -347,6 +347,8 @@ public interface Commands {
    */
   void bitfield(String key, String... arguments);
 
+  void bitfieldReadonly(String key, String... arguments);
+
   /**
    * Used for HSTRLEN Redis command
    * @param key

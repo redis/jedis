@@ -205,6 +205,11 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
     List<Long> responses2 = jedis.bitfieldReadonly("mykey", "GET", "i5", "100");
     assertEquals(1L, responses2.get(0).longValue());
+    
+    try {
+      jedis.bitfieldReadonly("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+      fail("Readonly command shouldn't allow INCRBY");
+    }catch(JedisDataException e) {}
   }
 
   @Test

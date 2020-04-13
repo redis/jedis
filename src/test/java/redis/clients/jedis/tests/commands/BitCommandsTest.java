@@ -3,12 +3,14 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.List;
@@ -198,6 +200,21 @@ public class BitCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void testBitfieldReadonly() {
+    List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    assertEquals(1L, responses.get(0).longValue());
+    assertEquals(0L, responses.get(1).longValue());
+
+    List<Long> responses2 = jedis.bitfieldReadonly("mykey", "GET", "i5", "100");
+    assertEquals(1L, responses2.get(0).longValue());
+    
+    try {
+      jedis.bitfieldReadonly("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+      fail("Readonly command shouldn't allow INCRBY");
+    }catch(JedisDataException e) {}
+  }
+
+  @Test
   public void testBinaryBitfield() {
     List<Long> responses = jedis.bitfield(SafeEncoder.encode("mykey"), SafeEncoder.encode("INCRBY"),
             SafeEncoder.encode("i5"), SafeEncoder.encode("100"), SafeEncoder.encode("1"),
@@ -205,6 +222,17 @@ public class BitCommandsTest extends JedisCommandTestBase {
     );
     assertEquals(1L, responses.get(0).longValue());
     assertEquals(0L, responses.get(1).longValue());
+  }
+
+  @Test
+  public void testBinaryBitfieldReadonly() {
+    List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    assertEquals(1L, responses.get(0).longValue());
+    assertEquals(0L, responses.get(1).longValue());
+
+    List<Long> responses2 = jedis.bitfieldReadonly(SafeEncoder.encode("mykey"), SafeEncoder.encode("GET"),
+        SafeEncoder.encode("i5"), SafeEncoder.encode("100"));
+    assertEquals(1L, responses2.get(0).longValue());
   }
 
 }

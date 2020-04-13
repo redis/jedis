@@ -345,6 +345,8 @@ public interface JedisCommands {
    */
   List<Long> bitfield(String key, String...arguments);
 
+  List<Long> bitfieldReadonly(String key, String...arguments);
+
   /**
    * Used for HSTRLEN Redis command
    * @param key 
@@ -452,7 +454,7 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  String xgroupDelConsumer( String key, String groupname, String consumername);
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XPENDING key group [start end count] [consumer]

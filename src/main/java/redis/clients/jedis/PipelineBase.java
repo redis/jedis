@@ -1839,6 +1839,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<Long>> bitfieldReadonly(byte[] key, final byte[]... arguments) {
+    getClient(key).bitfieldReadonly(key, arguments);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> bitfieldReadonly(String key, final String... arguments) {
+    getClient(key).bitfieldReadonly(key, arguments);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
   public Response<Long> hstrlen(final String key, final String field) {
     getClient(key).hstrlen(key, field);
     return getResponse(BuilderFactory.LONG);
@@ -1961,15 +1973,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<String> xgroupDelConsumer( String key, String groupname, String consumername){
+  public Response<Long> xgroupDelConsumer( String key, String groupname, String consumername){
     getClient(key).xgroupDelConsumer(key, groupname, consumername);
-    return getResponse(BuilderFactory.STRING);
+    return getResponse(BuilderFactory.LONG);
   }
   
   @Override
-  public Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername){
+  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername){
     getClient(key).xgroupDelConsumer(key, groupname, consumername);
-    return getResponse(BuilderFactory.STRING);    
+    return getResponse(BuilderFactory.LONG);
   }
 
   @Override

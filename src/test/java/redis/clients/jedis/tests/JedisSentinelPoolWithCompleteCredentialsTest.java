@@ -1,20 +1,8 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisSentinelPool;
@@ -22,9 +10,23 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
-public class JedisSentinelPoolTest {
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+
+/**
+ * This test class is a copy of @JedisSentinelPoolTest where all authentications are made with
+ * default:foobared credentialsinformation
+ *
+ * This test is only executed when the server/cluster is Redis 6. or more.
+ */
+public class JedisSentinelPoolWithCompleteCredentialsTest {
   private static final String MASTER_NAME = "mymaster";
+
+  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(2);
   protected static HostAndPort slave1 = HostAndPortUtil.getRedisServers().get(3);
@@ -39,19 +41,22 @@ public class JedisSentinelPoolTest {
 
   @Before
   public void setUp() throws Exception {
+    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis.connect();
+    jedis.auth("foobared");
+    // run the test only if the verison support ACL (6 or later)
+    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
+    if ( shouldNotRun ) {
+      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
+    }
+
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
     sentinelJedis1 = new Jedis(sentinel1);
     sentinelJedis2 = new Jedis(sentinel2);
   }
-
-  @After
-  public void tearDown() throws Exception {
-    sentinelJedis1.close();
-    sentinelJedis2.close();
-  }
-
+  
   @Test
   public void repeatedSentinelPoolInitialization() {
 
@@ -59,7 +64,7 @@ public class JedisSentinelPoolTest {
       GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 
       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-          "foobared", 2);
+          "default","foobared", 2);
       pool.getResource().close();
       pool.destroy();
     }
@@ -88,9 +93,9 @@ public class JedisSentinelPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+        "default","foobared", 2);
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
+    jedis.auth("default", "foobared");
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
@@ -99,12 +104,26 @@ public class JedisSentinelPoolTest {
   }
 
   @Test
+  public void ensureSafeTwiceFailover() throws InterruptedException {
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+        new GenericObjectPoolConfig(), 1000, "default", "foobared", 2);
+
+    forceFailover(pool);
+    // after failover sentinel needs a bit of time to stabilize before a new
+    // failover
+    Thread.sleep(100);
+    forceFailover(pool);
+
+    // you can test failover as much as possible
+  }
+
+  @Test
   public void returnResourceShouldResetState() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+        "default", "foobared", 2);
 
     Jedis jedis = pool.getResource();
     Jedis jedis2 = null;
@@ -136,7 +155,7 @@ public class JedisSentinelPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
+        "default", "foobared", 2);
 
     Jedis jedis = pool.getResource();
     try {
@@ -159,7 +178,7 @@ public class JedisSentinelPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 0, "my_shiny_client_name");
+        "default", "foobared", 0, "my_shiny_client_name");
 
     Jedis jedis = pool.getResource();
 
@@ -173,74 +192,6 @@ public class JedisSentinelPoolTest {
     assertTrue(pool.isClosed());
   }
 
-  @Test
-  public void ensureSafeTwiceFailover() throws InterruptedException {
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-        new GenericObjectPoolConfig(), 1000, "foobared", 2, "twice-failover-client");
-
-    forceFailover(pool);
-    // after failover sentinel needs a bit of time to stabilize before a new failover
-    Thread.sleep(100);
-    forceFailover(pool);
-
-    // you can test failover as much as possible
-  }
-
-  @Test
-  public void returnResourceDestroysResourceOnException() {
-    class CrashingJedis extends Jedis {
-      public CrashingJedis(final HostAndPort hp) {
-        super(hp);
-      }
-      @Override
-      public void resetState() {
-        throw new RuntimeException();
-      }
-    }
-
-    final AtomicInteger destroyed = new AtomicInteger(0);
-
-    class CrashingJedisPooledObjectFactory implements PooledObjectFactory<Jedis> {
-
-      @Override
-      public PooledObject<Jedis> makeObject() throws Exception {
-        return new DefaultPooledObject<Jedis>(new CrashingJedis(master));
-      }
-
-      @Override
-      public void destroyObject(PooledObject<Jedis> p) throws Exception {
-        destroyed.incrementAndGet();
-      }
-
-      @Override
-      public boolean validateObject(PooledObject<Jedis> p) {
-        return true;
-      }
-
-      @Override
-      public void activateObject(PooledObject<Jedis> p) throws Exception {
-      }
-
-      @Override
-      public void passivateObject(PooledObject<Jedis> p) throws Exception {
-      }
-    }
-
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    config.setMaxTotal(1);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
-    pool.initPool(config, new CrashingJedisPooledObjectFactory());
-    Jedis crashingJedis = pool.getResource();
-
-    try {
-      crashingJedis.close();
-    } catch (Exception ignored) {
-    }
-
-    assertEquals(1, destroyed.get());
-  }
-
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
     HostAndPort oldMaster = pool.getCurrentHostMaster();
 
@@ -252,8 +203,8 @@ public class JedisSentinelPoolTest {
 
     Jedis afterFailoverJedis = pool.getResource();
     assertEquals("PONG", afterFailoverJedis.ping());
+    assertNotNull(afterFailoverJedis.configGet("requirepass").get(1));
     assertEquals(2, afterFailoverJedis.getDB());
-    assertEquals("twice-failover-client", afterFailoverJedis.clientGetname());
 
     // returning both connections to the pool should not throw
     beforeFailoverJedis.close();

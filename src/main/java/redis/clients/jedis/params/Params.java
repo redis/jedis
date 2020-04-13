@@ -21,7 +21,7 @@ public abstract class Params {
 
   public byte[][] getByteParams() {
     if (params == null) return new byte[0][];
-    ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    ArrayList<byte[]> byteParams = new ArrayList<>();
 
     for (Entry<String, Object> param : params.entrySet()) {
       byteParams.add(SafeEncoder.encode(param.getKey()));
@@ -55,14 +55,14 @@ public abstract class Params {
 
   protected void addParam(String name, Object value) {
     if (params == null) {
-      params = new HashMap<String, Object>();
+      params = new HashMap<>();
     }
     params.put(name, value);
   }
 
   protected void addParam(String name) {
     if (params == null) {
-      params = new HashMap<String, Object>();
+      params = new HashMap<>();
     }
     params.put(name, null);
   }

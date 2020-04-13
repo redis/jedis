@@ -12,6 +12,8 @@ import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
 import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import static redis.clients.jedis.Protocol.Keyword.FREQ;
+import static redis.clients.jedis.Protocol.Keyword.HELP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1001,6 +1003,14 @@ public class BinaryClient extends Connection {
 
   public void objectEncoding(final byte[] key) {
     sendCommand(OBJECT, ENCODING.raw, key);
+  }
+
+  public void objectHelp() {
+    sendCommand(OBJECT, HELP.raw);
+  }
+
+  public void objectFreq(final byte[] key) {
+    sendCommand(OBJECT, FREQ.raw, key);
   }
 
   public void bitcount(final byte[] key) {

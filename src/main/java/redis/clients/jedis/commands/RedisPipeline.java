@@ -358,6 +358,8 @@ public interface RedisPipeline {
 
   Response<Long> objectIdletime(String key);
 
+  Response<Long> objectFreq(String key);
+
   Response<Double> incrByFloat(String key, double increment);
 
   Response<String> psetex(String key, long milliseconds, String value);

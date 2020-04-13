@@ -358,6 +358,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> objectIdletime(byte[] key);
 
+  Response<Long> objectFreq(byte[] key);
+
   Response<Double> incrByFloat(byte[] key, double increment);
 
   Response<String> psetex(byte[] key, long milliseconds, byte[] value);

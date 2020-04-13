@@ -847,6 +847,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void objectFreq(final String key) {
+    objectFreq(SafeEncoder.encode(key));
+  }
+
+  @Override
   public void bitcount(final String key) {
     bitcount(SafeEncoder.encode(key));
   }

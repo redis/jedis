@@ -3483,6 +3483,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> objectHelpBinary() {
+    client.objectHelp();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public Long objectFreq(final byte[] key) {
+    client.objectFreq(key);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public Long bitcount(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.bitcount(key);

@@ -26,6 +26,10 @@ public interface AdvancedBinaryJedisCommands {
 
   Long objectIdletime(byte[] key);
 
+  List<byte[]> objectHelpBinary();
+
+  Long objectFreq(byte[] key);
+
   String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);

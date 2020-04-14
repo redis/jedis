@@ -104,7 +104,6 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     if (jedis.getDB() != database) {
       jedis.select(database);
     }
-
   }
 
   @Override
@@ -118,18 +117,15 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
         }
         jedis.disconnect();
       } catch (Exception e) {
-
       }
     }
-
   }
 
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
-    final HostAndPort hostAndPort = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout,
-        soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-
+    final HostAndPort hp = this.hostAndPort.get();
+    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
+        ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     try {
       jedis.connect();
       if (user != null) {
@@ -149,7 +145,6 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     }
 
     return new DefaultPooledObject<>(jedis);
-
   }
 
   @Override

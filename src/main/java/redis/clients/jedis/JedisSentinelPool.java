@@ -53,6 +53,11 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, password);
   }
 
+  public JedisSentinelPool(String masterName, Set<String> sentinels, String password, String sentinelPassword) {
+    this(masterName, sentinels,  new GenericObjectPoolConfig(),  Protocol.DEFAULT_TIMEOUT,  Protocol.DEFAULT_TIMEOUT,
+        password,Protocol.DEFAULT_DATABASE, null, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, sentinelPassword, null);
+  }
+
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password) {
     this(masterName, sentinels, poolConfig, timeout, password, Protocol.DEFAULT_DATABASE);
@@ -325,6 +330,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       running.set(true);
 
       while (running.get()) {
+
         try {
           // double check that it is not being shutdown
           if (!running.get()) {

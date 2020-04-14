@@ -12,6 +12,8 @@ import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
 import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import static redis.clients.jedis.Protocol.Keyword.FREQ;
+import static redis.clients.jedis.Protocol.Keyword.HELP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ public class BinaryClient extends Connection {
 
   private boolean isInMulti;
 
+  private String user;
   private String password;
 
   private int db;
@@ -63,6 +66,10 @@ public class BinaryClient extends Connection {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
+  }
+
   public boolean isInMulti() {
     return isInMulti;
   }
@@ -86,6 +93,8 @@ public class BinaryClient extends Connection {
     return result;
   }
 
+  public void setUser(final String user) { this.user = user; }
+
   public void setPassword(final String password) {
     this.password = password;
   }
@@ -98,7 +107,10 @@ public class BinaryClient extends Connection {
   public void connect() {
     if (!isConnected()) {
       super.connect();
-      if (password != null) {
+      if (user != null) {
+        auth(user, password);
+        getStatusCodeReply();
+      } else if (password != null) {
         auth(password);
         getStatusCodeReply();
       }
@@ -601,6 +613,12 @@ public class BinaryClient extends Connection {
     sendCommand(AUTH, password);
   }
 
+  public void auth(final String user, final String password) {
+    setUser(user);
+    setPassword(password);
+    sendCommand(AUTH, user, password);
+  }
+
   public void subscribe(final byte[]... channels) {
     sendCommand(SUBSCRIBE, channels);
   }
@@ -991,6 +1009,14 @@ public class BinaryClient extends Connection {
     sendCommand(OBJECT, ENCODING.raw, key);
   }
 
+  public void objectHelp() {
+    sendCommand(OBJECT, HELP.raw);
+  }
+
+  public void objectFreq(final byte[] key) {
+    sendCommand(OBJECT, FREQ.raw, key);
+  }
+
   public void bitcount(final byte[] key) {
     sendCommand(BITCOUNT, key);
   }
@@ -1260,6 +1286,36 @@ public class BinaryClient extends Connection {
     return args;
   }
 
+  public void aclWhoAmI() { sendCommand(ACL, Keyword.WHOAMI.raw); }
+
+  public void aclGenPass() { sendCommand(ACL, Keyword.GENPASS.raw); }
+
+  public void aclList() { sendCommand(ACL, Keyword.LIST.raw); }
+
+  public void aclUsers() { sendCommand(ACL, Keyword.USERS.raw); }
+
+  public void aclCat() { sendCommand(ACL, Keyword.CAT.raw); }
+
+  public void aclCat(final byte[] category) {
+    sendCommand(ACL, Keyword.CAT.raw, category);
+  }
+
+  public void aclSetUser(final byte[] name) {
+    sendCommand(ACL, Keyword.SETUSER.raw, name);
+  }
+
+  public void aclGetUser(final byte[] name) {
+    sendCommand(ACL, Keyword.GETUSER.raw, name);
+  }
+
+  public void aclSetUser(final byte[] name, byte[][] parameters) {
+    sendCommand(ACL, joinParameters(Keyword.SETUSER.raw,name, parameters));
+  }
+
+  public void aclDelUser(final byte[] name) {
+    sendCommand(ACL, Keyword.DELUSER.raw, name);
+  }
+
   private List<byte[]> convertGeoCoordinateMapToByteArrays(
       final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3);
@@ -1276,6 +1332,10 @@ public class BinaryClient extends Connection {
 
   public void bitfield(final byte[] key, final byte[]... value) {
     sendCommand(BITFIELD, joinParameters(key, value));
+  }
+
+  public void bitfieldReadonly(final byte[] key, final byte[]... arguments) {
+    sendCommand(BITFIELD_RO, joinParameters(key, arguments));
   }
 
   public void hstrlen(final byte[] key, final byte[] field) {

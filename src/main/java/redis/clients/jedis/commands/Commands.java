@@ -318,6 +318,10 @@ public interface Commands {
 
   void objectEncoding(String key);
 
+  void objectHelp();
+
+  void objectFreq(String key);
+
   void bitcount(String key);
 
   void bitcount(String key, long start, long end);
@@ -346,6 +350,8 @@ public interface Commands {
    * @param arguments
    */
   void bitfield(String key, String... arguments);
+
+  void bitfieldReadonly(String key, String... arguments);
 
   /**
    * Used for HSTRLEN Redis command

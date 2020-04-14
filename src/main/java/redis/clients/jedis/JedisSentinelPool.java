@@ -325,13 +325,18 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       running.set(true);
 
       while (running.get()) {
-
-        j = new Jedis(host, port);
-
         try {
           // double check that it is not being shutdown
           if (!running.get()) {
             break;
+          }
+          
+          j = new Jedis(host, port, sentinelConnectionTimeout, sentinelSoTimeout);
+          if (sentinelPassword != null) {
+            j.auth(sentinelPassword);
+          }
+          if (sentinelClientName != null) {
+            j.clientSetname(sentinelClientName);
           }
 
           // code for active refresh
@@ -381,7 +386,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
             log.debug("Unsubscribing from Sentinel at {}:{}", host, port);
           }
         } finally {
-          j.close();
+          if (j != null) {
+            j.close();
+          }
         }
       }
     }

@@ -66,6 +66,10 @@ public class BinaryClient extends Connection {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
+  }
+
   public boolean isInMulti() {
     return isInMulti;
   }

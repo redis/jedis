@@ -155,6 +155,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setSoTimeout(soTimeout);
   }
 
+  public BinaryJedis(final JedisSocketFactory jedisSocketFactory) {
+    client = new Client(jedisSocketFactory);
+  }
+
   private void initializeClientFromURI(URI uri) {
     initializeClientFromURI(uri, null, null, null);
   }

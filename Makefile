@@ -222,6 +222,19 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node5.conf
 endef
 
+# UDS REDIS NODES
+define REDIS_UDS
+daemonize yes
+protected-mode no
+port 0
+pidfile /tmp/redis_uds.pid
+logfile /tmp/redis_uds.log
+unixsocket /tmp/redis_uds.sock
+unixsocketperm 777
+save ""
+appendonly no
+endef
+
 #STUNNEL
 define STUNNEL_CONF
 cert = src/test/resources/private.pem
@@ -263,6 +276,7 @@ export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
+export REDIS_UDS
 export STUNNEL_CONF
 export STUNNEL_BIN
 
@@ -293,6 +307,7 @@ start: stunnel cleanup
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_UDS" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -320,6 +335,7 @@ stop:
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_uds.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf

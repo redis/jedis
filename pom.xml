@@ -84,6 +84,12 @@
 			<version>2.11.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.kohlschutter.junixsocket</groupId>
+			<artifactId>junixsocket-core</artifactId>
+			<version>2.3.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<distributionManagement>

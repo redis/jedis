@@ -8,9 +8,7 @@ import java.util.ArrayList;
 public class GeoRadiusParam extends Params {
   private static final String WITHCOORD = "withcoord";
   private static final String WITHDIST = "withdist";
-
-  // Do not add WITHHASH since we can't classify result of WITHHASH and WITHDIST,
-  // and WITHHASH is for debugging purposes
+  private static final String WITHHASH = "withhash";
 
   private static final String ASC = "asc";
   private static final String DESC = "desc";
@@ -33,6 +31,11 @@ public class GeoRadiusParam extends Params {
     return this;
   }
 
+  public GeoRadiusParam withHash() {
+    addParam(WITHHASH);
+    return this;
+  }
+
   public GeoRadiusParam sortAscending() {
     addParam(ASC);
     return this;
@@ -51,7 +54,7 @@ public class GeoRadiusParam extends Params {
   }
 
   public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    ArrayList<byte[]> byteParams = new ArrayList<>();
     for (byte[] arg : args) {
       byteParams.add(arg);
     }
@@ -61,6 +64,9 @@ public class GeoRadiusParam extends Params {
     }
     if (contains(WITHDIST)) {
       byteParams.add(SafeEncoder.encode(WITHDIST));
+    }
+    if (contains(WITHHASH)) {
+      byteParams.add(SafeEncoder.encode(WITHHASH));
     }
 
     if (contains(COUNT)) {

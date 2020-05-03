@@ -4,10 +4,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -315,6 +318,10 @@ public interface Commands {
 
   void objectEncoding(String key);
 
+  void objectHelp();
+
+  void objectFreq(String key);
+
   void bitcount(String key);
 
   void bitcount(String key, long start, long end);
@@ -343,6 +350,8 @@ public interface Commands {
    * @param arguments
    */
   void bitfield(String key, String... arguments);
+
+  void bitfieldReadonly(String key, String... arguments);
 
   /**
    * Used for HSTRLEN Redis command
@@ -401,4 +410,7 @@ public interface Commands {
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
       boolean force, StreamEntryID... ids);
+  void xinfoStream (String key);
+  void xinfoGroup (String key);
+  void xinfoConsumers (String key, String group);
 }

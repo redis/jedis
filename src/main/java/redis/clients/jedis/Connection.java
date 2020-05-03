@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -25,46 +23,37 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private String host = Protocol.DEFAULT_HOST;
-  private int port = Protocol.DEFAULT_PORT;
+  private JedisSocketFactory jedisSocketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
-  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean broken = false;
-  private boolean ssl;
-  private SSLSocketFactory sslSocketFactory;
-  private SSLParameters sslParameters;
-  private HostnameVerifier hostnameVerifier;
 
   public Connection() {
+    this(Protocol.DEFAULT_HOST);
   }
 
   public Connection(final String host) {
-    this.host = host;
+    this(host, Protocol.DEFAULT_PORT);
   }
 
   public Connection(final String host, final int port) {
-    this.host = host;
-    this.port = port;
+    this(host, port, false);
   }
 
   public Connection(final String host, final int port, final boolean ssl) {
-    this.host = host;
-    this.port = port;
-    this.ssl = ssl;
+    this(host, port, ssl, null, null, null);
   }
 
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this.host = host;
-    this.port = port;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
+    this(new DefaultJedisSocketFactory(host, port, Protocol.DEFAULT_TIMEOUT,
+        Protocol.DEFAULT_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
+  }
+
+  public Connection(final JedisSocketFactory jedisSocketFactory) {
+    this.jedisSocketFactory = jedisSocketFactory;
   }
 
   public Socket getSocket() {
@@ -72,19 +61,19 @@ public class Connection implements Closeable {
   }
 
   public int getConnectionTimeout() {
-    return connectionTimeout;
+    return jedisSocketFactory.getConnectionTimeout();
   }
 
   public int getSoTimeout() {
-    return soTimeout;
+    return jedisSocketFactory.getSoTimeout();
   }
 
   public void setConnectionTimeout(int connectionTimeout) {
-    this.connectionTimeout = connectionTimeout;
+    jedisSocketFactory.setConnectionTimeout(connectionTimeout);
   }
 
   public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
+    jedisSocketFactory.setSoTimeout(soTimeout);
   }
 
   public void setTimeoutInfinite() {
@@ -101,7 +90,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(soTimeout);
+      socket.setSoTimeout(jedisSocketFactory.getSoTimeout());
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -148,61 +137,32 @@ public class Connection implements Closeable {
   }
 
   public String getHost() {
-    return host;
+    return jedisSocketFactory.getHost();
   }
 
   public void setHost(final String host) {
-    this.host = host;
+    jedisSocketFactory.setHost(host);
   }
 
   public int getPort() {
-    return port;
+    return jedisSocketFactory.getPort();
   }
 
   public void setPort(final int port) {
-    this.port = port;
+    jedisSocketFactory.setPort(port);
   }
 
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = new Socket();
-        // ->@wjw_add
-        socket.setReuseAddress(true);
-        socket.setKeepAlive(true); // Will monitor the TCP connection is
-        // valid
-        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
-        // ensure timely delivery of data
-        socket.setSoLinger(true, 0); // Control calls close () method,
-        // the underlying socket is closed
-        // immediately
-        // <-@wjw_add
-
-        socket.connect(new InetSocketAddress(host, port), connectionTimeout);
-        socket.setSoTimeout(soTimeout);
-
-        if (ssl) {
-          if (null == sslSocketFactory) {
-            sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-          }
-          socket = sslSocketFactory.createSocket(socket, host, port, true);
-          if (null != sslParameters) {
-            ((SSLSocket) socket).setSSLParameters(sslParameters);
-          }
-          if ((null != hostnameVerifier) &&
-              (!hostnameVerifier.verify(host, ((SSLSocket) socket).getSession()))) {
-            String message = String.format(
-                "The connection to '%s' failed ssl/tls hostname verification.", host);
-            throw new JedisConnectionException(message);
-          }
-        }
+        socket = jedisSocketFactory.createSocket();
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to host " 
-            + host + ":" + port, ex);
+        throw new JedisConnectionException("Failed connecting to "
+            + jedisSocketFactory.getDescription(), ex);
       }
     }
   }
@@ -324,7 +284,7 @@ public class Connection implements Closeable {
 
   public List<Object> getMany(final int count) {
     flush();
-    final List<Object> responses = new ArrayList<Object>(count);
+    final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
       try {
         responses.add(readProtocolWithCheckingBroken());

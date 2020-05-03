@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,6 +67,31 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     Long longId = Long.parseLong(matcher.group(1));
 
     assertEquals(clientId, longId);
+  }
+
+  @Test
+  public void clientIdmultipleConnection() {
+    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    client2.auth("foobared");
+    client2.clientSetname("fancy_jedis_another_name");
+
+    long clientId1 = client.clientId();
+    long clientId2 = client2.clientId();
+
+    ///client-id is monotonically increasing
+    Assert.assertTrue(clientId1 < clientId2);
+
+    client2.close();
+  }
+
+  @Test
+  public void clientIdReconnect() {
+    long clientIdInitial = client.clientId();
+    client.disconnect();
+    client.connect();
+    long clientIdAfterReconnect = client.clientId();
+
+    assertTrue(clientIdInitial < clientIdAfterReconnect);
   }
 
   @Test

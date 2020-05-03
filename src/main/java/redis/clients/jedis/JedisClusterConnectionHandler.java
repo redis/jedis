@@ -29,8 +29,8 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName,
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);

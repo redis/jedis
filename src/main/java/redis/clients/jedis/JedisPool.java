@@ -268,7 +268,7 @@ public class JedisPool extends JedisPoolAbstract {
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri, final int timeout,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(poolConfig, uri, timeout, timeout);
+    this(poolConfig, uri, timeout, timeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final URI uri,

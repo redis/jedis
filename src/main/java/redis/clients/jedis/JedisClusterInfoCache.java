@@ -47,25 +47,25 @@ public class JedisClusterInfoCache {
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
       final int connectionTimeout, final int soTimeout, final String password, final String clientName) {
-    this(poolConfig, connectionTimeout, soTimeout, password, clientName, false, null, null, null, null);
+    this(poolConfig, connectionTimeout, soTimeout, null, password, clientName);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-                               final int connectionTimeout, final int soTimeout, final String user, final String password, final String clientName) {
+      final int connectionTimeout, final int soTimeout, final String user, final String password, final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout, final String password, final String clientName,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+      final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier,  hostAndPortMap);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-                               final int connectionTimeout, final int soTimeout, final String user, final String password,
-                               final String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-                               HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+      final int soTimeout, final String user, final String password, final String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
@@ -202,7 +202,7 @@ public class JedisClusterInfoCache {
       if (existingPool != null) return existingPool;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, clientName, 
+          connectionTimeout, soTimeout, user, password, 0, clientName, 
           ssl, sslSocketFactory, sslParameters, hostnameVerifier);
       nodes.put(nodeKey, nodePool);
       return nodePool;

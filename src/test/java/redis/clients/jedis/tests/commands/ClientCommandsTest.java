@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,7 +78,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     long clientId2 = client2.clientId();
 
     ///client-id is monotonically increasing
-    Assert.assertTrue(clientId1 < clientId2);
+    assertTrue(clientId1 < clientId2);
 
     client2.close();
   }

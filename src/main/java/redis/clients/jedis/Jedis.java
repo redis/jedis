@@ -3244,6 +3244,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Long clientId() {
+    checkIsInMultiOrPipeline();
+    client.clientId();
+    return client.getIntegerReply();
+  }
+
+  @Override
   public String migrate(final String host, final int port, final String key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();

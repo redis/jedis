@@ -376,6 +376,8 @@ public interface Commands {
 
   void clientSetname(String name);
 
+  void clientId();
+
   void memoryDoctor();
 
   void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);

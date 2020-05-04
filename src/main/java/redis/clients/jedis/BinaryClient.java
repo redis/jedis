@@ -1097,6 +1097,10 @@ public class BinaryClient extends Connection {
     sendCommand(CLIENT, Keyword.PAUSE.raw, toByteArray(timeout));
   }
 
+  public void clientId() {
+    sendCommand(CLIENT, Keyword.ID.raw);
+  }
+
   public void time() {
     sendCommand(TIME);
   }

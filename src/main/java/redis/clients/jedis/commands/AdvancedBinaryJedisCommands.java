@@ -46,6 +46,8 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientSetname(byte[] name);
 
+  Long clientId();
+
   byte[] memoryDoctorBinary();
 
   byte[] aclWhoAmIBinary();

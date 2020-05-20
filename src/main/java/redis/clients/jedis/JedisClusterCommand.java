@@ -9,10 +9,13 @@ import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public abstract class JedisClusterCommand<T> {
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
+  private final AtomicBoolean nextAttemptRenew = new AtomicBoolean(true);
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
     this.connectionHandler = connectionHandler;
@@ -112,13 +115,20 @@ public abstract class JedisClusterCommand<T> {
       releaseConnection(connection);
       connection = null;
 
-      if (attempts <= 1) {
+      //Make sure renew slots cache when maxAttempts = 1, also avoid do it too often when maxAttempts > 1.
+      if (attempts <= 1 && this.nextAttemptRenew.getAndSet(true)) {
         //We need this because if node is not reachable anymore - we need to finally initiate slots
         //renewing, or we can stuck with cluster state without one node in opposite case.
         //But now if maxAttempts = [1 or 2] we will do it too often.
         //TODO make tracking of successful/unsuccessful operations for node - do renewing only
         //if there were no successful responses from this node last few seconds
         this.connectionHandler.renewSlotCache();
+      } else if (attempts == 2) {
+        this.connectionHandler.renewSlotCache();
+        //Avoid renew twice when maxAttempts >= 2.
+        this.nextAttemptRenew.set(false);
+        //Give a chance to retry run command in the second last attempt after renew slots cache.
+        return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
       }
 
       return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);

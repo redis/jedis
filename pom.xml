@@ -182,13 +182,16 @@
 				</configuration>
 			</plugin>
 			<plugin>
-			  <artifactId>maven-jar-plugin</artifactId>
-			  <version>2.6</version>
-			  <configuration>
-			    <archive>  
-			      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-			    </archive> 
-			  </configuration>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+						<manifestEntries>
+							<Automatic-Module-Name>redis.clients.jedis</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
+				</configuration>
 			</plugin> 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

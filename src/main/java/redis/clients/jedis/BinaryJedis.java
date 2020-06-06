@@ -820,8 +820,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Double incrByFloat(final byte[] key, final double increment) {
     checkIsInMultiOrPipeline();
     client.incrByFloat(key, increment);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -1026,8 +1025,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Double hincrByFloat(final byte[] key, final byte[] field, final double value) {
     checkIsInMultiOrPipeline();
     client.hincrByFloat(key, field, value);
-    final String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -1851,8 +1849,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Double zscore(final byte[] key, final byte[] member) {
     checkIsInMultiOrPipeline();
     client.zscore(key, member);
-    final String score = client.getBulkReply();
-    return (score != null ? new Double(score) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
@@ -3878,16 +3875,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2, unit);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override

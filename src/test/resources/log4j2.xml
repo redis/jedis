@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 
-	<Appenders>
-		<Console name="CONSOLE" target="SYSTEM_OUT">
-			<PatternLayout
-				pattern="[%-5level] %d{ISO8601} [%t] %50.50logger{1.} - %msg%n" />
-		</Console>
-	</Appenders>
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT" >
+            <PatternLayout pattern="[%-5level] %d{ISO8601} [%t] %30logger{1.} - %msg%xEx{filters(java.lang.reflect,sun.reflect,org.junit.internal.runners,org.junit.runners,org.apache.maven.surefire)}%n" />
+        </Console>
+    </Appenders>
 
-	<Loggers>
-		<Root level="info">
-			<AppenderRef ref="CONSOLE" />
-		</Root>
-		<Logger name="redis.clients" level="debug" />
-	</Loggers>
+    <Loggers>
+        <Logger name="redis.clients" level="debug" />
+        <Root level="info" >
+            <AppenderRef ref="CONSOLE" />
+        </Root>
+    </Loggers>
+
 </Configuration>

@@ -205,7 +205,7 @@ public final class Protocol {
     if (num == -1) {
       return null;
     }
-    final List<Object> ret = new ArrayList<Object>(num);
+    final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
         ret.add(process(is));
@@ -260,7 +260,7 @@ public final class Protocol {
     PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO,
     GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB, MEMORY,
     XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
-    ACL, XINFO;
+    ACL, XINFO, BITFIELD_RO;
 
     private final byte[] raw;
 
@@ -280,7 +280,7 @@ public final class Protocol {
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
     GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR,
     BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP,
-    IDLE, TIME, RETRYCOUNT, FORCE, STREAM, GROUPS, CONSUMERS, 
+    ID, IDLE, TIME, RETRYCOUNT, FORCE, STREAM, GROUPS, CONSUMERS, HELP, FREQ,
     SETUSER, GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS;
 
     public final byte[] raw;

@@ -311,6 +311,8 @@ public interface BinaryRedisPipeline {
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
+  Response<List<Long>> bitfieldReadonly(byte[] key, byte[]... elements);
+
   Response<Long> hstrlen(byte[] key, byte[] field);
   
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
@@ -355,6 +357,8 @@ public interface BinaryRedisPipeline {
   Response<byte[]> objectEncoding(byte[] key);
 
   Response<Long> objectIdletime(byte[] key);
+
+  Response<Long> objectFreq(byte[] key);
 
   Response<Double> incrByFloat(byte[] key, double increment);
 

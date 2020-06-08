@@ -12,6 +12,8 @@ import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
 import static redis.clients.jedis.Protocol.Keyword.RESET;
 import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
+import static redis.clients.jedis.Protocol.Keyword.FREQ;
+import static redis.clients.jedis.Protocol.Keyword.HELP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +64,10 @@ public class BinaryClient extends Connection {
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
   }
 
   public boolean isInMulti() {
@@ -1003,6 +1009,14 @@ public class BinaryClient extends Connection {
     sendCommand(OBJECT, ENCODING.raw, key);
   }
 
+  public void objectHelp() {
+    sendCommand(OBJECT, HELP.raw);
+  }
+
+  public void objectFreq(final byte[] key) {
+    sendCommand(OBJECT, FREQ.raw, key);
+  }
+
   public void bitcount(final byte[] key) {
     sendCommand(BITCOUNT, key);
   }
@@ -1081,6 +1095,10 @@ public class BinaryClient extends Connection {
 
   public void clientPause(final long timeout) {
     sendCommand(CLIENT, Keyword.PAUSE.raw, toByteArray(timeout));
+  }
+
+  public void clientId() {
+    sendCommand(CLIENT, Keyword.ID.raw);
   }
 
   public void time() {
@@ -1318,6 +1336,10 @@ public class BinaryClient extends Connection {
 
   public void bitfield(final byte[] key, final byte[]... value) {
     sendCommand(BITFIELD, joinParameters(key, value));
+  }
+
+  public void bitfieldReadonly(final byte[] key, final byte[]... arguments) {
+    sendCommand(BITFIELD_RO, joinParameters(key, arguments));
   }
 
   public void hstrlen(final byte[] key, final byte[] field) {

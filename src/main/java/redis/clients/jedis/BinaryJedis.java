@@ -92,9 +92,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout) {
-    client = new Client(host, port);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, connectionTimeout, soTimeout, 0);
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
@@ -115,9 +113,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, connectionTimeout, soTimeout, 0, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
@@ -168,9 +164,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
       final SSLSocketFactory sslSocketFactory,final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(uri, connectionTimeout, soTimeout, 0, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -180,6 +174,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setConnectionTimeout(connectionTimeout);
     client.setSoTimeout(soTimeout);
     client.setInfiniteSoTimeout(infiniteSoTimeout);
+  }
+
+  public BinaryJedis(final JedisSocketFactory jedisSocketFactory) {
+    client = new Client(jedisSocketFactory);
   }
 
   private void initializeClientFromURI(URI uri) {
@@ -3510,6 +3508,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> objectHelpBinary() {
+    client.objectHelp();
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public Long objectFreq(final byte[] key) {
+    client.objectFreq(key);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public Long bitcount(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.bitcount(key);
@@ -3725,6 +3735,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.clientSetname(name);
     return client.getBulkReply();
+  }
+
+  @Override
+  public Long clientId() {
+    checkIsInMultiOrPipeline();
+    client.clientId();
+    return client.getIntegerReply();
   }
 
   public String clientPause(final long timeout) {
@@ -4083,6 +4100,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public List<Long> bitfield(final byte[] key, final byte[]... arguments) {
     checkIsInMultiOrPipeline();
     client.bitfield(key, arguments);
+    return client.getIntegerMultiBulkReply();
+  }
+
+  @Override
+  public List<Long> bitfieldReadonly(byte[] key, final byte[]... arguments) {
+    checkIsInMultiOrPipeline();
+    client.bitfieldReadonly(key, arguments);
     return client.getIntegerMultiBulkReply();
   }
 

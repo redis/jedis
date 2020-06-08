@@ -331,6 +331,8 @@ public interface BinaryJedisCommands {
    * @return 
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
+
+  List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
   
   /**
    * Used for HSTRLEN Redis command

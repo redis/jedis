@@ -1511,6 +1511,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<Long> objectFreq(byte[] key) {
+    getClient(key).objectFreq(key);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> objectFreq(String key) {
+    getClient(key).objectFreq(key);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> pexpire(final String key, final long milliseconds) {
     getClient(key).pexpire(key, milliseconds);
     return getResponse(BuilderFactory.LONG);
@@ -1823,6 +1835,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<List<Long>> bitfield(final byte[] key, final byte[]... elements) {
     getClient(key).bitfield(key, elements);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> bitfieldReadonly(byte[] key, final byte[]... arguments) {
+    getClient(key).bitfieldReadonly(key, arguments);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> bitfieldReadonly(String key, final String... arguments) {
+    getClient(key).bitfieldReadonly(key, arguments);
     return getResponse(BuilderFactory.LONG_LIST);
   }
 

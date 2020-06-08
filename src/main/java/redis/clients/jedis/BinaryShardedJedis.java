@@ -767,6 +767,16 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.objectIdletime(key);
   }
 
+  public List<String> objectHelp() {
+    Jedis j = getShard("null");
+    return j.objectHelp();
+  }
+
+  public Long objectFreq(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.objectIdletime(key);
+  }
+
   @Override
   public Boolean setbit(final byte[] key, final long offset, boolean value) {
     Jedis j = getShard(key);
@@ -976,6 +986,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     Jedis j = getShard(key);
     return j.bitfield(key, arguments);
  }
+
+  @Override
+  public List<Long> bitfieldReadonly(byte[] key, final byte[]... arguments) {
+    Jedis j = getShard(key);
+    return j.bitfieldReadonly(key, arguments);
+  }
 
   @Override
   public Long hstrlen(final byte[] key, final byte[] field) {

@@ -191,11 +191,11 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
           DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, 
           null, null, hostnameVerifier, portMap);
-      Assert.fail("The code did not throw the expected NullPointerException.");
-    } catch (NullPointerException e) {
-      // Null pointer exception occurs from closing Jedis object that did not connect due to custom
-      // hostname validation. When closing this Jedis object, the RedisOutputStream in the underlying 
-      // Connection object is null and causes this exception
+      jc2.get("foo");
+      Assert.fail("The code did not throw the expected JedisNoReachableClusterNodeException.");
+    } catch (JedisNoReachableClusterNodeException e) {
+      // JedisNoReachableClusterNodeException exception occurs from not being able to connect
+      // since the socket factory fails the hostname verification
     } finally {
       if (jc2 != null) {
         jc2.close();

@@ -319,6 +319,8 @@ public interface JedisClusterCommands {
    * @return 
    */
   List<Long> bitfield(String key, String...arguments);
+
+  List<Long> bitfieldReadonly(String key, String...arguments);
   
   /**
    * Used for HSTRLEN Redis command

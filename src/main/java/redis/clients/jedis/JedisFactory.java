@@ -34,29 +34,36 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
-    this(host, port, connectionTimeout, soTimeout, password, database, clientName, false, null, null, null);
+    this(host, port, connectionTimeout, soTimeout, password, database, clientName,
+        false, null, null, null);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
-      final int soTimeout, final int infiniteSoTimeout, final String password, final int database, final String clientName) {
-    this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, database, clientName, false, null, null, null);
+  JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final int infiniteSoTimeout, final String password, final int database,
+      final String clientName) {
+    this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, database,
+        clientName, false, null, null, null);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName) {
-    this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName, false, null, null, null);
+    this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName,
+        false, null, null, null);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final int infiniteSoTimeout, final String user, final String password, final int database, final String clientName) {
-    this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, false, null, null, null);
+      final int infiniteSoTimeout, final String user, final String password, final int database,
+      final String clientName) {
+    this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database,
+        clientName, false, null, null, null);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(host, port, connectionTimeout, soTimeout, 0, null, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    this(host, port, connectionTimeout, soTimeout, 0, null, password, database, clientName,
+        ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
@@ -120,7 +127,6 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     if (jedis.getDB() != database) {
       jedis.select(database);
     }
-
   }
 
   @Override
@@ -134,18 +140,15 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
         }
         jedis.disconnect();
       } catch (Exception e) {
-
       }
     }
-
   }
 
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
-    final HostAndPort hap = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hap.getHost(), hap.getPort(), connectionTimeout,
+    final HostAndPort hp = this.hostAndPort.get();
+    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout,
         soTimeout, infiniteSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-
     try {
       jedis.connect();
       if (user != null) {
@@ -164,8 +167,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       throw je;
     }
 
-    return new DefaultPooledObject<Jedis>(jedis);
-
+    return new DefaultPooledObject<>(jedis);
   }
 
   @Override

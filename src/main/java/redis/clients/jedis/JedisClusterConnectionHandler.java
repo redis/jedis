@@ -14,53 +14,54 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public abstract class JedisClusterConnectionHandler implements Closeable {
   protected final JedisClusterInfoCache cache;
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, password, null);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
-    this(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, false, null, null, null, null);
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password, String clientName) {
+    this(nodes, poolConfig, connectionTimeout, soTimeout, null, password, clientName);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String password, String clientName) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, clientName);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, String user, String password, String clientName) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, false, null, null, null, null);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-      final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName,
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, 0, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-                                       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout,
-                                       String user, String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
-                                       SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
-    this(nodes, poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String user, String password, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    this(nodes, poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl,
+        sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
-  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout,
         user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
     initializeSlotsCache(nodes, connectionTimeout, soTimeout, infiniteSoTimeout,
-        null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+        user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   abstract Jedis getConnection();

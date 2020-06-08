@@ -185,7 +185,7 @@ public class ClusterScriptingCommandsTest {
     byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     byte[][] arraySha1 = { sha1 };
     Long result = 1L;
-    List<Long> listResult = new ArrayList();
+    List<Long> listResult = new ArrayList<>();
     listResult.add(result);
     assertEquals(listResult, jedisCluster.scriptExists(byteKey, arraySha1));
   }

@@ -68,7 +68,7 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
     if (unformatted == null) {
       return null;
     }
-    List<Response<?>> response = new ArrayList<Response<?>>();
+    List<Response<?>> response = new ArrayList<>();
     for (Object o : unformatted) {
       response.add(generateResponse(o));
     }

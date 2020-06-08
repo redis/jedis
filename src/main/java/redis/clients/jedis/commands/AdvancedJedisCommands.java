@@ -26,6 +26,10 @@ public interface AdvancedJedisCommands {
 
   Long objectIdletime(String key);
 
+  List<String> objectHelp();
+
+  Long objectFreq(String key);
+
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
@@ -41,6 +45,8 @@ public interface AdvancedJedisCommands {
   String clientList();
 
   String clientSetname(String name);
+
+  Long clientId();
 
   String memoryDoctor();
 

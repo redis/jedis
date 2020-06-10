@@ -22,9 +22,16 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
 
-  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout, int infiniteSoTimeout,
+  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
+    this(host, port, connectionTimeout, soTimeout, 0, ssl, sslSocketFactory, sslParameters,
+        hostnameVerifier);
+  }
+
+  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
+      int infiniteSoTimeout, boolean ssl, SSLSocketFactory sslSocketFactory,
+      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     this.host = host;
     this.port = port;
     this.connectionTimeout = connectionTimeout;

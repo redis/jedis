@@ -66,6 +66,14 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
         ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  JedisFactory(final String host, final int port, final int connectionTimeout,
+               final int soTimeout, final String user, final String password, final int database, final String clientName,
+               final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+               final HostnameVerifier hostnameVerifier) {
+    this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName, ssl,
+        sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
   JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,

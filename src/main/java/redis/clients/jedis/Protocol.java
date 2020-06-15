@@ -85,8 +85,17 @@ public final class Protocol {
     sendCommand(os, command.getRaw(), args);
   }
 
+  private static void checkArgsIsNull(final byte[]... args) {
+    for (byte[] arg : args) {
+      if (arg == null) {
+        throw new JedisDataException("value sent to redis cannot be null");
+      }
+    }
+  }
+
   private static void sendCommand(final RedisOutputStream os, final byte[] command,
       final byte[]... args) {
+    checkArgsIsNull(args);
     try {
       os.write(ASTERISK_BYTE);
       os.writeIntCrLf(args.length + 1);

@@ -867,14 +867,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
 
   @Test
-  public void binaryCommandWithComplexReturnTest(){
+  public void encodeCompleteResponse(){
     HashMap<String,String> entry = new HashMap<>();
     entry.put("foo", "bar");
     jedis.xadd( "mystream", StreamEntryID.NEW_ENTRY, entry );
     String status = jedis.xgroupCreate("mystream", "mygroup", null, false);
 
     Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
-    ArrayList encodeObj =  (ArrayList)SafeEncoder.encode(obj);
+    ArrayList encodeObj =  (ArrayList)SafeEncoder.encodeObject(obj);
 
     assertEquals( 14, encodeObj.size() );
     assertEquals( "length", encodeObj.get(0) );
@@ -886,11 +886,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     assertEquals( entryAsList, ((ArrayList)encodeObj.get(11)).get(1) );
 
-    assertEquals("PONG", SafeEncoder.encode(jedis.sendCommand(PING)));
+    assertEquals("PONG", SafeEncoder.encodeObject(jedis.sendCommand(PING)));
 
     entry.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entry);
-    encodeObj =   (ArrayList)SafeEncoder.encode(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    encodeObj =   (ArrayList)SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
 
     assertEquals( 4, encodeObj.size() );
     assertEquals( "foo", encodeObj.get(0) );

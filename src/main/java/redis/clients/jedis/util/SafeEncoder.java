@@ -48,7 +48,7 @@ public final class SafeEncoder {
    * @param dataToEncode
    * @return the object fully encoded
    */
-  public static Object encode(Object dataToEncode) {
+  public static Object encodeObject(Object dataToEncode) {
     Object returnValue = dataToEncode;
     if (dataToEncode instanceof byte[]) {
       returnValue = SafeEncoder.encode((byte[]) dataToEncode);
@@ -56,7 +56,7 @@ public final class SafeEncoder {
       ArrayList arrayToDecode = (ArrayList)dataToEncode;
       ArrayList returnValueArray = new ArrayList(arrayToDecode.size());
       for (Object arrayEntry : arrayToDecode) {
-        returnValueArray.add(encode(arrayEntry));
+        returnValueArray.add(encodeObject(arrayEntry));
       }
       returnValue = returnValueArray;
     }

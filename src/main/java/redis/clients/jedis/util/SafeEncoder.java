@@ -1,6 +1,7 @@
 package redis.clients.jedis.util;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -39,5 +40,26 @@ public final class SafeEncoder {
     } catch (UnsupportedEncodingException e) {
       throw new JedisException(e);
     }
+  }
+
+  /**
+   * This method takes an object and will convert all bytes[] and list of byte[]
+   * and will encode the object in a recursive way.
+   * @param dataToEncode
+   * @return the object fully encoded
+   */
+  public static Object encode(Object dataToEncode) {
+    Object returnValue = dataToEncode;
+    if (dataToEncode instanceof byte[]) {
+      returnValue = SafeEncoder.encode((byte[]) dataToEncode);
+    } else if (dataToEncode instanceof ArrayList) {
+      ArrayList arrayToDecode = (ArrayList)dataToEncode;
+      ArrayList returnValueArray = new ArrayList(arrayToDecode.size());
+      for (Object arrayEntry : arrayToDecode) {
+        returnValueArray.add(encode(arrayEntry));
+      }
+      returnValue = returnValueArray;
+    }
+    return returnValue;
   }
 }

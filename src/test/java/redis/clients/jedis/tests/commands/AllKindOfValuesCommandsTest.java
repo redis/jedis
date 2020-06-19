@@ -7,7 +7,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Command.HGETALL;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.LRANGE;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.RPUSH;
+import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.Protocol.Command.XINFO;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
@@ -895,8 +901,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals( 4, encodeObj.size() );
     assertEquals( "foo", encodeObj.get(0) );
     assertEquals( "foo2", encodeObj.get(2) );
-
-
 
   }
 

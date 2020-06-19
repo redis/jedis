@@ -2,6 +2,7 @@ package redis.clients.jedis.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -52,9 +53,9 @@ public final class SafeEncoder {
     Object returnValue = dataToEncode;
     if (dataToEncode instanceof byte[]) {
       returnValue = SafeEncoder.encode((byte[]) dataToEncode);
-    } else if (dataToEncode instanceof ArrayList) {
-      ArrayList arrayToDecode = (ArrayList)dataToEncode;
-      ArrayList returnValueArray = new ArrayList(arrayToDecode.size());
+    } else if (dataToEncode instanceof List) {
+      List arrayToDecode = (List)dataToEncode;
+      List returnValueArray = new ArrayList(arrayToDecode.size());
       for (Object arrayEntry : arrayToDecode) {
         returnValueArray.add(encodeObject(arrayEntry));
       }

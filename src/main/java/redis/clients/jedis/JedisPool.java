@@ -26,6 +26,10 @@ public class JedisPool extends JedisPoolAbstract {
     this(new GenericObjectPoolConfig(), host, port);
   }
 
+  public JedisPool(String host, int port, String password) {
+    this(new GenericObjectPoolConfig(), host, port, Protocol.DEFAULT_TIMEOUT, password);
+  }
+
   public JedisPool(final String host) {
     URI uri = URI.create(host);
     if (JedisURIHelper.isValid(uri)) {

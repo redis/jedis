@@ -50,17 +50,20 @@ public final class SafeEncoder {
    * @return the object fully encoded
    */
   public static Object encodeObject(Object dataToEncode) {
-    Object returnValue = dataToEncode;
     if (dataToEncode instanceof byte[]) {
-      returnValue = SafeEncoder.encode((byte[]) dataToEncode);
-    } else if (dataToEncode instanceof List) {
+      return SafeEncoder.encode((byte[]) dataToEncode);
+    } 
+    
+    if (dataToEncode instanceof List) {
       List arrayToDecode = (List)dataToEncode;
       List returnValueArray = new ArrayList(arrayToDecode.size());
       for (Object arrayEntry : arrayToDecode) {
-        returnValueArray.add(encodeObject(arrayEntry));
+        // recursive call and add to list
+        returnValueArray.add(encodeObject(arrayEntry)); 
       }
-      returnValue = returnValueArray;
+      return returnValueArray;
     }
-    return returnValue;
+    
+    return dataToEncode;
   }
 }

@@ -19,17 +19,13 @@ import redis.clients.jedis.util.JedisURIHelper;
  * PoolableObjectFactory custom impl.
  */
 class JedisFactory implements PooledObjectFactory<Jedis> {
-  private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
-  private final int connectionTimeout;
-  private final int soTimeout;
+  
+  private final JedisSocketFactory jedisSocketFactory;
+  
   private final String user;
   private final String password;
   private final int database;
   private final String clientName;
-  private final boolean ssl;
-  private final SSLSocketFactory sslSocketFactory;
-  private final SSLParameters sslParameters;
-  private final HostnameVerifier hostnameVerifier;
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
@@ -55,17 +51,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
                final int soTimeout, final String user, final String password, final int database, final String clientName,
                final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
                final HostnameVerifier hostnameVerifier) {
-    this.hostAndPort.set(new HostAndPort(host, port));
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(host, port, connectionTimeout,
+        soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+
     this.user = user;
     this.password = password;
     this.database = database;
     this.clientName = clientName;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -80,22 +72,27 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-
-    this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
+    
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(uri.getHost(), uri.getPort(),
+        connectionTimeout, soTimeout, JedisURIHelper.isRedisSSLScheme(uri), sslSocketFactory, sslParameters, hostnameVerifier);
     this.user = JedisURIHelper.getUser(uri);
     this.password = JedisURIHelper.getPassword(uri);
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
-    this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
   }
 
+  JedisFactory(final JedisSocketFactory jedisSocketFactory, final String user,
+      final String password, final int database, final String clientName) {
+    this.jedisSocketFactory = jedisSocketFactory;
+    this.user = user;
+    this.password = password;
+    this.database = database;
+    this.clientName = clientName;
+  }
+  
   public void setHostAndPort(final HostAndPort hostAndPort) {
-    this.hostAndPort.set(hostAndPort);
+    this.jedisSocketFactory.setHost(hostAndPort.getHost());
+    this.jedisSocketFactory.setPort(hostAndPort.getPort());
   }
 
   @Override
@@ -123,9 +120,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
-    final HostAndPort hp = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
-        ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    final Jedis jedis = new Jedis(this.jedisSocketFactory);
     try {
       jedis.connect();
       if (user != null) {
@@ -156,13 +151,14 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   public boolean validateObject(PooledObject<Jedis> pooledJedis) {
     final BinaryJedis jedis = pooledJedis.getObject();
     try {
-      HostAndPort hostAndPort = this.hostAndPort.get();
+      String host = this.jedisSocketFactory.getHost();
+      int port = this.jedisSocketFactory.getPort();
 
       String connectionHost = jedis.getClient().getHost();
       int connectionPort = jedis.getClient().getPort();
 
-      return hostAndPort.getHost().equals(connectionHost)
-          && hostAndPort.getPort() == connectionPort && jedis.isConnected()
+      return host.equals(connectionHost)
+          && port == connectionPort && jedis.isConnected()
           && jedis.ping().equals("PONG");
     } catch (final Exception e) {
       return false;

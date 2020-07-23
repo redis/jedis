@@ -282,6 +282,11 @@ public class JedisPool extends JedisPoolAbstract {
     super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout, null, sslSocketFactory,
         sslParameters, hostnameVerifier));
   }
+  
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final JedisSocketFactory jedisSocketFactory,
+      final String user, final String password, final int database, final String clientName) {
+    super(poolConfig, new JedisFactory(jedisSocketFactory, user, password, database, clientName));
+  }
 
   @Override
   public Jedis getResource() {

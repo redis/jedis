@@ -880,23 +880,23 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     String status = jedis.xgroupCreate("mystream", "mygroup", null, false);
 
     Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
-    ArrayList encodeObj =  (ArrayList)SafeEncoder.encodeObject(obj);
+    List encodeObj =  (List)SafeEncoder.encodeObject(obj);
 
     assertEquals( 14, encodeObj.size() );
     assertEquals( "length", encodeObj.get(0) );
     assertEquals( 1L, encodeObj.get(1) );
 
-    ArrayList entryAsList = new ArrayList(2);
+    List entryAsList = new ArrayList(2);
     entryAsList.add("foo");
     entryAsList.add("bar");
 
-    assertEquals( entryAsList, ((ArrayList)encodeObj.get(11)).get(1) );
+    assertEquals( entryAsList, ((List)encodeObj.get(11)).get(1) );
 
     assertEquals("PONG", SafeEncoder.encodeObject(jedis.sendCommand(PING)));
 
     entry.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entry);
-    encodeObj =   (ArrayList)SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    encodeObj =   (List)SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
 
     assertEquals( 4, encodeObj.size() );
     assertEquals( "foo", encodeObj.get(0) );

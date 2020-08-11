@@ -899,8 +899,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     encodeObj =   (List)SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
 
     assertEquals( 4, encodeObj.size() );
-    assertEquals( "foo", encodeObj.get(0) );
-    assertEquals( "foo2", encodeObj.get(2) );
+    assertTrue(encodeObj.contains("foo"));
+    assertTrue(encodeObj.contains("foo2"));
 
   }
 

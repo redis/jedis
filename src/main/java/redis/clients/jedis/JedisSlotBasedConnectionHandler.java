@@ -60,6 +60,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
     // ping-pong)
     // or exception if all connections are invalid
 
+    JedisException exception = new JedisNoReachableClusterNodeException("No reachable node in cluster");
     List<JedisPool> pools = cache.getShuffledNodesPool();
 
     for (JedisPool pool : pools) {
@@ -77,13 +78,15 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
         jedis.close();
       } catch (JedisException ex) {
+        exception.addSuppressed(ex);
+
         if (jedis != null) {
           jedis.close();
         }
       }
     }
 
-    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    throw exception;
   }
 
   @Override

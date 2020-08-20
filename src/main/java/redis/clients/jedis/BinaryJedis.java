@@ -35,6 +35,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -1340,6 +1341,69 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.lpop(key);
     return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Returns the index of the first matching element inside a redis list. If the element is found,
+   * its index (the zero-based position in the list) is returned. Otherwise, if no match is found,
+   * 'nil' is returned.
+   * <p>
+   * Time complexity: O(N) where N is the number of elements in the list
+   * @see #lpos(byte[], byte[])
+   * @param key
+   * @param element
+   * @return Integer Reply, specifically: The index of first matching element in the list. Value will
+   * be 'nil' when the element is not present in the list.
+   */
+  @Override
+  public Long lpos(final byte[] key, final byte[] element) {
+    checkIsInMultiOrPipeline();
+    client.lpos(key,element);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * In case there are multiple matches Rank option specifies the "rank" of the element to return.
+   * A rank of 1 returns the first match, 2 to return the second match, and so forth.
+   * If list `foo` has elements ("a","b","c","1","2","3","c","c"), The function call to get the
+   * index of second occurrence of "c" will be as follows lpos("foo","c", LPosParams.lPosParams().rank(2)).
+   * <p>
+   * Maxlen option compares the element provided only with a given maximum number of list items.
+   * A value of 1000 will make sure that the command performs only 1000 comparisons. The
+   * comparison is made for the first part or the last part depending on the fact we use a positive or
+   * negative rank.
+   * Following is how we could use the Maxlen option lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2)).
+   * @see   #lpos(byte[], byte[], LPosParams)
+   * @param key
+   * @param element
+   * @param params
+   * @return Integer Reply
+   */
+  @Override
+  public Long lpos(final byte[] key, final byte[] element, final LPosParams params) {
+    checkIsInMultiOrPipeline();
+    client.lpos(key,element, params);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Count will return list of position of all the first N matching elements. It is possible to
+   * specify 0 as the number of matches, as a way to tell the command we want all the matches
+   * found returned as an array of indexes. When count is used and no match is found, an empty list
+   * is returned.
+   * <p>
+   * Time complexity: O(N) where N is the number of elements in the list
+   * @see #lpos(byte[], byte[], LPosParams, long)
+   * @param key
+   * @param element
+   * @param count
+   * @return Returns value will be a list containing position of the matching elements inside the list.
+   */
+  @Override
+  public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+    checkIsInMultiOrPipeline();
+    client.lpos(key, element, params, count);
+    return client.getIntegerMultiBulkReply();
   }
 
   /**

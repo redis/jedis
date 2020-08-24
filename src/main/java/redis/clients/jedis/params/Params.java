@@ -67,4 +67,10 @@ public abstract class Params {
     params.put(name, null);
   }
 
+  @Override public String toString() {
+    if (params == null) {
+      params = new HashMap<>();
+    }
+    return params.toString();
+  }
 }

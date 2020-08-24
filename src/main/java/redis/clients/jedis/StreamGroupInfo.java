@@ -12,10 +12,10 @@ import java.util.Map;
  */
 public class StreamGroupInfo implements Serializable {
 
-  public final static String NAME = "name";
-  public final static String CONSUMERS = "consumers";
-  public final static String PENDING = "pending";
-  public final static String LAST_DELIVERED = "last-delivered-id";
+  public static final String NAME = "name";
+  public static final String CONSUMERS = "consumers";
+  public static final String PENDING = "pending";
+  public static final String LAST_DELIVERED = "last-delivered-id";
 
 
   private final String name;

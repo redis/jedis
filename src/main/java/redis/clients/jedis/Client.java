@@ -44,6 +44,10 @@ public class Client extends BinaryClient implements Commands {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public Client(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
+  }
+
   @Override
   public void ping(final String message) {
     ping(SafeEncoder.encode(message));
@@ -847,6 +851,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void objectFreq(final String key) {
+    objectFreq(SafeEncoder.encode(key));
+  }
+
+  @Override
   public void bitcount(final String key) {
     bitcount(SafeEncoder.encode(key));
   }
@@ -1151,6 +1160,26 @@ public class Client extends BinaryClient implements Commands {
     moduleUnload(SafeEncoder.encode(name));
   }
 
+  public void aclGetUser(final String name) {
+    aclGetUser(SafeEncoder.encode(name));
+  }
+
+  public void aclSetUser(final String name) {
+    aclSetUser(SafeEncoder.encode(name));
+  }
+
+  public void aclSetUser(String name, String... parameters) {
+    aclSetUser(SafeEncoder.encode(name), SafeEncoder.encodeMany(parameters));
+  }
+
+  public void aclCat(final String category) {
+    aclCat(SafeEncoder.encode(category));
+  }
+
+  public void aclDelUser(final String name) {
+    aclDelUser(SafeEncoder.encode(name));
+  }
+
   private HashMap<byte[], Double> convertScoreMembersToBinary(final Map<String, Double> scoreMembers) {
     HashMap<byte[], Double> binaryScoreMembers = new HashMap<>();
     for (Entry<String, Double> entry : scoreMembers.entrySet()) {
@@ -1171,6 +1200,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void bitfield(final String key, final String... arguments) {
     bitfield(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
+  }
+
+  @Override
+  public void bitfieldReadonly(String key, final String... arguments) {
+    bitfieldReadonly(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
   }
 
   @Override

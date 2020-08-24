@@ -34,7 +34,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected String sentinelPassword;
   protected String sentinelClientName;
 
-  protected boolean isRedisSslEnabled;
+  protected boolean isMasterSslEnabled;
   protected boolean isSentinelSslEnabled;
   protected SSLSocketFactory sslSocketFactory;
   protected SSLParameters sslParameters;
@@ -147,7 +147,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String user, final String password, final int database, final String clientName,
       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
-      final String sentinelPassword, final String sentinelClientName, final boolean isRedisSslEnabled,
+      final String sentinelPassword, final String sentinelClientName, final boolean isMasterSslEnabled,
       final boolean isSentinelSslEnabled, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
 
@@ -163,7 +163,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     this.sentinelUser = sentinelUser;
     this.sentinelPassword = sentinelPassword;
     this.sentinelClientName = sentinelClientName;
-    this.isRedisSslEnabled = isRedisSslEnabled;
+    this.isMasterSslEnabled = isMasterSslEnabled;
     this.isSentinelSslEnabled = isSentinelSslEnabled;
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
@@ -192,7 +192,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         currentHostMaster = master;
         if (factory == null) {
           factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-              soTimeout, user, password, database, clientName, isRedisSslEnabled,
+              soTimeout, user, password, database, clientName, isMasterSslEnabled,
               sslSocketFactory, sslParameters, hostnameVerifier);
           initPool(poolConfig, factory);
         } else {
@@ -369,7 +369,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     }
 
     public MasterListener(String masterName, String host, int port,
-                          long subscribeRetryWaitTimeMillis) {
+        long subscribeRetryWaitTimeMillis) {
       this(masterName, host, port, false, null, null, null);
       this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
     }

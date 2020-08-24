@@ -330,86 +330,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void lpos() {
-    jedis.rpush("foo", "a");
-    jedis.rpush("foo", "b");
-    jedis.rpush("foo", "c");
-
-    Long pos = jedis.lpos("foo", "b");
-    assertEquals(1, pos.intValue());
-    pos = jedis.lpos("foo", "d");
-    assertNull(pos);
-
-    jedis.rpush("foo", "a");
-    jedis.rpush("foo", "b");
-    jedis.rpush("foo", "b");
-
-    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(3));
-    assertEquals(5, pos.intValue());
-    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2));
-    assertEquals(4, pos.intValue());
-    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-5));
-    assertNull(pos);
-
-    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2));
-    assertEquals(1, pos.intValue());
-    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(2).maxlen(2));
-    assertNull(pos);
-    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2).maxlen(2));
-    assertEquals(4, pos.intValue());
-
-    List<Long> expected = new ArrayList<Long>();
-    expected.add(1L);
-    expected.add(4L);
-    expected.add(5L);
-    List<Long> posList = jedis.lpos("foo","b", LPosParams.lPosParams() , 2);
-    assertEquals(expected.subList(0,2), posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams(), 0);
-    assertEquals(expected, posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2), 0);
-    assertEquals(expected.subList(1,3), posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2).maxlen(5), 0);
-    assertEquals(expected.subList(1,2), posList);
-
-    Collections.reverse(expected);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-2), 0);
-    assertEquals(expected.subList(1,3), posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-1).maxlen(5), 2);
-    assertEquals(expected.subList(0,2), posList);
-
-    //Binary
-    jedis.rpush(bfoo, bA);
-    jedis.rpush(bfoo, bB);
-    jedis.rpush(bfoo, bC);
-
-    pos = jedis.lpos(bfoo, bB);
-    assertEquals(1, pos.intValue());
-    pos = jedis.lpos(bfoo, b3);
-    assertNull(pos);
-
-    jedis.rpush(bfoo, bA);
-    jedis.rpush(bfoo, bB);
-    jedis.rpush(bfoo, bA);
-
-    pos = jedis.lpos(bfoo, bB, LPosParams.lPosParams().rank(2));
-    assertEquals(4, pos.intValue());
-    pos = jedis.lpos(bfoo, bB, LPosParams.lPosParams().rank(-2).maxlen(5));
-    assertEquals(1, pos.intValue());
-
-    expected.clear();
-    expected.add(0L);
-    expected.add(3L);
-    expected.add(5L);
-
-    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6), 0);
-    assertEquals(expected, posList);
-    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
-    assertEquals(expected.subList(1,2), posList);
-
-  }
-
-
-  @Test
   public void rpop() {
     jedis.rpush("foo", "a");
     jedis.rpush("foo", "b");
@@ -666,6 +586,87 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bA, belement);
     assertEquals(1, jedis.llen("bar").longValue());
     assertArrayEquals(bA, jedis.lrange(bbar, 0, -1).get(0));
+
+  }
+
+  @Test
+  public void lpos() {
+    jedis.rpush("foo", "a");
+    jedis.rpush("foo", "b");
+    jedis.rpush("foo", "c");
+
+    Long pos = jedis.lpos("foo", "b");
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos("foo", "d");
+    assertNull(pos);
+
+    jedis.rpush("foo", "a");
+    jedis.rpush("foo", "b");
+    jedis.rpush("foo", "b");
+
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams());
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(3));
+    assertEquals(5, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2));
+    assertEquals(4, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-5));
+    assertNull(pos);
+
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2));
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(2).maxlen(2));
+    assertNull(pos);
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2).maxlen(2));
+    assertEquals(4, pos.intValue());
+
+    List<Long> expected = new ArrayList<Long>();
+    expected.add(1L);
+    expected.add(4L);
+    expected.add(5L);
+    List<Long> posList = jedis.lpos("foo","b", LPosParams.lPosParams() , 2);
+    assertEquals(expected.subList(0,2), posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams(), 0);
+    assertEquals(expected, posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2), 0);
+    assertEquals(expected.subList(1,3), posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2).maxlen(5), 0);
+    assertEquals(expected.subList(1,2), posList);
+
+    Collections.reverse(expected);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-2), 0);
+    assertEquals(expected.subList(1,3), posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-1).maxlen(5), 2);
+    assertEquals(expected.subList(0,2), posList);
+
+    //Binary
+    jedis.rpush(bfoo, bA);
+    jedis.rpush(bfoo, bB);
+    jedis.rpush(bfoo, bC);
+
+    pos = jedis.lpos(bfoo, bB);
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos(bfoo, b3);
+    assertNull(pos);
+
+    jedis.rpush(bfoo, bA);
+    jedis.rpush(bfoo, bB);
+    jedis.rpush(bfoo, bA);
+
+    pos = jedis.lpos(bfoo, bB, LPosParams.lPosParams().rank(2));
+    assertEquals(4, pos.intValue());
+    pos = jedis.lpos(bfoo, bB, LPosParams.lPosParams().rank(-2).maxlen(5));
+    assertEquals(1, pos.intValue());
+
+    expected.clear();
+    expected.add(0L);
+    expected.add(3L);
+    expected.add(5L);
+
+    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6), 0);
+    assertEquals(expected, posList);
+    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
+    assertEquals(expected.subList(1,2), posList);
 
   }
 }

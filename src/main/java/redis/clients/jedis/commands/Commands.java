@@ -18,7 +18,6 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.util.SafeEncoder;
 
 public interface Commands {
 

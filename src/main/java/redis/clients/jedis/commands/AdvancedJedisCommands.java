@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.params.ClientTrackingParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
@@ -47,6 +49,9 @@ public interface AdvancedJedisCommands {
   String clientSetname(String name);
 
   Long clientId();
+
+  // TODO check the best way to pass the client side caching connection
+  String clientTracking(boolean enabled, Jedis jedis, ClientTrackingParams params);
 
   String memoryDoctor();
 

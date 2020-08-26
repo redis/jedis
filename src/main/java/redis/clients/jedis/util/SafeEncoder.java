@@ -1,6 +1,8 @@
 package redis.clients.jedis.util;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -39,5 +41,18 @@ public final class SafeEncoder {
     } catch (UnsupportedEncodingException e) {
       throw new JedisException(e);
     }
+  }
+
+  public static List<String> encode(final List<byte[]> data) {
+    if (data == null) {
+      return null;
+    }
+    List listOfString = new ArrayList<String>();
+    if (data != null) {
+      for (byte[] item : data) {
+        listOfString.add(encode(item));
+      }
+    }
+    return listOfString;
   }
 }

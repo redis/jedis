@@ -35,6 +35,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ClientTrackingParams;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -3721,6 +3722,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.clientId();
     return client.getIntegerReply();
+  }
+
+  // TODO Check the best way to pass the invalidation connection
+  @Override
+  public String clientTracking(boolean enabled, BinaryJedis jedis, ClientTrackingParams params) {
+    client.clientTracking(enabled, jedis, params);
+    return client.getBulkReply();
   }
 
   public String clientPause(final long timeout) {

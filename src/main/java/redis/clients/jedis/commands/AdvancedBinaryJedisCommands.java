@@ -3,6 +3,9 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.params.ClientTrackingParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -47,6 +50,9 @@ public interface AdvancedBinaryJedisCommands {
   String clientSetname(byte[] name);
 
   Long clientId();
+
+  // TODO check the best way to pass the client side caching connection
+  String clientTracking(boolean enabled, BinaryJedis jedis, ClientTrackingParams params);
 
   byte[] memoryDoctorBinary();
 

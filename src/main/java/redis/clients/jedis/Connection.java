@@ -136,6 +136,14 @@ public class Connection implements Closeable {
     }
   }
 
+  /**
+   * TODO: check a better way, especially when using pool
+   * @return the socket factory of this connection
+   */
+  protected JedisSocketFactory getJedisSocketFactory(){
+    return jedisSocketFactory;
+  }
+
   public String getHost() {
     return jedisSocketFactory.getHost();
   }

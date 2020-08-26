@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
@@ -17,6 +18,7 @@ import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ClientTrackingParams;
 
 public interface Commands {
 
@@ -377,6 +379,10 @@ public interface Commands {
   void clientSetname(String name);
 
   void clientId();
+
+  // TODO check the best way to pass the client side caching connection
+  void clientTracking(boolean enabled, BinaryJedis jedis, ClientTrackingParams params);
+
 
   void memoryDoctor();
 

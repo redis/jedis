@@ -11,12 +11,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class BinaryJedisPubSub {
   private int subscribedChannels = 0;
   private Client client;
 
   public void onMessage(byte[] channel, byte[] message) {
+  }
+
+  public void onMessage(byte[] channel, List<byte[]> messages) {
   }
 
   public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {
@@ -100,8 +104,16 @@ public abstract class BinaryJedisPubSub {
         onUnsubscribe(bchannel, subscribedChannels);
       } else if (Arrays.equals(MESSAGE.raw, resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
-        final byte[] bmesg = (byte[]) reply.get(2);
-        onMessage(bchannel, bmesg);
+
+        // Client Side Caching messages are sent as an Array List not a simple String
+        if ( reply.get(2) instanceof List  ) {
+          final List bmesgs = (List)reply.get(2);
+          final List messages = (bmesgs == null) ? null : bmesgs ;
+          onMessage(bchannel, messages);
+        } else {
+          final byte[] bmesg = (byte[]) reply.get(2);
+          onMessage(bchannel, bmesg);
+        }
       } else if (Arrays.equals(PMESSAGE.raw, resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);

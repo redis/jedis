@@ -22,11 +22,7 @@ import redis.clients.jedis.commands.MultiKeyCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -180,9 +176,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public String get(final String key) {
+    String value = null;
+    // TODO : for Client Side Caching define the work that must be done with multi/pipeline
     checkIsInMultiOrPipeline();
-    client.get(key);
-    return client.getBulkReply();
+
+    if (client.isCachedConnection()) {
+      value = (String)client.getValueFromClientCache(key);
+      if (value == null) { // value is not found in the cache, we must check Redis
+        client.get(key);
+        value = client.getBulkReply();
+        if (client.isCachedConnection() && value != null) {
+          client.putValueInClientCache(key, value);
+        }
+      }
+    } else { // connection is not using ClienSideCaching
+      client.get(key);
+      value = client.getBulkReply();
+    }
+    return value;
   }
 
   /**
@@ -941,9 +952,23 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public Map<String, String> hgetAll(final String key) {
+    Map<String, String> value = null;
     checkIsInMultiOrPipeline();
-    client.hgetAll(key);
-    return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+
+    if (client.isCachedConnection()) {
+      value = (Map<String, String>)client.getValueFromClientCache(key);
+      if (value == null) {
+        client.hgetAll(key);
+        value = BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+        if (client.isCachedConnection() && value != null) {
+          client.putValueInClientCache(key, value);
+        }
+      }
+    } else { // connection is not using ClienSideCaching
+      client.hgetAll(key);
+      value = BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+    }
+    return value;
   }
 
   /**
@@ -3248,6 +3273,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.clientId();
     return client.getIntegerReply();
+  }
+
+  // TODO check the best way to pass the invalidation connection
+  @Override
+  public String clientTracking(boolean enabled, Jedis jedis, ClientTrackingParams params) {
+    client.clientTracking(enabled,jedis, params);
+    return client.getBulkReply();
   }
 
   @Override

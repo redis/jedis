@@ -24,6 +24,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -31,6 +33,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ClientTrackingParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -43,6 +46,9 @@ public class BinaryClient extends Connection {
   private int db;
 
   private boolean isInWatch;
+
+  private RedisClientCache redisClientCache = null;
+  protected static Logger log = LoggerFactory.getLogger(BinaryClient.class.getName());
 
   public BinaryClient() {
     super();
@@ -1099,6 +1105,40 @@ public class BinaryClient extends Connection {
 
   public void clientId() {
     sendCommand(CLIENT, Keyword.ID.raw);
+  }
+
+  public boolean isCachedConnection() {
+    return (redisClientCache != null);
+  }
+
+  public Object getValueFromClientCache(final String key) {
+    // TODO Remove/change level
+    log.info("Try to get the key: {} from client cache", key);
+    return redisClientCache.get(key);
+  }
+
+  public void putValueInClientCache(final String key, Object value )
+  {
+    // TODO Remove/change level
+    log.info("Put key: {} in client cache", key);
+    redisClientCache.put(key, value);
+  }
+
+  // TODO: Check the best way to retrieve/pass the invalidation connection
+  public void clientTracking(boolean enabled, BinaryJedis jedis, ClientTrackingParams params){
+    if (params == null) {
+      params = ClientTrackingParams.clientTrackingParams();
+    }
+
+    // TODO check RESP 3 vs RESP 2
+    redisClientCache = new RedisClientCache(jedis);
+    Long cacheListernerClientId =  redisClientCache.getRedisCacheClientId();
+    params.redirect(cacheListernerClientId);
+
+    // TODO Remove/change level
+    log.info("BinaryJedis clientTracking {} .", params);
+
+    sendCommand(CLIENT, joinParameters(Keyword.TRACKING.raw, (enabled?"ON":"OFF").getBytes(), params.getByteParams()));
   }
 
   public void time() {

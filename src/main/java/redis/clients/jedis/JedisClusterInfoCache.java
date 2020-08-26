@@ -185,7 +185,7 @@ public class JedisClusterInfoCache {
   private HostAndPort generateHostAndPort(List<Object> hostInfos) {
     String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
     int port = ((Long) hostInfos.get(1)).intValue();
-    if (ssl && hostAndPortMap != null) {
+    if (hostAndPortMap != null) {
       HostAndPort hostAndPort = hostAndPortMap.getSSLHostAndPort(host, port);
       if (hostAndPort != null) {
         return hostAndPort;

@@ -68,9 +68,20 @@ public abstract class Params {
   }
 
   @Override public String toString() {
-    if (params == null) {
-      params = new HashMap<>();
+    ArrayList<String> paramsAsString = new ArrayList<>();
+    if (params != null) {
+      for (Entry<String, Object> param : params.entrySet()) {
+        paramsAsString.add(param.getKey());
+        Object value = param.getValue();
+        if (value != null) {
+          if (value instanceof byte[]) {
+            paramsAsString.add( SafeEncoder.encode((byte[]) value));
+          } else {
+            paramsAsString.add(value.toString());
+          }
+        }
+      }
     }
-    return params.toString();
+    return paramsAsString.toString();
   }
 }

@@ -67,4 +67,12 @@ public abstract class Params {
     params.put(name, null);
   }
 
+  // TODO remove since it is part of 2230
+  @Override
+  public String toString() {
+    if (params == null ) {
+      params = new HashMap<>();
+    }
+    return "Params{" + "params=" + params.toString() + '}';
+  }
 }

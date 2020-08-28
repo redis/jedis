@@ -12,11 +12,7 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamGroupInfo;
 import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.*;
 
 public interface Commands {
 
@@ -377,6 +373,8 @@ public interface Commands {
   void clientSetname(String name);
 
   void clientId();
+
+  void clientTracking(boolean enabled, ClientTrackingParams params);
 
   void memoryDoctor();
 

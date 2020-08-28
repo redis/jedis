@@ -29,12 +29,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -3721,6 +3716,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.clientId();
     return client.getIntegerReply();
+  }
+
+  @Override
+  public String clientTracking(boolean enabled, ClientTrackingParams params) {
+    checkIsInMultiOrPipeline();
+    this.client.clientTracking(enabled, params);
+    return client.getBulkReply();
   }
 
   public String clientPause(final long timeout) {

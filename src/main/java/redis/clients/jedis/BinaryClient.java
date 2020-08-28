@@ -15,6 +15,7 @@ import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import static redis.clients.jedis.Protocol.Keyword.FREQ;
 import static redis.clients.jedis.Protocol.Keyword.HELP;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +26,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -1099,6 +1095,11 @@ public class BinaryClient extends Connection {
 
   public void clientId() {
     sendCommand(CLIENT, Keyword.ID.raw);
+  }
+
+  public void clientTracking(boolean enabled, ClientTrackingParams params) {
+    System.out.println(params);
+    sendCommand(CLIENT, joinParameters(Keyword.TRACKING.raw, (enabled)?Keyword.ON.raw: Keyword.OFF.raw, params.getByteParams()));
   }
 
   public void time() {

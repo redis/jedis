@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.params.ClientTrackingParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -47,6 +48,8 @@ public interface AdvancedBinaryJedisCommands {
   String clientSetname(byte[] name);
 
   Long clientId();
+
+  String clientTracking(boolean enabled, ClientTrackingParams params);
 
   byte[] memoryDoctorBinary();
 

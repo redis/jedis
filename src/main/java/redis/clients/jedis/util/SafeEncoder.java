@@ -66,4 +66,22 @@ public final class SafeEncoder {
     
     return dataToEncode;
   }
+
+  /**
+   *
+   * @param
+   * @return a list of Sting
+   */
+  public static List<String> encode(final List<byte[]> data) {
+    if (data == null) {
+      return null;
+    }
+    List listOfString = new ArrayList<String>();
+    if (data != null) {
+      for (byte[] item : data) {
+        listOfString.add(encode(item));
+      }
+    }
+    return listOfString;
+  }
 }

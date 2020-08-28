@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.params.ClientTrackingParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
@@ -47,6 +48,8 @@ public interface AdvancedJedisCommands {
   String clientSetname(String name);
 
   Long clientId();
+
+  String clientTracking(boolean enabled, ClientTrackingParams params);
 
   String memoryDoctor();
 

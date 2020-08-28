@@ -24,6 +24,9 @@ public abstract class JedisPubSub {
   public void onMessage(String channel, String message) {
   }
 
+  public void onMessage(String channel, List<String> messages) {
+  }
+
   public void onPMessage(String pattern, String channel, String message) {
   }
 
@@ -138,10 +141,20 @@ public abstract class JedisPubSub {
         onUnsubscribe(strchannel, subscribedChannels);
       } else if (Arrays.equals(MESSAGE.raw, resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
-        final byte[] bmesg = (byte[]) reply.get(2);
-        final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
-        final String strmesg = (bmesg == null) ? null : SafeEncoder.encode(bmesg);
-        onMessage(strchannel, strmesg);
+
+        // Client Side Caching messages are sent as an Array List not a simple String
+        if ( reply.get(2) instanceof List  ) {
+          final List bmesgs = (List)reply.get(2);
+          final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
+          final List messages = (bmesgs == null) ? null : SafeEncoder.encode(bmesgs) ;
+          onMessage(strchannel, messages);
+        } else {
+          final byte[] bmesg = (byte[]) reply.get(2);
+          final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
+          final String strmesg = (bmesg == null) ? null : SafeEncoder.encode(bmesg);
+          onMessage(strchannel, strmesg);
+        }
+
       } else if (Arrays.equals(PMESSAGE.raw, resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);

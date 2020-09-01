@@ -31,6 +31,7 @@ All of the following redis features are supported:
 - Commands operating on lists
 - Commands operating on sets
 - Commands operating on sorted sets
+- Commands operating on streams
 - Transactions
 - Pipelining
 - Publish/Subscribe
@@ -56,7 +57,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -89,7 +90,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.3.0-SNAPSHOT</version>
+      <version>3.4.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```

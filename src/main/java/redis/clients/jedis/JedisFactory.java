@@ -124,8 +124,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hp = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
-        ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    final Jedis jedis = newJedis(hp);
     try {
       jedis.connect();
       if (user != null) {
@@ -146,8 +145,12 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
     return new DefaultPooledObject<>(jedis);
   }
-
-  @Override
+  
+  protected Jedis newJedis(HostAndPort hp) { 
+    return new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+    
+    @Override
   public void passivateObject(PooledObject<Jedis> pooledJedis) throws Exception {
     // TODO maybe should select db 0? Not sure right now.
   }

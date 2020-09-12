@@ -1,19 +1,19 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PONG;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.Arrays;
 import java.util.List;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PONG;
+import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
 
 public abstract class JedisPubSub {
 
@@ -105,15 +105,22 @@ public abstract class JedisPubSub {
 
   public void proceedWithPatterns(Client client, String... patterns) {
     this.client = client;
-    client.psubscribe(patterns);
-    client.flush();
+    
+    if ( patterns.length > 0 ) {
+      client.psubscribe(patterns);
+      client.flush();
+    }
     process(client);
   }
 
   public void proceed(Client client, String... channels) {
     this.client = client;
-    client.subscribe(channels);
-    client.flush();
+    
+    if ( channels.length > 0 ) {
+      client.subscribe(channels);
+      client.flush();
+    }
+    
     process(client);
   }
 

@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.StreamGroupInfo.CONSUMERS;
@@ -300,26 +301,39 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xpendeing-stream", null, map);
     
-    String status = jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false);
+    assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
+    
     
     Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<String, StreamEntryID>("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY);
 
-    // Empty Stream
+    // Read the event from Stream put it on pending 
     List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false, streamQeury1); 
     assertEquals(1, range.size());
     assertEquals(1, range.get(0).getValue().size());
+    assertEquals(map, range.get(0).getValue().get(0).getFields());
     
+    // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", null, null, 3, "xpendeing-consumer");
     assertEquals(1, pendingRange.size());
+    assertEquals(id1, pendingRange.get(0).getID());
+    assertEquals(1, pendingRange.get(0).getDeliveredTimes());
+    assertEquals("xpendeing-consumer", pendingRange.get(0).getConsumerName());
     
+    // Sleep for 1000ms so we can claim events pending for more than 500ms
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
     
-    List<StreamEntry> claimRange = jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, pendingRange.get(0).getID());
-    assertEquals(1, pendingRange.size());
+    List<StreamEntry> claimRange = jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, id1);
+    assertEquals(1, claimRange.size());
+
+    // Deleted events should return as null on XClaim 
+    assertEquals(1, jedis.xdel("xpendeing-stream", id1));    
+    List<StreamEntry> claimRangeDel = jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 0, 0, 0, false, id1);
+    assertEquals(1, claimRangeDel.size());
+    assertNull(claimRangeDel.get(0));
     
     Long pendingMessageNum = jedis.xgroupDelConsumer("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2");
     assertEquals(1L, pendingMessageNum.longValue()); 

@@ -124,6 +124,9 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(0 < ttl && ttl <= expireSeconds);
+    jedis.set(bfoo, binaryValue);
+    ttl = jedis.ttl(bfoo);
+    assertTrue(ttl < 0);
   }
 
   @Test

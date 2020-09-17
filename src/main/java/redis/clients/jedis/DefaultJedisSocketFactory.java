@@ -45,10 +45,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       // valid
       socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
       // ensure timely delivery of data
-      socket.setSoLinger(true, 0); // Control calls close () method,
-      // the underlying socket is closed
-      // immediately
-      // <-@wjw_add
 
       socket.connect(new InetSocketAddress(getHost(), getPort()), getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());

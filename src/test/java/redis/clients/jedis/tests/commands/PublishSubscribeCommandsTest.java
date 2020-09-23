@@ -6,7 +6,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +84,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void pubSubChannelWithPingPong() throws InterruptedException {
+  public void pubSubChannelWithPingPong() {
     final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
     final CountDownLatch latchReceivedPong = new CountDownLatch(1);
     jedis.subscribe(new JedisPubSub() {
@@ -110,6 +112,41 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     }, "testchan1");
     assertEquals(0L, latchReceivedPong.getCount());
     assertEquals(0L, latchUnsubscribed.getCount());
+  }
+
+  @Test
+  public void pubSubChannelWithPingPongWithArgument() {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+    final List<String> pongPatterns = new ArrayList<>();
+    jedis.subscribe(new JedisPubSub() {
+
+      @Override
+      public void onSubscribe(String channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(String channel, String message) {
+        this.ping("hi!");
+      }
+
+      @Override
+      public void onPong(String pattern) {
+        pongPatterns.add(pattern);
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(String channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, "testchan1");
+
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
+    assertEquals(Collections.singletonList("hi!"), pongPatterns);
   }
 
   @Test
@@ -299,6 +336,74 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         punsubscribe(pattern);
       }
     }, SafeEncoder.encode("foo.*"), SafeEncoder.encode("bar.*"));
+  }
+
+  @Test
+  public void binaryPubSubChannelWithPingPong() {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+
+    jedis.subscribe(new BinaryJedisPubSub() {
+
+      @Override
+      public void onSubscribe(byte[] channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(byte[] channel, byte[] message) {
+        this.ping();
+      }
+
+      @Override
+      public void onPong(byte[] pattern) {
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(byte[] channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, SafeEncoder.encode("testchan1"));
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
+  }
+
+  @Test
+  public void binaryPubSubChannelWithPingPongWithArgument() {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+    final List<byte[]> pongPatterns = new ArrayList<>();
+
+    jedis.subscribe(new BinaryJedisPubSub() {
+
+      @Override
+      public void onSubscribe(byte[] channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(byte[] channel, byte[] message) {
+        this.ping("hi!".getBytes());
+      }
+
+      @Override
+      public void onPong(byte[] pattern) {
+        pongPatterns.add(pattern);
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(byte[] channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, SafeEncoder.encode("testchan1"));
+
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
+    assertEquals("hi!", new String(pongPatterns.get(0)));
   }
 
   @Test

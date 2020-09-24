@@ -1,30 +1,9 @@
 package redis.clients.jedis.tests;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Test;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
@@ -32,6 +11,12 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
+
+import java.io.IOException;
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 
 public class PipeliningTest extends JedisCommandTestBase {
 
@@ -414,7 +399,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     String script = "return 'success!'";
 
     Pipeline p = jedis.pipelined();
-    Response<Object> result = p.eval(script);
+    Response<Object> result = p.eval("", script);
     p.sync();
 
     assertEquals("success!", result.get());
@@ -425,7 +410,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     String script = "return 'success!'";
 
     Pipeline p = jedis.pipelined();
-    Response<Object> result = p.eval(SafeEncoder.encode(script));
+    Response<Object> result = p.eval(SafeEncoder.encode(""), SafeEncoder.encode(script));
     p.sync();
 
     assertArrayEquals(SafeEncoder.encode("success!"), (byte[]) result.get());
@@ -439,9 +424,9 @@ public class PipeliningTest extends JedisCommandTestBase {
 
     Pipeline p = jedis.pipelined();
     p.set(key, "0");
-    Response<Object> result0 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result0 = p.eval("", script, Arrays.asList(key), Arrays.asList(arg));
     p.incr(key);
-    Response<Object> result1 = p.eval(script, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result1 = p.eval("", script, Arrays.asList(key), Arrays.asList(arg));
     Response<String> result2 = p.get(key);
     p.sync();
 
@@ -460,9 +445,9 @@ public class PipeliningTest extends JedisCommandTestBase {
 
     Pipeline bP = jedis.pipelined();
     bP.set(bKey, SafeEncoder.encode("0"));
-    Response<Object> bResult0 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
+    Response<Object> bResult0 = bP.eval(bKey, bScript, Arrays.asList(bKey), Arrays.asList(bArg));
     bP.incr(bKey);
-    Response<Object> bResult1 = bP.eval(bScript, Arrays.asList(bKey), Arrays.asList(bArg));
+    Response<Object> bResult1 = bP.eval(bKey, bScript, Arrays.asList(bKey), Arrays.asList(bArg));
     Response<byte[]> bResult2 = bP.get(bKey);
     bP.sync();
 
@@ -476,7 +461,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     String script = "return { {KEYS[1]} , {2} }";
 
     Pipeline p = jedis.pipelined();
-    Response<Object> result = p.eval(script, 1, "key1");
+    Response<Object> result = p.eval("key1", script, 1, "key1");
     p.sync();
 
     List<?> results = (List<?>) result.get();
@@ -490,7 +475,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     byte[] bKey = SafeEncoder.encode("key1");
 
     Pipeline p = jedis.pipelined();
-    Response<Object> result = p.eval(bScript, 1, bKey);
+    Response<Object> result = p.eval(bKey, bScript, 1, bKey);
     p.sync();
 
     List<?> results = (List<?>) result.get();
@@ -506,7 +491,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertTrue(jedis.scriptExists(sha1));
 
     Pipeline p = jedis.pipelined();
-    Response<Object> result = p.evalsha(sha1);
+    Response<Object> result = p.evalsha("", sha1);
     p.sync();
 
     assertEquals("success!", result.get());
@@ -523,9 +508,9 @@ public class PipeliningTest extends JedisCommandTestBase {
 
     Pipeline p = jedis.pipelined();
     p.set(key, "0");
-    Response<Object> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result0 = p.evalsha(key, sha1, Arrays.asList(key), Arrays.asList(arg));
     p.incr(key);
-    Response<Object> result1 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
+    Response<Object> result1 = p.evalsha(key, sha1, Arrays.asList(key), Arrays.asList(arg));
     Response<String> result2 = p.get(key);
     p.sync();
 
@@ -546,9 +531,9 @@ public class PipeliningTest extends JedisCommandTestBase {
 
     Pipeline p = jedis.pipelined();
     p.set(bKey, SafeEncoder.encode("0"));
-    Response<Object> result0 = p.evalsha(bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
+    Response<Object> result0 = p.evalsha(bKey, bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
     p.incr(bKey);
-    Response<Object> result1 = p.evalsha(bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
+    Response<Object> result1 = p.evalsha(bKey, bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
     Response<byte[]> result2 = p.get(bKey);
     p.sync();
 

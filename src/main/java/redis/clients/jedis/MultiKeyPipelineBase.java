@@ -562,76 +562,76 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<Object> eval(String script) {
-    return this.eval(script, 0, new String[0]);
+  public Response<Object> eval(String targetKey, String script) {
+    return this.eval(targetKey, script, 0, new String[0]);
   }
 
   @Override
-  public Response<Object> eval(String script, List<String> keys, List<String> args) {
+  public Response<Object> eval(String targetKey, String script, List<String> keys, List<String> args) {
     String[] argv = Jedis.getParams(keys, args);
-    return this.eval(script, keys.size(), argv);
+    return this.eval(targetKey, script, keys.size(), argv);
   }
 
   @Override
-  public Response<Object> eval(String script, int keyCount, String... params) {
-    getClient(script).eval(script, keyCount, params);
+  public Response<Object> eval(String targetKey, String script, int keyCount, String... params) {
+    getClient(targetKey).eval(script, keyCount, params);
     return getResponse(BuilderFactory.EVAL_RESULT);
   }
 
   @Override
-  public Response<Object> evalsha(String sha1) {
-    return this.evalsha(sha1, 0, new String[0]);
+  public Response<Object> evalsha(String targetKey, String sha1) {
+    return this.evalsha(targetKey, sha1, 0, new String[0]);
   }
 
   @Override
-  public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+  public Response<Object> evalsha(String targetKey, String sha1, List<String> keys, List<String> args) {
     String[] argv = Jedis.getParams(keys, args);
-    return this.evalsha(sha1, keys.size(), argv);
+    return this.evalsha(targetKey, sha1, keys.size(), argv);
   }
 
   @Override
-  public Response<Object> evalsha(String sha1, int keyCount, String... params) {
+  public Response<Object> evalsha(String targetKey, String sha1, int keyCount, String... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
     return getResponse(BuilderFactory.EVAL_RESULT);
   }
 
   @Override
-  public Response<Object> eval(byte[] script) {
-    return this.eval(script, 0);
+  public Response<Object> eval(byte[] targetKey, byte[] script) {
+    return this.eval(targetKey, script, 0);
   }
 
   @Override
-  public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
-    getClient(script).eval(script, keyCount, params);
+  public Response<Object> eval(byte[] targetKey, byte[] script, byte[] keyCount, byte[]... params) {
+    getClient(targetKey).eval(script, keyCount, params);
     return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
   }
 
   @Override
-  public Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+  public Response<Object> eval(byte[] targetKey, byte[] script, List<byte[]> keys, List<byte[]> args) {
     byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
-    return this.eval(script, keys.size(), argv);
+    return this.eval(targetKey, script, keys.size(), argv);
   }
 
   @Override
-  public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
-    getClient(script).eval(script, keyCount, params);
+  public Response<Object> eval(byte[] targetKey, byte[] script, int keyCount, byte[]... params) {
+    getClient(targetKey).eval(script, keyCount, params);
     return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
   }
 
   @Override
-  public Response<Object> evalsha(byte[] sha1) {
-    return this.evalsha(sha1, 0);
+  public Response<Object> evalsha(byte[] targetKey, byte[] sha1) {
+    return this.evalsha(targetKey, sha1, 0);
   }
 
   @Override
-  public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+  public Response<Object> evalsha(byte[] targetKey, byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     byte[][] argv = BinaryJedis.getParamsWithBinary(keys, args);
-    return this.evalsha(sha1, keys.size(), argv);
+    return this.evalsha(targetKey, sha1, keys.size(), argv);
   }
 
   @Override
-  public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
-    getClient(sha1).evalsha(sha1, keyCount, params);
+  public Response<Object> evalsha(byte[] targetKey, byte[] sha1, int keyCount, byte[]... params) {
+    getClient(targetKey).evalsha(sha1, keyCount, params);
     return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
   }
 

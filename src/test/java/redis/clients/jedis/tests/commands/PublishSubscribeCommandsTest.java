@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -84,7 +85,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void pubSubChannelWithPingPong() {
+  public void pubSubChannelWithPingPong() throws InterruptedException {
     final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
     final CountDownLatch latchReceivedPong = new CountDownLatch(1);
     jedis.subscribe(new JedisPubSub() {
@@ -115,7 +116,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void pubSubChannelWithPingPongWithArgument() {
+  public void pubSubChannelWithPingPongWithArgument() throws InterruptedException {
     final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
     final CountDownLatch latchReceivedPong = new CountDownLatch(1);
     final List<String> pongPatterns = new ArrayList<>();
@@ -339,7 +340,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void binaryPubSubChannelWithPingPong() {
+  public void binaryPubSubChannelWithPingPong() throws InterruptedException {
     final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
     final CountDownLatch latchReceivedPong = new CountDownLatch(1);
 
@@ -371,10 +372,11 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void binaryPubSubChannelWithPingPongWithArgument() {
+  public void binaryPubSubChannelWithPingPongWithArgument() throws InterruptedException {
     final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
     final CountDownLatch latchReceivedPong = new CountDownLatch(1);
     final List<byte[]> pongPatterns = new ArrayList<>();
+    final byte[] pingMessage = SafeEncoder.encode("hi!");
 
     jedis.subscribe(new BinaryJedisPubSub() {
 
@@ -385,7 +387,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
       @Override
       public void onMessage(byte[] channel, byte[] message) {
-        this.ping("hi!".getBytes());
+        this.ping(pingMessage);
       }
 
       @Override
@@ -403,7 +405,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
     assertEquals(0L, latchReceivedPong.getCount());
     assertEquals(0L, latchUnsubscribed.getCount());
-    assertEquals("hi!", new String(pongPatterns.get(0)));
+    assertArrayEquals(pingMessage, pongPatterns.get(0));
   }
 
   @Test

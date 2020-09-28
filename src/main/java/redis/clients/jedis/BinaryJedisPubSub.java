@@ -11,7 +11,6 @@ import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
 import java.util.Arrays;
 import java.util.List;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class BinaryJedisPubSub {

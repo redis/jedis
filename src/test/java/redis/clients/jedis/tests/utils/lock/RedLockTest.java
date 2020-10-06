@@ -18,16 +18,21 @@ package redis.clients.jedis.tests.utils.lock;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.util.lock.JedisLock;
 import redis.clients.jedis.util.lock.JedisLockManager;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class LockTest {
-    private volatile static JedisLock lock;
+/**
+ * @author gao_xianglong@sina.com
+ * @version 0.1-SNAPSHOT
+ * @date created in 2020/8/18 10:19 上午
+ */
+public class RedLockTest {
+    private static JedisLock lock;
 
     @BeforeClass
     public static void init() {
@@ -36,16 +41,17 @@ public class LockTest {
         config.setMaxIdle(50);
         config.setMaxTotal(100);
         config.setMaxWaitMillis(1000);
-        lock = new JedisLockManager(new JedisCluster(new HostAndPort("127.0.0.1", 6379),
-                config)).getLock("mylock");
+        JedisLockManager manager = new JedisLockManager(Arrays.asList(new JedisPool(config, "127.0.0.1", 6379),
+                new JedisPool(config, "127.0.0.1", 6380),
+                new JedisPool(config, "127.0.0.1", 6381)));
+        lock = manager.getLock("mylock");
     }
 
     @Test
     public void lock() {
         try {
+            //同步获取重入锁，当前线程如果获取锁资源失败则一直阻塞直至成功
             lock.lock();
-            lock.lock();
-            System.out.println("Get lock success...");
         } finally {
             lock.unlock();
         }
@@ -54,23 +60,14 @@ public class LockTest {
     @Test
     public void tryLock() {
         try {
-            Assert.assertTrue(lock.tryLock());
+            System.out.println(lock.tryLock());
         } finally {
             lock.unlock();
         }
         try {
-            Assert.assertTrue(lock.tryLock(1, TimeUnit.SECONDS));
+            Assert.assertTrue(lock.tryLock(10, TimeUnit.SECONDS));
         } finally {
             lock.unlock();
-        }
-    }
-
-    @Test
-    public void forceUnlock() {
-        try {
-            lock.tryLock();
-        } finally {
-            lock.forceUnlock();
         }
     }
 }

@@ -17,29 +17,31 @@ package redis.clients.jedis.tests.utils.lock;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.util.lock.JedisLock;
 import redis.clients.jedis.util.lock.JedisLockManager;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class LockBenchmark {
+public class RedLockBenchmark {
     private static volatile JedisLock lock;
 
     @BeforeClass
     public static void init() {
         JedisPoolConfig config = new JedisPoolConfig();
-        config.setMinIdle(20);
+        config.setMinIdle(10);
         config.setMaxIdle(50);
         config.setMaxTotal(100);
         config.setMaxWaitMillis(2000);
-        lock = new JedisLockManager(new JedisCluster(new HostAndPort("127.0.0.1", 6379),
-                config)).getLock("mylock");
+        JedisLockManager manager = new JedisLockManager(Arrays.asList(new JedisPool(config, "127.0.0.1", 6379),
+                new JedisPool(config, "127.0.0.1", 6380),
+                new JedisPool(config, "127.0.0.1", 6381)));
+        lock = manager.getLock("mylock");
     }
 
     @Test

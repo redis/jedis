@@ -747,7 +747,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
-   * If the field is not found or the key does not exist, a special 'nil' value is returned.
+   * If the field is not found or the key does not exist, a null value is returned.
    * <p>
    * <b>Time complexity:</b> O(1)
    * @param key

@@ -79,9 +79,6 @@ public class SetParams extends Params {
     if (contains(XX)) {
       byteParams.add(SafeEncoder.encode(XX));
     }
-    if (contains(GET)) {
-      byteParams.add(SafeEncoder.encode(GET));
-    }
 
     if (contains(EX)) {
       byteParams.add(SafeEncoder.encode(EX));
@@ -90,6 +87,10 @@ public class SetParams extends Params {
     if (contains(PX)) {
       byteParams.add(SafeEncoder.encode(PX));
       byteParams.add(Protocol.toByteArray((long) getParam(PX)));
+    }
+
+    if (contains(GET)) {
+      byteParams.add(SafeEncoder.encode(GET));
     }
 
     return byteParams.toArray(new byte[byteParams.size()][]);

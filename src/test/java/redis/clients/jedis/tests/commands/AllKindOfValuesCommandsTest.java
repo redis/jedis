@@ -856,6 +856,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     String newValue = jedis.get("hello");
     assertEquals("jedis", newValue);
+
+    String nullValue = jedis.set("key", "value", setParams().get());
+    assertNull(nullValue);
   }
 
   @Test

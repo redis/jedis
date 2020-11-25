@@ -649,8 +649,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double incrByFloat(final String key, final double increment) {
     checkIsInMultiOrPipeline();
     client.incrByFloat(key, increment);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -855,8 +854,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double hincrByFloat(final String key, final String field, final double value) {
     checkIsInMultiOrPipeline();
     client.hincrByFloat(key, field, value);
-    final String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -3614,16 +3612,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double geodist(final String key, final String member1, final String member2) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
   public Double geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2, unit);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override

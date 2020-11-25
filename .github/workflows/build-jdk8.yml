@@ -26,11 +26,9 @@ jobs:
         # cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
 
     - name: Build Jedis
-      run: make
+      run: make travis-install
     
     - name: Test
-      run: |
-        make start
-        make test
+      run: TEST="\!ModuleTest" make test
       
              

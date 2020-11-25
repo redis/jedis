@@ -17,12 +17,13 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build Redis
+    - name: Build Stunnel
       run: |
-        sudo apt-get install libssl-dev
-        wget -O stunnel.tar.gz ftp://ftp.stunnel.org/stunnel/archive/5.x/stunnel-5.29.tar.gz
-        tar -xvzf stunnel.tar.gz
-        cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
+        sudo apt-get install stunnel
+        # sudo apt-get install libssl-dev
+        # wget -O stunnel.tar.gz ftp://ftp.stunnel.org/stunnel/archive/5.x/stunnel-5.29.tar.gz
+        # tar -xvzf stunnel.tar.gz
+        # cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..
 
     - name: Build Jedis
       run: make

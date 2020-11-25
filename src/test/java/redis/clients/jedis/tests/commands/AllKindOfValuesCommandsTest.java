@@ -847,6 +847,21 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void setGetOptionTest() {
+    String status = jedis.set("hello", "world");
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+
+    String oldValue = jedis.set("hello", "jedis", setParams().get());
+    assertEquals("world", oldValue);
+
+    String newValue = jedis.get("hello");
+    assertEquals("jedis", newValue);
+
+    String nullValue = jedis.set("key", "value", setParams().get());
+    assertNull(nullValue);
+  }
+
+  @Test
   public void sendCommandTest(){
     Object obj = jedis.sendCommand(SET, "x", "1");
     String returnValue = SafeEncoder.encode((byte[]) obj);

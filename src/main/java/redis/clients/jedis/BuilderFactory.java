@@ -574,6 +574,10 @@ public final class BuilderFactory {
       }
 
       for(ArrayList<Object> res : objectList) {
+        if(res == null) {
+          responses.add(null);
+          continue;
+        }
         String entryIdString = SafeEncoder.encode((byte[])res.get(0));
         StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>)res.get(1);

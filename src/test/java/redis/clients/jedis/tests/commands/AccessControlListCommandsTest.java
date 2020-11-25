@@ -114,7 +114,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertNull(authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     // now activate the user
@@ -131,7 +131,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     // remove password, and try to authenticate
@@ -141,7 +141,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     jedis.aclDelUser(USER_ZZZ); // delete the user
@@ -150,7 +150,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     jedis2.close();

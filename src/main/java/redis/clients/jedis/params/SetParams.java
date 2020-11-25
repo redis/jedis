@@ -1,6 +1,7 @@
 package redis.clients.jedis.params;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
@@ -79,9 +80,7 @@ public class SetParams extends Params {
 
   public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
-    for (byte[] arg : args) {
-      byteParams.add(arg);
-    }
+    Collections.addAll(byteParams, args);
 
     if (contains(NX)) {
       byteParams.add(SafeEncoder.encode(NX));

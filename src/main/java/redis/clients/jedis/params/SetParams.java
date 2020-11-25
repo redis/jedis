@@ -11,6 +11,7 @@ public class SetParams extends Params {
   private static final String NX = "nx";
   private static final String PX = "px";
   private static final String EX = "ex";
+  private static final String KEEPTTL = "keepttl";
   private static final String GET = "get";
 
   public SetParams() {
@@ -59,6 +60,14 @@ public class SetParams extends Params {
   }
 
   /**
+   * Retain the time to live associated with the key.
+   * @return SetParams
+   */
+  public SetParams keepttl() {
+    addParam(KEEPTTL);
+  }
+  
+  /**
    * Return the old value stored at key, or nil when key did not exist.
    * @return SetParams
    */
@@ -87,6 +96,9 @@ public class SetParams extends Params {
     if (contains(PX)) {
       byteParams.add(SafeEncoder.encode(PX));
       byteParams.add(Protocol.toByteArray((long) getParam(PX)));
+    }
+    if (contains(KEEPTTL)) {
+      byteParams.add(SafeEncoder.encode(KEEPTTL));
     }
 
     if (contains(GET)) {

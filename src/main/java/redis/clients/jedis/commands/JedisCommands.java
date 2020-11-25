@@ -23,6 +23,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 /**
  * Common interface for sharded and non-sharded Jedis
@@ -137,6 +138,12 @@ public interface JedisCommands {
   Long lrem(String key, long count, String value);
 
   String lpop(String key);
+
+  Long lpos(String key, String element);
+
+  Long lpos(String key, String element, LPosParams params);
+
+  List<Long> lpos(String key, String element, LPosParams params, long count);
 
   String rpop(String key);
 

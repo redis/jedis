@@ -12,6 +12,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -125,6 +126,12 @@ public interface BinaryJedisClusterCommands {
   Long lrem(byte[] key, long count, byte[] value);
 
   byte[] lpop(byte[] key);
+
+  Long lpos(byte[] key, byte[] element);
+
+  Long lpos(byte[] key, byte[] element, LPosParams params);
+
+  List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count);
 
   byte[] rpop(byte[] key);
 

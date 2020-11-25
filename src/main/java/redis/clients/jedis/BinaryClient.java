@@ -14,6 +14,7 @@ import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import static redis.clients.jedis.Protocol.Keyword.FREQ;
 import static redis.clients.jedis.Protocol.Keyword.HELP;
+import static redis.clients.jedis.Protocol.Keyword.COUNT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -371,6 +373,18 @@ public class BinaryClient extends Connection {
 
   public void lpop(final byte[] key) {
     sendCommand(LPOP, key);
+  }
+
+  public void lpos(final byte[] key, final byte[] element){
+    sendCommand(LPOS, key, element);
+  }
+
+  public void lpos(final byte[] key, final byte[] element, LPosParams params) {
+    sendCommand(LPOS, joinParameters(key, element, params.getByteParams()));
+  }
+
+  public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count){
+    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(toByteArray(count))));
   }
 
   public void rpop(final byte[] key) {

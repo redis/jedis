@@ -5,6 +5,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
@@ -716,6 +717,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.lpop(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long lpos(final String key, final String element) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.lpos(key, element);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long lpos(final String key, final String element, final LPosParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.lpos(key, element, params);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Long> lpos(final String key, final String element, final LPosParams params, final long count) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Long> execute(Jedis connection) {
+        return connection.lpos(key, element, params, count);
       }
     }.run(key);
   }

@@ -27,6 +27,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -648,8 +649,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double incrByFloat(final String key, final double increment) {
     checkIsInMultiOrPipeline();
     client.incrByFloat(key, increment);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -854,8 +854,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double hincrByFloat(final String key, final String field, final double value) {
     checkIsInMultiOrPipeline();
     client.hincrByFloat(key, field, value);
-    final String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   /**
@@ -1160,6 +1159,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.lpop(key);
     return client.getBulkReply();
+  }
+
+  @Override
+  public Long lpos(final String key, final String element) {
+    checkIsInMultiOrPipeline();
+    client.lpos(key, element);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long lpos(final String key, final String element, final LPosParams params) {
+    checkIsInMultiOrPipeline();
+    client.lpos(key, element, params);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public List<Long> lpos(final String key, final String element, final LPosParams params, final long count) {
+    checkIsInMultiOrPipeline();
+    client.lpos(key, element, params, count);
+    return client.getIntegerMultiBulkReply();
   }
 
   /**
@@ -3592,16 +3612,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Double geodist(final String key, final String member1, final String member2) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
   public Double geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2, unit);
-    String dval = client.getBulkReply();
-    return (dval != null ? new Double(dval) : null);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override

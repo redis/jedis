@@ -18,6 +18,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -304,6 +305,21 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void lpop(final String key) {
     lpop(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void lpos(final String key, final String element){
+    lpos(SafeEncoder.encode(key), SafeEncoder.encode(element));
+  }
+
+  @Override
+  public void lpos(final String key, final String element, final LPosParams params){
+    lpos(SafeEncoder.encode(key), SafeEncoder.encode(element), params);
+  }
+
+  @Override
+  public void lpos(final String key, final String element, final LPosParams params, final long count){
+    lpos(SafeEncoder.encode(key), SafeEncoder.encode(element), params, count);
   }
 
   @Override

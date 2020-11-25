@@ -65,6 +65,7 @@ public class SetParams extends Params {
    */
   public SetParams keepttl() {
     addParam(KEEPTTL);
+    return this;
   }
   
   /**

@@ -12,6 +12,7 @@ public class SetParams extends Params {
   private static final String PX = "px";
   private static final String EX = "ex";
   private static final String KEEPTTL = "keepttl";
+  private static final String GET = "get";
 
   public SetParams() {
   }
@@ -64,6 +65,14 @@ public class SetParams extends Params {
    */
   public SetParams keepttl() {
     addParam(KEEPTTL);
+  }
+  
+  /**
+   * Return the old value stored at key, or nil when key did not exist.
+   * @return SetParams
+   */
+  public SetParams get() {
+    addParam(GET);
     return this;
   }
 
@@ -90,6 +99,10 @@ public class SetParams extends Params {
     }
     if (contains(KEEPTTL)) {
       byteParams.add(SafeEncoder.encode(KEEPTTL));
+    }
+
+    if (contains(GET)) {
+      byteParams.add(SafeEncoder.encode(GET));
     }
 
     return byteParams.toArray(new byte[byteParams.size()][]);

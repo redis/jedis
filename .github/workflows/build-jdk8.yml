@@ -10,19 +10,21 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
-      matrix:
-        java: [ 7, 8]
+#    strategy:
+#      max-parallel: 1
+#      matrix:
+#        java: [ 7, 8]
         
     
+#    name: Java ${{ matrix.java }}
     name: Java ${{ matrix.java }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
-        java-version: ${{ matrix.java }}
+  #        java-version: ${{ matrix.java }}
+        java-version: 8
   #  - name: Cache local Maven repository
   #    uses: actions/cache@v2
   #    with:

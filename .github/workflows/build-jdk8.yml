@@ -11,8 +11,10 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
       matrix:
         java: [ 7, 8]
+        
     
     name: Java ${{ matrix.java }}
     steps:

@@ -10,24 +10,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ 7, 8]
-    
-    name: Java ${{ matrix.java }}
+   
+    name: Java 8
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
-        java-version: ${{ matrix.java }}
-    - name: Cache local Maven repository
-      uses: actions/cache@v2
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+        java-version: 8
+
     - name: Build Stunnel
       run: |
         sudo apt-get install stunnel

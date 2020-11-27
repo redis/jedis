@@ -832,6 +832,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<Boolean> smismember(final String key, final String... members) {
+    return new JedisClusterCommand<List<Boolean>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Boolean> execute(Jedis connection) {
+        return connection.smismember(key, members);
+      }
+    }.run(key);
+  }
+
+  @Override
   public String srandmember(final String key) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
@@ -1009,6 +1019,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Double execute(Jedis connection) {
         return connection.zscore(key, member);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Double> zmscore(final String key, final String... members) {
+    return new JedisClusterCommand<List<Double>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Double> execute(Jedis connection) {
+        return connection.zmscore(key, members);
       }
     }.run(key);
   }

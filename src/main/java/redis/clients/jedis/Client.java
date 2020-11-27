@@ -374,6 +374,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void smismember(final String key, final String... members) {
+    smismember(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  @Override
   public void sinter(final String... keys) {
     sinter(SafeEncoder.encodeMany(keys));
   }
@@ -484,6 +489,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zscore(final String key, final String member) {
     zscore(SafeEncoder.encode(key), SafeEncoder.encode(member));
+  }
+
+  @Override
+  public void zmscore(final String key, final String... members) {
+    zmscore(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
   @Override

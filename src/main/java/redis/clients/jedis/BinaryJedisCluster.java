@@ -777,6 +777,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<Boolean> smismember(final byte[] key, final byte[]... members) {
+    return new JedisClusterCommand<List<Boolean>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Boolean> execute(Jedis connection) {
+        return connection.smismember(key, members);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public byte[] srandmember(final byte[] key) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override
@@ -944,6 +954,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public Double execute(Jedis connection) {
         return connection.zscore(key, member);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<Double> zmscore(final byte[] key, final byte[]... members) {
+    return new JedisClusterCommand<List<Double>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Double> execute(Jedis connection) {
+        return connection.zmscore(key, members);
       }
     }.runBinary(key);
   }

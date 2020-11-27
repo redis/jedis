@@ -149,6 +149,8 @@ public interface JedisClusterCommands {
 
   Boolean sismember(String key, String member);
 
+  List<Boolean> smismember(String key, String... members);
+
   String srandmember(String key);
 
   List<String> srandmember(String key, int count);
@@ -184,6 +186,8 @@ public interface JedisClusterCommands {
   Long zcard(String key);
 
   Double zscore(String key, String member);
+
+  List<Double> zmscore(String key, String... members);
 
   Tuple zpopmax(String key);
 

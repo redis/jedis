@@ -455,6 +455,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<Boolean> smismember(final byte[] key, final byte[]... members) {
+    Jedis j = getShard(key);
+    return j.smismember(key, members);
+  }
+
+  @Override
   public byte[] srandmember(final byte[] key) {
     Jedis j = getShard(key);
     return j.srandmember(key);
@@ -554,6 +560,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Double zscore(final byte[] key, final byte[] member) {
     Jedis j = getShard(key);
     return j.zscore(key, member);
+  }
+
+  @Override
+  public List<Double> zmscore(final byte[] key, final byte[]... members) {
+    Jedis j = getShard(key);
+    return j.zmscore(key, members);
   }
 
   @Override

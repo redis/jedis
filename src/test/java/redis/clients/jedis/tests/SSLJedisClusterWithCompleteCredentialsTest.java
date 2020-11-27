@@ -158,9 +158,8 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
           null, sslParameters, null, hostAndPortMap);
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals(SSLException.class, e.getCause().getClass());
-      Assert.assertEquals(SSLHandshakeException.class, e.getCause().getCause().getClass());
-      Assert.assertEquals(CertificateException.class, e.getCause().getCause().getCause().getClass());
+      Assert.assertEquals(SSLHandshakeException.class, e.getCause().getClass());
+      Assert.assertEquals(CertificateException.class, e.getCause().getCause().getClass());
     } finally {
       if (jc != null) {
         jc.close();
@@ -191,10 +190,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
           DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_CONFIG, true,
           null, null, hostnameVerifier, portMap);
       Assert.fail("The code did not throw the expected NullPointerException.");
-    } catch (NullPointerException e) {
-      // Null pointer exception occurs from closing Jedis object that did not connect due to custom
-      // hostname validation. When closing this Jedis object, the RedisOutputStream in the underlying 
-      // Connection object is null and causes this exception
+    } catch (JedisConnectionException e) {
     } finally {
       if (jc2 != null) {
         jc2.close();
@@ -232,12 +228,10 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
     } catch (JedisConnectionException e) {
       Assert.assertEquals("Unexpected first inner exception.",
           SSLException.class, e.getCause().getClass());
-      Assert.assertEquals("Unexpected second inner exception.",
-          SSLException.class, e.getCause().getCause().getClass());
       Assert.assertEquals("Unexpected third inner exception",
-          RuntimeException.class, e.getCause().getCause().getCause().getClass());
+          RuntimeException.class, e.getCause().getCause().getClass());
       Assert.assertEquals("Unexpected fourth inner exception.",
-          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getCause().getClass());
+          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getClass());
     } finally {
       if (jc != null) {
         jc.close();

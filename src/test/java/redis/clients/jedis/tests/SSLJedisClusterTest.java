@@ -159,9 +159,8 @@ public class SSLJedisClusterTest extends JedisClusterTest {
           null, sslParameters, null, hostAndPortMap);
       Assert.fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals(SSLException.class, e.getCause().getClass());
-      Assert.assertEquals(SSLHandshakeException.class, e.getCause().getCause().getClass());
-      Assert.assertEquals(CertificateException.class, e.getCause().getCause().getCause().getClass());
+      Assert.assertEquals(SSLHandshakeException.class, e.getCause().getClass());
+      Assert.assertEquals(CertificateException.class, e.getCause().getCause().getClass());
     } finally {
       if (jc != null) {
         jc.close();
@@ -193,7 +192,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
           null, null, hostnameVerifier, portMap);
       jc2.get("foo");
       Assert.fail("The code did not throw the expected JedisNoReachableClusterNodeException.");
-    } catch (JedisNoReachableClusterNodeException e) {
+    } catch (JedisConnectionException e) {
       // JedisNoReachableClusterNodeException exception occurs from not being able to connect
       // since the socket factory fails the hostname verification
     } finally {
@@ -233,12 +232,10 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     } catch (JedisConnectionException e) {
       Assert.assertEquals("Unexpected first inner exception.",
           SSLException.class, e.getCause().getClass());
-      Assert.assertEquals("Unexpected second inner exception.",
-          SSLException.class, e.getCause().getCause().getClass());
       Assert.assertEquals("Unexpected third inner exception",
-          RuntimeException.class, e.getCause().getCause().getCause().getClass());
+          RuntimeException.class, e.getCause().getCause().getClass());
       Assert.assertEquals("Unexpected fourth inner exception.",
-          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getCause().getClass());
+          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getClass());
     } finally {
       if (jc != null) {
         jc.close();

@@ -385,7 +385,7 @@ public class BinaryClient extends Connection {
   }
 
   public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count){
-    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(toByteArray(count))));
+    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(Keyword.COUNT.raw, toByteArray(count))));
   }
 
   public void rpop(final byte[] key) {

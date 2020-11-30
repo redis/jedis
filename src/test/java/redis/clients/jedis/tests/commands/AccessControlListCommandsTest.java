@@ -1,36 +1,30 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.hamcrest.CoreMatchers.*;
-import org.junit.*;
+import static org.junit.Assert.*;
+
 import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.util.List;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-// TODO :properly define and test exceptions
-
+/**
+ * TODO: properly define and test exceptions
+ */
 public class AccessControlListCommandsTest extends JedisCommandTestBase {
-
 
   public static String USER_YYY = "yyy";
   public static String USER_ZZZ = "zzz";
   public static String USER_ZZZ_PASSWORD = "secret";
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
+  @BeforeClass
+  public static void prepare() throws Exception {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -91,9 +85,9 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.aclSetUser(USER_ZZZ, "reset", "+@all", "~*", "-@string", "+incr", "-debug",
       "+debug|digest");
     userInfo = jedis.aclGetUser(USER_ZZZ);
-    Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
-    Assert.assertThat(userInfo.getCommands(), containsString("-@string"));
-    Assert.assertThat(userInfo.getCommands(), containsString("+debug|digest"));
+    assertThat(userInfo.getCommands(), containsString("+@all"));
+    assertThat(userInfo.getCommands(), containsString("-@string"));
+    assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_ZZZ);
 
@@ -366,9 +360,9 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
     AccessControlUser userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
 
-    Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
-    Assert.assertThat(userInfo.getCommands(), containsString("-@string"));
-    Assert.assertThat(userInfo.getCommands(), containsString("+debug|digest"));
+    assertThat(userInfo.getCommands(), containsString("+@all"));
+    assertThat(userInfo.getCommands(), containsString("-@string"));
+    assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_ZZZ.getBytes());
   }

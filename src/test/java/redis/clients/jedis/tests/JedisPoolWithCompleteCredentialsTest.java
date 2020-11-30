@@ -4,7 +4,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of @JedisPoolTest where all authentications are made with
+ * This test class is a copy of {@link JedisPoolTest} where all authentications are made with
  * default:foobared credentialsinformation
  *
  * This test is only executed when the server/cluster is Redis 6. or more.
@@ -26,21 +26,10 @@ import static org.junit.Assert.*;
 public class JedisPoolWithCompleteCredentialsTest {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
+  @BeforeClass
+  public static void prepare() throws Exception {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test

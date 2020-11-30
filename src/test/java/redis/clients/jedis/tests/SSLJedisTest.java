@@ -36,7 +36,11 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class SSLJedisTest {
 
   @BeforeClass
-  public static void setupTrustStore() {
+  public static void prepare() {
+    setupTrustStore();
+  }
+
+  static void setupTrustStore() {
     setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
   }
 

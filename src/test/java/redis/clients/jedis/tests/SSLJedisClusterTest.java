@@ -6,7 +6,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.cert.CertificateException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +20,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -49,23 +49,11 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     }
   };
 
-  @Before
-  public void setUp() throws InterruptedException {
-    super.setUp();
-    
+  @BeforeClass
+  public static void prepare() {
     SSLJedisTest.setupTrustStore(); // set up trust store for SSL tests
   }
 
-  @AfterClass
-  public static void cleanUp() {
-    JedisClusterTest.cleanUp();
-  }
-
-  @After
-  public void tearDown() throws InterruptedException {
-    cleanUp();
-  }
- 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();

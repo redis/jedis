@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -56,7 +57,13 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     sentinelJedis1 = new Jedis(sentinel1);
     sentinelJedis2 = new Jedis(sentinel2);
   }
-  
+
+  @After
+  public void tearDown() throws Exception {
+    sentinelJedis1.close();
+    sentinelJedis2.close();
+  }
+
   @Test
   public void repeatedSentinelPoolInitialization() {
 
@@ -69,7 +76,6 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
       pool.destroy();
     }
   }
-  
 
   @Test(expected = JedisConnectionException.class)
   public void initializeWithNotAvailableSentinelsShouldThrowException() {

@@ -45,9 +45,10 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void useWithoutConnecting() {
-    Jedis jedis = new Jedis("localhost");
-    jedis.auth("default", "foobared");
-    jedis.dbSize();
+    try(Jedis jedis = new Jedis("localhost")){
+      assertEquals("OK", jedis.auth("default", "foobared"));
+      jedis.dbSize();
+    }
   }
 
   @Test
@@ -69,8 +70,9 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
     JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
     shardInfo.setUser("default");
     shardInfo.setPassword("foobared");
-    Jedis jedis = new Jedis(shardInfo);
-    jedis.get("foo");
+    try(Jedis jedis = new Jedis(shardInfo)){
+      jedis.get("foo");
+    }
   }
 
   @Test
@@ -137,24 +139,28 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("default", "foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis("redis://default:foobared@localhost:6380/2");
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+    try(Jedis j = new Jedis("localhost", 6380)){
+      j.auth("default", "foobared");
+      j.select(2);
+      j.set("foo", "bar");
+    }
+    try(Jedis jedis = new Jedis("redis://default:foobared@localhost:6380/2")){
+      assertEquals("PONG", jedis.ping());
+      assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("default","foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6380/2"));
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+    try(Jedis j = new Jedis("localhost", 6380)){
+      j.auth("default","foobared");
+      j.select(2);
+      j.set("foo", "bar");
+    }
+    try(Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6380/2"))){
+      assertEquals("PONG", jedis.ping());
+      assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
@@ -172,46 +178,48 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void connectWithURICredentials() throws URISyntaxException {
-    Jedis j = new Jedis("localhost");
-    j.auth("default", "foobared");
-    j.set("foo", "bar");
-
-    // create new user
-    j.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
-
-    Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6379"));
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
-
-    Jedis jedis2 = new Jedis(new URI("redis://alice:alicePassword@localhost:6379"));
-    assertEquals("PONG", jedis2.ping());
-    assertEquals("bar", jedis2.get("foo"));
-
-    // delete user
-    j.aclDelUser("alice");
+    try(Jedis j = new Jedis("localhost")){
+      j.auth("default", "foobared");
+      j.set("foo", "bar");
+  
+      // create new user
+      j.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
+  
+      Jedis jedis = new Jedis(new URI("redis://default:foobared@localhost:6379"));
+      assertEquals("PONG", jedis.ping());
+      assertEquals("bar", jedis.get("foo"));
+  
+      Jedis jedis2 = new Jedis(new URI("redis://alice:alicePassword@localhost:6379"));
+      assertEquals("PONG", jedis2.ping());
+      assertEquals("bar", jedis2.get("foo"));
+  
+      // delete user
+      j.aclDelUser("alice");
+    }
   }
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
-    jedis.auth("default", "foobared");
-    assertEquals("localhost", jedis.getClient().getHost());
-    assertEquals(6380, jedis.getClient().getPort());
-    assertEquals(0, jedis.getDB());
-
-    jedis = new Jedis("redis://localhost:6380/");
-    jedis.auth("default", "foobared");
-    assertEquals("localhost", jedis.getClient().getHost());
-    assertEquals(6380, jedis.getClient().getPort());
-    assertEquals(0, jedis.getDB());
+    try(Jedis jedis = new Jedis("redis://localhost:6380")){
+      jedis.auth("default", "foobared");
+      assertEquals("localhost", jedis.getClient().getHost());
+      assertEquals(6380, jedis.getClient().getPort());
+      assertEquals(0, jedis.getDB());
+    }
+    try(Jedis jedis = new Jedis("redis://localhost:6380/")) {
+      jedis.auth("default", "foobared");
+      assertEquals("localhost", jedis.getClient().getHost());
+      assertEquals(6380, jedis.getClient().getPort());
+      assertEquals(0, jedis.getDB());
+    }
   }
 
   @Test
   public void checkCloseable() {
     jedis.close();
-    BinaryJedis bj = new BinaryJedis("localhost");
-    bj.connect();
-    bj.close();
+    try(BinaryJedis bj = new BinaryJedis("localhost")){
+      bj.connect();
+    }
   }
 
   @Test

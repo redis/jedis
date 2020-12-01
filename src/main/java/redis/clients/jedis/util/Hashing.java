@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 public interface Hashing {
   Hashing MURMUR_HASH = new MurmurHash();
-  ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<MessageDigest>();
+  ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<>();
 
   Hashing MD5 = new Hashing() {
     @Override

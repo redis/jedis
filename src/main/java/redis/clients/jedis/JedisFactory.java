@@ -19,7 +19,7 @@ import redis.clients.jedis.util.JedisURIHelper;
  * PoolableObjectFactory custom impl.
  */
 class JedisFactory implements PooledObjectFactory<Jedis> {
-  private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<HostAndPort>();
+  private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<>();
   private final int connectionTimeout;
   private final int soTimeout;
   private final String user;

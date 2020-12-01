@@ -429,7 +429,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Status code repy
+   * @return Status code reply
    */
   @Override
   public String rename(final byte[] oldkey, final byte[] newkey) {
@@ -2176,9 +2176,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
     int size = keys.length;
     final byte[][] args = new byte[size + 1][];
-    for (int at = 0; at != size; ++at) {
-      args[at] = keys[at];
-    }
+    System.arraycopy(keys, 0, args, 0, size);
     args[size] = Protocol.toByteArray(timeout);
     return args;
   }
@@ -3881,7 +3879,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
-      results.add(new AbstractMap.SimpleEntry<byte[], byte[]>(iterator.next(), iterator.next()));
+      results.add(new AbstractMap.SimpleEntry<>(iterator.next(), iterator.next()));
     }
     return new ScanResult<>(newcursor, results);
   }

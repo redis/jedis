@@ -17,6 +17,7 @@ import static redis.clients.jedis.Protocol.Keyword.HELP;
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -589,9 +590,8 @@ public class BinaryClient extends Connection {
 
   public void blpop(final int timeout, final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
-    for (final byte[] arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(Protocol.toByteArray(timeout));
     blpop(args.toArray(new byte[args.size()][]));
   }
@@ -615,9 +615,8 @@ public class BinaryClient extends Connection {
 
   public void brpop(final int timeout, final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
-    for (final byte[] arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(Protocol.toByteArray(timeout));
     brpop(args.toArray(new byte[args.size()][]));
   }
@@ -771,9 +770,8 @@ public class BinaryClient extends Connection {
     final List<byte[]> args = new ArrayList<>();
     args.add(dstkey);
     args.add(Protocol.toByteArray(sets.length));
-    for (final byte[] set : sets) {
-      args.add(set);
-    }
+    Collections.addAll(args, sets);
+
     args.addAll(params.getParams());
     sendCommand(ZUNIONSTORE, args.toArray(new byte[args.size()][]));
   }
@@ -786,9 +784,8 @@ public class BinaryClient extends Connection {
     final List<byte[]> args = new ArrayList<>();
     args.add(dstkey);
     args.add(Protocol.toByteArray(sets.length));
-    for (final byte[] set : sets) {
-      args.add(set);
-    }
+    Collections.addAll(args, sets);
+
     args.addAll(params.getParams());
     sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
   }
@@ -1532,9 +1529,8 @@ public class BinaryClient extends Connection {
       arguments.add(consumername);
       arguments.add(toByteArray(minIdleTime));
       
-      for(byte[] id : ids) {
-        arguments.add(id);  
-      }
+      Collections.addAll(arguments, ids);
+
       if(newIdleTime > 0) {
         arguments.add(Keyword.IDLE.raw);
         arguments.add(toByteArray(newIdleTime));

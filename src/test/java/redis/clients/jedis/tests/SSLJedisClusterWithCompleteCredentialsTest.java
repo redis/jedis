@@ -190,6 +190,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
       jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
           DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_CONFIG, true,
           null, null, hostnameVerifier, portMap);
+      jc2.get("foo");
       Assert.fail("The code did not throw the expected NullPointerException.");
     } catch (NullPointerException e) {
       // Null pointer exception occurs from closing Jedis object that did not connect due to custom

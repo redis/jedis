@@ -32,7 +32,10 @@ jobs:
           keys:
             - jedis-{{ checksum "pom.xml" }}
 
-      - run: mvn dependency:go-offline 
+      - run: |
+          sudo apt update
+          sudo install -y maven
+          mvn dependency:go-offline 
 
       - save_cache:
           paths:
@@ -40,7 +43,6 @@ jobs:
           key: jedis-{{ checksum "pom.xml" }}
 
       - run: |
-          sudo apt update
           sudo apt install -y stunnel
 
       - run: make circleci-install

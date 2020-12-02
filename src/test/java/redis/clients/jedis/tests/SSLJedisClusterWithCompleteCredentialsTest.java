@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@Ignore
 public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest {
   private static final int DEFAULT_TIMEOUT = 2000;
   private static final int DEFAULT_REDIRECTIONS = 5;

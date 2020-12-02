@@ -52,7 +52,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void aclListBinaryDefault() {
-    assertEquals(1, jedis.aclListBinary().size());
+    assertEquals(2, jedis.aclListBinary().size());
   }
 
   @Test
@@ -84,7 +84,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.aclDelUser(USER_ZZZ);
     jedis.aclSetUser(USER_ZZZ);
     userInfo = jedis.aclGetUser(USER_ZZZ);
-    assertEquals(1, userInfo.getFlags().size());
+    assertEquals(2, userInfo.getFlags().size());
     assertEquals("off", userInfo.getFlags().get(0));
     assertTrue(userInfo.getPassword().isEmpty());
     assertTrue(userInfo.getKeys().isEmpty());

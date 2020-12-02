@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
@@ -116,6 +117,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     jc.close();
   }
   
+  @Ignore
   @Test
   public void connectToNodesFailsWithSSLParametersAndNoHostMapping() {
     final SSLParameters sslParameters = new SSLParameters();
@@ -147,6 +149,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     jc.close();
   }
   
+  @Ignore
   @Test
   public void connectByIpAddressFailsWithSSLParameters() {
     final SSLParameters sslParameters = new SSLParameters();

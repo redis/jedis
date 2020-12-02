@@ -49,9 +49,9 @@ jobs:
 
 
 workflows:
-  all-tests:
+  all-jdks:
     jobs:
-      - test:
+      - build:
           matrix:
             parameters:
               os: [linux-8-jdk, linux-7-jdk]

@@ -38,7 +38,9 @@ jobs:
             - ~/.m2
           key: jedis-{{ checksum "pom.xml" }}
 
-      - run: sudo apt install -y stunnel
+      - run: |
+        sudo apt update
+        sudo apt install -y stunnel
 
       - run: make travis-install
     

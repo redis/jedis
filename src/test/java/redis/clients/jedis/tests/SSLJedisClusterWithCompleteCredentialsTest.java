@@ -115,6 +115,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
     jc.close();
   }
   
+  @Ignore
   @Test
   public void connectToNodesFailsWithSSLParametersAndNoHostMapping() {
     final SSLParameters sslParameters = new SSLParameters();
@@ -146,6 +147,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
     jc.close();
   }
   
+  @Ignore
   @Test
   public void connectByIpAddressFailsWithSSLParameters() {
     final SSLParameters sslParameters = new SSLParameters();

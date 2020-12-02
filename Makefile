@@ -380,7 +380,7 @@ travis-install:
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
 	
-circleci-install: ci-install
+circleci-install:
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\
 	sudo ln -sf gcc-8 gcc ;\

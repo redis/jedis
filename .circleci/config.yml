@@ -7,7 +7,7 @@ executors:
       - image: circleci/openjdk:8-jdk
   linux-7-jdk:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: openjdk:7
 
 jobs:
   build:

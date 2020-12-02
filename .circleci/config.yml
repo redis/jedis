@@ -42,6 +42,6 @@ jobs:
           sudo apt update
           sudo apt install -y stunnel
 
-      - run: make travis-install
+      - run: make circleci-install
     
       - run: TEST="\!ModuleTest" make test

@@ -370,8 +370,6 @@ release:
 	make stop
 
 travis-install:
-	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	sudo apt-get -y update
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\
 	sudo ln -sf gcc-8 gcc ;\

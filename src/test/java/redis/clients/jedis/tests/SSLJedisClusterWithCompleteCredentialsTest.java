@@ -1,10 +1,14 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.*;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.tests.SSLJedisTest.BasicHostnameVerifier;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
@@ -14,9 +18,6 @@ import java.security.cert.CertificateException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.Assert.*;
-import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 
 public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest {
   private static final int DEFAULT_TIMEOUT = 2000;

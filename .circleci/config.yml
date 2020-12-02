@@ -39,7 +39,7 @@ jobs:
           key: jedis-{{ checksum "pom.xml" }}
 
       - run: |
-          sudo apt install libssl-dev
+          sudo apt install -y stunnel libssl-dev
           wget -O stunnel.tar.gz ftp://ftp.stunnel.org/stunnel/archive/5.x/stunnel-5.29.tar.gz
           tar -xvzf stunnel.tar.gz
           cd ./stunnel-5.29 && ./configure && make && sudo make install && cd ..

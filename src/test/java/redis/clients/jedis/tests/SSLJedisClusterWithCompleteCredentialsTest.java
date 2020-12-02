@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
+import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 
 public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest {
   private static final int DEFAULT_TIMEOUT = 2000;
@@ -193,11 +194,10 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
           DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_CONFIG, true,
           null, null, hostnameVerifier, portMap);
       jc2.get("foo");
-      Assert.fail("The code did not throw the expected NullPointerException.");
-    } catch (NullPointerException e) {
-      // Null pointer exception occurs from closing Jedis object that did not connect due to custom
-      // hostname validation. When closing this Jedis object, the RedisOutputStream in the underlying 
-      // Connection object is null and causes this exception
+      Assert.fail("The code did not throw the expected JedisNoReachableClusterNodeException.");
+    } catch (JedisNoReachableClusterNodeException e) {
+      // JedisNoReachableClusterNodeException exception occurs from not being able to connect
+      // since the socket factory fails the hostname verification
     } finally {
       if (jc2 != null) {
         jc2.close();

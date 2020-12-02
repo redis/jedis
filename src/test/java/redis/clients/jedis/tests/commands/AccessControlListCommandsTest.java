@@ -75,7 +75,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
     System.err.println("userInfo.getFlags(): " + userInfo.getFlags());
     
-    assertEquals(3, userInfo.getFlags().size());
+    assertEquals(4, userInfo.getFlags().size());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
     assertEquals("*", userInfo.getKeys().get(0));

@@ -52,7 +52,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void aclListBinaryDefault() {
-    assertEquals(2, jedis.aclListBinary().size());
+    assertEquals(1, jedis.aclListBinary().size());
   }
 
   @Test

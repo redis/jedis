@@ -7,7 +7,7 @@ executors:
       - image: circleci/openjdk:8-jdk
   linux-7-jdk:
     docker:
-      - image: openjdk:7
+      - image: circleci/openjdk:7-jdk
 
 jobs:
   build:
@@ -32,10 +32,7 @@ jobs:
           keys:
             - jedis-{{ checksum "pom.xml" }}
 
-      - run: |
-          sudo apt update
-          sudo install -y maven
-          mvn dependency:go-offline 
+      - run: mvn dependency:go-offline 
 
       - save_cache:
           paths:
@@ -43,6 +40,7 @@ jobs:
           key: jedis-{{ checksum "pom.xml" }}
 
       - run: |
+          sudo apt update
           sudo apt install -y stunnel
 
       - run: make circleci-install
@@ -56,4 +54,5 @@ workflows:
       - build:
           matrix:
             parameters:
-              os: [linux-8-jdk, linux-7-jdk]
+#              os: [linux-8-jdk, linux-7-jdk]
+              os: [linux-8-jdk]

@@ -73,6 +73,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     // get default user information
     AccessControlUser userInfo = jedis.aclGetUser("default");
 
+    System.err.println("userInfo.getFlags(): " + userInfo.getFlags());
+    
     assertEquals(3, userInfo.getFlags().size());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());

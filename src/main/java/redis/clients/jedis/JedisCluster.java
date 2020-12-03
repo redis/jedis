@@ -5,6 +5,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
@@ -716,6 +717,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.lpop(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long lpos(final String key, final String element) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.lpos(key, element);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long lpos(final String key, final String element, final LPosParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.lpos(key, element, params);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<Long> lpos(final String key, final String element, final LPosParams params, final long count) {
+    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Long> execute(Jedis connection) {
+        return connection.lpos(key, element, params, count);
       }
     }.run(key);
   }
@@ -2139,6 +2170,27 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+  
+  @Override
+  public Long memoryUsage(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.memoryUsage(key);
+      }
+    }.run(key);
+  }
+  
+  @Override
+  public Long memoryUsage(final String key, final int samples) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.memoryUsage(key, samples);
+      }
+    }.run(key);
+  }
+  
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {

@@ -287,7 +287,7 @@ public class JedisClusterTest {
     jedisClusterNode.add(nodeInfo1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
-    node4.clusterMeet(localHost, nodeInfo1.getPort());
+    node3.clusterMeet(localHost, nodeInfo4.getPort());
 
     String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
     String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
@@ -379,29 +379,31 @@ public class JedisClusterTest {
   public void testClusterForgetNode() throws InterruptedException {
     // at first, join node4 to cluster
     node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+    node2.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+    node3.clusterMeet("127.0.0.1", nodeInfo4.getPort());
 
-    String node7Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
+    String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
 
-    JedisClusterTestUtil.assertNodeIsKnown(node3, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsKnown(node2, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsKnown(node1, node7Id, 1000);
-
-    assertNodeHandshakeEnded(node3, 1000);
-    assertNodeHandshakeEnded(node2, 1000);
+    JedisClusterTestUtil.assertNodeIsKnown(node1, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsKnown(node2, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsKnown(node3, node4Id, 1000);
+    
     assertNodeHandshakeEnded(node1, 1000);
+    assertNodeHandshakeEnded(node2, 1000);
+    assertNodeHandshakeEnded(node3, 1000);
 
     assertEquals(4, node1.clusterNodes().split("\n").length);
     assertEquals(4, node2.clusterNodes().split("\n").length);
     assertEquals(4, node3.clusterNodes().split("\n").length);
 
     // do cluster forget
-    node1.clusterForget(node7Id);
-    node2.clusterForget(node7Id);
-    node3.clusterForget(node7Id);
+    node1.clusterForget(node4Id);
+    node2.clusterForget(node4Id);
+    node3.clusterForget(node4Id);
 
-    JedisClusterTestUtil.assertNodeIsUnknown(node1, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsUnknown(node2, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsUnknown(node3, node7Id, 1000);
+    JedisClusterTestUtil.assertNodeIsUnknown(node1, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsUnknown(node2, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsUnknown(node3, node4Id, 1000);
 
     assertEquals(3, node1.clusterNodes().split("\n").length);
     assertEquals(3, node2.clusterNodes().split("\n").length);

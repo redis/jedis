@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -528,9 +529,8 @@ public class Client extends BinaryClient implements Commands {
   public void blpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
     List<String> args = new ArrayList<>(size);
-    for (String arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(String.valueOf(timeout));
     blpop(args.toArray(new String[size]));
   }
@@ -553,9 +553,8 @@ public class Client extends BinaryClient implements Commands {
   public void brpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
     List<String> args = new ArrayList<>(size);
-    for (String arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(String.valueOf(timeout));
     brpop(args.toArray(new String[size]));
   }

@@ -27,7 +27,7 @@ public class SlowlogCommandsTest extends JedisCommandTestBase {
     Slowlog log = reducedLog.get(0);
     assertTrue(log.getId() > 0);
     assertTrue(log.getTimeStamp() > 0);
-    assertTrue(log.getExecutionTime() > 0);
+    assertTrue(log.getExecutionTime() >= 0);
     assertNotNull(log.getArgs());
 
     List<byte[]> breducedLog = jedis.slowlogGetBinary(1);

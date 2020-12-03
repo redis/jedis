@@ -9,7 +9,6 @@ import redis.clients.jedis.util.SafeEncoder;
 public class LPosParams extends Params {
 
   private static final String RANK = "RANK";
-  private static final String COUNT = "COUNT";
   private static final String MAXLEN = "MAXLEN";
   
   public static LPosParams lPosParams() {
@@ -26,11 +25,6 @@ public class LPosParams extends Params {
     return this;
   }
 
-  public LPosParams count(int count) {
-    addParam(COUNT, count);
-    return this;
-  }
-  
   public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
     Collections.addAll(byteParams, args);
@@ -40,11 +34,6 @@ public class LPosParams extends Params {
       byteParams.add(Protocol.toByteArray((int) getParam(RANK)));
     }
 
-    if (contains(COUNT)) {
-      byteParams.add(SafeEncoder.encode(COUNT));
-      byteParams.add(Protocol.toByteArray((int) getParam(COUNT)));
-    }
-    
     if (contains(MAXLEN)) {
       byteParams.add(SafeEncoder.encode(MAXLEN));
       byteParams.add(Protocol.toByteArray((int) getParam(MAXLEN)));

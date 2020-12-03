@@ -299,12 +299,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void renameOldAndNewAreTheSame() {
-    jedis.set("foo", "bar");
-    jedis.rename("foo", "foo");
+    assertEquals("OK", jedis.set("foo", "bar"));
+    assertEquals("OK", jedis.rename("foo", "foo"));
 
     // Binary
-    jedis.set(bfoo, bbar);
-    jedis.rename(bfoo, bfoo);
+    assertEquals("OK", jedis.set(bfoo, bbar));
+    assertEquals("OK", jedis.rename(bfoo, bfoo));
   }
 
   @Test
@@ -424,7 +424,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     reply = jedis.touch("foo1");
     assertEquals(1, reply);
-    assertTrue(jedis.objectIdletime("foo1") == 0);
+    assertEquals(0L, jedis.objectIdletime("foo1").longValue());
 
     reply = jedis.touch("foo1", "foo2", "foo3");
     assertEquals(1, reply);
@@ -447,7 +447,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     reply = jedis.touch(bfoo1);
     assertEquals(1, reply);
-    assertTrue(jedis.objectIdletime(bfoo1) == 0);
+    assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
 
     reply = jedis.touch(bfoo1, bfoo2, bfoo3);
     assertEquals(1, reply);
@@ -847,6 +847,21 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void setGetOptionTest() {
+    String status = jedis.set("hello", "world");
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+
+    String oldValue = jedis.set("hello", "jedis", setParams().get());
+    assertEquals("world", oldValue);
+
+    String newValue = jedis.get("hello");
+    assertEquals("jedis", newValue);
+
+    String nullValue = jedis.set("key", "value", setParams().get());
+    assertNull(nullValue);
+  }
+
+  @Test
   public void sendCommandTest(){
     Object obj = jedis.sendCommand(SET, "x", "1");
     String returnValue = SafeEncoder.encode((byte[]) obj);
@@ -886,7 +901,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals( "length", encodeObj.get(0) );
     assertEquals( 1L, encodeObj.get(1) );
 
-    List entryAsList = new ArrayList(2);
+    List<String> entryAsList = new ArrayList<>(2);
     entryAsList.add("foo");
     entryAsList.add("bar");
 

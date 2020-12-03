@@ -74,10 +74,10 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
     for (HostAndPort hostAndPort : startNodes) {
-      Jedis jedis = null;
-      try {
-        jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, soTimeout,
-            infiniteSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+
+      try (Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, 
+          soTimeout, infiniteSoTimeout. ssl, sslSocketFactory, sslParameters, hostnameVerifier)) { 
+
         if (user != null) {
           jedis.auth(user, password);
         } else if (password != null) {
@@ -87,13 +87,9 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
           jedis.clientSetname(clientName);
         }
         cache.discoverClusterNodesAndSlots(jedis);
-        break;
+        return;
       } catch (JedisConnectionException e) {
         // try next nodes
-      } finally {
-        if (jedis != null) {
-          jedis.close();
-        }
       }
     }
   }

@@ -17,7 +17,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class ScanParams {
 
-  private final Map<Keyword, ByteBuffer> params = new EnumMap<Keyword, ByteBuffer>(Keyword.class);
+  private final Map<Keyword, ByteBuffer> params = new EnumMap<>(Keyword.class);
 
   public static final String SCAN_POINTER_START = String.valueOf(0);
   public static final byte[] SCAN_POINTER_START_BINARY = SafeEncoder.encode(SCAN_POINTER_START);
@@ -50,7 +50,7 @@ public class ScanParams {
   }
 
   public Collection<byte[]> getParams() {
-    List<byte[]> paramsList = new ArrayList<byte[]>(params.size());
+    List<byte[]> paramsList = new ArrayList<>(params.size());
     for (Map.Entry<Keyword, ByteBuffer> param : params.entrySet()) {
       paramsList.add(param.getKey().raw);
       paramsList.add(param.getValue().array());

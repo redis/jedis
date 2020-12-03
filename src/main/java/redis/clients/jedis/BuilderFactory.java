@@ -180,9 +180,7 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      List<byte[]> l = (List<byte[]>) data;
-
-      return l;
+      return (List<byte[]>) data;
     }
 
     @Override
@@ -622,10 +620,7 @@ public final class BuilderFactory {
         map.put(SafeEncoder.encode(hashIterator.next()),
             SafeEncoder.encode(hashIterator.next()));
       }
-      StreamEntry streamEntry = new StreamEntry(entryID, map);
-
-
-      return streamEntry;
+      return new StreamEntry(entryID, map);
     }
 
     @Override
@@ -690,9 +685,8 @@ public final class BuilderFactory {
       List<Object> streamsEntries = (List<Object>)data;
       Iterator<Object> iterator = streamsEntries.iterator();
 
-      StreamInfo streamInfo = new StreamInfo(
+      return new StreamInfo(
           createMapFromDecodingFunctions(iterator,mappingFunctions));
-      return streamInfo;
     }
 
     @Override

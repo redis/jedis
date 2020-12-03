@@ -76,7 +76,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     for (HostAndPort hostAndPort : startNodes) {
 
       try (Jedis jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, 
-          soTimeout, infiniteSoTimeout. ssl, sslSocketFactory, sslParameters, hostnameVerifier)) { 
+          soTimeout, infiniteSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier)) { 
 
         if (user != null) {
           jedis.auth(user, password);

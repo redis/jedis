@@ -927,8 +927,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> hvals(final String key) {
     checkIsInMultiOrPipeline();
     client.hvals(key);
-    final List<String> lresult = client.getMultiBulkReply();
-    return lresult;
+    return client.getMultiBulkReply();
   }
 
   /**
@@ -3805,6 +3804,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.memoryDoctor();
     return client.getBulkReply();
+  }
+  
+  @Override
+  public Long memoryUsage(final String key) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key);
+    return client.getIntegerReply();
+  }
+  
+  @Override
+  public Long memoryUsage(final String key, final int samples) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key, samples);
+    return client.getIntegerReply();
   }
       
   @Override

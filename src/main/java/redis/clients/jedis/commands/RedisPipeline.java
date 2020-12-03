@@ -15,6 +15,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,12 @@ public interface RedisPipeline {
   Response<Long> llen(String key);
 
   Response<String> lpop(String key);
+
+  Response<Long> lpos(String key, String element);
+
+  Response<Long> lpos(String key, String element, LPosParams params);
+
+  Response<List<Long>> lpos(String key, String element, LPosParams params, long count);
 
   Response<Long> lpush(String key, String... string);
 
@@ -259,6 +266,8 @@ public interface RedisPipeline {
   Response<Long> pfcount(String key);
   
   Response<List<Long>> bitfield(String key, String... arguments);
+
+  Response<List<Long>> bitfieldReadonly(String key, String... arguments);
   
   Response<Long> hstrlen(String key, String field);
 
@@ -326,7 +335,7 @@ public interface RedisPipeline {
   
   Response<Long> xgroupDestroy( String key, String groupname);
   
-  Response<String> xgroupDelConsumer( String key, String groupname, String consumername);
+  Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
   
@@ -355,6 +364,8 @@ public interface RedisPipeline {
   Response<String> objectEncoding(String key);
 
   Response<Long> objectIdletime(String key);
+
+  Response<Long> objectFreq(String key);
 
   Response<Double> incrByFloat(String key, double increment);
 

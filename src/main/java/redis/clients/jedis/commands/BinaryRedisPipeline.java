@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -90,6 +91,12 @@ public interface BinaryRedisPipeline {
   Response<Long> llen(byte[] key);
 
   Response<byte[]> lpop(byte[] key);
+
+  Response<Long> lpos(byte[] key, byte[] element);
+
+  Response<Long> lpos(byte[] key, byte[] element, LPosParams params);
+
+  Response<List<Long>> lpos(byte[] key, byte[] element, LPosParams params, long count);
 
   Response<Long> lpush(byte[] key, byte[]... string);
 
@@ -311,6 +318,8 @@ public interface BinaryRedisPipeline {
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
+  Response<List<Long>> bitfieldReadonly(byte[] key, byte[]... elements);
+
   Response<Long> hstrlen(byte[] key, byte[] field);
   
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
@@ -331,7 +340,7 @@ public interface BinaryRedisPipeline {
   
   Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
   
-  Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
+  Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
   Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
   
@@ -355,6 +364,8 @@ public interface BinaryRedisPipeline {
   Response<byte[]> objectEncoding(byte[] key);
 
   Response<Long> objectIdletime(byte[] key);
+
+  Response<Long> objectFreq(byte[] key);
 
   Response<Double> incrByFloat(byte[] key, double increment);
 

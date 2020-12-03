@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
@@ -454,6 +455,42 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<byte[]> lpop(final byte[] key) {
     getClient(key).lpop(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<Long> lpos(final String key, final String element) {
+    getClient(key).lpos(key, element);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> lpos(final byte[] key, final byte[] element) {
+    getClient(key).lpos(key, element);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> lpos(final String key, final String element, final LPosParams params) {
+    getClient(key).lpos(key, element, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> lpos(final byte[] key, final byte[] element, final LPosParams params) {
+    getClient(key).lpos(key, element, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<List<Long>> lpos(final String key, final String element, final LPosParams params, final long count) {
+    getClient(key).lpos(key, element, params, count);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+    getClient(key).lpos(key, element, params, count);
+    return getResponse(BuilderFactory.LONG_LIST);
   }
 
   @Override
@@ -1511,6 +1548,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<Long> objectFreq(byte[] key) {
+    getClient(key).objectFreq(key);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> objectFreq(String key) {
+    getClient(key).objectFreq(key);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> pexpire(final String key, final long milliseconds) {
     getClient(key).pexpire(key, milliseconds);
     return getResponse(BuilderFactory.LONG);
@@ -1827,6 +1876,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<Long>> bitfieldReadonly(byte[] key, final byte[]... arguments) {
+    getClient(key).bitfieldReadonly(key, arguments);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> bitfieldReadonly(String key, final String... arguments) {
+    getClient(key).bitfieldReadonly(key, arguments);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
   public Response<Long> hstrlen(final String key, final String field) {
     getClient(key).hstrlen(key, field);
     return getResponse(BuilderFactory.LONG);
@@ -1949,15 +2010,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<String> xgroupDelConsumer( String key, String groupname, String consumername){
+  public Response<Long> xgroupDelConsumer( String key, String groupname, String consumername){
     getClient(key).xgroupDelConsumer(key, groupname, consumername);
-    return getResponse(BuilderFactory.STRING);
+    return getResponse(BuilderFactory.LONG);
   }
   
   @Override
-  public Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername){
+  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername){
     getClient(key).xgroupDelConsumer(key, groupname, consumername);
-    return getResponse(BuilderFactory.STRING);    
+    return getResponse(BuilderFactory.LONG);
   }
 
   @Override

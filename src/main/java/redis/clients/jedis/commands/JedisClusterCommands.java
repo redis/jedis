@@ -14,6 +14,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -125,6 +126,12 @@ public interface JedisClusterCommands {
   Long lrem(String key, long count, String value);
 
   String lpop(String key);
+
+  Long lpos(String key, String element);
+
+  Long lpos(String key, String element, LPosParams params);
+
+  List<Long> lpos(String key, String element, LPosParams params, long count);
 
   String rpop(String key);
 
@@ -319,6 +326,8 @@ public interface JedisClusterCommands {
    * @return 
    */
   List<Long> bitfield(String key, String...arguments);
+
+  List<Long> bitfieldReadonly(String key, String...arguments);
   
   /**
    * Used for HSTRLEN Redis command
@@ -328,6 +337,24 @@ public interface JedisClusterCommands {
    */
   Long hstrlen(String key, String field);
 
+  /**
+   *  MEMORY USAGE key
+   * 
+   * @param key
+   * @return the memory usage
+   */
+  Long memoryUsage(String key);
+
+  /**
+   *  MEMORY USAGE key [SAMPLES count] 
+   * 
+   * @param key
+   * @param samples
+   * @return the memory usage
+   */
+  Long memoryUsage(String key, int samples);
+
+  
   /**
    * XADD key ID field string [field string ...]
    * 
@@ -434,7 +461,7 @@ public interface JedisClusterCommands {
    * @param consumername
    * @return
    */
-  String xgroupDelConsumer( String key, String groupname, String consumername);
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

@@ -60,7 +60,7 @@ public class HostAndPort implements Serializable {
    * @return array of host and port strings
      */
   public static String[] extractParts(String from){
-    int idx     = from.lastIndexOf(":");
+    int idx     = from.lastIndexOf(':');
     String host = idx != -1 ? from.substring(0, idx)  : from;
     String port = idx != -1 ? from.substring(idx + 1) : "";
     return new String[] { host, port };
@@ -105,15 +105,14 @@ public class HostAndPort implements Serializable {
       InetAddress inetAddress = InetAddress.getByName(host);
 
       // isLoopbackAddress() handles both IPV4 and IPV6
-      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254"))
+      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254")) {
         return getLocalhost();
-      else
-        return host;
+      }
     } catch (Exception e) {
       // Not a valid IP address
-      log.warn("{}.convertHost '" + host + "' is not a valid IP address. ", HostAndPort.class.getName(), e);
-      return host;
+      log.warn("{}.convertHost '{}' is not a valid IP address. ", HostAndPort.class.getName(), host, e);
     }
+    return host;
   }
 
   public static void setLocalhost(String localhost) {

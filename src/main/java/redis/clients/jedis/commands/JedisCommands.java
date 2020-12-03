@@ -23,6 +23,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 /**
  * Common interface for sharded and non-sharded Jedis
@@ -137,6 +138,12 @@ public interface JedisCommands {
   Long lrem(String key, long count, String value);
 
   String lpop(String key);
+
+  Long lpos(String key, String element);
+
+  Long lpos(String key, String element, LPosParams params);
+
+  List<Long> lpos(String key, String element, LPosParams params, long count);
 
   String rpop(String key);
 
@@ -345,6 +352,8 @@ public interface JedisCommands {
    */
   List<Long> bitfield(String key, String...arguments);
 
+  List<Long> bitfieldReadonly(String key, String...arguments);
+
   /**
    * Used for HSTRLEN Redis command
    * @param key 
@@ -452,7 +461,7 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  String xgroupDelConsumer( String key, String groupname, String consumername);
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XPENDING key group [start end count] [consumer]

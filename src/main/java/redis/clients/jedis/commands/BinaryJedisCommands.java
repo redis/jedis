@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +19,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -113,7 +113,7 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> hkeys(byte[] key);
 
-  Collection<byte[]> hvals(byte[] key);
+  List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
@@ -134,6 +134,12 @@ public interface BinaryJedisCommands {
   Long lrem(byte[] key, long count, byte[] value);
 
   byte[] lpop(byte[] key);
+
+  Long lpos(byte[] key, byte[] element);
+
+  Long lpos(byte[] key, byte[] element, LPosParams params);
+
+  List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count);
 
   byte[] rpop(byte[] key);
 
@@ -332,6 +338,8 @@ public interface BinaryJedisCommands {
    * @return 
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
+
+  List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
   
   /**
    * Used for HSTRLEN Redis command
@@ -358,7 +366,7 @@ public interface BinaryJedisCommands {
 
   Long xgroupDestroy(final byte[] key, final byte[] consumer);
 
-  String xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
  
   Long xdel(final byte[] key, final byte[]... ids);
 

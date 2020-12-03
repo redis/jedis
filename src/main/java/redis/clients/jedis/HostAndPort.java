@@ -105,15 +105,14 @@ public class HostAndPort implements Serializable {
       InetAddress inetAddress = InetAddress.getByName(host);
 
       // isLoopbackAddress() handles both IPV4 and IPV6
-      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254"))
+      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254")) {
         return getLocalhost();
-      else
-        return host;
+      }
     } catch (Exception e) {
       // Not a valid IP address
-      log.warn("{}.convertHost '" + host + "' is not a valid IP address. ", HostAndPort.class.getName(), e);
-      return host;
+      log.warn("{}.convertHost '{}' is not a valid IP address. ", HostAndPort.class.getName(), host, e);
     }
+    return host;
   }
 
   public static void setLocalhost(String localhost) {

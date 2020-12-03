@@ -117,6 +117,19 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void setAndKeepttl() {
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    status = jedis.set(bfoo, binaryValue, setParams().keepttl());
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    long ttl = jedis.ttl(bfoo);
+    assertTrue(0 < ttl && ttl <= expireSeconds);
+    jedis.set(bfoo, binaryValue);
+    ttl = jedis.ttl(bfoo);
+    assertTrue(ttl < 0);
+  }
+
+  @Test
   public void getSet() {
     byte[] value = jedis.getSet(bfoo, binaryValue);
     assertNull(value);

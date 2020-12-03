@@ -49,6 +49,10 @@ public interface AdvancedBinaryJedisCommands {
   Long clientId();
 
   byte[] memoryDoctorBinary();
+  
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
 
   byte[] aclWhoAmIBinary();
 

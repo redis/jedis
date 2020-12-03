@@ -73,7 +73,9 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     // get default user information
     AccessControlUser userInfo = jedis.aclGetUser("default");
 
-    assertEquals(3, userInfo.getFlags().size());
+    System.err.println("userInfo.getFlags(): " + userInfo.getFlags());
+    
+    assertEquals(4, userInfo.getFlags().size());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
     assertEquals("*", userInfo.getKeys().get(0));
@@ -82,7 +84,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.aclDelUser(USER_ZZZ);
     jedis.aclSetUser(USER_ZZZ);
     userInfo = jedis.aclGetUser(USER_ZZZ);
-    assertEquals(1, userInfo.getFlags().size());
+    assertEquals(2, userInfo.getFlags().size());
     assertEquals("off", userInfo.getFlags().get(0));
     assertTrue(userInfo.getPassword().isEmpty());
     assertTrue(userInfo.getKeys().isEmpty());
@@ -114,7 +116,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertNull(authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     // now activate the user
@@ -131,7 +133,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     // remove password, and try to authenticate
@@ -141,7 +143,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     jedis.aclDelUser(USER_ZZZ); // delete the user
@@ -150,7 +152,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
-      assertEquals("WRONGPASS invalid username-password pair", e.getMessage());
+      assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
     jedis2.close();

@@ -1,23 +1,25 @@
-# Java Gradle CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-java/ for more details
-#
-version: 2
+version: 2.1
+
+
+executors:
+  linux-8-jdk:
+    docker:
+      - image: circleci/openjdk:8-jdk
+  linux-7-jdk:
+    docker:
+      - image: circleci/openjdk:7-jdk
+
 jobs:
   build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/openjdk:8-jdk
+    parameters:
+      os:
+        type: executor
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+    executor: << parameters.os >>
 
     working_directory: ~/repo
 
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
       TERM: dumb
 
@@ -28,10 +30,8 @@ jobs:
       - restore_cache:
           keys:
             - jedis-{{ checksum "pom.xml" }}
-            # fallback to using the latest cache if no exact match is found
-            - jedis-
 
-      - run: mvn compile 
+      - run: mvn dependency:go-offline 
 
       - save_cache:
           paths:
@@ -45,3 +45,13 @@ jobs:
       - run: make circleci-install
     
       - run: TEST="\!ModuleTest" make test
+
+
+workflows:
+  all-jdks:
+    jobs:
+      - build:
+          matrix:
+            parameters:
+#              os: [linux-8-jdk, linux-7-jdk]
+              os: [linux-8-jdk]

@@ -4,6 +4,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class GeoRadiusParam extends Params {
   private static final String WITHCOORD = "withcoord";
@@ -55,9 +56,7 @@ public class GeoRadiusParam extends Params {
 
   public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
-    for (byte[] arg : args) {
-      byteParams.add(arg);
-    }
+    Collections.addAll(byteParams, args);
 
     if (contains(WITHCOORD)) {
       byteParams.add(SafeEncoder.encode(WITHCOORD));

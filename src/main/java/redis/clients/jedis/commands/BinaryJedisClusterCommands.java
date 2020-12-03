@@ -366,4 +366,8 @@ public interface BinaryJedisClusterCommands {
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
   Long waitReplicas(byte[] key, final int replicas, final long timeout);
+  
+  Long memoryUsage(final byte[] key);
+  
+  Long memoryUsage(final byte[] key, final int samples);
 }

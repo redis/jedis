@@ -927,8 +927,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> hvals(final String key) {
     checkIsInMultiOrPipeline();
     client.hvals(key);
-    final List<String> lresult = client.getMultiBulkReply();
-    return lresult;
+    return client.getMultiBulkReply();
   }
 
   /**
@@ -1906,9 +1905,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   private String[] getArgsAddTimeout(int timeout, String[] keys) {
     final int keyCount = keys.length;
     final String[] args = new String[keyCount + 1];
-    for (int at = 0; at != keyCount; ++at) {
-      args[at] = keys[at];
-    }
+    
+    System.arraycopy(keys, 0, args, 0, keyCount);  
 
     args[keyCount] = String.valueOf(timeout);
     return args;
@@ -3136,7 +3134,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     final List<Map<String, String>> slaves = new ArrayList<>();
     for (Object obj : reply) {
-      slaves.add(BuilderFactory.STRING_MAP.build((List) obj));
+      slaves.add(BuilderFactory.STRING_MAP.build(obj));
     }
     return slaves;
   }
@@ -3321,7 +3319,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     Iterator<byte[]> iterator = rawResults.iterator();
     while (iterator.hasNext()) {
-      results.add(new AbstractMap.SimpleEntry<String, String>(SafeEncoder.encode(iterator.next()),
+      results.add(new AbstractMap.SimpleEntry<>(SafeEncoder.encode(iterator.next()),
           SafeEncoder.encode(iterator.next())));
     }
     return new ScanResult<>(newcursor, results);
@@ -3807,6 +3805,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.memoryDoctor();
     return client.getBulkReply();
   }
+  
+  @Override
+  public Long memoryUsage(final String key) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key);
+    return client.getIntegerReply();
+  }
+  
+  @Override
+  public Long memoryUsage(final String key, final int samples) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key, samples);
+    return client.getIntegerReply();
+  }
       
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
@@ -3869,7 +3881,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
         List<Object> stream = (List<Object>)streamObj;
         String streamId = SafeEncoder.encode((byte[])stream.get(0));
         List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
       }
       
       return result;
@@ -3951,7 +3963,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
         List<Object> stream = (List<Object>)streamObj;
         String streamId = SafeEncoder.encode((byte[])stream.get(0));
         List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<String, List<StreamEntry>>(streamId, streamEntries));
+        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
       }
       return result;
     } finally {

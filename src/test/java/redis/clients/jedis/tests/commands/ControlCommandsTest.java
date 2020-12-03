@@ -207,7 +207,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     
     jedis.lpush("loo", "ba", "da", "sha");
     usage = jedis.memoryUsage("loo", 2);    
-    assertEquals(141, (long)usage);
+    assertEquals(141+3, (long)usage);
     
     usage = jedis.memoryUsage("roo", 2);    
     assertEquals(null, usage);

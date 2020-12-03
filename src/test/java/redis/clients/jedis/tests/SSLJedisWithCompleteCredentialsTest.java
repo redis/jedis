@@ -291,13 +291,9 @@ public class SSLJedisWithCompleteCredentialsTest {
   static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
 
     KeyStore trustStore = KeyStore.getInstance("jceks");
-    InputStream inputStream = null;
-    try {
-      inputStream = new FileInputStream("src/test/resources/truststore.jceks");
+    try (InputStream inputStream = new FileInputStream("src/test/resources/truststore.jceks")){
       trustStore.load(inputStream, null);
-    } finally {
-      inputStream.close();
-    }
+    } 
 
     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
     trustManagerFactory.init(trustStore);

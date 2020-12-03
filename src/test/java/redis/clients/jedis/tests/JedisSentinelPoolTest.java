@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -117,7 +118,7 @@ public class JedisSentinelPoolTest {
 
       jedis2 = pool.getResource();
 
-      assertTrue(jedis == jedis2);
+      assertSame(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
     } catch (JedisConnectionException e) {
       if (jedis2 != null) {
@@ -180,7 +181,7 @@ public class JedisSentinelPoolTest {
 
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new failover
-    Thread.sleep(100);
+    Thread.sleep(1000);
     forceFailover(pool);
 
     // you can test failover as much as possible

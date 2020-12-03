@@ -1,5 +1,5 @@
 [![Release](https://img.shields.io/github/release/redis/jedis.svg)](https://github.com/redis/jedis/releases/latest)
-[![Build](https://github.com/redis/jedis/workflows/Build%20with%20JDK/badge.svg)](https://github.com/redis/jedis/actions)
+[![CircleCI](https://circleci.com/gh/redis/jedis/tree/master.svg?style=svg)](https://circleci.com/gh/redis/jedis/tree/master)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)

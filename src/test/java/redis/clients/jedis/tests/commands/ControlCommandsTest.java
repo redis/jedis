@@ -203,7 +203,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   public void memoryUsageString() {
     jedis.set("foo", "ba");
     Long usage = jedis.memoryUsage("foo");
-    assertEquals(49, (long)usage);
+    assertEquals(49+3, (long)usage);
     
     jedis.lpush("loo", "ba", "da", "sha");
     usage = jedis.memoryUsage("loo", 2);    

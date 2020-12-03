@@ -117,6 +117,19 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void setAndKeepttl() {
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    status = jedis.set(bfoo, binaryValue, setParams().keepttl());
+    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    long ttl = jedis.ttl(bfoo);
+    assertTrue(0 < ttl && ttl <= expireSeconds);
+    jedis.set(bfoo, binaryValue);
+    ttl = jedis.ttl(bfoo);
+    assertTrue(ttl < 0);
+  }
+
+  @Test
   public void getSet() {
     byte[] value = jedis.getSet(bfoo, binaryValue);
     assertNull(value);
@@ -127,7 +140,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void mget() {
     List<byte[]> values = jedis.mget(bfoo, bbar);
-    List<byte[]> expected = new ArrayList<byte[]>();
+    List<byte[]> expected = new ArrayList<>();
     expected.add(null);
     expected.add(null);
 
@@ -135,7 +148,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo, binaryValue);
 
-    expected = new ArrayList<byte[]>();
+    expected = new ArrayList<>();
     expected.add(binaryValue);
     expected.add(null);
     values = jedis.mget(bfoo, bbar);
@@ -144,7 +157,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bbar, bfoo);
 
-    expected = new ArrayList<byte[]>();
+    expected = new ArrayList<>();
     expected.add(binaryValue);
     expected.add(bfoo);
     values = jedis.mget(bfoo, bbar);

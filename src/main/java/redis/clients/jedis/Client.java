@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -42,6 +44,10 @@ public class Client extends BinaryClient implements Commands {
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Client(final JedisSocketFactory jedisSocketFactory) {
+    super(jedisSocketFactory);
   }
 
   @Override
@@ -191,7 +197,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void hset(final String key, final Map<String, String> hash) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
+    final Map<byte[], byte[]> bhash = new HashMap<>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
@@ -210,7 +216,7 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void hmset(final String key, final Map<String, String> hash) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(hash.size());
+    final Map<byte[], byte[]> bhash = new HashMap<>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
@@ -300,6 +306,21 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void lpop(final String key) {
     lpop(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void lpos(final String key, final String element){
+    lpos(SafeEncoder.encode(key), SafeEncoder.encode(element));
+  }
+
+  @Override
+  public void lpos(final String key, final String element, final LPosParams params){
+    lpos(SafeEncoder.encode(key), SafeEncoder.encode(element), params);
+  }
+
+  @Override
+  public void lpos(final String key, final String element, final LPosParams params, final long count){
+    lpos(SafeEncoder.encode(key), SafeEncoder.encode(element), params, count);
   }
 
   @Override
@@ -466,6 +487,26 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zpopmax(final String key) {
+    zpopmax(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void zpopmax(final String key, final int count) {
+    zpopmax(SafeEncoder.encode(key), count);
+  }
+
+  @Override
+  public void zpopmin(final String key) {
+    zpopmin(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void zpopmin(final String key, final long count) {
+    zpopmin(SafeEncoder.encode(key), count);
+  }
+
+  @Override
   public void watch(final String... keys) {
     watch(SafeEncoder.encodeMany(keys));
   }
@@ -487,10 +528,9 @@ public class Client extends BinaryClient implements Commands {
 
   public void blpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
-    List<String> args = new ArrayList<String>(size);
-    for (String arg : keys) {
-      args.add(arg);
-    }
+    List<String> args = new ArrayList<>(size);
+    Collections.addAll(args, keys);
+
     args.add(String.valueOf(timeout));
     blpop(args.toArray(new String[size]));
   }
@@ -512,10 +552,9 @@ public class Client extends BinaryClient implements Commands {
 
   public void brpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
-    List<String> args = new ArrayList<String>(size);
-    for (String arg : keys) {
-      args.add(arg);
-    }
+    List<String> args = new ArrayList<>(size);
+    Collections.addAll(args, keys);
+
     args.add(String.valueOf(timeout));
     brpop(args.toArray(new String[size]));
   }
@@ -827,6 +866,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void objectFreq(final String key) {
+    objectFreq(SafeEncoder.encode(key));
+  }
+
+  @Override
   public void bitcount(final String key) {
     bitcount(SafeEncoder.encode(key));
   }
@@ -884,6 +928,14 @@ public class Client extends BinaryClient implements Commands {
 
   public void srandmember(final String key, final int count) {
     srandmember(SafeEncoder.encode(key), count);
+  }
+  
+  public void memoryUsage(final String key) {
+    memoryUsage(SafeEncoder.encode(key));
+  }
+  
+  public void memoryUsage(final String key, final int samples) {
+    memoryUsage(SafeEncoder.encode(key), samples);
   }
 
   public void clientKill(final String ipPort) {
@@ -1131,8 +1183,28 @@ public class Client extends BinaryClient implements Commands {
     moduleUnload(SafeEncoder.encode(name));
   }
 
+  public void aclGetUser(final String name) {
+    aclGetUser(SafeEncoder.encode(name));
+  }
+
+  public void aclSetUser(final String name) {
+    aclSetUser(SafeEncoder.encode(name));
+  }
+
+  public void aclSetUser(String name, String... parameters) {
+    aclSetUser(SafeEncoder.encode(name), SafeEncoder.encodeMany(parameters));
+  }
+
+  public void aclCat(final String category) {
+    aclCat(SafeEncoder.encode(category));
+  }
+
+  public void aclDelUser(final String name) {
+    aclDelUser(SafeEncoder.encode(name));
+  }
+
   private HashMap<byte[], Double> convertScoreMembersToBinary(final Map<String, Double> scoreMembers) {
-    HashMap<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
+    HashMap<byte[], Double> binaryScoreMembers = new HashMap<>();
     for (Entry<String, Double> entry : scoreMembers.entrySet()) {
       binaryScoreMembers.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
     }
@@ -1141,7 +1213,7 @@ public class Client extends BinaryClient implements Commands {
 
   private HashMap<byte[], GeoCoordinate> convertMemberCoordinateMapToBinary(
       final Map<String, GeoCoordinate> memberCoordinateMap) {
-    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    HashMap<byte[], GeoCoordinate> binaryMemberCoordinateMap = new HashMap<>();
     for (Entry<String, GeoCoordinate> entry : memberCoordinateMap.entrySet()) {
       binaryMemberCoordinateMap.put(SafeEncoder.encode(entry.getKey()), entry.getValue());
     }
@@ -1151,6 +1223,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void bitfield(final String key, final String... arguments) {
     bitfield(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
+  }
+
+  @Override
+  public void bitfieldReadonly(String key, final String... arguments) {
+    bitfieldReadonly(SafeEncoder.encode(key), SafeEncoder.encodeMany(arguments));
   }
 
   @Override
@@ -1184,7 +1261,7 @@ public class Client extends BinaryClient implements Commands {
   
   @Override
   public void xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
-    final Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>(streams.length);
+    final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
     for (final Entry<String, StreamEntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
     }
@@ -1262,5 +1339,25 @@ public class Client extends BinaryClient implements Commands {
     xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
   }
 
+  @Override
+  public void xinfoStream(String key) {
+
+    xinfoStream(SafeEncoder.encode(key));
+
+  }
+
+  @Override
+  public void xinfoGroup(String key) {
+
+    xinfoGroup(SafeEncoder.encode(key));
+
+  }
+
+  @Override
+  public void xinfoConsumers(String key, String group) {
+
+    xinfoConsumers(SafeEncoder.encode(key),SafeEncoder.encode(group));
+
+  }
  
 }

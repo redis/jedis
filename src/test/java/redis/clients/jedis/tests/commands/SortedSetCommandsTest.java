@@ -544,6 +544,157 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zpopmax() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 10d, "b");
+    jedis.zadd("foo", 0.1d, "c");
+    jedis.zadd("foo", 2d, "d");
+    
+    Tuple actual = jedis.zpopmax("foo");
+    Tuple expected = new Tuple("b", 10d);
+    assertEquals(expected, actual);
+    
+    actual = jedis.zpopmax("foo");
+    expected = new Tuple("d", 2d);
+    assertEquals(expected, actual);
+    
+    actual = jedis.zpopmax("foo");
+    expected = new Tuple("a", 1d);
+    assertEquals(expected, actual);
+    
+    actual = jedis.zpopmax("foo");
+    expected = new Tuple("c", 0.1d);
+    assertEquals(expected, actual);
+    
+    // Empty
+    actual = jedis.zpopmax("foo");
+    assertNull(actual);
+    
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+    
+    // First
+    actual = jedis.zpopmax(bfoo);
+    expected = new Tuple(bb, 10d);
+    assertEquals(expected, actual);
+    
+    // Second
+    actual = jedis.zpopmax(bfoo);
+    expected = new Tuple(ba, 2d);
+    assertEquals(expected, actual);
+    
+    // Third
+    actual = jedis.zpopmax(bfoo);
+    expected = new Tuple(bc, 0.1d);
+    assertEquals(expected, actual);
+    
+    // Empty
+    actual = jedis.zpopmax(bfoo);
+    assertNull(actual);
+  }
+
+  @Test
+  public void zpopmaxWithCount() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 10d, "b");
+    jedis.zadd("foo", 0.1d, "c");
+    jedis.zadd("foo", 2d, "d");
+    jedis.zadd("foo", 0.03, "e");
+    
+    Set<Tuple> actual = jedis.zpopmax("foo", 2);
+    assertEquals(2, actual.size());
+    
+    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    expected.add(new Tuple("b", 10d));
+    expected.add(new Tuple("d", 2d));
+    assertEquals(expected, actual);
+    
+    actual = jedis.zpopmax("foo", 3);
+    assertEquals(3, actual.size());
+    
+    expected.clear();
+    expected.add(new Tuple("a", 1d));
+    expected.add(new Tuple("c", 0.1d));
+    expected.add(new Tuple("e", 0.03d));
+    assertEquals(expected, actual);
+    
+    // Empty
+    actual = jedis.zpopmax("foo", 1);
+    expected.clear();
+    assertEquals(expected, actual);
+    
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+    
+    // First
+    actual = jedis.zpopmax(bfoo, 1);
+    expected.clear();
+    expected.add(new Tuple(bb, 10d));
+    assertEquals(expected, actual);
+
+    // Second
+    actual = jedis.zpopmax(bfoo, 1);
+    expected.clear();
+    expected.add(new Tuple(ba, 2d));
+    assertEquals(expected, actual);
+    
+    // Last 2 (just 1, because 1 was overwritten)
+    actual = jedis.zpopmax(bfoo, 1);
+    expected.clear();
+    expected.add(new Tuple(bc, 0.1d));
+    assertEquals(expected, actual);
+    
+    // Empty
+    actual = jedis.zpopmax(bfoo, 1);
+    expected.clear();
+    assertEquals(expected, actual);
+  }
+  
+  @Test
+  public void zpopmin() {
+
+    jedis.zadd("foo", 1d, "a",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 0.1d, "c",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 2d, "a",ZAddParams.zAddParams().nx());
+
+    Set<Tuple> range = jedis.zpopmin("foo",  2);
+
+    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    expected.add(new Tuple("c", 0.1d));
+    expected.add(new Tuple("a", 1d));
+
+    assertEquals(expected, range);
+
+    Tuple tuple = jedis.zpopmin("foo");
+    assertEquals(new Tuple("b", 10d), tuple);
+
+    // Binary
+
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    Set<Tuple> brange = jedis.zpopmin(bfoo, 2);
+
+    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    bexpected.add(new Tuple(bc, 0.1d));
+    bexpected.add(new Tuple(ba, 2d));
+
+    assertEquals(bexpected, brange);
+
+    tuple = jedis.zpopmin(bfoo);
+    assertEquals(new Tuple(bb, 10d), tuple);
+  }
+
+  @Test
   public void zcount() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 10d, "b");

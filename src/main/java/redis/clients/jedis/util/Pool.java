@@ -46,7 +46,7 @@ public abstract class Pool<T> implements Closeable {
       }
     }
 
-    this.internalPool = new GenericObjectPool<T>(factory, poolConfig);
+    this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
   public void prepareInternalPool() {

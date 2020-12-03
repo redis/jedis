@@ -37,7 +37,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @After
   @Override
-  public void tearDown() {
+  public void tearDown() throws Exception {
     client.close();
     super.tearDown();
   }
@@ -54,6 +54,43 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     byte[] name = "binary".getBytes();
     client.clientSetname(name);
     assertArrayEquals(name, client.clientGetnameBinary());
+  }
+
+  @Test
+  public void clientId() {
+    Long clientId = client.clientId();
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);
+    matcher.find();
+
+    Long longId = Long.parseLong(matcher.group(1));
+
+    assertEquals(clientId, longId);
+  }
+
+  @Test
+  public void clientIdmultipleConnection() {
+    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    client2.auth("foobared");
+    client2.clientSetname("fancy_jedis_another_name");
+
+    long clientId1 = client.clientId();
+    long clientId2 = client2.clientId();
+
+    ///client-id is monotonically increasing
+    assertTrue(clientId1 < clientId2);
+
+    client2.close();
+  }
+
+  @Test
+  public void clientIdReconnect() {
+    long clientIdInitial = client.clientId();
+    client.disconnect();
+    client.connect();
+    long clientIdAfterReconnect = client.clientId();
+
+    assertTrue(clientIdInitial < clientIdAfterReconnect);
   }
 
   @Test

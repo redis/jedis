@@ -5,11 +5,14 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
@@ -20,6 +23,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 /**
  * Common interface for sharded and non-sharded Jedis
@@ -135,6 +139,12 @@ public interface JedisCommands {
 
   String lpop(String key);
 
+  Long lpos(String key, String element);
+
+  Long lpos(String key, String element, LPosParams params);
+
+  List<Long> lpos(String key, String element, LPosParams params, long count);
+
   String rpop(String key);
 
   Long sadd(String key, String... member);
@@ -186,6 +196,14 @@ public interface JedisCommands {
   Long zcard(String key);
 
   Double zscore(String key, String member);
+
+  Tuple zpopmax(String key);
+
+  Set<Tuple> zpopmax(String key, int count);
+
+  Tuple zpopmin(String key);
+
+  Set<Tuple> zpopmin(String key, int count);
 
   List<String> sort(String key);
 
@@ -334,6 +352,8 @@ public interface JedisCommands {
    */
   List<Long> bitfield(String key, String...arguments);
 
+  List<Long> bitfieldReadonly(String key, String...arguments);
+
   /**
    * Used for HSTRLEN Redis command
    * @param key 
@@ -441,7 +461,7 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  String xgroupDelConsumer( String key, String groupname, String consumername);
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XPENDING key group [start end count] [consumer]
@@ -480,4 +500,27 @@ public interface JedisCommands {
    */        
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  /**
+   * Introspection command used in order to retrieve different information about the stream
+   * @param key Stream name
+   * @return {@link StreamInfo} that contains information about the stream
+   */
+  StreamInfo xinfoStream (String key);
+
+  /**
+   * Introspection command used in order to retrieve different information about groups in the stream
+   * @param key Stream name
+   * @return List of {@link StreamGroupInfo} containing information about groups
+   */
+  List<StreamGroupInfo> xinfoGroup (String key);
+
+  /**
+   * Introspection command used in order to retrieve different information about consumers in the group
+   * @param key Stream name
+   * @param group Group name
+   * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
+   * to the the group
+   */
+  List<StreamConsumersInfo> xinfoConsumers (String key, String group);
 }

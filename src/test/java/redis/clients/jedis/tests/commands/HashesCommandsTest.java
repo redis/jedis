@@ -9,6 +9,7 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -318,8 +319,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     List<byte[]> bvals = jedis.hvals(bfoo);
 
     assertEquals(2, bvals.size());
-    assertTrue(arrayContains(bvals, bbar));
-    assertTrue(arrayContains(bvals, bcar));
+    assertCollectionContains(bvals, bbar);
+    assertCollectionContains(bvals, bcar);
   }
 
   @Test

@@ -572,6 +572,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Double hincrByFloat(final String key, final String field, final double value) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.hincrByFloat(key, field, value);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Boolean hexists(final String key, final String field) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
       @Override

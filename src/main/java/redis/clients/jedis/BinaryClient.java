@@ -428,6 +428,10 @@ public class BinaryClient extends Connection {
     sendCommand(SISMEMBER, key, member);
   }
 
+  public void smismember(final byte[] key, final byte[]... members) {
+    sendCommand(SMISMEMBER, joinParameters(key, members));
+  }
+
   public void sinter(final byte[]... keys) {
     sendCommand(SINTER, keys);
   }
@@ -528,6 +532,10 @@ public class BinaryClient extends Connection {
 
   public void zscore(final byte[] key, final byte[] member) {
     sendCommand(ZSCORE, key, member);
+  }
+
+  public void zmscore(final byte[] key, final byte[]... members) {
+    sendCommand(ZMSCORE, joinParameters(key, members));
   }
 
   public void zpopmax(final byte[] key) {

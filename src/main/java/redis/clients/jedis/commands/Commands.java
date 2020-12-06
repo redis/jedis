@@ -163,6 +163,8 @@ public interface Commands {
 
   void sismember(String key, String member);
 
+  void smismember(String key, String... members);
+
   void sinter(String... keys);
 
   void sinterstore(String dstkey, String... keys);
@@ -206,6 +208,8 @@ public interface Commands {
   void zcard(String key);
 
   void zscore(String key, String member);
+
+  void zmscore(String key, String... members);
   
   void zpopmax(String key);
   

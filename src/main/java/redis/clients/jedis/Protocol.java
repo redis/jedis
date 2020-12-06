@@ -280,13 +280,20 @@ public final class Protocol {
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
     GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR,
     BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP,
-    ID, IDLE, TIME, RETRYCOUNT, FORCE, STREAM, GROUPS, CONSUMERS, HELP, FREQ,
+    ID, IDLE, TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ,
     SETUSER, GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS;
 
+    /**
+     * @deprecated This will be private in future. Use {@link #getRaw()}.
+     */
     public final byte[] raw;
 
     Keyword() {
       raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));
+    }
+
+    public byte[] getRaw() {
+      return raw;
     }
   }
 }

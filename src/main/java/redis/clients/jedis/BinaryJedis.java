@@ -3547,15 +3547,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary() {
+  public List<Object> slowlogGetBinary() {
     client.slowlogGet();
-    return client.getBinaryMultiBulkReply();
+    return client.getObjectMultiBulkReply();
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary(final long entries) {
+  public List<Object> slowlogGetBinary(final long entries) {
     client.slowlogGet(entries);
-    return client.getBinaryMultiBulkReply();
+    return client.getObjectMultiBulkReply();
   }
 
   @Override
@@ -3692,6 +3692,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.memoryDoctor();
     return client.getBinaryBulkReply();
+  }
+  
+  @Override
+  public Long memoryUsage(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key);
+    return client.getIntegerReply();
+  }
+  
+  @Override
+  public Long memoryUsage(final byte[] key, final int samples) {
+    checkIsInMultiOrPipeline();
+    client.memoryUsage(key, samples);
+    return client.getIntegerReply();
   }
 
   @Override

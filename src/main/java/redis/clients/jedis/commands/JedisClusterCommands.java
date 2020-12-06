@@ -97,6 +97,8 @@ public interface JedisClusterCommands {
 
   Long hincrBy(String key, String field, long value);
 
+  Double hincrByFloat(String key, String field, double value);
+
   Boolean hexists(String key, String field);
 
   Long hdel(String key, String... field);
@@ -341,6 +343,24 @@ public interface JedisClusterCommands {
    */
   Long hstrlen(String key, String field);
 
+  /**
+   *  MEMORY USAGE key
+   * 
+   * @param key
+   * @return the memory usage
+   */
+  Long memoryUsage(String key);
+
+  /**
+   *  MEMORY USAGE key [SAMPLES count] 
+   * 
+   * @param key
+   * @param samples
+   * @return the memory usage
+   */
+  Long memoryUsage(String key, int samples);
+
+  
   /**
    * XADD key ID field string [field string ...]
    * 

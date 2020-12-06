@@ -572,6 +572,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Double hincrByFloat(final String key, final String field, final double value) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.hincrByFloat(key, field, value);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Boolean hexists(final String key, final String field) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
       @Override
@@ -2190,6 +2200,27 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+  
+  @Override
+  public Long memoryUsage(final String key) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.memoryUsage(key);
+      }
+    }.run(key);
+  }
+  
+  @Override
+  public Long memoryUsage(final String key, final int samples) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.memoryUsage(key, samples);
+      }
+    }.run(key);
+  }
+  
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {

@@ -16,9 +16,9 @@ public interface AdvancedBinaryJedisCommands {
 
   Long slowlogLen();
 
-  List<byte[]> slowlogGetBinary();
+  List<Object> slowlogGetBinary();
 
-  List<byte[]> slowlogGetBinary(long entries);
+  List<Object> slowlogGetBinary(long entries);
 
   Long objectRefcount(byte[] key);
 

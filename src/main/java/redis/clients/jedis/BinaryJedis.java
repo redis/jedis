@@ -3516,15 +3516,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary() {
+  public List<Object> slowlogGetBinary() {
     client.slowlogGet();
-    return client.getBinaryMultiBulkReply();
+    return client.getObjectMultiBulkReply();
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary(final long entries) {
+  public List<Object> slowlogGetBinary(final long entries) {
     client.slowlogGet(entries);
-    return client.getBinaryMultiBulkReply();
+    return client.getObjectMultiBulkReply();
   }
 
   @Override

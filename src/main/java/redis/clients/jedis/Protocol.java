@@ -283,10 +283,17 @@ public final class Protocol {
     ID, IDLE, TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ,
     SETUSER, GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS;
 
+    /**
+     * @deprecated This will be private in future. Use {@link #getRaw()}.
+     */
     public final byte[] raw;
 
     Keyword() {
       raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));
+    }
+
+    public byte[] getRaw() {
+      return raw;
     }
   }
 }

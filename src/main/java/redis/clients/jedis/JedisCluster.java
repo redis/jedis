@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -2116,6 +2117,18 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long georadiusStore(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    String[] keys = storeParam.getStringKeys(key);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
@@ -2157,6 +2170,18 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         return connection.georadiusByMember(key, member, radius, unit, param);
       }
     }.run(key);
+  }
+
+  @Override
+  public Long georadiusByMemberStore(final String key, final String member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    String[] keys = storeParam.getStringKeys(key);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+      }
+    }.run(keys.length, keys);
   }
 
   @Override

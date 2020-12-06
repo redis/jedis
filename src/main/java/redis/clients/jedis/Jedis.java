@@ -23,6 +23,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -3690,6 +3691,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Long georadiusStore(final String key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
@@ -3719,6 +3728,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Long georadiusByMemberStore(final String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return client.getIntegerReply();
   }
 
   @Override

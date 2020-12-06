@@ -29,6 +29,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -1270,6 +1271,12 @@ public class BinaryClient extends Connection {
       toByteArray(radius), unit.raw));
   }
 
+  public void georadiusStore(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
+        toByteArray(radius), unit.raw, storeParam.getOption(), storeParam.getKey()));
+  }
+
   public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
@@ -1287,6 +1294,12 @@ public class BinaryClient extends Connection {
   public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusByMemberStore(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw,
+        storeParam.getOption(), storeParam.getKey()));
   }
 
   public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,

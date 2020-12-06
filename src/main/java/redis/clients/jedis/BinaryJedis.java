@@ -1578,6 +1578,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Returns whether each member is a member of the set stored at key.
+   * <p>
+   * Time complexity O(N) where N is the number of elements being checked for membership
+   * @param key
+   * @param members
+   * @return List representing the membership of the given elements, in the same order as they are requested.
+   */
+  @Override
+  public List<Boolean> smismember(final byte[] key, final byte[]... members) {
+    checkIsInMultiOrPipeline();
+    client.smismember(key, members);
+    return BuilderFactory.BOOLEAN_LIST.build(client.getIntegerMultiBulkReply());
+  }
+
+  /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the
    * client as a multi-bulk reply (see the protocol specification for more information). If just a
@@ -1915,6 +1930,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zscore(key, member);
     return BuilderFactory.DOUBLE.build(client.getOne());
+  }
+
+  /**
+   * Returns the scores associated with the specified members in the sorted set stored at key.
+   * For every member that does not exist in the sorted set, a nil value is returned.
+   * <p>
+   * <b>Time complexity:</b> O(N) where N is the number of members being requested.
+   * @param key
+   * @param members
+   * @return the scores
+   */
+  @Override
+  public List<Double> zmscore(final byte[] key, final byte[]... members) {
+    checkIsInMultiOrPipeline();
+    client.zmscore(key, members);
+    return BuilderFactory.DOUBLE_LIST.build(client.getBinaryMultiBulkReply());
   }
 
   @Override
@@ -3517,15 +3548,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary() {
+  public List<Object> slowlogGetBinary() {
     client.slowlogGet();
-    return client.getBinaryMultiBulkReply();
+    return client.getObjectMultiBulkReply();
   }
 
   @Override
-  public List<byte[]> slowlogGetBinary(final long entries) {
+  public List<Object> slowlogGetBinary(final long entries) {
     client.slowlogGet(entries);
-    return client.getBinaryMultiBulkReply();
+    return client.getObjectMultiBulkReply();
   }
 
   @Override

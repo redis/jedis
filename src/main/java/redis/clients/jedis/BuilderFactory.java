@@ -539,6 +539,48 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<List<Boolean>> BOOLEAN_LIST = new Builder<List<Boolean>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Boolean> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<Long> longs = (List<Long>) data;
+      List<Boolean> booleans = new ArrayList<>(longs.size());
+      for (Long value : longs) {
+        booleans.add(value == 1L);
+      }
+      return booleans;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Boolean>";
+    }
+  };
+
+  public static final Builder<List<Double>> DOUBLE_LIST = new Builder<List<Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Double> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> values = (List<byte[]>) data;
+      List<Double> doubles = new ArrayList<>(values.size());
+      for (byte[] value : values) {
+        doubles.add(DOUBLE.build(value));
+      }
+      return doubles;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Double>";
+    }
+  };
+
   public static final Builder<StreamEntryID> STREAM_ENTRY_ID = new Builder<StreamEntryID>() {
     @Override
     @SuppressWarnings("unchecked")

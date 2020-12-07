@@ -43,8 +43,8 @@ jobs:
           sudo apt install -y stunnel
 
       - run: make circleci-install
-    
-      - run: TEST="\!ModuleTest" make test
+
+      - run: TEST="" make test
 
 
 workflows:

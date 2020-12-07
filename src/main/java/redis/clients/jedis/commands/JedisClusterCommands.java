@@ -19,8 +19,6 @@ import redis.clients.jedis.params.LPosParams;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
 
 public interface JedisClusterCommands {
   String set(String key, String value);

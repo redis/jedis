@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -55,43 +58,59 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
   @Override
   public Jedis getConnection() {
-    // In antirez's redis-rb-cluster implementation,
-    // getRandomConnection always return valid connection (able to
-    // ping-pong)
-    // or exception if all connections are invalid
+    // In antirez's redis-rb-cluster implementation, getRandomConnection always return valid
+    // connection (able to ping-pong) or exception if all connections are invalid
 
     List<JedisPool> pools = cache.getShuffledNodesPool();
+
+    Queue<JedisException> firstExceptions = new LinkedList<>();
+    Queue<JedisException> lastExceptions = new LinkedList<>();
 
     for (JedisPool pool : pools) {
       Jedis jedis = null;
       try {
         jedis = pool.getResource();
-
         if (jedis == null) {
           continue;
         }
 
-        String result = jedis.ping();
-
-        if (result.equalsIgnoreCase("pong")) return jedis;
+        if (jedis.ping().equalsIgnoreCase("pong")) {
+          return jedis;
+        }
 
         jedis.close();
       } catch (JedisException ex) {
+        if (firstExceptions.size() < 5) {
+          firstExceptions.add(ex);
+        } else {
+          if (lastExceptions.size() >= 5) {
+            lastExceptions.remove();
+          }
+          lastExceptions.add(ex);
+        }
+
         if (jedis != null) {
           jedis.close();
         }
       }
     }
 
-    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    JedisNoReachableClusterNodeException noReachableNode = new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    for (JedisException je : firstExceptions) {
+      noReachableNode.addSuppressed(je);
+    }
+    for (JedisException je : lastExceptions) {
+      noReachableNode.addSuppressed(je);
+    }
+
+    throw noReachableNode;
   }
 
   @Override
   public Jedis getConnectionFromSlot(int slot) {
     JedisPool connectionPool = cache.getSlotPool(slot);
     if (connectionPool != null) {
-      // It can't guaranteed to get valid connection because of node
-      // assignment
+      // It can't be guaranteed to get valid connection because of node assignment
       return connectionPool.getResource();
     } else {
       renewSlotCache(); //It's abnormal situation for cluster mode, that we have just nothing for slot, try to rediscover state

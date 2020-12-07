@@ -53,6 +53,19 @@ public class HostAndPort implements Serializable {
   }
 
   /**
+   * Creates HostAndPort with <i>unconverted</i> host.
+   *
+   * @param string String to parse. Must be in <b>"host:port"</b> format. Port is mandatory.
+   * @return parsed HostAndPort
+   */
+  public static HostAndPort from(String string) {
+    int lastColon = string.lastIndexOf(":");
+    String host = string.substring(0, lastColon);
+    int port = Integer.parseInt(string.substring(lastColon + 1));
+    return new HostAndPort(host, port);
+  }
+
+  /**
    * Splits String into host and port parts.
    * String must be in ( host + ":" + port ) format.
    * Port is optional

@@ -3821,6 +3821,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<AccessControlLogEntry> aclLog() {
+    client.aclLog();
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<AccessControlLogEntry> aclLog(int limit) {
+    client.aclLog(limit);
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclLog(String options) {
+    client.aclLog(options);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public String aclGenPass() {
     client.aclGenPass();
     return client.getStatusCodeReply();

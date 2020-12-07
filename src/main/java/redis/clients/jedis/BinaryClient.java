@@ -14,7 +14,6 @@ import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import static redis.clients.jedis.Protocol.Keyword.FREQ;
 import static redis.clients.jedis.Protocol.Keyword.HELP;
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,14 +26,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -1457,10 +1449,28 @@ public class BinaryClient extends Connection {
       params[streamsIndex++] = entry.getKey();
       params[idsIndex++] = entry.getValue();
     }
-    
+
     sendCommand(XREAD, params);
- }
-  
+  }
+
+  public void xread(final XReadParams params, final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[paramLength + 1 + streams.length * 2][];
+    System.arraycopy(bparams, 0, args, 0, paramLength);
+
+    args[paramLength] = Keyword.STREAMS.raw;
+    int keyIndex = paramLength + 1;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREAD, args);
+  }
+
   public void xack(final byte[] key, final byte[] group, final byte[]... ids) {
     final byte[][] params = new byte[2 + ids.length][];
     int index = 0;
@@ -1552,7 +1562,29 @@ public class BinaryClient extends Connection {
     sendCommand(XREADGROUP, params);
   }
 
-  
+  public void xreadGroup(byte[] groupname, byte[] consumer, final XReadGroupParams params, final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[3 + paramLength + 1 + streams.length * 2][];
+    int index = 0;
+    args[index++] = Keyword.GROUP.raw;
+    args[index++] = groupname;
+    args[index++] = consumer;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+
+    args[index++] = Keyword.STREAMS.raw;
+    int keyIndex = index;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREADGROUP, args);
+  }
+
   public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
     if(consumername == null) {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count));

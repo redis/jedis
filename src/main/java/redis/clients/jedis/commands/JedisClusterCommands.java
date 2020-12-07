@@ -19,6 +19,8 @@ import redis.clients.jedis.params.LPosParams;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 public interface JedisClusterCommands {
   String set(String key, String value);
@@ -411,17 +413,10 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-  
-  /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param count
-   * @param block
-   * @param streams
-   * @return
-   */
+
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
-  
+
   /**
    * XACK key group ID [ID ...]
    * @param key
@@ -469,19 +464,9 @@ public interface JedisClusterCommands {
    */
   Long xgroupDelConsumer( String key, String groupname, String consumername);
 
-  /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param groupname
-   * @param consumer
-   * @param count
-   * @param block
-   * @param streams
-   * @return
-   */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
-  
   /**
    * XPENDING key group [start end count] [consumer]
    * 

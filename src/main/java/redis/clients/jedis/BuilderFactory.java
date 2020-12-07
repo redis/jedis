@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -643,7 +644,32 @@ public final class BuilderFactory {
       return "StreamEntryID";
     }
   };
-  
+
+  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
+      = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
+    @Override
+    public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      List<Object> streams = (List<Object>) data;
+
+      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streams.size());
+      for (Object streamObj : streams) {
+        List<Object> stream = (List<Object>) streamObj;
+        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
+      }
+
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Entry<String, List<StreamEntry>>>";
+    }
+  };
 
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override

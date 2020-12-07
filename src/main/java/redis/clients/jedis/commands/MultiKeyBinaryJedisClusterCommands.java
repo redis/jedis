@@ -9,9 +9,12 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
@@ -83,9 +86,13 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Set<byte[]> keys(byte[] pattern);
   
-  List<byte[]> xread(final int count, final long block, final Map<byte[], byte[]> streams);
+  List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams);
+
+  List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams);
   
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams);
+
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams);
 
   Long georadiusStore(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);

@@ -18,6 +18,8 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 public interface Commands {
 
@@ -400,7 +402,9 @@ public interface Commands {
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
   
   void xread(int count, long block, Entry<String, StreamEntryID>... streams);
-  
+
+  void xread(XReadParams params, Map<String, StreamEntryID> streams);
+
   void xack(String key, String group, StreamEntryID... ids);
   
   void xgroupCreate(String key, String consumer, StreamEntryID id, boolean makeStream);
@@ -416,6 +420,8 @@ public interface Commands {
   void xtrim(String key, long maxLen, boolean approximateLength);
 
   void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
+
+  void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams);
 
   void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 

@@ -4,12 +4,7 @@ import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -17,6 +12,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -2244,6 +2240,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> xread(final XReadParams xReadParams, final Entry<byte[], byte[]>... streams) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xread(xReadParams, streams);
+      }
+    }.runBinary(streams.length, getKeys(streams));
+  }
+
+  @Override
   public Long xack(final byte[] key, final byte[] group, final byte[]... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -2308,6 +2314,17 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> xreadGroup(final byte[] groupname, final byte[] consumer, final XReadGroupParams xReadGroupParams,
+      final Entry<byte[], byte[]>... streams) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+      }
+    }.runBinary(streams.length, getKeys(streams));
+  }
+
+  @Override
   public Long xdel(final byte[] key, final byte[]... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -2366,5 +2383,13 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.sendCommand(cmd, args);
       }
     }.runBinary(sampleKey);
+  }
+
+  private static byte[][] getKeys(final Entry<byte[], ?>... entries) {
+    byte[][] keys = new byte[entries.length][];
+    for (int i = 0; i < entries.length; i++) {
+      keys[i] = entries[i].getKey();
+    }
+    return keys;
   }
 }

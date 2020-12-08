@@ -45,6 +45,7 @@ jobs:
       - run: make circleci-install
     
       - run: TEST="\!ModuleTest" make test
+      - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} 
 
 
 workflows:

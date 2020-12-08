@@ -728,9 +728,21 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<Boolean>> smismember(final String key, final String... members) {
+    getClient(key).smismember(key, members);
+    return getResponse(BuilderFactory.BOOLEAN_LIST);
+  }
+
+  @Override
   public Response<Boolean> sismember(final byte[] key, final byte[] member) {
     getClient(key).sismember(key, member);
     return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<List<Boolean>> smismember(final byte[] key, final byte[]... members) {
+    getClient(key).smismember(key, members);
+    return getResponse(BuilderFactory.BOOLEAN_LIST);
   }
 
   @Override
@@ -1332,9 +1344,21 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<Double>> zmscore(final String key, final String... members) {
+    getClient(key).zmscore(key, members);
+    return getResponse(BuilderFactory.DOUBLE_LIST);
+  }
+
+  @Override
   public Response<Double> zscore(final byte[] key, final byte[] member) {
     getClient(key).zscore(key, member);
     return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
+  public Response<List<Double>> zmscore(final byte[] key, final byte[]... members) {
+    getClient(key).zmscore(key, members);
+    return getResponse(BuilderFactory.DOUBLE_LIST);
   }
 
   @Override

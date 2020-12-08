@@ -97,6 +97,8 @@ public interface JedisClusterCommands {
 
   Long hincrBy(String key, String field, long value);
 
+  Double hincrByFloat(String key, String field, double value);
+
   Boolean hexists(String key, String field);
 
   Long hdel(String key, String... field);
@@ -149,6 +151,8 @@ public interface JedisClusterCommands {
 
   Boolean sismember(String key, String member);
 
+  List<Boolean> smismember(String key, String... members);
+
   String srandmember(String key);
 
   List<String> srandmember(String key, int count);
@@ -184,6 +188,8 @@ public interface JedisClusterCommands {
   Long zcard(String key);
 
   Double zscore(String key, String member);
+
+  List<Double> zmscore(String key, String... members);
 
   Tuple zpopmax(String key);
 

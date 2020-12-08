@@ -73,6 +73,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
     List<JedisPool> pools = cache.getShuffledNodesPool();
 
+    JedisException suppressed = null;
     for (JedisPool pool : pools) {
       Jedis jedis = null;
       try {
@@ -82,19 +83,26 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
           continue;
         }
 
-        String result = jedis.ping();
-
-        if (result.equalsIgnoreCase("pong")) return jedis;
+        if (jedis.ping().equalsIgnoreCase("pong")) {
+          return jedis;
+        }
 
         jedis.close();
       } catch (JedisException ex) {
+        if (suppressed == null) { // remembering first suppressed exception
+          suppressed = ex;
+        }
         if (jedis != null) {
           jedis.close();
         }
       }
     }
 
-    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    JedisNoReachableClusterNodeException noReachableNode = new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    if (suppressed != null) {
+      noReachableNode.addSuppressed(suppressed);
+    }
+    throw noReachableNode;
   }
 
   @Override

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import org.junit.After;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   Jedis nj;
 
   @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
 
@@ -45,6 +47,13 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     nj.connect();
     nj.auth("foobared");
     nj.flushAll();
+  }
+
+  @After
+  @Override
+  public void tearDown() throws Exception {
+    nj.close();
+    super.tearDown();
   }
 
   @Test
@@ -111,10 +120,10 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void unwatch() throws UnknownHostException, IOException {
+  public void unwatch() {
     jedis.watch("mykey");
-    String val = jedis.get("mykey");
-    val = "foo";
+    jedis.get("mykey");
+    String val = "foo";
     String status = jedis.unwatch();
     assertEquals("OK", status);
     Transaction t = jedis.multi();
@@ -131,8 +140,8 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     // Binary
     jedis.watch(bmykey);
-    byte[] bval = jedis.get(bmykey);
-    bval = bfoo;
+    jedis.get(bmykey);
+    byte[] bval = bfoo;
     status = jedis.unwatch();
     assertEquals(Keyword.OK.name(), status);
     t = jedis.multi();
@@ -231,7 +240,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     } catch (JedisDataException e) {
       // that is fine we should be here
     }
-    assertEquals(r.get(), "bar");
+    assertEquals("bar", r.get());
   }
 
   @Test
@@ -351,7 +360,6 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     }
   }
 
-
   @Test
   public void testTransactionWithGeneralCommand(){
     Transaction t = jedis.multi();
@@ -370,16 +378,13 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     Response<Object> x = t.sendCommand(GET, "x");
     t.exec();
 
-
     assertEquals("foo", string.get());
     assertEquals("foo", list.get());
     assertEquals("bar", hash.get());
     assertEquals("foo", zset.get().iterator().next());
     assertEquals("foo", set.get());
     assertEquals("2", SafeEncoder.encode((byte[]) x.get()));
-
   }
-
 
   @Test
   public void transactionResponseWithErrorWithGeneralCommand() {
@@ -398,8 +403,24 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     } catch (JedisDataException e) {
       // that is fine we should be here
     }
-    assertEquals(r.get(), "bar");
+    assertEquals("bar", r.get());
     assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
+  }
+
+  @Test
+  public void unwatchWithinMulti() {
+    final String key = "foo";
+    final String val = "bar";
+    jedis.set(key, val);
+    jedis.watch(key);
+
+    List<Object> exp = new ArrayList<>();
+    Transaction t = jedis.multi();
+    t.get(key);     exp.add(val);
+    t.unwatch();    exp.add("OK");
+    t.get(key);     exp.add(val);
+    List<Object> res = t.exec();
+    assertEquals(exp, res);
   }
 
 }

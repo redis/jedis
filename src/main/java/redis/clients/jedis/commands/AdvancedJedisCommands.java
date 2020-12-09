@@ -1,7 +1,10 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
 
+import redis.clients.jedis.AccessControlLogEntry;
+import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
@@ -25,6 +28,10 @@ public interface AdvancedJedisCommands {
 
   Long objectIdletime(String key);
 
+  List<String> objectHelp();
+
+  Long objectFreq(String key);
+
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
@@ -41,5 +48,39 @@ public interface AdvancedJedisCommands {
 
   String clientSetname(String name);
 
+  Long clientId();
+
   String memoryDoctor();
+  
+  Long memoryUsage(String key);
+  
+  Long memoryUsage(String key, int samples);
+
+  String aclWhoAmI();
+
+  String aclGenPass();
+
+  List<String> aclList();
+
+  List<String> aclUsers();
+
+  AccessControlUser aclGetUser(String name);
+
+  String aclSetUser(String name);
+
+  String aclSetUser(String name, String... keys);
+
+  Long aclDelUser(String name);
+
+  List<String> aclCat();
+
+  List<String> aclCat(String category);
+
+  List<AccessControlLogEntry> aclLog();
+
+  List<AccessControlLogEntry> aclLog(int limit);
+
+  String aclLog(String options);
+
+  // TODO: Implements ACL LOAD/SAVE commands
 }

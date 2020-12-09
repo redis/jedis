@@ -1,10 +1,10 @@
-[![GitHub issues](https://img.shields.io/github/release/xetorthio/jedis.svg)](https://github.com/xetorthio/jedis/releases/latest)
-[![Build Status](https://travis-ci.org/xetorthio/jedis.png?branch=master)](https://travis-ci.org/xetorthio/jedis)
+[![Release](https://img.shields.io/github/release/redis/jedis.svg)](https://github.com/redis/jedis/releases/latest)
+[![CircleCI](https://circleci.com/gh/redis/jedis/tree/master.svg?style=svg)](https://circleci.com/gh/redis/jedis/tree/master)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/xetorthio/jedis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/xetorthio/jedis/context:java)
-[![Gitter](https://badges.gitter.im/xetorthio/jedis.svg)](https://gitter.im/xetorthio/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/redis/jedis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/redis/jedis/context:java)
+[![Gitter](https://badges.gitter.im/redis/jedis.svg)](https://gitter.im/redis/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Jedis
 
@@ -13,8 +13,6 @@ Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Red
 Jedis was conceived to be EASY to use.
 
 Jedis is fully compatible with redis 2.8.x, 3.x.x and above*.
-
-*There are still couple of new functionalities added Redis 5 missing in Jedis like Streams.
 
 ## Community
 
@@ -33,6 +31,7 @@ All of the following redis features are supported:
 - Commands operating on lists
 - Commands operating on sets
 - Commands operating on sorted sets
+- Commands operating on streams
 - Transactions
 - Pipelining
 - Publish/Subscribe
@@ -48,7 +47,7 @@ All of the following redis features are supported:
 ## How do I use it?
 
 You can download the latest build at: 
-    http://github.com/xetorthio/jedis/releases
+    http://github.com/redis/jedis/releases
 
 Or use it as a maven dependency:
 
@@ -58,7 +57,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.1.0</version>
+    <version>3.3.0</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -91,7 +90,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.2.0-SNAPSHOT</version>
+      <version>3.4.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -107,15 +106,15 @@ String value = jedis.get("foo");
 
 For more usage examples check the tests.
 
-Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
+Please check the [wiki](http://github.com/redis/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
-Master branch javadocs can be found here: http://xetorthio.github.io/jedis/
+Master branch javadocs can be found here: http://redis.github.io/jedis/
 
 And you are done!
 
 ## Jedis Cluster
 
-Redis cluster [specification](http://redis.io/topics/cluster-spec) (still under development) is implemented
+Redis cluster [specification](http://redis.io/topics/cluster-spec) is implemented
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
@@ -132,14 +131,14 @@ String value = jc.get("foo");
 - You're getting errors when running jedis in multi-threaded environments?
 - Do you need further instructions about pipelining, transactions or sentinel?
 
-Please check the [WIKI](https://github.com/xetorthio/jedis/wiki) for more useful information.
+Please check the [WIKI](https://github.com/redis/jedis/wiki) for more useful information.
 
 
 ## I want to contribute!
 
 That is great!
 
-Please see [CONTRIBUTING.md](https://github.com/xetorthio/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
+Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
 
 Thanks for helping!
 

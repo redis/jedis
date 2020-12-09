@@ -34,7 +34,7 @@ jobs:
       - run: |
           sudo apt update
           sudo apt install -y software-properties-common
-          sudo add-apt-repository ppa:redislabs/redis
+          sudo add-apt-repository --yes ppa:redislabs/redis
           sudo apt update
           sudo apt install -y stunnel redis
 

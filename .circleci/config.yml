@@ -1,6 +1,5 @@
 version: 2.1
 
-
 executors:
   linux-8-jdk:
     docker:
@@ -14,9 +13,7 @@ jobs:
     parameters:
       os:
         type: executor
-
     executor: << parameters.os >>
-
     working_directory: ~/repo
 
     environment:
@@ -25,14 +22,39 @@ jobs:
 
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - jedis-{{ checksum "pom.xml" }}
-
       - run: mvn dependency:go-offline 
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: jedis-{{ checksum "pom.xml" }}
 
+      - run: |
+          sudo add-apt-repository ppa:redislabs/redis
+          sudo apt update
+          sudo apt install -y stunnel redis
+
+      - run: TEST="\!ModuleTest" make test
+
+  build-nightly:
+    parameters:
+      os:
+        type: executor
+    executor: << parameters.os >>
+    working_directory: ~/repo
+
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - jedis-{{ checksum "pom.xml" }}
+      - run: mvn dependency:go-offline 
       - save_cache:
           paths:
             - ~/.m2
@@ -42,10 +64,9 @@ jobs:
           sudo apt update
           sudo apt install -y stunnel
 
+      # Nightly is tested with Redis unstable
       - run: make circleci-install
-    
       - run: TEST="\!ModuleTest" make test
-
 
 workflows:
   all-jdks:
@@ -55,3 +76,18 @@ workflows:
             parameters:
 #              os: [linux-8-jdk, linux-7-jdk]
               os: [linux-8-jdk]
+  all-jdks-nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build_nightly:
+          matrix:
+            parameters:
+#              os: [linux-8-jdk, linux-7-jdk]
+              os: [linux-8-jdk]
+

@@ -411,8 +411,11 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-
-  @Deprecated
+  
+  /**
+   * @deprecated Will be removed in future version. Use
+   * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
+   */
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
 
   /**
@@ -462,7 +465,10 @@ public interface JedisClusterCommands {
    */
   Long xgroupDelConsumer( String key, String groupname, String consumername);
 
-  @Deprecated
+  /**
+   * @deprecated Will be removed in future version. Use
+   * {@link MultiKeyJedisClusterCommands#xreadGroup(java.lang.String, java.lang.String, int, long, boolean, java.util.Map.Entry...)}.
+   */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
   /**

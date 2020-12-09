@@ -39,6 +39,11 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
@@ -53,6 +58,12 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
         ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+  }
+
   @Override
   public Jedis getConnection() {
     // In antirez's redis-rb-cluster implementation,
@@ -62,6 +73,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
     List<JedisPool> pools = cache.getShuffledNodesPool();
 
+    JedisException suppressed = null;
     for (JedisPool pool : pools) {
       Jedis jedis = null;
       try {
@@ -71,19 +83,26 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
           continue;
         }
 
-        String result = jedis.ping();
-
-        if (result.equalsIgnoreCase("pong")) return jedis;
+        if (jedis.ping().equalsIgnoreCase("pong")) {
+          return jedis;
+        }
 
         jedis.close();
       } catch (JedisException ex) {
+        if (suppressed == null) { // remembering first suppressed exception
+          suppressed = ex;
+        }
         if (jedis != null) {
           jedis.close();
         }
       }
     }
 
-    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    JedisNoReachableClusterNodeException noReachableNode = new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    if (suppressed != null) {
+      noReachableNode.addSuppressed(suppressed);
+    }
+    throw noReachableNode;
   }
 
   @Override

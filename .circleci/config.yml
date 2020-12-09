@@ -32,10 +32,11 @@ jobs:
           key: jedis-{{ checksum "pom.xml" }}
 
       - run: |
-          sudo apt install -y snapd
           sudo apt update
-          sudo apt install -y stunnel
-          sudo snap install redis
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository --yes ppa:redislabs/redis
+          sudo apt update
+          sudo apt install -y stunnel redis
 
       - run: TEST="\!ModuleTest" make test
 

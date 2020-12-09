@@ -38,7 +38,7 @@ jobs:
 
       - run: TEST="\!ModuleTest" make test
 
-  build-nightly:
+  build_nightly:
     parameters:
       os:
         type: executor
@@ -76,6 +76,7 @@ workflows:
             parameters:
 #              os: [linux-8-jdk, linux-7-jdk]
               os: [linux-8-jdk]
+
   all-jdks-nightly:
     triggers:
       - schedule:

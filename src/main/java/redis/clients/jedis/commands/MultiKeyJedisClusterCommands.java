@@ -11,14 +11,12 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import redis.clients.jedis.StreamEntry;
-import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
 
 public interface MultiKeyJedisClusterCommands {
 

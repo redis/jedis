@@ -1,6 +1,8 @@
 package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +26,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class SSLJedisTest {
   }
 
   private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-    Assert.assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
+    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
         new File(trustStoreFilePath).exists());
     System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
     System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
@@ -121,11 +122,11 @@ public class SSLJedisTest {
     Jedis jedis = new Jedis(shardInfo);
     try {
       assertEquals("PONG", jedis.ping());
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
+      fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals("Unexpected first inner exception.",
+      assertEquals("Unexpected first inner exception.",
           SSLHandshakeException.class, e.getCause().getClass());
-      Assert.assertEquals("Unexpected second inner exception.",
+      assertEquals("Unexpected second inner exception.",
           CertificateException.class, e.getCause().getCause().getClass());
     }
 
@@ -194,9 +195,9 @@ public class SSLJedisTest {
     Jedis jedis = new Jedis(shardInfo);
     try {
       assertEquals("PONG", jedis.ping());
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
+      fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals("The JedisConnectionException does not contain the expected message.",
+      assertEquals("The JedisConnectionException does not contain the expected message.",
           "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
     }
 
@@ -226,14 +227,14 @@ public class SSLJedisTest {
     Jedis jedis = new Jedis(shardInfo);
     try {
       assertEquals("PONG", jedis.ping());
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
+      fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      Assert.assertEquals("Unexpected first inner exception.",
-          SSLException.class, e.getCause().getClass());
-      Assert.assertEquals("Unexpected second inner exception.",
-          RuntimeException.class, e.getCause().getCause().getClass());
-      Assert.assertEquals("Unexpected third inner exception.",
-          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getClass());
+      assertEquals("Unexpected first inner exception.", SSLException.class,
+          e.getCause().getClass());
+      assertEquals("Unexpected second inner exception.", RuntimeException.class,
+          e.getCause().getCause().getClass());
+      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
+          e.getCause().getCause().getCause().getClass());
     }
 
     try {
@@ -247,15 +248,12 @@ public class SSLJedisTest {
    * Creates an SSLSocketFactory that trusts all certificates in
    * truststore.jceks.
    */
-  private static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
+  static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
 
     KeyStore trustStore = KeyStore.getInstance("jceks");
-    InputStream inputStream = null;
-    try {
-      inputStream = new FileInputStream("src/test/resources/truststore.jceks");
+    
+    try (InputStream inputStream = new FileInputStream("src/test/resources/truststore.jceks")){
       trustStore.load(inputStream, null);
-    } finally {
-      inputStream.close();
     }
 
     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
@@ -271,7 +269,7 @@ public class SSLJedisTest {
    * Creates an SSLSocketFactory with a trust manager that does not trust any
    * certificates.
    */
-  private static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
+  static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
     TrustManager[] unTrustManagers = new TrustManager[] {
       new X509TrustManager() {
         public X509Certificate[] getAcceptedIssuers() {
@@ -297,7 +295,7 @@ public class SSLJedisTest {
    * for production.
    * 
    */
-  private static class BasicHostnameVerifier implements HostnameVerifier {
+  static class BasicHostnameVerifier implements HostnameVerifier {
 
     private static final String COMMON_NAME_RDN_PREFIX = "CN=";
 
@@ -307,7 +305,7 @@ public class SSLJedisTest {
       try {
         peerCertificate = (X509Certificate) session.getPeerCertificates()[0];
       } catch (SSLPeerUnverifiedException e) {
-        throw new IllegalStateException("The session does not contain a peer X.509 certificate.");
+        throw new IllegalStateException("The session does not contain a peer X.509 certificate.",  e);
       }
       String peerCertificateCN = getCommonName(peerCertificate);
       return hostname.equals(peerCertificateCN);
@@ -317,6 +315,7 @@ public class SSLJedisTest {
       String subjectDN = peerCertificate.getSubjectDN().getName();
       String[] dnComponents = subjectDN.split(",");
       for (String dnComponent : dnComponents) {
+        dnComponent = dnComponent.trim();
         if (dnComponent.startsWith(COMMON_NAME_RDN_PREFIX)) {
           return dnComponent.substring(COMMON_NAME_RDN_PREFIX.length());
         }

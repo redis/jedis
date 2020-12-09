@@ -7,7 +7,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayCollectionContainsAll;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContainsAll;
+import static redis.clients.jedis.tests.utils.ByteArrayUtil.byteArrayCollectionRemoveAll;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -142,34 +145,46 @@ public class SetCommandsTest extends JedisCommandTestBase {
   public void spopWithCount() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");
+    jedis.sadd("foo", "c");
 
-    Set<String> expected = new HashSet<String>();
-    expected.add("a");
-    expected.add("b");
+    Set<String> superSet = new HashSet<String>();
+    superSet.add("c");
+    superSet.add("b");
+    superSet.add("a");
 
     Set<String> members = jedis.spop("foo", 2);
 
     assertEquals(2, members.size());
-    assertEquals(expected, members);
+    assertCollectionContainsAll(superSet, members);
+    superSet.removeAll(members);
 
     members = jedis.spop("foo", 2);
-    assertTrue(members.isEmpty());
+    assertEquals(1, members.size());
+    assertEquals(superSet, members);
+
+    assertTrue(jedis.spop("foo", 2).isEmpty());
 
     // Binary
     jedis.sadd(bfoo, ba);
     jedis.sadd(bfoo, bb);
+    jedis.sadd(bfoo, bc);
 
-    Set<byte[]> bexpected = new HashSet<byte[]>();
-    bexpected.add(bb);
-    bexpected.add(ba);
+    Set<byte[]> bsuperSet = new HashSet<byte[]>();
+    bsuperSet.add(bc);
+    bsuperSet.add(bb);
+    bsuperSet.add(ba);
 
     Set<byte[]> bmembers = jedis.spop(bfoo, 2);
 
     assertEquals(2, bmembers.size());
-    assertByteArraySetEquals(bexpected, bmembers);
+    assertByteArrayCollectionContainsAll(bsuperSet, bmembers);
+    byteArrayCollectionRemoveAll(bsuperSet, bmembers);
 
     bmembers = jedis.spop(bfoo, 2);
-    assertTrue(bmembers.isEmpty());
+    assertEquals(1, bmembers.size());
+    assertByteArraySetEquals(bsuperSet, bmembers);
+
+    assertTrue(jedis.spop(bfoo, 2).isEmpty());
   }
 
   @Test
@@ -262,6 +277,18 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     assertFalse(jedis.sismember(bfoo, bc));
 
+  }
+
+  @Test
+  public void smismember() {
+    jedis.sadd("foo", "a", "b");
+
+    assertEquals(Arrays.asList(true, false), jedis.smismember("foo", "a", "c"));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb);
+
+    assertEquals(Arrays.asList(true, false), jedis.smismember(bfoo, ba, bc));
   }
 
   @Test

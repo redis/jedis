@@ -9,6 +9,7 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,15 +191,15 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     value = jedis.hincrByFloat("foo", "bar", -1.5d);
     assertEquals((Double) 0d, value);
     value = jedis.hincrByFloat("foo", "bar", -10.7d);
-    assertEquals(Double.compare(-10.7d, value), 0);
+    assertEquals(Double.valueOf(-10.7d), value);
 
     // Binary
     double bvalue = jedis.hincrByFloat(bfoo, bbar, 1.5d);
-    assertEquals(Double.compare(1.5d, bvalue), 0);
+    assertEquals(1.5d, bvalue, 0d);
     bvalue = jedis.hincrByFloat(bfoo, bbar, -1.5d);
-    assertEquals(Double.compare(0d, bvalue), 0);
+    assertEquals(0d, bvalue, 0d);
     bvalue = jedis.hincrByFloat(bfoo, bbar, -10.7d);
-    assertEquals(Double.compare(-10.7d, value), 0);
+    assertEquals(-10.7d, bvalue, 0d);
 
   }
 
@@ -318,8 +319,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     List<byte[]> bvals = jedis.hvals(bfoo);
 
     assertEquals(2, bvals.size());
-    assertTrue(arrayContains(bvals, bbar));
-    assertTrue(arrayContains(bvals, bcar));
+    assertCollectionContains(bvals, bbar);
+    assertCollectionContains(bvals, bcar);
   }
 
   @Test

@@ -2,14 +2,15 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -31,6 +32,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -39,9 +42,11 @@ import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.*;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
-import redis.clients.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisClusterTest {
   private static Jedis node1;
@@ -288,7 +293,7 @@ public class JedisClusterTest {
     jedisClusterNode.add(nodeInfo1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
-    node4.clusterMeet(localHost, nodeInfo1.getPort());
+    node3.clusterMeet(localHost, nodeInfo4.getPort());
 
     String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
     String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
@@ -364,7 +369,7 @@ public class JedisClusterTest {
     assertEquals("foo", jc.get("51"));
   }
 
-  @Test(expected = JedisClusterMaxRedirectionsException.class)
+  @Test(expected = JedisClusterMaxAttemptsException.class)
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
@@ -377,41 +382,34 @@ public class JedisClusterTest {
   }
 
   @Test
-  public void testRedisHashtag() {
-    assertEquals(JedisClusterCRC16.getSlot("{bar"), JedisClusterCRC16.getSlot("foo{{bar}}zap"));
-    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
-      JedisClusterCRC16.getSlot("{user1000}.followers"));
-    assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), JedisClusterCRC16.getSlot("bar"));
-    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
-  }
-
-  @Test
   public void testClusterForgetNode() throws InterruptedException {
     // at first, join node4 to cluster
     node1.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+    node2.clusterMeet("127.0.0.1", nodeInfo4.getPort());
+    node3.clusterMeet("127.0.0.1", nodeInfo4.getPort());
 
-    String node7Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
+    String node4Id = JedisClusterTestUtil.getNodeId(node4.clusterNodes());
 
-    JedisClusterTestUtil.assertNodeIsKnown(node3, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsKnown(node2, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsKnown(node1, node7Id, 1000);
-
-    assertNodeHandshakeEnded(node3, 1000);
-    assertNodeHandshakeEnded(node2, 1000);
+    JedisClusterTestUtil.assertNodeIsKnown(node1, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsKnown(node2, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsKnown(node3, node4Id, 1000);
+    
     assertNodeHandshakeEnded(node1, 1000);
+    assertNodeHandshakeEnded(node2, 1000);
+    assertNodeHandshakeEnded(node3, 1000);
 
     assertEquals(4, node1.clusterNodes().split("\n").length);
     assertEquals(4, node2.clusterNodes().split("\n").length);
     assertEquals(4, node3.clusterNodes().split("\n").length);
 
     // do cluster forget
-    node1.clusterForget(node7Id);
-    node2.clusterForget(node7Id);
-    node3.clusterForget(node7Id);
+    node1.clusterForget(node4Id);
+    node2.clusterForget(node4Id);
+    node3.clusterForget(node4Id);
 
-    JedisClusterTestUtil.assertNodeIsUnknown(node1, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsUnknown(node2, node7Id, 1000);
-    JedisClusterTestUtil.assertNodeIsUnknown(node3, node7Id, 1000);
+    JedisClusterTestUtil.assertNodeIsUnknown(node1, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsUnknown(node2, node4Id, 1000);
+    JedisClusterTestUtil.assertNodeIsUnknown(node3, node4Id, 1000);
 
     assertEquals(3, node1.clusterNodes().split("\n").length);
     assertEquals(3, node2.clusterNodes().split("\n").length);
@@ -443,10 +441,14 @@ public class JedisClusterTest {
   @Test
   public void testClusterKeySlot() {
     // It assumes JedisClusterCRC16 is correctly implemented
-    assertEquals(node1.clusterKeySlot("foo{bar}zap}").intValue(),
-      JedisClusterCRC16.getSlot("foo{bar}zap"));
-    assertEquals(node1.clusterKeySlot("{user1000}.following").intValue(),
-      JedisClusterCRC16.getSlot("{user1000}.following"));
+    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
+        node1.clusterKeySlot("{user1000}.following").intValue());
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
+        node1.clusterKeySlot("foo{bar}{zap}").intValue());
+    assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
+        node1.clusterKeySlot("foo{}{bar}").intValue());
+    assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"),
+        node1.clusterKeySlot("foo{{bar}}zap").intValue());
   }
 
   @Test
@@ -456,12 +458,13 @@ public class JedisClusterTest {
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
 
-    for (int index = 0; index < 5; index++) {
+    int count = 5;
+    for (int index = 0; index < count; index++) {
       jc.set("foo{bar}" + index, "hello");
     }
 
     int slot = JedisClusterCRC16.getSlot("foo{bar}");
-    assertEquals(DEFAULT_REDIRECTIONS, node1.clusterCountKeysInSlot(slot).intValue());
+    assertEquals(count, node1.clusterCountKeysInSlot(slot).intValue());
   }
 
   @Test
@@ -537,11 +540,10 @@ public class JedisClusterTest {
 
     for (JedisPool pool : jc.getClusterNodes().values()) {
       Jedis jedis = pool.getResource();
-      assertEquals(jedis.getClient().getConnectionTimeout(), 4000);
-      assertEquals(jedis.getClient().getSoTimeout(), 4000);
+      assertEquals(4000, jedis.getClient().getConnectionTimeout());
+      assertEquals(4000, jedis.getClient().getSoTimeout());
       jedis.close();
     }
-
   }
 
   @Test
@@ -579,7 +581,7 @@ public class JedisClusterTest {
   public void testReturnConnectionOnJedisConnectionException() throws InterruptedException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "cluster", config);
@@ -592,11 +594,11 @@ public class JedisClusterTest {
     jc.get("test");
   }
 
-  @Test(expected = JedisClusterMaxRedirectionsException.class, timeout = DEFAULT_TIMEOUT)
+  @Test(expected = JedisClusterMaxAttemptsException.class, timeout = DEFAULT_TIMEOUT)
   public void testReturnConnectionOnRedirection() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, DEFAULT_REDIRECTIONS, "cluster",
         config);
@@ -613,7 +615,7 @@ public class JedisClusterTest {
     // cluster node is defined as 127.0.0.1; adding localhost should work,
     // but shouldn't show up.
     jedisClusterNode.add(localhost);
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, DEFAULT_REDIRECTIONS, "cluster",
         DEFAULT_CONFIG);
@@ -628,13 +630,114 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new LinkedHashSet<HostAndPort>();
     jedisClusterNode.add(invalidHost);
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    JedisPoolConfig config = DEFAULT_CONFIG;
+    JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
     JedisCluster jc = new JedisCluster(jedisClusterNode, 0, 2, DEFAULT_REDIRECTIONS, "cluster",
         config);
     Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
     assertEquals(3, clusterNodes.size());
     assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
+  }
+
+  @Test
+  public void nullKeys() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+    JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+
+    String foo = "foo";
+    byte[] bfoo = new byte[]{0x0b, 0x0f, 0x00, 0x00};
+
+    try {
+      cluster.exists((String) null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(foo, null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(null, foo);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists((byte[]) null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(bfoo, null);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+
+    try {
+      cluster.exists(null, bfoo);
+      fail();
+    } catch (JedisClusterOperationException coe) {
+      // expected
+    }
+  }
+
+  @Test
+  public void georadiusStore() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(nodeInfo1);
+    jedisClusterNode.add(nodeInfo2);
+    jedisClusterNode.add(nodeInfo3);
+    JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+
+    // prepare datas
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
+    coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
+    cluster.geoadd("{Sicily}", coordinateMap);
+
+    long size = cluster.georadiusStore("{Sicily}", 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
+    assertEquals(2, size);
+    Set<String> expected = new LinkedHashSet<String>();
+    expected.add("Palermo");
+    expected.add("Catania");
+    assertEquals(expected, cluster.zrange("{Sicily}Store", 0, -1));
+  }
+
+  @Test
+  public void georadiusStoreBinary() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(nodeInfo1);
+    jedisClusterNode.add(nodeInfo2);
+    jedisClusterNode.add(nodeInfo3);
+    JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_CONFIG);
+
+    // prepare datas
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    bcoordinateMap.put("Palermo".getBytes(), new GeoCoordinate(13.361389, 38.115556));
+    bcoordinateMap.put("Catania".getBytes(), new GeoCoordinate(15.087269, 37.502669));
+    cluster.geoadd("{Sicily}".getBytes(), bcoordinateMap);
+
+    long size = cluster.georadiusStore("{Sicily}".getBytes(), 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
+    assertEquals(2, size);
+    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    bexpected.add("Palermo".getBytes());
+    bexpected.add("Palermo".getBytes());
+    assertByteArraySetEquals(bexpected, cluster.zrange("{Sicily}Store".getBytes(), 0, -1));
   }
 
   private static String getNodeServingSlotRange(String infoOutput) {

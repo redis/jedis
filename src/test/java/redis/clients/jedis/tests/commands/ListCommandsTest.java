@@ -4,20 +4,19 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.LPosParams;
 
 public class ListCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -129,9 +128,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     range = jedis.lrange("foo", 1, 2);
     assertEquals(expected, range);
 
-    expected = new ArrayList<String>();
     range = jedis.lrange("foo", 2, 1);
-    assertEquals(expected, range);
+    assertEquals(Collections.<String>emptyList(), range);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -156,9 +154,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     brange = jedis.lrange(bfoo, 1, 2);
     assertByteArrayListEquals(bexpected, brange);
 
-    bexpected = new ArrayList<byte[]>();
     brange = jedis.lrange(bfoo, 2, 1);
-    assertByteArrayListEquals(bexpected, brange);
+    assertByteArrayListEquals(Collections.<byte[]>emptyList(), brange);
 
   }
 
@@ -194,7 +191,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void lindex() {
+  public void lset() {
     jedis.lpush("foo", "1");
     jedis.lpush("foo", "2");
     jedis.lpush("foo", "3");
@@ -226,7 +223,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void lset() {
+  public void lindex() {
     jedis.lpush("foo", "1");
     jedis.lpush("foo", "2");
     jedis.lpush("foo", "3");
@@ -549,17 +546,19 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void brpoplpush() {
-    (new Thread(new Runnable() {
+
+    new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(100);
           Jedis j = createJedis();
           j.lpush("foo", "a");
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          org.apache.logging.log4j.LogManager.getLogger().error("Interruption in string lpush", e);
         }
       }
-    })).start();
+    }).start();
 
     String element = jedis.brpoplpush("foo", "bar", 0);
 
@@ -567,23 +566,107 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertEquals(1, jedis.llen("bar").longValue());
     assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
 
-    (new Thread(new Runnable() {
+    // Binary
+
+    new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(100);
           Jedis j = createJedis();
-          j.lpush("foo", "a");
+          j.lpush(bfoo, bA);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          org.apache.logging.log4j.LogManager.getLogger().error("Interruption in binary lpush", e);
         }
       }
-    })).start();
+    }).start();
 
-    byte[] brpoplpush = jedis.brpoplpush("foo".getBytes(), "bar".getBytes(), 0);
+    byte[] belement = jedis.brpoplpush(bfoo, bbar, 0);
 
-    assertTrue(Arrays.equals("a".getBytes(), brpoplpush));
+    assertArrayEquals(bA, belement);
     assertEquals(1, jedis.llen("bar").longValue());
-    assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
+    assertArrayEquals(bA, jedis.lrange(bbar, 0, -1).get(0));
+
+  }
+
+  @Test
+  public void lpos() {
+    jedis.rpush("foo", "a");
+    jedis.rpush("foo", "b");
+    jedis.rpush("foo", "c");
+
+    Long pos = jedis.lpos("foo", "b");
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos("foo", "d");
+    assertNull(pos);
+
+    jedis.rpush("foo", "a");
+    jedis.rpush("foo", "b");
+    jedis.rpush("foo", "b");
+
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams());
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(3));
+    assertEquals(5, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2));
+    assertEquals(4, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-5));
+    assertNull(pos);
+
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2));
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(2).maxlen(2));
+    assertNull(pos);
+    pos = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2).maxlen(2));
+    assertEquals(4, pos.intValue());
+
+    List<Long> expected = new ArrayList<Long>();
+    expected.add(1L);
+    expected.add(4L);
+    expected.add(5L);
+    List<Long> posList = jedis.lpos("foo","b", LPosParams.lPosParams() , 2);
+    assertEquals(expected.subList(0,2), posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams(), 0);
+    assertEquals(expected, posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2), 0);
+    assertEquals(expected.subList(1,3), posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2).maxlen(5), 0);
+    assertEquals(expected.subList(1,2), posList);
+
+    Collections.reverse(expected);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-2), 0);
+    assertEquals(expected.subList(1,3), posList);
+    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-1).maxlen(5), 2);
+    assertEquals(expected.subList(0,2), posList);
+
+    //Binary
+    jedis.rpush(bfoo, bA);
+    jedis.rpush(bfoo, bB);
+    jedis.rpush(bfoo, bC);
+
+    pos = jedis.lpos(bfoo, bB);
+    assertEquals(1, pos.intValue());
+    pos = jedis.lpos(bfoo, b3);
+    assertNull(pos);
+
+    jedis.rpush(bfoo, bA);
+    jedis.rpush(bfoo, bB);
+    jedis.rpush(bfoo, bA);
+
+    pos = jedis.lpos(bfoo, bB, LPosParams.lPosParams().rank(2));
+    assertEquals(4, pos.intValue());
+    pos = jedis.lpos(bfoo, bB, LPosParams.lPosParams().rank(-2).maxlen(5));
+    assertEquals(1, pos.intValue());
+
+    expected.clear();
+    expected.add(0L);
+    expected.add(3L);
+    expected.add(5L);
+
+    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6), 0);
+    assertEquals(expected, posList);
+    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
+    assertEquals(expected.subList(1,2), posList);
 
   }
 }

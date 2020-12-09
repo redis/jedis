@@ -26,7 +26,7 @@ public interface BasicCommands {
 
   /**
    * Return the number of keys in the currently-selected database.
-   * @return the number of key in the curr currently-selected database.
+   * @return the number of key in the currently-selected database.
    */
   Long dbSize();
 
@@ -59,6 +59,15 @@ public interface BasicCommands {
    * @return the result of the auth
    */
   String auth(String password);
+
+  /**
+   * Request for authentication with username and password, based on the  ACL feature introduced in Redis 6.0
+   *   see https://redis.io/topics/acl
+   * @param user
+   * @param password
+   * @return
+   */
+  String auth(String user, String password);
 
   /**
    * The SAVE commands performs a synchronous save of the dataset producing a point in time snapshot of all the data inside the Redis instance, in the form of an RDB file.
@@ -114,9 +123,9 @@ public interface BasicCommands {
   /**
    * The SLAVEOF command can change the replication settings of a slave on the fly. In the proper form SLAVEOF hostname port will make the server a slave of another server listening at the specified hostname and port.
    * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication against the old server and start the synchronization against the new one, discarding the old dataset.
-   * @param host, listening at the specified hostname
-   * @param port, server listening at the specified port
-   * @return result of the commmand.
+   * @param host listening at the specified hostname
+   * @param port server listening at the specified port
+   * @return result of the command.
    */
   String slaveof(String host, int port);
 
@@ -136,5 +145,17 @@ public interface BasicCommands {
 
   String configResetStat();
 
+  String configRewrite();
+
+  /**
+   * Blocks until all the previous write commands are successfully transferred and acknowledged by 
+   * at least the specified number of replicas. 
+   * If the timeout, specified in milliseconds, is reached, the command returns 
+   * even if the specified number of replicas were not yet reached.
+   * 
+   * @param replicas successfully transferred and acknowledged by at least the specified number of replicas
+   * @param timeout the time to block in milliseconds, a timeout of 0 means to block forever
+   * @return the number of replicas reached by all the writes performed in the context of the current connection
+   */
   Long waitReplicas(int replicas, long timeout);
 }

@@ -1,18 +1,28 @@
 package redis.clients.jedis.commands;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.StreamConsumersInfo;
+import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.params.MigrateParams;
+import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 public interface Commands {
 
+  void ping(String message);
+  
   void set(String key, String value);
 
   void set(String key, String value, SetParams params);
@@ -127,6 +137,12 @@ public interface Commands {
 
   void lpop(String key);
 
+  void lpos(String key, String element);
+
+  void lpos(String key, String element, LPosParams params);
+
+  void lpos(String key, String element, LPosParams params, long count);
+
   void rpop(String key);
 
   void rpoplpush(String srckey, String dstkey);
@@ -146,6 +162,8 @@ public interface Commands {
   void scard(String key);
 
   void sismember(String key, String member);
+
+  void smismember(String key, String... members);
 
   void sinter(String... keys);
 
@@ -190,6 +208,16 @@ public interface Commands {
   void zcard(String key);
 
   void zscore(String key, String member);
+
+  void zmscore(String key, String... members);
+  
+  void zpopmax(String key);
+  
+  void zpopmax(String key, int count);
+
+  void zpopmin(String key);
+
+  void zpopmin(String key, long count);
 
   void watch(String... keys);
 
@@ -301,11 +329,21 @@ public interface Commands {
 
   void objectEncoding(String key);
 
+  void objectHelp();
+
+  void objectFreq(String key);
+
   void bitcount(String key);
 
   void bitcount(String key, long start, long end);
 
   void bitop(BitOP op, String destKey, String... srcKeys);
+
+  void dump(String key);
+
+  void restore(String key, int ttl, byte[] serializedValue);
+
+  void restoreReplace(String key, int ttl, byte[] serializedValue);
 
   void scan(String cursor, ScanParams params);
 
@@ -324,10 +362,66 @@ public interface Commands {
    */
   void bitfield(String key, String... arguments);
 
+  void bitfieldReadonly(String key, String... arguments);
+
   /**
    * Used for HSTRLEN Redis command
    * @param key
    * @param field
    */
   void hstrlen(String key, String field);
+
+  void migrate(String host, int port, String key, int destinationDB, int timeout);
+
+  void migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+
+  void clientKill(String ipPort);
+
+  void clientKill(String ip, int port);
+
+  void clientKill(ClientKillParams params);
+
+  void clientGetname();
+
+  void clientList();
+
+  void clientSetname(String name);
+
+  void clientId();
+
+  void memoryDoctor();
+
+  void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+  
+  void xlen(String key);
+
+  void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
+  
+  void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+  
+  void xread(int count, long block, Entry<String, StreamEntryID>... streams);
+  
+  void xack(String key, String group, StreamEntryID... ids);
+  
+  void xgroupCreate(String key, String consumer, StreamEntryID id, boolean makeStream);
+
+  void xgroupSetID(String key, String consumer, StreamEntryID id);
+
+  void xgroupDestroy(String key, String consumer);
+
+  void xgroupDelConsumer(String key, String consumer, String consumerName);
+
+  void xdel(String key, StreamEntryID... ids);
+
+  void xtrim(String key, long maxLen, boolean approximateLength);
+
+  void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
+
+  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+
+  void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
+      boolean force, StreamEntryID... ids);
+  void xinfoStream (String key);
+  void xinfoGroup (String key);
+  void xinfoConsumers (String key, String group);
 }

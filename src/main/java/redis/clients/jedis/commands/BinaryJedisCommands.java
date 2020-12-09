@@ -1,15 +1,25 @@
 package redis.clients.jedis.commands;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.*;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamConsumersInfo;
+import redis.clients.jedis.StreamGroupInfo;
+import redis.clients.jedis.StreamInfo;
+import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -30,6 +40,8 @@ public interface BinaryJedisCommands {
   byte[] dump(byte[] key);
 
   String restore(byte[] key, int ttl, byte[] serializedValue);
+
+  String restoreReplace(byte[] key, int ttl, byte[] serializedValue);
 
   Long expire(byte[] key, int seconds);
 
@@ -101,7 +113,7 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> hkeys(byte[] key);
 
-  Collection<byte[]> hvals(byte[] key);
+  List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
@@ -123,6 +135,12 @@ public interface BinaryJedisCommands {
 
   byte[] lpop(byte[] key);
 
+  Long lpos(byte[] key, byte[] element);
+
+  Long lpos(byte[] key, byte[] element, LPosParams params);
+
+  List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count);
+
   byte[] rpop(byte[] key);
 
   Long sadd(byte[] key, byte[]... member);
@@ -138,6 +156,8 @@ public interface BinaryJedisCommands {
   Long scard(byte[] key);
 
   Boolean sismember(byte[] key, byte[] member);
+
+  List<Boolean> smismember(byte[] key, byte[]... members);
 
   byte[] srandmember(byte[] key);
 
@@ -174,6 +194,16 @@ public interface BinaryJedisCommands {
   Long zcard(byte[] key);
 
   Double zscore(byte[] key, byte[] member);
+
+  List<Double> zmscore(byte[] key, byte[]... members);
+
+  Tuple zpopmax(byte[] key);
+
+  Set<Tuple> zpopmax(byte[] key, int count);
+
+  Tuple zpopmin(byte[] key);
+
+  Set<Tuple> zpopmin(byte[] key, int count);
 
   List<byte[]> sort(byte[] key);
 
@@ -274,12 +304,23 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
+      GeoUnit unit);
+
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
+  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit);
+
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
+      GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
@@ -298,8 +339,11 @@ public interface BinaryJedisCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
+   * @return 
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
+
+  List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
   
   /**
    * Used for HSTRLEN Redis command
@@ -308,5 +352,37 @@ public interface BinaryJedisCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(byte[] key, byte[] field);
+  
+  
+  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
+  Long xlen(final byte[] key);
+ 
+  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+
+  List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
+
+  Long xack(final byte[] key, final byte[] group, final byte[]... ids);
+ 
+  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id, boolean makeStream);
+
+  String xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id);
+
+  Long xgroupDestroy(final byte[] key, final byte[] consumer);
+
+  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+ 
+  Long xdel(final byte[] key, final byte[]... ids);
+
+  Long xtrim(byte[] key, long maxLen, boolean approximateLength);
+
+  List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
+
+  StreamInfo xinfoStream (byte[] key);
+
+  List<StreamGroupInfo> xinfoGroup (byte[] key);
+
+  List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group);
 }

@@ -4,8 +4,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import redis.clients.util.ByteArrayComparator;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.ByteArrayComparator;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ByteArrayComparatorTest {
 

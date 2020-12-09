@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -21,14 +22,16 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisTest extends JedisCommandTestBase {
+
   @Test
   public void useWithoutConnecting() {
     Jedis jedis = new Jedis("localhost");
     jedis.auth("foobared");
     jedis.dbSize();
+    jedis.close();
   }
 
   @Test
@@ -51,23 +54,64 @@ public class JedisTest extends JedisCommandTestBase {
     shardInfo.setPassword("foobared");
     Jedis jedis = new Jedis(shardInfo);
     jedis.get("foo");
+    jedis.close();
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test
   public void timeoutConnection() throws Exception {
     Jedis jedis = new Jedis("localhost", 6379, 15000);
     jedis.auth("foobared");
+    String timeout = jedis.configGet("timeout").get(1);
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
-    jedis.hmget("foobar", "foo");
+    try {
+      jedis.hmget("foobar", "foo");
+      fail("Operation should throw JedisConnectionException");
+    } catch(JedisConnectionException jce) {
+      // expected
+    }
+    jedis.close();
+
+    // reset config
+    jedis = new Jedis("localhost", 6379);
+    jedis.auth("foobared");
+    jedis.configSet("timeout", timeout);
+    jedis.close();
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test
   public void timeoutConnectionWithURI() throws Exception {
     Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
+    String timeout = jedis.configGet("timeout").get(1);
     jedis.configSet("timeout", "1");
     Thread.sleep(2000);
-    jedis.hmget("foobar", "foo");
+    try {
+      jedis.hmget("foobar", "foo");
+      fail("Operation should throw JedisConnectionException");
+    } catch(JedisConnectionException jce) {
+      // expected
+    }
+    jedis.close();
+
+    // reset config
+    jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
+    jedis.configSet("timeout", timeout);
+    jedis.close();
+  }
+
+  @Test
+  public void infiniteTimeout() throws Exception {
+    Jedis jedis = new Jedis("localhost", 6379, 350, 350, 350);
+    jedis.auth("foobared");
+    try {
+      jedis.blpop(0, "foo");
+      fail("SocketTimeoutException should occur");
+    } catch(JedisConnectionException jce) {
+      assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
+      assertEquals("Read timed out", jce.getCause().getMessage());
+      assertTrue(jedis.getClient().isBroken());
+    }
+    jedis.close();
   }
 
   @Test(expected = JedisDataException.class)
@@ -78,7 +122,6 @@ public class JedisTest extends JedisCommandTestBase {
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
     Jedis j = new Jedis(new URI("localhost:6380"));
-    j.ping();
   }
 
   @Test
@@ -96,9 +139,12 @@ public class JedisTest extends JedisCommandTestBase {
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
+    j.close();
+
     Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2");
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
+    jedis.close();
   }
 
   @Test
@@ -107,13 +153,15 @@ public class JedisTest extends JedisCommandTestBase {
     j.auth("foobared");
     j.select(2);
     j.set("foo", "bar");
+
     Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
+    jedis.close();
   }
 
   @Test
-  public void shouldNotUpdateDbIndexIfSelectFails() throws URISyntaxException {
+  public void shouldNotUpdateDbIndexIfSelectFails() {
     int currentDb = jedis.getDB();
     try {
       int invalidDb = -1;
@@ -129,15 +177,17 @@ public class JedisTest extends JedisCommandTestBase {
   public void allowUrlWithNoDBAndNoPassword() {
     Jedis jedis = new Jedis("redis://localhost:6380");
     jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), 0);
+    assertEquals("localhost", jedis.getClient().getHost());
+    assertEquals(6380, jedis.getClient().getPort());
+    assertEquals(0, jedis.getDB());
+    jedis.close();
 
     jedis = new Jedis("redis://localhost:6380/");
     jedis.auth("foobared");
-    assertEquals(jedis.getClient().getHost(), "localhost");
-    assertEquals(jedis.getClient().getPort(), 6380);
-    assertEquals(jedis.getDB(), 0);
+    assertEquals("localhost", jedis.getClient().getHost());
+    assertEquals(6380, jedis.getClient().getPort());
+    assertEquals(0, jedis.getDB());
+    jedis.close();
   }
 
   @Test

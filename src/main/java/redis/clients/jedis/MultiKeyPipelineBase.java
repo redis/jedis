@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.MigrateParams;
 
 import java.util.List;
 import java.util.Map;
@@ -303,6 +306,12 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<String> watch(byte[]... keys) {
     client.watch(keys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> unwatch() {
+    client.unwatch();
     return getResponse(BuilderFactory.STRING);
   }
 
@@ -688,5 +697,55 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }  
   
-  
+  @Override
+  public Response<String> migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final String... keys) {
+    client.migrate(host, port, destinationDB, timeout, params, keys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> migrate(final String host, final int port, final int destinationDB,
+      final int timeout, final MigrateParams params, final byte[]... keys) {
+    client.migrate(host, port, destinationDB, timeout, params, keys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  public Response<Object> sendCommand(final ProtocolCommand cmd, final String... args) {
+    client.sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
+  }
+
+  public Response<Object> sendCommand(final ProtocolCommand cmd, final byte[]... args) {
+    client.sendCommand(cmd, args);
+    return getResponse(BuilderFactory.OBJECT);
+  }
+
+  @Override
+  public Response<Long> georadiusStore(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> georadiusStore(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> georadiusByMemberStore(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> georadiusByMemberStore(final String key, final String member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
 }

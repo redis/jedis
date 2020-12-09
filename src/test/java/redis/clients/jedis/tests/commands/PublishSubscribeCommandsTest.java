@@ -1,12 +1,15 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +22,7 @@ import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   private void publishOne(final String channel, final String message) {
@@ -110,6 +113,41 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     }, "testchan1");
     assertEquals(0L, latchReceivedPong.getCount());
     assertEquals(0L, latchUnsubscribed.getCount());
+  }
+
+  @Test
+  public void pubSubChannelWithPingPongWithArgument() throws InterruptedException {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+    final List<String> pongPatterns = new ArrayList<>();
+    jedis.subscribe(new JedisPubSub() {
+
+      @Override
+      public void onSubscribe(String channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(String channel, String message) {
+        this.ping("hi!");
+      }
+
+      @Override
+      public void onPong(String pattern) {
+        pongPatterns.add(pattern);
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(String channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, "testchan1");
+
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
+    assertEquals(Collections.singletonList("hi!"), pongPatterns);
   }
 
   @Test
@@ -299,6 +337,75 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         punsubscribe(pattern);
       }
     }, SafeEncoder.encode("foo.*"), SafeEncoder.encode("bar.*"));
+  }
+
+  @Test
+  public void binaryPubSubChannelWithPingPong() throws InterruptedException {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+
+    jedis.subscribe(new BinaryJedisPubSub() {
+
+      @Override
+      public void onSubscribe(byte[] channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(byte[] channel, byte[] message) {
+        this.ping();
+      }
+
+      @Override
+      public void onPong(byte[] pattern) {
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(byte[] channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, SafeEncoder.encode("testchan1"));
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
+  }
+
+  @Test
+  public void binaryPubSubChannelWithPingPongWithArgument() throws InterruptedException {
+    final CountDownLatch latchUnsubscribed = new CountDownLatch(1);
+    final CountDownLatch latchReceivedPong = new CountDownLatch(1);
+    final List<byte[]> pongPatterns = new ArrayList<>();
+    final byte[] pingMessage = SafeEncoder.encode("hi!");
+
+    jedis.subscribe(new BinaryJedisPubSub() {
+
+      @Override
+      public void onSubscribe(byte[] channel, int subscribedChannels) {
+        publishOne("testchan1", "hello");
+      }
+
+      @Override
+      public void onMessage(byte[] channel, byte[] message) {
+        this.ping(pingMessage);
+      }
+
+      @Override
+      public void onPong(byte[] pattern) {
+        pongPatterns.add(pattern);
+        latchReceivedPong.countDown();
+        unsubscribe();
+      }
+
+      @Override
+      public void onUnsubscribe(byte[] channel, int subscribedChannels) {
+        latchUnsubscribed.countDown();
+      }
+    }, SafeEncoder.encode("testchan1"));
+
+    assertEquals(0L, latchReceivedPong.getCount());
+    assertEquals(0L, latchUnsubscribed.getCount());
+    assertArrayEquals(pingMessage, pongPatterns.get(0));
   }
 
   @Test

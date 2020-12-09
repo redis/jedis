@@ -1,10 +1,14 @@
 package redis.clients.jedis.tests;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.SET;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,8 +22,9 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
-import redis.clients.util.Hashing;
-import redis.clients.util.Sharded;
+import redis.clients.jedis.util.Hashing;
+import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.Sharded;
 
 public class ShardedJedisTest {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
@@ -165,14 +170,11 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo(redis2));
     ShardedJedis jedis = new ShardedJedis(shards, ShardedJedis.DEFAULT_KEY_TAG_PATTERN);
 
-    assertEquals(jedis.getKeyTag("foo"), "foo");
-    assertEquals(jedis.getKeyTag("foo{bar}"), "bar");
-    assertEquals(jedis.getKeyTag("foo{bar}}"), "bar"); // default pattern is
-    // non greedy
-    assertEquals(jedis.getKeyTag("{bar}foo"), "bar"); // Key tag may appear
-    // anywhere
-    assertEquals(jedis.getKeyTag("f{bar}oo"), "bar"); // Key tag may appear
-    // anywhere
+    assertEquals("foo", jedis.getKeyTag("foo"));
+    assertEquals("bar", jedis.getKeyTag("foo{bar}"));
+    assertEquals("bar", jedis.getKeyTag("foo{bar}}")); // Default pattern is non greedy
+    assertEquals("bar", jedis.getKeyTag("{bar}foo")); // Key tag may appear anywhere
+    assertEquals("bar", jedis.getKeyTag("f{bar}oo")); // Key tag may appear anywhere
 
     JedisShardInfo s1 = jedis.getShardInfo("abc{bar}");
     JedisShardInfo s2 = jedis.getShardInfo("foo{bar}");
@@ -185,8 +187,8 @@ public class ShardedJedisTest {
 
     ShardedJedis jedis2 = new ShardedJedis(shards);
 
-    assertEquals(jedis2.getKeyTag("foo"), "foo");
-    assertNotSame(jedis2.getKeyTag("foo{bar}"), "bar");
+    assertEquals("foo", jedis2.getKeyTag("foo"));
+    assertNotEquals("bar", jedis2.getKeyTag("foo{bar}"));
 
     JedisShardInfo s5 = jedis2.getShardInfo(keys.get(0) + "{bar}");
     JedisShardInfo s6 = jedis2.getShardInfo(keys.get(1) + "{bar}");
@@ -323,6 +325,37 @@ public class ShardedJedisTest {
     for (Jedis jedis : jedisShard.getAllShards()) {
       assertTrue(!jedis.isConnected());
     }
+  }
+
+  @Test
+  public void testGeneralCommand(){
+
+    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    JedisShardInfo si = new JedisShardInfo(redis1);
+    si.setPassword("foobared");
+    shards.add(si);
+    si = new JedisShardInfo(redis2);
+    si.setPassword("foobared");
+    shards.add(si);
+    ShardedJedis jedis = new ShardedJedis(shards);
+    jedis.sendCommand(SET, "a", "bar");
+    JedisShardInfo s1 = jedis.getShardInfo("a");
+    jedis.sendCommand(SET, "b", "bar1");
+    JedisShardInfo s2 = jedis.getShardInfo("b");
+    jedis.disconnect();
+
+    Jedis j = new Jedis(s1);
+    j.auth("foobared");
+    assertEquals("bar", j.get("a"));
+    j.disconnect();
+
+    j = new Jedis(s2);
+    j.auth("foobared");
+    assertEquals("bar1", j.get("b"));
+    j.disconnect();
+
+    assertEquals("PONG", SafeEncoder.encode((byte[]) jedis.sendCommand(PING)));
+
   }
 
 }

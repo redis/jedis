@@ -167,8 +167,8 @@ public class ShardedJedisPoolTest {
     shards.set(1, new JedisShardInfo("localhost", 1234));
     pool = new ShardedJedisPool(redisConfig, shards);
     jedis = pool.getResource();
-    Long actual = Long.valueOf(0);
-    Long fails = Long.valueOf(0);
+    long actual = 0;
+    long fails = 0;
     for (int i = 0; i < 1000; i++) {
       try {
         jedis.get("a-test-" + i);
@@ -179,8 +179,8 @@ public class ShardedJedisPoolTest {
     }
     jedis.close();
     pool.destroy();
-    assertEquals(actual, c1);
-    assertEquals(fails, c2);
+    assertEquals(Long.valueOf(actual), c1);
+    assertEquals(Long.valueOf(fails), c2);
   }
 
   @Test
@@ -188,10 +188,12 @@ public class ShardedJedisPoolTest {
     Jedis j = new Jedis("localhost", 6380);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     j = new Jedis("localhost", 6379);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo("redis://:foobared@localhost:6380"));
@@ -216,10 +218,12 @@ public class ShardedJedisPoolTest {
     Jedis j = new Jedis("localhost", 6380);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     j = new Jedis("localhost", 6379);
     j.auth("foobared");
     j.set("foo", "bar");
+    j.disconnect();
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));

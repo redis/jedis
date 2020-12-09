@@ -1,10 +1,20 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.*;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
-import redis.clients.jedis.params.set.SetParams;
-import redis.clients.jedis.params.sortedset.ZAddParams;
-import redis.clients.jedis.params.sortedset.ZIncrByParams;
+import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoRadiusResponse;
+import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamPendingEntry;
+import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -87,6 +97,8 @@ public interface JedisClusterCommands {
 
   Long hincrBy(String key, String field, long value);
 
+  Double hincrByFloat(String key, String field, double value);
+
   Boolean hexists(String key, String field);
 
   Long hdel(String key, String... field);
@@ -117,6 +129,12 @@ public interface JedisClusterCommands {
 
   String lpop(String key);
 
+  Long lpos(String key, String element);
+
+  Long lpos(String key, String element, LPosParams params);
+
+  List<Long> lpos(String key, String element, LPosParams params, long count);
+
   String rpop(String key);
 
   Long sadd(String key, String... member);
@@ -132,6 +150,8 @@ public interface JedisClusterCommands {
   Long scard(String key);
 
   Boolean sismember(String key, String member);
+
+  List<Boolean> smismember(String key, String... members);
 
   String srandmember(String key);
 
@@ -168,6 +188,16 @@ public interface JedisClusterCommands {
   Long zcard(String key);
 
   Double zscore(String key, String member);
+
+  List<Double> zmscore(String key, String... members);
+
+  Tuple zpopmax(String key);
+
+  Set<Tuple> zpopmax(String key, int count);
+
+  Tuple zpopmin(String key);
+
+  Set<Tuple> zpopmin(String key, int count);
 
   List<String> sort(String key);
 
@@ -276,20 +306,34 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
+      GeoUnit unit);
+
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
+      GeoUnit unit, GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
 
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit);
+
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param);
+
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
   /**
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
+   * @return 
    */
   List<Long> bitfield(String key, String...arguments);
+
+  List<Long> bitfieldReadonly(String key, String...arguments);
   
   /**
    * Used for HSTRLEN Redis command
@@ -298,4 +342,173 @@ public interface JedisClusterCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(String key, String field);
+
+  /**
+   *  MEMORY USAGE key
+   * 
+   * @param key
+   * @return the memory usage
+   */
+  Long memoryUsage(String key);
+
+  /**
+   *  MEMORY USAGE key [SAMPLES count] 
+   * 
+   * @param key
+   * @param samples
+   * @return the memory usage
+   */
+  Long memoryUsage(String key, int samples);
+
+  
+  /**
+   * XADD key ID field string [field string ...]
+   * 
+   * @param key
+   * @param id
+   * @param hash
+   * @return the ID of the added entry
+   */
+  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash);
+
+  /**
+   * XADD key MAXLEN ~ LEN ID field string [field string ...]
+   * 
+   * @param key
+   * @param id
+   * @param hash
+   * @param maxLen
+   * @param approximateLength
+   * @return
+   */
+  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+  
+  /**
+   * XLEN key
+   * 
+   * @param key
+   * @return
+   */
+  Long xlen(String key);
+
+  /**
+   * XRANGE key start end [COUNT count]
+   * 
+   * @param key
+   * @param start
+   * @param end
+   * @param count
+   * @return
+   */
+  List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  /**
+   * XREVRANGE key end start [COUNT <n>]
+   * @param key
+   * @param end
+   * @param start
+   * @param count
+   * @return
+   */
+  List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+  
+  /**
+   * @deprecated Will be removed in future version. Use
+   * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
+   */
+  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
+  
+  /**
+   * XACK key group ID [ID ...]
+   * @param key
+   * @param group
+   * @param ids
+   * @return
+   */
+  Long xack(String key, String group,  StreamEntryID... ids);
+  
+  /**
+   * XGROUP CREATE <key> <groupname> <id or $>
+   * 
+   * @param key
+   * @param groupname
+   * @param id
+   * @return
+   */
+  String xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
+  
+  /**
+   * XGROUP SETID <key> <groupname> <id or $>
+   * 
+   * @param key
+   * @param groupname
+   * @param id
+   * @return
+   */
+  String xgroupSetID( String key, String groupname, StreamEntryID id);
+  
+  /**
+   * XGROUP DESTROY <key> <groupname>
+   * 
+   * @param key
+   * @param groupname
+   * @return
+   */
+  Long xgroupDestroy( String key, String groupname);
+  
+  /**
+   * XGROUP DELCONSUMER <key> <groupname> <consumername> 
+   * @param key
+   * @param groupname
+   * @param consumername
+   * @return
+   */
+  Long xgroupDelConsumer( String key, String groupname, String consumername);
+
+  /**
+   * @deprecated Will be removed in future version. Use
+   * {@link MultiKeyJedisClusterCommands#xreadGroup(java.lang.String, java.lang.String, int, long, boolean, java.util.Map.Entry...)}.
+   */
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+
+  
+  /**
+   * XPENDING key group [start end count] [consumer]
+   * 
+   * @param key
+   * @param groupname
+   * @param start
+   * @param end
+   * @param count
+   * @param consumername
+   * @return
+   */
+  List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  
+  /**
+   * XDEL key ID [ID ...]
+   * @param key
+   * @param ids
+   * @return
+   */
+  Long xdel( String key, StreamEntryID... ids);
+  
+  /**
+   * XTRIM key MAXLEN [~] count
+   * @param key
+   * @param maxLen
+   * @param approximateLength
+   * @return
+   */
+  Long xtrim( String key, long maxLen, boolean approximateLength);
+ 
+  /**
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE] [JUSTID]
+   */        
+  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
+      long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  Long waitReplicas(final String key, final int replicas, final long timeout);
 }

@@ -7,9 +7,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 
 public final class HostAndPortUtil {
-  private static List<HostAndPort> redisHostAndPortList = new ArrayList<HostAndPort>();
-  private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<HostAndPort>();
-  private static List<HostAndPort> clusterHostAndPortList = new ArrayList<HostAndPort>();
+  private static List<HostAndPort> redisHostAndPortList = new ArrayList<>();
+  private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<>();
+  private static List<HostAndPort> clusterHostAndPortList = new ArrayList<>();
 
   private HostAndPortUtil(){
     throw new InstantiationError( "Must not instantiate this class" );
@@ -23,6 +23,7 @@ public final class HostAndPortUtil {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 4));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 5));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 6));
+    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 7));
 
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
@@ -54,7 +55,7 @@ public final class HostAndPortUtil {
 
       if (null != hostDefs && 2 <= hostDefs.length) {
 
-        List<HostAndPort> envHostsAndPorts = new ArrayList<HostAndPort>(hostDefs.length);
+        List<HostAndPort> envHostsAndPorts = new ArrayList<>(hostDefs.length);
 
         for (String hostDef : hostDefs) {
 

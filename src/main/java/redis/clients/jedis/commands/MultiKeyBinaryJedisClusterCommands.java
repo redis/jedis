@@ -2,12 +2,16 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
@@ -78,4 +82,14 @@ public interface MultiKeyBinaryJedisClusterCommands {
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
   Set<byte[]> keys(byte[] pattern);
+  
+  List<byte[]> xread(final int count, final long block, final Map<byte[], byte[]> streams);
+  
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams);
+
+  Long georadiusStore(byte[] key, double longitude, double latitude, double radius,
+      GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

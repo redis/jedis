@@ -13,13 +13,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Builder Class for {@link Jedis#sort(String, SortingParams) SORT} Parameters.
  */
 public class SortingParams {
-  private List<byte[]> params = new ArrayList<byte[]>();
+  private final List<byte[]> params = new ArrayList<>();
 
   /**
    * Sort by weight in keys.

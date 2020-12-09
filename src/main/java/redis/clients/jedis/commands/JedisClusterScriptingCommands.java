@@ -7,17 +7,54 @@ public interface JedisClusterScriptingCommands {
 
   Object eval(String script, List<String> keys, List<String> args);
 
-  Object eval(String script, String key);
+  /**
+   * @param script
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @return 
+   */
+  Object eval(String script, String sampleKey);
 
-  Object evalsha(String sha1, String key);
+  /**
+   * @param sha1
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @return 
+   */
+  Object evalsha(String sha1, String sampleKey);
 
   Object evalsha(String sha1, List<String> keys, List<String> args);
 
   Object evalsha(String sha1, int keyCount, String... params);
 
-  Boolean scriptExists(String sha1, String key);
+  /**
+   * @param sha1
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @return 
+   */
+  Boolean scriptExists(String sha1, String sampleKey);
 
-  List<Boolean> scriptExists(String key, String... sha1);
+  /**
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @param sha1
+   * @return 
+   */
+  List<Boolean> scriptExists(String sampleKey, String... sha1);
 
-  String scriptLoad(String script, String key);
+  /**
+   * @param script
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @return 
+   */
+  String scriptLoad(String script, String sampleKey);
+
+  /**
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @return 
+   */
+  String scriptFlush(String sampleKey);
+
+  /**
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @return 
+   */
+  String scriptKill(String sampleKey);
 }

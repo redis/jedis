@@ -2,6 +2,9 @@ package redis.clients.jedis;
 
 import java.util.List;
 import java.util.Set;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -17,15 +20,48 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, null);
+    this(nodes, poolConfig, connectionTimeout, soTimeout, null);
   }
 
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, password);
   }
 
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password, String clientName) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String user, String password, String clientName) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String password, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, String user, String password, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName,
+        ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
+  }
+
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+      int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
+    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
   @Override
@@ -37,6 +73,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
 
     List<JedisPool> pools = cache.getShuffledNodesPool();
 
+    JedisException suppressed = null;
     for (JedisPool pool : pools) {
       Jedis jedis = null;
       try {
@@ -46,19 +83,26 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
           continue;
         }
 
-        String result = jedis.ping();
-
-        if (result.equalsIgnoreCase("pong")) return jedis;
+        if (jedis.ping().equalsIgnoreCase("pong")) {
+          return jedis;
+        }
 
         jedis.close();
       } catch (JedisException ex) {
+        if (suppressed == null) { // remembering first suppressed exception
+          suppressed = ex;
+        }
         if (jedis != null) {
           jedis.close();
         }
       }
     }
 
-    throw new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    JedisNoReachableClusterNodeException noReachableNode = new JedisNoReachableClusterNodeException("No reachable node in cluster");
+    if (suppressed != null) {
+      noReachableNode.addSuppressed(suppressed);
+    }
+    throw noReachableNode;
   }
 
   @Override

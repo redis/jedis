@@ -22,7 +22,7 @@ public class ConnectionTest {
 
   @After
   public void tearDown() throws Exception {
-    client.disconnect();
+    client.close();
   }
 
   @Test(expected = JedisConnectionException.class)
@@ -54,7 +54,7 @@ public class ConnectionTest {
   }
 
   @Test
-  public void getErrorAfterConnectionReset() throws Exception {
+  public void getErrorMultibulkLength() throws Exception {
     class TestConnection extends Connection {
       public TestConnection() {
         super("localhost", 6379);
@@ -73,6 +73,32 @@ public class ConnectionTest {
       fail("Should throw exception");
     } catch (JedisConnectionException jce) {
       assertEquals("ERR Protocol error: invalid multibulk length", jce.getMessage());
+    }
+  }
+
+  @Test
+  public void readWithBrokenConnection() {
+    class BrokenConnection extends Connection {
+      private BrokenConnection() {
+        super("nonexistinghost", 0);
+        try {
+          connect();
+          fail("Client should fail connecting to nonexistinghost");
+        } catch (JedisConnectionException ignored) {
+        }
+      }
+
+      private Object read() {
+        return readProtocolWithCheckingBroken();
+      }
+    }
+
+    BrokenConnection conn = new BrokenConnection();
+    try {
+      conn.read();
+      fail("Read should fail as connection is broken");
+    } catch (JedisConnectionException jce) {
+      assertEquals("Attempting to read from a broken connection", jce.getMessage());
     }
   }
 }

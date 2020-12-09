@@ -3,8 +3,8 @@ package redis.clients.jedis;
 import java.util.Arrays;
 import java.util.Objects;
 
-import redis.clients.util.ByteArrayComparator;
-import redis.clients.util.SafeEncoder;
+import redis.clients.jedis.util.ByteArrayComparator;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class Tuple implements Comparable<Tuple> {
   private byte[] element;
@@ -37,9 +37,10 @@ public class Tuple implements Comparable<Tuple> {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
     if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (obj == this) return true;
+    if (!(obj instanceof Tuple)) return false;
+
     Tuple other = (Tuple) obj;
     if (!Arrays.equals(element, other.element)) return false;
     return Objects.equals(score, other.score);

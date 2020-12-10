@@ -128,6 +128,8 @@ public interface RedisPipeline {
 
   Response<Boolean> sismember(String key, String member);
 
+  Response<List<Boolean>> smismember(String key, String... members);
+
   Response<String> set(String key, String value);
 
   Response<Boolean> setbit(String key, long offset, boolean value);
@@ -234,6 +236,8 @@ public interface RedisPipeline {
   Response<Long> zrevrank(String key, String member);
 
   Response<Double> zscore(String key, String member);
+
+  Response<List<Double>> zmscore(String key, String... members);
 
   Response<Tuple> zpopmax(String key);
 

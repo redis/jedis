@@ -23,6 +23,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -81,6 +82,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final int infiniteSoTimeout) {
+    super(host, port, connectionTimeout, soTimeout, infiniteSoTimeout);
+  }
+
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final boolean ssl) {
     super(host, port, connectionTimeout, soTimeout, ssl);
   }
@@ -90,6 +96,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final HostnameVerifier hostnameVerifier) {
     super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
+  }
+
+  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
+      final int infiniteSoTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    super(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, ssl, sslSocketFactory,
+        sslParameters, hostnameVerifier);
   }
 
   public Jedis(JedisShardInfo shardInfo) {
@@ -122,6 +135,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(uri, connectionTimeout, soTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Jedis(final URI uri, final int connectionTimeout, final int soTimeout,
+      final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    super(uri, connectionTimeout, soTimeout, infiniteSoTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -1355,6 +1374,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Returns whether each member is a member of the set stored at key.
+   * <p>
+   * Time complexity O(N) where N is the number of elements being checked for membership
+   * @param key
+   * @param members
+   * @return List representing the membership of the given elements, in the same order as they are requested.
+   */
+  @Override
+  public List<Boolean> smismember(final String key, final String... members) {
+    checkIsInMultiOrPipeline();
+    client.smismember(key, members);
+    return BuilderFactory.BOOLEAN_LIST.build(client.getIntegerMultiBulkReply());
+  }
+
+  /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the
    * client as a multi-bulk reply (see the protocol specification for more information). If just a
@@ -1697,6 +1731,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zscore(key, member);
     return BuilderFactory.DOUBLE.build(client.getOne());
+  }
+
+  /**
+   * Returns the scores associated with the specified members in the sorted set stored at key.
+   * For every member that does not exist in the sorted set, a nil value is returned.
+   * <p>
+   * <b>Time complexity:</b> O(N) where N is the number of members being requested.
+   * @param key
+   * @param members
+   * @return the scores
+   */
+  @Override
+  public List<Double> zmscore(final String key, final String... members) {
+    checkIsInMultiOrPipeline();
+    client.zmscore(key, members);
+    return BuilderFactory.DOUBLE_LIST.build(client.getBinaryMultiBulkReply());
   }
 
   @Override
@@ -3659,6 +3709,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Long georadiusStore(final String key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
@@ -3688,6 +3746,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Long georadiusByMemberStore(final String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return client.getIntegerReply();
   }
 
   @Override
@@ -3770,6 +3836,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public List<String> aclCat(String category) {
     client.aclCat(category);
     return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<AccessControlLogEntry> aclLog() {
+    client.aclLog();
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<AccessControlLogEntry> aclLog(int limit) {
+    client.aclLog(limit);
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclLog(String options) {
+    client.aclLog(options);
+    return client.getStatusCodeReply();
   }
 
   @Override

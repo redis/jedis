@@ -15,6 +15,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -374,6 +375,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void smismember(final String key, final String... members) {
+    smismember(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  @Override
   public void sinter(final String... keys) {
     sinter(SafeEncoder.encodeMany(keys));
   }
@@ -484,6 +490,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zscore(final String key, final String member) {
     zscore(SafeEncoder.encode(key), SafeEncoder.encode(member));
+  }
+
+  @Override
+  public void zmscore(final String key, final String... members) {
+    zmscore(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
   @Override
@@ -1152,6 +1163,11 @@ public class Client extends BinaryClient implements Commands {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
+  public void georadiusStore(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    georadiusStore(SafeEncoder.encode(key), longitude, latitude, radius, unit, param, storeParam);
+  }
+
   public void georadiusReadonly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     georadiusReadonly(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
@@ -1168,6 +1184,11 @@ public class Client extends BinaryClient implements Commands {
   public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
+  }
+
+  public void georadiusByMemberStore(final String key, final String member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    georadiusByMemberStore(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param, storeParam);
   }
 
   public void georadiusByMemberReadonly(final String key, final String member, final double radius, final GeoUnit unit,
@@ -1197,6 +1218,10 @@ public class Client extends BinaryClient implements Commands {
 
   public void aclCat(final String category) {
     aclCat(SafeEncoder.encode(category));
+  }
+
+  public void aclLog(final String options) {
+    aclLog(SafeEncoder.encode(options));
   }
 
   public void aclDelUser(final String name) {

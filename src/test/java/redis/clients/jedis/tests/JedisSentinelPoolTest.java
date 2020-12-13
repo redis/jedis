@@ -180,36 +180,41 @@ public class JedisSentinelPoolTest {
   @Test
   public void testResetInvalidPassword() {
     JedisFactory factory = new JedisFactory(null, 0, 2000, 2000, "foobared", 0, "my_shiny_client_name");
-    
-    try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory);
-        Jedis obj1 = pool.getResource(); ) {
-      obj1.set("foo", "bar");
-      assertEquals("bar", obj1.get("foo"));
-      assertEquals(1, pool.getNumActive());
-      
+
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
+      Jedis obj1;
+      try (Jedis obj11 = pool.getResource()) {
+        obj1 = obj11;
+        obj11.set("foo", "bar");
+        assertEquals("bar", obj11.get("foo"));
+      }
+      Jedis obj12 = pool.getResource();
+      assertSame(obj1, obj12);
+
       factory.setPassword("wrong password");
-      try (Jedis obj2 = pool.getResource();) {
+      try (Jedis obj2 = pool.getResource()) {
         fail("Should not get resource from pool");
-      }catch (JedisConnectionException e) {}
+      } catch (JedisConnectionException e) {
+      }
+      obj12.close();
     }
   }
  
   @Test
   public void testResetValidPassword() {
     JedisFactory factory = new JedisFactory(null, 0, 2000, 2000, "wrong password", 0, "my_shiny_client_name");
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory);
-    Jedis obj = null;
-    try {
-      pool.getResource();
-      fail("Could not get resource from pool");
-    } catch (JedisConnectionException e) {
+
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
+      try (Jedis obj1 = pool.getResource()) {
+        fail("Should not get resource from pool");
+      } catch (JedisConnectionException jce) {
+      }
+
       factory.setPassword("foobared");
-      obj = pool.getResource();
-      obj.set("foo", "bar");
-      assertEquals("bar", obj.get("foo"));
-    } finally {
-      obj.close();
-      pool.close();
+      try (Jedis obj2 = pool.getResource()) {
+        obj2.set("foo", "bar");
+        assertEquals("bar", obj2.get("foo"));
+      }
     }
   }
 

@@ -37,31 +37,31 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this(host, port, connectionTimeout, soTimeout, password, database, clientName, false, null, null, null);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
+  public JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+  public JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, false, null, null, null);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
+  public JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, null, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
+  public JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName,
                final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
                final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+  public JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
@@ -79,18 +79,18 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
-  JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName) {
     this(uri, connectionTimeout, soTimeout, clientName, null, null, null);
   }
 
-  JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(uri, connectionTimeout, soTimeout, 0, clientName, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String clientName, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     if (!JedisURIHelper.isValid(uri)) {
@@ -116,7 +116,17 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(hostAndPort);
   }
 
-  public void setPassword(final String password) {
+  public void setPassword(final String password) throws IllegalArgumentException {
+    if (this.user != null) {
+      throw new IllegalArgumentException();
+    }
+    this.password.set(password);
+  }
+
+  public void setPassword(final String user, final String password) throws IllegalArgumentException {
+    if (!java.util.Objects.equals(this.user, user)) {
+      throw new IllegalArgumentException();
+    }
     this.password.set(password);
   }
 

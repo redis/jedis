@@ -32,36 +32,36 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   private final SSLParameters sslParameters;
   private final HostnameVerifier hostnameVerifier;
 
-  public JedisFactory(final String host, final int port, final int connectionTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, password, database, clientName, false, null, null, null);
   }
 
-  public JedisFactory(final String host, final int port, final int connectionTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName);
   }
 
-  public JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database, final String clientName) {
     this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, false, null, null, null);
   }
 
-  public JedisFactory(final String host, final int port, final int connectionTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, null, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public JedisFactory(final String host, final int port, final int connectionTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName,
                final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
                final HostnameVerifier hostnameVerifier) {
     this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
@@ -79,18 +79,18 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
-  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+  protected JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName) {
     this(uri, connectionTimeout, soTimeout, clientName, null, null, null);
   }
 
-  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+  protected JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final String clientName, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(uri, connectionTimeout, soTimeout, 0, clientName, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
+  protected JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String clientName, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     if (!JedisURIHelper.isValid(uri)) {

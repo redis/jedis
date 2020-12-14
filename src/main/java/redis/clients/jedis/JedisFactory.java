@@ -24,7 +24,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   private final int soTimeout;
   private final int infiniteSoTimeout;
   private final String user;
-  private final AtomicReference<String> password = new AtomicReference<>();
+  private volatile String password;
   private final int database;
   private final String clientName;
   private final boolean ssl;
@@ -70,7 +70,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.soTimeout = soTimeout;
     this.infiniteSoTimeout = infiniteSoTimeout;
     this.user = user;
-    this.password.set(password);
+    this.password = password;
     this.database = database;
     this.clientName = clientName;
     this.ssl = ssl;
@@ -103,7 +103,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.soTimeout = soTimeout;
     this.infiniteSoTimeout = infiniteSoTimeout;
     this.user = JedisURIHelper.getUser(uri);
-    this.password.set(JedisURIHelper.getPassword(uri));
+    this.password = JedisURIHelper.getPassword(uri);
     this.database = JedisURIHelper.getDBIndex(uri);
     this.clientName = clientName;
     this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
@@ -120,14 +120,14 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     if (this.user != null) {
       throw new IllegalArgumentException();
     }
-    this.password.set(password);
+    this.password = password;
   }
 
   public void setPassword(final String user, final String password) throws IllegalArgumentException {
     if (!java.util.Objects.equals(this.user, user)) {
       throw new IllegalArgumentException();
     }
-    this.password.set(password);
+    this.password = password;
   }
 
   @Override
@@ -162,9 +162,9 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     try {
       jedis.connect();
       if (user != null) {
-        jedis.auth(user, password.get());
-      } else if (password.get() != null) {
-        jedis.auth(password.get());
+        jedis.auth(user, password);
+      } else if (password != null) {
+        jedis.auth(password);
       }
       if (database != 0) {
         jedis.select(database);

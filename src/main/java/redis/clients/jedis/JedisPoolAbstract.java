@@ -7,6 +7,9 @@ import redis.clients.jedis.util.Pool;
 
 public class JedisPoolAbstract extends Pool<Jedis> {
 
+  /**
+   * Using this constructor means you have to set and initialize the internalPool yourself.
+   */
   public JedisPoolAbstract() {
     super();
   }

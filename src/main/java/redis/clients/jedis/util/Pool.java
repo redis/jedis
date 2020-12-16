@@ -12,7 +12,11 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
-  protected GenericObjectPool<T> internalPool;
+
+  /**
+   * This will be private in future update.
+   */
+  protected volatile GenericObjectPool<T> internalPool;
 
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
@@ -43,6 +47,17 @@ public abstract class Pool<T> implements Closeable {
     }
 
     this.internalPool = new GenericObjectPool<>(factory, poolConfig);
+  }
+
+  /**
+   * This call only clears idle instances, not borrowed instances.
+   */
+  protected void clearInternalPool() {
+    try {
+      this.internalPool.clear();
+    } catch (Exception e) {
+      throw new JedisException("Could not clear the pool", e);
+    }
   }
 
   public T getResource() {
@@ -102,7 +117,7 @@ public abstract class Pool<T> implements Closeable {
       throw new JedisException("Could not destroy the pool", e);
     }
   }
-  
+
   /**
    * Returns the number of instances currently borrowed from this pool.
    *

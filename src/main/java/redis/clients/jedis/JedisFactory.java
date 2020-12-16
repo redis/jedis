@@ -47,6 +47,14 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, false, null, null, null);
   }
 
+  /**
+   * {@link #setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
+   */
+  protected JedisFactory(final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+      final String user, final String password, final int database, final String clientName) {
+    this(connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, false, null, null, null);
+  }
+
   protected JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName,
       final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
@@ -65,7 +73,16 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    this(connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     this.hostAndPort.set(new HostAndPort(host, port));
+  }
+
+  /**
+   * {@link #setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
+   */
+  protected JedisFactory(final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+      final String user, final String password, final int database, final String clientName, final boolean ssl,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.infiniteSoTimeout = infiniteSoTimeout;

@@ -1134,6 +1134,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.sendCommand(cmd, args);
   }
 
+  public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
+  }
+
   public Object sendCommand(ProtocolCommand cmd) {
     return sendCommand(cmd, dummyArray);
   }

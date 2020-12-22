@@ -45,7 +45,8 @@ jobs:
       - run: make circleci-install
     
       - run: TEST="\!ModuleTest" make test
-
+      
+      - run: mvn -s .circleci.settings.xml -DskipTests deploy
 
 workflows:
   all-jdks:

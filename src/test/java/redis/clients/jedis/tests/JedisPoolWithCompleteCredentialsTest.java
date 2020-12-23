@@ -73,7 +73,8 @@ public class JedisPoolWithCompleteCredentialsTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), Protocol.DEFAULT_TIMEOUT,
-        Protocol.DEFAULT_TIMEOUT, 0, "acljedis", "fizzbuzz", Protocol.DEFAULT_DATABASE, "closable-resuable-pool");
+        Protocol.DEFAULT_TIMEOUT, 0 /*infinite*/, "acljedis", "fizzbuzz", Protocol.DEFAULT_DATABASE,
+        "closable-resuable-pool", false, null, null, null);
 
     Jedis jedis = pool.getResource();
     try {

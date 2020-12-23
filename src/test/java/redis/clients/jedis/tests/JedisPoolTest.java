@@ -66,7 +66,8 @@ public class JedisPoolTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared", 0, "closable-resuable-pool");
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared", 0,
+        "closable-resuable-pool", false, null, null, null);
 
     Jedis jedis = pool.getResource();
     try {

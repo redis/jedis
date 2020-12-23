@@ -10,6 +10,7 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -31,9 +32,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   protected static final int DEFAULT_TIMEOUT = 2000;
   protected static final int DEFAULT_MAX_ATTEMPTS = 5;
 
-  protected int maxAttempts;
+  protected final int maxAttempts;
 
-  protected JedisClusterConnectionHandler connectionHandler;
+  protected final JedisClusterConnectionHandler connectionHandler;
 
   public BinaryJedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
@@ -114,12 +115,20 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }
   }
 
+  public Pipeline startPipeline(byte[] sampleKey) {
+    return startPipeline(JedisClusterCRC16.getSlot(sampleKey));
+  }
+
+  public Pipeline startPipeline(int hashSlot) {
+    return this.connectionHandler.getConnectionFromSlot(hashSlot).startPipeline();
+  }
+
   public Map<String, JedisPool> getClusterNodes() {
     return connectionHandler.getNodes();
   }
 
   public Jedis getConnectionFromSlot(int slot) {
-	  return  this.connectionHandler.getConnectionFromSlot(slot);
+    return this.connectionHandler.getConnectionFromSlot(slot);
   }
 
   @Override

@@ -10,6 +10,7 @@ import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
+import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 
@@ -191,6 +192,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user, password,
         clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+  }
+
+  public Pipeline startPipeline(String sampleKey) {
+    return startPipeline(JedisClusterCRC16.getSlot(sampleKey));
   }
 
   @Override

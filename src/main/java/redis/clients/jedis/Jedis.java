@@ -35,7 +35,7 @@ import redis.clients.jedis.util.Slowlog;
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
-  protected JedisPoolAbstract dataSource = null;
+  protected volatile JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
@@ -145,6 +145,43 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     super(jedisSocketFactory);
+  }
+
+  @Override
+  public void close() {
+    if (dataSource != null) {
+      unsetDataSource();
+    } else {
+      super.close();
+    }
+  }
+
+  public void unsetDataSource() {
+    if (dataSource != null) {
+      synchronized (this) {
+        if (dataSource != null) {
+          JedisPoolAbstract pool = this.dataSource;
+          this.dataSource = null;
+          if (client.isBroken()) {
+            pool.returnBrokenResource(this);
+          } else {
+            pool.returnResource(this);
+          }
+        }
+      }
+    }
+  }
+
+  public void setDataSource(JedisPoolAbstract jedisPool) {
+    if (jedisPool == null) return;
+
+    this.dataSource = jedisPool;
+  }
+
+  public Pipeline startPipeline() {
+    checkIsInMultiOrPipeline();
+    pipeline = new Pipeline(this);
+    return pipeline;
   }
 
   /**
@@ -3583,25 +3620,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.pubsubNumSub(channels);
     return BuilderFactory.PUBSUB_NUMSUB_MAP.build(client.getBinaryMultiBulkReply());
-  }
-
-  @Override
-  public void close() {
-    if (dataSource != null) {
-      JedisPoolAbstract pool = this.dataSource;
-      this.dataSource = null;
-      if (client.isBroken()) {
-        pool.returnBrokenResource(this);
-      } else {
-        pool.returnResource(this);
-      }
-    } else {
-      super.close();
-    }
-  }
-
-  public void setDataSource(JedisPoolAbstract jedisPool) {
-    this.dataSource = jedisPool;
   }
 
   @Override

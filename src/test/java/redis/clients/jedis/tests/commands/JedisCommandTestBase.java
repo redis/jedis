@@ -29,7 +29,7 @@ public abstract class JedisCommandTestBase {
 
   @After
   public void tearDown() throws Exception {
-    jedis.disconnect();
+    jedis.close();
   }
 
   protected Jedis createJedis() {

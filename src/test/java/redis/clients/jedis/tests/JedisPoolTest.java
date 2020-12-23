@@ -8,7 +8,6 @@ import static org.junit.Assert.fail;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -21,7 +20,6 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class JedisPoolTest {
@@ -42,42 +40,48 @@ public class JedisPoolTest {
   @Test
   public void checkCloseableConnections() throws Exception {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000);
-    Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
-    jedis.set("foo", "bar");
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
+    try (Jedis jedis = pool.getResource()) {
+      jedis.auth("foobared");
+      jedis.set("foo", "bar");
+      assertEquals("bar", jedis.get("foo"));
+    }
     pool.close();
     assertTrue(pool.isClosed());
   }
 
   @Test
   public void checkConnectionWithDefaultPort() {
-    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
-    Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
-    jedis.set("foo", "bar");
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost());
+    try (Jedis jedis = pool.getResource()) {
+      jedis.auth("foobared");
+      jedis.set("foo", "bar");
+      assertEquals("bar", jedis.get("foo"));
+    }
     pool.destroy();
     assertTrue(pool.isClosed());
   }
 
   @Test
-  public void checkJedisIsReusedWhenReturned() {
+  public void checkResourceIsClosebleAndReusable() {
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(false);
+    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared", 0, "closable-resuable-pool");
 
-    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
     Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
-    jedis.set("foo", "0");
-    jedis.close();
+    try {
+      jedis.set("hello", "jedis");
+    } finally {
+      jedis.close();
+    }
 
-    jedis = pool.getResource();
-    jedis.auth("foobared");
-    jedis.incr("foo");
-    jedis.close();
-    pool.destroy();
-    assertTrue(pool.isClosed());
+    Jedis jedis2 = pool.getResource();
+    try {
+      assertEquals(jedis, jedis2);
+      assertEquals("jedis", jedis2.get("hello"));
+    } finally {
+      jedis2.close();
+    }
   }
 
   @Test
@@ -297,28 +301,6 @@ public class JedisPoolTest {
 
     pool.destroy();
     assertTrue(pool.isClosed());
-  }
-
-  @Test
-  public void checkResourceIsCloseable() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-    config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
-
-    Jedis jedis = pool.getResource();
-    try {
-      jedis.set("hello", "jedis");
-    } finally {
-      jedis.close();
-    }
-
-    Jedis jedis2 = pool.getResource();
-    try {
-      assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
-    }
   }
 
   @Test

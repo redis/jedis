@@ -92,6 +92,23 @@ public class JedisPoolWithCompleteCredentialsTest {
     }
   }
 
+  @Test
+  public void checkPoolRepairedWhenJedisIsBroken() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(),
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, 0 /*infinite*/, "acljedis", "fizzbuzz",
+        Protocol.DEFAULT_DATABASE, "repairable-pool");
+    try (Jedis jedis = pool.getResource()) {
+      jedis.set("foo", "0");
+      jedis.quit();
+    }
+
+    try (Jedis jedis = pool.getResource()) {
+      jedis.incr("foo");
+    }
+    pool.destroy();
+    assertTrue(pool.isClosed());
+  }
+
   @Test(expected = JedisExhaustedPoolException.class)
   public void checkPoolOverflow() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();

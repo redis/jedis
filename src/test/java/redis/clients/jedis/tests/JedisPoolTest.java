@@ -62,7 +62,7 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void checkResourceIsClosebleAndReusable() {
+  public void checkResourceIsClosableAndReusable() {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
@@ -88,15 +88,16 @@ public class JedisPoolTest {
   @Test
   public void checkPoolRepairedWhenJedisIsBroken() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
-    Jedis jedis = pool.getResource();
-    jedis.auth("foobared");
-    jedis.quit();
-    jedis.close();
+    try (Jedis jedis = pool.getResource()) {
+      jedis.auth("foobared");
+      jedis.set("foo", "0");
+      jedis.quit();
+    }
 
-    jedis = pool.getResource();
-    jedis.auth("foobared");
-    jedis.incr("foo");
-    jedis.close();
+    try (Jedis jedis = pool.getResource()) {
+      jedis.auth("foobared");
+      jedis.incr("foo");
+    }
     pool.destroy();
     assertTrue(pool.isClosed());
   }

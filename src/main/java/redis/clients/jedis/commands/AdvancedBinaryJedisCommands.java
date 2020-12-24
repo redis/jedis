@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
+import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -73,6 +74,12 @@ public interface AdvancedBinaryJedisCommands {
   List<byte[]> aclCatBinary();
 
   List<byte[]> aclCat(byte[] category);
+
+  List<byte[]> aclLogBinary();
+
+  List<byte[]> aclLogBinary(int limit);
+
+  byte[] aclLog(byte[] options);
 
   // TODO: Implements ACL LOAD/SAVE commands
 }

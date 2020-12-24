@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -95,6 +96,21 @@ public class JedisTest extends JedisCommandTestBase {
     // reset config
     jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
     jedis.configSet("timeout", timeout);
+    jedis.close();
+  }
+
+  @Test
+  public void infiniteTimeout() throws Exception {
+    Jedis jedis = new Jedis("localhost", 6379, 350, 350, 350);
+    jedis.auth("foobared");
+    try {
+      jedis.blpop(0, "foo");
+      fail("SocketTimeoutException should occur");
+    } catch(JedisConnectionException jce) {
+      assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
+      assertEquals("Read timed out", jce.getCause().getMessage());
+      assertTrue(jedis.getClient().isBroken());
+    }
     jedis.close();
   }
 

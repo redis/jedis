@@ -1344,6 +1344,18 @@ public class BinaryClient extends Connection {
     sendCommand(ACL, Keyword.CAT.raw, category);
   }
 
+  public void aclLog() {
+    sendCommand(ACL, Keyword.LOG.raw);
+  }
+
+  public void aclLog(int limit) {
+    sendCommand(ACL, Keyword.LOG.raw, toByteArray(limit));
+  }
+
+  public void aclLog(final byte[] option) {
+    sendCommand(ACL, Keyword.LOG.raw, option);
+  }
+
   public void aclSetUser(final byte[] name) {
     sendCommand(ACL, Keyword.SETUSER.raw, name);
   }

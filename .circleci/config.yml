@@ -55,8 +55,8 @@ jobs:
           sudo apt install -y stunnel
 
       - run: make circleci-install
-    
-      - run: TEST="\!ModuleTest" make test
+
+      - run: TEST="" make test
 
       - early_return_for_forked_pull_requests
 

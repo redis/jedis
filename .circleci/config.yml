@@ -45,7 +45,9 @@ jobs:
       - run: make circleci-install
     
       - run: TEST="\!ModuleTest" make test
-      
+
+      - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} 
+     
       - run: mvn -s .circleci.settings.xml -DskipTests deploy
 
 workflows:

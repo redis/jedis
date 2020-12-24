@@ -53,10 +53,10 @@ public class SSLJedisTest {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis("rediss://localhost:6390");
-    jedis.auth("foobared");
-    assertEquals("PONG", jedis.ping());
-    jedis.close();
+    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -65,10 +65,10 @@ public class SSLJedisTest {
   @Test
   public void connectWithoutShardInfo() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"));
-    jedis.auth("foobared");
-    assertEquals("PONG", jedis.ping());
-    jedis.close();
+    try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**

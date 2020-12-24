@@ -4104,4 +4104,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.sendCommand(cmd, args);
     return client.getOne();
   }
+
+  @Override
+  public Object stralgo(String algorithm, String... params) {
+    checkIsInMultiOrPipeline();
+    client.stralgo(algorithm, params);
+    return client.getOne();
+  }
 }

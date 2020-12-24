@@ -1603,4 +1603,10 @@ public class BinaryClient extends Connection {
     sendCommand(XINFO,Keyword.CONSUMERS.raw,key,group);
   }
 
+  public void stralgo(final byte[] algorithm, final byte[]... params) {
+    ArrayList<byte[]> arguments = new ArrayList<>(1 + params.length);
+    arguments.add(algorithm);
+    Collections.addAll(arguments, params);
+    sendCommand(STRALGO, arguments.toArray(new byte[arguments.size()][]));
+  }
 }

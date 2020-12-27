@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.BLPOP;
 import static redis.clients.jedis.Protocol.Command.HGETALL;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.LRANGE;
@@ -886,6 +887,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("PONG", SafeEncoder.encode((byte[]) jedis.sendCommand(PING)));
   }
 
+  @Test
+  public void sendBlockingCommandTest(){
+    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+
+    jedis.sendCommand(RPUSH, "foo", "bar");
+    assertEquals(Arrays.asList("foo", "bar"), SafeEncoder.encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
+
+    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+  }
 
   @Test
   public void encodeCompleteResponse(){

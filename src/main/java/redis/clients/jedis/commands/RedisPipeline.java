@@ -15,6 +15,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -93,6 +94,12 @@ public interface RedisPipeline {
 
   Response<String> lpop(String key);
 
+  Response<Long> lpos(String key, String element);
+
+  Response<Long> lpos(String key, String element, LPosParams params);
+
+  Response<List<Long>> lpos(String key, String element, LPosParams params, long count);
+
   Response<Long> lpush(String key, String... string);
 
   Response<Long> lpushx(String key, String... string);
@@ -120,6 +127,8 @@ public interface RedisPipeline {
   Response<Long> scard(String key);
 
   Response<Boolean> sismember(String key, String member);
+
+  Response<List<Boolean>> smismember(String key, String... members);
 
   Response<String> set(String key, String value);
 
@@ -227,6 +236,8 @@ public interface RedisPipeline {
   Response<Long> zrevrank(String key, String member);
 
   Response<Double> zscore(String key, String member);
+
+  Response<List<Double>> zmscore(String key, String... members);
 
   Response<Tuple> zpopmax(String key);
 

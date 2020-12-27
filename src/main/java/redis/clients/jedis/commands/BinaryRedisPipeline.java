@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,12 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> lpop(byte[] key);
 
+  Response<Long> lpos(byte[] key, byte[] element);
+
+  Response<Long> lpos(byte[] key, byte[] element, LPosParams params);
+
+  Response<List<Long>> lpos(byte[] key, byte[] element, LPosParams params, long count);
+
   Response<Long> lpush(byte[] key, byte[]... string);
 
   Response<Long> lpushx(byte[] key, byte[]... bytes);
@@ -132,6 +139,8 @@ public interface BinaryRedisPipeline {
   Response<Set<byte[]>> smembers(byte[] key);
 
   Response<Boolean> sismember(byte[] key, byte[] member);
+
+  Response<List<Boolean>> smismember(byte[] key, byte[]... members);
 
   Response<List<byte[]>> sort(byte[] key);
 
@@ -232,6 +241,8 @@ public interface BinaryRedisPipeline {
   Response<Long> zrevrank(byte[] key, byte[] member);
 
   Response<Double> zscore(byte[] key, byte[] member);
+
+  Response<List<Double>> zmscore(byte[] key, byte[]... members);
 
   Response<Tuple> zpopmax(byte[] key);
 

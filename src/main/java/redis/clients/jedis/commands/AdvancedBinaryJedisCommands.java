@@ -16,9 +16,9 @@ public interface AdvancedBinaryJedisCommands {
 
   Long slowlogLen();
 
-  List<byte[]> slowlogGetBinary();
+  List<Object> slowlogGetBinary();
 
-  List<byte[]> slowlogGetBinary(long entries);
+  List<Object> slowlogGetBinary(long entries);
 
   Long objectRefcount(byte[] key);
 
@@ -49,6 +49,10 @@ public interface AdvancedBinaryJedisCommands {
   Long clientId();
 
   byte[] memoryDoctorBinary();
+  
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
 
   byte[] aclWhoAmIBinary();
 
@@ -69,6 +73,12 @@ public interface AdvancedBinaryJedisCommands {
   List<byte[]> aclCatBinary();
 
   List<byte[]> aclCat(byte[] category);
+
+  List<byte[]> aclLogBinary();
+
+  List<byte[]> aclLogBinary(int limit);
+
+  byte[] aclLog(byte[] options);
 
   // TODO: Implements ACL LOAD/SAVE commands
 }

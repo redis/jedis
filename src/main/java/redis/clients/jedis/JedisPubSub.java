@@ -99,6 +99,14 @@ public abstract class JedisPubSub {
     client.flush();
   }
 
+  public void ping(String argument) {
+    if (client == null) {
+      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+    }
+    client.ping(argument);
+    client.flush();
+  }
+
   public boolean isSubscribed() {
     return subscribedChannels > 0;
   }

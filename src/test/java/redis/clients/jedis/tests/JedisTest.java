@@ -28,10 +28,10 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void useWithoutConnecting() {
-    Jedis jedis = new Jedis("localhost");
-    jedis.auth("foobared");
-    jedis.dbSize();
-    jedis.close();
+    try (Jedis j = new Jedis()) {
+      j.auth("foobared");
+      j.dbSize();
+    }
   }
 
   @Test
@@ -135,16 +135,16 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    j.close();
+    try (Jedis j = new Jedis("localhost", 6380)) {
+      j.auth("foobared");
+      j.select(2);
+      j.set("foo", "bar");
+    }
 
-    Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2");
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
+    try (Jedis j2 = new Jedis("redis://:foobared@localhost:6380/2")) {
+      assertEquals("PONG", j2.ping());
+      assertEquals("bar", j2.get("foo"));
+    }
   }
 
   @Test
@@ -175,19 +175,19 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
-    jedis.auth("foobared");
-    assertEquals("localhost", jedis.getClient().getHost());
-    assertEquals(6380, jedis.getClient().getPort());
-    assertEquals(0, jedis.getDB());
-    jedis.close();
+    try (Jedis j1 = new Jedis("redis://localhost:6380")) {
+      j1.auth("foobared");
+      assertEquals("localhost", j1.getClient().getHost());
+      assertEquals(6380, j1.getClient().getPort());
+      assertEquals(0, j1.getDB());
+    }
 
-    jedis = new Jedis("redis://localhost:6380/");
-    jedis.auth("foobared");
-    assertEquals("localhost", jedis.getClient().getHost());
-    assertEquals(6380, jedis.getClient().getPort());
-    assertEquals(0, jedis.getDB());
-    jedis.close();
+    try (Jedis j2 = new Jedis("redis://localhost:6380/")) {
+      j2.auth("foobared");
+      assertEquals("localhost", j2.getClient().getHost());
+      assertEquals(6380, j2.getClient().getPort());
+      assertEquals(0, j2.getDB());
+    }
   }
 
   @Test

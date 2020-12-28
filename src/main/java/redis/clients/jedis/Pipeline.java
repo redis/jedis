@@ -11,13 +11,13 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
   private MultiResponseBuilder currentMulti;
 
   private class MultiResponseBuilder extends Builder<List<Object>> {
-    private List<Response<?>> responses = new ArrayList<Response<?>>();
+    private List<Response<?>> responses = new ArrayList<>();
 
     @Override
     public List<Object> build(Object data) {
       @SuppressWarnings("unchecked")
       List<Object> list = (List<Object>) data;
-      List<Object> values = new ArrayList<Object>();
+      List<Object> values = new ArrayList<>();
 
       if (list.size() != responses.size()) {
         throw new JedisDataException("Expected data size " + responses.size() + " but was "
@@ -54,7 +54,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     if (currentMulti != null) {
       super.getResponse(BuilderFactory.STRING); // Expected QUEUED
 
-      Response<T> lr = new Response<T>(builder);
+      Response<T> lr = new Response<>(builder);
       currentMulti.addResponse(lr);
       return lr;
     } else {
@@ -111,7 +111,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
   public List<Object> syncAndReturnAll() {
     if (getPipelinedResponseLength() > 0) {
       List<Object> unformatted = client.getMany(getPipelinedResponseLength());
-      List<Object> formatted = new ArrayList<Object>();
+      List<Object> formatted = new ArrayList<>();
       for (Object o : unformatted) {
         try {
           formatted.add(generateResponse(o).get());

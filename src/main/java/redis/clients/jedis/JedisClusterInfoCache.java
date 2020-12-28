@@ -18,8 +18,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
-  private final Map<String, JedisPool> nodes = new HashMap<String, JedisPool>();
-  private final Map<Integer, JedisPool> slots = new HashMap<Integer, JedisPool>();
+  private final Map<String, JedisPool> nodes = new HashMap<>();
+  private final Map<Integer, JedisPool> slots = new HashMap<>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -29,6 +29,8 @@ public class JedisClusterInfoCache {
 
   private int connectionTimeout;
   private int soTimeout;
+  private int infiniteSoTimeout;
+  private String user;
   private String password;
   private String clientName;
 
@@ -46,16 +48,49 @@ public class JedisClusterInfoCache {
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
       final int connectionTimeout, final int soTimeout, final String password, final String clientName) {
-    this(poolConfig, connectionTimeout, soTimeout, password, clientName, false, null, null, null, null);
+    this(poolConfig, connectionTimeout, soTimeout, null, password, clientName);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+      final int soTimeout, final int infiniteSoTimeout, final String password, final String clientName) {
+    this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, clientName);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final int connectionTimeout, final int soTimeout, final String password, final String clientName,
+      final int connectionTimeout, final int soTimeout, final String user, final String password, final String clientName) {
+    this(poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+      final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+      final String user, final String password, final String clientName) {
+    this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, false, null, null, null, null);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+      final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+    this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+      final int soTimeout, final String user, final String password, final String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+    this(poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+      final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+      final String user, final String password, final String clientName, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.user = user;
     this.password = password;
     this.clientName = clientName;
     this.ssl = ssl;
@@ -85,7 +120,7 @@ public class JedisClusterInfoCache {
         int size = slotInfo.size();
         for (int i = MASTER_NODE_INDEX; i < size; i++) {
           List<Object> hostInfos = (List<Object>) slotInfo.get(i);
-          if (hostInfos.size() <= 0) {
+          if (hostInfos.isEmpty()) {
             continue;
           }
 
@@ -188,7 +223,7 @@ public class JedisClusterInfoCache {
       if (existingPool != null) return existingPool;
 
       JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, password, 0, clientName, 
+          connectionTimeout, soTimeout, infiniteSoTimeout, user, password, 0, clientName, 
           ssl, sslSocketFactory, sslParameters, hostnameVerifier);
       nodes.put(nodeKey, nodePool);
       return nodePool;
@@ -240,7 +275,7 @@ public class JedisClusterInfoCache {
   public Map<String, JedisPool> getNodes() {
     r.lock();
     try {
-      return new HashMap<String, JedisPool>(nodes);
+      return new HashMap<>(nodes);
     } finally {
       r.unlock();
     }
@@ -249,7 +284,7 @@ public class JedisClusterInfoCache {
   public List<JedisPool> getShuffledNodesPool() {
     r.lock();
     try {
-      List<JedisPool> pools = new ArrayList<JedisPool>(nodes.values());
+      List<JedisPool> pools = new ArrayList<>(nodes.values());
       Collections.shuffle(pools);
       return pools;
     } finally {
@@ -292,7 +327,7 @@ public class JedisClusterInfoCache {
   }
 
   private List<Integer> getAssignedSlotArray(List<Object> slotInfo) {
-    List<Integer> slotNums = new ArrayList<Integer>();
+    List<Integer> slotNums = new ArrayList<>();
     for (int slot = ((Long) slotInfo.get(0)).intValue(); slot <= ((Long) slotInfo.get(1))
         .intValue(); slot++) {
       slotNums.add(slot);

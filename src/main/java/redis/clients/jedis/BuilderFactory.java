@@ -180,9 +180,7 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      List<byte[]> l = (List<byte[]>) data;
-
-      return l;
+      return (List<byte[]>) data;
     }
 
     @Override
@@ -422,6 +420,9 @@ public final class BuilderFactory {
 
               resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
                   DOUBLE.build(coord.get(1))));
+            } else if (info instanceof Long) {
+              // score
+              resp.setRawScore(LONG.build(info));
             } else {
               // distance
               resp.setDistance(DOUBLE.build(info));
@@ -475,6 +476,98 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * Create a AccessControlUser object from the ACL GETUSER < > result
+   */
+  public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
+    @Override
+    public AccessControlUser build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<List<Object>> objectList = (List<List<Object>>) data;
+      if (objectList.isEmpty()) { return null; }
+
+      AccessControlUser accessControlUser = new AccessControlUser();
+
+      // flags
+      List<Object> flags = objectList.get(1);
+      for (Object f : flags) {
+        accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
+      }
+
+      // passwords
+      List<Object> passwords = objectList.get(3);
+      for (Object p : passwords) {
+        accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
+      }
+
+      // commands
+      accessControlUser.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
+
+      // keys
+      List<Object> keys = objectList.get(7);
+      for (Object k : keys) {
+        accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
+      }
+
+      return accessControlUser;
+    }
+
+    @Override
+    public String toString() {
+      return "AccessControlUser";
+    }
+
+  };
+
+  /**
+   * Create an Access Control Log Entry
+   * Result of ACL LOG command
+   */
+  public static final Builder<List<AccessControlLogEntry>> ACCESS_CONTROL_LOG_ENTRY_LIST = new Builder<List<AccessControlLogEntry>>() {
+
+    private final Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(AccessControlLogEntry.COUNT ,LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.REASON ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.CONTEXT ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.OBJECT ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.USERNAME,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO,STRING);
+
+      return  tempMappingFunctions;
+    }
+
+    @Override
+    public List<AccessControlLogEntry> build(Object data) {
+
+      if (null == data) {
+        return null;
+      }
+
+      List<AccessControlLogEntry> list = new ArrayList<>();
+      List<List<Object>> logEntries = (List<List<Object>>)data;
+      for  (List<Object> logEntryData : logEntries) {
+        Iterator<Object> logEntryDataIterator = logEntryData.iterator();
+        AccessControlLogEntry accessControlLogEntry = new AccessControlLogEntry(
+                createMapFromDecodingFunctions(logEntryDataIterator,mappingFunctions));
+        list.add(accessControlLogEntry);
+      }
+      return list;
+    }
+
+    @Override
+    public String toString() {
+      return "List<AccessControlLogEntry>";
+    }
+  };
+
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -490,6 +583,48 @@ public final class BuilderFactory {
       return "List<Long>";
     }
 
+  };
+
+  public static final Builder<List<Boolean>> BOOLEAN_LIST = new Builder<List<Boolean>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Boolean> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<Long> longs = (List<Long>) data;
+      List<Boolean> booleans = new ArrayList<>(longs.size());
+      for (Long value : longs) {
+        booleans.add(value == 1L);
+      }
+      return booleans;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Boolean>";
+    }
+  };
+
+  public static final Builder<List<Double>> DOUBLE_LIST = new Builder<List<Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Double> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> values = (List<byte[]>) data;
+      List<Double> doubles = new ArrayList<>(values.size());
+      for (byte[] value : values) {
+        doubles.add(DOUBLE.build(value));
+      }
+      return doubles;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Double>";
+    }
   };
 
   public static final Builder<StreamEntryID> STREAM_ENTRY_ID = new Builder<StreamEntryID>() {
@@ -525,6 +660,10 @@ public final class BuilderFactory {
       }
 
       for(ArrayList<Object> res : objectList) {
+        if(res == null) {
+          responses.add(null);
+          continue;
+        }
         String entryIdString = SafeEncoder.encode((byte[])res.get(0));
         StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>)res.get(1);
@@ -569,10 +708,7 @@ public final class BuilderFactory {
         map.put(SafeEncoder.encode(hashIterator.next()),
             SafeEncoder.encode(hashIterator.next()));
       }
-      StreamEntry streamEntry = new StreamEntry(entryID, map);
-
-
-      return streamEntry;
+      return new StreamEntry(entryID, map);
     }
 
     @Override
@@ -637,9 +773,8 @@ public final class BuilderFactory {
       List<Object> streamsEntries = (List<Object>)data;
       Iterator<Object> iterator = streamsEntries.iterator();
 
-      StreamInfo streamInfo = new StreamInfo(
+      return new StreamInfo(
           createMapFromDecodingFunctions(iterator,mappingFunctions));
-      return streamInfo;
     }
 
     @Override

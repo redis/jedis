@@ -3,6 +3,7 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ZAddParams extends Params {
 
@@ -46,7 +47,7 @@ public class ZAddParams extends Params {
   }
 
   public byte[][] getByteParams(byte[] key, byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
+    ArrayList<byte[]> byteParams = new ArrayList<>();
     byteParams.add(key);
 
     if (contains(NX)) {
@@ -59,9 +60,7 @@ public class ZAddParams extends Params {
       byteParams.add(SafeEncoder.encode(CH));
     }
 
-    for (byte[] arg : args) {
-      byteParams.add(arg);
-    }
+    Collections.addAll(byteParams, args);
 
     return byteParams.toArray(new byte[byteParams.size()][]);
   }

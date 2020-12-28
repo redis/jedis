@@ -14,23 +14,26 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisSentinelPool extends JedisPoolAbstract {
+  protected Logger log = LoggerFactory.getLogger(getClass().getName());
 
-  protected GenericObjectPoolConfig poolConfig;
+  protected final GenericObjectPoolConfig poolConfig;
 
-  protected int connectionTimeout;
-  protected int soTimeout;
-  protected String password;
-  protected int database;
-  protected String clientName;
+  protected final int connectionTimeout;
+  protected final int soTimeout;
+  protected final int infiniteSoTimeout;
+
+  protected final String user;
+  protected final String password;
+  protected final int database;
+  protected final String clientName;
 
   protected int sentinelConnectionTimeout;
   protected int sentinelSoTimeout;
+  protected String sentinelUser;
   protected String sentinelPassword;
   protected String sentinelClientName;
 
-  protected Set<MasterListener> masterListeners = new HashSet<MasterListener>();
-
-  protected Logger log = LoggerFactory.getLogger(getClass().getName());
+  protected final Set<MasterListener> masterListeners = new HashSet<>();
 
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
@@ -52,6 +55,11 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, password);
   }
 
+  public JedisSentinelPool(String masterName, Set<String> sentinels, String password, String sentinelPassword) {
+    this(masterName, sentinels, new GenericObjectPoolConfig(), Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT,
+        password, Protocol.DEFAULT_DATABASE, null, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, sentinelPassword, null);
+  }
+
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password) {
     this(masterName, sentinels, poolConfig, timeout, password, Protocol.DEFAULT_DATABASE);
@@ -70,7 +78,13 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, int timeout, final String password,
       final int database) {
-    this(masterName, sentinels, poolConfig, timeout, timeout, password, database);
+    this(masterName, sentinels, poolConfig, timeout, timeout, null, password, database);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, int timeout, final String user,
+      final String password, final int database) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, user, password, database);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -80,16 +94,42 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final int timeout, final int soTimeout,
+      final GenericObjectPoolConfig poolConfig, int timeout, final String user,
+      final String password, final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, timeout, timeout, user, password, database, clientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database) {
-    this(masterName, sentinels, poolConfig, timeout, soTimeout, password, database, null);
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, null, password, database, null);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      final String user, final String password, final int database) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, user, password, database, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
       final String password, final int database, final String clientName) {
-    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
-        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null);
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, null, password, database, clientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      final String user, final String password, final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, user, password, database, clientName,
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null, null);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig,
+      final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+      final String user, final String password, final int database, final String clientName) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, 0, user, password, database, clientName,
+        Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null, null);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -97,15 +137,37 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final String password, final int database, final String clientName,
       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelPassword,
       final String sentinelClientName) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, null, password, database, clientName,
+        sentinelConnectionTimeout, sentinelSoTimeout, null, sentinelPassword, sentinelClientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig, final int connectionTimeout, final int soTimeout,
+      final String user, final String password, final int database, final String clientName,
+      final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
+      final String sentinelPassword, final String sentinelClientName) {
+    this(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, 0, user, password, database, clientName,
+        sentinelConnectionTimeout, sentinelSoTimeout, sentinelUser, sentinelPassword, sentinelClientName);
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig poolConfig,
+      final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+      final String user, final String password, final int database, final String clientName,
+      final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
+      final String sentinelPassword, final String sentinelClientName) {
 
     this.poolConfig = poolConfig;
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
+    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.user = user;
     this.password = password;
     this.database = database;
     this.clientName = clientName;
     this.sentinelConnectionTimeout = sentinelConnectionTimeout;
     this.sentinelSoTimeout = sentinelSoTimeout;
+    this.sentinelUser = sentinelUser;
     this.sentinelPassword = sentinelPassword;
     this.sentinelClientName = sentinelClientName;
 
@@ -132,7 +194,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         currentHostMaster = master;
         if (factory == null) {
           factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-              soTimeout, password, database, clientName);
+              soTimeout, infiniteSoTimeout, user, password, database, clientName);
           initPool(poolConfig, factory);
         } else {
           factory.setHostAndPort(currentHostMaster);
@@ -143,7 +205,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
           internalPool.clear();
         }
 
-        log.info("Created JedisPool to master at " + master);
+        log.info("Created JedisPool to master at {}", master);
       }
     }
   }
@@ -163,7 +225,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       Jedis jedis = null;
       try {
         jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
-        if (sentinelPassword != null) {
+        if (sentinelUser != null) {
+          jedis.auth(sentinelUser, sentinelPassword);
+        } else if (sentinelPassword != null) {
           jedis.auth(sentinelPassword);
         }
         if (sentinelClientName != null) {
@@ -187,8 +251,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         // resolves #1036, it should handle JedisException there's another chance
         // of raising JedisDataException
         log.warn(
-          "Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap,
-          e.toString());
+          "Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap, e);
       } finally {
         if (jedis != null) {
           jedis.close();
@@ -208,7 +271,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       }
     }
 
-    log.info("Redis master running at " + master + ", starting Sentinel listeners...");
+    log.info("Redis master running at {}, starting Sentinel listeners...", master);
 
     for (String sentinel : sentinels) {
       final HostAndPort hap = HostAndPort.parseString(sentinel);
@@ -301,12 +364,20 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       while (running.get()) {
 
-        j = new Jedis(host, port);
-
         try {
           // double check that it is not being shutdown
           if (!running.get()) {
             break;
+          }
+          
+          j = new Jedis(host, port, sentinelConnectionTimeout, sentinelSoTimeout);
+          if (sentinelUser != null) {
+            j.auth(sentinelUser, sentinelPassword);
+          } else if (sentinelPassword != null) {
+            j.auth(sentinelPassword);
+          }
+          if (sentinelClientName != null) {
+            j.clientSetname(sentinelClientName);
           }
 
           // code for active refresh
@@ -356,7 +427,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
             log.debug("Unsubscribing from Sentinel at {}:{}", host, port);
           }
         } finally {
-          j.close();
+          if (j != null) {
+            j.close();
+          }
         }
       }
     }

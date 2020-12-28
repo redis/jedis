@@ -162,7 +162,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     assertEquals(1, members.size());
     assertEquals(superSet, members);
 
-    assertNull(jedis.spop("foo", 2));
+    assertTrue(jedis.spop("foo", 2).isEmpty());
 
     // Binary
     jedis.sadd(bfoo, ba);
@@ -184,7 +184,7 @@ public class SetCommandsTest extends JedisCommandTestBase {
     assertEquals(1, bmembers.size());
     assertByteArraySetEquals(bsuperSet, bmembers);
 
-    assertNull(jedis.spop(bfoo, 2));
+    assertTrue(jedis.spop(bfoo, 2).isEmpty());
   }
 
   @Test
@@ -277,6 +277,18 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     assertFalse(jedis.sismember(bfoo, bc));
 
+  }
+
+  @Test
+  public void smismember() {
+    jedis.sadd("foo", "a", "b");
+
+    assertEquals(Arrays.asList(true, false), jedis.smismember("foo", "a", "c"));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb);
+
+    assertEquals(Arrays.asList(true, false), jedis.smismember(bfoo, ba, bc));
   }
 
   @Test

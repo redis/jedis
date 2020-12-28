@@ -1,20 +1,22 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.hamcrest.CoreMatchers.*;
-import org.junit.*;
-import redis.clients.jedis.AccessControlUser;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisAccessControlException;
-import redis.clients.jedis.tests.utils.RedisVersionUtil;
-
-import java.util.List;
-
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
+
+import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.JedisAccessControlException;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
+import redis.clients.jedis.util.SafeEncoder;
+
 // TODO :properly define and test exceptions
-
 public class AccessControlListCommandsTest extends JedisCommandTestBase {
-
 
   public static String USER_YYY = "yyy";
   public static String USER_ZZZ = "zzz";
@@ -35,36 +37,40 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void aclWhoAmI() {
-    String returnValue = jedis.aclWhoAmI();
-    assertEquals("default", returnValue);
-  }
+    String string = jedis.aclWhoAmI();
+    assertEquals("default", string);
 
-  @Test
-  public void aclWhoAmIBinary() {
-    byte[] returnValue = jedis.aclWhoAmIBinary();
-    assertNotNull(returnValue);
+    byte[] binary = jedis.aclWhoAmIBinary();
+    assertArrayEquals(SafeEncoder.encode("default"), binary);
   }
 
   @Test
   public void aclListDefault() {
-    assertEquals(1, jedis.aclList().size());
-  }
-
-  @Test
-  public void aclListBinaryDefault() {
-    assertEquals(1, jedis.aclListBinary().size());
+    assertTrue(jedis.aclList().size() > 0);
+    assertTrue(jedis.aclListBinary().size() > 0);
   }
 
   @Test
   public void addAndRemoveUser() {
+    int existingUsers = jedis.aclList().size();
+
     String status = jedis.aclSetUser(USER_ZZZ);
     assertEquals("OK", status);
-    assertEquals(2, jedis.aclList().size());
-    assertEquals(2, jedis.aclListBinary().size()); // test binary
+    assertEquals(existingUsers + 1, jedis.aclList().size());
+    assertEquals(existingUsers + 1, jedis.aclListBinary().size()); // test binary
 
     jedis.aclDelUser(USER_ZZZ);
-    assertEquals(1, jedis.aclList().size());
-    assertEquals(1, jedis.aclListBinary().size()); // test binary
+    assertEquals(existingUsers, jedis.aclList().size());
+    assertEquals(existingUsers, jedis.aclListBinary().size()); // test binary
+  }
+
+  @Test
+  public void aclUsers() {
+    List<String> users = jedis.aclUsers();
+    assertEquals(2, users.size());
+    assertTrue(users.contains("default"));
+
+    assertEquals(2, jedis.aclUsersBinary().size()); // Test binary
   }
 
   @Test
@@ -93,9 +99,9 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.aclSetUser(USER_ZZZ, "reset", "+@all", "~*", "-@string", "+incr", "-debug",
       "+debug|digest");
     userInfo = jedis.aclGetUser(USER_ZZZ);
-    Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
-    Assert.assertThat(userInfo.getCommands(), containsString("-@string"));
-    Assert.assertThat(userInfo.getCommands(), containsString("+debug|digest"));
+    assertThat(userInfo.getCommands(), containsString("+@all"));
+    assertThat(userInfo.getCommands(), containsString("-@string"));
+    assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_ZZZ);
 
@@ -318,6 +324,111 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void aclLogTest() {
+    jedis.aclLog("RESET");
+    assertTrue(jedis.aclLog().isEmpty());
+
+    // create new user and cconnect
+    jedis.aclSetUser("antirez", ">foo", "on", "+set", "~object:1234");
+    jedis.aclSetUser("antirez", "+eval", "+multi", "+exec");
+    jedis.auth("antirez", "foo");
+
+    // generate an error (antirez user does not have the permission to access foo)
+    try {
+      jedis.get("foo");
+      fail("Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
+    } catch(JedisAccessControlException e) {}
+
+    // test the ACL Log
+    jedis.auth("default", "foobared");
+
+    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals(1, jedis.aclLog().get(0).getCount());
+    assertEquals("antirez", jedis.aclLog().get(0).getUsername());
+    assertEquals("toplevel", jedis.aclLog().get(0).getContext());
+    assertEquals("command", jedis.aclLog().get(0).getReason());
+    assertEquals("get", jedis.aclLog().get(0).getObject());
+
+    // Capture similar event
+    jedis.aclLog("RESET");
+    assertTrue(jedis.aclLog().isEmpty());
+
+    jedis.auth("antirez", "foo");
+
+    for(int i = 0; i < 10 ; i++ ) {
+      // generate an error (antirez user does not have the permission to access foo)
+      try {
+        jedis.get("foo");
+        fail("Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
+      } catch (JedisAccessControlException e) {}
+    }
+
+    // test the ACL Log
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals(10, jedis.aclLog().get(0).getCount());
+    assertEquals("get", jedis.aclLog().get(0).getObject());
+
+    // Generate another type of error
+    jedis.auth("antirez", "foo");
+    try {
+      jedis.set("somekeynotallowed", "1234");
+      fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"somekeynotallowed\", \"1234\")");
+    } catch (JedisAccessControlException e) {}
+
+    // test the ACL Log
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 2, jedis.aclLog().size());
+    assertEquals(1, jedis.aclLog().get(0).getCount());
+    assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
+    assertEquals("key", jedis.aclLog().get(0).getReason());
+
+    jedis.aclLog("RESET");
+    assertTrue(jedis.aclLog().isEmpty());
+
+    jedis.auth("antirez", "foo");
+    Transaction t = jedis.multi();
+    t.incr("foo");
+    try{
+      t.exec();
+      fail("Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
+    } catch (Exception e){}
+    t.close();
+
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
+    assertEquals(1, jedis.aclLog().get(0).getCount());
+    assertEquals("multi", jedis.aclLog().get(0).getContext());
+    assertEquals("incr", jedis.aclLog().get(0).getObject());
+
+     // ACL LOG can accept a numerical argument to show less entries
+    jedis.auth("antirez", "foo");
+    for (int i = 0; i < 5; i++) {
+      try{
+        jedis.incr("foo");
+        fail("Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
+      } catch (JedisAccessControlException e){}
+    }
+    try{
+      jedis.set("foo-2", "bar");
+      fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"foo-2\", \"bar\")");
+    } catch (JedisAccessControlException e){}
+
+    jedis.auth("default", "foobared");
+    assertEquals("Number of log messages ", 3, jedis.aclLog().size());
+    assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
+
+     // Binary tests
+    assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
+    assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
+    byte[] status = jedis.aclLog("RESET".getBytes());
+    assertNotNull(status);
+    assertTrue(jedis.aclLog().isEmpty());
+
+    jedis.aclDelUser("antirez");
+  }
+
+  @Test
   public void aclGenPass() {
     assertNotNull( jedis.aclGenPass() );
   }
@@ -328,34 +439,11 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void aclUsers() {
-    List<String> users = jedis.aclUsers();
-    assertEquals( 1, users.size() );
-    assertEquals( "default", users.get(0) );
-
-    assertEquals( 1, jedis.aclUsersBinary().size() ); // Test binary
-
-    //add new user
-    jedis.aclSetUser(USER_ZZZ);
-    users = jedis.aclUsers();
-    assertEquals( 2, users.size() );
-    assertEquals( "default", users.get(0) );
-    assertEquals( USER_ZZZ, users.get(1) );
-
-    assertEquals( 2, jedis.aclUsersBinary().size() ); // Test binary
-
-    //delete user
-    jedis.aclDelUser(USER_ZZZ);
-
-  }
-
-  @Test
   public void aclBinaryCommandsTest() {
     jedis.aclSetUser(USER_ZZZ.getBytes());
-    assertEquals(2, jedis.aclList().size());
-    assertNotNull( jedis.aclGetUser(USER_ZZZ) );
+    assertNotNull(jedis.aclGetUser(USER_ZZZ));
 
-    assertEquals( new Long(1) , jedis.aclDelUser(USER_ZZZ.getBytes()) );
+    assertEquals(Long.valueOf(1L), jedis.aclDelUser(USER_ZZZ.getBytes()));
 
     jedis.aclSetUser(USER_ZZZ.getBytes(),
             "reset".getBytes(),
@@ -368,9 +456,9 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
     AccessControlUser userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
 
-    Assert.assertThat(userInfo.getCommands(), containsString("+@all"));
-    Assert.assertThat(userInfo.getCommands(), containsString("-@string"));
-    Assert.assertThat(userInfo.getCommands(), containsString("+debug|digest"));
+    assertThat(userInfo.getCommands(), containsString("+@all"));
+    assertThat(userInfo.getCommands(), containsString("-@string"));
+    assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_ZZZ.getBytes());
   }

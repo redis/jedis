@@ -522,6 +522,52 @@ public final class BuilderFactory {
 
   };
 
+  /**
+   * Create an Access Control Log Entry
+   * Result of ACL LOG command
+   */
+  public static final Builder<List<AccessControlLogEntry>> ACCESS_CONTROL_LOG_ENTRY_LIST = new Builder<List<AccessControlLogEntry>>() {
+
+    private final Map<String,Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String,Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(AccessControlLogEntry.COUNT ,LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.REASON ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.CONTEXT ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.OBJECT ,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.USERNAME,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS,STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO,STRING);
+
+      return  tempMappingFunctions;
+    }
+
+    @Override
+    public List<AccessControlLogEntry> build(Object data) {
+
+      if (null == data) {
+        return null;
+      }
+
+      List<AccessControlLogEntry> list = new ArrayList<>();
+      List<List<Object>> logEntries = (List<List<Object>>)data;
+      for  (List<Object> logEntryData : logEntries) {
+        Iterator<Object> logEntryDataIterator = logEntryData.iterator();
+        AccessControlLogEntry accessControlLogEntry = new AccessControlLogEntry(
+                createMapFromDecodingFunctions(logEntryDataIterator,mappingFunctions));
+        list.add(accessControlLogEntry);
+      }
+      return list;
+    }
+
+    @Override
+    public String toString() {
+      return "List<AccessControlLogEntry>";
+    }
+  };
+
   public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -537,6 +583,48 @@ public final class BuilderFactory {
       return "List<Long>";
     }
 
+  };
+
+  public static final Builder<List<Boolean>> BOOLEAN_LIST = new Builder<List<Boolean>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Boolean> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<Long> longs = (List<Long>) data;
+      List<Boolean> booleans = new ArrayList<>(longs.size());
+      for (Long value : longs) {
+        booleans.add(value == 1L);
+      }
+      return booleans;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Boolean>";
+    }
+  };
+
+  public static final Builder<List<Double>> DOUBLE_LIST = new Builder<List<Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Double> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> values = (List<byte[]>) data;
+      List<Double> doubles = new ArrayList<>(values.size());
+      for (byte[] value : values) {
+        doubles.add(DOUBLE.build(value));
+      }
+      return doubles;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Double>";
+    }
   };
 
   public static final Builder<StreamEntryID> STREAM_ENTRY_ID = new Builder<StreamEntryID>() {

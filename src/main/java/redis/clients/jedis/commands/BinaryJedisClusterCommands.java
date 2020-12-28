@@ -149,6 +149,8 @@ public interface BinaryJedisClusterCommands {
 
   Boolean sismember(byte[] key, byte[] member);
 
+  List<Boolean> smismember(byte[] key, byte[]... members);
+
   byte[] srandmember(byte[] key);
 
   List<byte[]> srandmember(byte[] key, int count);
@@ -184,6 +186,8 @@ public interface BinaryJedisClusterCommands {
   Long zcard(byte[] key);
 
   Double zscore(byte[] key, byte[] member);
+
+  List<Double> zmscore(byte[] key, byte[]... members);
 
   Tuple zpopmax(byte[] key);
 
@@ -366,4 +370,8 @@ public interface BinaryJedisClusterCommands {
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
   Long waitReplicas(byte[] key, final int replicas, final long timeout);
+  
+  Long memoryUsage(final byte[] key);
+  
+  Long memoryUsage(final byte[] key, final int samples);
 }

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -373,6 +375,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void smismember(final String key, final String... members) {
+    smismember(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  @Override
   public void sinter(final String... keys) {
     sinter(SafeEncoder.encodeMany(keys));
   }
@@ -486,6 +493,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zmscore(final String key, final String... members) {
+    zmscore(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
+  }
+
+  @Override
   public void zpopmax(final String key) {
     zpopmax(SafeEncoder.encode(key));
   }
@@ -528,9 +540,8 @@ public class Client extends BinaryClient implements Commands {
   public void blpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
     List<String> args = new ArrayList<>(size);
-    for (String arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(String.valueOf(timeout));
     blpop(args.toArray(new String[size]));
   }
@@ -553,9 +564,8 @@ public class Client extends BinaryClient implements Commands {
   public void brpop(final int timeout, final String... keys) {
     final int size = keys.length + 1;
     List<String> args = new ArrayList<>(size);
-    for (String arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(String.valueOf(timeout));
     brpop(args.toArray(new String[size]));
   }
@@ -930,6 +940,14 @@ public class Client extends BinaryClient implements Commands {
   public void srandmember(final String key, final int count) {
     srandmember(SafeEncoder.encode(key), count);
   }
+  
+  public void memoryUsage(final String key) {
+    memoryUsage(SafeEncoder.encode(key));
+  }
+  
+  public void memoryUsage(final String key, final int samples) {
+    memoryUsage(SafeEncoder.encode(key), samples);
+  }
 
   public void clientKill(final String ipPort) {
     clientKill(SafeEncoder.encode(ipPort));
@@ -1145,6 +1163,11 @@ public class Client extends BinaryClient implements Commands {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
+  public void georadiusStore(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    georadiusStore(SafeEncoder.encode(key), longitude, latitude, radius, unit, param, storeParam);
+  }
+
   public void georadiusReadonly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     georadiusReadonly(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
@@ -1161,6 +1184,11 @@ public class Client extends BinaryClient implements Commands {
   public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
+  }
+
+  public void georadiusByMemberStore(final String key, final String member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    georadiusByMemberStore(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param, storeParam);
   }
 
   public void georadiusByMemberReadonly(final String key, final String member, final double radius, final GeoUnit unit,
@@ -1190,6 +1218,10 @@ public class Client extends BinaryClient implements Commands {
 
   public void aclCat(final String category) {
     aclCat(SafeEncoder.encode(category));
+  }
+
+  public void aclLog(final String options) {
+    aclLog(SafeEncoder.encode(options));
   }
 
   public void aclDelUser(final String name) {

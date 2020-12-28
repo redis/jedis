@@ -491,6 +491,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<Boolean> smismember(final String key, final String... members) {
+    Jedis j = getShard(key);
+    return j.smismember(key, members);
+  }
+
+  @Override
   public String srandmember(final String key) {
     Jedis j = getShard(key);
     return j.srandmember(key);
@@ -590,6 +596,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Double zscore(final String key, final String member) {
     Jedis j = getShard(key);
     return j.zscore(key, member);
+  }
+
+  @Override
+  public List<Double> zmscore(final String key, final String... members) {
+    Jedis j = getShard(key);
+    return j.zmscore(key, members);
   }
 
   @Override
@@ -1129,5 +1141,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     String sampleKey = args.length > 0 ? args[0] : cmd.toString();
     Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
+    // default since no sample key provided in JedisCommands interface
+    String sampleKey = args.length > 0 ? args[0] : cmd.toString();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
   }
 }

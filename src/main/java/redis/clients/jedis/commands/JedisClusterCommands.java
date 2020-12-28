@@ -97,6 +97,8 @@ public interface JedisClusterCommands {
 
   Long hincrBy(String key, String field, long value);
 
+  Double hincrByFloat(String key, String field, double value);
+
   Boolean hexists(String key, String field);
 
   Long hdel(String key, String... field);
@@ -149,6 +151,8 @@ public interface JedisClusterCommands {
 
   Boolean sismember(String key, String member);
 
+  List<Boolean> smismember(String key, String... members);
+
   String srandmember(String key);
 
   List<String> srandmember(String key, int count);
@@ -184,6 +188,8 @@ public interface JedisClusterCommands {
   Long zcard(String key);
 
   Double zscore(String key, String member);
+
+  List<Double> zmscore(String key, String... members);
 
   Tuple zpopmax(String key);
 
@@ -338,6 +344,24 @@ public interface JedisClusterCommands {
   Long hstrlen(String key, String field);
 
   /**
+   *  MEMORY USAGE key
+   * 
+   * @param key
+   * @return the memory usage
+   */
+  Long memoryUsage(String key);
+
+  /**
+   *  MEMORY USAGE key [SAMPLES count] 
+   * 
+   * @param key
+   * @param samples
+   * @return the memory usage
+   */
+  Long memoryUsage(String key, int samples);
+
+  
+  /**
    * XADD key ID field string [field string ...]
    * 
    * @param key
@@ -389,12 +413,8 @@ public interface JedisClusterCommands {
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
   
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param count
-   * @param block
-   * @param streams
-   * @return
+   * @deprecated Will be removed in future version. Use
+   * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
    */
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
   
@@ -446,14 +466,8 @@ public interface JedisClusterCommands {
   Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
-   * @param groupname
-   * @param consumer
-   * @param count
-   * @param block
-   * @param streams
-   * @return
+   * @deprecated Will be removed in future version. Use
+   * {@link MultiKeyJedisClusterCommands#xreadGroup(java.lang.String, java.lang.String, int, long, boolean, java.util.Map.Entry...)}.
    */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 

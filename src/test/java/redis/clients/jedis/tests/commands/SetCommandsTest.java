@@ -280,6 +280,18 @@ public class SetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void smismember() {
+    jedis.sadd("foo", "a", "b");
+
+    assertEquals(Arrays.asList(true, false), jedis.smismember("foo", "a", "c"));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb);
+
+    assertEquals(Arrays.asList(true, false), jedis.smismember(bfoo, ba, bc));
+  }
+
+  @Test
   public void sinter() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");

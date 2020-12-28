@@ -1,9 +1,10 @@
 [![Release](https://img.shields.io/github/release/redis/jedis.svg)](https://github.com/redis/jedis/releases/latest)
-[![Build Status](https://travis-ci.org/redis/jedis.png?branch=master)](https://travis-ci.org/redis/jedis)
+[![CircleCI](https://circleci.com/gh/redis/jedis/tree/master.svg?style=svg)](https://circleci.com/gh/redis/jedis/tree/master)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/redis/jedis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/redis/jedis/context:java)
+[![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
 [![Gitter](https://badges.gitter.im/redis/jedis.svg)](https://gitter.im/redis/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Jedis
@@ -57,7 +58,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.1</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -90,7 +91,7 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.4.0-SNAPSHOT</version>
+      <version>3.5.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -143,6 +144,9 @@ Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/
 Thanks for helping!
 
 ## Sponsorship
+
+![RedisLabs Logo](logo-redislabs.png)
+
 
 YourKit supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 

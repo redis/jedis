@@ -140,6 +140,8 @@ public interface BinaryRedisPipeline {
 
   Response<Boolean> sismember(byte[] key, byte[] member);
 
+  Response<List<Boolean>> smismember(byte[] key, byte[]... members);
+
   Response<List<byte[]>> sort(byte[] key);
 
   Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters);
@@ -239,6 +241,8 @@ public interface BinaryRedisPipeline {
   Response<Long> zrevrank(byte[] key, byte[] member);
 
   Response<Double> zscore(byte[] key, byte[] member);
+
+  Response<List<Double>> zmscore(byte[] key, byte[]... members);
 
   Response<Tuple> zpopmax(byte[] key);
 

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static redis.clients.jedis.Protocol.Command.BLPOP;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.LRANGE;
 import static redis.clients.jedis.Protocol.Command.RPUSH;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.Protocol;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -322,5 +324,18 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     expected.add("c".getBytes());
     for (int i = 0; i < 3; i++)
       assertArrayEquals(expected.get(i), list.get(i));
+  }
+
+  @Test
+  public void sendBlockingCommandTest() {
+    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+
+    jedis.sendCommand(RPUSH, bfoo, bbar);
+    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L));
+    assertEquals(2, blpop.size());
+    assertArrayEquals(bfoo, blpop.get(0));
+    assertArrayEquals(bbar, blpop.get(1));
+
+    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
   }
 }

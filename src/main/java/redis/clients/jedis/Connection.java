@@ -27,6 +27,7 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
+  private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
   public Connection() {
@@ -76,12 +77,16 @@ public class Connection implements Closeable {
     jedisSocketFactory.setSoTimeout(soTimeout);
   }
 
+  public void setInfiniteSoTimeout(int infiniteSoTimeout) {
+    this.infiniteSoTimeout = infiniteSoTimeout;
+  }
+
   public void setTimeoutInfinite() {
     try {
       if (!isConnected()) {
         connect();
       }
-      socket.setSoTimeout(0);
+      socket.setSoTimeout(infiniteSoTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);

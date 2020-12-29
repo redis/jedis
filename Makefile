@@ -6,6 +6,7 @@ daemonize yes
 protected-mode no
 port 6379
 requirepass foobared
+user acljedis on allcommands allkeys >fizzbuzz
 pidfile /tmp/redis1.pid
 logfile /tmp/redis1.log
 save ""

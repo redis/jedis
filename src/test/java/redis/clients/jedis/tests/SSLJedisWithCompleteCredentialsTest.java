@@ -23,9 +23,7 @@ import java.security.cert.X509Certificate;
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of @SSLJedisTest
- * where all authentications are made with
- * default:foobared credentialsinformation
+ * This test class is a copy of {@link SSLJedisTest}.
  *
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
@@ -67,10 +65,14 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis("rediss://localhost:6390");
-    jedis.auth("default", "foobared");
-    assertEquals("PONG", jedis.ping());
-    jedis.close();
+    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+      jedis.auth("default", "foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -79,17 +81,12 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithUrlAndCompleteCredentials() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390");
-    assertEquals("PONG", jedis.ping());
-
-    // create user
-    jedis.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
-
-    Jedis jedis2 = new Jedis("rediss://alice:alicePassword@localhost:6390");
-    assertEquals("PONG", jedis2.ping());
-
-    jedis.aclDelUser("alice");
-    jedis.close();
+    try (Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390")) {
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis("rediss://acljedis:fizzbuzz@localhost:6390")) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
 
@@ -99,10 +96,10 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithoutShardInfo() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"));
-    jedis.auth("default", "foobared");
-    assertEquals("PONG", jedis.ping());
-    jedis.close();
+    try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -122,8 +119,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     assertEquals("PONG", jedis.ping());
@@ -152,8 +149,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     try {
@@ -185,8 +182,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     assertEquals("PONG", jedis.ping());
@@ -205,8 +202,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     assertEquals("PONG", jedis.ping());
@@ -228,8 +225,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     try {
@@ -261,8 +258,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     final SSLSocketFactory sslSocketFactory = createTrustNoOneSslSocketFactory();
 
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     try {

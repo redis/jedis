@@ -91,6 +91,12 @@
 			<version>2.3.2</version>
 			<scope>test</scope>
 		</dependency>
+                <dependency>
+                        <groupId>org.testcontainers</groupId>
+                        <artifactId>testcontainers</artifactId>
+                        <version>1.15.1</version>
+                        <scope>test</scope>
+                </dependency>
 	</dependencies>
 
 	<distributionManagement>

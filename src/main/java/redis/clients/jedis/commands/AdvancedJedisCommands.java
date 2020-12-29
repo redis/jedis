@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
-import java.util.Map;
 
 import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;

@@ -76,6 +76,15 @@ public class JedisPool extends JedisPoolAbstract {
     this(poolConfig, host, port, timeout, password, Protocol.DEFAULT_DATABASE);
   }
 
+  public JedisPool(final String host, int port, String user, final String password) {
+    this(new GenericObjectPoolConfig(), host, port, user, password);
+  }
+
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, int port,
+      String user, final String password) {
+    this(poolConfig, host, port, Protocol.DEFAULT_TIMEOUT, user, password, Protocol.DEFAULT_DATABASE);
+  }
+
   public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, int port,
       int timeout, final String user, final String password) {
     this(poolConfig, host, port, timeout, user, password, Protocol.DEFAULT_DATABASE);
@@ -221,8 +230,8 @@ public class JedisPool extends JedisPoolAbstract {
       final String user, final String password, final int database, final String clientName, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, password,
-        database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
+    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, infiniteSoTimeout,
+        user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig) {

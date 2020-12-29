@@ -1142,4 +1142,11 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
   }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
+    // default since no sample key provided in JedisCommands interface
+    String sampleKey = args.length > 0 ? args[0] : cmd.toString();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
+  }
 }

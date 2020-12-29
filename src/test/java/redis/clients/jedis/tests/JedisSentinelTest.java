@@ -61,9 +61,8 @@ public class JedisSentinelTest {
       assertTrue(inMasters);
 
       List<String> masterHostAndPort = j.sentinelGetMasterAddrByName(MASTER_NAME);
-      HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0),
-          Integer.parseInt(masterHostAndPort.get(1)));
-      assertEquals(master, masterFromSentinel);
+      assertEquals(MASTER_IP, masterHostAndPort.get(0));
+      assertEquals(master.getPort(), Integer.parseInt(masterHostAndPort.get(1)));
 
       List<Map<String, String>> slaves = j.sentinelSlaves(MASTER_NAME);
       assertTrue(!slaves.isEmpty());

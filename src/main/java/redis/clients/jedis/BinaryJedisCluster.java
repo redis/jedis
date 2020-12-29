@@ -2400,6 +2400,15 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(sampleKey);
   }
 
+  public Object sendBlockingCommand(final byte[] sampleKey, final ProtocolCommand cmd, final byte[]... args) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
+      @Override
+      public Object execute(Jedis connection){
+        return connection.sendBlockingCommand(cmd, args);
+      }
+    }.runBinary(sampleKey);
+  }
+
   private static byte[][] getKeys(final Entry<byte[], ?>... entries) {
     byte[][] keys = new byte[entries.length][];
     for (int i = 0; i < entries.length; i++) {

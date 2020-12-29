@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.*;
@@ -275,13 +274,15 @@ public final class Protocol {
   }
 
   public static enum Keyword {
-    AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
-    PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
+    // Request keywords
+    AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, NO, NOSORT, ONE, SET, STORE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
-    GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR,
-    BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP,
-    ID, IDLE, TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ,
-    SETUSER, GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG;
+    GETNAME, SETNAME, LIST, MATCH, COUNT, PING, @Deprecated PONG, UNLOAD, REPLACE, KEYS, PAUSE,
+    DOCTOR, BLOCK, NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN,
+    GROUP, ID, IDLE, TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ,
+    SETUSER, GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG,
+    // Response keywords
+    OK, QUEUED, message, pmessage, psubscribe, punsubscribe, subscribe, unsubscribe, pong;
 
     /**
      * @deprecated This will be private in future. Use {@link #getRaw()}.
@@ -289,7 +290,7 @@ public final class Protocol {
     public final byte[] raw;
 
     Keyword() {
-      raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));
+      raw = SafeEncoder.encode(this.name());
     }
 
     public byte[] getRaw() {

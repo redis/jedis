@@ -2,11 +2,17 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +46,13 @@ public class JedisSentinelPoolTest {
     sentinelJedis1 = new Jedis(sentinel1);
     sentinelJedis2 = new Jedis(sentinel2);
   }
-  
+
+  @After
+  public void tearDown() throws Exception {
+    sentinelJedis1.close();
+    sentinelJedis2.close();
+  }
+
   @Test
   public void repeatedSentinelPoolInitialization() {
 
@@ -106,7 +118,7 @@ public class JedisSentinelPoolTest {
 
       jedis2 = pool.getResource();
 
-      assertTrue(jedis == jedis2);
+      assertSame(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
     } catch (JedisConnectionException e) {
       if (jedis2 != null) {
@@ -169,10 +181,65 @@ public class JedisSentinelPoolTest {
 
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new failover
-    Thread.sleep(100);
+    Thread.sleep(1000);
     forceFailover(pool);
 
     // you can test failover as much as possible
+  }
+
+  @Test
+  public void returnResourceDestroysResourceOnException() {
+    class CrashingJedis extends Jedis {
+      public CrashingJedis(final HostAndPort hp) {
+        super(hp);
+      }
+      @Override
+      public void resetState() {
+        throw new RuntimeException();
+      }
+    }
+
+    final AtomicInteger destroyed = new AtomicInteger(0);
+
+    class CrashingJedisPooledObjectFactory implements PooledObjectFactory<Jedis> {
+
+      @Override
+      public PooledObject<Jedis> makeObject() throws Exception {
+        return new DefaultPooledObject<Jedis>(new CrashingJedis(master));
+      }
+
+      @Override
+      public void destroyObject(PooledObject<Jedis> p) throws Exception {
+        destroyed.incrementAndGet();
+      }
+
+      @Override
+      public boolean validateObject(PooledObject<Jedis> p) {
+        return true;
+      }
+
+      @Override
+      public void activateObject(PooledObject<Jedis> p) throws Exception {
+      }
+
+      @Override
+      public void passivateObject(PooledObject<Jedis> p) throws Exception {
+      }
+    }
+
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "foobared", 2);
+    pool.initPool(config, new CrashingJedisPooledObjectFactory());
+    Jedis crashingJedis = pool.getResource();
+
+    try {
+      crashingJedis.close();
+    } catch (Exception ignored) {
+    }
+
+    assertEquals(1, destroyed.get());
   }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {

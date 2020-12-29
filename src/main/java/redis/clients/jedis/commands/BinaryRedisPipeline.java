@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 import java.util.List;
 import java.util.Map;
@@ -91,6 +92,12 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> lpop(byte[] key);
 
+  Response<Long> lpos(byte[] key, byte[] element);
+
+  Response<Long> lpos(byte[] key, byte[] element, LPosParams params);
+
+  Response<List<Long>> lpos(byte[] key, byte[] element, LPosParams params, long count);
+
   Response<Long> lpush(byte[] key, byte[]... string);
 
   Response<Long> lpushx(byte[] key, byte[]... bytes);
@@ -132,6 +139,8 @@ public interface BinaryRedisPipeline {
   Response<Set<byte[]>> smembers(byte[] key);
 
   Response<Boolean> sismember(byte[] key, byte[] member);
+
+  Response<List<Boolean>> smismember(byte[] key, byte[]... members);
 
   Response<List<byte[]>> sort(byte[] key);
 
@@ -233,6 +242,16 @@ public interface BinaryRedisPipeline {
 
   Response<Double> zscore(byte[] key, byte[] member);
 
+  Response<List<Double>> zmscore(byte[] key, byte[]... members);
+
+  Response<Tuple> zpopmax(byte[] key);
+
+  Response<Set<Tuple>> zpopmax(byte[] key, int count);
+
+  Response<Tuple> zpopmin(byte[] key);
+
+  Response<Set<Tuple>> zpopmin(byte[] key, int count);
+
   Response<Long> zlexcount(byte[] key, byte[] min, byte[] max);
 
   Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max);
@@ -303,6 +322,8 @@ public interface BinaryRedisPipeline {
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
+  Response<List<Long>> bitfieldReadonly(byte[] key, byte[]... elements);
+
   Response<Long> hstrlen(byte[] key, byte[] field);
   
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
@@ -323,7 +344,7 @@ public interface BinaryRedisPipeline {
   
   Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
   
-  Response<String> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
+  Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
   Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
   
@@ -347,6 +368,8 @@ public interface BinaryRedisPipeline {
   Response<byte[]> objectEncoding(byte[] key);
 
   Response<Long> objectIdletime(byte[] key);
+
+  Response<Long> objectFreq(byte[] key);
 
   Response<Double> incrByFloat(byte[] key, double increment);
 

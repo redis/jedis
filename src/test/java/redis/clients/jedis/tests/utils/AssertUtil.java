@@ -2,7 +2,6 @@ package redis.clients.jedis.tests.utils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +13,15 @@ import java.util.Set;
 import org.junit.ComparisonFailure;
 
 public class AssertUtil {
+
+  public static boolean assertCollectionContains(Collection<byte[]> array, byte[] expected) {
+    for (byte[] bytes : array) {
+      if (Arrays.equals(bytes, expected)) {
+        return true;
+      }
+    }
+    throw new ComparisonFailure("element is missing", Arrays.toString(expected), array.toString());
+  }
 
   public static void assertByteArrayListEquals(List<byte[]> expected, List<byte[]> actual) {
     assertEquals(expected.size(), actual.size());

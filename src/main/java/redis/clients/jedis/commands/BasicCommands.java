@@ -61,6 +61,15 @@ public interface BasicCommands {
   String auth(String password);
 
   /**
+   * Request for authentication with username and password, based on the  ACL feature introduced in Redis 6.0
+   *   see https://redis.io/topics/acl
+   * @param user
+   * @param password
+   * @return
+   */
+  String auth(String user, String password);
+
+  /**
    * The SAVE commands performs a synchronous save of the dataset producing a point in time snapshot of all the data inside the Redis instance, in the form of an RDB file.
    You almost never want to call SAVE in production environments where it will block all the other clients. Instead usually BGSAVE is used. However in case of issues preventing Redis to create the background saving child (for instance errors in the fork(2) system call), the SAVE command can be a good last resort to perform the dump of the latest dataset.
    * @return result of the save
@@ -114,8 +123,8 @@ public interface BasicCommands {
   /**
    * The SLAVEOF command can change the replication settings of a slave on the fly. In the proper form SLAVEOF hostname port will make the server a slave of another server listening at the specified hostname and port.
    * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication against the old server and start the synchronization against the new one, discarding the old dataset.
-   * @param host, listening at the specified hostname
-   * @param port, server listening at the specified port
+   * @param host listening at the specified hostname
+   * @param port server listening at the specified port
    * @return result of the command.
    */
   String slaveof(String host, int port);

@@ -53,6 +53,19 @@ public class HostAndPort implements Serializable {
   }
 
   /**
+   * Creates HostAndPort with <i>unconverted</i> host.
+   *
+   * @param string String to parse. Must be in <b>"host:port"</b> format. Port is mandatory.
+   * @return parsed HostAndPort
+   */
+  public static HostAndPort from(String string) {
+    int lastColon = string.lastIndexOf(":");
+    String host = string.substring(0, lastColon);
+    int port = Integer.parseInt(string.substring(lastColon + 1));
+    return new HostAndPort(host, port);
+  }
+
+  /**
    * Splits String into host and port parts.
    * String must be in ( host + ":" + port ) format.
    * Port is optional
@@ -60,7 +73,7 @@ public class HostAndPort implements Serializable {
    * @return array of host and port strings
      */
   public static String[] extractParts(String from){
-    int idx     = from.lastIndexOf(":");
+    int idx     = from.lastIndexOf(':');
     String host = idx != -1 ? from.substring(0, idx)  : from;
     String port = idx != -1 ? from.substring(idx + 1) : "";
     return new String[] { host, port };
@@ -105,15 +118,14 @@ public class HostAndPort implements Serializable {
       InetAddress inetAddress = InetAddress.getByName(host);
 
       // isLoopbackAddress() handles both IPV4 and IPV6
-      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254"))
+      if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254")) {
         return getLocalhost();
-      else
-        return host;
+      }
     } catch (Exception e) {
       // Not a valid IP address
-      log.warn("{}.convertHost '" + host + "' is not a valid IP address. ", HostAndPort.class.getName(), e);
-      return host;
+      log.warn("{}.convertHost '{}' is not a valid IP address. ", HostAndPort.class.getName(), host, e);
     }
+    return host;
   }
 
   public static void setLocalhost(String localhost) {

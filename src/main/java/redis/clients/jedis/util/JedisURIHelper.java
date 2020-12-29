@@ -13,6 +13,18 @@ public final class JedisURIHelper {
     throw new InstantiationError( "Must not instantiate this class" );
   }
 
+  public static String getUser(URI uri) {
+    String userInfo = uri.getUserInfo();
+    if (userInfo != null) {
+      String user = userInfo.split(":", 2)[0];
+      if (user.isEmpty()) {
+        user = null; //return null user is not specified
+      }
+      return user;
+    }
+    return null;
+  }
+
   public static String getPassword(URI uri) {
     String userInfo = uri.getUserInfo();
     if (userInfo != null) {

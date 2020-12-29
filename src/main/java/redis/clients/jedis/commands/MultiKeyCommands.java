@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
@@ -8,6 +9,8 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 
 import java.util.List;
 import java.util.Map;
@@ -172,7 +175,6 @@ public interface MultiKeyCommands {
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    * 
-   * @param key
    * @param count
    * @param block
    * @param streams
@@ -183,13 +185,18 @@ public interface MultiKeyCommands {
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    * 
-   * @param key
    * @param groupname
-   * @param cosumer
+   * @param consumer
    * @param count
    * @param block
    * @param streams
    * @return
    */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, final boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+
+  Long georadiusStore(String key, double longitude, double latitude, double radius,
+      GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

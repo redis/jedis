@@ -3,7 +3,7 @@ package redis.clients.jedis.tests.utils;
 import redis.clients.jedis.Jedis;
 
 public class RedisVersionUtil {
-    String completeVersion = null;
+    private String completeVersion = null;
 
     public RedisVersionUtil(Jedis jedis) {
         String info = jedis.info("server");
@@ -14,14 +14,12 @@ public class RedisVersionUtil {
                 i = splitted.length; // out of the loop
             }
         }
-        this.completeVersion = completeVersion;
     }
 
     public int getRedisMajorVersionNumber() {
         if (completeVersion == null) {
             return 0;
-        } else {
-            return Integer.parseInt(completeVersion.substring(0, completeVersion.indexOf(".")));
         }
+        return Integer.parseInt(completeVersion.substring(0, completeVersion.indexOf(".")));
     }
 }

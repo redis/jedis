@@ -14,10 +14,15 @@ public class ZParams {
   public enum Aggregate {
     SUM, MIN, MAX;
 
+    @Deprecated
     public final byte[] raw;
 
     Aggregate() {
       raw = SafeEncoder.encode(name());
+    }
+    
+    public byte[] getRaw() {
+      return raw;
     }
   }
 
@@ -29,7 +34,7 @@ public class ZParams {
    * @return 
    */
   public ZParams weights(final double... weights) {
-    params.add(WEIGHTS.raw);
+    params.add(WEIGHTS.getRaw());
     for (final double weight : weights) {
       params.add(Protocol.toByteArray(weight));
     }
@@ -42,7 +47,7 @@ public class ZParams {
   }
 
   public ZParams aggregate(final Aggregate aggregate) {
-    params.add(AGGREGATE.raw);
+    params.add(AGGREGATE.getRaw());
     params.add(aggregate.raw);
     return this;
   }

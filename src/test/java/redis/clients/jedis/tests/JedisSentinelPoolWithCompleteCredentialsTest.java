@@ -132,25 +132,19 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
         "default", "foobared", 2);
 
     Jedis jedis = pool.getResource();
-    Jedis jedis2 = null;
-
     try {
       jedis.set("hello", "jedis");
       Transaction t = jedis.multi();
       t.set("hello", "world");
       jedis.close();
 
-      jedis2 = pool.getResource();
-
-      assertTrue(jedis == jedis2);
-      assertEquals("jedis", jedis2.get("hello"));
-    } catch (JedisConnectionException e) {
-      if (jedis2 != null) {
-        jedis2 = null;
+      try (Jedis jedis2 = pool.getResource()) {
+  
+        assertSame(jedis, jedis2);
+        assertEquals("jedis", jedis2.get("hello"));
       }
     } finally {
-      jedis2.close();
-
+    
       pool.destroy();
     }
   }
@@ -160,21 +154,19 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     GenericObjectPoolConfig config = new GenericObjectPoolConfig();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default", "foobared", 2);
+    try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "default", "foobared", 2)){
 
-    Jedis jedis = pool.getResource();
-    try {
-      jedis.set("hello", "jedis");
-    } finally {
-      jedis.close();
-    }
-
-    Jedis jedis2 = pool.getResource();
-    try {
-      assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
+      Jedis jedis = pool.getResource();
+      try {
+        jedis.set("hello", "jedis");
+      } finally {
+        jedis.close();
+      }
+      
+      try (Jedis jedis2 = pool.getResource()){
+        assertEquals(jedis, jedis2);
+      }
     }
   }
 

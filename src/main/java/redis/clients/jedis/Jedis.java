@@ -3106,7 +3106,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     final List<Map<String, String>> masters = new ArrayList<>();
     for (Object obj : reply) {
-      masters.add(BuilderFactory.STRING_MAP.build((List) obj));
+      masters.add(BuilderFactory.STRING_MAP.build( obj));
     }
     return masters;
   }
@@ -3177,7 +3177,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return
    */
   @Override
-  @SuppressWarnings("rawtypes")
   public List<Map<String, String>> sentinelSlaves(final String masterName) {
     client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
     final List<Object> reply = client.getObjectMultiBulkReply();

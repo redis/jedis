@@ -3,11 +3,17 @@ package redis.clients.jedis.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import redis.clients.jedis.HostAndPort;
+
 public class Slowlog {
+
   private final long id;
   private final long timeStamp;
   private final long executionTime;
   private final List<String> args;
+  private HostAndPort clientIpPort;
+  private String clientName;
+
   private static final String COMMA = ",";
 
   @SuppressWarnings("unchecked")
@@ -18,16 +24,20 @@ public class Slowlog {
     this.executionTime = (Long) properties.get(2);
 
     List<byte[]> bargs = (List<byte[]>) properties.get(3);
-    this.args = new ArrayList<String>(bargs.size());
+    this.args = new ArrayList<>(bargs.size());
 
     for (byte[] barg : bargs) {
       this.args.add(SafeEncoder.encode(barg));
     }
+    if (properties.size() == 4) return;
+
+    this.clientIpPort = HostAndPort.from(SafeEncoder.encode((byte[]) properties.get(4)));
+    this.clientName = SafeEncoder.encode((byte[]) properties.get(5));
   }
 
   @SuppressWarnings("unchecked")
   public static List<Slowlog> from(List<Object> nestedMultiBulkReply) {
-    List<Slowlog> logs = new ArrayList<Slowlog>(nestedMultiBulkReply.size());
+    List<Slowlog> logs = new ArrayList<>(nestedMultiBulkReply.size());
     for (Object obj : nestedMultiBulkReply) {
       List<Object> properties = (List<Object>) obj;
       logs.add(new Slowlog(properties));
@@ -35,7 +45,7 @@ public class Slowlog {
 
     return logs;
   }
-  
+
   public long getId() {
     return id;
   }
@@ -50,6 +60,14 @@ public class Slowlog {
 
   public List<String> getArgs() {
     return args;
+  }
+
+  public HostAndPort getClientIpPort() {
+    return clientIpPort;
+  }
+
+  public String getClientName() {
+    return clientName;
   }
 
   @Override

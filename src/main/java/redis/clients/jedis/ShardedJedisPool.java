@@ -7,6 +7,8 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Pool;
@@ -57,6 +59,9 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
    * PoolableObjectFactory custom impl.
    */
   private static class ShardedJedisFactory implements PooledObjectFactory<ShardedJedis> {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private List<JedisShardInfo> shards;
     private Hashing algo;
     private Pattern keyTagPattern;
@@ -79,14 +84,17 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
       for (Jedis jedis : shardedJedis.getAllShards()) {
         if (jedis.isConnected()) {
           try {
-            try {
+            // need a proper test, probably with mock
+            if (!jedis.isBroken()) {
               jedis.quit();
-            } catch (Exception e) {
-
             }
+          } catch (Exception e) {
+            logger.error("Error while QUIT", e);
+          }
+          try {
             jedis.disconnect();
           } catch (Exception e) {
-
+            logger.error("Error while disconnect", e);
           }
         }
       }

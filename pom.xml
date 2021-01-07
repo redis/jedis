@@ -41,7 +41,7 @@
 		<connection>scm:git:git@github.com:redis/jedis.git</connection>
 		<url>scm:git:git@github.com:redis/jedis.git</url>
 		<developerConnection>scm:git:git@github.com:redis/jedis.git</developerConnection>
-		<tag>jedis-2.2.0</tag>
+		<tag>jedis-3.4.1</tag>
 	</scm>
 
 	<properties>

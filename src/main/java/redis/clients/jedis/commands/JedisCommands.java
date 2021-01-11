@@ -139,6 +139,8 @@ public interface JedisCommands {
 
   String lpop(String key);
 
+  List<String> lpop(String key, int count);
+
   Long lpos(String key, String element);
 
   Long lpos(String key, String element, LPosParams params);
@@ -146,6 +148,8 @@ public interface JedisCommands {
   List<Long> lpos(String key, String element, LPosParams params, long count);
 
   String rpop(String key);
+
+  List<String> rpop(String key, int count);
 
   Long sadd(String key, String... member);
 

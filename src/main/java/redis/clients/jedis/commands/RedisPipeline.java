@@ -94,6 +94,8 @@ public interface RedisPipeline {
 
   Response<String> lpop(String key);
 
+  Response<List<String>> lpop(String key, int count);
+
   Response<Long> lpos(String key, String element);
 
   Response<Long> lpos(String key, String element, LPosParams params);
@@ -117,6 +119,8 @@ public interface RedisPipeline {
   Response<Long> persist(String key);
 
   Response<String> rpop(String key);
+
+  Response<List<String>> rpop(String key, int count);
 
   Response<Long> rpush(String key, String... string);
 

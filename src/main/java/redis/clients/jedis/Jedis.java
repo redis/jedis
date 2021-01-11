@@ -1180,6 +1180,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<String> lpop(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.lpop(key, count);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
   public Long lpos(final String key, final String element) {
     checkIsInMultiOrPipeline();
     client.lpos(key, element);
@@ -1215,6 +1222,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.rpop(key);
     return client.getBulkReply();
+  }
+
+  @Override
+  public List<String> rpop(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.rpop(key, count);
+    return client.getMultiBulkReply();
   }
 
   /**

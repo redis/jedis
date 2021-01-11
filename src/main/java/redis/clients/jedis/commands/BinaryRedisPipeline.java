@@ -92,6 +92,8 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> lpop(byte[] key);
 
+  Response<List<byte[]>> lpop(byte[] key, int count);
+
   Response<Long> lpos(byte[] key, byte[] element);
 
   Response<Long> lpos(byte[] key, byte[] element, LPosParams params);
@@ -115,6 +117,8 @@ public interface BinaryRedisPipeline {
   Response<Long> persist(byte[] key);
 
   Response<byte[]> rpop(byte[] key);
+
+  Response<List<byte[]>> rpop(byte[] key, int count);
 
   Response<Long> rpush(byte[] key, byte[]... string);
 

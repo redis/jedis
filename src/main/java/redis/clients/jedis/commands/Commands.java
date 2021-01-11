@@ -134,6 +134,8 @@ public interface Commands {
 
   void lpop(String key);
 
+  void lpop(String key, int count);
+
   void lpos(String key, String element);
 
   void lpos(String key, String element, LPosParams params);
@@ -141,6 +143,8 @@ public interface Commands {
   void lpos(String key, String element, LPosParams params, long count);
 
   void rpop(String key);
+
+  void rpop(String key, int count);
 
   void rpoplpush(String srckey, String dstkey);
 

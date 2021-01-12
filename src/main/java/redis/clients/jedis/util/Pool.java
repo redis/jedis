@@ -16,7 +16,7 @@ public abstract class Pool<T> implements Closeable {
   /**
    * This will be private in future update.
    */
-  protected volatile GenericObjectPool<T> internalPool;
+  protected GenericObjectPool<T> internalPool;
 
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
@@ -117,7 +117,7 @@ public abstract class Pool<T> implements Closeable {
       throw new JedisException("Could not destroy the pool", e);
     }
   }
-
+  
   /**
    * Returns the number of instances currently borrowed from this pool.
    *

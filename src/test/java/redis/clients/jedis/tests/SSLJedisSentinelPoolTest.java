@@ -45,30 +45,32 @@ public class SSLJedisSentinelPoolTest {
 
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
-    boolean redisSsl = false;
+    boolean masterSsl = false;
     boolean sentinelSsl = true;
     GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, poolConfig, 1000, 1000,
-        "foobared", 0, "clientName", 1000, 1000, null, "sentinelClientName", redisSsl, sentinelSsl, null, null, null);
+        null, "foobared", 0, "clientName", masterSsl, 1000, 1000, null, null, "sentinelClientName", sentinelSsl, null, null, null);
     pool.getResource().close();
     pool.destroy();
   }
 
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
-    boolean redisSsl = true;
+    boolean masterSsl = true;
     boolean sentinelSsl = true;
     GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
 
     class PortSwizzlingJedisSentinelPool extends JedisSentinelPool {
       public PortSwizzlingJedisSentinelPool(String masterName, Set<String> sentinels,
-          GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, int database,
-          String clientName, int sentinelConnectionTimeout, int sentinelSoTimeout, String sentinelPassword,
-          String sentinelClientName, boolean isRedisSslEnabled, boolean isSentinelSslEnabled,
-          SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-        super(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, password, database, clientName,
-            sentinelConnectionTimeout, sentinelSoTimeout, sentinelPassword, sentinelClientName, isRedisSslEnabled,
-            isSentinelSslEnabled, sslSocketFactory, sslParameters, hostnameVerifier);
+          GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password,
+          int database, String clientName, boolean isMasterSslEnabled, int sentinelConnectionTimeout,
+          int sentinelSoTimeout, String sentinelPassword, String sentinelClientName,
+          boolean isSentinelSslEnabled, SSLSocketFactory sslSocketFactory,
+          SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+        super(masterName, sentinels, poolConfig, connectionTimeout, soTimeout, null, password,
+            database, clientName, isMasterSslEnabled, sentinelConnectionTimeout, sentinelSoTimeout,
+            null, sentinelPassword, sentinelClientName, isSentinelSslEnabled, sslSocketFactory,
+            sslParameters, hostnameVerifier);
       }
 
       @Override
@@ -83,7 +85,7 @@ public class SSLJedisSentinelPoolTest {
       }
     }
     JedisSentinelPool pool = new PortSwizzlingJedisSentinelPool(MASTER_NAME, sentinels, poolConfig, 1000, 1000,
-            "foobared", 0, "clientName", 1000, 1000, null, "sentinelClientName", redisSsl, sentinelSsl, null, null, null);
+            "foobared", 0, "clientName", masterSsl, 1000, 1000, null, "sentinelClientName", sentinelSsl, null, null, null);
     pool.getResource().close();
     pool.destroy();
   }

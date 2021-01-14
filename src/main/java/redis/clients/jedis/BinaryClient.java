@@ -377,6 +377,10 @@ public class BinaryClient extends Connection {
     sendCommand(LPOP, key);
   }
 
+  public void lpop(final byte[] key, final int count) {
+    sendCommand(LPOP, key, toByteArray(count));
+  }
+
   public void lpos(final byte[] key, final byte[] element){
     sendCommand(LPOS, key, element);
   }
@@ -391,6 +395,10 @@ public class BinaryClient extends Connection {
 
   public void rpop(final byte[] key) {
     sendCommand(RPOP, key);
+  }
+
+  public void rpop(final byte[] key, final int count) {
+    sendCommand(RPOP, key, toByteArray(count));
   }
 
   public void rpoplpush(final byte[] srckey, final byte[] dstkey) {

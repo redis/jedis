@@ -458,6 +458,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<String>> lpop(final String key, final int count) {
+    getClient(key).lpop(key, count);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> lpop(final byte[] key, final int count) {
+    getClient(key).lpop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
   public Response<Long> lpos(final String key, final String element) {
     getClient(key).lpos(key, element);
     return getResponse(BuilderFactory.LONG);
@@ -599,6 +611,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<byte[]> rpop(final byte[] key) {
     getClient(key).rpop(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<List<String>> rpop(final String key, final int count) {
+    getClient(key).rpop(key, count);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> rpop(final byte[] key, final int count) {
+    getClient(key).rpop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override

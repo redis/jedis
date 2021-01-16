@@ -425,6 +425,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<String> lpop(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
   public Long lpos(final String key,final String element) {
     Jedis j = getShard(key);
     return j.lpos(key, element);
@@ -446,6 +452,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String rpop(final String key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<String> rpop(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override
@@ -1141,5 +1153,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     String sampleKey = args.length > 0 ? args[0] : cmd.toString();
     Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
+    // default since no sample key provided in JedisCommands interface
+    String sampleKey = args.length > 0 ? args[0] : cmd.toString();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
   }
 }

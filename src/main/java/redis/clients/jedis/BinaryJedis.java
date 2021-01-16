@@ -42,10 +42,11 @@ import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
+
   protected Client client = null;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
-  private final byte[][] dummyArray = new byte[0][];
+  protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
   public BinaryJedis() {
     client = new Client();
@@ -1379,6 +1380,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryBulkReply();
   }
 
+  @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.lpop(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
   /**
    * Returns the index of the first matching element inside a redis list. If the element is found,
    * its index (the zero-based position in the list) is returned. Otherwise, if no match is found,
@@ -1457,6 +1465,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.rpop(key);
     return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.rpop(key, count);
+    return client.getBinaryMultiBulkReply();
   }
 
   /**
@@ -4381,12 +4396,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryMultiBulkReply();  
   }
 
-  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
-    checkIsInMultiOrPipeline();
-    client.sendCommand(cmd, args);
-    return client.getOne();
-  }
-
   @Override
   public StreamInfo xinfoStream(byte[] key) {
     checkIsInMultiOrPipeline();
@@ -4411,7 +4420,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getBinaryMultiBulkReply());
   }
 
+  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    checkIsInMultiOrPipeline();
+    client.sendCommand(cmd, args);
+    return client.getOne();
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
+    checkIsInMultiOrPipeline();
+    client.sendCommand(cmd, args);
+    client.setTimeoutInfinite();
+    try {
+      return client.getOne();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
   public Object sendCommand(ProtocolCommand cmd) {
-    return sendCommand(cmd, dummyArray);
+    return sendCommand(cmd, DUMMY_ARRAY);
   }
 }

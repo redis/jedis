@@ -310,6 +310,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void lpop(final String key, final int count) {
+    lpop(SafeEncoder.encode(key), count);
+  }
+
+  @Override
   public void lpos(final String key, final String element){
     lpos(SafeEncoder.encode(key), SafeEncoder.encode(element));
   }
@@ -327,6 +332,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void rpop(final String key) {
     rpop(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void rpop(final String key, final int count) {
+    rpop(SafeEncoder.encode(key), count);
   }
 
   @Override

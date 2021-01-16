@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -290,83 +291,67 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void lpop() {
+
+    assertNull(jedis.lpop("foo"));
+    assertNull(jedis.lpop("foo", 0));
+
     jedis.rpush("foo", "a");
     jedis.rpush("foo", "b");
     jedis.rpush("foo", "c");
 
-    String element = jedis.lpop("foo");
-    assertEquals("a", element);
+    assertEquals("a", jedis.lpop("foo"));
+    assertEquals(Arrays.asList("b", "c"), jedis.lpop("foo", 10));
 
-    List<String> expected = new ArrayList<String>();
-    expected.add("b");
-    expected.add("c");
-
-    assertEquals(expected, jedis.lrange("foo", 0, 1000));
-    jedis.lpop("foo");
-    jedis.lpop("foo");
-
-    element = jedis.lpop("foo");
-    assertNull(element);
+    assertNull(jedis.lpop("foo"));
+    assertNull(jedis.lpop("foo", 1));
 
     // Binary
+
+    assertNull(jedis.lpop(bfoo));
+    assertNull(jedis.lpop(bfoo, 0));
+
     jedis.rpush(bfoo, bA);
     jedis.rpush(bfoo, bB);
     jedis.rpush(bfoo, bC);
 
-    byte[] belement = jedis.lpop(bfoo);
-    assertArrayEquals(bA, belement);
+    assertArrayEquals(bA, jedis.lpop(bfoo));
+    assertByteArrayListEquals(Arrays.asList(bB, bC), jedis.lpop(bfoo, 10));
 
-    List<byte[]> bexpected = new ArrayList<byte[]>();
-    bexpected.add(bB);
-    bexpected.add(bC);
-
-    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
-    jedis.lpop(bfoo);
-    jedis.lpop(bfoo);
-
-    belement = jedis.lpop(bfoo);
-    assertNull(belement);
+    assertNull(jedis.lpop(bfoo));
+    assertNull(jedis.lpop(bfoo, 1));
 
   }
 
   @Test
   public void rpop() {
+
+    assertNull(jedis.rpop("foo"));
+    assertNull(jedis.rpop("foo", 0));
+
     jedis.rpush("foo", "a");
     jedis.rpush("foo", "b");
     jedis.rpush("foo", "c");
 
-    String element = jedis.rpop("foo");
-    assertEquals("c", element);
+    assertEquals("c", jedis.rpop("foo"));
+    assertEquals(Arrays.asList("b", "a"), jedis.rpop("foo", 10));
 
-    List<String> expected = new ArrayList<String>();
-    expected.add("a");
-    expected.add("b");
-
-    assertEquals(expected, jedis.lrange("foo", 0, 1000));
-    jedis.rpop("foo");
-    jedis.rpop("foo");
-
-    element = jedis.rpop("foo");
-    assertNull(element);
+    assertNull(jedis.rpop("foo"));
+    assertNull(jedis.rpop("foo", 1));
 
     // Binary
+
+    assertNull(jedis.rpop(bfoo));
+    assertNull(jedis.rpop(bfoo, 0));
+
     jedis.rpush(bfoo, bA);
     jedis.rpush(bfoo, bB);
     jedis.rpush(bfoo, bC);
 
-    byte[] belement = jedis.rpop(bfoo);
-    assertArrayEquals(bC, belement);
+    assertArrayEquals(bC, jedis.rpop(bfoo));
+    assertByteArrayListEquals(Arrays.asList(bB, bA), jedis.rpop(bfoo, 10));
 
-    List<byte[]> bexpected = new ArrayList<byte[]>();
-    bexpected.add(bA);
-    bexpected.add(bB);
-
-    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
-    jedis.rpop(bfoo);
-    jedis.rpop(bfoo);
-
-    belement = jedis.rpop(bfoo);
-    assertNull(belement);
+    assertNull(jedis.rpop(bfoo));
+    assertNull(jedis.rpop(bfoo, 1));
 
   }
 

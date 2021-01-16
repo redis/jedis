@@ -76,6 +76,15 @@ public class JedisPool extends JedisPoolAbstract {
     this(poolConfig, host, port, timeout, password, Protocol.DEFAULT_DATABASE);
   }
 
+  public JedisPool(final String host, int port, String user, final String password) {
+    this(new GenericObjectPoolConfig(), host, port, user, password);
+  }
+
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, int port,
+      String user, final String password) {
+    this(poolConfig, host, port, Protocol.DEFAULT_TIMEOUT, user, password, Protocol.DEFAULT_DATABASE);
+  }
+
   public JedisPool(final GenericObjectPoolConfig poolConfig, final String host, int port,
       int timeout, final String user, final String password) {
     this(poolConfig, host, port, timeout, user, password, Protocol.DEFAULT_DATABASE);

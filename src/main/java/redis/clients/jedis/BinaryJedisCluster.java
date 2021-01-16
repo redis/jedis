@@ -692,6 +692,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.lpop(key, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Long lpos(final byte[] key, final byte[] element) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -727,6 +737,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public byte[] execute(Jedis connection) {
         return connection.rpop(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.rpop(key, count);
       }
     }.runBinary(key);
   }
@@ -2388,6 +2408,15 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public Object execute(Jedis connection){
         return connection.sendCommand(cmd, args);
+      }
+    }.runBinary(sampleKey);
+  }
+
+  public Object sendBlockingCommand(final byte[] sampleKey, final ProtocolCommand cmd, final byte[]... args) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
+      @Override
+      public Object execute(Jedis connection){
+        return connection.sendBlockingCommand(cmd, args);
       }
     }.runBinary(sampleKey);
   }

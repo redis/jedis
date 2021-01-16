@@ -389,6 +389,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
   public Long lpos(final byte[] key, final byte[] element) {
     Jedis j = getShard(key);
     return j.lpos(key, element);
@@ -410,6 +416,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public byte[] rpop(final byte[] key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override
@@ -1132,6 +1144,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
     Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

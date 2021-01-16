@@ -22,6 +22,7 @@ import redis.clients.jedis.commands.MultiKeyCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
@@ -35,7 +36,7 @@ import redis.clients.jedis.util.Slowlog;
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
-  protected volatile JedisPoolAbstract dataSource = null;
+  protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
@@ -173,9 +174,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public void setDataSource(JedisPoolAbstract jedisPool) {
-    if (jedisPool == null) return;
+    if (jedisPool != null) {
+      synchronized (this) {
+        if (dataSource == null) {
+          this.dataSource = jedisPool;
+          return;
+        }
+      }
+    }
 
-    this.dataSource = jedisPool;
+    throw new JedisException("Could not set the data source.");
   }
 
   public Pipeline startPipeline() {

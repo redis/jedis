@@ -100,17 +100,6 @@ public class PipeliningTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void pipelineResponseWithData() {
-    jedis.zadd("zset", 1, "foo");
-
-    Pipeline p = jedis.pipelined();
-    Response<Double> score = p.zscore("zset", "foo");
-    p.sync();
-
-    assertNotNull(score.get());
-  }
-
-  @Test
   public void pipelineBinarySafeHashCommands() {
     jedis.hset("key".getBytes(), "f1".getBytes(), "v111".getBytes());
     jedis.hset("key".getBytes(), "f22".getBytes(), "v2222".getBytes());
@@ -170,6 +159,17 @@ public class PipeliningTest extends JedisCommandTestBase {
     Pipeline p = jedis.pipelined();
     p.select(1);
     p.sync();
+  }
+
+  @Test
+  public void pipelineResponseWithData() {
+    jedis.zadd("zset", 1, "foo");
+
+    Pipeline p = jedis.pipelined();
+    Response<Double> score = p.zscore("zset", "foo");
+    p.sync();
+
+    assertNotNull(score.get());
   }
 
   @Test

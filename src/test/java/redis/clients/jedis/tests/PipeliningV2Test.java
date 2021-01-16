@@ -33,7 +33,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class Pipelining2Test extends JedisCommandTestBase {
+public class PipeliningV2Test extends JedisCommandTestBase {
 
   @Test
   public void pipeline() {
@@ -92,17 +92,6 @@ public class Pipelining2Test extends JedisCommandTestBase {
     assertEquals("123", getrange.get());
     byte[] expectedGetRangeBytes = { 6, 7, 8 };
     assertArrayEquals(expectedGetRangeBytes, getrangeBytes.get());
-  }
-
-  @Test
-  public void pipelineResponseWithData() {
-    jedis.zadd("zset", 1, "foo");
-
-    Pipeline p = jedis.startPipeline();
-    Response<Double> score = p.zscore("zset", "foo");
-    p.sync();
-
-    assertNotNull(score.get());
   }
 
   @Test
@@ -165,6 +154,17 @@ public class Pipelining2Test extends JedisCommandTestBase {
     Pipeline p = jedis.startPipeline();
     p.select(1);
     p.sync();
+  }
+
+  @Test
+  public void pipelineResponseWithData() {
+    jedis.zadd("zset", 1, "foo");
+
+    Pipeline p = jedis.startPipeline();
+    Response<Double> score = p.zscore("zset", "foo");
+    p.sync();
+
+    assertNotNull(score.get());
   }
 
   @Test

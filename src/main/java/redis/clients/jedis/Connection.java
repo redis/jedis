@@ -179,6 +179,9 @@ public class Connection implements Closeable {
         broken = true;
         throw new JedisConnectionException("Failed connecting to "
             + socketFactory.getDescription(), ex);
+      } catch(Exception ex) {
+        broken = true;
+        throw ex;
       }
     }
   }

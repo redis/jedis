@@ -158,8 +158,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public void unsetDataSource() {
-    if (dataSource != null) {
-      JedisPoolAbstract pool = this.dataSource;
+    JedisPoolAbstract pool = this.dataSource;
+    if (pool != null) {
       this.dataSource = null;
       if (client.isBroken()) {
         pool.returnBrokenResource(this);

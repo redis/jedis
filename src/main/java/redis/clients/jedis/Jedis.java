@@ -159,31 +159,25 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public void unsetDataSource() {
     if (dataSource != null) {
-      synchronized (this) {
-        if (dataSource != null) {
-          JedisPoolAbstract pool = this.dataSource;
-          this.dataSource = null;
-          if (client.isBroken()) {
-            pool.returnBrokenResource(this);
-          } else {
-            pool.returnResource(this);
-          }
-        }
+      JedisPoolAbstract pool = this.dataSource;
+      this.dataSource = null;
+      if (client.isBroken()) {
+        pool.returnBrokenResource(this);
+      } else {
+        pool.returnResource(this);
       }
     }
   }
 
   public void setDataSource(JedisPoolAbstract jedisPool) {
     if (jedisPool != null) {
-      synchronized (this) {
-        if (dataSource == null) {
-          this.dataSource = jedisPool;
-          return;
-        }
+      if (dataSource != null) {
+        throw new JedisException("Data source is already set.");
       }
+      this.dataSource = jedisPool;
+      return;
     }
-
-    throw new JedisException("Could not set the data source.");
+    throw new JedisException("Could not set data source.");
   }
 
   public Pipeline startPipeline() {

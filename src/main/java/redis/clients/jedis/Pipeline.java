@@ -78,6 +78,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
    * @deprecated This will be removed in future.
    * @param client
    */
+  @Deprecated
   public void setClient(Client client) {
     if (this.resource == null) {
       this.client = client;
@@ -89,6 +90,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
    * @param key
    * @return 
    */
+  @Deprecated
   @Override
   protected Client getClient(byte[] key) {
     return client;
@@ -99,6 +101,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
    * @param key
    * @return 
    */
+  @Deprecated
   @Override
   protected Client getClient(String key) {
     return client;

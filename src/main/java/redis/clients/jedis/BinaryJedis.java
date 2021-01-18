@@ -226,6 +226,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @deprecated Use {@link Jedis#startPipeline() Jedis.startPipeline()}
    * @return 
    */
+  @Deprecated
   public Pipeline pipelined() {
     pipeline = new Pipeline();
     pipeline.setClient(client);

@@ -2,7 +2,7 @@ package redis.clients.jedis.tests;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.DefaultJedisSocketConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -26,7 +26,6 @@ import static org.junit.Assert.*;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class SSLJedisWithCompleteCredentialsTest {
-  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   @BeforeClass
   public static void prepare() {
@@ -36,9 +35,22 @@ public class SSLJedisWithCompleteCredentialsTest {
     SSLJedisTest.setupTrustStore();
   }
 
-  /**
-   * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
-   */
+  @Test
+  public void connectWithSsl() {
+    try (Jedis jedis = new Jedis("localhost", 6390, true)) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfig() {
+    try (Jedis jedis = new Jedis("localhost", 6390, DefaultJedisSocketConfig.builder().withSsl(true).build())) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
@@ -52,11 +64,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     }
   }
 
-  /**
-   * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
-   */
   @Test
-  public void connectWithUrlAndCompleteCredentials() {
+  public void connectWithCompleteCredentialsUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390")) {
       assertEquals("PONG", jedis.ping());
@@ -66,15 +75,22 @@ public class SSLJedisWithCompleteCredentialsTest {
     }
   }
 
-
-  /**
-   * Tests opening a default SSL/TLS connection to redis.
-   */
   @Test
-  public void connectWithoutShardInfo() {
+  public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
       jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithCompleteCredentialsUri() {
+    // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
+    try (Jedis jedis = new Jedis(URI.create("rediss://default:foobared@localhost:6390"))) {
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(URI.create("rediss://acljedis:fizzbuzz@localhost:6390"))) {
       assertEquals("PONG", jedis.ping());
     }
   }

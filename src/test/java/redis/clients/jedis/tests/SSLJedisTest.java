@@ -29,6 +29,7 @@ import javax.net.ssl.X509TrustManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisSocketConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -51,6 +52,22 @@ public class SSLJedisTest {
     System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
   }
 
+  @Test
+  public void connectWithSsl() {
+    try (Jedis jedis = new Jedis("localhost", 6390, true)) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfig() {
+    try (Jedis jedis = new Jedis("localhost", 6390, DefaultJedisSocketConfig.builder().withSsl(true).build())) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
   /**
    * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
    */
@@ -67,7 +84,7 @@ public class SSLJedisTest {
    * Tests opening a default SSL/TLS connection to redis.
    */
   @Test
-  public void connectWithoutShardInfo() {
+  public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
       jedis.auth("foobared");

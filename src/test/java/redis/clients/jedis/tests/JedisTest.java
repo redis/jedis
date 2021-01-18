@@ -14,6 +14,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.DefaultJedisSocketConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
@@ -40,11 +41,10 @@ public class JedisTest extends JedisCommandTestBase {
     for (int b = 0; b < bigdata.length; b++) {
       bigdata[b] = (byte) ((byte) b % 255);
     }
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     hash.put("data", SafeEncoder.encode(bigdata));
 
-    String status = jedis.hmset("foo", hash);
-    assertEquals("OK", status);
+    assertEquals("OK", jedis.hmset("foo", hash));
     assertEquals(hash, jedis.hgetAll("foo"));
   }
 
@@ -52,9 +52,25 @@ public class JedisTest extends JedisCommandTestBase {
   public void connectWithShardInfo() {
     JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
     shardInfo.setPassword("foobared");
-    Jedis jedis = new Jedis(shardInfo);
-    jedis.get("foo");
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      jedis.get("foo");
+    }
+  }
+
+  @Test
+  public void connectWithConfig() {
+    try (Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), DefaultJedisSocketConfig.builder().build())) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithHostAndPortAndConfig() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisSocketConfig.builder().build())) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   @Test
@@ -75,26 +91,6 @@ public class JedisTest extends JedisCommandTestBase {
     // reset config
     jedis = new Jedis("localhost", 6379);
     jedis.auth("foobared");
-    jedis.configSet("timeout", timeout);
-    jedis.close();
-  }
-
-  @Test
-  public void timeoutConnectionWithURI() throws Exception {
-    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
-    String timeout = jedis.configGet("timeout").get(1);
-    jedis.configSet("timeout", "1");
-    Thread.sleep(2000);
-    try {
-      jedis.hmget("foobar", "foo");
-      fail("Operation should throw JedisConnectionException");
-    } catch(JedisConnectionException jce) {
-      // expected
-    }
-    jedis.close();
-
-    // reset config
-    jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
     jedis.configSet("timeout", timeout);
     jedis.close();
   }
@@ -134,7 +130,7 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void startWithUrlString() {
+  public void startWithUrl() {
     try (Jedis j = new Jedis("localhost", 6380)) {
       j.auth("foobared");
       j.select(2);
@@ -148,16 +144,17 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
+  public void startWithUri() throws URISyntaxException {
+    try (Jedis j = new Jedis("localhost", 6380)) {
+      j.auth("foobared");
+      j.select(2);
+      j.set("foo", "bar");
+    }
 
-    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
+    try (Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"))) {
+      assertEquals("PONG", jedis.ping());
+      assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
@@ -191,10 +188,37 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void checkCloseable() {
-    try (BinaryJedis bj = new BinaryJedis("localhost")) {
-      bj.connect();
+  public void uriWithDBindexShouldUseTimeout() throws URISyntaxException {
+    URI uri = new URI("redis://fakehost:6378/1");
+    long startTime = System.nanoTime();
+    try (Jedis jedis = new Jedis(uri, 5000)) {
+      jedis.ping();
+    } catch(Exception ex) {
+      assertEquals(JedisConnectionException.class, ex.getClass());
+      assertEquals(java.net.UnknownHostException.class, ex.getCause().getClass());
     }
+    long stopTime = System.nanoTime();
+    assertTrue(stopTime - startTime > 3500);
+  }
+
+  @Test
+  public void checkCloseable() {
+    BinaryJedis bj = new BinaryJedis();
+    bj.close();
+  }
+
+  @Test
+  public void checkCloseableAfterConnect() {
+    BinaryJedis bj = new BinaryJedis();
+    bj.connect();
+    bj.close();
+  }
+
+  @Test
+  public void checkCloseableAfterCommand() {
+    BinaryJedis bj = new BinaryJedis();
+    bj.auth("foobared");
+    bj.close();
   }
 
   @Test

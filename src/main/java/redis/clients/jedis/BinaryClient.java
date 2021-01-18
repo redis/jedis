@@ -60,14 +60,20 @@ public class BinaryClient extends Connection {
     super(host, port);
   }
 
+  @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public BinaryClient(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
+    super(host, port, jedisSocketConfig);
   }
 
   public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
@@ -97,7 +103,9 @@ public class BinaryClient extends Connection {
     return result;
   }
 
-  public void setUser(final String user) { this.user = user; }
+  public void setUser(final String user) {
+    this.user = user;
+  }
 
   public void setPassword(final String password) {
     this.password = password;

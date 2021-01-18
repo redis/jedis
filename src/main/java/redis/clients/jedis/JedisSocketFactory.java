@@ -21,17 +21,17 @@ public interface JedisSocketFactory {
 
   String getHost();
 
-  void setHost(String host);
+  @Deprecated void setHost(String host);
 
   int getPort();
 
-  void setPort(int port);
+  @Deprecated void setPort(int port);
 
   int getConnectionTimeout();
 
-  void setConnectionTimeout(int connectionTimeout);
+  @Deprecated void setConnectionTimeout(int connectionTimeout);
 
   int getSoTimeout();
 
-  void setSoTimeout(int soTimeout);
+  @Deprecated void setSoTimeout(int soTimeout);
 }

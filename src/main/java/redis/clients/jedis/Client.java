@@ -37,14 +37,20 @@ public class Client extends BinaryClient implements Commands {
     super(host, port);
   }
 
+  @Deprecated
   public Client(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  @Deprecated
   public Client(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Client(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
+    super(host, port, jedisSocketConfig);
   }
 
   public Client(final JedisSocketFactory jedisSocketFactory) {

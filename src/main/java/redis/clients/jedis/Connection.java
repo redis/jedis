@@ -23,7 +23,7 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private JedisSocketFactory jedisSocketFactory;
+  private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
@@ -39,22 +39,29 @@ public class Connection implements Closeable {
   }
 
   public Connection(final String host, final int port) {
-    this(host, port, false);
+    this(host, port, null);
   }
 
+  @Deprecated
   public Connection(final String host, final int port, final boolean ssl) {
-    this(host, port, ssl, null, null, null);
+    this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl).build());
   }
 
+  @Deprecated
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(new DefaultJedisSocketFactory(host, port, Protocol.DEFAULT_TIMEOUT,
-        Protocol.DEFAULT_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
+    this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
+  }
+
+  public Connection(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
+    this(new DefaultJedisSocketFactory(host, port, jedisSocketConfig));
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {
-    this.jedisSocketFactory = jedisSocketFactory;
+    this.socketFactory = jedisSocketFactory;
   }
 
   public Socket getSocket() {
@@ -62,19 +69,21 @@ public class Connection implements Closeable {
   }
 
   public int getConnectionTimeout() {
-    return jedisSocketFactory.getConnectionTimeout();
+    return socketFactory.getConnectionTimeout();
   }
 
   public int getSoTimeout() {
-    return jedisSocketFactory.getSoTimeout();
+    return socketFactory.getSoTimeout();
   }
 
+  @Deprecated
   public void setConnectionTimeout(int connectionTimeout) {
-    jedisSocketFactory.setConnectionTimeout(connectionTimeout);
+    socketFactory.setConnectionTimeout(connectionTimeout);
   }
 
+  @Deprecated
   public void setSoTimeout(int soTimeout) {
-    jedisSocketFactory.setSoTimeout(soTimeout);
+    socketFactory.setSoTimeout(soTimeout);
   }
 
   public void setInfiniteSoTimeout(int infiniteSoTimeout) {
@@ -95,7 +104,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(jedisSocketFactory.getSoTimeout());
+      socket.setSoTimeout(socketFactory.getSoTimeout());
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -142,32 +151,34 @@ public class Connection implements Closeable {
   }
 
   public String getHost() {
-    return jedisSocketFactory.getHost();
+    return socketFactory.getHost();
   }
 
+  @Deprecated
   public void setHost(final String host) {
-    jedisSocketFactory.setHost(host);
+    socketFactory.setHost(host);
   }
 
   public int getPort() {
-    return jedisSocketFactory.getPort();
+    return socketFactory.getPort();
   }
 
+  @Deprecated
   public void setPort(final int port) {
-    jedisSocketFactory.setPort(port);
+    socketFactory.setPort(port);
   }
 
   public void connect() {
     if (!isConnected()) {
       try {
-        socket = jedisSocketFactory.createSocket();
+        socket = socketFactory.createSocket();
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ex) {
         broken = true;
         throw new JedisConnectionException("Failed connecting to "
-            + jedisSocketFactory.getDescription(), ex);
+            + socketFactory.getDescription(), ex);
       }
     }
   }

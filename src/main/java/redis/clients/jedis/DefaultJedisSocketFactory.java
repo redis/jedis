@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.IOUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -12,26 +13,30 @@ import java.net.Socket;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  private String host;
-  private int port;
-  private int connectionTimeout;
-  private int soTimeout;
-  private boolean ssl;
-  private SSLSocketFactory sslSocketFactory;
-  private SSLParameters sslParameters;
-  private HostnameVerifier hostnameVerifier;
+  private final String host;
+  private final int port;
+  private final JedisSocketConfig config;
 
+  @Deprecated
   public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
+    this(host, port,
+        DefaultJedisSocketConfig.builder()
+            .withConnectionTimeout(connectionTimeout)
+            .withSoTimeout(soTimeout)
+            .withSsl(ssl)
+            .withSslSocketFactory(sslSocketFactory)
+            .withSslParameters(sslParameters)
+            .withHostnameVerifier(hostnameVerifier)
+            .build()
+    );
+  }
+
+  public DefaultJedisSocketFactory(String host, int port, JedisSocketConfig socketConfig) {
     this.host = host;
     this.port = port;
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
+    this.config = socketConfig != null ? socketConfig : DefaultJedisSocketConfig.builder().build();
   }
 
   @Override
@@ -41,39 +46,46 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket = new Socket();
       // ->@wjw_add
       socket.setReuseAddress(true);
-      socket.setKeepAlive(true); // Will monitor the TCP connection is
-      // valid
-      socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to
-      // ensure timely delivery of data
-      socket.setSoLinger(true, 0); // Control calls close () method,
-      // the underlying socket is closed
-      // immediately
+      socket.setKeepAlive(true); // Will monitor the TCP connection is valid
+      socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
+      socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
       // <-@wjw_add
 
       socket.connect(new InetSocketAddress(getHost(), getPort()), getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());
 
-      if (ssl) {
+      if (config.isSSL()) {
+        SSLSocketFactory sslSocketFactory = config.getSSLSocketFactory();
         if (null == sslSocketFactory) {
           sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
         socket = sslSocketFactory.createSocket(socket, getHost(), getPort(), true);
+
+        SSLParameters sslParameters = config.getSSLParameters();
         if (null != sslParameters) {
           ((SSLSocket) socket).setSSLParameters(sslParameters);
         }
-        if ((null != hostnameVerifier)
-            && (!hostnameVerifier.verify(getHost(), ((SSLSocket) socket).getSession()))) {
+
+        HostnameVerifier hostnameVerifier = config.getHostnameVerifier();
+        if (null != hostnameVerifier
+            && !hostnameVerifier.verify(getHost(), ((SSLSocket) socket).getSession())) {
           String message = String.format(
-            "The connection to '%s' failed ssl/tls hostname verification.", getHost());
+              "The connection to '%s' failed ssl/tls hostname verification.", getHost());
           throw new JedisConnectionException(message);
         }
       }
+
       return socket;
+
     } catch (Exception ex) {
-      if (socket != null) {
-        socket.close();
+
+      IOUtils.closeQuietly(socket);
+
+      if (ex instanceof JedisConnectionException) {
+        throw ex;
+      } else {
+        throw new JedisConnectionException("Failed to create socket.", ex);
       }
-      throw ex;
     }
   }
 
@@ -89,7 +101,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   @Override
   public void setHost(String host) {
-    this.host = host;
+    // throw exception?
   }
 
   @Override
@@ -99,26 +111,26 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   @Override
   public void setPort(int port) {
-    this.port = port;
+    // throw exception?
   }
 
   @Override
   public int getConnectionTimeout() {
-    return connectionTimeout;
+    return config.getConnectionTimeout();
   }
 
   @Override
   public void setConnectionTimeout(int connectionTimeout) {
-    this.connectionTimeout = connectionTimeout;
+    // throw exception?
   }
 
   @Override
   public int getSoTimeout() {
-    return soTimeout;
+    return config.getSoTimeout();
   }
 
   @Override
   public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
+    // throw exception?
   }
 }

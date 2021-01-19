@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -10,7 +9,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import javax.net.ssl.*;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -30,33 +28,12 @@ import static org.junit.Assert.*;
 public class SSLJedisWithCompleteCredentialsTest {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
-  }
-
   @BeforeClass
-  public static void setupTrustStore() {
-    setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
-  }
+  public static void prepare() {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
-  private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-        new File(trustStoreFilePath).exists());
-    System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
-    System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
+    SSLJedisTest.setupTrustStore();
   }
 
   /**

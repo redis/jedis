@@ -1,15 +1,16 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Test;
-import org.newsclub.net.unix.AFUNIXSocket;
-import org.newsclub.net.unix.AFUNIXSocketAddress;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisSocketFactory;
-import redis.clients.jedis.Protocol;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import org.junit.Test;
+import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisSocketFactory;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,10 +28,14 @@ public class UdsTest {
     private static final File UDS_SOCKET = new File("/tmp/redis_uds.sock");
 
     @Override
-    public Socket createSocket() throws IOException {
-      Socket socket = AFUNIXSocket.newStrictInstance();
-      socket.connect(new AFUNIXSocketAddress(UDS_SOCKET), Protocol.DEFAULT_TIMEOUT);
-      return socket;
+    public Socket createSocket() throws JedisConnectionException {
+      try {
+        Socket socket = AFUNIXSocket.newStrictInstance();
+        socket.connect(new AFUNIXSocketAddress(UDS_SOCKET), Protocol.DEFAULT_TIMEOUT);
+        return socket;
+      } catch (IOException ioe) {
+        throw new JedisConnectionException("Failed to create UDS connection.", ioe);
+      }
     }
 
     @Override

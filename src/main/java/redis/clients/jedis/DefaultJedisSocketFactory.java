@@ -1,15 +1,15 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.util.IOUtils;
-
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
@@ -40,7 +40,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   @Override
-  public Socket createSocket() throws IOException {
+  public Socket createSocket() throws JedisConnectionException {
     Socket socket = null;
     try {
       socket = new Socket();
@@ -77,15 +77,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
       return socket;
 
-    } catch (Exception ex) {
+    } catch (IOException ex) {
 
       IOUtils.closeQuietly(socket);
 
-      if (ex instanceof JedisConnectionException) {
-        throw ex;
-      } else {
-        throw new JedisConnectionException("Failed to create socket.", ex);
-      }
+      throw new JedisConnectionException("Failed to create socket.", ex);
     }
   }
 

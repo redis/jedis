@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.IOException;
 import java.net.Socket;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * JedisSocketFactory: responsible for creating socket connections
@@ -15,7 +16,14 @@ import java.net.Socket;
  */
 public interface JedisSocketFactory {
 
-  Socket createSocket() throws IOException;
+  /**
+   * @return Socket
+   * @throws IOException this will be removed in future
+   * @throws JedisConnectionException
+   * @deprecated throwing IOException will not be supported in future
+   */
+  @Deprecated
+  Socket createSocket() throws IOException, JedisConnectionException;
 
   String getDescription();
 

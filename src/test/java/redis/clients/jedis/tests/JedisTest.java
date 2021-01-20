@@ -193,7 +193,7 @@ public class JedisTest extends JedisCommandTestBase {
     long startTime = System.nanoTime();
     try (Jedis jedis = new Jedis(uri, 5000)) {
       jedis.ping();
-    } catch(Exception ex) {
+    } catch (Exception ex) {
       assertEquals(JedisConnectionException.class, ex.getClass());
       assertEquals(java.net.UnknownHostException.class, ex.getCause().getClass());
     }

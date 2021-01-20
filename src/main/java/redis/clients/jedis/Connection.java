@@ -175,10 +175,12 @@ public class Connection implements Closeable {
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
-      } catch (Exception ex) {
+      } catch (IOException ioe) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to "
-            + socketFactory.getDescription(), ex);
+        throw new JedisConnectionException("Failed connecting to " + socketFactory.getDescription(), ioe);
+      } catch (JedisConnectionException jce) {
+        broken = true;
+        throw jce;
       }
     }
   }

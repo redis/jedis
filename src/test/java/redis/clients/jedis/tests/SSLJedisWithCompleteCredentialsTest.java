@@ -115,10 +115,9 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    assertEquals("PONG", jedis.ping());
-    jedis.disconnect();
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -145,8 +144,7 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    try {
+    try (Jedis jedis = new Jedis(shardInfo)) {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
@@ -154,12 +152,6 @@ public class SSLJedisWithCompleteCredentialsTest {
           SSLHandshakeException.class, e.getCause().getClass());
       assertEquals("Unexpected second inner exception.",
           CertificateException.class, e.getCause().getCause().getClass());
-    }
-
-    try {
-      jedis.close();
-    } catch (Throwable e1) {
-      // Expected.
     }
   }
 
@@ -178,10 +170,9 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    assertEquals("PONG", jedis.ping());
-    jedis.disconnect();
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -198,10 +189,9 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    assertEquals("PONG", jedis.ping());
-    jedis.disconnect();
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -221,19 +211,14 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    try {
-      assertEquals("PONG", jedis.ping());
-      fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-      assertEquals("The JedisConnectionException does not contain the expected message.",
-          "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
-    }
-
-    try {
-      jedis.close();
-    } catch (Throwable e1) {
-      // Expected.
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      try {
+        assertEquals("PONG", jedis.ping());
+        fail("The code did not throw the expected JedisConnectionException.");
+      } catch (JedisConnectionException e) {
+        assertEquals("The JedisConnectionException does not contain the expected message.",
+            "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
+      }
     }
   }
 
@@ -254,8 +239,7 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    try {
+    try (Jedis jedis = new Jedis(shardInfo)) {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
@@ -265,12 +249,6 @@ public class SSLJedisWithCompleteCredentialsTest {
           e.getCause().getCause().getClass());
       assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
           e.getCause().getCause().getCause().getClass());
-    }
-
-    try {
-      jedis.close();
-    } catch (Throwable e1) {
-      // Expected.
     }
   }
 

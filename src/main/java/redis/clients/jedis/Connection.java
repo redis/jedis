@@ -39,7 +39,7 @@ public class Connection implements Closeable {
   }
 
   public Connection(final String host, final int port) {
-    this(host, port, null);
+    this(host, port, DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG);
   }
 
   @Deprecated
@@ -57,7 +57,11 @@ public class Connection implements Closeable {
   }
 
   public Connection(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
-    this(new DefaultJedisSocketFactory(host, port, jedisSocketConfig));
+    this(new HostAndPort(host, port), jedisSocketConfig);
+  }
+
+  public Connection(final HostAndPort hostAndPort, final JedisSocketConfig jedisSocketConfig) {
+    this(new DefaultJedisSocketFactory(hostAndPort, jedisSocketConfig));
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {
@@ -177,10 +181,14 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
       } catch (IOException ioe) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to " + socketFactory.getDescription(), ioe);
+        throw new JedisConnectionException("Failed to create input/output stream", ioe);
       } catch (JedisConnectionException jce) {
         broken = true;
         throw jce;
+      } finally {
+        if (broken) {
+          IOUtils.closeQuietly(socket);
+        }
       }
     }
   }

@@ -84,26 +84,36 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl, null, null, null, null);
   }
 
+  @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
         poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        connectionTimeout, soTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-    this.maxAttempts = maxAttempts;
+    this(jedisClusterNode, connectionTimeout, soTimeout, 0, maxAttempts, user, password, clientName, poolConfig,
+        ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    this.maxAttempts = maxAttempts;
+  }
+
+  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, JedisSocketConfig socketConfig,
+      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
+      GenericObjectPoolConfig poolConfig) {
+    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
+        socketConfig, infiniteSoTimeout, user, password, clientName);
     this.maxAttempts = maxAttempts;
   }
 

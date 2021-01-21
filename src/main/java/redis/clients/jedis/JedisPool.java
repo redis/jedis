@@ -234,6 +234,12 @@ public class JedisPool extends JedisPoolAbstract {
         user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final HostAndPort hostAndPort,
+      final JedisSocketConfig socketConfig, final int infiniteSoTimeout,
+      final String user, final String password, final int database, final String clientName) {
+    super(poolConfig, new JedisFactory(hostAndPort, socketConfig, infiniteSoTimeout, user, password, database, clientName));
+  }
+
   public JedisPool(final GenericObjectPoolConfig poolConfig) {
     this(poolConfig, Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }

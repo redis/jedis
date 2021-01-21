@@ -193,6 +193,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, JedisSocketConfig socketConfig,
+      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
+      final GenericObjectPoolConfig poolConfig) {
+    super(jedisClusterNode, socketConfig, infiniteSoTimeout, maxAttempts, user, password, clientName, poolConfig);
+  }
+
   @Override
   public String set(final String key, final String value) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {

@@ -57,10 +57,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host, port);
   }
 
-  public Jedis(final String host, final int port, final JedisSocketConfig config) {
-    super(host, port, config);
-  }
-
   public Jedis(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
@@ -92,6 +88,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout) {
     super(host, port, connectionTimeout, soTimeout, infiniteSoTimeout);
+  }
+
+  public Jedis(final HostAndPort hostAndPort, final JedisSocketConfig config, final int infiniteSoTimeout) {
+    super(hostAndPort, config, infiniteSoTimeout);
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,

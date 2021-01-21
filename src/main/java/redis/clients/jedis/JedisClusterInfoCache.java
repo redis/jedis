@@ -27,18 +27,11 @@ public class JedisClusterInfoCache {
   private volatile boolean rediscovering;
   private final GenericObjectPoolConfig poolConfig;
 
-  private int connectionTimeout;
-  private int soTimeout;
+  private final JedisSocketConfig socketConfig;
   private int infiniteSoTimeout;
   private String user;
   private String password;
   private String clientName;
-
-  private boolean ssl;
-  private SSLSocketFactory sslSocketFactory;
-  private SSLParameters sslParameters;
-  private HostnameVerifier hostnameVerifier;
-  private HostAndPortMapper hostAndPortMap;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -112,18 +105,21 @@ public class JedisClusterInfoCache {
       final String user, final String password, final String clientName, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap) {
+    this(poolConfig, DefaultJedisSocketConfig.builder().withConnectionTimeout(connectionTimeout)
+        .withSoTimeout(soTimeout).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
+        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier)
+        .withHostAndPortMapper(hostAndPortMap).build(), infiniteSoTimeout, user, password, clientName);
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+      final JedisSocketConfig socketConfig, final int infiniteSoTimeout,
+      final String user, final String password, final String clientName) {
     this.poolConfig = poolConfig;
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
+    this.socketConfig = socketConfig;
     this.infiniteSoTimeout = infiniteSoTimeout;
     this.user = user;
     this.password = password;
     this.clientName = clientName;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
-    this.hostAndPortMap = hostAndPortMap;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -232,25 +228,17 @@ public class JedisClusterInfoCache {
   private HostAndPort generateHostAndPort(List<Object> hostInfos) {
     String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
     int port = ((Long) hostInfos.get(1)).intValue();
-    if (ssl && hostAndPortMap != null) {
-      HostAndPort hostAndPort = hostAndPortMap.getHostAndPort(host, port);
-      if (hostAndPort != null) {
-        return hostAndPort;
-      }
-    }
     return new HostAndPort(host, port);
   }
 
-  public JedisPool setupNodeIfNotExist(HostAndPort node) {
+  public JedisPool setupNodeIfNotExist(final HostAndPort node) {
     w.lock();
     try {
       String nodeKey = getNodeKey(node);
       JedisPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      JedisPool nodePool = new JedisPool(poolConfig, node.getHost(), node.getPort(),
-          connectionTimeout, soTimeout, infiniteSoTimeout, user, password, 0, clientName, 
-          ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+      JedisPool nodePool = new JedisPool(poolConfig, node, socketConfig, infiniteSoTimeout, user, password, 0, clientName);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {
@@ -344,10 +332,12 @@ public class JedisClusterInfoCache {
     return hnp.getHost() + ":" + hnp.getPort();
   }
 
+  @Deprecated
   public static String getNodeKey(Client client) {
     return client.getHost() + ":" + client.getPort();
   }
 
+  @Deprecated
   public static String getNodeKey(Jedis jedis) {
     return getNodeKey(jedis.getClient());
   }

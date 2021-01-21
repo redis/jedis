@@ -3,17 +3,13 @@ package redis.clients.jedis;
 /**
  * @deprecated Use HostAndPortMapper
  */
+@Deprecated
 public interface JedisClusterHostAndPortMap extends HostAndPortMapper {
 
   HostAndPort getSSLHostAndPort(String host, int port);
 
   @Override
-  default HostAndPort getHostAndPort(String host, int port) {
-    return getSSLHostAndPort(host, port);
-  }
-
-  @Override
   default HostAndPort getHostAndPort(HostAndPort hap) {
-    return getHostAndPort(hap.getHost(), hap.getPort());
+    return getSSLHostAndPort(hap.getHost(), hap.getPort());
   }
 }

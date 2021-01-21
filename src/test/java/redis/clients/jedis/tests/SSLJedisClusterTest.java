@@ -62,9 +62,9 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     		                           "cluster", null, DEFAULT_CONFIG, true, null, null, null, hostAndPortMap)){
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("localhost:8379"));
-      assertTrue(clusterNodes.containsKey("localhost:8380"));
-      assertTrue(clusterNodes.containsKey("localhost:8381"));
+      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
       
       jc.get("foo");
     }
@@ -73,9 +73,9 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     		                            DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_CONFIG, true, null, null, null, hostAndPortMap)){
       Map<String, JedisPool> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("localhost:8379"));
-      assertTrue(clusterNodes.containsKey("localhost:8380"));
-      assertTrue(clusterNodes.containsKey("localhost:8381"));
+      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
       jc2.get("foo");
     }
   }

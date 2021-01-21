@@ -13,15 +13,14 @@ import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  private final String host;
-  private final int port;
+  private final HostAndPort hostPort;
   private final JedisSocketConfig config;
 
   @Deprecated
   public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(host, port,
+    this(new HostAndPort(host, port),
         DefaultJedisSocketConfig.builder()
             .withConnectionTimeout(connectionTimeout)
             .withSoTimeout(soTimeout)
@@ -33,10 +32,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     );
   }
 
-  public DefaultJedisSocketFactory(String host, int port, JedisSocketConfig socketConfig) {
-    this.host = host;
-    this.port = port;
-    this.config = socketConfig != null ? socketConfig : DefaultJedisSocketConfig.builder().build();
+  public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisSocketConfig socketConfig) {
+    this.hostPort = hostAndPort;
+    this.config = socketConfig != null ? socketConfig : DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG;
   }
 
   @Override
@@ -51,7 +49,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
       // <-@wjw_add
 
-      socket.connect(new InetSocketAddress(getHost(), getPort()), getConnectionTimeout());
+      HostAndPort hostAndPort = getSocketHostAndPort();
+      socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());
 
       if (config.isSSL()) {
@@ -59,7 +58,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         if (null == sslSocketFactory) {
           sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
-        socket = sslSocketFactory.createSocket(socket, getHost(), getPort(), true);
+        socket = sslSocketFactory.createSocket(socket, hostAndPort.getHost(), hostAndPort.getPort(), true);
 
         SSLParameters sslParameters = config.getSSLParameters();
         if (null != sslParameters) {
@@ -85,14 +84,28 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
+  public HostAndPort getHostAndPort() {
+    return this.hostPort;
+  }
+
+  public HostAndPort getSocketHostAndPort() {
+    HostAndPortMapper mapper = config.getHostAndPortMapper();
+    HostAndPort hostAndPort = getHostAndPort();
+    if (mapper != null) {
+      HostAndPort mapped = mapper.getHostAndPort(hostAndPort);
+      if (mapped != null) return mapped;
+    }
+    return hostAndPort;
+  }
+
   @Override
   public String getDescription() {
-    return host + ":" + port;
+    return this.hostPort.toString();
   }
 
   @Override
   public String getHost() {
-    return host;
+    return this.hostPort.getHost();
   }
 
   @Override
@@ -102,7 +115,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   @Override
   public int getPort() {
-    return port;
+    return this.hostPort.getPort();
   }
 
   @Override

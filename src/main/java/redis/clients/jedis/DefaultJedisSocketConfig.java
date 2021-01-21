@@ -6,6 +6,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class DefaultJedisSocketConfig implements JedisSocketConfig {
 
+  public static final DefaultJedisSocketConfig DEFAULT_SOCKET_CONFIG = DefaultJedisSocketConfig.builder().build();
+
   private final int connectionTimeout;
   private final int soTimeout;
 

@@ -137,6 +137,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setInfiniteSoTimeout(infiniteSoTimeout);
   }
 
+  public BinaryJedis(final HostAndPort hostAndPort, final JedisSocketConfig config, final int infiniteSoTimeout) {
+    this(hostAndPort, config);
+    client.setInfiniteSoTimeout(infiniteSoTimeout);
+  }
+
   public BinaryJedis(final JedisShardInfo shardInfo) {
     this(shardInfo.getHost(), shardInfo.getPort(), shardInfo.getConnectionTimeout(),
         shardInfo.getSoTimeout(), shardInfo.getSsl(), shardInfo.getSslSocketFactory(),

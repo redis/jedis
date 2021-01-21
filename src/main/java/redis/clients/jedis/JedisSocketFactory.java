@@ -25,13 +25,13 @@ public interface JedisSocketFactory {
   @Deprecated
   Socket createSocket() throws IOException, JedisConnectionException;
 
-  String getDescription();
+  @Deprecated String getDescription();
 
-  String getHost();
+  @Deprecated String getHost();
 
   @Deprecated void setHost(String host);
 
-  int getPort();
+  @Deprecated int getPort();
 
   @Deprecated void setPort(int port);
 

@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -10,6 +12,8 @@ import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
+
+  private static final Logger log = LoggerFactory.getLogger(JedisClusterCommand.class);
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
@@ -95,6 +99,7 @@ public abstract class JedisClusterCommand<T> {
         }
       } else {
         if (tryRandomNode) {
+          log.debug("Trying to connect to random node");
           connection = connectionHandler.getConnection();
         } else {
           connection = connectionHandler.getConnectionFromSlot(slot);
@@ -106,6 +111,7 @@ public abstract class JedisClusterCommand<T> {
     } catch (JedisNoReachableClusterNodeException jnrcne) {
       throw jnrcne;
     } catch (JedisConnectionException jce) {
+      log.warn("Got retryable connection exception ({} attempts left)", attempts, jce);
       // release current connection before recursion
       releaseConnection(connection);
       connection = null;
@@ -121,6 +127,7 @@ public abstract class JedisClusterCommand<T> {
 
       return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
     } catch (JedisRedirectionException jre) {
+      log.debug("Redirected by server to {}", jre.getTargetNode());
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
         // it rebuilds cluster's slot cache recommended by Redis cluster specification

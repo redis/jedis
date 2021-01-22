@@ -235,8 +235,8 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig, final HostAndPort hostAndPort,
-      final JedisSocketConfig socketConfig, final JedisClientConfig clientConfig) {
-    super(poolConfig, new JedisFactory(hostAndPort, socketConfig, clientConfig));
+      final JedisClientConfig clientConfig) {
+    super(poolConfig, new JedisFactory(hostAndPort, clientConfig));
   }
 
   public JedisPool(final GenericObjectPoolConfig poolConfig) {

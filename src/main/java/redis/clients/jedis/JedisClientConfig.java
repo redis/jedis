@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-public interface JedisClientConfig {
+public interface JedisClientConfig extends JedisSocketConfig {
 
   int getInfiniteSoTimeout();
 

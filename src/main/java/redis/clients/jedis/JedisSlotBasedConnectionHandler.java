@@ -65,8 +65,8 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
-      JedisSocketConfig socketConfig, JedisClientConfig clientConfig) {
-    super(nodes, poolConfig, socketConfig, clientConfig);
+      JedisClientConfig clientConfig) {
+    super(nodes, poolConfig, clientConfig);
   }
 
   @Override

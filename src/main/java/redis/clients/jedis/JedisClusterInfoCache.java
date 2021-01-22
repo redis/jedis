@@ -27,7 +27,6 @@ public class JedisClusterInfoCache {
   private volatile boolean rediscovering;
 
   private final GenericObjectPoolConfig poolConfig;
-  private final JedisSocketConfig socketConfig;
   private final JedisClientConfig clientConfig;
 
   private static final int MASTER_NODE_INDEX = 2;
@@ -103,19 +102,17 @@ public class JedisClusterInfoCache {
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap) {
     this(poolConfig,
-        DefaultJedisSocketConfig.builder().withConnectionTimeout(connectionTimeout)
-            .withSoTimeout(soTimeout).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
+        DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
+            .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
+            .withUser(user).withPassword(password).withClinetName(clientName)
+            .withSsl(ssl).withSslSocketFactory(sslSocketFactory)
             .withSslParameters(sslParameters) .withHostnameVerifier(hostnameVerifier)
-            .withHostAndPortMapper(hostAndPortMap).build(),
-        DefaultJedisClientConfig.builder().withInfiniteSoTimeout(infiniteSoTimeout)
-            .withUser(user).withPassword(password).withClinetName(clientName).build()
+            .withHostAndPortMapper(hostAndPortMap).build()
     );
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final JedisSocketConfig socketConfig, final JedisClientConfig clientConfig) {
+  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final JedisClientConfig clientConfig) {
     this.poolConfig = poolConfig;
-    this.socketConfig = socketConfig;
     this.clientConfig = clientConfig;
   }
 
@@ -235,7 +232,7 @@ public class JedisClusterInfoCache {
       JedisPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      JedisPool nodePool = new JedisPool(poolConfig, node, socketConfig, clientConfig);
+      JedisPool nodePool = new JedisPool(poolConfig, node, clientConfig);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {

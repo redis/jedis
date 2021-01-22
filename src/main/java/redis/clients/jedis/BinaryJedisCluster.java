@@ -110,10 +110,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, JedisSocketConfig socketConfig,
-      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
-      GenericObjectPoolConfig poolConfig) {
+      JedisClientConfig clientConfig, int maxAttempts, GenericObjectPoolConfig poolConfig) {
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        socketConfig, infiniteSoTimeout, user, password, clientName);
+        socketConfig, clientConfig);
     this.maxAttempts = maxAttempts;
   }
 

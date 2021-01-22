@@ -193,6 +193,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setInfiniteSoTimeout(infiniteSoTimeout);
   }
 
+  public BinaryJedis(final URI uri, final JedisSocketConfig config, final int infiniteSoTimeout) {
+    this(uri, config);
+    client.setInfiniteSoTimeout(infiniteSoTimeout);
+  }
+
   public BinaryJedis(final URI uri, JedisSocketConfig config) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));

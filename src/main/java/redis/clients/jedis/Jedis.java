@@ -151,6 +151,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(uri, connectionTimeout, soTimeout, infiniteSoTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public Jedis(final URI uri, JedisSocketConfig config, final int infiniteSoTimeout) {
+    super(uri, config, infiniteSoTimeout);
+  }
+
   public Jedis(final URI uri, JedisSocketConfig config) {
     super(uri, config);
   }

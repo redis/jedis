@@ -25,13 +25,10 @@ public class JedisClusterInfoCache {
   private final Lock r = rwl.readLock();
   private final Lock w = rwl.writeLock();
   private volatile boolean rediscovering;
-  private final GenericObjectPoolConfig poolConfig;
 
+  private final GenericObjectPoolConfig poolConfig;
   private final JedisSocketConfig socketConfig;
-  private int infiniteSoTimeout;
-  private String user;
-  private String password;
-  private String clientName;
+  private final JedisClientConfig clientConfig;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -105,21 +102,21 @@ public class JedisClusterInfoCache {
       final String user, final String password, final String clientName, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap) {
-    this(poolConfig, DefaultJedisSocketConfig.builder().withConnectionTimeout(connectionTimeout)
-        .withSoTimeout(soTimeout).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
-        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier)
-        .withHostAndPortMapper(hostAndPortMap).build(), infiniteSoTimeout, user, password, clientName);
+    this(poolConfig,
+        DefaultJedisSocketConfig.builder().withConnectionTimeout(connectionTimeout)
+            .withSoTimeout(soTimeout).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
+            .withSslParameters(sslParameters) .withHostnameVerifier(hostnameVerifier)
+            .withHostAndPortMapper(hostAndPortMap).build(),
+        DefaultJedisClientConfig.builder().withInfiniteSoTimeout(infiniteSoTimeout)
+            .withUser(user).withPassword(password).withClinetName(clientName).build()
+    );
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
-      final JedisSocketConfig socketConfig, final int infiniteSoTimeout,
-      final String user, final String password, final String clientName) {
+      final JedisSocketConfig socketConfig, final JedisClientConfig clientConfig) {
     this.poolConfig = poolConfig;
     this.socketConfig = socketConfig;
-    this.infiniteSoTimeout = infiniteSoTimeout;
-    this.user = user;
-    this.password = password;
-    this.clientName = clientName;
+    this.clientConfig = clientConfig;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -238,7 +235,7 @@ public class JedisClusterInfoCache {
       JedisPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      JedisPool nodePool = new JedisPool(poolConfig, node, socketConfig, infiniteSoTimeout, user, password, 0, clientName);
+      JedisPool nodePool = new JedisPool(poolConfig, node, socketConfig, clientConfig);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {

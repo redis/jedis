@@ -119,7 +119,7 @@ public abstract class JedisClusterCommand<T> {
         this.connectionHandler.renewSlotCache();
       }
 
-      return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
+      return runWithRetries(slot, attempts - 1, true, null);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {

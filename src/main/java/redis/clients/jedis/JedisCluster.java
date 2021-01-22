@@ -99,9 +99,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
             ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
-  public JedisCluster(HostAndPort node, final JedisSocketConfig socketConfig,
-      final JedisClientConfig clientConfig, int maxAttempts, final GenericObjectPoolConfig poolConfig) {
-    this(Collections.singleton(node), socketConfig, clientConfig, maxAttempts, poolConfig);
+  public JedisCluster(HostAndPort node, final JedisClientConfig clientConfig, int maxAttempts, final GenericObjectPoolConfig poolConfig) {
+    this(Collections.singleton(node), clientConfig, maxAttempts, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> nodes) {
@@ -198,9 +197,9 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
-  public JedisCluster(Set<HostAndPort> nodes, final JedisSocketConfig socketConfig,
-      final JedisClientConfig clientConfig, int maxAttempts, final GenericObjectPoolConfig poolConfig) {
-    super(nodes, socketConfig, clientConfig, maxAttempts, poolConfig);
+  public JedisCluster(Set<HostAndPort> nodes, final JedisClientConfig clientConfig, int maxAttempts,
+      final GenericObjectPoolConfig poolConfig) {
+    super(nodes, clientConfig, maxAttempts, poolConfig);
   }
 
   @Override

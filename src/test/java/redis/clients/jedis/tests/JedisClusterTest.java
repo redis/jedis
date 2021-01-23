@@ -40,7 +40,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.DefaultJedisSocketConfig;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -62,7 +61,8 @@ public class JedisClusterTest {
   private static final int DEFAULT_TIMEOUT = 2000;
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final JedisPoolConfig DEFAULT_POOL_CONFIG = new JedisPoolConfig();
-  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG = DefaultJedisClientConfig.builder().withPassword("cluster").build();
+  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
+      = DefaultJedisClientConfig.builder().withPassword("cluster").build();
 
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);

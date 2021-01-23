@@ -42,4 +42,8 @@ public interface JedisSocketFactory {
   int getSoTimeout();
 
   @Deprecated void setSoTimeout(int soTimeout);
+
+  default int getInfiniteSoTimeout() {
+    return 0;
+  }
 }

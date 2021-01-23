@@ -1,13 +1,13 @@
 package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
-import static redis.clients.jedis.DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
@@ -50,7 +50,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(hnp, DEFAULT_SOCKET_CONFIG)) {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().build())) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }

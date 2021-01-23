@@ -27,7 +27,6 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
   public Connection() {
@@ -39,33 +38,29 @@ public class Connection implements Closeable {
   }
 
   public Connection(final String host, final int port) {
-    this(host, port, DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
   }
 
   @Deprecated
   public Connection(final String host, final int port, final boolean ssl) {
-    this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl).build());
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl).build());
   }
 
   @Deprecated
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl)
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl)
         .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
         .withHostnameVerifier(hostnameVerifier).build());
   }
 
-  public Connection(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
-    this(new HostAndPort(host, port), jedisSocketConfig);
+  public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
   }
 
-  public Connection(final HostAndPort hostAndPort, final JedisSocketConfig jedisSocketConfig) {
-    this(new DefaultJedisSocketFactory(hostAndPort, jedisSocketConfig));
-  }
-
-  public Connection(final JedisSocketFactory jedisSocketFactory) {
-    this.socketFactory = jedisSocketFactory;
+  public Connection(final JedisSocketFactory socketFactory) {
+    this.socketFactory = socketFactory;
   }
 
   public Socket getSocket() {
@@ -90,8 +85,9 @@ public class Connection implements Closeable {
     socketFactory.setSoTimeout(soTimeout);
   }
 
+  @Deprecated
   public void setInfiniteSoTimeout(int infiniteSoTimeout) {
-    this.infiniteSoTimeout = infiniteSoTimeout;
+    // throw exception?
   }
 
   public void setTimeoutInfinite() {
@@ -99,7 +95,7 @@ public class Connection implements Closeable {
       if (!isConnected()) {
         connect();
       }
-      socket.setSoTimeout(infiniteSoTimeout);
+      socket.setSoTimeout(socketFactory.getInfiniteSoTimeout());
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);

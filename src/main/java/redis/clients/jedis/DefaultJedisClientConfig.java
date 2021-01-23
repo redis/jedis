@@ -22,7 +22,7 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final HostAndPortMapper hostAndPortMapper;
 
-  private DefaultJedisClientConfig(int connectionTimeout, int soTimeout, int infiniteSoTimeout,
+  protected DefaultJedisClientConfig(int connectionTimeout, int soTimeout, int infiniteSoTimeout,
       String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
@@ -80,17 +80,17 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public boolean isSSL() {
+  public boolean isSsl() {
     return ssl;
   }
 
   @Override
-  public SSLSocketFactory getSSLSocketFactory() {
+  public SSLSocketFactory getSslSocketFactory() {
     return sslSocketFactory;
   }
 
   @Override
-  public SSLParameters getSSLParameters() {
+  public SSLParameters getSslParameters() {
     return sslParameters;
   }
 

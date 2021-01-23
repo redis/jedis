@@ -14,14 +14,14 @@ import redis.clients.jedis.util.IOUtils;
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   private final HostAndPort hostPort;
-  private final JedisSocketConfig config;
+  private final JedisClientConfig config;
 
   @Deprecated
   public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
     this(new HostAndPort(host, port),
-        DefaultJedisSocketConfig.builder()
+        DefaultJedisClientConfig.builder()
             .withConnectionTimeout(connectionTimeout)
             .withSoTimeout(soTimeout)
             .withSsl(ssl)
@@ -32,9 +32,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     );
   }
 
-  public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisSocketConfig socketConfig) {
+  public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
     this.hostPort = hostAndPort;
-    this.config = socketConfig != null ? socketConfig : DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG;
+    this.config = config != null ? config : DefaultJedisClientConfig.builder().build();
   }
 
   @Override
@@ -53,14 +53,14 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());
 
-      if (config.isSSL()) {
-        SSLSocketFactory sslSocketFactory = config.getSSLSocketFactory();
+      if (config.isSsl()) {
+        SSLSocketFactory sslSocketFactory = config.getSslSocketFactory();
         if (null == sslSocketFactory) {
           sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
         socket = sslSocketFactory.createSocket(socket, hostAndPort.getHost(), hostAndPort.getPort(), true);
 
-        SSLParameters sslParameters = config.getSSLParameters();
+        SSLParameters sslParameters = config.getSslParameters();
         if (null != sslParameters) {
           ((SSLSocket) socket).setSSLParameters(sslParameters);
         }
@@ -141,5 +141,10 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   @Override
   public void setSoTimeout(int soTimeout) {
     // throw exception?
+  }
+
+  @Override
+  public int getInfiniteSoTimeout() {
+    return config.getInfiniteSoTimeout();
   }
 }

@@ -270,9 +270,9 @@ public class ShardedJedisTest {
         Hashing.MURMUR_HASH);
 
     List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 1));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 2));
     Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(otherShards,
         Hashing.MURMUR_HASH);
 
@@ -294,9 +294,9 @@ public class ShardedJedisTest {
         Hashing.MURMUR_HASH);
 
     List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT, "HOST2:1234"));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1, "HOST3:1234"));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2, "HOST1:1234"));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT, "HOST2:1234"));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 1, "HOST3:1234"));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 2, "HOST1:1234"));
     Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(otherShards,
         Hashing.MURMUR_HASH);
 

@@ -2,7 +2,7 @@ package redis.clients.jedis.tests;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.DefaultJedisSocketConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
@@ -46,7 +46,7 @@ public class SSLJedisWithCompleteCredentialsTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisSocketConfig.builder().withSsl(true).build())) {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig.builder().withSsl(true).build())) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -213,13 +213,11 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setPassword("fizzbuzz");
 
     try (Jedis jedis = new Jedis(shardInfo)) {
-      try {
-        assertEquals("PONG", jedis.ping());
-        fail("The code did not throw the expected JedisConnectionException.");
-      } catch (JedisConnectionException e) {
-        assertEquals("The JedisConnectionException does not contain the expected message.",
-            "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
-      }
+      assertEquals("PONG", jedis.ping());
+      fail("The code did not throw the expected JedisConnectionException.");
+    } catch (JedisConnectionException e) {
+      assertEquals("The JedisConnectionException does not contain the expected message.",
+          "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
     }
   }
 

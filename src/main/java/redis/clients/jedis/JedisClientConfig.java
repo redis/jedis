@@ -1,6 +1,14 @@
 package redis.clients.jedis;
 
-public interface JedisClientConfig extends JedisSocketConfig {
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocketFactory;
+
+public interface JedisClientConfig {
+
+  int getConnectionTimeout();
+
+  int getSoTimeout();
 
   int getInfiniteSoTimeout();
 
@@ -11,4 +19,15 @@ public interface JedisClientConfig extends JedisSocketConfig {
   int getDatabase();
 
   String getClientName();
+
+  boolean isSsl();
+
+  SSLSocketFactory getSslSocketFactory();
+
+  SSLParameters getSslParameters();
+
+  HostnameVerifier getHostnameVerifier();
+
+  HostAndPortMapper getHostAndPortMapper();
+
 }

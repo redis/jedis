@@ -128,23 +128,18 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hostPort = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hostPort, (JedisSocketConfig) clientConfig, clientConfig.getInfiniteSoTimeout());
-
+    Jedis jedis = null;
     try {
+      jedis = new Jedis(hostPort, clientConfig);
       jedis.connect();
-      if (clientConfig.getUser() != null) {
-        jedis.auth(clientConfig.getUser(), clientConfig.getPassword());
-      } else if (clientConfig.getPassword() != null) {
-        jedis.auth(clientConfig.getPassword());
-      }
-      if (clientConfig.getDatabase() != 0) {
-        jedis.select(clientConfig.getDatabase());
-      }
-      if (clientConfig.getClientName() != null) {
-        jedis.clientSetname(clientConfig.getClientName());
-      }
     } catch (JedisException je) {
-      jedis.close();
+      if (jedis != null) {
+        try {
+          jedis.quit();
+          jedis.close();
+        } catch (Exception e) {
+        }
+      }
       throw je;
     }
 

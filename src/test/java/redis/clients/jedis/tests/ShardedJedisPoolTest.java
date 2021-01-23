@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
@@ -136,6 +137,7 @@ public class ShardedJedisPoolTest {
     pool.destroy();
   }
 
+  @Ignore
   @Test
   public void shouldReturnActiveShardsWhenOneGoesOffline() {
     GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();

@@ -47,7 +47,7 @@ public class Connection implements Closeable {
   }
 
   public Connection(final String host, final int port) {
-    this(host, port, DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
   }
 
   /**
@@ -55,7 +55,7 @@ public class Connection implements Closeable {
    */
   @Deprecated
   public Connection(final String host, final int port, final boolean ssl) {
-    this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl).build());
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl).build());
   }
 
   /**
@@ -65,17 +65,15 @@ public class Connection implements Closeable {
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl)
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl)
         .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
         .withHostnameVerifier(hostnameVerifier).build());
   }
 
-  public Connection(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
-    this(new HostAndPort(host, port), jedisSocketConfig);
-  }
-
-  public Connection(final HostAndPort hostAndPort, final JedisSocketConfig jedisSocketConfig) {
-    this(new DefaultJedisSocketFactory(hostAndPort, jedisSocketConfig));
+  public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
+    this.soTimeout = clientConfig.getSoTimeout();
+    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeout();
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {

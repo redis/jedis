@@ -83,8 +83,8 @@ public class BinaryClient extends Connection {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public BinaryClient(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
-    super(host, port, jedisSocketConfig);
+  public BinaryClient(final HostAndPort hostPort, final JedisClientConfig clientConfig) {
+    super(hostPort, clientConfig);
   }
 
   public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
@@ -97,21 +97,6 @@ public class BinaryClient extends Connection {
 
   public boolean isInWatch() {
     return isInWatch;
-  }
-
-  private byte[][] joinParameters(byte[] first, byte[][] rest) {
-    byte[][] result = new byte[rest.length + 1][];
-    result[0] = first;
-    System.arraycopy(rest, 0, result, 1, rest.length);
-    return result;
-  }
-
-  private byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
-    byte[][] result = new byte[rest.length + 2][];
-    result[0] = first;
-    result[1] = second;
-    System.arraycopy(rest, 0, result, 2, rest.length);
-    return result;
   }
 
   /**
@@ -136,6 +121,10 @@ public class BinaryClient extends Connection {
     this.db = db;
   }
 
+  public int getDB() {
+    return db;
+  }
+
   @Override
   public void connect() {
     if (!isConnected()) {
@@ -151,6 +140,25 @@ public class BinaryClient extends Connection {
         select(db);
         getStatusCodeReply();
       }
+    }
+  }
+
+  @Override
+  public void disconnect() {
+    db = 0;
+    super.disconnect();
+  }
+
+  @Override
+  public void close() {
+    db = 0;
+    super.close();
+  }
+
+  public void resetState() {
+    if (isInWatch()) {
+      unwatch();
+      getStatusCodeReply();
     }
   }
 
@@ -983,29 +991,6 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
-  public int getDB() {
-    return db;
-  }
-
-  @Override
-  public void disconnect() {
-    db = 0;
-    super.disconnect();
-  }
-
-  @Override
-  public void close() {
-    db = 0;
-    super.close();
-  }
-
-  public void resetState() {
-    if (isInWatch()) {
-      unwatch();
-      getStatusCodeReply();
-    }
-  }
-
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
     sendCommand(EVAL, joinParameters(script, keyCount, params));
   }
@@ -1640,4 +1625,18 @@ public class BinaryClient extends Connection {
     sendCommand(XINFO,Keyword.CONSUMERS.getRaw(),key,group);
   }
 
+  private static byte[][] joinParameters(byte[] first, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 1][];
+    result[0] = first;
+    System.arraycopy(rest, 0, result, 1, rest.length);
+    return result;
+  }
+
+  private static byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 2][];
+    result[0] = first;
+    result[1] = second;
+    System.arraycopy(rest, 0, result, 2, rest.length);
+    return result;
+  }
 }

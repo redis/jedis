@@ -40,16 +40,16 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     setHostnameVerifier(hostnameVerifier);
   }
 
-  public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisSocketConfig socketConfig) {
+  public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
     setHostAndPort(hostAndPort);
-    if (socketConfig != null) {
-      setConnectionTimeout(socketConfig.getConnectionTimeout());
-      setSoTimeout(socketConfig.getSoTimeout());
-      setSsl(socketConfig.isSsl());
-      setSslSocketFactory(socketConfig.getSslSocketFactory());
-      setSslParameters(socketConfig.getSslParameters());
-      setHostnameVerifier(socketConfig.getHostnameVerifier());
-      setHostAndPortMapper(socketConfig.getHostAndPortMapper());
+    if (config != null) {
+      setConnectionTimeout(config.getConnectionTimeout());
+      setSoTimeout(config.getSoTimeout());
+      setSsl(config.isSsl());
+      setSslSocketFactory(config.getSslSocketFactory());
+      setSslParameters(config.getSslParameters());
+      setHostnameVerifier(config.getHostnameVerifier());
+      setHostAndPortMapper(config.getHostAndPortMapper());
     }
   }
 

@@ -61,7 +61,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(hp);
   }
 
-  public Jedis(final HostAndPort hp, final JedisSocketConfig config) {
+  public Jedis(final HostAndPort hp, final JedisClientConfig config) {
     super(hp, config);
   }
 
@@ -102,10 +102,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host, port, connectionTimeout, soTimeout, infiniteSoTimeout);
   }
 
-  public Jedis(final HostAndPort hostAndPort, final JedisSocketConfig config, final int infiniteSoTimeout) {
-    super(hostAndPort, config, infiniteSoTimeout);
-  }
-
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final boolean ssl) {
     super(host, port, connectionTimeout, soTimeout, ssl);
@@ -125,11 +121,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
         sslParameters, hostnameVerifier);
   }
 
-  /**
-   * @param shardInfo
-   * @deprecated Internal behavior of this constructor has been changed.
-   */
-  @Deprecated
   public Jedis(JedisShardInfo shardInfo) {
     super(shardInfo);
   }
@@ -168,11 +159,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(uri, connectionTimeout, soTimeout, infiniteSoTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public Jedis(final URI uri, JedisSocketConfig config, final int infiniteSoTimeout) {
-    super(uri, config, infiniteSoTimeout);
-  }
-
-  public Jedis(final URI uri, JedisSocketConfig config) {
+  public Jedis(final URI uri, JedisClientConfig config) {
     super(uri, config);
   }
 

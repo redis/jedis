@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static redis.clients.jedis.DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +14,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
@@ -59,7 +59,7 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(hnp, DEFAULT_SOCKET_CONFIG)) {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().build())) {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }

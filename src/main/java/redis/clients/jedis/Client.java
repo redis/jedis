@@ -61,8 +61,8 @@ public class Client extends BinaryClient implements Commands {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public Client(final String host, final int port, final JedisSocketConfig jedisSocketConfig) {
-    super(host, port, jedisSocketConfig);
+  public Client(final HostAndPort hostPort, final JedisClientConfig clientConfig) {
+    super(hostPort, clientConfig);
   }
 
   public Client(final JedisSocketFactory jedisSocketFactory) {

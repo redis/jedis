@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.function.Supplier;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -79,36 +80,27 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
-  private interface ConnectionGetter {
-    Jedis getConnection();
-  }
-
   private T runWithRetries(final int slot) {
-    ConnectionGetter connectionGetter = new ConnectionGetter() {
-      @Override
-      public Jedis getConnection() {
-        return connectionHandler.getConnectionFromSlot(slot);
-      }
-    };
+    Supplier<Jedis> connectionSupplier = () -> connectionHandler.getConnectionFromSlot(slot);
 
     // If we got one redirection, stick with that and don't try anything else
-    ConnectionGetter redirected = null;
+    Supplier<Jedis> redirectionSupplier = null;
 
     for (int currentAttempt = 0; currentAttempt < this.maxAttempts; currentAttempt++) {
       Jedis connection = null;
       try {
-        if (redirected != null) {
-          connection = redirected.getConnection();
+        if (redirectionSupplier != null) {
+          connection = redirectionSupplier.get();
         } else {
-          connection = connectionGetter.getConnection();
+          connection = connectionSupplier.get();
         }
         return execute(connection);
       } catch (JedisNoReachableClusterNodeException e) {
         throw e;
       } catch (JedisConnectionException e) {
-        connectionGetter = handleConnectionProblem(slot, currentAttempt);
+        connectionSupplier = handleConnectionProblem(slot, currentAttempt);
       } catch (JedisRedirectionException e) {
-        redirected = handleRedirection(connection, e);
+        redirectionSupplier = handleRedirection(connection, e);
       } finally {
         releaseConnection(connection);
       }
@@ -117,7 +109,7 @@ public abstract class JedisClusterCommand<T> {
     throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
   }
 
-  private ConnectionGetter handleConnectionProblem(final int slot, int currentAttempt) {
+  private Supplier<Jedis> handleConnectionProblem(final int slot, int currentAttempt) {
     int attemptsLeft = (maxAttempts - currentAttempt) - 1;
     if (attemptsLeft <= 1) {
       //We need this because if node is not reachable anymore - we need to finally initiate slots
@@ -128,15 +120,10 @@ public abstract class JedisClusterCommand<T> {
       this.connectionHandler.renewSlotCache();
     }
 
-    return new ConnectionGetter() {
-      @Override
-      public Jedis getConnection() {
-        return connectionHandler.getConnectionFromSlot(slot);
-      }
-    };
+    return () -> connectionHandler.getConnectionFromSlot(slot);
   }
 
-  private ConnectionGetter handleRedirection(Jedis connection, final JedisRedirectionException jre) {
+  private Supplier<Jedis> handleRedirection(Jedis connection, final JedisRedirectionException jre) {
     // if MOVED redirection occurred,
     if (jre instanceof JedisMovedDataException) {
       // it rebuilds cluster's slot cache recommended by Redis cluster specification
@@ -146,17 +133,14 @@ public abstract class JedisClusterCommand<T> {
     // release current connection before iteration
     releaseConnection(connection);
 
-    return new ConnectionGetter() {
-      @Override
-      public Jedis getConnection() {
-        Jedis connection = connectionHandler.getConnectionFromNode(jre.getTargetNode());
-        if (jre instanceof JedisAskDataException) {
-          // TODO: Pipeline asking with the original command to make it faster....
-          connection.asking();
-        }
-
-        return connection;
+    return () -> {
+      Jedis redirectedConnection = connectionHandler.getConnectionFromNode(jre.getTargetNode());
+      if (jre instanceof JedisAskDataException) {
+        // TODO: Pipeline asking with the original command to make it faster....
+        redirectedConnection.asking();
       }
+
+      return redirectedConnection;
     };
   }
 

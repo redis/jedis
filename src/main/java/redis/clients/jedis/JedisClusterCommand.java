@@ -110,9 +110,7 @@ public abstract class JedisClusterCommand<T> {
       } catch (JedisRedirectionException e) {
         redirected = handleRedirection(connection, e);
       } finally {
-        if (connection != null) {
-          releaseConnection(connection);
-        }
+        releaseConnection(connection);
       }
     }
 

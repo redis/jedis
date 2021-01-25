@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import javax.annotation.Nullable;
+
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -137,7 +139,7 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
-  private void releaseConnection(Jedis connection) {
+  private void releaseConnection(@Nullable Jedis connection) {
     if (connection != null) {
       connection.close();
     }

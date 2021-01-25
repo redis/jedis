@@ -22,7 +22,7 @@ public abstract class JedisClusterCommand<T> {
   public abstract T execute(Jedis connection);
 
   public T run(String key) {
-    return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
+    return runWithRetries(JedisClusterCRC16.getSlot(key));
   }
 
   public T run(int keyCount, String... keys) {
@@ -42,11 +42,11 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    return runWithRetries(slot, this.maxAttempts, false, null);
+    return runWithRetries(slot);
   }
 
   public T runBinary(byte[] key) {
-    return runWithRetries(JedisClusterCRC16.getSlot(key), this.maxAttempts, false, null);
+    return runWithRetries(JedisClusterCRC16.getSlot(key));
   }
 
   public T runBinary(int keyCount, byte[]... keys) {
@@ -66,7 +66,7 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    return runWithRetries(slot, this.maxAttempts, false, null);
+    return runWithRetries(slot);
   }
 
   public T runWithAnyNode() {
@@ -79,62 +79,87 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
-  private T runWithRetries(final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
-    if (attempts <= 0) {
-      throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+  private interface ConnectionGetter {
+    Jedis getConnection();
+  }
+
+  private T runWithRetries(final int slot) {
+    ConnectionGetter connectionGetter = new ConnectionGetter() {
+      @Override
+      public Jedis getConnection() {
+        return connectionHandler.getConnectionFromSlot(slot);
+      }
+    };
+
+    // If we got one redirection, stick with that and don't try anything else
+    ConnectionGetter redirected = null;
+
+    for (int currentAttempt = 0; currentAttempt < this.maxAttempts; currentAttempt++) {
+      Jedis connection = null;
+      try {
+        if (redirected != null) {
+          connection = redirected.getConnection();
+        } else {
+          connection = connectionGetter.getConnection();
+        }
+        return execute(connection);
+      } catch (JedisNoReachableClusterNodeException e) {
+        throw e;
+      } catch (JedisConnectionException e) {
+        connectionGetter = handleConnectionProblem(slot, currentAttempt);
+      } catch (JedisRedirectionException e) {
+        redirected = handleRedirection(connection, e);
+      } finally {
+        if (connection != null) {
+          releaseConnection(connection);
+        }
+      }
     }
 
-    Jedis connection = null;
-    try {
+    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+  }
 
-      if (redirect != null) {
-        connection = this.connectionHandler.getConnectionFromNode(redirect.getTargetNode());
-        if (redirect instanceof JedisAskDataException) {
+  private ConnectionGetter handleConnectionProblem(final int slot, int currentAttempt) {
+    int attemptsLeft = (maxAttempts - currentAttempt) - 1;
+    if (attemptsLeft <= 1) {
+      //We need this because if node is not reachable anymore - we need to finally initiate slots
+      //renewing, or we can stuck with cluster state without one node in opposite case.
+      //But now if maxAttempts = [1 or 2] we will do it too often.
+      //TODO make tracking of successful/unsuccessful operations for node - do renewing only
+      //if there were no successful responses from this node last few seconds
+      this.connectionHandler.renewSlotCache();
+    }
+
+    return new ConnectionGetter() {
+      @Override
+      public Jedis getConnection() {
+        return connectionHandler.getConnectionFromSlot(slot);
+      }
+    };
+  }
+
+  private ConnectionGetter handleRedirection(Jedis connection, final JedisRedirectionException jre) {
+    // if MOVED redirection occurred,
+    if (jre instanceof JedisMovedDataException) {
+      // it rebuilds cluster's slot cache recommended by Redis cluster specification
+      this.connectionHandler.renewSlotCache(connection);
+    }
+
+    // release current connection before iteration
+    releaseConnection(connection);
+
+    return new ConnectionGetter() {
+      @Override
+      public Jedis getConnection() {
+        Jedis connection = connectionHandler.getConnectionFromNode(jre.getTargetNode());
+        if (jre instanceof JedisAskDataException) {
           // TODO: Pipeline asking with the original command to make it faster....
           connection.asking();
         }
-      } else {
-        if (tryRandomNode) {
-          connection = connectionHandler.getConnection();
-        } else {
-          connection = connectionHandler.getConnectionFromSlot(slot);
-        }
+
+        return connection;
       }
-
-      return execute(connection);
-
-    } catch (JedisNoReachableClusterNodeException jnrcne) {
-      throw jnrcne;
-    } catch (JedisConnectionException jce) {
-      // release current connection before recursion
-      releaseConnection(connection);
-      connection = null;
-
-      if (attempts <= 1) {
-        //We need this because if node is not reachable anymore - we need to finally initiate slots
-        //renewing, or we can stuck with cluster state without one node in opposite case.
-        //But now if maxAttempts = [1 or 2] we will do it too often.
-        //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-        //if there were no successful responses from this node last few seconds
-        this.connectionHandler.renewSlotCache();
-      }
-
-      return runWithRetries(slot, attempts - 1, tryRandomNode, redirect);
-    } catch (JedisRedirectionException jre) {
-      // if MOVED redirection occurred,
-      if (jre instanceof JedisMovedDataException) {
-        // it rebuilds cluster's slot cache recommended by Redis cluster specification
-        this.connectionHandler.renewSlotCache(connection);
-      }
-
-      // release current connection before recursion
-      releaseConnection(connection);
-      connection = null;
-
-      return runWithRetries(slot, attempts - 1, false, jre);
-    } finally {
-      releaseConnection(connection);
-    }
+    };
   }
 
   private void releaseConnection(Jedis connection) {

@@ -73,10 +73,10 @@ public abstract class BinaryJedisPubSub {
   public void proceed(Client client, byte[]... channels) {
     this.client = client;
 
-    if ( channels.length > 0 ) {
-        client.subscribe(channels);
-        client.flush();
-    }
+      if ( channels.length > 0 ) {
+          client.subscribe(channels);
+          client.flush();
+      }
 
     process(client);
   }

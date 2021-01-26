@@ -1,16 +1,11 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
+import redis.clients.jedis.exceptions.JedisException;
 
 import java.util.Arrays;
 import java.util.List;
 
-import redis.clients.jedis.exceptions.JedisException;
+import static redis.clients.jedis.Protocol.Keyword.*;
 
 public abstract class BinaryJedisPubSub {
   private int subscribedChannels = 0;
@@ -77,8 +72,12 @@ public abstract class BinaryJedisPubSub {
 
   public void proceed(Client client, byte[]... channels) {
     this.client = client;
-    client.subscribe(channels);
-    client.flush();
+
+      if ( channels.length > 0 ) {
+          client.subscribe(channels);
+          client.flush();
+      }
+
     process(client);
   }
 

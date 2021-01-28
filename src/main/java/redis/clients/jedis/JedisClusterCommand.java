@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
@@ -12,12 +15,33 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
 
+  /**
+   * Default cluster-node-timeout is 15s according to
+   * https://www.programmersought.com/article/40076100313/,
+   * add some on top of that and we get to 20.
+   *
+   * @see #JedisClusterCommand(JedisClusterConnectionHandler, int, Duration)
+   */
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(20);
+
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
+  private final Duration timeout;
 
-  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts,
+      Duration timeout) {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
+    this.timeout = timeout;
+  }
+
+  /**
+   * Create a cluster command with a default timeout of {@link #DEFAULT_TIMEOUT}. To override the
+   * timeout, call {@link #JedisClusterCommand(JedisClusterConnectionHandler, int, Duration)}
+   * instead.
+   */
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
+    this(connectionHandler, maxAttempts, DEFAULT_TIMEOUT);
   }
 
   public abstract T execute(Jedis connection);
@@ -80,7 +104,26 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
+  private boolean shouldBackOff(int attemptsLeft) {
+    int attemptsDone = maxAttempts - attemptsLeft;
+    return attemptsDone >= maxAttempts / 3;
+  }
+
+  private static long getBackoffSleepMillis(int attemptsLeft, Instant deadline) {
+    if (attemptsLeft <= 0) {
+      return 0;
+    }
+
+    long millisLeft = Duration.between(Instant.now(), deadline).toMillis();
+    if (millisLeft < 0) {
+      throw new JedisClusterMaxAttemptsException("Deadline exceeded");
+    }
+
+    return millisLeft / (attemptsLeft * attemptsLeft);
+  }
+
   private T runWithRetries(final int slot) {
+    Instant deadline = Instant.now().plus(timeout);
     Supplier<Jedis> connectionSupplier = () -> connectionHandler.getConnectionFromSlot(slot);
 
     // If we got one redirection, stick with that and don't try anything else
@@ -94,11 +137,19 @@ public abstract class JedisClusterCommand<T> {
         } else {
           connection = connectionSupplier.get();
         }
+
+        if (shouldBackOff(maxAttempts - currentAttempt)) {
+          // Don't just stick to this any more, start asking around
+          redirectionSupplier = null;
+        }
+
         return execute(connection);
       } catch (JedisNoReachableClusterNodeException e) {
         throw e;
       } catch (JedisConnectionException e) {
-        connectionSupplier = handleConnectionProblem(slot, currentAttempt);
+        // "- 1" because we just did one, but the currentAttempt counter hasn't increased yet
+        int attemptsLeft = maxAttempts - currentAttempt - 1;
+        connectionSupplier = handleConnectionProblem(connection, slot, attemptsLeft, deadline);
       } catch (JedisRedirectionException e) {
         redirectionSupplier = handleRedirection(connection, e);
       } finally {
@@ -109,18 +160,36 @@ public abstract class JedisClusterCommand<T> {
     throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
   }
 
-  private Supplier<Jedis> handleConnectionProblem(final int slot, int currentAttempt) {
-    int attemptsLeft = (maxAttempts - currentAttempt) - 1;
-    if (attemptsLeft <= 1) {
-      //We need this because if node is not reachable anymore - we need to finally initiate slots
-      //renewing, or we can stuck with cluster state without one node in opposite case.
-      //But now if maxAttempts = [1 or 2] we will do it too often.
-      //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-      //if there were no successful responses from this node last few seconds
-      this.connectionHandler.renewSlotCache();
+  protected void sleep(long sleepMillis) {
+    try {
+      TimeUnit.MILLISECONDS.sleep(sleepMillis);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Supplier<Jedis> handleConnectionProblem(Jedis failedConnection, final int slot, int attemptsLeft,
+      Instant doneDeadline) {
+    if (!shouldBackOff(attemptsLeft)) {
+      return () -> connectionHandler.getConnectionFromSlot(slot);
     }
 
-    return () -> connectionHandler.getConnectionFromSlot(slot);
+    // Must release current connection before renewing the slot cache below. If we fail to do this,
+    // then JedisClusterTest.testReturnConnectionOnJedisClusterConnection will start failing
+    // intermittently.
+    releaseConnection(failedConnection);
+
+    //We need this because if node is not reachable anymore - we need to finally initiate slots
+    //renewing, or we can stuck with cluster state without one node in opposite case.
+    //TODO make tracking of successful/unsuccessful operations for node - do renewing only
+    //if there were no successful responses from this node last few seconds
+    this.connectionHandler.renewSlotCache();
+
+    return () -> {
+      sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
+      // Get a random connection, it will redirect us if it's not the right one
+      return connectionHandler.getConnection();
+    };
   }
 
   private Supplier<Jedis> handleRedirection(Jedis connection, final JedisRedirectionException jre) {

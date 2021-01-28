@@ -583,7 +583,11 @@ public class JedisClusterTest {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+
+    // Otherwise the test can time out before we are done
+    int shorterThanTheTestTimeoutMs = DEFAULT_TIMEOUT / 2;
+
+    JedisCluster jc = new JedisCluster(jedisClusterNode, shorterThanTheTestTimeoutMs, shorterThanTheTestTimeoutMs,
         DEFAULT_REDIRECTIONS, "cluster", config);
 
     Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource();

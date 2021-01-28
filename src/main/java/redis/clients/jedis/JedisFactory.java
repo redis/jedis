@@ -153,6 +153,13 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
         jedis.clientSetname(clientConfig.getClientName());
       }
     } catch (JedisException je) {
+      try {
+        if (jedis.isConnected() && !jedis.isBroken()) {
+          jedis.quit();
+        }
+      } catch(Exception e) {
+        // swallow
+      }
       jedis.close();
       throw je;
     }

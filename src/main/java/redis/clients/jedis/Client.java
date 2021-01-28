@@ -29,6 +29,11 @@ public class Client extends BinaryClient implements Commands {
     super();
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Client(final String host) {
     super(host);
   }

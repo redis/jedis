@@ -41,17 +41,17 @@ public class DefaultJedisSocketConfig implements JedisSocketConfig {
   }
 
   @Override
-  public boolean isSSL() {
+  public boolean isSsl() {
     return ssl;
   }
 
   @Override
-  public SSLSocketFactory getSSLSocketFactory() {
+  public SSLSocketFactory getSslSocketFactory() {
     return sslSocketFactory;
   }
 
   @Override
-  public SSLParameters getSSLParameters() {
+  public SSLParameters getSslParameters() {
     return sslParameters;
   }
 
@@ -159,7 +159,7 @@ public class DefaultJedisSocketConfig implements JedisSocketConfig {
 
   static DefaultJedisSocketConfig withSsl(boolean ssl, JedisSocketConfig copy) {
     return new DefaultJedisSocketConfig(copy.getConnectionTimeout(), copy.getSoTimeout(),
-        ssl, copy.getSSLSocketFactory(), copy.getSSLParameters(), copy.getHostnameVerifier(),
+        ssl, copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
         copy.getHostAndPortMapper());
   }
 }

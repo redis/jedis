@@ -10,9 +10,8 @@ import java.net.URISyntaxException;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.DefaultJedisSocketConfig;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

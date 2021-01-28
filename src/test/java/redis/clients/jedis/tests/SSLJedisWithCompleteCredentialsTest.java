@@ -213,13 +213,11 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setPassword("fizzbuzz");
 
     try (Jedis jedis = new Jedis(shardInfo)) {
-      try {
-        assertEquals("PONG", jedis.ping());
-        fail("The code did not throw the expected JedisConnectionException.");
-      } catch (JedisConnectionException e) {
-        assertEquals("The JedisConnectionException does not contain the expected message.",
-            "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
-      }
+      assertEquals("PONG", jedis.ping());
+      fail("The code did not throw the expected JedisConnectionException.");
+    } catch (JedisConnectionException e) {
+      assertEquals("The JedisConnectionException does not contain the expected message.",
+          "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
     }
   }
 

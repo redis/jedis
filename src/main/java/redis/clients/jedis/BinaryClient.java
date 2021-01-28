@@ -14,8 +14,10 @@ import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import static redis.clients.jedis.Protocol.Keyword.FREQ;
 import static redis.clients.jedis.Protocol.Keyword.HELP;
+import static redis.clients.jedis.Protocol.Keyword.COUNT;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,10 +29,12 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -373,8 +377,28 @@ public class BinaryClient extends Connection {
     sendCommand(LPOP, key);
   }
 
+  public void lpop(final byte[] key, final int count) {
+    sendCommand(LPOP, key, toByteArray(count));
+  }
+
+  public void lpos(final byte[] key, final byte[] element){
+    sendCommand(LPOS, key, element);
+  }
+
+  public void lpos(final byte[] key, final byte[] element, LPosParams params) {
+    sendCommand(LPOS, joinParameters(key, element, params.getByteParams()));
+  }
+
+  public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count){
+    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(Keyword.COUNT.raw, toByteArray(count))));
+  }
+
   public void rpop(final byte[] key) {
     sendCommand(RPOP, key);
+  }
+
+  public void rpop(final byte[] key, final int count) {
+    sendCommand(RPOP, key, toByteArray(count));
   }
 
   public void rpoplpush(final byte[] srckey, final byte[] dstkey) {
@@ -411,6 +435,10 @@ public class BinaryClient extends Connection {
 
   public void sismember(final byte[] key, final byte[] member) {
     sendCommand(SISMEMBER, key, member);
+  }
+
+  public void smismember(final byte[] key, final byte[]... members) {
+    sendCommand(SMISMEMBER, joinParameters(key, members));
   }
 
   public void sinter(final byte[]... keys) {
@@ -515,6 +543,10 @@ public class BinaryClient extends Connection {
     sendCommand(ZSCORE, key, member);
   }
 
+  public void zmscore(final byte[] key, final byte[]... members) {
+    sendCommand(ZMSCORE, joinParameters(key, members));
+  }
+
   public void zpopmax(final byte[] key) {
     sendCommand(ZPOPMAX, key);
   }
@@ -575,9 +607,8 @@ public class BinaryClient extends Connection {
 
   public void blpop(final int timeout, final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
-    for (final byte[] arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(Protocol.toByteArray(timeout));
     blpop(args.toArray(new byte[args.size()][]));
   }
@@ -601,9 +632,8 @@ public class BinaryClient extends Connection {
 
   public void brpop(final int timeout, final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
-    for (final byte[] arg : keys) {
-      args.add(arg);
-    }
+    Collections.addAll(args, keys);
+
     args.add(Protocol.toByteArray(timeout));
     brpop(args.toArray(new byte[args.size()][]));
   }
@@ -757,9 +787,8 @@ public class BinaryClient extends Connection {
     final List<byte[]> args = new ArrayList<>();
     args.add(dstkey);
     args.add(Protocol.toByteArray(sets.length));
-    for (final byte[] set : sets) {
-      args.add(set);
-    }
+    Collections.addAll(args, sets);
+
     args.addAll(params.getParams());
     sendCommand(ZUNIONSTORE, args.toArray(new byte[args.size()][]));
   }
@@ -772,9 +801,8 @@ public class BinaryClient extends Connection {
     final List<byte[]> args = new ArrayList<>();
     args.add(dstkey);
     args.add(Protocol.toByteArray(sets.length));
-    for (final byte[] set : sets) {
-      args.add(set);
-    }
+    Collections.addAll(args, sets);
+
     args.addAll(params.getParams());
     sendCommand(ZINTERSTORE, args.toArray(new byte[args.size()][]));
   }
@@ -1068,6 +1096,14 @@ public class BinaryClient extends Connection {
   public void memoryDoctor() {
     sendCommand(MEMORY, Keyword.DOCTOR.raw);
   }
+  
+  public void memoryUsage(final byte[] key) {
+    sendCommand(MEMORY, Keyword.USAGE.raw, key);
+  }
+  
+  public void memoryUsage(final byte[] key, final int samples) {
+    sendCommand(MEMORY, Keyword.USAGE.raw, key, Keyword.SAMPLES.raw, toByteArray(samples));
+  }
 
   public void clientKill(final byte[] ipPort) {
     sendCommand(CLIENT, Keyword.KILL.raw, ipPort);
@@ -1243,6 +1279,12 @@ public class BinaryClient extends Connection {
       toByteArray(radius), unit.raw));
   }
 
+  public void georadiusStore(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
+        toByteArray(radius), unit.raw, storeParam.getOption(), storeParam.getKey()));
+  }
+
   public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
@@ -1260,6 +1302,12 @@ public class BinaryClient extends Connection {
   public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
+  }
+
+  public void georadiusByMemberStore(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw,
+        storeParam.getOption(), storeParam.getKey()));
   }
 
   public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
@@ -1302,6 +1350,18 @@ public class BinaryClient extends Connection {
 
   public void aclCat(final byte[] category) {
     sendCommand(ACL, Keyword.CAT.raw, category);
+  }
+
+  public void aclLog() {
+    sendCommand(ACL, Keyword.LOG.raw);
+  }
+
+  public void aclLog(int limit) {
+    sendCommand(ACL, Keyword.LOG.raw, toByteArray(limit));
+  }
+
+  public void aclLog(final byte[] option) {
+    sendCommand(ACL, Keyword.LOG.raw, option);
   }
 
   public void aclSetUser(final byte[] name) {
@@ -1518,9 +1578,8 @@ public class BinaryClient extends Connection {
       arguments.add(consumername);
       arguments.add(toByteArray(minIdleTime));
       
-      for(byte[] id : ids) {
-        arguments.add(id);  
-      }
+      Collections.addAll(arguments, ids);
+
       if(newIdleTime > 0) {
         arguments.add(Keyword.IDLE.raw);
         arguments.add(toByteArray(newIdleTime));

@@ -12,6 +12,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Sharded;
 
@@ -388,9 +389,39 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
+  public Long lpos(final byte[] key, final byte[] element) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element);
+  }
+
+  @Override
+  public Long lpos(final byte[] key, final byte[] element, final LPosParams params) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element, params);
+  }
+
+  @Override
+  public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element, params, count);
+  }
+
+  @Override
   public byte[] rpop(final byte[] key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override
@@ -433,6 +464,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Boolean sismember(final byte[] key, final byte[] member) {
     Jedis j = getShard(key);
     return j.sismember(key, member);
+  }
+
+  @Override
+  public List<Boolean> smismember(final byte[] key, final byte[]... members) {
+    Jedis j = getShard(key);
+    return j.smismember(key, members);
   }
 
   @Override
@@ -535,6 +572,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Double zscore(final byte[] key, final byte[] member) {
     Jedis j = getShard(key);
     return j.zscore(key, member);
+  }
+
+  @Override
+  public List<Double> zmscore(final byte[] key, final byte[]... members) {
+    Jedis j = getShard(key);
+    return j.zmscore(key, members);
   }
 
   @Override
@@ -1101,6 +1144,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
     Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

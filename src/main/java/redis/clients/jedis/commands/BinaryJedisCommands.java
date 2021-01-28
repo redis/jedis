@@ -19,6 +19,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -134,7 +135,17 @@ public interface BinaryJedisCommands {
 
   byte[] lpop(byte[] key);
 
+  List<byte[]> lpop(byte[] key, int count);
+
+  Long lpos(byte[] key, byte[] element);
+
+  Long lpos(byte[] key, byte[] element, LPosParams params);
+
+  List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count);
+
   byte[] rpop(byte[] key);
+
+  List<byte[]> rpop(byte[] key, int count);
 
   Long sadd(byte[] key, byte[]... member);
 
@@ -149,6 +160,8 @@ public interface BinaryJedisCommands {
   Long scard(byte[] key);
 
   Boolean sismember(byte[] key, byte[] member);
+
+  List<Boolean> smismember(byte[] key, byte[]... members);
 
   byte[] srandmember(byte[] key);
 
@@ -185,6 +198,8 @@ public interface BinaryJedisCommands {
   Long zcard(byte[] key);
 
   Double zscore(byte[] key, byte[] member);
+
+  List<Double> zmscore(byte[] key, byte[]... members);
 
   Tuple zpopmax(byte[] key);
 

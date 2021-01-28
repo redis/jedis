@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
@@ -424,9 +425,39 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<String> lpop(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
+  public Long lpos(final String key,final String element) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element);
+  }
+
+  @Override
+  public Long lpos(final String key, final String element, final LPosParams params) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element, params);
+  }
+
+  @Override
+  public List<Long> lpos(final String key, final String element, final LPosParams params, final long count) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element, params, count);
+  }
+
+  @Override
   public String rpop(final String key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<String> rpop(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override
@@ -469,6 +500,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Boolean sismember(final String key, final String member) {
     Jedis j = getShard(key);
     return j.sismember(key, member);
+  }
+
+  @Override
+  public List<Boolean> smismember(final String key, final String... members) {
+    Jedis j = getShard(key);
+    return j.smismember(key, members);
   }
 
   @Override
@@ -571,6 +608,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Double zscore(final String key, final String member) {
     Jedis j = getShard(key);
     return j.zscore(key, member);
+  }
+
+  @Override
+  public List<Double> zmscore(final String key, final String... members) {
+    Jedis j = getShard(key);
+    return j.zmscore(key, members);
   }
 
   @Override
@@ -1110,5 +1153,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     String sampleKey = args.length > 0 ? args[0] : cmd.toString();
     Jedis j = getShard(sampleKey);
     return j.sendCommand(cmd, args);
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
+    // default since no sample key provided in JedisCommands interface
+    String sampleKey = args.length > 0 ? args[0] : cmd.toString();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
   }
 }

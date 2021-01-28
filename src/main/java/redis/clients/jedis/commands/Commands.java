@@ -4,19 +4,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.BitOP;
-import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamGroupInfo;
-import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 public interface Commands {
 
@@ -136,7 +134,17 @@ public interface Commands {
 
   void lpop(String key);
 
+  void lpop(String key, int count);
+
+  void lpos(String key, String element);
+
+  void lpos(String key, String element, LPosParams params);
+
+  void lpos(String key, String element, LPosParams params, long count);
+
   void rpop(String key);
+
+  void rpop(String key, int count);
 
   void rpoplpush(String srckey, String dstkey);
 
@@ -155,6 +163,8 @@ public interface Commands {
   void scard(String key);
 
   void sismember(String key, String member);
+
+  void smismember(String key, String... members);
 
   void sinter(String... keys);
 
@@ -199,6 +209,8 @@ public interface Commands {
   void zcard(String key);
 
   void zscore(String key, String member);
+
+  void zmscore(String key, String... members);
   
   void zpopmax(String key);
   

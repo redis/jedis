@@ -1,7 +1,9 @@
 package redis.clients.jedis.tests;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -14,11 +16,12 @@ import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.junit.After;
 
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of @JedisSentinelPoolTest where all authentications are made with
+ * This test class is a copy of {@link JedisSentinelPoolTest} where all authentications are made with
  * default:foobared credentialsinformation
  *
  * This test is only executed when the server/cluster is Redis 6. or more.
@@ -39,24 +42,26 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   protected Set<String> sentinels = new HashSet<String>();
 
+  @BeforeClass
+  public static void prepare() throws Exception {
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
+  }
+
   @Before
   public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
-    }
-
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
     sentinelJedis1 = new Jedis(sentinel1);
     sentinelJedis2 = new Jedis(sentinel2);
   }
-  
+
+  @After
+  public void tearDown() throws Exception {
+    sentinelJedis1.close();
+    sentinelJedis2.close();
+  }
+
   @Test
   public void repeatedSentinelPoolInitialization() {
 
@@ -69,7 +74,6 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
       pool.destroy();
     }
   }
-  
 
   @Test(expected = JedisConnectionException.class)
   public void initializeWithNotAvailableSentinelsShouldThrowException() {
@@ -111,7 +115,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new
     // failover
-    Thread.sleep(100);
+    Thread.sleep(1000);
     forceFailover(pool);
 
     // you can test failover as much as possible

@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
@@ -457,6 +458,54 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<String>> lpop(final String key, final int count) {
+    getClient(key).lpop(key, count);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> lpop(final byte[] key, final int count) {
+    getClient(key).lpop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<Long> lpos(final String key, final String element) {
+    getClient(key).lpos(key, element);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> lpos(final byte[] key, final byte[] element) {
+    getClient(key).lpos(key, element);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> lpos(final String key, final String element, final LPosParams params) {
+    getClient(key).lpos(key, element, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> lpos(final byte[] key, final byte[] element, final LPosParams params) {
+    getClient(key).lpos(key, element, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<List<Long>> lpos(final String key, final String element, final LPosParams params, final long count) {
+    getClient(key).lpos(key, element, params, count);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
+  public Response<List<Long>> lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+    getClient(key).lpos(key, element, params, count);
+    return getResponse(BuilderFactory.LONG_LIST);
+  }
+
+  @Override
   public Response<Long> lpush(final String key, final String... string) {
     getClient(key).lpush(key, string);
     return getResponse(BuilderFactory.LONG);
@@ -562,6 +611,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<byte[]> rpop(final byte[] key) {
     getClient(key).rpop(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<List<String>> rpop(final String key, final int count) {
+    getClient(key).rpop(key, count);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> rpop(final byte[] key, final int count) {
+    getClient(key).rpop(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override
@@ -691,9 +752,21 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<Boolean>> smismember(final String key, final String... members) {
+    getClient(key).smismember(key, members);
+    return getResponse(BuilderFactory.BOOLEAN_LIST);
+  }
+
+  @Override
   public Response<Boolean> sismember(final byte[] key, final byte[] member) {
     getClient(key).sismember(key, member);
     return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<List<Boolean>> smismember(final byte[] key, final byte[]... members) {
+    getClient(key).smismember(key, members);
+    return getResponse(BuilderFactory.BOOLEAN_LIST);
   }
 
   @Override
@@ -1295,9 +1368,21 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<Double>> zmscore(final String key, final String... members) {
+    getClient(key).zmscore(key, members);
+    return getResponse(BuilderFactory.DOUBLE_LIST);
+  }
+
+  @Override
   public Response<Double> zscore(final byte[] key, final byte[] member) {
     getClient(key).zscore(key, member);
     return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
+  public Response<List<Double>> zmscore(final byte[] key, final byte[]... members) {
+    getClient(key).zmscore(key, members);
+    return getResponse(BuilderFactory.DOUBLE_LIST);
   }
 
   @Override

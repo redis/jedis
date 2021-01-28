@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -10,7 +9,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import javax.net.ssl.*;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -23,42 +21,19 @@ import java.security.cert.X509Certificate;
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of @SSLJedisTest
- * where all authentications are made with
- * default:foobared credentialsinformation
+ * This test class is a copy of {@link SSLJedisTest}.
  *
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class SSLJedisWithCompleteCredentialsTest {
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
-  }
-
   @BeforeClass
-  public static void setupTrustStore() {
-    setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
-  }
+  public static void prepare() {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
-  private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-        new File(trustStoreFilePath).exists());
-    System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
-    System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
+    SSLJedisTest.setupTrustStore();
   }
 
   /**
@@ -67,10 +42,14 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis("rediss://localhost:6390");
-    jedis.auth("default", "foobared");
-    assertEquals("PONG", jedis.ping());
-    jedis.close();
+    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+      jedis.auth("default", "foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -79,17 +58,12 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithUrlAndCompleteCredentials() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390");
-    assertEquals("PONG", jedis.ping());
-
-    // create user
-    jedis.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
-
-    Jedis jedis2 = new Jedis("rediss://alice:alicePassword@localhost:6390");
-    assertEquals("PONG", jedis2.ping());
-
-    jedis.aclDelUser("alice");
-    jedis.close();
+    try (Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390")) {
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis("rediss://acljedis:fizzbuzz@localhost:6390")) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
 
@@ -99,10 +73,10 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithoutShardInfo() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"));
-    jedis.auth("default", "foobared");
-    assertEquals("PONG", jedis.ping());
-    jedis.close();
+    try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -122,8 +96,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     assertEquals("PONG", jedis.ping());
@@ -152,8 +126,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     try {
@@ -185,8 +159,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     assertEquals("PONG", jedis.ping());
@@ -205,8 +179,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     assertEquals("PONG", jedis.ping());
@@ -228,8 +202,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     try {
@@ -261,8 +235,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     final SSLSocketFactory sslSocketFactory = createTrustNoOneSslSocketFactory();
 
     JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
-    shardInfo.setUser("default");
-    shardInfo.setPassword("foobared");
+    shardInfo.setUser("acljedis");
+    shardInfo.setPassword("fizzbuzz");
 
     Jedis jedis = new Jedis(shardInfo);
     try {
@@ -291,13 +265,9 @@ public class SSLJedisWithCompleteCredentialsTest {
   static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
 
     KeyStore trustStore = KeyStore.getInstance("jceks");
-    InputStream inputStream = null;
-    try {
-      inputStream = new FileInputStream("src/test/resources/truststore.jceks");
+    try (InputStream inputStream = new FileInputStream("src/test/resources/truststore.jceks")){
       trustStore.load(inputStream, null);
-    } finally {
-      inputStream.close();
-    }
+    } 
 
     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
     trustManagerFactory.init(trustStore);

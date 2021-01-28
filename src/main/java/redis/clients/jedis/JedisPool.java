@@ -26,6 +26,12 @@ public class JedisPool extends JedisPoolAbstract {
     this(new GenericObjectPoolConfig(), host, port);
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will not accept a host string in future. It will accept only a uri
+   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
+   */
+  @Deprecated
   public JedisPool(final String host) {
     URI uri = URI.create(host);
     if (JedisURIHelper.isValid(uri)) {
@@ -36,6 +42,15 @@ public class JedisPool extends JedisPoolAbstract {
     }
   }
 
+  /**
+   * @param host
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   * @deprecated This constructor will not accept a host string in future. It will accept only a uri
+   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
+   */
+  @Deprecated
   public JedisPool(final String host, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     URI uri = URI.create(host);

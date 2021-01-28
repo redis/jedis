@@ -133,13 +133,20 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.hostAndPort.set(hostAndPort);
   }
 
+  /**
+   * @param password
+   * @throws IllegalArgumentException
+   * @see #setPassword(java.lang.String, java.lang.String)
+   */
   public void setPassword(final String password) throws IllegalArgumentException {
-    if (this.user != null) {
-      throw new IllegalArgumentException();
-    }
-    this.password = password;
+    setPassword(null, password);
   }
 
+  /**
+   * @param user has to be the same one with which the factory is created
+   * @param password
+   * @throws IllegalArgumentException if the user is not the original user
+   */
   public void setPassword(final String user, final String password) throws IllegalArgumentException {
     if (!java.util.Objects.equals(this.user, user)) {
       throw new IllegalArgumentException();

@@ -10,6 +10,7 @@ public class JedisPoolAbstract extends Pool<Jedis> {
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
    */
+  @Deprecated
   public JedisPoolAbstract() {
     super();
   }

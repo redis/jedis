@@ -21,6 +21,7 @@ public abstract class Pool<T> implements Closeable {
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
    */
+  @Deprecated
   public Pool() {
   }
 
@@ -37,6 +38,12 @@ public abstract class Pool<T> implements Closeable {
     return this.internalPool.isClosed();
   }
 
+  /**
+   * @param poolConfig
+   * @param factory
+   * @deprecated This could be private in future.
+   */
+  @Deprecated
   public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {

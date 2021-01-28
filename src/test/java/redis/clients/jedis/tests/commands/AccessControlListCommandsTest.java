@@ -107,7 +107,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     // create a new client to try to authenticate
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     String authResult = null;
 
     // the user is just created without any permission the authentication should fail
@@ -168,7 +168,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     // connect with this new user and try to get/set keys
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     String authResult = jedis2.auth(USER_ZZZ, "any password");
     assertEquals("OK", authResult);
 
@@ -193,7 +193,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     // connect with this new user and try to get/set keys
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     String authResult = jedis2.auth(USER_ZZZ, "any password");
     assertEquals("OK", authResult);
 
@@ -238,7 +238,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     String authResult = jedis.aclSetUser(USER_ZZZ, "on", "+acl");
 
     // connect with this new user and try to get/set keys
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
 
     String result = null;

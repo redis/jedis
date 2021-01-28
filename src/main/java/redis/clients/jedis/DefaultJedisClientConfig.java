@@ -80,17 +80,17 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public boolean isSSL() {
+  public boolean isSsl() {
     return ssl;
   }
 
   @Override
-  public SSLSocketFactory getSSLSocketFactory() {
+  public SSLSocketFactory getSslSocketFactory() {
     return sslSocketFactory;
   }
 
   @Override
-  public SSLParameters getSSLParameters() {
+  public SSLParameters getSslParameters() {
     return sslParameters;
   }
 

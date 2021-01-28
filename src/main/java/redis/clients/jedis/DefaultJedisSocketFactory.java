@@ -13,7 +13,7 @@ import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  private final HostAndPort hostPort;
+  private HostAndPort hostPort; // TODO: should be final
   private final JedisSocketConfig config;
 
   @Deprecated
@@ -53,14 +53,14 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());
 
-      if (config.isSSL()) {
-        SSLSocketFactory sslSocketFactory = config.getSSLSocketFactory();
+      if (config.isSsl()) {
+        SSLSocketFactory sslSocketFactory = config.getSslSocketFactory();
         if (null == sslSocketFactory) {
           sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
         socket = sslSocketFactory.createSocket(socket, hostAndPort.getHost(), hostAndPort.getPort(), true);
 
-        SSLParameters sslParameters = config.getSSLParameters();
+        SSLParameters sslParameters = config.getSslParameters();
         if (null != sslParameters) {
           ((SSLSocket) socket).setSSLParameters(sslParameters);
         }
@@ -109,8 +109,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   @Override
+  @Deprecated
   public void setHost(String host) {
-    // throw exception?
+    this.hostPort = new HostAndPort(host, this.hostPort.getPort());
   }
 
   @Override
@@ -119,8 +120,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   @Override
+  @Deprecated
   public void setPort(int port) {
-    // throw exception?
+    this.hostPort = new HostAndPort(this.hostPort.getHost(), port);
   }
 
   @Override

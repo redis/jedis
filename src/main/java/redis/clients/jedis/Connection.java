@@ -23,17 +23,24 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private final JedisSocketFactory socketFactory;
+  private boolean socketParamModified = false; // for backward compatibility
+  private JedisSocketFactory socketFactory; // TODO: sould be final
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
+  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
   public Connection() {
-    this(Protocol.DEFAULT_HOST);
+    this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Connection(final String host) {
     this(host, Protocol.DEFAULT_PORT);
   }
@@ -66,6 +73,7 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {
     this.socketFactory = jedisSocketFactory;
+    this.soTimeout = jedisSocketFactory.getSoTimeout();
   }
 
   public Socket getSocket() {
@@ -77,7 +85,7 @@ public class Connection implements Closeable {
   }
 
   public int getSoTimeout() {
-    return socketFactory.getSoTimeout();
+    return soTimeout;
   }
 
   @Deprecated
@@ -85,8 +93,8 @@ public class Connection implements Closeable {
     socketFactory.setConnectionTimeout(connectionTimeout);
   }
 
-  @Deprecated
   public void setSoTimeout(int soTimeout) {
+    this.soTimeout = soTimeout;
     socketFactory.setSoTimeout(soTimeout);
   }
 
@@ -161,6 +169,7 @@ public class Connection implements Closeable {
   @Deprecated
   public void setHost(final String host) {
     socketFactory.setHost(host);
+    socketParamModified = true;
   }
 
   public int getPort() {
@@ -170,9 +179,17 @@ public class Connection implements Closeable {
   @Deprecated
   public void setPort(final int port) {
     socketFactory.setPort(port);
+    socketParamModified = true;
   }
 
-  public void connect() {
+  public void connect() throws JedisConnectionException {
+    if (socketParamModified) { // this is only for backward compatibility
+      try {
+        disconnect();
+      } catch(Exception e) {
+        // swallow
+      }
+    }
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();

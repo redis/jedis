@@ -41,8 +41,8 @@ public class BinaryClient extends Connection {
 
   private boolean isInMulti;
 
-  private String user;
-  private String password;
+  @Deprecated private String user;
+  @Deprecated private String password;
 
   private int db;
 
@@ -52,6 +52,11 @@ public class BinaryClient extends Connection {
     super();
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public BinaryClient(final String host) {
     super(host);
   }
@@ -103,10 +108,12 @@ public class BinaryClient extends Connection {
     return result;
   }
 
+  @Deprecated
   public void setUser(final String user) {
     this.user = user;
   }
 
+  @Deprecated
   public void setPassword(final String password) {
     this.password = password;
   }

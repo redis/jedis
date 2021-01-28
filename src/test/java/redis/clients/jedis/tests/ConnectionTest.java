@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -22,14 +23,29 @@ public class ConnectionTest {
   }
 
   @Test(expected = JedisConnectionException.class)
+  public void checkUnkownHostBackwardCompatible() {
+    client = new Connection();
+    client.setHost("someunknownhost");
+    client.connect();
+  }
+
+  @Test(expected = JedisConnectionException.class)
   public void checkUnkownHost() {
-    client = new Connection("someunknownhost");
+    client = new Connection("someunknownhost", Protocol.DEFAULT_PORT);
+    client.connect();
+  }
+
+  @Test(expected = JedisConnectionException.class)
+  public void checkWrongPortBackwardCompatible() {
+    client = new Connection();
+    client.setHost("localhost");
+    client.setPort(55665);
     client.connect();
   }
 
   @Test(expected = JedisConnectionException.class)
   public void checkWrongPort() {
-    client = new Connection("localhost", 55665);
+    client = new Connection(Protocol.DEFAULT_HOST, 55665);
     client.connect();
   }
 

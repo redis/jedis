@@ -17,21 +17,21 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public interface JedisSocketFactory {
 
   /**
+   * @deprecated throwing IOException will not be supported in future
    * @return Socket
    * @throws IOException this will be removed in future
    * @throws JedisConnectionException
-   * @deprecated throwing IOException will not be supported in future
    */
   @Deprecated
   Socket createSocket() throws IOException, JedisConnectionException;
 
   @Deprecated String getDescription();
 
-  @Deprecated String getHost();
+  String getHost();
 
   @Deprecated void setHost(String host);
 
-  @Deprecated int getPort();
+  int getPort();
 
   @Deprecated void setPort(int port);
 

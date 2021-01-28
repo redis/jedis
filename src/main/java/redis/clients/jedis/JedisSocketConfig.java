@@ -10,11 +10,11 @@ public interface JedisSocketConfig {
 
   int getSoTimeout();
 
-  boolean isSSL();
+  boolean isSsl();
 
-  SSLSocketFactory getSSLSocketFactory();
+  SSLSocketFactory getSslSocketFactory();
 
-  SSLParameters getSSLParameters();
+  SSLParameters getSslParameters();
 
   HostnameVerifier getHostnameVerifier();
 

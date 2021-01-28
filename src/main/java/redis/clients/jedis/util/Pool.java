@@ -20,6 +20,8 @@ public abstract class Pool<T> implements Closeable {
 
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
+   *
+   * @deprecated
    */
   @Deprecated
   public Pool() {

@@ -27,17 +27,17 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   /**
-   * @param host
+   * @param url
    * @deprecated This constructor will not accept a host string in future. It will accept only a uri
    * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
    */
   @Deprecated
-  public JedisPool(final String host) {
-    URI uri = URI.create(host);
+  public JedisPool(final String url) {
+    URI uri = URI.create(url);
     if (JedisURIHelper.isValid(uri)) {
       initPool(new GenericObjectPoolConfig(), new JedisFactory(uri, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null));
     } else {
-      initPool(new GenericObjectPoolConfig(), new JedisFactory(host, Protocol.DEFAULT_PORT,
+      initPool(new GenericObjectPoolConfig(), new JedisFactory(url, Protocol.DEFAULT_PORT,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
     }
   }

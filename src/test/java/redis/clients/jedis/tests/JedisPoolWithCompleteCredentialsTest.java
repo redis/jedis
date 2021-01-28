@@ -274,24 +274,23 @@ public class JedisPoolWithCompleteCredentialsTest {
         "acljedis", "fizzbuzz", 0, "my_shiny_client_name") { };
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
-      Jedis obj1;
-      try (Jedis obj11 = pool.getResource()) {
-        obj1 = obj11;
-        obj11.set("foo", "bar");
-        assertEquals("bar", obj11.get("foo"));
+      Jedis obj1_ref;
+      try (Jedis obj1_1 = pool.getResource()) {
+        obj1_ref = obj1_1;
+        obj1_1.set("foo", "bar");
+        assertEquals("bar", obj1_1.get("foo"));
         assertEquals(1, pool.getNumActive());
       }
       assertEquals(0, pool.getNumActive());
-      Jedis obj12 = pool.getResource();
-      assertSame(obj1, obj12);
-      assertEquals(1, pool.getNumActive());
-
-      factory.setPassword("acljedis", "wrong password");
-      try (Jedis obj2 = pool.getResource()) {
-        fail("Should not get resource from pool");
-      } catch (JedisConnectionException jce) { }
-      assertEquals(1, pool.getNumActive());
-      obj12.close();
+      try (Jedis obj1_2 = pool.getResource()) {
+        assertSame(obj1_ref, obj1_2);
+        assertEquals(1, pool.getNumActive());
+        factory.setPassword("acljedis", "wrong password");
+        try (Jedis obj2 = pool.getResource()) {
+          fail("Should not get resource from pool");
+        } catch (JedisConnectionException jce) { }
+        assertEquals(1, pool.getNumActive());
+      }
       assertEquals(0, pool.getNumActive());
     }
   }
@@ -309,7 +308,7 @@ public class JedisPoolWithCompleteCredentialsTest {
 
       try {
         factory.setPassword("fizzbuzz");
-        fail();
+        fail("Factory created with user='fizzbuzz'. Setting password without user should fail.");
       } catch (IllegalArgumentException e) { }
 
       factory.setPassword("acljedis", "fizzbuzz");

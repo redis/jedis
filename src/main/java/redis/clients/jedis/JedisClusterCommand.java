@@ -17,15 +17,6 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class JedisClusterCommand<T> {
 
-  /**
-   * Default cluster-node-timeout is 15s according to
-   * https://www.programmersought.com/article/40076100313/,
-   * add some on top of that and we get to 20.
-   *
-   * @see #JedisClusterCommand(JedisClusterConnectionHandler, int, Duration)
-   */
-  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(20);
-
   private static final Logger LOG = LoggerFactory.getLogger(JedisClusterCommand.class);
 
   private final JedisClusterConnectionHandler connectionHandler;
@@ -37,15 +28,6 @@ public abstract class JedisClusterCommand<T> {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
     this.timeout = timeout;
-  }
-
-  /**
-   * Create a cluster command with a default timeout of {@link #DEFAULT_TIMEOUT}. To override the
-   * timeout, call {@link #JedisClusterCommand(JedisClusterConnectionHandler, int, Duration)}
-   * instead.
-   */
-  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
-    this(connectionHandler, maxAttempts, DEFAULT_TIMEOUT);
   }
 
   public abstract T execute(Jedis connection);

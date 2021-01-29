@@ -53,7 +53,8 @@ public class BinaryClient extends Connection {
 
   /**
    * @param host
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in future. It can be replaced with
+   * {@link #BinaryClient(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
    */
   @Deprecated
   public BinaryClient(final String host) {
@@ -64,11 +65,17 @@ public class BinaryClient extends Connection {
     super(host, port);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,

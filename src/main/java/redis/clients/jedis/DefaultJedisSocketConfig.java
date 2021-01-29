@@ -127,34 +127,6 @@ public class DefaultJedisSocketConfig implements JedisSocketConfig {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
     }
-
-    public int getConnectionTimeout() {
-      return connectionTimeout;
-    }
-
-    public int getSoTimeout() {
-      return soTimeout;
-    }
-
-    public boolean isSsl() {
-      return ssl;
-    }
-
-    public SSLSocketFactory getSslSocketFactory() {
-      return sslSocketFactory;
-    }
-
-    public SSLParameters getSslParameters() {
-      return sslParameters;
-    }
-
-    public HostnameVerifier getHostnameVerifier() {
-      return hostnameVerifier;
-    }
-
-    public HostAndPortMapper getHostAndPortMapper() {
-      return hostAndPortMapper;
-    }
   }
 
   static DefaultJedisSocketConfig withSsl(boolean ssl, JedisSocketConfig copy) {

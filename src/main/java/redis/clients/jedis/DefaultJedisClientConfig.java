@@ -40,10 +40,6 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
     this.hostAndPortMapper = hostAndPortMapper;
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
   @Override
   public int getConnectionTimeout() {
     return connectionTimeout;
@@ -102,6 +98,10 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public HostAndPortMapper getHostAndPortMapper() {
     return hostAndPortMapper;
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   public static class Builder {
@@ -189,54 +189,6 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
     public Builder withHostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
-    }
-
-    public int getConnectionTimeout() {
-      return connectionTimeout;
-    }
-
-    public int getSoTimeout() {
-      return soTimeout;
-    }
-
-    public int getInfiniteSoTimeout() {
-      return infiniteSoTimeout;
-    }
-
-    public String getUser() {
-      return user;
-    }
-
-    public String getPassword() {
-      return password;
-    }
-
-    public int getDatabse() {
-      return databse;
-    }
-
-    public String getClientName() {
-      return clientName;
-    }
-
-    public boolean isSsl() {
-      return ssl;
-    }
-
-    public SSLSocketFactory getSslSocketFactory() {
-      return sslSocketFactory;
-    }
-
-    public SSLParameters getSslParameters() {
-      return sslParameters;
-    }
-
-    public HostnameVerifier getHostnameVerifier() {
-      return hostnameVerifier;
-    }
-
-    public HostAndPortMapper getHostAndPortMapper() {
-      return hostAndPortMapper;
     }
   }
 }

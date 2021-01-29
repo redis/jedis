@@ -574,16 +574,17 @@ public class JedisClusterTest {
       }
     }
 
-    Iterator<JedisPool> poolIterator = jc.getClusterNodes().values().iterator();
-    while (poolIterator.hasNext()) {
-      JedisPool pool = poolIterator.next();
-      try {
-        pool.getResource();
-        fail("JedisCluster's internal pools should be already destroyed");
-      } catch (JedisConnectionException e) {
-        // ok to go...
-      }
-    }
+//    Iterator<JedisPool> poolIterator = jc.getClusterNodes().values().iterator();
+//    while (poolIterator.hasNext()) {
+//      JedisPool pool = poolIterator.next();
+//      try {
+//        pool.getResource();
+//        fail("JedisCluster's internal pools should be already destroyed");
+//      } catch (JedisConnectionException e) {
+//        // ok to go...
+//      }
+//    }
+    assertEquals(0, jc.getClusterNodes().size());
   }
 
   @Test
@@ -593,14 +594,7 @@ public class JedisClusterTest {
     jc.set("51", "foo");
     jc.close();
 
-    jc.getClusterNodes().values().forEach(pool -> {
-      try {
-        pool.getResource();
-        fail("JedisCluster's internal pools should be already destroyed");
-      } catch (JedisConnectionException e) {
-        // ok to go...
-      }
-    });
+    assertEquals(0, jc.getClusterNodes().size());
   }
 
   @Test

@@ -183,14 +183,14 @@ public class JedisTest extends JedisCommandTestBase {
   public void uriWithDBindexShouldUseTimeout() throws URISyntaxException {
     URI uri = new URI("redis://fakehost:6378/1");
     long startTime = System.nanoTime();
-    try (Jedis jedis = new Jedis(uri, 5000)) {
-      jedis.ping();
+    try (Jedis j = new Jedis(uri, 5000)) {
+      j.ping();
     } catch (Exception ex) {
       assertEquals(JedisConnectionException.class, ex.getClass());
       assertEquals(java.net.UnknownHostException.class, ex.getCause().getClass());
     }
     long stopTime = System.nanoTime();
-    assertTrue(stopTime - startTime > 3500);
+    assertTrue(stopTime - startTime > 4000);
   }
 
   @Test

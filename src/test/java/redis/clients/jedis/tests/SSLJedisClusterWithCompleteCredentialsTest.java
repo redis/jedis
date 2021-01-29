@@ -46,24 +46,26 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
   public void testSSLDiscoverNodesAutomatically() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("localhost", 8379));
-    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS,
-    		                           "default","cluster", null, DEFAULT_POOL_CONFIG, true, null, null, null, hostAndPortMap);
+    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true, null, null,
+        null, hostAndPortMap);
     Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
     assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
     
     jc.get("foo");
     jc.close();
-  
-    JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, 
-    		                            DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true, null, null, null, hostAndPortMap);
+    
+    JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT,
+        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG,
+        true, null, null, null, hostAndPortMap);
     clusterNodes = jc2.getClusterNodes();
     assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
+    assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
     jc2.get("foo");
     jc2.close();
   }
@@ -75,7 +77,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
     try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS,
             "default", "cluster", null, DEFAULT_POOL_CONFIG,
             true, null, null, null, null)){
-
+      
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));

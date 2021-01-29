@@ -1,14 +1,5 @@
 package redis.clients.jedis.tests;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import redis.clients.jedis.DefaultJedisSocketConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.tests.utils.RedisVersionUtil;
-
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -18,6 +9,16 @@ import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import redis.clients.jedis.DefaultJedisSocketConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import static org.junit.Assert.*;
 

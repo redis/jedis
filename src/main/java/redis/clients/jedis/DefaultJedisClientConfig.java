@@ -113,7 +113,7 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
     private String user = null;
     private String password = null;
     private int databse = Protocol.DEFAULT_DATABASE;
-    private String clinetName = null;
+    private String clientName = null;
 
     private boolean ssl = false;
     private SSLSocketFactory sslSocketFactory = null;
@@ -127,7 +127,7 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
 
     public DefaultJedisClientConfig build() {
       return new DefaultJedisClientConfig(connectionTimeout, soTimeout, infiniteSoTimeout,
-          user, password, databse, clinetName,
+          user, password, databse, clientName,
           ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
@@ -161,8 +161,8 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder withClinetName(String clinetName) {
-      this.clinetName = clinetName;
+    public Builder withClientName(String clientName) {
+      this.clientName = clientName;
       return this;
     }
 
@@ -215,8 +215,8 @@ public class DefaultJedisClientConfig implements JedisClientConfig {
       return databse;
     }
 
-    public String getClinetName() {
-      return clinetName;
+    public String getClientName() {
+      return clientName;
     }
 
     public boolean isSsl() {

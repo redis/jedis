@@ -84,6 +84,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl, null, null, null, null);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
@@ -91,6 +94,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig,
@@ -100,6 +106,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig,

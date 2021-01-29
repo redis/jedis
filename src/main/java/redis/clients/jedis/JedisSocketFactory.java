@@ -22,8 +22,7 @@ public interface JedisSocketFactory {
    * @throws IOException this will be removed in future
    * @throws JedisConnectionException
    */
-  @Deprecated
-  Socket createSocket() throws IOException, JedisConnectionException;
+  @Deprecated Socket createSocket() throws IOException, JedisConnectionException;
 
   @Deprecated String getDescription();
 

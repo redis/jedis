@@ -57,6 +57,11 @@ public class Connection implements Closeable {
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
+  @Override
+  public String toString() {
+    return "Connection{" + jedisSocketFactory + "}";
+  }
+
   public Socket getSocket() {
     return socket;
   }

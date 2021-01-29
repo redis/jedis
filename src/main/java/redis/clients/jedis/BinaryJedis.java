@@ -189,6 +189,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client(jedisSocketFactory);
   }
 
+  @Override
+  public String toString() {
+    return "BinaryJedis{" + client + '}';
+  }
+
   private void initializeClientFromURI(URI uri) {
     initializeClientFromURI(uri, null, null, null);
   }

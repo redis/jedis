@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -23,6 +25,8 @@ public abstract class JedisClusterCommand<T> {
    * @see #JedisClusterCommand(JedisClusterConnectionHandler, int, Duration)
    */
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(20);
+
+  private static final Logger LOG = LoggerFactory.getLogger(JedisClusterCommand.class);
 
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
@@ -143,10 +147,15 @@ public abstract class JedisClusterCommand<T> {
           redirectionSupplier = null;
         }
 
-        return execute(connection);
+        final T result = execute(connection);
+        if (currentAttempt > 0) {
+          LOG.info("Success after {} attempts", currentAttempt + 1);
+        }
+        return result;
       } catch (JedisNoReachableClusterNodeException e) {
         throw e;
       } catch (JedisConnectionException e) {
+        LOG.warn("Failed connecting to Redis: {}", connection, e);
         // "- 1" because we just did one, but the currentAttempt counter hasn't increased yet
         int attemptsLeft = maxAttempts - currentAttempt - 1;
         connectionSupplier = handleConnectionProblem(connection, slot, attemptsLeft, deadline);
@@ -155,6 +164,8 @@ public abstract class JedisClusterCommand<T> {
       } finally {
         releaseConnection(connection);
       }
+
+      LOG.info("{} retries left...", maxAttempts - currentAttempt - 1);
     }
 
     throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
@@ -162,6 +173,7 @@ public abstract class JedisClusterCommand<T> {
 
   protected void sleep(long sleepMillis) {
     try {
+      LOG.info("Backing off, sleeping {}ms before trying again...", sleepMillis);
       TimeUnit.MILLISECONDS.sleep(sleepMillis);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -171,7 +183,11 @@ public abstract class JedisClusterCommand<T> {
   private Supplier<Jedis> handleConnectionProblem(Jedis failedConnection, final int slot, int attemptsLeft,
       Instant doneDeadline) {
     if (!shouldBackOff(attemptsLeft)) {
-      return () -> connectionHandler.getConnectionFromSlot(slot);
+      return () -> {
+        Jedis connection = connectionHandler.getConnectionFromSlot(slot);
+        LOG.info("Retrying with {}", connection);
+        return connection;
+      };
     }
 
     // Must release current connection before renewing the slot cache below. If we fail to do this,
@@ -188,11 +204,16 @@ public abstract class JedisClusterCommand<T> {
     return () -> {
       sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
       // Get a random connection, it will redirect us if it's not the right one
-      return connectionHandler.getConnection();
+      LOG.info("Retrying with a random node...");
+      Jedis connection = connectionHandler.getConnection();
+      LOG.info("Retrying with random pick: {}", connection);
+      return connection;
     };
   }
 
   private Supplier<Jedis> handleRedirection(Jedis connection, final JedisRedirectionException jre) {
+    LOG.debug("Redirected by server to {}", jre.getTargetNode());
+
     // if MOVED redirection occurred,
     if (jre instanceof JedisMovedDataException) {
       // it rebuilds cluster's slot cache recommended by Redis cluster specification
@@ -204,6 +225,7 @@ public abstract class JedisClusterCommand<T> {
 
     return () -> {
       Jedis redirectedConnection = connectionHandler.getConnectionFromNode(jre.getTargetNode());
+      LOG.info("Retrying with redirection target {}", connection);
       if (jre instanceof JedisAskDataException) {
         // TODO: Pipeline asking with the original command to make it faster....
         redirectedConnection.asking();

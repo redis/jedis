@@ -121,4 +121,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
   }
+
+  @Override
+  public String toString() {
+    return "DefaultJedisSocketFactory{" + host + ":" + +port + "}";
+  }
 }

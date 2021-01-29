@@ -34,6 +34,9 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, false, null, null, null, null);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, String password, String clientName,
@@ -42,6 +45,9 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this(nodes, poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, String user, String password, String clientName,
@@ -50,6 +56,9 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this(nodes, poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig poolConfig,
       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
@@ -58,17 +67,20 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
     this(nodes,
         DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
             .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
-            .withUser(user).withPassword(password).withClinetName(clientName)
+            .withUser(user).withPassword(password).withClientName(clientName)
             .withSsl(ssl).withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
             .withHostnameVerifier(hostnameVerifier).build(),
         poolConfig,
         DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
             .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
-            .withUser(user).withPassword(password).withClinetName(clientName)
+            .withUser(user).withPassword(password).withClientName(clientName)
             .withSsl(ssl).withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
             .withHostnameVerifier(hostnameVerifier).withHostAndPortMapper(portMap).build());
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final JedisClientConfig seedNodesClientConfig,
       final GenericObjectPoolConfig poolConfig, final JedisClientConfig clusterNodesClientConfig) {

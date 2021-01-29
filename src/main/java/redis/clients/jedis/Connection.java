@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -49,11 +51,17 @@ public class Connection implements Closeable {
     this(host, port, DefaultJedisSocketConfig.DEFAULT_SOCKET_CONFIG);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public Connection(final String host, final int port, final boolean ssl) {
     this(host, port, DefaultJedisSocketConfig.builder().withSsl(ssl).build());
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -88,14 +96,27 @@ public class Connection implements Closeable {
     return soTimeout;
   }
 
+  /**
+   * @param connectionTimeout
+   * @deprecated This method is not supported anymore and is kept for backward compatibility. It
+   * will be removed in future.
+   */
   @Deprecated
   public void setConnectionTimeout(int connectionTimeout) {
     socketFactory.setConnectionTimeout(connectionTimeout);
   }
 
   public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
     socketFactory.setSoTimeout(soTimeout);
+    this.soTimeout = soTimeout;
+    if (this.socket != null) {
+      try {
+        this.socket.setSoTimeout(soTimeout);
+      } catch (SocketException ex) {
+        broken = true;
+        throw new JedisConnectionException(ex);
+      }
+    }
   }
 
   public void setInfiniteSoTimeout(int infiniteSoTimeout) {
@@ -166,6 +187,10 @@ public class Connection implements Closeable {
     return socketFactory.getHost();
   }
 
+  /**
+   * @param host
+   * @deprecated This method will be removed in future.
+   */
   @Deprecated
   public void setHost(final String host) {
     socketFactory.setHost(host);
@@ -176,6 +201,10 @@ public class Connection implements Closeable {
     return socketFactory.getPort();
   }
 
+  /**
+   * @param port
+   * @deprecated This method will be removed in future.
+   */
   @Deprecated
   public void setPort(final int port) {
     socketFactory.setPort(port);

@@ -56,6 +56,9 @@ public class JedisClusterInfoCache {
     this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, false, null, null, null, (HostAndPortMapper) null);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
       final int soTimeout, final String password, final String clientName,
@@ -71,6 +74,9 @@ public class JedisClusterInfoCache {
     this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
       final int soTimeout, final String user, final String password, final String clientName,
@@ -86,6 +92,9 @@ public class JedisClusterInfoCache {
     this(poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
   @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
@@ -104,7 +113,7 @@ public class JedisClusterInfoCache {
     this(poolConfig,
         DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
             .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
-            .withUser(user).withPassword(password).withClinetName(clientName)
+            .withUser(user).withPassword(password).withClientName(clientName)
             .withSsl(ssl).withSslSocketFactory(sslSocketFactory)
             .withSslParameters(sslParameters) .withHostnameVerifier(hostnameVerifier)
             .withHostAndPortMapper(hostAndPortMap).build()
@@ -326,11 +335,17 @@ public class JedisClusterInfoCache {
     return hnp.getHost() + ":" + hnp.getPort();
   }
 
+  /**
+   * @deprecated This method will be removed in future.
+   */
   @Deprecated
   public static String getNodeKey(Client client) {
     return client.getHost() + ":" + client.getPort();
   }
 
+  /**
+   * @deprecated This method will be removed in future.
+   */
   @Deprecated
   public static String getNodeKey(Jedis jedis) {
     return getNodeKey(jedis.getClient());

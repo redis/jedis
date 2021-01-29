@@ -213,7 +213,7 @@ public class JedisClusterTest {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
     String clientName = "config-pattern-app";
     try (JedisCluster jc = new JedisCluster(Collections.singleton(hp),
-        DefaultJedisClientConfig.builder().withPassword("cluster").withClinetName(clientName).build(),
+        DefaultJedisClientConfig.builder().withPassword("cluster").withClientName(clientName).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       jc.getClusterNodes().values().forEach(jedisPool -> {
         try (Jedis jedis = jedisPool.getResource()) {

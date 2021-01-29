@@ -69,7 +69,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this(new HostAndPort(host, port),
         DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
             .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
-            .withUser(user).withPassword(password).withDatabse(database).withClinetName(clientName)
+            .withUser(user).withPassword(password).withDatabse(database).withClientName(clientName)
             .withSsl(ssl).withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
             .withHostnameVerifier(hostnameVerifier).build()
     );
@@ -97,7 +97,7 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this.clientConfig = DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
         .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
         .withUser(JedisURIHelper.getUser(uri)).withPassword(JedisURIHelper.getPassword(uri))
-        .withDatabse(JedisURIHelper.getDBIndex(uri)).withClinetName(clientName)
+        .withDatabse(JedisURIHelper.getDBIndex(uri)).withClientName(clientName)
         .withSsl(JedisURIHelper.isRedisSSLScheme(uri)).withSslSocketFactory(sslSocketFactory)
         .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
   }

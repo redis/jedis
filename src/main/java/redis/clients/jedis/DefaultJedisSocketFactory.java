@@ -108,6 +108,10 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostPort.getHost();
   }
 
+  /**
+   * @param host
+   * @deprecated This method will be removed in future.
+   */
   @Override
   @Deprecated
   public void setHost(String host) {
@@ -119,6 +123,10 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostPort.getPort();
   }
 
+  /**
+   * @param port
+   * @deprecated This method will be removed in future.
+   */
   @Override
   @Deprecated
   public void setPort(int port) {

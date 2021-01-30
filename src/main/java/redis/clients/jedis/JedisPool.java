@@ -10,9 +10,8 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisURIHelper;
-import redis.clients.jedis.util.Pool;
 
-public class JedisPool extends Pool<Jedis> {
+public class JedisPool extends JedisPoolAbstract {
 
   public JedisPool() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);

@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-
 import org.junit.*;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
@@ -36,34 +35,13 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
     }
   };
 
-  @Before
-  public void setUp() throws InterruptedException {
-    super.setUp();
-    SSLJedisTest.setupTrustStore(); // set up trust store for SSL tests
+  @BeforeClass
+  public static void prepare() {
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
-    HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    jedis.close();
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
-
+    SSLJedisTest.setupTrustStore();
   }
 
-  @AfterClass
-  public static void cleanUp() {
-    JedisClusterTest.cleanUp();
-  }
-
-  @After
-  public void tearDown() throws InterruptedException {
-    cleanUp();
-  }
- 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();

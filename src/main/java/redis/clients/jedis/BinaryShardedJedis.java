@@ -389,6 +389,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
   public Long lpos(final byte[] key, final byte[] element) {
     Jedis j = getShard(key);
     return j.lpos(key, element);
@@ -410,6 +416,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public byte[] rpop(final byte[] key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override

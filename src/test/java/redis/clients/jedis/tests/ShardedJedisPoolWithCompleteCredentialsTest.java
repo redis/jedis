@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
@@ -15,7 +16,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of @ShardedJedisPoolTest
+ * This test class is a copy of {@link ShardedJedisPoolTest}
  * where all authentications are made with
  * default:foobared credentialsinformation
  *
@@ -28,35 +29,26 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   private List<JedisShardInfo> shards;
 
+  @BeforeClass
+  public static void shouldRun() throws Exception {
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
+  }
+
   @Before
   public void startUp() {
-
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
-    }
-
-    shards = new ArrayList<JedisShardInfo>();
+    shards = new ArrayList<>();
     shards.add(new JedisShardInfo(redis1));
     shards.add(new JedisShardInfo(redis2));
     shards.get(0).setUser("default");
     shards.get(0).setPassword("foobared");
     shards.get(1).setUser("default");
     shards.get(1).setPassword("foobared");
-    Jedis j = new Jedis(shards.get(0));
-    j.connect();
-    j.flushAll();
-    j.disconnect();
-    j = new Jedis(shards.get(1));
-    j.connect();
-    j.flushAll();
-    j.disconnect();
 
+    for (JedisShardInfo shard : shards) {
+      try (Jedis j = new Jedis(shard)) {
+        j.flushAll();
+      }
+    }
   }
 
   @Test

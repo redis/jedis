@@ -1370,6 +1370,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryBulkReply();
   }
 
+  @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.lpop(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
   /**
    * Returns the index of the first matching element inside a redis list. If the element is found,
    * its index (the zero-based position in the list) is returned. Otherwise, if no match is found,
@@ -1448,6 +1455,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.rpop(key);
     return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.rpop(key, count);
+    return client.getBinaryMultiBulkReply();
   }
 
   /**

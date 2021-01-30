@@ -92,27 +92,29 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
     clear();
   }
 
+  private static final String WATCH_INSIDE_MULTI_MESSAGE = "WATCH inside MULTI is not allowed";
+
   /**
    * @param keys
    * @return
    * @throws UnsupportedOperationException
-   * @deprecated WATCH inside MULTI is not allowed
+   * @deprecated {@value #WATCH_INSIDE_MULTI_MESSAGE}
    */
   @Override
   @Deprecated
   public Response<String> watch(String... keys) throws UnsupportedOperationException {
-    throw new UnsupportedOperationException("WATCH inside MULTI is not allowed");
+    throw new UnsupportedOperationException(WATCH_INSIDE_MULTI_MESSAGE);
   }
 
   /**
    * @param keys
    * @return
    * @throws UnsupportedOperationException
-   * @deprecated WATCH inside MULTI is not allowed
+   * @deprecated {@value #WATCH_INSIDE_MULTI_MESSAGE}
    */
   @Override
   @Deprecated
   public Response<String> watch(byte[]... keys) throws UnsupportedOperationException {
-    throw new UnsupportedOperationException("WATCH inside MULTI is not allowed");
+    throw new UnsupportedOperationException(WATCH_INSIDE_MULTI_MESSAGE);
   }
 }

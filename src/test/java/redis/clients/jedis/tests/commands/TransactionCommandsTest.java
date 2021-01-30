@@ -157,6 +157,11 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", resp.get(0));
   }
 
+  @Test(expected = JedisDataException.class)
+  public void validateWhenInMultiBackwardCompatible() {
+    validateWhenInMulti();
+  }
+
   @Test(expected = JedisBatchOperationException.class)
   public void validateWhenInMulti() {
     jedis.multi();
@@ -214,6 +219,11 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertArrayEquals("bar".getBytes(), hash.get());
     assertArrayEquals("foo".getBytes(), zset.get().iterator().next());
     assertArrayEquals("foo".getBytes(), set.get());
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void transactionResponseWithinPipelineBackwardCompatible() {
+    transactionResponseWithinPipeline();
   }
 
   @Test(expected = JedisBatchOperationException.class)

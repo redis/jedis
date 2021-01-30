@@ -24,6 +24,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisBatchOperationException;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ShardedJedisPipelineTest {
 
@@ -107,6 +108,11 @@ public class ShardedJedisPipelineTest {
     assertNotNull(hgetAll.get().get("foo"));
     assertEquals(1, smembers.get().size());
     assertEquals(1, zrangeWithScores.get().size());
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void pipelineResponseWithinPipelineBackwardCompatible() {
+    pipelineResponseWithinPipeline();
   }
 
   @Test(expected = JedisBatchOperationException.class)

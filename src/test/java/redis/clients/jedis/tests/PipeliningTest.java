@@ -184,6 +184,11 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertNull(score.get());
   }
 
+  @Test(expected = JedisDataException.class)
+  public void pipelineResponseWithinPipelineBackwardCompatible() {
+    pipelineResponseWithinPipeline();
+  }
+
   @Test(expected = JedisBatchOperationException.class)
   public void pipelineResponseWithinPipeline() {
     jedis.set("string", "foo");
@@ -352,10 +357,20 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertEquals(expect, pipe.syncAndReturnAll());
   }
 
+  @Test(expected = JedisDataException.class)
+  public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMultiBackwardCompatible() {
+    pipelineExecShoudThrowBatchExceptionWhenNotInMulti();
+  }
+
   @Test(expected = JedisBatchOperationException.class)
   public void pipelineExecShoudThrowBatchExceptionWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.exec();
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void pipelineDiscardShoudThrowJedisDataExceptionWhenNotInMultiBackwardCompatible() {
+    pipelineDiscardShoudThrowBatchExceptionWhenNotInMulti();
   }
 
   @Test(expected = JedisBatchOperationException.class)
@@ -364,12 +379,22 @@ public class PipeliningTest extends JedisCommandTestBase {
     pipeline.discard();
   }
 
+  @Test(expected = JedisDataException.class)
+  public void pipelineMultiShoudThrowJedisDataExceptionWhenAlreadyInMultiBackwardCompatible() {
+    pipelineMultiShoudThrowBatchExceptionWhenAlreadyInMulti();
+  }
+
   @Test(expected = JedisBatchOperationException.class)
   public void pipelineMultiShoudThrowBatchExceptionWhenAlreadyInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.multi();
     pipeline.set("foo", "3");
     pipeline.multi();
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void testJedisThowExceptionWhenInPipelineBackwardCompatible() {
+    testJedisThowExceptionWhenInPipeline();
   }
 
   @Test(expected = JedisBatchOperationException.class)

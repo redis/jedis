@@ -425,6 +425,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<String> lpop(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
   public Long lpos(final String key,final String element) {
     Jedis j = getShard(key);
     return j.lpos(key, element);
@@ -446,6 +452,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String rpop(final String key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<String> rpop(final String key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override

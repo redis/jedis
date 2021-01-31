@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
@@ -24,13 +24,9 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
    * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
    * @throws Exception
    */
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
-    }
+  @BeforeClass
+  public static void prepare() throws Exception {
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test

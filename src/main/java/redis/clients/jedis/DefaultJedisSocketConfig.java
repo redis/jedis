@@ -134,4 +134,10 @@ public class DefaultJedisSocketConfig implements JedisSocketConfig {
         ssl, copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
         copy.getHostAndPortMapper());
   }
+
+  public static DefaultJedisSocketConfig copyConfig(JedisSocketConfig copy) {
+    return new DefaultJedisSocketConfig(copy.getConnectionTimeout(), copy.getSoTimeout(),
+        copy.isSsl(), copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
+        copy.getHostAndPortMapper());
+  }
 }

@@ -22,7 +22,12 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<>();
 
-  private final JedisClientConfig clientConfig;
+  private final JedisSocketConfig socketConfig;
+  private final int infiniteSoTimeout;
+  private final String user;
+  private final String password;
+  private final int database;
+  private final String clientName;
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
@@ -55,20 +60,27 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
 
   JedisFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this.hostAndPort.set(hostAndPort);
-    this.clientConfig = clientConfig;
+    this.socketConfig = DefaultJedisSocketConfig.copyConfig(clientConfig);
+    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeout();
+    this.user = clientConfig.getUser();
+    this.password = clientConfig.getPassword();
+    this.database = clientConfig.getDatabase();
+    this.clientName = clientConfig.getClientName();
   }
 
   JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    this(new HostAndPort(host, port),
-        DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
-            .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
-            .withUser(user).withPassword(password).withDatabse(database).withClientName(clientName)
-            .withSsl(ssl).withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
-            .withHostnameVerifier(hostnameVerifier).build()
-    );
+    this.hostAndPort.set(new HostAndPort(host, port));
+    this.socketConfig = DefaultJedisSocketConfig.builder().withConnectionTimeout(connectionTimeout)
+        .withSoTimeout(soTimeout).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
+        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
+    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.user = user;
+    this.password = password;
+    this.database = database;
+    this.clientName = clientName;
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -90,12 +102,15 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
           "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
-    this.clientConfig = DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
-        .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
-        .withUser(JedisURIHelper.getUser(uri)).withPassword(JedisURIHelper.getPassword(uri))
-        .withDatabse(JedisURIHelper.getDBIndex(uri)).withClientName(clientName)
-        .withSsl(JedisURIHelper.isRedisSSLScheme(uri)).withSslSocketFactory(sslSocketFactory)
-        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
+    this.socketConfig = DefaultJedisSocketConfig.builder().withConnectionTimeout(connectionTimeout)
+        .withSoTimeout(soTimeout).withSsl(JedisURIHelper.isRedisSSLScheme(uri))
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build();
+    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.user = JedisURIHelper.getUser(uri);
+    this.password = JedisURIHelper.getPassword(uri);
+    this.database = JedisURIHelper.getDBIndex(uri);
+    this.clientName = clientName;
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
@@ -105,8 +120,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public void activateObject(PooledObject<Jedis> pooledJedis) throws Exception {
     final BinaryJedis jedis = pooledJedis.getObject();
-    if (jedis.getDB() != clientConfig.getDatabase()) {
-      jedis.select(clientConfig.getDatabase());
+    if (jedis.getDB() != database) {
+      jedis.select(database);
     }
   }
 
@@ -128,20 +143,20 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
     final HostAndPort hostPort = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hostPort, (JedisSocketConfig) clientConfig, clientConfig.getInfiniteSoTimeout());
+    final Jedis jedis = new Jedis(hostPort, (JedisSocketConfig) socketConfig, infiniteSoTimeout);
 
     try {
       jedis.connect();
-      if (clientConfig.getUser() != null) {
-        jedis.auth(clientConfig.getUser(), clientConfig.getPassword());
-      } else if (clientConfig.getPassword() != null) {
-        jedis.auth(clientConfig.getPassword());
+      if (user != null) {
+        jedis.auth(user, password);
+      } else if (password != null) {
+        jedis.auth(password);
       }
-      if (clientConfig.getDatabase() != 0) {
-        jedis.select(clientConfig.getDatabase());
+      if (database != 0) {
+        jedis.select(database);
       }
-      if (clientConfig.getClientName() != null) {
-        jedis.clientSetname(clientConfig.getClientName());
+      if (clientName != null) {
+        jedis.clientSetname(clientName);
       }
     } catch (JedisException je) {
       try {

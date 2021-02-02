@@ -19,15 +19,25 @@ public abstract class JedisClusterCommand<T> {
 
   private static final Logger LOG = LoggerFactory.getLogger(JedisClusterCommand.class);
 
+  private static final Duration DEFAULT_MAX_TOTAL_RETRIES_DURATION = Duration.ofMillis(
+      BinaryJedisCluster.DEFAULT_TIMEOUT * BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS);
+
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
-  private final Duration timeout;
+  private final Duration maxTotalRetriesDuration;
 
+  public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
+    this(connectionHandler, maxAttempts, DEFAULT_MAX_TOTAL_RETRIES_DURATION);
+  }
+
+  /**
+   * @param maxTotalRetriesDuration No more attempts after we have been trying for this long.
+   */
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts,
-      Duration timeout) {
+      Duration maxTotalRetriesDuration) {
     this.connectionHandler = connectionHandler;
     this.maxAttempts = maxAttempts;
-    this.timeout = timeout;
+    this.maxTotalRetriesDuration = maxTotalRetriesDuration;
   }
 
   public abstract T execute(Jedis connection);
@@ -109,7 +119,7 @@ public abstract class JedisClusterCommand<T> {
   }
 
   private T runWithRetries(final int slot) {
-    Instant deadline = Instant.now().plus(timeout);
+    Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
     Supplier<Jedis> connectionSupplier = () -> connectionHandler.getConnectionFromSlot(slot);
 
     // If we got one redirection, stick with that and don't try anything else

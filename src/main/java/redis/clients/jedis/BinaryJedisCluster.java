@@ -107,6 +107,103 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this.maxAttempts = maxAttempts;
   }
 
+  public static class Builder {
+    // Defaults inspired by this class, JedisClusterConnectionHandler and
+    // JedisSlotBasedConnectionHandler.
+    private final Set<HostAndPort> jedisClusterNode;
+    private int connectionTimeoutMs = DEFAULT_TIMEOUT;
+    private int soTimeoutMs = DEFAULT_TIMEOUT;
+    private int infiniteSoTimeoutMs = 0;
+    private int maxAttempts = DEFAULT_MAX_ATTEMPTS;
+    private String user = null;
+    private String password = null;
+    private String clientName = null;
+    private GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+    private boolean ssl = false;
+    private SSLSocketFactory sslSocketFactory = null;
+    private SSLParameters sslParameters = null;
+    private HostnameVerifier hostnameVerifier = null;
+    private JedisClusterHostAndPortMap hostAndPortMap = null;
+
+    public Builder(Set<HostAndPort> jedisClusterNode) {
+      this.jedisClusterNode = jedisClusterNode;
+    }
+
+    public BinaryJedisCluster build() {
+      return new BinaryJedisCluster(jedisClusterNode, connectionTimeoutMs, soTimeoutMs,
+          infiniteSoTimeoutMs, maxAttempts, user, password, clientName, poolConfig, ssl,
+          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    }
+
+    public Builder connectionTimeoutMs(int connectionTimeoutMs) {
+      this.connectionTimeoutMs = connectionTimeoutMs;
+      return this;
+    }
+
+    public Builder soTimeoutMs(int soTimeoutMs) {
+      this.soTimeoutMs = soTimeoutMs;
+      return this;
+    }
+
+    public Builder infiniteSoTimeoutMs(int infiniteSoTimeoutMs) {
+      this.infiniteSoTimeoutMs = infiniteSoTimeoutMs;
+      return this;
+    }
+
+    public Builder maxAttempts(int maxAttempts) {
+      this.maxAttempts = maxAttempts;
+      return this;
+    }
+
+    public Builder user(String user) {
+      this.user = user;
+      return this;
+    }
+
+    public Builder password(String password) {
+      this.password = password;
+      return this;
+    }
+
+    public Builder clientName(String clientName) {
+      this.clientName = clientName;
+      return this;
+    }
+
+    public Builder poolConfig(GenericObjectPoolConfig poolConfig) {
+      this.poolConfig = poolConfig;
+      return this;
+    }
+
+    public Builder ssl(boolean ssl) {
+      this.ssl = ssl;
+      return this;
+    }
+
+    public Builder sslSocketFactory(SSLSocketFactory sslSocketFactory) {
+      this.ssl = true;
+      this.sslSocketFactory = sslSocketFactory;
+      return this;
+    }
+
+    public Builder SSLParameters(SSLParameters sslParameters) {
+      this.ssl = true;
+      this.sslParameters = sslParameters;
+      return this;
+    }
+
+    public Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
+      this.ssl = true;
+      this.hostnameVerifier = hostnameVerifier;
+      return this;
+    }
+
+    public Builder hostAndPortMap(JedisClusterHostAndPortMap hostAndPortMap) {
+      this.hostAndPortMap = hostAndPortMap;
+      return this;
+    }
+  }
+
   @Override
   public void close() {
     if (connectionHandler != null) {

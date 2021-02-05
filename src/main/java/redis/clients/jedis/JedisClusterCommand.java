@@ -130,8 +130,6 @@ public abstract class JedisClusterCommand<T> {
       this.connectionHandler.renewSlotCache(connection);
     }
 
-    // release current connection before iteration
-    releaseConnection(connection);
 
     return () -> {
       Jedis redirectedConnection = connectionHandler.getConnectionFromNode(jre.getTargetNode());

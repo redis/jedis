@@ -17,9 +17,9 @@ executors:
   linux-8-jdk:
     docker:
       - image: circleci/openjdk:8-jdk
-  linux-7-jdk:
+  linux-latest-jdk:
     docker:
-      - image: circleci/openjdk:7-jdk
+      - image: circleci/openjdk:latest
 
 jobs:
   build:
@@ -70,5 +70,4 @@ workflows:
       - build:
           matrix:
             parameters:
-#              os: [linux-8-jdk, linux-7-jdk]
-              os: [linux-8-jdk]
+              os: [linux-8-jdk, linux-latest-jdk]

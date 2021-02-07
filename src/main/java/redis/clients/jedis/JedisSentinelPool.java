@@ -14,7 +14,12 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisSentinelPool extends JedisPoolAbstract {
-  protected Logger log = LoggerFactory.getLogger(getClass().getName());
+
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
+  protected static Logger log = LoggerFactory.getLogger(JedisSentinelPool.class);
 
   protected final GenericObjectPoolConfig poolConfig;
 
@@ -310,13 +315,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   @Override
-  public void returnBrokenResource(final Jedis resource) {
-    if (resource != null) {
-      returnBrokenResourceObject(resource);
-    }
-  }
-
-  @Override
   public void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
@@ -324,7 +322,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         returnResourceObject(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
-        throw new JedisException("Resource is returned to the pool as broken", e);
+        log.debug("Resource is returned to the pool as broken", e);
       }
     }
   }

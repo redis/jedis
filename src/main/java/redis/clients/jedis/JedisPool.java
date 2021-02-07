@@ -1,17 +1,19 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class JedisPool extends JedisPoolAbstract {
+
+  private static final Logger log = LoggerFactory.getLogger(JedisPool.class);
 
   public JedisPool() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -330,13 +332,6 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   @Override
-  public void returnBrokenResource(final Jedis resource) {
-    if (resource != null) {
-      returnBrokenResourceObject(resource);
-    }
-  }
-
-  @Override
   public void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
@@ -344,6 +339,7 @@ public class JedisPool extends JedisPoolAbstract {
         returnResourceObject(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
+        log.debug("Resource is returned to the pool as broken", e);
       }
     }
   }

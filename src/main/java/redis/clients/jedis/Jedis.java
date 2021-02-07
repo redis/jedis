@@ -29,7 +29,6 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -40,7 +39,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @deprecated This will be private in future.
    */
   @Deprecated
-  protected Pool<Jedis> dataSource = null;
+  protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
@@ -3608,7 +3607,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void close() {
     if (dataSource != null) {
-      Pool<Jedis> pool = this.dataSource;
+      JedisPoolAbstract pool = this.dataSource;
       this.dataSource = null;
       if (client.isBroken()) {
         pool.returnBrokenResource(this);

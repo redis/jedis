@@ -134,23 +134,23 @@ public abstract class JedisPubSub {
         throw new JedisException("Unknown message type: " + firstObj);
       }
       final byte[] resp = (byte[]) firstObj;
-      if (Arrays.equals(SUBSCRIBE.raw, resp)) {
+      if (Arrays.equals(SUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bchannel = (byte[]) reply.get(1);
         final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
         onSubscribe(strchannel, subscribedChannels);
-      } else if (Arrays.equals(UNSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(UNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bchannel = (byte[]) reply.get(1);
         final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
         onUnsubscribe(strchannel, subscribedChannels);
-      } else if (Arrays.equals(MESSAGE.raw, resp)) {
+      } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
         final byte[] bmesg = (byte[]) reply.get(2);
         final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
         final String strmesg = (bmesg == null) ? null : SafeEncoder.encode(bmesg);
         onMessage(strchannel, strmesg);
-      } else if (Arrays.equals(PMESSAGE.raw, resp)) {
+      } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);
         final byte[] bmesg = (byte[]) reply.get(3);
@@ -158,17 +158,17 @@ public abstract class JedisPubSub {
         final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
         final String strmesg = (bmesg == null) ? null : SafeEncoder.encode(bmesg);
         onPMessage(strpattern, strchannel, strmesg);
-      } else if (Arrays.equals(PSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(PSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPSubscribe(strpattern, subscribedChannels);
-      } else if (Arrays.equals(PUNSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPUnsubscribe(strpattern, subscribedChannels);
-      } else if (Arrays.equals(PONG.raw, resp)) {
+      } else if (Arrays.equals(PONG.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPong(strpattern);

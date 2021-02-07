@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands;
 
-public interface ProtocolCommand {
+import redis.clients.jedis.Raw;
 
-  byte[] getRaw();
-
+public interface ProtocolCommand extends Raw {
 }

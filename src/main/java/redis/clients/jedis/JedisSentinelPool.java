@@ -14,7 +14,12 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisSentinelPool extends JedisPoolAbstract {
-  protected Logger log = LoggerFactory.getLogger(getClass().getName());
+
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
+  protected static Logger log = LoggerFactory.getLogger(JedisSentinelPool.class);
 
   protected final GenericObjectPoolConfig poolConfig;
 
@@ -197,11 +202,9 @@ public class JedisSentinelPool extends JedisPoolAbstract {
           initPool(poolConfig, factory);
         } else {
           factory.setHostAndPort(currentHostMaster);
-          // although we clear the pool, we still have to check the
-          // returned object
-          // in getResource, this call only clears idle instances, not
-          // borrowed instances
-          internalPool.clear();
+          // although we clear the pool, we still have to check the returned object in getResource,
+          // this call only clears idle instances, not borrowed instances
+          clearInternalPool();
         }
 
         log.info("Created JedisPool to master at {}", master);
@@ -312,21 +315,14 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   @Override
-  protected void returnBrokenResource(final Jedis resource) {
-    if (resource != null) {
-      returnBrokenResourceObject(resource);
-    }
-  }
-
-  @Override
-  protected void returnResource(final Jedis resource) {
+  public void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
         resource.resetState();
         returnResourceObject(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
-        throw new JedisException("Resource is returned to the pool as broken", e);
+        log.debug("Resource is returned to the pool as broken", e);
       }
     }
   }

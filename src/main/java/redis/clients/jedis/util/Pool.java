@@ -12,6 +12,11 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
+
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
   protected GenericObjectPool<T> internalPool;
 
   /**
@@ -45,6 +50,12 @@ public abstract class Pool<T> implements Closeable {
     this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
+  protected void clearInternalPool() {
+    if (internalPool != null) {
+      internalPool.clear();
+    }
+  }
+
   public T getResource() {
     try {
       return internalPool.borrowObject();
@@ -61,9 +72,6 @@ public abstract class Pool<T> implements Closeable {
   }
 
   protected void returnResourceObject(final T resource) {
-    if (resource == null) {
-      return;
-    }
     try {
       internalPool.returnObject(resource);
     } catch (Exception e) {
@@ -71,13 +79,13 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  protected void returnBrokenResource(final T resource) {
+  public void returnBrokenResource(final T resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  protected void returnResource(final T resource) {
+  public void returnResource(final T resource) {
     if (resource != null) {
       returnResourceObject(resource);
     }

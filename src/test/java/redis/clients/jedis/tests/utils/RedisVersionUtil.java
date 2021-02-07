@@ -16,7 +16,6 @@ public class RedisVersionUtil {
           completeVersion = splitted[i + 1];
           break;
         }
-
       }
     }
 

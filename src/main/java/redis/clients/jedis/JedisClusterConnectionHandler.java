@@ -58,9 +58,9 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
         null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public abstract Jedis getConnection();
+  protected abstract Jedis getConnection();
 
-  public abstract Jedis getConnectionFromSlot(int slot);
+  protected abstract Jedis getConnectionFromSlot(int slot);
 
   public Jedis getConnectionFromNode(HostAndPort node) {
     return cache.setupNodeIfNotExist(node).getResource();

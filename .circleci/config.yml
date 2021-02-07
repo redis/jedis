@@ -51,6 +51,7 @@ jobs:
           key: jedis-{{ checksum "pom.xml" }}
 
       - run: |
+          sudo rm -rf /var/lib/apt/lists/* 
           sudo apt update
           sudo apt install -y stunnel
 

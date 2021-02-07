@@ -104,32 +104,32 @@ public abstract class BinaryJedisPubSub {
         throw new JedisException("Unknown message type: " + firstObj);
       }
       final byte[] resp = (byte[]) firstObj;
-      if (Arrays.equals(SUBSCRIBE.raw, resp)) {
+      if (Arrays.equals(SUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bchannel = (byte[]) reply.get(1);
         onSubscribe(bchannel, subscribedChannels);
-      } else if (Arrays.equals(UNSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(UNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bchannel = (byte[]) reply.get(1);
         onUnsubscribe(bchannel, subscribedChannels);
-      } else if (Arrays.equals(MESSAGE.raw, resp)) {
+      } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
         final byte[] bmesg = (byte[]) reply.get(2);
         onMessage(bchannel, bmesg);
-      } else if (Arrays.equals(PMESSAGE.raw, resp)) {
+      } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);
         final byte[] bmesg = (byte[]) reply.get(3);
         onPMessage(bpattern, bchannel, bmesg);
-      } else if (Arrays.equals(PSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(PSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         onPSubscribe(bpattern, subscribedChannels);
-      } else if (Arrays.equals(PUNSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         onPUnsubscribe(bpattern, subscribedChannels);
-      } else if (Arrays.equals(PONG.raw, resp)) {
+      } else if (Arrays.equals(PONG.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         onPong(bpattern);
       } else {

@@ -14,7 +14,6 @@ import static redis.clients.jedis.Protocol.Keyword.STORE;
 import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 import static redis.clients.jedis.Protocol.Keyword.FREQ;
 import static redis.clients.jedis.Protocol.Keyword.HELP;
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -390,7 +389,7 @@ public class BinaryClient extends Connection {
   }
 
   public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count){
-    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(Keyword.COUNT.raw, toByteArray(count))));
+    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(Keyword.COUNT.getRaw(), toByteArray(count))));
   }
 
   public void rpop(final byte[] key) {
@@ -528,11 +527,11 @@ public class BinaryClient extends Connection {
   }
 
   public void zrangeWithScores(final byte[] key, final long start, final long stop) {
-    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.getRaw());
   }
 
   public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.raw);
+    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.getRaw());
   }
 
   public void zcard(final byte[] key) {
@@ -617,13 +616,13 @@ public class BinaryClient extends Connection {
     final List<byte[]> args = new ArrayList<>();
     args.add(key);
     args.addAll(sortingParameters.getParams());
-    args.add(STORE.raw);
+    args.add(STORE.getRaw());
     args.add(dstkey);
     sendCommand(SORT, args.toArray(new byte[args.size()][]));
   }
 
   public void sort(final byte[] key, final byte[] dstkey) {
-    sendCommand(SORT, key, STORE.raw, dstkey);
+    sendCommand(SORT, key, STORE.getRaw(), dstkey);
   }
 
   public void brpop(final byte[][] args) {
@@ -707,64 +706,64 @@ public class BinaryClient extends Connection {
 
   public void zrangeByScore(final byte[] key, final double min, final double max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.raw, toByteArray(offset),
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(), toByteArray(offset),
       toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.raw, toByteArray(offset),
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(), toByteArray(offset),
       toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), WITHSCORES.raw);
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), WITHSCORES.raw);
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), WITHSCORES.getRaw());
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.raw, toByteArray(offset),
-      toByteArray(count), WITHSCORES.raw);
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.raw, toByteArray(offset),
-      toByteArray(count), WITHSCORES.raw);
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrangeByScore(final byte[] key, final byte[] min, final byte[] max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.raw, toByteArray(offset), toByteArray(count));
+    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.raw, toByteArray(offset), toByteArray(count));
+    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, WITHSCORES.raw);
+    sendCommand(ZRANGEBYSCORE, key, min, max, WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, WITHSCORES.raw);
+    sendCommand(ZREVRANGEBYSCORE, key, max, min, WITHSCORES.getRaw());
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.raw, toByteArray(offset), toByteArray(count),
-      WITHSCORES.raw);
+    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count),
+      WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.raw, toByteArray(offset),
-      toByteArray(count), WITHSCORES.raw);
+    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zremrangeByRank(final byte[] key, final long start, final long stop) {
@@ -817,7 +816,7 @@ public class BinaryClient extends Connection {
 
   public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.raw, toByteArray(offset), toByteArray(count));
+    sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
@@ -826,7 +825,7 @@ public class BinaryClient extends Connection {
 
   public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.raw, toByteArray(offset), toByteArray(count));
+    sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
@@ -870,15 +869,15 @@ public class BinaryClient extends Connection {
   }
 
   public void slaveofNoOne() {
-    sendCommand(SLAVEOF, NO.raw, ONE.raw);
+    sendCommand(SLAVEOF, NO.getRaw(), ONE.getRaw());
   }
 
   public void configGet(final byte[] pattern) {
-    sendCommand(CONFIG, Keyword.GET.raw, pattern);
+    sendCommand(CONFIG, Keyword.GET.getRaw(), pattern);
   }
 
   public void configSet(final byte[] parameter, final byte[] value) {
-    sendCommand(CONFIG, Keyword.SET.raw, parameter, value);
+    sendCommand(CONFIG, Keyword.SET.getRaw(), parameter, value);
   }
 
   public void strlen(final byte[] key) {
@@ -919,11 +918,11 @@ public class BinaryClient extends Connection {
   }
 
   public void configResetStat() {
-    sendCommand(CONFIG, Keyword.RESETSTAT.raw);
+    sendCommand(CONFIG, Keyword.RESETSTAT.getRaw());
   }
 
   public void configRewrite() {
-    sendCommand(CONFIG, Keyword.REWRITE.raw);
+    sendCommand(CONFIG, Keyword.REWRITE.getRaw());
   }
 
   public void setbit(final byte[] key, final long offset, final byte[] value) {
@@ -994,55 +993,55 @@ public class BinaryClient extends Connection {
   }
 
   public void scriptFlush() {
-    sendCommand(SCRIPT, Keyword.FLUSH.raw);
+    sendCommand(SCRIPT, Keyword.FLUSH.getRaw());
   }
 
   public void scriptExists(final byte[]... sha1) {
-    sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.raw, sha1));
+    sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.getRaw(), sha1));
   }
 
   public void scriptLoad(final byte[] script) {
-    sendCommand(SCRIPT, Keyword.LOAD.raw, script);
+    sendCommand(SCRIPT, Keyword.LOAD.getRaw(), script);
   }
 
   public void scriptKill() {
-    sendCommand(SCRIPT, Keyword.KILL.raw);
+    sendCommand(SCRIPT, Keyword.KILL.getRaw());
   }
 
   public void slowlogGet() {
-    sendCommand(SLOWLOG, Keyword.GET.raw);
+    sendCommand(SLOWLOG, Keyword.GET.getRaw());
   }
 
   public void slowlogGet(final long entries) {
-    sendCommand(SLOWLOG, Keyword.GET.raw, toByteArray(entries));
+    sendCommand(SLOWLOG, Keyword.GET.getRaw(), toByteArray(entries));
   }
 
   public void slowlogReset() {
-    sendCommand(SLOWLOG, RESET.raw);
+    sendCommand(SLOWLOG, RESET.getRaw());
   }
 
   public void slowlogLen() {
-    sendCommand(SLOWLOG, LEN.raw);
+    sendCommand(SLOWLOG, LEN.getRaw());
   }
 
   public void objectRefcount(final byte[] key) {
-    sendCommand(OBJECT, REFCOUNT.raw, key);
+    sendCommand(OBJECT, REFCOUNT.getRaw(), key);
   }
 
   public void objectIdletime(final byte[] key) {
-    sendCommand(OBJECT, IDLETIME.raw, key);
+    sendCommand(OBJECT, IDLETIME.getRaw(), key);
   }
 
   public void objectEncoding(final byte[] key) {
-    sendCommand(OBJECT, ENCODING.raw, key);
+    sendCommand(OBJECT, ENCODING.getRaw(), key);
   }
 
   public void objectHelp() {
-    sendCommand(OBJECT, HELP.raw);
+    sendCommand(OBJECT, HELP.getRaw());
   }
 
   public void objectFreq(final byte[] key) {
-    sendCommand(OBJECT, FREQ.raw, key);
+    sendCommand(OBJECT, FREQ.getRaw(), key);
   }
 
   public void bitcount(final byte[] key) {
@@ -1070,7 +1069,7 @@ public class BinaryClient extends Connection {
   }
 
   public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
-    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.raw);
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }
 
   public void pexpire(final byte[] key, final long milliseconds) {
@@ -1094,19 +1093,19 @@ public class BinaryClient extends Connection {
   }
 
   public void memoryDoctor() {
-    sendCommand(MEMORY, Keyword.DOCTOR.raw);
+    sendCommand(MEMORY, Keyword.DOCTOR.getRaw());
   }
   
   public void memoryUsage(final byte[] key) {
-    sendCommand(MEMORY, Keyword.USAGE.raw, key);
+    sendCommand(MEMORY, Keyword.USAGE.getRaw(), key);
   }
   
   public void memoryUsage(final byte[] key, final int samples) {
-    sendCommand(MEMORY, Keyword.USAGE.raw, key, Keyword.SAMPLES.raw, toByteArray(samples));
+    sendCommand(MEMORY, Keyword.USAGE.getRaw(), key, Keyword.SAMPLES.getRaw(), toByteArray(samples));
   }
 
   public void clientKill(final byte[] ipPort) {
-    sendCommand(CLIENT, Keyword.KILL.raw, ipPort);
+    sendCommand(CLIENT, Keyword.KILL.getRaw(), ipPort);
   }
 
   public void clientKill(final String ip, final int port) {
@@ -1114,27 +1113,27 @@ public class BinaryClient extends Connection {
   }
 
   public void clientKill(ClientKillParams params) {
-    sendCommand(CLIENT, joinParameters(Keyword.KILL.raw, params.getByteParams()));
+    sendCommand(CLIENT, joinParameters(Keyword.KILL.getRaw(), params.getByteParams()));
   }
 
   public void clientGetname() {
-    sendCommand(CLIENT, Keyword.GETNAME.raw);
+    sendCommand(CLIENT, Keyword.GETNAME.getRaw());
   }
 
   public void clientList() {
-    sendCommand(CLIENT, Keyword.LIST.raw);
+    sendCommand(CLIENT, Keyword.LIST.getRaw());
   }
 
   public void clientSetname(final byte[] name) {
-    sendCommand(CLIENT, Keyword.SETNAME.raw, name);
+    sendCommand(CLIENT, Keyword.SETNAME.getRaw(), name);
   }
 
   public void clientPause(final long timeout) {
-    sendCommand(CLIENT, Keyword.PAUSE.raw, toByteArray(timeout));
+    sendCommand(CLIENT, Keyword.PAUSE.getRaw(), toByteArray(timeout));
   }
 
   public void clientId() {
-    sendCommand(CLIENT, Keyword.ID.raw);
+    sendCommand(CLIENT, Keyword.ID.getRaw());
   }
 
   public void time() {
@@ -1160,7 +1159,7 @@ public class BinaryClient extends Connection {
     args[i++] = toByteArray(timeout);
     System.arraycopy(bparams, 0, args, i, bparams.length);
     i += bparams.length;
-    args[i++] = Keyword.KEYS.raw;
+    args[i++] = Keyword.KEYS.getRaw();
     System.arraycopy(keys, 0, args, i, keys.length);
     sendCommand(MIGRATE, args);
   }
@@ -1316,15 +1315,15 @@ public class BinaryClient extends Connection {
   }
 
   public void moduleLoad(final byte[] path) {
-    sendCommand(MODULE, Keyword.LOAD.raw, path);
+    sendCommand(MODULE, Keyword.LOAD.getRaw(), path);
   }
 
   public void moduleList() {
-    sendCommand(MODULE, Keyword.LIST.raw);
+    sendCommand(MODULE, Keyword.LIST.getRaw());
   }
 
   public void moduleUnload(final byte[] name) {
-    sendCommand(MODULE, Keyword.UNLOAD.raw, name);
+    sendCommand(MODULE, Keyword.UNLOAD.getRaw(), name);
   }
 
   private ArrayList<byte[]> convertScoreMembersToByteArrays(final Map<byte[], Double> scoreMembers) {
@@ -1338,46 +1337,46 @@ public class BinaryClient extends Connection {
     return args;
   }
 
-  public void aclWhoAmI() { sendCommand(ACL, Keyword.WHOAMI.raw); }
+  public void aclWhoAmI() { sendCommand(ACL, Keyword.WHOAMI.getRaw()); }
 
-  public void aclGenPass() { sendCommand(ACL, Keyword.GENPASS.raw); }
+  public void aclGenPass() { sendCommand(ACL, Keyword.GENPASS.getRaw()); }
 
-  public void aclList() { sendCommand(ACL, Keyword.LIST.raw); }
+  public void aclList() { sendCommand(ACL, Keyword.LIST.getRaw()); }
 
-  public void aclUsers() { sendCommand(ACL, Keyword.USERS.raw); }
+  public void aclUsers() { sendCommand(ACL, Keyword.USERS.getRaw()); }
 
-  public void aclCat() { sendCommand(ACL, Keyword.CAT.raw); }
+  public void aclCat() { sendCommand(ACL, Keyword.CAT.getRaw()); }
 
   public void aclCat(final byte[] category) {
-    sendCommand(ACL, Keyword.CAT.raw, category);
+    sendCommand(ACL, Keyword.CAT.getRaw(), category);
   }
 
   public void aclLog() {
-    sendCommand(ACL, Keyword.LOG.raw);
+    sendCommand(ACL, Keyword.LOG.getRaw());
   }
 
   public void aclLog(int limit) {
-    sendCommand(ACL, Keyword.LOG.raw, toByteArray(limit));
+    sendCommand(ACL, Keyword.LOG.getRaw(), toByteArray(limit));
   }
 
   public void aclLog(final byte[] option) {
-    sendCommand(ACL, Keyword.LOG.raw, option);
+    sendCommand(ACL, Keyword.LOG.getRaw(), option);
   }
 
   public void aclSetUser(final byte[] name) {
-    sendCommand(ACL, Keyword.SETUSER.raw, name);
+    sendCommand(ACL, Keyword.SETUSER.getRaw(), name);
   }
 
   public void aclGetUser(final byte[] name) {
-    sendCommand(ACL, Keyword.GETUSER.raw, name);
+    sendCommand(ACL, Keyword.GETUSER.getRaw(), name);
   }
 
   public void aclSetUser(final byte[] name, byte[][] parameters) {
-    sendCommand(ACL, joinParameters(Keyword.SETUSER.raw,name, parameters));
+    sendCommand(ACL, joinParameters(Keyword.SETUSER.getRaw(),name, parameters));
   }
 
   public void aclDelUser(final byte[] name) {
-    sendCommand(ACL, Keyword.DELUSER.raw, name);
+    sendCommand(ACL, Keyword.DELUSER.getRaw(), name);
   }
 
   private List<byte[]> convertGeoCoordinateMapToByteArrays(
@@ -1420,7 +1419,7 @@ public class BinaryClient extends Connection {
 	  int index = 0;
 	  params[index++] = key;
 	  if(maxLen < Long.MAX_VALUE) {
-	    params[index++] = Keyword.MAXLEN.raw;
+	    params[index++] = Keyword.MAXLEN.getRaw();
 	    if(approximateLength) {
 	      params[index++] = Protocol.BYTES_TILDE;
 	    }
@@ -1440,25 +1439,25 @@ public class BinaryClient extends Connection {
   }
   
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) { 
-     sendCommand(XRANGE, key, start, end, Keyword.COUNT.raw, toByteArray(count));
+     sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
   }
   
   public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
-    sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.raw, toByteArray(count));
+    sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
   }
 
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
     final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
 
     int streamsIndex = 0;
-    params[streamsIndex++] = Keyword.COUNT.raw;
+    params[streamsIndex++] = Keyword.COUNT.getRaw();
     params[streamsIndex++] = toByteArray(count);
     if(block > 0) {
-      params[streamsIndex++] = Keyword.BLOCK.raw;
+      params[streamsIndex++] = Keyword.BLOCK.getRaw();
       params[streamsIndex++] = toByteArray(block);
     }
     
-    params[streamsIndex++] = Keyword.STREAMS.raw;
+    params[streamsIndex++] = Keyword.STREAMS.getRaw();
     int idsIndex = streamsIndex + streams.size();
 
     for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
@@ -1482,22 +1481,22 @@ public class BinaryClient extends Connection {
    
   public void xgroupCreate(final byte[] key, final byte[] groupname, final byte[] id, boolean makeStream) {
     if(makeStream) {
-      sendCommand(XGROUP, Keyword.CREATE.raw, key, groupname, id, Keyword.MKSTREAM.raw);  
+      sendCommand(XGROUP, Keyword.CREATE.getRaw(), key, groupname, id, Keyword.MKSTREAM.getRaw());  
     } else {
-      sendCommand(XGROUP, Keyword.CREATE.raw, key, groupname, id);  
+      sendCommand(XGROUP, Keyword.CREATE.getRaw(), key, groupname, id);  
     }
   }
 
   public void xgroupSetID(final byte[] key, final byte[] groupname, final byte[] id) {
-    sendCommand(XGROUP, Keyword.SETID.raw, key, groupname, id);    
+    sendCommand(XGROUP, Keyword.SETID.getRaw(), key, groupname, id);    
   }
 
   public void xgroupDestroy(final byte[] key, final byte[] groupname) {
-    sendCommand(XGROUP, Keyword.DESTROY.raw, key, groupname);    
+    sendCommand(XGROUP, Keyword.DESTROY.getRaw(), key, groupname);    
   }
 
   public void xgroupDelConsumer(final byte[] key, final byte[] groupname, final byte[] consumerName) {
-    sendCommand(XGROUP, Keyword.DELCONSUMER.raw, key, groupname, consumerName);    
+    sendCommand(XGROUP, Keyword.DELCONSUMER.getRaw(), key, groupname, consumerName);    
   }
    
   public void xdel(final byte[] key, final byte[]... ids) {
@@ -1512,9 +1511,9 @@ public class BinaryClient extends Connection {
   
   public void xtrim(byte[] key, long maxLen, boolean approximateLength) {
     if(approximateLength) {
-      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, Protocol.BYTES_TILDE ,toByteArray(maxLen));
+      sendCommand(XTRIM, key, Keyword.MAXLEN.getRaw(), Protocol.BYTES_TILDE ,toByteArray(maxLen));
     } else {
-      sendCommand(XTRIM, key, Keyword.MAXLEN.raw, toByteArray(maxLen));
+      sendCommand(XTRIM, key, Keyword.MAXLEN.getRaw(), toByteArray(maxLen));
     }
   }
   
@@ -1535,21 +1534,21 @@ public class BinaryClient extends Connection {
     final byte[][] params = new byte[4 + optional + streams.size() * 2][];
 
     int streamsIndex = 0;
-    params[streamsIndex++] = Keyword.GROUP.raw;
+    params[streamsIndex++] = Keyword.GROUP.getRaw();
     params[streamsIndex++] = groupname;
     params[streamsIndex++] = consumer;
     if(count>0) {
-      params[streamsIndex++] = Keyword.COUNT.raw;
+      params[streamsIndex++] = Keyword.COUNT.getRaw();
       params[streamsIndex++] = toByteArray(count);
     }
     if(block > 0) {
-      params[streamsIndex++] = Keyword.BLOCK.raw;
+      params[streamsIndex++] = Keyword.BLOCK.getRaw();
       params[streamsIndex++] = toByteArray(block);
     }
     if(noAck) {
-      params[streamsIndex++] = Keyword.NOACK.raw;
+      params[streamsIndex++] = Keyword.NOACK.getRaw();
     }
-    params[streamsIndex++] = Keyword.STREAMS.raw;
+    params[streamsIndex++] = Keyword.STREAMS.getRaw();
     
     int idsIndex = streamsIndex + streams.size();
     for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
@@ -1581,34 +1580,34 @@ public class BinaryClient extends Connection {
       Collections.addAll(arguments, ids);
 
       if(newIdleTime > 0) {
-        arguments.add(Keyword.IDLE.raw);
+        arguments.add(Keyword.IDLE.getRaw());
         arguments.add(toByteArray(newIdleTime));
       }
       if(retries > 0) {
-        arguments.add(Keyword.RETRYCOUNT.raw);
+        arguments.add(Keyword.RETRYCOUNT.getRaw());
         arguments.add(toByteArray(retries));        
       }
       if(force) {
-        arguments.add(Keyword.FORCE.raw);        
+        arguments.add(Keyword.FORCE.getRaw());        
       }
       sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
   }
 
   public void xinfoStream(byte[] key) {
 
-    sendCommand(XINFO,Keyword.STREAM.raw,key);
+    sendCommand(XINFO,Keyword.STREAM.getRaw(),key);
 
   }
 
   public void xinfoGroup(byte[] key) {
 
-    sendCommand(XINFO,Keyword.GROUPS.raw,key);
+    sendCommand(XINFO,Keyword.GROUPS.getRaw(),key);
 
   }
 
   public void xinfoConsumers (byte[] key, byte[] group) {
 
-    sendCommand(XINFO,Keyword.CONSUMERS.raw,key,group);
+    sendCommand(XINFO,Keyword.CONSUMERS.getRaw(),key,group);
   }
 
 }

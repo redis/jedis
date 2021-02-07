@@ -286,6 +286,7 @@ public final class Protocol {
     /**
      * @deprecated This will be private in future. Use {@link #getRaw()}.
      */
+    @Deprecated
     public final byte[] raw;
 
     Keyword() {

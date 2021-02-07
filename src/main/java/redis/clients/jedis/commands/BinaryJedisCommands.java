@@ -135,6 +135,8 @@ public interface BinaryJedisCommands {
 
   byte[] lpop(byte[] key);
 
+  List<byte[]> lpop(byte[] key, int count);
+
   Long lpos(byte[] key, byte[] element);
 
   Long lpos(byte[] key, byte[] element, LPosParams params);
@@ -142,6 +144,8 @@ public interface BinaryJedisCommands {
   List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count);
 
   byte[] rpop(byte[] key);
+
+  List<byte[]> rpop(byte[] key, int count);
 
   Long sadd(byte[] key, byte[]... member);
 

@@ -177,7 +177,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     try (Jedis jedis = pool.getResource()){
       assertEquals("my_shiny_client_name", jedis.clientGetname());
     } finally {
-      pool.destroy();
+      pool.close();
     }
 
     assertTrue(pool.isClosed());

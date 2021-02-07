@@ -36,7 +36,11 @@ import redis.clients.jedis.util.Slowlog;
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
-  private Pool<Jedis> dataSource = null;
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
+  protected Pool<Jedis> dataSource = null;
 
   public Jedis() {
     super();

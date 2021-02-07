@@ -14,7 +14,7 @@ import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 public abstract class Pool<T> implements Closeable {
 
   /**
-   * @deprecated This will be private in future;
+   * @deprecated This will be private in future.
    */
   @Deprecated
   protected GenericObjectPool<T> internalPool;

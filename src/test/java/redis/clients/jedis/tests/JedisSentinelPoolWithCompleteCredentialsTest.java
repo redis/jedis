@@ -135,7 +135,6 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
         jedis1.set("hello", "jedis");
         Transaction t = jedis1.multi();
         t.set("hello", "world");
-        jedis1.close();
       }
 
       try (Jedis jedis2 = pool.getResource()) {

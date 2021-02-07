@@ -339,7 +339,7 @@ public class JedisPool extends JedisPoolAbstract {
         returnResourceObject(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
-        log.debug("Resource is returned to the pool as broken", e);
+        log.warn("Resource is returned to the pool as broken", e);
       }
     }
   }

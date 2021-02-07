@@ -191,8 +191,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Get the value of the specified key. If the key does not exist null is returned. If the value
-   * stored at key is not a string an error is returned because GET can only handle string values.
+   * Get the value of the specified key. If the key does not exist the special value 'nil' is
+   * returned. If the value stored at key is not a string an error is returned because GET can only
+   * handle string values.
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -1180,6 +1181,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<String> lpop(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.lpop(key, count);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
   public Long lpos(final String key, final String element) {
     checkIsInMultiOrPipeline();
     client.lpos(key, element);
@@ -1215,6 +1223,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.rpop(key);
     return client.getBulkReply();
+  }
+
+  @Override
+  public List<String> rpop(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.rpop(key, count);
+    return client.getMultiBulkReply();
   }
 
   /**

@@ -19,7 +19,6 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class ShardedJedisPoolTest {
@@ -30,20 +29,17 @@ public class ShardedJedisPoolTest {
 
   @Before
   public void startUp() {
-    shards = new ArrayList<JedisShardInfo>();
+    shards = new ArrayList<>();
     shards.add(new JedisShardInfo(redis1));
     shards.add(new JedisShardInfo(redis2));
     shards.get(0).setPassword("foobared");
     shards.get(1).setPassword("foobared");
-    Jedis j = new Jedis(shards.get(0));
-    j.connect();
-    j.flushAll();
-    j.disconnect();
-    j = new Jedis(shards.get(1));
-    j.connect();
-    j.flushAll();
-    j.disconnect();
 
+    for (JedisShardInfo shard : shards) {
+      try (Jedis j = new Jedis(shard)) {
+        j.flushAll();
+      }
+    }
   }
 
   @Test

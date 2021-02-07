@@ -14,6 +14,9 @@ public class ZParams {
   public enum Aggregate {
     SUM, MIN, MAX;
 
+    /**
+     * @deprecated This will be private in future. Use {@link #getRaw()}.
+     */
     @Deprecated
     public final byte[] raw;
 

@@ -104,7 +104,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
         null, sslParameters, null, portMap)){
       jc.get("foo");
       Assert.fail("The code did not throw the expected JedisClusterMaxAttemptsException.");
-    } catch (JedisNoReachableClusterNodeException e) {
+    } catch (JedisClusterMaxAttemptsException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
     }
@@ -148,7 +148,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
         null, null, hostnameVerifier, portMap)){
       jc.get("foo");
       Assert.fail("The code did not throw the expected JedisClusterMaxAttemptsException.");
-    } catch (JedisNoReachableClusterNodeException e) {
+    } catch (JedisClusterMaxAttemptsException e) {
       // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
       // which causes custom hostname verification to fail
     }

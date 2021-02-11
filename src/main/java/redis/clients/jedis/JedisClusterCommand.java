@@ -3,11 +3,11 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -105,7 +105,7 @@ public abstract class JedisClusterCommand<T> {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
-    AtomicInteger consecutiveConnectionFailures = new AtomicInteger();
+    int consecutiveConnectionFailures = 0;
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
       Jedis connection = null;
       try {
@@ -124,13 +124,17 @@ public abstract class JedisClusterCommand<T> {
       } catch (JedisNoReachableClusterNodeException jnrcne) {
         throw jnrcne;
       } catch (JedisConnectionException jce) {
-        consecutiveConnectionFailures.incrementAndGet();
+        ++consecutiveConnectionFailures;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the currentAttempt counter hasn't increased yet
-        handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        if (reset) {
+          consecutiveConnectionFailures = 0;
+          redirect = null;
+        }
       } catch (JedisRedirectionException jre) {
         LOG.debug("Redirected by server to {}", jre.getTargetNode());
-        consecutiveConnectionFailures.set(0);
+        consecutiveConnectionFailures = 0;
         redirect = jre;
         // if MOVED redirection occurred,
         if (jre instanceof JedisMovedDataException) {
@@ -140,22 +144,25 @@ public abstract class JedisClusterCommand<T> {
       } finally {
         releaseConnection(connection);
       }
+      if (Instant.now().isAfter(deadline)) {
+        throw new JedisClusterMaxAttemptsException("Deadline exceeded"); // TODO: change to JedisClusterException
+      }
     }
 
     throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
   }
 
-  private void handleConnectionProblem(int attemptsLeft, AtomicInteger consecutiveConnectionFailures, Instant doneDeadline) {
+  private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures, Instant doneDeadline) {
     if (this.maxAttempts < 3) {
       // keep the old implementations as is?
-      if (attemptsLeft <= 1) {
+      if (attemptsLeft == 0) {
         this.connectionHandler.renewSlotCache();
       }
-      return;
+      return false;
     }
 
-    if (consecutiveConnectionFailures.get() < 2) {
-      return;
+    if (consecutiveConnectionFailures < 2) {
+      return false;
     }
 
     sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
@@ -164,7 +171,7 @@ public abstract class JedisClusterCommand<T> {
     //TODO make tracking of successful/unsuccessful operations for node - do renewing only
     //if there were no successful responses from this node last few seconds
     this.connectionHandler.renewSlotCache();
-    consecutiveConnectionFailures.set(0);
+    return true;
   }
 
   private static long getBackoffSleepMillis(int attemptsLeft, Instant deadline) {
@@ -174,7 +181,7 @@ public abstract class JedisClusterCommand<T> {
 
     long millisLeft = Duration.between(Instant.now(), deadline).toMillis();
     if (millisLeft < 0) {
-      throw new JedisClusterMaxAttemptsException("Deadline exceeded");
+      throw new JedisClusterMaxAttemptsException("Deadline exceeded"); // TODO: change to JedisClusterException
     }
 
     return millisLeft / (attemptsLeft * attemptsLeft);

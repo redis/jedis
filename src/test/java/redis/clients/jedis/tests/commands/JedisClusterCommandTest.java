@@ -1,6 +1,8 @@
 package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -10,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -259,6 +262,69 @@ public class JedisClusterCommandTest {
     inOrder.verify(connectionHandler).getConnection();
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  public void runMasterFailingReplicaRecovering() {
+    // We have two nodes, master and replica, and master has just gone down permanently.
+    //
+    // Test:
+    // 1. We try to contact master => JedisConnectionException
+    // 2. We try to contact replica => It refers us to master, hasn't failed over yet
+    // 3. We try to contact master => JedisConnectionException
+    // 4. We try to contact replica => Success, because it has now failed over
+    //
+    // Between 1 and 4 there should be at least one sleep().
+
+    final Jedis master = mock(Jedis.class);
+    when(master.toString()).thenReturn("master");
+
+    final Jedis replica = mock(Jedis.class);
+    when(replica.toString()).thenReturn("replica");
+
+    JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
+
+    // This is where we expect to find our data
+    when(connectionHandler.getConnectionFromSlot(anyInt())).thenReturn(master);
+
+    // This is when trying to find a random node after giving up on master
+    when(connectionHandler.getConnection()).thenReturn(replica);
+
+    // This is when we're handling a redirection
+    when(connectionHandler.getConnectionFromNode(any())).thenReturn(master);
+
+    final HostAndPort movedTarget = new HostAndPort(null, 0);
+    final AtomicLong totalSleepMs = new AtomicLong();
+    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
+        Duration.ofSeconds(1)) {
+      int redirectionsCountFromReplica = 0;
+
+      @Override
+      public String execute(Jedis connection) {
+        assertNotNull(connection);
+
+        if (connection == master) {
+          throw new JedisConnectionException("Master is down");
+        }
+
+        assert connection == replica;
+
+        if (redirectionsCountFromReplica++ == 0) {
+          throw new JedisMovedDataException("Moved", movedTarget, 0);
+        }
+
+        return "Success!";
+      }
+
+      @Override
+      protected void sleep(long sleepMillis) {
+        assert sleepMillis > 0;
+        totalSleepMs.addAndGet(sleepMillis);
+      }
+    };
+
+    assertEquals("Success!", testMe.run(""));
+    assertTrue(totalSleepMs.get() > 0);
   }
 
   @Test(expected = JedisNoReachableClusterNodeException.class)

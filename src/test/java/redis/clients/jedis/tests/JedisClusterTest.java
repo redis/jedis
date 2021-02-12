@@ -563,27 +563,11 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    JedisCluster jc = null;
-    try {
-      jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-          DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG);
-      jc.set("51", "foo");
-    } finally {
-      if (jc != null) {
-        jc.close();
-      }
-    }
+    JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG);
+    jc.set("51", "foo");
+    jc.close();
 
-//    Iterator<JedisPool> poolIterator = jc.getClusterNodes().values().iterator();
-//    while (poolIterator.hasNext()) {
-//      JedisPool pool = poolIterator.next();
-//      try {
-//        pool.getResource();
-//        fail("JedisCluster's internal pools should be already destroyed");
-//      } catch (JedisConnectionException e) {
-//        // ok to go...
-//      }
-//    }
     assertEquals(0, jc.getClusterNodes().size());
   }
 
@@ -616,8 +600,8 @@ public class JedisClusterTest {
   @Test
   public void testJedisClusterTimeoutWithConfig() {
     HostAndPort hp = nodeInfo1;
-    try (JedisCluster jc = new JedisCluster(hp,
-        DefaultJedisClientConfig.builder().withConnectionTimeout(4000).withSoTimeout(4000).withPassword("cluster").build(),
+    try (JedisCluster jc = new JedisCluster(hp, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(4000).withSoTimeout(4000).withPassword("cluster").build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       jc.getClusterNodes().values().forEach(pool -> {

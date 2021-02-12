@@ -26,19 +26,19 @@ public interface JedisSocketFactory {
 
   @Deprecated String getDescription();
 
-  String getHost();
+  @Deprecated String getHost();
 
   @Deprecated void setHost(String host);
 
-  int getPort();
+  @Deprecated int getPort();
 
   @Deprecated void setPort(int port);
 
-  int getConnectionTimeout();
+  @Deprecated int getConnectionTimeout();
 
   @Deprecated void setConnectionTimeout(int connectionTimeout);
 
-  int getSoTimeout();
+  @Deprecated int getSoTimeout();
 
   @Deprecated void setSoTimeout(int soTimeout);
 }

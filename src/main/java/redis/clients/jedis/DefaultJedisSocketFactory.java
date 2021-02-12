@@ -13,8 +13,9 @@ import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  private String host = Protocol.DEFAULT_HOST;
-  private int port = Protocol.DEFAULT_PORT;
+  protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+
+  private HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean ssl = false;
@@ -26,30 +27,33 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   public DefaultJedisSocketFactory() {
   }
 
+  public DefaultJedisSocketFactory(HostAndPort hostAndPort) {
+    this(hostAndPort, null);
+  }
+
   @Deprecated
   public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    setHost(host);
-    setPort(port);
-    setConnectionTimeout(connectionTimeout);
-    setSoTimeout(soTimeout);
-    setSsl(ssl);
-    setSslSocketFactory(sslSocketFactory);
-    setSslParameters(sslParameters);
-    setHostnameVerifier(hostnameVerifier);
+    this.hostAndPort = new HostAndPort(host, port);
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
+    this.ssl = ssl;
+    this.sslSocketFactory = sslSocketFactory;
+    this.sslParameters = sslParameters;
+    this.hostnameVerifier = hostnameVerifier;
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
-    setHostAndPort(hostAndPort);
+    this.hostAndPort = hostAndPort;
     if (config != null) {
-      setConnectionTimeout(config.getConnectionTimeout());
-      setSoTimeout(config.getSoTimeout());
-      setSsl(config.isSsl());
-      setSslSocketFactory(config.getSslSocketFactory());
-      setSslParameters(config.getSslParameters());
-      setHostnameVerifier(config.getHostnameVerifier());
-      setHostAndPortMapper(config.getHostAndPortMapper());
+      this.connectionTimeout = config.getConnectionTimeout();
+      this.soTimeout = config.getSoTimeout();
+      this.ssl = config.isSsl();
+      this.sslSocketFactory = config.getSslSocketFactory();
+      this.sslParameters = config.getSslParameters();
+      this.hostnameVerifier = config.getHostnameVerifier();
+      this.hostAndPortMapper = config.getHostAndPortMapper();
     }
   }
 
@@ -83,9 +87,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
         HostnameVerifier hostnameVerifier = getHostnameVerifier();
         if (null != hostnameVerifier
-            && !hostnameVerifier.verify(getHost(), ((SSLSocket) socket).getSession())) {
+            && !hostnameVerifier.verify(hostAndPort.getHost(), ((SSLSocket) socket).getSession())) {
           String message = String.format(
-              "The connection to '%s' failed ssl/tls hostname verification.", getHost());
+              "The connection to '%s' failed ssl/tls hostname verification.", hostAndPort.getHost());
           throw new JedisConnectionException(message);
         }
       }
@@ -105,43 +109,44 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     HostAndPort hostAndPort = getHostAndPort();
     if (mapper != null) {
       HostAndPort mapped = mapper.getHostAndPort(hostAndPort);
-      if (mapped != null) return mapped;
+      if (mapped != null) {
+        return mapped;
+      }
     }
     return hostAndPort;
   }
 
   public HostAndPort getHostAndPort() {
-    return new HostAndPort(this.host, this.port);
+    return this.hostAndPort;
   }
 
-  public void setHostAndPort(HostAndPort hostPort) {
-    this.host = hostPort.getHost();
-    this.port = hostPort.getPort();
+  public void setHostAndPort(HostAndPort hostAndPort) {
+    this.hostAndPort = hostAndPort;
   }
 
   @Override
   public String getDescription() {
-    return host + ":" + port;
+    return this.hostAndPort.toString();
   }
 
   @Override
   public String getHost() {
-    return this.host;
+    return this.hostAndPort.getHost();
   }
 
   @Override
   public void setHost(String host) {
-    this.host = host;
+    this.hostAndPort = new HostAndPort(host, this.hostAndPort.getPort());
   }
 
   @Override
   public int getPort() {
-    return this.port;
+    return this.hostAndPort.getPort();
   }
 
   @Override
   public void setPort(int port) {
-    this.port = port;
+    this.hostAndPort = new HostAndPort(this.hostAndPort.getHost(), port);
   }
 
   @Override

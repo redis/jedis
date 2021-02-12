@@ -126,7 +126,7 @@ public abstract class JedisClusterCommand<T> {
       } catch (JedisConnectionException jce) {
         ++consecutiveConnectionFailures;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);
-        // "- 1" because we just did one, but the currentAttempt counter hasn't increased yet
+        // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
         boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
         if (reset) {
           consecutiveConnectionFailures = 0;

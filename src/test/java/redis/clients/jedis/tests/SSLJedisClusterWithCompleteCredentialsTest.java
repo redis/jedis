@@ -4,7 +4,6 @@ import org.junit.*;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.tests.SSLJedisTest.BasicHostnameVerifier;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 

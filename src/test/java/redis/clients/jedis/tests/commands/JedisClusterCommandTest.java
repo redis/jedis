@@ -7,8 +7,10 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
@@ -16,18 +18,23 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClusterCommand;
 import redis.clients.jedis.JedisClusterConnectionHandler;
 import redis.clients.jedis.JedisSlotBasedConnectionHandler;
 import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 
 public class JedisClusterCommandTest {
+
+  private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
   @Test(expected = JedisClusterMaxAttemptsException.class)
   public void runZeroAttempts() {
@@ -70,7 +77,7 @@ public class JedisClusterCommandTest {
     JedisClusterConnectionHandler connectionHandler = mock(JedisClusterConnectionHandler.class);
 
     JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        Duration.ZERO) {
+        ONE_SECOND) {
       boolean isFirstCall = true;
 
       @Override
@@ -99,7 +106,7 @@ public class JedisClusterCommandTest {
 
     final LongConsumer sleep = mock(LongConsumer.class);
     JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 3,
-        Duration.ofSeconds(1)) {
+        ONE_SECOND) {
       @Override
       public String execute(Jedis connection) {
         throw new JedisConnectionException("Connection failed");
@@ -118,14 +125,10 @@ public class JedisClusterCommandTest {
       // expected
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);
+    inOrder.verify(connectionHandler, times(2)).getConnectionFromSlot(anyInt());
+    inOrder.verify(sleep).accept(anyLong());
+    inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler).getConnectionFromSlot(anyInt());
-    inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verify(sleep).accept(anyLong());
-    inOrder.verify(connectionHandler).getConnection();
-    inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verify(sleep).accept(anyLong());
-    inOrder.verify(connectionHandler).getConnection();
-    inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -135,7 +138,7 @@ public class JedisClusterCommandTest {
 
     final HostAndPort movedTarget = new HostAndPort(null, 0);
     JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        Duration.ZERO) {
+        ONE_SECOND) {
       boolean isFirstCall = true;
 
       @Override
@@ -174,7 +177,7 @@ public class JedisClusterCommandTest {
     when(connectionHandler.getConnectionFromNode(askTarget)).thenReturn(connection);
 
     JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        Duration.ZERO) {
+        ONE_SECOND) {
       boolean isFirstCall = true;
 
       @Override
@@ -220,12 +223,15 @@ public class JedisClusterCommandTest {
 
     final Jedis failer = mock(Jedis.class);
     when(connectionHandler.getConnectionFromNode(any(HostAndPort.class))).thenReturn(failer);
-    when(connectionHandler.getConnection()).thenReturn(failer);
+    doAnswer((Answer) (InvocationOnMock invocation) -> {
+      when(connectionHandler.getConnectionFromSlot(anyInt())).thenReturn(failer);
+      return null;
+    }).when(connectionHandler).renewSlotCache();
 
     final LongConsumer sleep = mock(LongConsumer.class);
     final HostAndPort movedTarget = new HostAndPort(null, 0);
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 3,
-        Duration.ofSeconds(1)) {
+    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 5,
+        ONE_SECOND) {
       @Override
       public String execute(Jedis connection) {
         if (redirecter == connection) {
@@ -256,10 +262,11 @@ public class JedisClusterCommandTest {
     InOrder inOrder = inOrder(connectionHandler, sleep);
     inOrder.verify(connectionHandler).getConnectionFromSlot(anyInt());
     inOrder.verify(connectionHandler).renewSlotCache(redirecter);
-    inOrder.verify(connectionHandler).getConnectionFromNode(movedTarget);
-    inOrder.verify(connectionHandler).renewSlotCache();
+    inOrder.verify(connectionHandler, times(2)).getConnectionFromNode(movedTarget);
     inOrder.verify(sleep).accept(anyLong());
-    inOrder.verify(connectionHandler).getConnection();
+    inOrder.verify(connectionHandler).renewSlotCache();
+    inOrder.verify(connectionHandler, times(2)).getConnectionFromSlot(anyInt());
+    inOrder.verify(sleep).accept(anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verifyNoMoreInteractions();
   }
@@ -270,11 +277,9 @@ public class JedisClusterCommandTest {
     //
     // Test:
     // 1. We try to contact master => JedisConnectionException
-    // 2. We try to contact replica => It refers us to master, hasn't failed over yet
-    // 3. We try to contact master => JedisConnectionException
+    // 2. We try to contact master => JedisConnectionException
+    // 3. sleep and renew
     // 4. We try to contact replica => Success, because it has now failed over
-    //
-    // Between 1 and 4 there should be at least one sleep().
 
     final Jedis master = mock(Jedis.class);
     when(master.toString()).thenReturn("master");
@@ -284,20 +289,16 @@ public class JedisClusterCommandTest {
 
     JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
 
-    // This is where we expect to find our data
     when(connectionHandler.getConnectionFromSlot(anyInt())).thenReturn(master);
 
-    // This is when trying to find a random node after giving up on master
-    when(connectionHandler.getConnection()).thenReturn(replica);
+    doAnswer((Answer) (InvocationOnMock invocation) -> {
+      when(connectionHandler.getConnectionFromSlot(anyInt())).thenReturn(replica);
+      return null;
+    }).when(connectionHandler).renewSlotCache();
 
-    // This is when we're handling a redirection
-    when(connectionHandler.getConnectionFromNode(any())).thenReturn(master);
-
-    final HostAndPort movedTarget = new HostAndPort(null, 0);
     final AtomicLong totalSleepMs = new AtomicLong();
     JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        Duration.ofSeconds(1)) {
-      int redirectionsCountFromReplica = 0;
+        ONE_SECOND) {
 
       @Override
       public String execute(Jedis connection) {
@@ -308,10 +309,6 @@ public class JedisClusterCommandTest {
         }
 
         assert connection == replica;
-
-        if (redirectionsCountFromReplica++ == 0) {
-          throw new JedisMovedDataException("Moved", movedTarget, 0);
-        }
 
         return "Success!";
       }
@@ -324,6 +321,11 @@ public class JedisClusterCommandTest {
     };
 
     assertEquals("Success!", testMe.run(""));
+    InOrder inOrder = inOrder(connectionHandler);
+    inOrder.verify(connectionHandler, times(2)).getConnectionFromSlot(anyInt());
+    inOrder.verify(connectionHandler).renewSlotCache();
+    inOrder.verify(connectionHandler).getConnectionFromSlot(anyInt());
+    inOrder.verifyNoMoreInteractions();
     assertTrue(totalSleepMs.get() > 0);
   }
 
@@ -360,7 +362,7 @@ public class JedisClusterCommandTest {
       public String execute(Jedis connection) {
         try {
           // exceed deadline
-          Thread.sleep(100L);
+          Thread.sleep(2L);
         } catch (InterruptedException e) {
           throw new RuntimeException(e);
         }
@@ -381,43 +383,6 @@ public class JedisClusterCommandTest {
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);
     inOrder.verify(connectionHandler).getConnectionFromSlot(anyInt());
-    inOrder.verify(connectionHandler).renewSlotCache();
-    inOrder.verifyNoMoreInteractions();
-  }
-
-  @Test
-  public void runClosesConnectionBeforeRenewingSlotsCache() {
-    JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
-
-    Jedis connection = mock(Jedis.class);
-    when(connectionHandler.getConnectionFromSlot(anyInt())).thenReturn(connection);
-
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 1, Duration.ZERO) {
-      @Override
-      public String execute(Jedis connection) {
-        throw new JedisConnectionException("Connection failure");
-      }
-    };
-
-    try {
-      testMe.run("");
-      fail("Didn't get the expected exception");
-    } catch (JedisClusterMaxAttemptsException e) {
-      // Expected case, do nothing
-    }
-
-    InOrder inOrder = inOrder(connectionHandler, connection);
-    // Must close connection before renewing slot cache, otherwise
-    // JedisClusterTest.testReturnConnectionOnJedisClusterConnection
-    // will start failing intermittently.
-    inOrder.verify(connection).close();
-    inOrder.verify(connectionHandler).renewSlotCache();
-
-    // This one is because of a finally block, and isn't needed but doesn't hurt.
-    // If you rewrite the code so this close() call goes away, fell free to
-    // update this test as well to match!
-    inOrder.verify(connection).close();
-
     inOrder.verifyNoMoreInteractions();
   }
 }

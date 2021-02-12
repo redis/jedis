@@ -3,10 +3,11 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.exceptions.JedisAskDataException;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -100,9 +101,77 @@ public abstract class JedisClusterCommand<T> {
     }
   }
 
-  private boolean shouldBackOff(int attemptsLeft) {
-    int attemptsDone = maxAttempts - attemptsLeft;
-    return attemptsDone >= maxAttempts / 3;
+  private T runWithRetries(final int slot) {
+    Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
+
+    JedisRedirectionException redirect = null;
+    int consecutiveConnectionFailures = 0;
+    for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
+      Jedis connection = null;
+      try {
+        if (redirect != null) {
+          connection = connectionHandler.getConnectionFromNode(redirect.getTargetNode());
+          if (redirect instanceof JedisAskDataException) {
+            // TODO: Pipeline asking with the original command to make it faster....
+            connection.asking();
+          }
+        } else {
+          connection = connectionHandler.getConnectionFromSlot(slot);
+        }
+
+        return execute(connection);
+
+      } catch (JedisNoReachableClusterNodeException jnrcne) {
+        throw jnrcne;
+      } catch (JedisConnectionException jce) {
+        ++consecutiveConnectionFailures;
+        LOG.debug("Failed connecting to Redis: {}", connection, jce);
+        // "- 1" because we just did one, but the currentAttempt counter hasn't increased yet
+        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        if (reset) {
+          consecutiveConnectionFailures = 0;
+          redirect = null;
+        }
+      } catch (JedisRedirectionException jre) {
+        LOG.debug("Redirected by server to {}", jre.getTargetNode());
+        consecutiveConnectionFailures = 0;
+        redirect = jre;
+        // if MOVED redirection occurred,
+        if (jre instanceof JedisMovedDataException) {
+          // it rebuilds cluster's slot cache recommended by Redis cluster specification
+          this.connectionHandler.renewSlotCache(connection);
+        }
+      } finally {
+        releaseConnection(connection);
+      }
+      if (Instant.now().isAfter(deadline)) {
+        throw new JedisClusterMaxAttemptsException("Deadline exceeded"); // TODO: change to JedisClusterException
+      }
+    }
+
+    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+  }
+
+  private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures, Instant doneDeadline) {
+    if (this.maxAttempts < 3) {
+      // keep the old implementations as is?
+      if (attemptsLeft == 0) {
+        this.connectionHandler.renewSlotCache();
+      }
+      return false;
+    }
+
+    if (consecutiveConnectionFailures < 2) {
+      return false;
+    }
+
+    sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
+    //We need this because if node is not reachable anymore - we need to finally initiate slots
+    //renewing, or we can stuck with cluster state without one node in opposite case.
+    //TODO make tracking of successful/unsuccessful operations for node - do renewing only
+    //if there were no successful responses from this node last few seconds
+    this.connectionHandler.renewSlotCache();
+    return true;
   }
 
   private static long getBackoffSleepMillis(int attemptsLeft, Instant deadline) {
@@ -112,119 +181,18 @@ public abstract class JedisClusterCommand<T> {
 
     long millisLeft = Duration.between(Instant.now(), deadline).toMillis();
     if (millisLeft < 0) {
-      throw new JedisClusterMaxAttemptsException("Deadline exceeded");
+      throw new JedisClusterMaxAttemptsException("Deadline exceeded"); // TODO: change to JedisClusterException
     }
 
     return millisLeft / (attemptsLeft * attemptsLeft);
   }
 
-  private T runWithRetries(final int slot) {
-    Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
-    Supplier<Jedis> connectionSupplier = () -> connectionHandler.getConnectionFromSlot(slot);
-
-    // If we got one redirection, stick with that and don't try anything else
-    Supplier<Jedis> redirectionSupplier = null;
-
-    for (int currentAttempt = 0; currentAttempt < this.maxAttempts; currentAttempt++) {
-      Jedis connection = null;
-      try {
-        if (redirectionSupplier != null) {
-          connection = redirectionSupplier.get();
-        } else {
-          connection = connectionSupplier.get();
-        }
-
-        if (shouldBackOff(maxAttempts - currentAttempt)) {
-          // Don't just stick to this any more, start asking around
-          redirectionSupplier = null;
-        }
-
-        final T result = execute(connection);
-        if (currentAttempt > 0) {
-          LOG.info("Success after {} attempts", currentAttempt + 1);
-        }
-        return result;
-      } catch (JedisNoReachableClusterNodeException e) {
-        throw e;
-      } catch (JedisConnectionException e) {
-        LOG.warn("Failed connecting to Redis: {}", connection, e);
-        // "- 1" because we just did one, but the currentAttempt counter hasn't increased yet
-        int attemptsLeft = maxAttempts - currentAttempt - 1;
-        connectionSupplier = handleConnectionProblem(connection, slot, attemptsLeft, deadline);
-      } catch (JedisRedirectionException e) {
-        redirectionSupplier = handleRedirection(connection, e);
-      } finally {
-        releaseConnection(connection);
-      }
-
-      LOG.info("{} retries left...", maxAttempts - currentAttempt - 1);
-    }
-
-    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
-  }
-
   protected void sleep(long sleepMillis) {
     try {
-      LOG.info("Backing off, sleeping {}ms before trying again...", sleepMillis);
       TimeUnit.MILLISECONDS.sleep(sleepMillis);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private Supplier<Jedis> handleConnectionProblem(Jedis failedConnection, final int slot, int attemptsLeft,
-      Instant doneDeadline) {
-    if (!shouldBackOff(attemptsLeft)) {
-      return () -> {
-        Jedis connection = connectionHandler.getConnectionFromSlot(slot);
-        LOG.info("Retrying with {}", connection);
-        return connection;
-      };
-    }
-
-    // Must release current connection before renewing the slot cache below. If we fail to do this,
-    // then JedisClusterTest.testReturnConnectionOnJedisClusterConnection will start failing
-    // intermittently.
-    releaseConnection(failedConnection);
-
-    //We need this because if node is not reachable anymore - we need to finally initiate slots
-    //renewing, or we can stuck with cluster state without one node in opposite case.
-    //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-    //if there were no successful responses from this node last few seconds
-    this.connectionHandler.renewSlotCache();
-
-    return () -> {
-      sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
-      // Get a random connection, it will redirect us if it's not the right one
-      LOG.info("Retrying with a random node...");
-      Jedis connection = connectionHandler.getConnection();
-      LOG.info("Retrying with random pick: {}", connection);
-      return connection;
-    };
-  }
-
-  private Supplier<Jedis> handleRedirection(Jedis connection, final JedisRedirectionException jre) {
-    LOG.debug("Redirected by server to {}", jre.getTargetNode());
-
-    // if MOVED redirection occurred,
-    if (jre instanceof JedisMovedDataException) {
-      // it rebuilds cluster's slot cache recommended by Redis cluster specification
-      this.connectionHandler.renewSlotCache(connection);
-    }
-
-    // release current connection before iteration
-    releaseConnection(connection);
-
-    return () -> {
-      Jedis redirectedConnection = connectionHandler.getConnectionFromNode(jre.getTargetNode());
-      LOG.info("Retrying with redirection target {}", connection);
-      if (jre instanceof JedisAskDataException) {
-        // TODO: Pipeline asking with the original command to make it faster....
-        redirectedConnection.asking();
-      }
-
-      return redirectedConnection;
-    };
   }
 
   private void releaseConnection(Jedis connection) {

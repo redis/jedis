@@ -145,18 +145,29 @@ public abstract class JedisClusterCommand<T> {
         releaseConnection(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterMaxAttemptsException("Deadline exceeded"); // TODO: change to JedisClusterException
+        // TODO: change to JedisClusterOperationException or a new sub-class of it
+        throw new JedisClusterMaxAttemptsException("Deadline exceeded");
       }
     }
 
     throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
   }
 
+  /**
+   * Related values should be reset if <code>TRUE</code> is returned.
+   *
+   * @param attemptsLeft
+   * @param consecutiveConnectionFailures
+   * @param doneDeadline
+   * @return true - if some actions are taken
+   * <br /> false - if no actions are taken
+   */
   private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures, Instant doneDeadline) {
     if (this.maxAttempts < 3) {
       // keep the old implementations as is?
       if (attemptsLeft == 0) {
         this.connectionHandler.renewSlotCache();
+        return true;
       }
       return false;
     }
@@ -181,7 +192,8 @@ public abstract class JedisClusterCommand<T> {
 
     long millisLeft = Duration.between(Instant.now(), deadline).toMillis();
     if (millisLeft < 0) {
-      throw new JedisClusterMaxAttemptsException("Deadline exceeded"); // TODO: change to JedisClusterException
+      // TODO: change to JedisClusterOperationException or a new sub-class of it
+      throw new JedisClusterMaxAttemptsException("Deadline exceeded");
     }
 
     return millisLeft / (attemptsLeft * attemptsLeft);

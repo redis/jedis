@@ -1,6 +1,7 @@
 package redis.clients.jedis.params;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -92,10 +93,8 @@ public class GeoRadiusStoreParam extends Params {
     }
 
     public byte[][] getByteParams(byte[]... args) {
-        ArrayList<byte[]> byteParams = new ArrayList<byte[]>();
-        for (byte[] arg : args) {
-            byteParams.add(arg);
-        }
+        ArrayList<byte[]> byteParams = new ArrayList<>();
+        Collections.addAll(byteParams, args);
 
         if (contains(STORE)) {
             byteParams.add(SafeEncoder.encode(STORE));

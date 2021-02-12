@@ -35,6 +35,10 @@ import redis.clients.jedis.util.Slowlog;
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
   protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
@@ -3121,7 +3125,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     final List<Map<String, String>> masters = new ArrayList<>();
     for (Object obj : reply) {
-      masters.add(BuilderFactory.STRING_MAP.build((List) obj));
+      masters.add(BuilderFactory.STRING_MAP.build( obj));
     }
     return masters;
   }
@@ -3192,7 +3196,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return
    */
   @Override
-  @SuppressWarnings("rawtypes")
   public List<Map<String, String>> sentinelSlaves(final String masterName) {
     client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
     final List<Object> reply = client.getObjectMultiBulkReply();

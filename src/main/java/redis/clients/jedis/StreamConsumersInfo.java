@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public class StreamConsumersInfo {
 
-  public final static String NAME = "name";
-  public final static String IDLE = "idle";
-  public final static String PENDING = "pending";
+  public static final String NAME = "name";
+  public static final String IDLE = "idle";
+  public static final String PENDING = "pending";
 
   private final String name;
   private final long idle;

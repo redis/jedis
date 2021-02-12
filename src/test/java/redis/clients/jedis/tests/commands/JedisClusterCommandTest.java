@@ -378,7 +378,7 @@ public class JedisClusterCommandTest {
     try {
       testMe.run("");
       fail("cluster command did not fail");
-    } catch (JedisClusterException e) {
+    } catch (JedisClusterMaxAttemptsException e) {
       // expected
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);

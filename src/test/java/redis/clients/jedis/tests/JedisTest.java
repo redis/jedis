@@ -6,8 +6,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -180,17 +184,20 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void uriWithDBindexShouldUseTimeout() throws URISyntaxException {
-    URI uri = new URI("redis://fakehost:6378/1");
-    long startTime = System.nanoTime();
-    try (Jedis j = new Jedis(uri, 5000)) {
-      j.ping();
-    } catch (Exception ex) {
-      assertEquals(JedisConnectionException.class, ex.getClass());
-      assertEquals(java.net.UnknownHostException.class, ex.getCause().getClass());
+  public void uriWithDBindexShouldUseTimeout() throws URISyntaxException, IOException {
+    int fakePort = 6378;
+    int timeoutMillis = 3250;
+    int deltaMillis = 500;
+    URI uri = new URI(String.format("redis://localhost:%d/1", fakePort));
+    Instant start = Instant.now();
+
+    try (ServerSocket server = new ServerSocket(fakePort);
+        Jedis jedis = new Jedis(uri, timeoutMillis)) {
+      fail("Jedis should fail to connect to a fake port");
+    } catch (JedisConnectionException ex) {
+      assertEquals(SocketTimeoutException.class, ex.getCause().getClass());
+      assertEquals(timeoutMillis, Duration.between(start, Instant.now()).toMillis(), deltaMillis);
     }
-    long stopTime = System.nanoTime();
-    assertTrue(stopTime - startTime > 4000);
   }
 
   @Test

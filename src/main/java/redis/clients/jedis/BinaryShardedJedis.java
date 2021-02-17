@@ -21,7 +21,7 @@ import redis.clients.jedis.util.Sharded;
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+  private static final Logger logger = LoggerFactory.getLogger(BinaryShardedJedis.class);
 
   private final byte[][] dummyArray = new byte[0][];
 
@@ -51,13 +51,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
           }
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
-          logger.error("Error while QUIT", e);
+          logger.warn("Error while QUIT", e);
         }
         try {
           jedis.disconnect();
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
-          logger.error("Error while disconnect", e);
+          logger.warn("Error while disconnect", e);
         }
       }
     }

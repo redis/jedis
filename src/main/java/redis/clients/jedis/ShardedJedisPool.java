@@ -14,6 +14,9 @@ import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Pool;
 
 public class ShardedJedisPool extends Pool<ShardedJedis> {
+
+  private static final Logger logger = LoggerFactory.getLogger(ShardedJedisPool.class);
+
   public ShardedJedisPool(final GenericObjectPoolConfig poolConfig, List<JedisShardInfo> shards) {
     this(poolConfig, shards, Hashing.MURMUR_HASH);
   }
@@ -60,11 +63,9 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
    */
   private static class ShardedJedisFactory implements PooledObjectFactory<ShardedJedis> {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private List<JedisShardInfo> shards;
-    private Hashing algo;
-    private Pattern keyTagPattern;
+    private final List<JedisShardInfo> shards;
+    private final Hashing algo;
+    private final Pattern keyTagPattern;
 
     public ShardedJedisFactory(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
       this.shards = shards;

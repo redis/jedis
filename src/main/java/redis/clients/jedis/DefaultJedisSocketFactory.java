@@ -124,6 +124,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   @Override
   public String toString() {
-    return "DefaultJedisSocketFactory{" + host + ":" + +port + "}";
+    return "DefaultJedisSocketFactory{" + host + ":" + port + "}";
   }
 }

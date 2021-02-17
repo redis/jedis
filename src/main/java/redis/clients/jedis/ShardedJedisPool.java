@@ -90,12 +90,12 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
               jedis.quit();
             }
           } catch (Exception e) {
-            logger.error("Error while QUIT", e);
+            logger.warn("Error while QUIT", e);
           }
           try {
             jedis.disconnect();
           } catch (Exception e) {
-            logger.error("Error while disconnect", e);
+            logger.warn("Error while disconnect", e);
           }
         }
       }

@@ -86,6 +86,7 @@ public abstract class JedisClusterCommand<T> {
     // If we got one redirection, stick with that and don't try anything else
     Supplier<Jedis> redirectionSupplier = null;
 
+    Exception lastException = null;
     for (int currentAttempt = 0; currentAttempt < this.maxAttempts; currentAttempt++) {
       Jedis connection = null;
       try {
@@ -98,15 +99,17 @@ public abstract class JedisClusterCommand<T> {
       } catch (JedisNoReachableClusterNodeException e) {
         throw e;
       } catch (JedisConnectionException e) {
+        lastException = e;
         connectionSupplier = handleConnectionProblem(slot, currentAttempt);
       } catch (JedisRedirectionException e) {
+        lastException = e;
         redirectionSupplier = handleRedirection(connection, e);
       } finally {
         releaseConnection(connection);
       }
     }
 
-    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.", lastException);
   }
 
   private Supplier<Jedis> handleConnectionProblem(final int slot, int currentAttempt) {

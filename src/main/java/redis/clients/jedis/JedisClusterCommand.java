@@ -109,7 +109,9 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.", lastException);
+    JedisClusterMaxAttemptsException maxAttemptsException =  new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+    maxAttemptsException.addSuppressed(lastException);
+    throw maxAttemptsException;
   }
 
   private Supplier<Jedis> handleConnectionProblem(final int slot, int currentAttempt) {

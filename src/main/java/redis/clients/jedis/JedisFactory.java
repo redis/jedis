@@ -22,7 +22,7 @@ import redis.clients.jedis.util.JedisURIHelper;
  */
 class JedisFactory implements PooledObjectFactory<Jedis> {
 
-  private final Logger logger = LoggerFactory.getLogger(getClass());
+  private static final Logger logger = LoggerFactory.getLogger(JedisFactory.class);
 
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<>();
   private final int connectionTimeout;

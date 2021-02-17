@@ -351,7 +351,7 @@ stop:
 	kill `cat /tmp/redis_cluster_node5.pid` || true
 	kill `cat /tmp/redis_uds.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
-	# kill `cat /tmp/redis_unavailable.pid` || true
+	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf

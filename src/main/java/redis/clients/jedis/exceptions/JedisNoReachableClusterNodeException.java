@@ -1,7 +1,7 @@
 package redis.clients.jedis.exceptions;
 
 /**
- * @deprecated This will not extend {@link JedisConnectionException} in future. It can extend
+ * @deprecated This will not extend {@link JedisConnectionException} in future. It will extend
  * {@link JedisClusterOperationException} instead.
  */
 @Deprecated

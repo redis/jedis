@@ -236,6 +236,17 @@ save ""
 appendonly no
 endef
 
+# UNAVAILABLE REDIS NODES
+define REDIS_UNAVAILABLE_CONF
+daemonize yes
+protected-mode no
+port 6400
+pidfile /tmp/redis_unavailable.pid
+logfile /tmp/redis_unavailable.log
+save ""
+appendonly no
+endef
+
 #STUNNEL
 define STUNNEL_CONF
 cert = src/test/resources/private.pem
@@ -278,6 +289,7 @@ export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
 export REDIS_UDS
+export REDIS_UNAVAILABLE_CONF
 export STUNNEL_CONF
 export STUNNEL_BIN
 
@@ -309,6 +321,7 @@ start: stunnel cleanup
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
 	echo "$$REDIS_UDS" | redis-server -
+	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -338,6 +351,7 @@ stop:
 	kill `cat /tmp/redis_cluster_node5.pid` || true
 	kill `cat /tmp/redis_uds.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
+	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf

@@ -222,6 +222,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
+  public boolean isConnected() {
+    return client.isConnected();
+  }
+
+  public boolean isBroken() {
+    return client.isBroken();
+  }
+
   @Override
   public String ping() {
     checkIsInMultiOrPipeline();
@@ -2044,7 +2052,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public void resetState() {
-    if (client.isConnected()) {
+    if (isConnected()) {
       if (transaction != null) {
         transaction.close();
       }
@@ -3296,10 +3304,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getBinaryBulkReply();
-  }
-
-  public boolean isConnected() {
-    return client.isConnected();
   }
 
   @Override

@@ -101,17 +101,17 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void infiniteTimeout() throws Exception {
-    Jedis jedis = new Jedis("localhost", 6379, 350, 350, 350);
-    jedis.auth("foobared");
-    try {
-      jedis.blpop(0, "foo");
-      fail("SocketTimeoutException should occur");
-    } catch(JedisConnectionException jce) {
-      assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
-      assertEquals("Read timed out", jce.getCause().getMessage());
-      assertTrue(jedis.getClient().isBroken());
+    try (Jedis timeoutJedis = new Jedis("localhost", 6379, 350, 350, 350)) {
+      timeoutJedis.auth("foobared");
+      try {
+        timeoutJedis.blpop(0, "foo");
+        fail("SocketTimeoutException should occur");
+      } catch(JedisConnectionException jce) {
+        assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
+        assertEquals("Read timed out", jce.getCause().getMessage());
+        assertTrue(timeoutJedis.isBroken());
+      }
     }
-    jedis.close();
   }
 
   @Test(expected = JedisDataException.class)
@@ -192,16 +192,15 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void checkCloseable() {
-    jedis.close();
-    BinaryJedis bj = new BinaryJedis("localhost");
-    bj.connect();
-    bj.close();
+    try (BinaryJedis bj = new BinaryJedis("localhost")) {
+      bj.connect();
+    }
   }
 
   @Test
   public void checkDisconnectOnQuit() {
     jedis.quit();
-    assertFalse(jedis.getClient().isConnected());
+    assertFalse(jedis.isConnected());
   }
 
 }

@@ -3608,7 +3608,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     if (dataSource != null) {
       JedisPoolAbstract pool = this.dataSource;
       this.dataSource = null;
-      if (client.isBroken()) {
+      if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);

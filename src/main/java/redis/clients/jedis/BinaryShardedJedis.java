@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -18,6 +20,8 @@ import redis.clients.jedis.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
+
+  private static final Logger logger = LoggerFactory.getLogger(BinaryShardedJedis.class);
 
   private final byte[][] dummyArray = new byte[0][];
 
@@ -41,14 +45,19 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     for (Jedis jedis : getAllShards()) {
       if (jedis.isConnected()) {
         try {
-          jedis.quit();
+          // need a proper test, probably with mock
+          if (!jedis.isBroken()) {
+            jedis.quit();
+          }
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
+          logger.warn("Error while QUIT", e);
         }
         try {
           jedis.disconnect();
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
+          logger.warn("Error while disconnect", e);
         }
       }
     }

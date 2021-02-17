@@ -356,7 +356,7 @@ public class JedisPoolTest {
         fail();
       } catch (Exception e) {
       }
-      assertTrue(j.getClient().isBroken());
+      assertTrue(j.isBroken());
       j.close();
       j.close();
     }

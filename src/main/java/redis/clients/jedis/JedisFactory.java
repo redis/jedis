@@ -10,6 +10,8 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -19,6 +21,9 @@ import redis.clients.jedis.util.JedisURIHelper;
  * PoolableObjectFactory custom impl.
  */
 class JedisFactory implements PooledObjectFactory<Jedis> {
+
+  private static final Logger logger = LoggerFactory.getLogger(JedisFactory.class);
+
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<>();
   private final int connectionTimeout;
   private final int soTimeout;
@@ -129,12 +134,17 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     final BinaryJedis jedis = pooledJedis.getObject();
     if (jedis.isConnected()) {
       try {
-        try {
+        // need a proper test, probably with mock
+        if (!jedis.isBroken()) {
           jedis.quit();
-        } catch (Exception e) {
         }
+      } catch (Exception e) {
+        logger.warn("Error while QUIT", e);
+      }
+      try {
         jedis.disconnect();
       } catch (Exception e) {
+        logger.warn("Error while disconnect", e);
       }
     }
   }

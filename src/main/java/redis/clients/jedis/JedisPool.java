@@ -1,18 +1,19 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class JedisPool extends JedisPoolAbstract {
+
+  private static final Logger log = LoggerFactory.getLogger(JedisPool.class);
 
   public JedisPool() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -29,12 +30,11 @@ public class JedisPool extends JedisPoolAbstract {
   public JedisPool(final String host) {
     URI uri = URI.create(host);
     if (JedisURIHelper.isValid(uri)) {
-      this.internalPool = new GenericObjectPool<>(new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null), new GenericObjectPoolConfig());
+      initPool(new GenericObjectPoolConfig(), new JedisFactory(uri, Protocol.DEFAULT_TIMEOUT,
+          Protocol.DEFAULT_TIMEOUT, null));
     } else {
-      this.internalPool = new GenericObjectPool<>(new JedisFactory(host,
-          Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null,
-          Protocol.DEFAULT_DATABASE, null), new GenericObjectPoolConfig());
+      initPool(new GenericObjectPoolConfig(), new JedisFactory(host, Protocol.DEFAULT_PORT,
+          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
     }
   }
 
@@ -42,13 +42,12 @@ public class JedisPool extends JedisPoolAbstract {
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     URI uri = URI.create(host);
     if (JedisURIHelper.isValid(uri)) {
-      this.internalPool = new GenericObjectPool<>(new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory, sslParameters,
-          hostnameVerifier), new GenericObjectPoolConfig());
+      initPool(new GenericObjectPoolConfig(), new JedisFactory(uri, Protocol.DEFAULT_TIMEOUT,
+          Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory, sslParameters, hostnameVerifier));
     } else {
-      this.internalPool = new GenericObjectPool<>(new JedisFactory(host,
-          Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null,
-          Protocol.DEFAULT_DATABASE, null, false, null, null, null), new GenericObjectPoolConfig());
+      initPool(new GenericObjectPoolConfig(), new JedisFactory(host, Protocol.DEFAULT_PORT,
+          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null,
+          false, null, null, null));
     }
   }
 
@@ -333,21 +332,14 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   @Override
-  protected void returnBrokenResource(final Jedis resource) {
-    if (resource != null) {
-      returnBrokenResourceObject(resource);
-    }
-  }
-
-  @Override
-  protected void returnResource(final Jedis resource) {
+  public void returnResource(final Jedis resource) {
     if (resource != null) {
       try {
         resource.resetState();
         returnResourceObject(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
-        throw new JedisException("Resource is returned to the pool as broken", e);
+        log.warn("Resource is returned to the pool as broken", e);
       }
     }
   }

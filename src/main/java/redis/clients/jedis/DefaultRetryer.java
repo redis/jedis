@@ -23,6 +23,17 @@ public class DefaultRetryer extends Retryer {
     return runWithRetries(command, slot, maxAttempts, false, null);
   }
 
+  @Override
+  public <R> R runWithRetries(Function<Jedis, R> command) {
+    Jedis connection = null;
+    try {
+      connection = connectionHandler.getConnection();
+      return command.apply(connection);
+    } finally {
+      releaseConnection(connection);
+    }
+  }
+
   private <R> R runWithRetries(Function<Jedis, R> command, final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
     if (attempts <= 0) {
       throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");

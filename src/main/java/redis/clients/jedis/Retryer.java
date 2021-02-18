@@ -13,6 +13,11 @@ public abstract class Retryer {
    */
   protected abstract <R> R runWithRetries(int slot, Function<Jedis, R> command);
 
+  /**
+   * Execute a Redis command on any random node.
+   */
+  public abstract <R> R runWithRetries(Function<Jedis, R> command);
+
   public <R> R run(Function<Jedis, R> command, String key) {
     return runWithRetries(JedisClusterCRC16.getSlot(key), command);
   }

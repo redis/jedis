@@ -27,9 +27,13 @@ public abstract class Retryer {
 
   /**
    * Override this method to free up any resources.
+   * <p/>
+   * And if you do, you <em>must</em> call {@code super.close()} from your overriding method!
    */
   public void close() {
-    // This method intentionally left blank
+    if (connectionHandler != null) {
+      connectionHandler.close();
+    }
   }
 
   public Map<String, JedisPool> getClusterNodes() {

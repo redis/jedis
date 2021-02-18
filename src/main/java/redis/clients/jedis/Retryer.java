@@ -36,19 +36,19 @@ public abstract class Retryer {
     }
   }
 
-  public Map<String, JedisPool> getClusterNodes() {
+  public final Map<String, JedisPool> getClusterNodes() {
     return connectionHandler.getNodes();
   }
 
-  public Jedis getConnectionFromSlot(int slot) {
+  public final Jedis getConnectionFromSlot(int slot) {
     return connectionHandler.getConnectionFromSlot(slot);
   }
 
-  public <R> R run(Function<Jedis, R> command, String key) {
+  public final <R> R run(Function<Jedis, R> command, String key) {
     return runWithRetries(JedisClusterCRC16.getSlot(key), command);
   }
 
-  public <R> R run(Function<Jedis, R> command, int keyCount, String... keys) {
+  public final <R> R run(Function<Jedis, R> command, int keyCount, String... keys) {
     if (keys == null || keys.length == 0) {
       throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
     }
@@ -68,11 +68,11 @@ public abstract class Retryer {
     return runWithRetries(slot, command);
   }
 
-  public <R> R runBinary(Function<Jedis, R> command, byte[] key) {
+  public final <R> R runBinary(Function<Jedis, R> command, byte[] key) {
     return runWithRetries(JedisClusterCRC16.getSlot(key), command);
   }
 
-  public <R> R runBinary(Function<Jedis, R> command, int keyCount, byte[]... keys) {
+  public final <R> R runBinary(Function<Jedis, R> command, int keyCount, byte[]... keys) {
     if (keys == null || keys.length == 0) {
       throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
     }

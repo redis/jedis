@@ -111,11 +111,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   public Map<String, JedisPool> getClusterNodes() {
-    return connectionHandler.getNodes();
+    return retryer.getClusterNodes();
   }
 
   public Jedis getConnectionFromSlot(int slot) {
-	  return  this.connectionHandler.getConnectionFromSlot(slot);
+    return retryer.getConnectionFromSlot(slot);
   }
 
   @Override

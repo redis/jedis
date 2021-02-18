@@ -10,11 +10,10 @@ import redis.clients.jedis.exceptions.JedisRedirectionException;
 
 public class DefaultRetryer extends Retryer {
 
-  private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
 
   public DefaultRetryer(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
-    this.connectionHandler = connectionHandler;
+    super(connectionHandler);
     this.maxAttempts = maxAttempts;
   }
 

@@ -1,10 +1,17 @@
 package redis.clients.jedis;
 
+import java.util.Map;
 import java.util.function.Function;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class Retryer {
+  protected final JedisClusterConnectionHandler connectionHandler;
+
+  public Retryer(JedisClusterConnectionHandler connectionHandler) {
+    this.connectionHandler = connectionHandler;
+  }
+
   /**
    * Execute a Redis command with retries.
    *
@@ -23,6 +30,14 @@ public abstract class Retryer {
    */
   public void close() {
     // This method intentionally left blank
+  }
+
+  public Map<String, JedisPool> getClusterNodes() {
+    return connectionHandler.getNodes();
+  }
+
+  public Jedis getConnectionFromSlot(int slot) {
+    return connectionHandler.getConnectionFromSlot(slot);
   }
 
   public <R> R run(Function<Jedis, R> command, String key) {

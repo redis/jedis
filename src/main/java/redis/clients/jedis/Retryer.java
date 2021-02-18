@@ -18,6 +18,13 @@ public abstract class Retryer {
    */
   public abstract <R> R runWithRetries(Function<Jedis, R> command);
 
+  /**
+   * Override this method to free up any resources.
+   */
+  public void close() {
+    // This method intentionally left blank
+  }
+
   public <R> R run(Function<Jedis, R> command, String key) {
     return runWithRetries(JedisClusterCRC16.getSlot(key), command);
   }

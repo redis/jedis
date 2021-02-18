@@ -33,10 +33,6 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   protected final Retryer retryer;
 
-  protected int maxAttempts;
-
-  protected JedisClusterConnectionHandler connectionHandler;
-
   public BinaryJedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
   }
@@ -64,16 +60,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
+    JedisClusterConnectionHandler connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, user, password, clientName);
-    this.maxAttempts = maxAttempts;
+    retryer = new DefaultRetryer(connectionHandler, maxAttempts);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
+    JedisClusterConnectionHandler connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName);
-    this.maxAttempts = maxAttempts;
+    retryer = new DefaultRetryer(connectionHandler, maxAttempts);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig,
@@ -96,24 +92,22 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
+    JedisClusterConnectionHandler connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-    this.maxAttempts = maxAttempts;
+    retryer = new DefaultRetryer(connectionHandler, maxAttempts);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
+    JedisClusterConnectionHandler connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-    this.maxAttempts = maxAttempts;
+    retryer = new DefaultRetryer(connectionHandler, maxAttempts);
   }
 
   @Override
   public void close() {
-    if (connectionHandler != null) {
-      connectionHandler.close();
-    }
+    retryer.close();
   }
 
   public Map<String, JedisPool> getClusterNodes() {

@@ -31,6 +31,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   protected static final int DEFAULT_TIMEOUT = 2000;
   protected static final int DEFAULT_MAX_ATTEMPTS = 5;
 
+  protected final Retryer retryer;
+
   protected int maxAttempts;
 
   protected JedisClusterConnectionHandler connectionHandler;
@@ -124,12 +126,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public String set(final byte[] key, final byte[] value) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.set(key, value);
-      }
-    }.runBinary(key);
+    return retryer.runBinary((connection) -> connection.set(key, value), key);
   }
 
   @Override
@@ -1834,46 +1831,30 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public Long publish(final byte[] channel, final byte[] message) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.publish(channel, message);
-      }
-    }.runWithAnyNode();
+    return retryer.runWithRetries((connection) -> connection.publish(channel, message));
   }
 
   @Override
   public void subscribe(final BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
-    new JedisClusterCommand<Integer>(connectionHandler, maxAttempts) {
-      @Override
-      public Integer execute(Jedis connection) {
-        connection.subscribe(jedisPubSub, channels);
-        return 0;
-      }
-    }.runWithAnyNode();
+    retryer.runWithRetries((connection) -> {
+      connection.subscribe(jedisPubSub, channels);
+      return null;
+    });
   }
 
   @Override
   public void psubscribe(final BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
-    new JedisClusterCommand<Integer>(connectionHandler, maxAttempts) {
-      @Override
-      public Integer execute(Jedis connection) {
-        connection.psubscribe(jedisPubSub, patterns);
-        return 0;
-      }
-    }.runWithAnyNode();
+    retryer.runWithRetries((connection) -> {
+      connection.psubscribe(jedisPubSub, patterns);
+      return null;
+    });
   }
 
   @Override
   public Long bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
     byte[][] wholeKeys = KeyMergeUtil.merge(destKey, srcKeys);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.bitop(op, destKey, srcKeys);
-      }
-    }.runBinary(wholeKeys.length, wholeKeys);
+    return retryer.runBinary((connection) -> connection.bitop(op, destKey, srcKeys), wholeKeys.length, wholeKeys);
   }
 
   @Override

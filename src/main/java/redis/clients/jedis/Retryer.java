@@ -1,9 +1,6 @@
 package redis.clients.jedis;
 
-import java.util.Map;
 import java.util.function.Function;
-import redis.clients.jedis.exceptions.JedisClusterOperationException;
-import redis.clients.jedis.util.JedisClusterCRC16;
 
 /**
  * Functionality for retrying Redis connections.
@@ -11,16 +8,16 @@ import redis.clients.jedis.util.JedisClusterCRC16;
  * This class contains scaffolding around the retry mechanism. The actual retrying will be done in
  * subclasses of this class, with {@link DefaultRetryer} being the default implementation.
  *
- * @see BinaryJedisCluster#BinaryJedisCluster(Retryer)
- * @see JedisCluster#JedisCluster(Retryer)
+ * @see BinaryJedisCluster#BinaryJedisCluster(JedisClusterConnectionHandler, Retryer)
+ * @see JedisCluster#JedisCluster(JedisClusterConnectionHandler, Retryer)
  * @see DefaultRetryer
  */
-public abstract class Retryer {
-  protected final JedisClusterConnectionHandler connectionHandler;
+public interface Retryer {
 
-  public Retryer(JedisClusterConnectionHandler connectionHandler) {
-    this.connectionHandler = connectionHandler;
-  }
+  /**
+   * Execute a Redis command on any random node.
+   */
+  <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler, Function<Jedis, R> command);
 
   /**
    * Execute a Redis command with retries.
@@ -28,77 +25,6 @@ public abstract class Retryer {
    * @param slot From one of the {@code JedisClusterCRC16#get*())} methods
    * @return The result of running the given command with retries
    */
-  protected abstract <R> R runWithRetries(int slot, Function<Jedis, R> command);
-
-  /**
-   * Execute a Redis command on any random node.
-   */
-  public abstract <R> R runWithRetries(Function<Jedis, R> command);
-
-  /**
-   * Override this method to free up any resources.
-   * <p/>
-   * And if you do, you <em>must</em> call {@code super.close()} from your overriding method!
-   */
-  public void close() {
-    if (connectionHandler != null) {
-      connectionHandler.close();
-    }
-  }
-
-  public final Map<String, JedisPool> getClusterNodes() {
-    return connectionHandler.getNodes();
-  }
-
-  public final Jedis getConnectionFromSlot(int slot) {
-    return connectionHandler.getConnectionFromSlot(slot);
-  }
-
-  public final <R> R run(Function<Jedis, R> command, String key) {
-    return runWithRetries(JedisClusterCRC16.getSlot(key), command);
-  }
-
-  public final <R> R run(Function<Jedis, R> command, int keyCount, String... keys) {
-    if (keys == null || keys.length == 0) {
-      throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
-    }
-
-    // For multiple keys, only execute if they all share the same connection slot.
-    int slot = JedisClusterCRC16.getSlot(keys[0]);
-    if (keys.length > 1) {
-      for (int i = 1; i < keyCount; i++) {
-        int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
-        if (slot != nextSlot) {
-          throw new JedisClusterOperationException("No way to dispatch this command to Redis "
-              + "Cluster because keys have different slots.");
-        }
-      }
-    }
-
-    return runWithRetries(slot, command);
-  }
-
-  public final <R> R runBinary(Function<Jedis, R> command, byte[] key) {
-    return runWithRetries(JedisClusterCRC16.getSlot(key), command);
-  }
-
-  public final <R> R runBinary(Function<Jedis, R> command, int keyCount, byte[]... keys) {
-    if (keys == null || keys.length == 0) {
-      throw new JedisClusterOperationException("No way to dispatch this command to Redis Cluster.");
-    }
-
-    // For multiple keys, only execute if they all share the same connection slot.
-    int slot = JedisClusterCRC16.getSlot(keys[0]);
-    if (keys.length > 1) {
-      for (int i = 1; i < keyCount; i++) {
-        int nextSlot = JedisClusterCRC16.getSlot(keys[i]);
-        if (slot != nextSlot) {
-          throw new JedisClusterOperationException("No way to dispatch this command to Redis "
-              + "Cluster because keys have different slots.");
-        }
-      }
-    }
-
-    return runWithRetries(slot, command);
-  }
+  <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler, int slot,
+      Function<Jedis, R> command);
 }

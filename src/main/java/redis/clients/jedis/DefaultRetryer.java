@@ -13,22 +13,23 @@ import redis.clients.jedis.exceptions.JedisRedirectionException;
  *
  * @see Retryer
  */
-public class DefaultRetryer extends Retryer {
+public class DefaultRetryer implements Retryer {
 
   private final int maxAttempts;
 
-  public DefaultRetryer(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
-    super(connectionHandler);
+  public DefaultRetryer(int maxAttempts) {
     this.maxAttempts = maxAttempts;
   }
 
   @Override
-  protected <R> R runWithRetries(int slot, Function<Jedis, R> command) {
-    return runWithRetries(command, slot, maxAttempts, false, null);
+  public <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler, int slot,
+      Function<Jedis, R> command) {
+    return runWithRetries(connectionHandler, command, slot, maxAttempts, false, null);
   }
 
   @Override
-  public <R> R runWithRetries(Function<Jedis, R> command) {
+  public <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler,
+      Function<Jedis, R> command) {
     Jedis connection = null;
     try {
       connection = connectionHandler.getConnection();
@@ -38,7 +39,9 @@ public class DefaultRetryer extends Retryer {
     }
   }
 
-  private <R> R runWithRetries(Function<Jedis, R> command, final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
+  private <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler,
+      Function<Jedis, R> command, final int slot, int attempts, boolean tryRandomNode,
+      JedisRedirectionException redirect) {
     if (attempts <= 0) {
       throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
     }
@@ -47,7 +50,7 @@ public class DefaultRetryer extends Retryer {
     try {
 
       if (redirect != null) {
-        connection = this.connectionHandler.getConnectionFromNode(redirect.getTargetNode());
+        connection = connectionHandler.getConnectionFromNode(redirect.getTargetNode());
         if (redirect instanceof JedisAskDataException) {
           // TODO: Pipeline asking with the original command to make it faster....
           connection.asking();
@@ -75,22 +78,23 @@ public class DefaultRetryer extends Retryer {
         //But now if maxAttempts = [1 or 2] we will do it too often.
         //TODO make tracking of successful/unsuccessful operations for node - do renewing only
         //if there were no successful responses from this node last few seconds
-        this.connectionHandler.renewSlotCache();
+        connectionHandler.renewSlotCache();
       }
 
-      return runWithRetries(command, slot, attempts - 1, tryRandomNode, redirect);
+      return runWithRetries(connectionHandler, command, slot, attempts - 1, tryRandomNode,
+          redirect);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {
         // it rebuilds cluster's slot cache recommended by Redis cluster specification
-        this.connectionHandler.renewSlotCache(connection);
+        connectionHandler.renewSlotCache(connection);
       }
 
       // release current connection before recursion
       releaseConnection(connection);
       connection = null;
 
-      return runWithRetries(command, slot, attempts - 1, false, jre);
+      return runWithRetries(connectionHandler, command, slot, attempts - 1, false, jre);
     } finally {
       releaseConnection(connection);
     }

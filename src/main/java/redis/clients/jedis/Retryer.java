@@ -5,6 +5,16 @@ import java.util.function.Function;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
+/**
+ * Functionality for retrying Redis connections.
+ * <p/>
+ * This class contains scaffolding around the retry mechanism. The actual retrying will be done in
+ * subclasses of this class, with {@link DefaultRetryer} being the default implementation.
+ *
+ * @see BinaryJedisCluster#BinaryJedisCluster(Retryer)
+ * @see JedisCluster#JedisCluster(Retryer)
+ * @see DefaultRetryer
+ */
 public abstract class Retryer {
   protected final JedisClusterConnectionHandler connectionHandler;
 

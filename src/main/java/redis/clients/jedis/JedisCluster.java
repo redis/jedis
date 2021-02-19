@@ -24,6 +24,14 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+/**
+ * Interface to a Jedis cluster.
+ * <p/>
+ * Uses {@link DefaultRetryer}, or you can inject your own using
+ * {@link JedisCluster#JedisCluster(Retryer)}.
+ *
+ * @see BinaryJedisCluster
+ */
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
 

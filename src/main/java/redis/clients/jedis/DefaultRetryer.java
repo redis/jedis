@@ -8,6 +8,11 @@ import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 
+/**
+ * Retries failed and redirected Jedis connections, without any backoff.
+ *
+ * @see Retryer
+ */
 public class DefaultRetryer extends Retryer {
 
   private final int maxAttempts;

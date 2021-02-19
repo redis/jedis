@@ -22,12 +22,6 @@ public class DefaultRetryer implements Retryer {
   }
 
   @Override
-  public <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler, int slot,
-      Function<Jedis, R> command) {
-    return runWithRetries(connectionHandler, command, slot, maxAttempts, false, null);
-  }
-
-  @Override
   public <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler,
       Function<Jedis, R> command) {
     Jedis connection = null;
@@ -39,9 +33,14 @@ public class DefaultRetryer implements Retryer {
     }
   }
 
-  private <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler,
-      Function<Jedis, R> command, final int slot, int attempts, boolean tryRandomNode,
-      JedisRedirectionException redirect) {
+  @Override
+  public <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler, int slot,
+      Function<Jedis, R> command) {
+    return runWithRetries(connectionHandler, command, slot, maxAttempts, false, null);
+  }
+
+  private <R> R runWithRetries(JedisClusterConnectionHandler connectionHandler, Function<Jedis, R> command,
+      final int slot, int attempts, boolean tryRandomNode, JedisRedirectionException redirect) {
     if (attempts <= 0) {
       throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
     }
@@ -81,8 +80,7 @@ public class DefaultRetryer implements Retryer {
         connectionHandler.renewSlotCache();
       }
 
-      return runWithRetries(connectionHandler, command, slot, attempts - 1, tryRandomNode,
-          redirect);
+      return runWithRetries(connectionHandler, command, slot, attempts - 1, tryRandomNode, redirect);
     } catch (JedisRedirectionException jre) {
       // if MOVED redirection occurred,
       if (jre instanceof JedisMovedDataException) {

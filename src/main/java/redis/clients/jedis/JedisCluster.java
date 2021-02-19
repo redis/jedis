@@ -193,6 +193,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
+  public JedisCluster(Retryer retryer) {
+    super(retryer);
+  }
+
   @Override
   public String set(final String key, final String value) {
     return retryer.run((connection) -> connection.set(key, value), key);

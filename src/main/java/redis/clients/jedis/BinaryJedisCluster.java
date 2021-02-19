@@ -105,6 +105,10 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     retryer = new DefaultRetryer(connectionHandler, maxAttempts);
   }
 
+  public BinaryJedisCluster(Retryer retryer) {
+    this.retryer = retryer;
+  }
+
   @Override
   public void close() {
     retryer.close();

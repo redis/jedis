@@ -195,62 +195,32 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public String set(final String key, final String value) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.set(key, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.set(key, value), key);
   }
 
   @Override
   public String set(final String key, final String value, final SetParams params) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.set(key, value, params);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.set(key, value, params), key);
   }
 
   @Override
   public String get(final String key) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.get(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.get(key), key);
   }
 
   @Override
   public Boolean exists(final String key) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.exists(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.exists(key), key);
   }
 
   @Override
   public Long exists(final String... keys) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.exists(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.exists(keys), keys.length, keys);
   }
 
   @Override
   public Long persist(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.persist(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.persist(key), key);
   }
 
   @Override
@@ -260,1256 +230,636 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public byte[] dump(final String key) {
-    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
-      @Override
-      public byte[] execute(Jedis connection) {
-        return connection.dump(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.dump(key), key);
   }
 
   @Override
   public String restore(final String key, final int ttl, final byte[] serializedValue) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.restore(key, ttl, serializedValue);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.restore(key, ttl, serializedValue), key);
   }
 
   @Override
   public Long expire(final String key, final int seconds) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.expire(key, seconds);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.expire(key, seconds), key);
   }
 
   @Override
   public Long pexpire(final String key, final long milliseconds) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.pexpire(key, milliseconds);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.pexpire(key, milliseconds), key);
   }
 
   @Override
   public Long expireAt(final String key, final long unixTime) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.expireAt(key, unixTime);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.expireAt(key, unixTime), key);
   }
 
   @Override
   public Long pexpireAt(final String key, final long millisecondsTimestamp) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.pexpireAt(key, millisecondsTimestamp);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.pexpireAt(key, millisecondsTimestamp), key);
   }
 
   @Override
   public Long ttl(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.ttl(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.ttl(key), key);
   }
 
   @Override
   public Long pttl(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.pttl(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.pttl(key), key);
   }
 
   @Override
   public Long touch(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.touch(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.touch(key), key);
   }
 
   @Override
   public Long touch(final String... keys) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.touch(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.touch(keys), keys.length, keys);
   }
 
   @Override
   public Boolean setbit(final String key, final long offset, final boolean value) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.setbit(key, offset, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.setbit(key, offset, value), key);
   }
 
   @Override
   public Boolean setbit(final String key, final long offset, final String value) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.setbit(key, offset, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.setbit(key, offset, value), key);
   }
 
   @Override
   public Boolean getbit(final String key, final long offset) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.getbit(key, offset);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.getbit(key, offset), key);
   }
 
   @Override
   public Long setrange(final String key, final long offset, final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.setrange(key, offset, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.setrange(key, offset, value), key);
   }
 
   @Override
   public String getrange(final String key, final long startOffset, final long endOffset) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.getrange(key, startOffset, endOffset);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.getrange(key, startOffset, endOffset), key);
   }
 
   @Override
   public String getSet(final String key, final String value) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.getSet(key, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.getSet(key, value), key);
   }
 
   @Override
   public Long setnx(final String key, final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.setnx(key, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.setnx(key, value), key);
   }
 
   @Override
   public String setex(final String key, final int seconds, final String value) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.setex(key, seconds, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.setex(key, seconds, value), key);
   }
 
   @Override
   public String psetex(final String key, final long milliseconds, final String value) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.psetex(key, milliseconds, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.psetex(key, milliseconds, value), key);
   }
 
   @Override
   public Long decrBy(final String key, final long decrement) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.decrBy(key, decrement);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.decrBy(key, decrement), key);
   }
 
   @Override
   public Long decr(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.decr(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.decr(key), key);
   }
 
   @Override
   public Long incrBy(final String key, final long increment) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.incrBy(key, increment);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.incrBy(key, increment), key);
   }
 
   @Override
   public Double incrByFloat(final String key, final double increment) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.incrByFloat(key, increment);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.incrByFloat(key, increment), key);
   }
 
   @Override
   public Long incr(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.incr(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.incr(key), key);
   }
 
   @Override
   public Long append(final String key, final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.append(key, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.append(key, value), key);
   }
 
   @Override
   public String substr(final String key, final int start, final int end) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.substr(key, start, end);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.substr(key, start, end), key);
   }
 
   @Override
   public Long hset(final String key, final String field, final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hset(key, field, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hset(key, field, value), key);
   }
 
   @Override
   public Long hset(final String key, final Map<String, String> hash) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hset(key, hash);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hset(key, hash), key);
   }
 
   @Override
   public String hget(final String key, final String field) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.hget(key, field);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hget(key, field), key);
   }
 
   @Override
   public Long hsetnx(final String key, final String field, final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hsetnx(key, field, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hsetnx(key, field, value), key);
   }
 
   @Override
   public String hmset(final String key, final Map<String, String> hash) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.hmset(key, hash);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hmset(key, hash), key);
   }
 
   @Override
   public List<String> hmget(final String key, final String... fields) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.hmget(key, fields);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hmget(key, fields), key);
   }
 
   @Override
   public Long hincrBy(final String key, final String field, final long value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hincrBy(key, field, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hincrBy(key, field, value), key);
   }
 
   @Override
   public Double hincrByFloat(final String key, final String field, final double value) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.hincrByFloat(key, field, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hincrByFloat(key, field, value), key);
   }
 
   @Override
   public Boolean hexists(final String key, final String field) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.hexists(key, field);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hexists(key, field), key);
   }
 
   @Override
   public Long hdel(final String key, final String... field) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hdel(key, field);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hdel(key, field), key);
   }
 
   @Override
   public Long hlen(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hlen(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hlen(key), key);
   }
 
   @Override
   public Set<String> hkeys(final String key) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.hkeys(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hkeys(key), key);
   }
 
   @Override
   public List<String> hvals(final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.hvals(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hvals(key), key);
   }
 
   @Override
   public Map<String, String> hgetAll(final String key) {
-    return new JedisClusterCommand<Map<String, String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Map<String, String> execute(Jedis connection) {
-        return connection.hgetAll(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hgetAll(key), key);
   }
 
   @Override
   public Long rpush(final String key, final String... string) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.rpush(key, string);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.rpush(key, string), key);
   }
 
   @Override
   public Long lpush(final String key, final String... string) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.lpush(key, string);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpush(key, string), key);
   }
 
   @Override
   public Long llen(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.llen(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.llen(key), key);
   }
 
   @Override
   public List<String> lrange(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.lrange(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lrange(key, start, stop), key);
   }
 
   @Override
   public String ltrim(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.ltrim(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.ltrim(key, start, stop), key);
   }
 
   @Override
   public String lindex(final String key, final long index) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.lindex(key, index);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lindex(key, index), key);
   }
 
   @Override
   public String lset(final String key, final long index, final String value) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.lset(key, index, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lset(key, index, value), key);
   }
 
   @Override
   public Long lrem(final String key, final long count, final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.lrem(key, count, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lrem(key, count, value), key);
   }
 
   @Override
   public String lpop(final String key) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.lpop(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpop(key), key);
   }
 
   @Override
   public List<String> lpop(final String key, final int count) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.lpop(key, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpop(key, count), key);
   }
 
   @Override
   public Long lpos(final String key, final String element) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.lpos(key, element);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpos(key, element), key);
   }
 
   @Override
   public Long lpos(final String key, final String element, final LPosParams params) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.lpos(key, element, params);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpos(key, element, params), key);
   }
 
   @Override
   public List<Long> lpos(final String key, final String element, final LPosParams params, final long count) {
-    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Long> execute(Jedis connection) {
-        return connection.lpos(key, element, params, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpos(key, element, params, count), key);
   }
 
   @Override
   public String rpop(final String key) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.rpop(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.rpop(key), key);
   }
 
   @Override
   public List<String> rpop(final String key, final int count) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.rpop(key, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.rpop(key, count), key);
   }
 
   @Override
   public Long sadd(final String key, final String... member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.sadd(key, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.sadd(key, member), key);
   }
 
   @Override
   public Set<String> smembers(final String key) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.smembers(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.smembers(key), key);
   }
 
   @Override
   public Long srem(final String key, final String... member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.srem(key, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.srem(key, member), key);
   }
 
   @Override
   public String spop(final String key) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.spop(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.spop(key), key);
   }
 
   @Override
   public Set<String> spop(final String key, final long count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.spop(key, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.spop(key, count), key);
   }
 
   @Override
   public Long scard(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.scard(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.scard(key), key);
   }
 
   @Override
   public Boolean sismember(final String key, final String member) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.sismember(key, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.sismember(key, member), key);
   }
 
   @Override
   public List<Boolean> smismember(final String key, final String... members) {
-    return new JedisClusterCommand<List<Boolean>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Boolean> execute(Jedis connection) {
-        return connection.smismember(key, members);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.smismember(key, members), key);
   }
 
   @Override
   public String srandmember(final String key) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.srandmember(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.srandmember(key), key);
   }
 
   @Override
   public List<String> srandmember(final String key, final int count) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.srandmember(key, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.srandmember(key, count), key);
   }
 
   @Override
   public Long strlen(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.strlen(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.strlen(key), key);
   }
 
   @Override
   public Long zadd(final String key, final double score, final String member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zadd(key, score, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zadd(key, score, member), key);
   }
 
   @Override
   public Long zadd(final String key, final double score, final String member,
       final ZAddParams params) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zadd(key, score, member, params);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zadd(key, score, member, params), key);
   }
 
   @Override
   public Long zadd(final String key, final Map<String, Double> scoreMembers) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zadd(key, scoreMembers);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zadd(key, scoreMembers), key);
   }
 
   @Override
   public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zadd(key, scoreMembers, params);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zadd(key, scoreMembers, params), key);
   }
 
   @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrange(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrange(key, start, stop), key);
   }
 
   @Override
   public Long zrem(final String key, final String... members) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zrem(key, members);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrem(key, members), key);
   }
 
   @Override
   public Double zincrby(final String key, final double increment, final String member) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.zincrby(key, increment, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zincrby(key, increment, member), key);
   }
 
   @Override
   public Double zincrby(final String key, final double increment, final String member,
       final ZIncrByParams params) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.zincrby(key, increment, member, params);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zincrby(key, increment, member, params), key);
   }
 
   @Override
   public Long zrank(final String key, final String member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zrank(key, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrank(key, member), key);
   }
 
   @Override
   public Long zrevrank(final String key, final String member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zrevrank(key, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrank(key, member), key);
   }
 
   @Override
   public Set<String> zrevrange(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrange(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrange(key, start, stop), key);
   }
 
   @Override
   public Set<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrangeWithScores(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeWithScores(key, start, stop), key);
   }
 
   @Override
   public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrevrangeWithScores(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeWithScores(key, start, stop), key);
   }
 
   @Override
   public Long zcard(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zcard(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zcard(key), key);
   }
 
   @Override
   public Double zscore(final String key, final String member) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.zscore(key, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zscore(key, member), key);
   }
 
   @Override
   public List<Double> zmscore(final String key, final String... members) {
-    return new JedisClusterCommand<List<Double>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Double> execute(Jedis connection) {
-        return connection.zmscore(key, members);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zmscore(key, members), key);
   }
 
   @Override
   public Tuple zpopmax(final String key) {
-    return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
-      @Override
-      public Tuple execute(Jedis connection) {
-        return connection.zpopmax(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zpopmax(key), key);
   }
 
   @Override
   public Set<Tuple> zpopmax(final String key, final int count) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zpopmax(key, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zpopmax(key, count), key);
   }
 
   @Override
   public Tuple zpopmin(final String key) {
-    return new JedisClusterCommand<Tuple>(connectionHandler, maxAttempts) {
-      @Override
-      public Tuple execute(Jedis connection) {
-        return connection.zpopmin(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zpopmin(key), key);
   }
 
   @Override
   public Set<Tuple> zpopmin(final String key, final int count) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zpopmin(key, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zpopmin(key, count), key);
   }
 
   @Override
   public List<String> sort(final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.sort(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.sort(key), key);
   }
 
   @Override
   public List<String> sort(final String key, final SortingParams sortingParameters) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.sort(key, sortingParameters);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.sort(key, sortingParameters), key);
   }
 
   @Override
   public Long zcount(final String key, final double min, final double max) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zcount(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zcount(key, min, max), key);
   }
 
   @Override
   public Long zcount(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zcount(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zcount(key, min, max), key);
   }
 
   @Override
   public Set<String> zrangeByScore(final String key, final double min, final double max) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrangeByScore(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScore(key, min, max), key);
   }
 
   @Override
   public Set<String> zrangeByScore(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrangeByScore(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScore(key, min, max), key);
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrangeByScore(key, max, min);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScore(key, max, min), key);
   }
 
   @Override
   public Set<String> zrangeByScore(final String key, final double min, final double max,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrangeByScore(key, min, max, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScore(key, min, max, offset, count), key);
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final String max, final String min) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrangeByScore(key, max, min);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScore(key, max, min), key);
   }
 
   @Override
   public Set<String> zrangeByScore(final String key, final String min, final String max,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrangeByScore(key, min, max, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScore(key, min, max, offset, count), key);
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final double max, final double min,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrangeByScore(key, max, min, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScore(key, max, min, offset, count), key);
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrangeByScoreWithScores(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScoreWithScores(key, min, max), key);
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrevrangeByScoreWithScores(key, max, min);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScoreWithScores(key, max, min), key);
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrangeByScoreWithScores(key, min, max, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScoreWithScores(key, min, max, offset, count), key);
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final String max, final String min,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrangeByScore(key, max, min, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScore(key, max, min, offset, count), key);
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrangeByScoreWithScores(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScoreWithScores(key, min, max), key);
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrevrangeByScoreWithScores(key, max, min);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScoreWithScores(key, max, min), key);
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrangeByScoreWithScores(key, min, max, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByScoreWithScores(key, min, max, offset, count), key);
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
       final double min, final int offset, final int count) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrevrangeByScoreWithScores(key, max, min, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScoreWithScores(key, max, min, offset, count), key);
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
       final String min, final int offset, final int count) {
-    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<Tuple> execute(Jedis connection) {
-        return connection.zrevrangeByScoreWithScores(key, max, min, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByScoreWithScores(key, max, min, offset, count), key);
   }
 
   @Override
   public Long zremrangeByRank(final String key, final long start, final long stop) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zremrangeByRank(key, start, stop);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zremrangeByRank(key, start, stop), key);
   }
 
   @Override
   public Long zremrangeByScore(final String key, final double min, final double max) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zremrangeByScore(key, min, max), key);
   }
 
   @Override
   public Long zremrangeByScore(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zremrangeByScore(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zremrangeByScore(key, min, max), key);
   }
 
   @Override
   public Long zlexcount(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zlexcount(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zlexcount(key, min, max), key);
   }
 
   @Override
   public Set<String> zrangeByLex(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrangeByLex(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByLex(key, min, max), key);
   }
 
   @Override
   public Set<String> zrangeByLex(final String key, final String min, final String max,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrangeByLex(key, min, max, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrangeByLex(key, min, max, offset, count), key);
   }
 
   @Override
   public Set<String> zrevrangeByLex(final String key, final String max, final String min) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrangeByLex(key, max, min);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByLex(key, max, min), key);
   }
 
   @Override
   public Set<String> zrevrangeByLex(final String key, final String max, final String min,
       final int offset, final int count) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.zrevrangeByLex(key, max, min, offset, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zrevrangeByLex(key, max, min, offset, count), key);
   }
 
   @Override
   public Long zremrangeByLex(final String key, final String min, final String max) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zremrangeByLex(key, min, max);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zremrangeByLex(key, min, max), key);
   }
 
   @Override
   public Long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.linsert(key, where, pivot, value);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.linsert(key, where, pivot, value), key);
   }
 
   @Override
   public Long lpushx(final String key, final String... string) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.lpushx(key, string);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.lpushx(key, string), key);
   }
 
   @Override
   public Long rpushx(final String key, final String... string) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.rpushx(key, string);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.rpushx(key, string), key);
   }
 
   @Override
   public Long del(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.del(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.del(key), key);
   }
 
   @Override
   public Long unlink(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.unlink(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.unlink(key), key);
   }
 
   @Override
   public Long unlink(final String... keys) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.unlink(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.unlink(keys), keys.length, keys);
   }
 
   @Override
   public String echo(final String string) {
     // note that it'll be run from arbitrary node
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.echo(string);
-      }
-    }.run(string);
+    return retryer.run((connection) -> connection.echo(string), string);
   }
 
   @Override
   public Long bitcount(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.bitcount(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.bitcount(key), key);
   }
 
   @Override
   public Long bitcount(final String key, final long start, final long end) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.bitcount(key, start, end);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.bitcount(key, start, end), key);
   }
 
   @Override
@@ -1522,18 +872,13 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       throw new IllegalArgumentException(this.getClass().getSimpleName()
           + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.keys(pattern);
-      }
-    }.run(pattern);
+    return retryer.run((connection) -> connection.keys(pattern), pattern);
   }
 
   @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params) {
 
-    String matchPattern = null;
+    String matchPattern;
 
     if (params == null || (matchPattern = params.match()) == null || matchPattern.isEmpty()) {
       throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
@@ -1545,124 +890,63 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
     }
 
-    return new JedisClusterCommand< ScanResult<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public ScanResult<String> execute(Jedis connection) {
-        return connection.scan(cursor, params);
-      }
-    }.run(matchPattern);
+    return retryer.run((connection) -> connection.scan(cursor, params), matchPattern);
   }
-  
+
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
-    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
-                                                                      maxAttempts) {
-      @Override
-      public ScanResult<Entry<String, String>> execute(Jedis connection) {
-        return connection.hscan(key, cursor);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hscan(key, cursor), key);
   }
 
   @Override
   public ScanResult<String> sscan(final String key, final String cursor) {
-    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public ScanResult<String> execute(Jedis connection) {
-        return connection.sscan(key, cursor);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.sscan(key, cursor), key);
   }
 
   @Override
   public ScanResult<Tuple> zscan(final String key, final String cursor) {
-    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public ScanResult<Tuple> execute(Jedis connection) {
-        return connection.zscan(key, cursor);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.zscan(key, cursor), key);
   }
 
   @Override
   public Long pfadd(final String key, final String... elements) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.pfadd(key, elements);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.pfadd(key, elements), key);
   }
 
   @Override
   public long pfcount(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.pfcount(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.pfcount(key), key);
   }
 
   @Override
   public List<String> blpop(final int timeout, final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.blpop(timeout, key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.blpop(timeout, key), key);
   }
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.brpop(timeout, key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.brpop(timeout, key), key);
   }
 
   @Override
   public Long del(final String... keys) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.del(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.del(keys), keys.length, keys);
   }
 
   @Override
   public List<String> blpop(final int timeout, final String... keys) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.blpop(timeout, keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.blpop(timeout, keys), keys.length, keys);
 
   }
 
   @Override
   public List<String> brpop(final int timeout, final String... keys) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.brpop(timeout, keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.brpop(timeout, keys), keys.length, keys);
   }
 
   @Override
   public List<String> mget(final String... keys) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.mget(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.mget(keys), keys.length, keys);
   }
 
   @Override
@@ -1673,12 +957,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       keys[keyIdx] = keysvalues[keyIdx * 2];
     }
 
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.mset(keysvalues);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.mset(keysvalues), keys.length, keys);
   }
 
   @Override
@@ -1689,647 +968,346 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       keys[keyIdx] = keysvalues[keyIdx * 2];
     }
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.msetnx(keysvalues);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.msetnx(keysvalues), keys.length, keys);
   }
 
   @Override
   public String rename(final String oldkey, final String newkey) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.rename(oldkey, newkey);
-      }
-    }.run(2, oldkey, newkey);
+    return retryer.run((connection) -> connection.rename(oldkey, newkey), 2, oldkey, newkey);
   }
 
   @Override
   public Long renamenx(final String oldkey, final String newkey) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.renamenx(oldkey, newkey);
-      }
-    }.run(2, oldkey, newkey);
+    return retryer.run((connection) -> connection.renamenx(oldkey, newkey), 2, oldkey, newkey);
   }
 
   @Override
   public String rpoplpush(final String srckey, final String dstkey) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.rpoplpush(srckey, dstkey);
-      }
-    }.run(2, srckey, dstkey);
+    return retryer.run((connection) -> connection.rpoplpush(srckey, dstkey), 2, srckey, dstkey);
   }
 
   @Override
   public Set<String> sdiff(final String... keys) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.sdiff(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.sdiff(keys), keys.length, keys);
   }
 
   @Override
   public Long sdiffstore(final String dstkey, final String... keys) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, keys);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.sdiffstore(dstkey, keys);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.sdiffstore(dstkey, keys), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public Set<String> sinter(final String... keys) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.sinter(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.sinter(keys), keys.length, keys);
   }
 
   @Override
   public Long sinterstore(final String dstkey, final String... keys) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, keys);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.sinterstore(dstkey, keys);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.sinterstore(dstkey, keys), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public Long smove(final String srckey, final String dstkey, final String member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.smove(srckey, dstkey, member);
-      }
-    }.run(2, srckey, dstkey);
+    return retryer.run((connection) -> connection.smove(srckey, dstkey, member), 2, srckey, dstkey);
   }
 
   @Override
   public Long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.sort(key, sortingParameters, dstkey);
-      }
-    }.run(2, key, dstkey);
+    return retryer.run((connection) -> connection.sort(key, sortingParameters, dstkey), 2, key, dstkey);
   }
 
   @Override
   public Long sort(final String key, final String dstkey) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.sort(key, dstkey);
-      }
-    }.run(2, key, dstkey);
+    return retryer.run((connection) -> connection.sort(key, dstkey), 2, key, dstkey);
   }
 
   @Override
   public Set<String> sunion(final String... keys) {
-    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public Set<String> execute(Jedis connection) {
-        return connection.sunion(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.sunion(keys), keys.length, keys);
   }
 
   @Override
   public Long sunionstore(final String dstkey, final String... keys) {
     String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.sunionstore(dstkey, keys);
-      }
-    }.run(wholeKeys.length, wholeKeys);
+    return retryer.run((connection) -> connection.sunionstore(dstkey, keys), wholeKeys.length, wholeKeys);
   }
 
   @Override
   public Long zinterstore(final String dstkey, final String... sets) {
     String[] wholeKeys = KeyMergeUtil.merge(dstkey, sets);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zinterstore(dstkey, sets);
-      }
-    }.run(wholeKeys.length, wholeKeys);
+    return retryer.run((connection) -> connection.zinterstore(dstkey, sets), wholeKeys.length, wholeKeys);
   }
 
   @Override
   public Long zinterstore(final String dstkey, final ZParams params, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zinterstore(dstkey, params, sets);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.zinterstore(dstkey, params, sets), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public Long zunionstore(final String dstkey, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zunionstore(dstkey, sets);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.zunionstore(dstkey, sets), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public Long zunionstore(final String dstkey, final ZParams params, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.zunionstore(dstkey, params, sets);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.zunionstore(dstkey, params, sets), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public String brpoplpush(final String source, final String destination, final int timeout) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.brpoplpush(source, destination, timeout);
-      }
-    }.run(2, source, destination);
+    return retryer.run((connection) -> connection.brpoplpush(source, destination, timeout), 2, source, destination);
   }
 
   @Override
   public Long publish(final String channel, final String message) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.publish(channel, message);
-      }
-    }.runWithAnyNode();
+    return retryer.runWithRetries((connection) -> connection.publish(channel, message));
   }
 
   @Override
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    new JedisClusterCommand<Integer>(connectionHandler, maxAttempts) {
-      @Override
-      public Integer execute(Jedis connection) {
-        connection.subscribe(jedisPubSub, channels);
-        return 0;
-      }
-    }.runWithAnyNode();
+    retryer.runWithRetries((connection) -> {
+      connection.subscribe(jedisPubSub, channels);
+      return null;
+    });
   }
 
   @Override
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
-    new JedisClusterCommand<Integer>(connectionHandler, maxAttempts) {
-      @Override
-      public Integer execute(Jedis connection) {
-        connection.psubscribe(jedisPubSub, patterns);
-        return 0;
-      }
-    }.runWithAnyNode();
+    retryer.runWithRetries((connection) -> {
+      connection.psubscribe(jedisPubSub, patterns);
+      return null;
+    });
   }
 
   @Override
   public Long bitop(final BitOP op, final String destKey, final String... srcKeys) {
     String[] mergedKeys = KeyMergeUtil.merge(destKey, srcKeys);
 
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.bitop(op, destKey, srcKeys);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.bitop(op, destKey, srcKeys), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public String pfmerge(final String destkey, final String... sourcekeys) {
     String[] mergedKeys = KeyMergeUtil.merge(destkey, sourcekeys);
 
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.pfmerge(destkey, sourcekeys);
-      }
-    }.run(mergedKeys.length, mergedKeys);
+    return retryer.run((connection) -> connection.pfmerge(destkey, sourcekeys), mergedKeys.length, mergedKeys);
   }
 
   @Override
   public long pfcount(final String... keys) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.pfcount(keys);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.pfcount(keys), keys.length, keys);
   }
 
   @Override
   public Object eval(final String script, final int keyCount, final String... params) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.eval(script, keyCount, params);
-      }
-    }.run(keyCount, params);
+    return retryer.run((connection) -> connection.eval(script, keyCount, params), keyCount, params);
   }
 
   @Override
   public Object eval(final String script, final String sampleKey) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.eval(script);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.eval(script), sampleKey);
   }
 
   @Override
   public Object eval(final String script, final List<String> keys, final List<String> args) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.eval(script, keys, args);
-      }
-    }.run(keys.size(), keys.toArray(new String[keys.size()]));
+    return retryer.run((connection) -> connection.eval(script, keys, args), keys.size(), keys.toArray(new String[keys.size()]));
   }
 
   @Override
   public Object evalsha(final String sha1, final int keyCount, final String... params) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.evalsha(sha1, keyCount, params);
-      }
-    }.run(keyCount, params);
+    return retryer.run((connection) -> connection.evalsha(sha1, keyCount, params), keyCount, params);
   }
 
   @Override
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.evalsha(sha1, keys, args);
-      }
-    }.run(keys.size(), keys.toArray(new String[keys.size()]));
+    return retryer.run((connection) -> connection.evalsha(sha1, keys, args), keys.size(), keys.toArray(new String[keys.size()]));
   }
 
   @Override
   public Object evalsha(final String sha1, final String sampleKey) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.evalsha(sha1);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.evalsha(sha1), sampleKey);
   }
 
   @Override
   public Boolean scriptExists(final String sha1, final String sampleKey) {
-    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
-      @Override
-      public Boolean execute(Jedis connection) {
-        return connection.scriptExists(sha1);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.scriptExists(sha1), sampleKey);
   }
 
   @Override
   public List<Boolean> scriptExists(final String sampleKey, final String... sha1) {
-    return new JedisClusterCommand<List<Boolean>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Boolean> execute(Jedis connection) {
-        return connection.scriptExists(sha1);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.scriptExists(sha1), sampleKey);
   }
 
   @Override
   public String scriptLoad(final String script, final String sampleKey) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.scriptLoad(script);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.scriptLoad(script), sampleKey);
   }
 
   @Override
   public String scriptFlush(final String sampleKey) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.scriptFlush();
-      }
-    }.run(sampleKey);
+    return retryer.run(BinaryJedis::scriptFlush, sampleKey);
   }
 
   @Override
   public String scriptKill(final String sampleKey) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.scriptKill();
-      }
-    }.run(sampleKey);
+    return retryer.run(BinaryJedis::scriptKill, sampleKey);
   }
 
   @Override
   public Long geoadd(final String key, final double longitude, final double latitude,
       final String member) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.geoadd(key, longitude, latitude, member);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.geoadd(key, longitude, latitude, member), key);
   }
 
   @Override
   public Long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.geoadd(key, memberCoordinateMap);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.geoadd(key, memberCoordinateMap), key);
   }
 
   @Override
   public Double geodist(final String key, final String member1, final String member2) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.geodist(key, member1, member2);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.geodist(key, member1, member2), key);
   }
 
   @Override
   public Double geodist(final String key, final String member1, final String member2,
       final GeoUnit unit) {
-    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
-      @Override
-      public Double execute(Jedis connection) {
-        return connection.geodist(key, member1, member2, unit);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.geodist(key, member1, member2, unit), key);
   }
 
   @Override
   public List<String> geohash(final String key, final String... members) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<String> execute(Jedis connection) {
-        return connection.geohash(key, members);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.geohash(key, members), key);
   }
 
   @Override
   public List<GeoCoordinate> geopos(final String key, final String... members) {
-    return new JedisClusterCommand<List<GeoCoordinate>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoCoordinate> execute(Jedis connection) {
-        return connection.geopos(key, members);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.geopos(key, members), key);
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadius(key, longitude, latitude, radius, unit);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadius(key, longitude, latitude, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadiusReadonly(key, longitude, latitude, radius, unit);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadiusReadonly(key, longitude, latitude, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadius(key, longitude, latitude, radius, unit, param);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadius(key, longitude, latitude, radius, unit, param), key);
   }
 
   @Override
   public Long georadiusStore(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
     String[] keys = storeParam.getStringKeys(key);
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam), keys.length, keys);
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadiusReadonly(key, longitude, latitude, radius, unit, param);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadiusReadonly(key, longitude, latitude, radius, unit, param), key);
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member,
       final double radius, final GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadiusByMember(key, member, radius, unit);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadiusByMember(key, member, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member,
       final double radius, final GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadiusByMemberReadonly(key, member, radius, unit);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadiusByMemberReadonly(key, member, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadiusByMember(key, member, radius, unit, param);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadiusByMember(key, member, radius, unit, param), key);
   }
 
   @Override
   public Long georadiusByMemberStore(final String key, final String member, final double radius, final GeoUnit unit,
       final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
     String[] keys = storeParam.getStringKeys(key);
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
-      }
-    }.run(keys.length, keys);
+    return retryer.run((connection) -> connection.georadiusByMemberStore(key, member, radius, unit, param, storeParam), keys.length, keys);
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.georadiusByMemberReadonly(key, member, radius, unit, param);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.georadiusByMemberReadonly(key, member, radius, unit, param), key);
   }
 
   @Override
   public List<Long> bitfield(final String key, final String... arguments) {
-    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Long> execute(Jedis connection) {
-        return connection.bitfield(key, arguments);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.bitfield(key, arguments), key);
   }
 
   @Override
   public List<Long> bitfieldReadonly(final String key, final String... arguments) {
-    return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Long> execute(Jedis connection) {
-        return connection.bitfieldReadonly(key, arguments);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.bitfieldReadonly(key, arguments), key);
   }
 
   @Override
   public Long hstrlen(final String key, final String field) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.hstrlen(key, field);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.hstrlen(key, field), key);
   }
 
-  
+
   @Override
   public Long memoryUsage(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.memoryUsage(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.memoryUsage(key), key);
   }
-  
+
   @Override
   public Long memoryUsage(final String key, final int samples) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.memoryUsage(key, samples);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.memoryUsage(key, samples), key);
   }
-  
+
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
-    return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
-      @Override
-      public StreamEntryID execute(Jedis connection) {
-        return connection.xadd(key, id, hash);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xadd(key, id, hash), key);
   }
 
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
-    return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
-      @Override
-      public StreamEntryID execute(Jedis connection) {
-        return connection.xadd(key, id, hash, maxLen, approximateLength);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xadd(key, id, hash, maxLen, approximateLength), key);
   }
 
   @Override
   public Long xlen(final String key) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.xlen(key);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xlen(key), key);
   }
 
   @Override
   public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end, final int count) {
-    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<StreamEntry> execute(Jedis connection) {
-        return connection.xrange(key, start, end, count);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xrange(key, start, end, count), key);
   }
 
   @Override
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end, final StreamEntryID start, final int count) {
-    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<StreamEntry> execute(Jedis connection) {
-        return connection.xrevrange(key, end, start, count);
-      }
-    }.run(key);  
+    return retryer.run((connection) -> connection.xrevrange(key, end, start, count), key);
   }
 
   @Override
@@ -2338,149 +1316,79 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     for(int i=0; i<streams.length; ++i) {
       keys[i] = streams[i].getKey();
     }
-    
-    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
-        return connection.xread(count, block, streams);
-      }
-    }.run(keys.length, keys);  
+
+    return retryer.run((connection) -> connection.xread(count, block, streams), keys.length, keys);
   }
 
   @Override
   public Long xack(final String key, final String group, final StreamEntryID... ids) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.xack(key, group, ids);
-      }
-    }.run(key);   
+    return retryer.run((connection) -> connection.xack(key, group, ids), key);
   }
 
   @Override
   public String xgroupCreate(final String key, final String groupname, final StreamEntryID id, final boolean makeStream) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.xgroupCreate(key, groupname, id, makeStream);
-      }
-    }.run(key);  
+    return retryer.run((connection) -> connection.xgroupCreate(key, groupname, id, makeStream), key);
   }
 
   @Override
   public String xgroupSetID(final String key, final String groupname, final StreamEntryID id) {
-    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
-      @Override
-      public String execute(Jedis connection) {
-        return connection.xgroupSetID(key, groupname, id);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xgroupSetID(key, groupname, id), key);
   }
 
   @Override
   public Long xgroupDestroy(final String key, final String groupname) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.xgroupDestroy(key, groupname);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xgroupDestroy(key, groupname), key);
   }
 
   @Override
   public Long xgroupDelConsumer(final String key, final String groupname, final String consumername) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.xgroupDelConsumer(key, groupname, consumername);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xgroupDelConsumer(key, groupname, consumername), key);
   }
 
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
       final boolean noAck, final Entry<String, StreamEntryID>... streams) {
-    
+
     String[] keys = new String[streams.length];
     for(int i=0; i<streams.length; ++i) {
       keys[i] = streams[i].getKey();
     }
-    
-    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
-        return connection.xreadGroup(groupname, consumer, count, block, noAck, streams);
-      }
-    }.run(keys.length, keys);
+
+    return retryer.run((connection) -> connection.xreadGroup(groupname, consumer, count, block, noAck, streams), keys.length, keys);
   }
 
   @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname, final StreamEntryID start, final StreamEntryID end, final int count,
       final String consumername) {
-    return new JedisClusterCommand<List<StreamPendingEntry>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<StreamPendingEntry> execute(Jedis connection) {
-        return connection.xpending(key, groupname, start, end, count, consumername);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xpending(key, groupname, start, end, count, consumername), key);
   }
 
   @Override
   public Long xdel(final String key, final StreamEntryID... ids) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.xdel(key, ids);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xdel(key, ids), key);
   }
 
   @Override
   public Long xtrim(final  String key, final long maxLen, final boolean approximateLength) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.xtrim(key, maxLen, approximateLength);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xtrim(key, maxLen, approximateLength), key);
   }
 
   @Override
   public List<StreamEntry> xclaim(final String key, final String group, final String consumername, final long minIdleTime, final long newIdleTime,
       final int retries, final boolean force, final StreamEntryID... ids) {
-    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
-      @Override
-      public List<StreamEntry> execute(Jedis connection) {
-        return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids), key);
   }
 
   public Long waitReplicas(final String key, final int replicas, final long timeout) {
-    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
-      @Override
-      public Long execute(Jedis connection) {
-        return connection.waitReplicas(replicas, timeout);
-      }
-    }.run(key);
+    return retryer.run((connection) -> connection.waitReplicas(replicas, timeout), key);
   }
 
   public Object sendCommand(final String sampleKey, final ProtocolCommand cmd, final String... args) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection){
-        return connection.sendCommand(cmd, args);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.sendCommand(cmd, args), sampleKey);
   }
 
   public Object sendBlockingCommand(final String sampleKey, final ProtocolCommand cmd, final String... args) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection){
-        return connection.sendBlockingCommand(cmd, args);
-      }
-    }.run(sampleKey);
+    return retryer.run((connection) -> connection.sendBlockingCommand(cmd, args), sampleKey);
   }
 
 }

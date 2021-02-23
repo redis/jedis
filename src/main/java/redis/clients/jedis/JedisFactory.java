@@ -146,10 +146,12 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
         try {
           jedis.quit();
         } catch (Exception e) {
+          logger.warn("Error while QUIT", e);
         }
         try {
           jedis.close();
         } catch (Exception e) {
+          logger.warn("Error while close", e);
         }
       }
       throw je;

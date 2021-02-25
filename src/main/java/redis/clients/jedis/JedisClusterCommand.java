@@ -5,9 +5,7 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -106,6 +104,7 @@ public abstract class JedisClusterCommand<T> {
 
     JedisRedirectionException redirect = null;
     int consecutiveConnectionFailures = 0;
+    Exception lastException = null;
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
       Jedis connection = null;
       try {
@@ -124,6 +123,7 @@ public abstract class JedisClusterCommand<T> {
       } catch (JedisNoReachableClusterNodeException jnrcne) {
         throw jnrcne;
       } catch (JedisConnectionException jce) {
+        lastException = jce;
         ++consecutiveConnectionFailures;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
@@ -133,6 +133,7 @@ public abstract class JedisClusterCommand<T> {
           redirect = null;
         }
       } catch (JedisRedirectionException jre) {
+        lastException = jre;
         LOG.debug("Redirected by server to {}", jre.getTargetNode());
         consecutiveConnectionFailures = 0;
         redirect = jre;
@@ -150,7 +151,7 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.", lastException);
   }
 
   /**

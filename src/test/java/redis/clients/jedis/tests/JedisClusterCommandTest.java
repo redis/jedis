@@ -1,4 +1,4 @@
-package redis.clients.jedis.tests.commands;
+package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,7 +26,6 @@ import redis.clients.jedis.JedisClusterCommand;
 import redis.clients.jedis.JedisClusterConnectionHandler;
 import redis.clients.jedis.JedisSlotBasedConnectionHandler;
 import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;

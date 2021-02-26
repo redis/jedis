@@ -146,7 +146,6 @@ public abstract class JedisClusterCommand<T> {
         releaseConnection(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        // TODO: change to JedisClusterOperationException or a new sub-class of it
         throw new JedisClusterOperationException("Retry deadline exceeded");
       }
     }

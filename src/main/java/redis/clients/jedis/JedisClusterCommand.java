@@ -147,7 +147,7 @@ public abstract class JedisClusterCommand<T> {
       }
       if (Instant.now().isAfter(deadline)) {
         // TODO: change to JedisClusterOperationException or a new sub-class of it
-        throw new JedisClusterMaxAttemptsException("Deadline exceeded");
+        throw new JedisClusterOperationException("Retry deadline exceeded");
       }
     }
 
@@ -168,7 +168,6 @@ public abstract class JedisClusterCommand<T> {
       // Since we only renew the slots cache after two consecutive connection
       // failures (see consecutiveConnectionFailures above), we need to special
       // case the situation where we max out after two or fewer attempts.
-      //
       // Otherwise, on two or fewer max attempts, the slots cache would never be
       // renewed.
       if (attemptsLeft == 0) {
@@ -209,7 +208,7 @@ public abstract class JedisClusterCommand<T> {
     try {
       TimeUnit.MILLISECONDS.sleep(sleepMillis);
     } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+      throw new JedisClusterOperationException(e);
     }
   }
 

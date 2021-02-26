@@ -201,7 +201,7 @@ public abstract class JedisClusterCommand<T> {
       throw new JedisClusterMaxAttemptsException("Deadline exceeded");
     }
 
-    return millisLeft / (attemptsLeft * attemptsLeft);
+    return millisLeft / (attemptsLeft * (attemptsLeft + 1));
   }
 
   protected void sleep(long sleepMillis) {

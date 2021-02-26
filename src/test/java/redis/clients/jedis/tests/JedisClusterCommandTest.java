@@ -27,6 +27,7 @@ import redis.clients.jedis.JedisClusterConnectionHandler;
 import redis.clients.jedis.JedisSlotBasedConnectionHandler;
 import redis.clients.jedis.exceptions.JedisAskDataException;
 import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
@@ -377,7 +378,7 @@ public class JedisClusterCommandTest {
     try {
       testMe.run("");
       fail("cluster command did not fail");
-    } catch (JedisClusterMaxAttemptsException e) {
+    } catch (JedisClusterOperationException e) {
       // expected
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);

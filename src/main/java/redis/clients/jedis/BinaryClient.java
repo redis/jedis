@@ -1438,12 +1438,20 @@ public class BinaryClient extends Connection {
      sendCommand(XLEN, key);
   }
   
-  public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) { 
-     sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+  public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
+    if (count > 0) {
+      sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+    } else {
+      sendCommand(XRANGE, key, start, end);
+    }
   }
   
   public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
-    sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
+    if (count > 0) {
+      sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
+    } else {
+      sendCommand(XREVRANGE, key, end, start);
+    }
   }
 
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {

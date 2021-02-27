@@ -141,6 +141,9 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     StreamEntryID id3 = jedis.xadd("xrange-stream", null, map);
     List<StreamEntry> range7 = jedis.xrange("xrange-stream", id2, id2, 4); 
     assertEquals(1, range7.size());
+	
+    List<StreamEntry> range8 = jedis.xrange("xrange-stream", id1, id2, -1);
+    assertEquals(2, range8.size());
   }
   
   @Test
@@ -213,6 +216,8 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     List<StreamEntry> range7 = jedis.xrevrange("xrevrange-stream", id2, id2, 4); 
     assertEquals(1, range7.size());
 
+    List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", id2, id1, -1); 
+    assertEquals(2, range8.size());
   }
   
   @Test

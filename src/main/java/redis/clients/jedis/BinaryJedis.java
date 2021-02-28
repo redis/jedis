@@ -301,7 +301,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Bulk reply
+   * @return the value of key
    * @since Redis 6.2
    */
   @Override

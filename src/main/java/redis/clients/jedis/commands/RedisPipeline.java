@@ -49,6 +49,8 @@ public interface RedisPipeline {
   Response<Long> pexpireAt(String key, long millisecondsTimestamp);
 
   Response<String> get(String key);
+  
+  Response<String> getDel(String key);
 
   Response<Boolean> getbit(String key, long offset);
 

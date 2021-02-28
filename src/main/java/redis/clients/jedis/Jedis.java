@@ -211,6 +211,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Get the value of key and delete the key. This command is similar to GET, except for the fact
+   * that it also deletes the key on success (if and only if the key's value type is a string).
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @return the value of key
+   * @since Redis 6.2
+   */
+  @Override
+  public String getDel(final String key) {
+    checkIsInMultiOrPipeline();
+    client.getDel(key);
+    return client.getBulkReply();
+  }
+  
+  /**
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
    * @param keys

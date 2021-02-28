@@ -86,6 +86,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public byte[] getDel(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.getDel(key);
+  }
+  
+  @Override
   public Boolean exists(final byte[] key) {
     Jedis j = getShard(key);
     return j.exists(key);

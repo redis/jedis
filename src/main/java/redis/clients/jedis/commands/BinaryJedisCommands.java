@@ -30,6 +30,8 @@ public interface BinaryJedisCommands {
   String set(byte[] key, byte[] value, SetParams params);
 
   byte[] get(byte[] key);
+  
+  byte[] getDel(byte[] key);
 
   Boolean exists(byte[] key);
 

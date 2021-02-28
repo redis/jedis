@@ -47,6 +47,8 @@ public interface BinaryRedisPipeline {
   Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp);
 
   Response<byte[]> get(byte[] key);
+  
+  Response<byte[]> getDel(byte[] key);
 
   Response<Boolean> getbit(byte[] key, long offset);
 

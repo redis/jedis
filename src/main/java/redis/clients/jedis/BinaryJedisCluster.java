@@ -151,6 +151,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+  
+  @Override
+  public byte[] getDel(final byte[] key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.getDel(key);
+      }
+    }.runBinary(key);
+  }
 
   @Override
   public Long exists(final byte[]... keys) {

@@ -70,6 +70,11 @@ public class Client extends BinaryClient implements Commands {
   public void get(final String key) {
     get(SafeEncoder.encode(key));
   }
+  
+  @Override
+  public void getDel(final String key) {
+    getDel(SafeEncoder.encode(key));
+  }
 
   @Override
   public void exists(final String... keys) {

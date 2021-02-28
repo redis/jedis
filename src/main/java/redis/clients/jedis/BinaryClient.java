@@ -143,6 +143,10 @@ public class BinaryClient extends Connection {
   public void get(final byte[] key) {
     sendCommand(GET, key);
   }
+  
+  public void getDel(final byte[] key) {
+    sendCommand(GETDEL, key);
+  }
 
   public void quit() {
     db = 0;

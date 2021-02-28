@@ -25,6 +25,8 @@ public interface Commands {
   void set(String key, String value, SetParams params);
 
   void get(String key);
+  
+  void getDel(String key);
 
   void exists(String... keys);
 

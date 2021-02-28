@@ -25,6 +25,8 @@ public interface BinaryJedisClusterCommands {
 
   byte[] get(byte[] key);
 
+  byte[] getDel(byte[] key);
+
   Boolean exists(byte[] key);
 
   Long persist(byte[] key);

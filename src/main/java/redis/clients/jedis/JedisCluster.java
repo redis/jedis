@@ -222,6 +222,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+  
+  @Override
+  public String getDel(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.getDel(key);
+      }
+    }.run(key);
+  }
 
   @Override
   public Boolean exists(final String key) {

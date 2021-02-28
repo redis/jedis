@@ -30,7 +30,7 @@ public class PoolBenchmark {
   }
 
   private static void withPool() throws Exception {
-    final JedisPool pool = new JedisPool(new GenericObjectPoolConfig(), hnp.getHost(),
+    final JedisPool pool = new JedisPool(new GenericObjectPoolConfig<Jedis>(), hnp.getHost(),
         hnp.getPort(), 2000, "foobared");
     List<Thread> tds = new ArrayList<Thread>();
 

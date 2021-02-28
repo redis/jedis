@@ -7,6 +7,7 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
@@ -25,7 +26,7 @@ public abstract class Pool<T> implements Closeable {
   public Pool() {
   }
 
-  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public Pool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
     initPool(poolConfig, factory);
   }
 
@@ -38,7 +39,7 @@ public abstract class Pool<T> implements Closeable {
     return this.internalPool.isClosed();
   }
 
-  public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public void initPool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {
       try {

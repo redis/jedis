@@ -58,7 +58,7 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkResourceIsClosableAndReusable() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(),
@@ -95,7 +95,7 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test(expected = JedisExhaustedPoolException.class)
   public void checkPoolOverflow() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort());

@@ -25,7 +25,7 @@ public class JedisClusterInfoCache {
   private final Lock r = rwl.readLock();
   private final Lock w = rwl.writeLock();
   private volatile boolean rediscovering;
-  private final GenericObjectPoolConfig poolConfig;
+  private final GenericObjectPoolConfig<Jedis> poolConfig;
 
   private int connectionTimeout;
   private int soTimeout;
@@ -42,46 +42,46 @@ public class JedisClusterInfoCache {
 
   private static final int MASTER_NODE_INDEX = 2;
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, int timeout) {
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, int timeout) {
     this(poolConfig, timeout, timeout, null, null);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String password, final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, null, password, clientName);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout, final String password, final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, clientName);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String user, final String password, final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null, null, null);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, false, null, null, null, null);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, final int connectionTimeout,
       final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig, final int connectionTimeout,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, final int connectionTimeout,
       final int soTimeout, final String user, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
     this(poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig poolConfig,
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final String clientName, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,

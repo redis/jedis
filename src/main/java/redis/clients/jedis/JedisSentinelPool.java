@@ -224,9 +224,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       log.debug("Connecting to Sentinel {}", hap);
 
-      Jedis jedis = null;
-      try {
-        jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout);
+      
+      try (Jedis jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout)){
         if (sentinelUser != null) {
           jedis.auth(sentinelUser, sentinelPassword);
         } else if (sentinelPassword != null) {
@@ -254,10 +253,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         // of raising JedisDataException
         log.warn(
           "Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap, e);
-      } finally {
-        if (jedis != null) {
-          jedis.close();
-        }
       }
     }
 

@@ -34,6 +34,8 @@ public interface JedisCommands {
   String set(String key, String value, SetParams params);
 
   String get(String key);
+  
+  String getDel(String key);
 
   Boolean exists(String key);
 

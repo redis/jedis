@@ -23,7 +23,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.Tuple;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 public class ShardedJedisPipelineTest {
 

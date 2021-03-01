@@ -27,7 +27,6 @@ import redis.clients.jedis.commands.BinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisBatchOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -2027,10 +2026,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   protected void checkIsInMultiOrPipeline() {
     if (client.isInMulti()) {
-      throw new JedisBatchOperationException(
+      throw new IllegalStateException(
           "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
     } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
-      throw new JedisBatchOperationException(
+      throw new IllegalStateException(
           "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state.");
     }
   }

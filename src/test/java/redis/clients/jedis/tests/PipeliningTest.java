@@ -29,7 +29,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
-import redis.clients.jedis.exceptions.JedisBatchOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
@@ -184,12 +183,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertNull(score.get());
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineResponseWithinPipelineBackwardCompatible() {
-    pipelineResponseWithinPipeline();
-  }
-
-  @Test(expected = JedisBatchOperationException.class)
+  @Test(expected = IllegalStateException.class)
   public void pipelineResponseWithinPipeline() {
     jedis.set("string", "foo");
 
@@ -357,34 +351,19 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertEquals(expect, pipe.syncAndReturnAll());
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMultiBackwardCompatible() {
-    pipelineExecShoudThrowBatchExceptionWhenNotInMulti();
-  }
-
-  @Test(expected = JedisBatchOperationException.class)
+  @Test(expected = IllegalStateException.class)
   public void pipelineExecShoudThrowBatchExceptionWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.exec();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineDiscardShoudThrowJedisDataExceptionWhenNotInMultiBackwardCompatible() {
-    pipelineDiscardShoudThrowBatchExceptionWhenNotInMulti();
-  }
-
-  @Test(expected = JedisBatchOperationException.class)
+  @Test(expected = IllegalStateException.class)
   public void pipelineDiscardShoudThrowBatchExceptionWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.discard();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineMultiShoudThrowJedisDataExceptionWhenAlreadyInMultiBackwardCompatible() {
-    pipelineMultiShoudThrowBatchExceptionWhenAlreadyInMulti();
-  }
-
-  @Test(expected = JedisBatchOperationException.class)
+  @Test(expected = IllegalStateException.class)
   public void pipelineMultiShoudThrowBatchExceptionWhenAlreadyInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.multi();
@@ -392,12 +371,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     pipeline.multi();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void testJedisThowExceptionWhenInPipelineBackwardCompatible() {
-    testJedisThowExceptionWhenInPipeline();
-  }
-
-  @Test(expected = JedisBatchOperationException.class)
+  @Test(expected = IllegalStateException.class)
   public void testJedisThowExceptionWhenInPipeline() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.set("foo", "3");
@@ -706,7 +680,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     try {
       pipeline.exec();
       fail("close should discard transaction");
-    } catch (JedisBatchOperationException e) {
+    } catch (IllegalStateException e) {
       assertTrue(e.getMessage().contains("EXEC without MULTI"));
       // pass
     }

@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.exceptions.JedisBatchOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Response<T> {
@@ -30,7 +29,7 @@ public class Response<T> {
       dependency.build();
     }
     if (!set) {
-      throw new JedisBatchOperationException(
+      throw new IllegalStateException(
           "Please close pipeline or multi block before calling this method.");
     }
     if (!built) {

@@ -113,7 +113,7 @@ public class JedisTest extends JedisCommandTestBase {
     jedis.close();
   }
 
-  @Test(expected = JedisException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void failWhenSendingNullValues() {
     jedis.set("foo", null);
   }

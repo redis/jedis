@@ -372,7 +372,10 @@ public interface BinaryRedisPipeline {
   
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
-  Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  @Deprecated
+  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
   

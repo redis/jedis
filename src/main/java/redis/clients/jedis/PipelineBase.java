@@ -2088,7 +2088,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
   
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername){
+  public Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername){
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);            
+  }
+  
+  @Override
+  public Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
     return getResponse(BuilderFactory.OBJECT_LIST);            
   }

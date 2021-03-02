@@ -42,6 +42,9 @@ public interface Commands {
 
   void renamenx(String oldkey, String newkey);
 
+  /**
+   * @deprecated Use {@link #expire(java.lang.String, long)}.
+   */
   @Deprecated
   default void expire(String key, int seconds) {
     expire(key, (long) seconds);
@@ -75,6 +78,9 @@ public interface Commands {
 
   void setnx(String key, String value);
 
+  /**
+   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
+   */
   @Deprecated
   default void setex(String key, int seconds, String value) {
     setex(key, (long) seconds, value);
@@ -256,39 +262,33 @@ public interface Commands {
 
   void zrangeByScore(String key, String min, String max);
 
-  void zrangeByScore(String key, double min, double max, int offset,
-      int count);
+  void zrangeByScore(String key, double min, double max, int offset, int count);
 
   void zrangeByScore(String key, String min, String max, int offset, int count);
 
   void zrangeByScoreWithScores(String key, double min, double max);
 
-  void zrangeByScoreWithScores(String key, double min, double max,
-      int offset, int count);
+  void zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
   void zrangeByScoreWithScores(String key, String min, String max);
 
-  void zrangeByScoreWithScores(String key, String min, String max,
-      int offset, int count);
+  void zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
   void zrevrangeByScore(String key, double max, double min);
 
   void zrevrangeByScore(String key, String max, String min);
 
-  void zrevrangeByScore(String key, double max, double min, int offset,
-      int count);
+  void zrevrangeByScore(String key, double max, double min, int offset, int count);
 
   void zrevrangeByScore(String key, String max, String min, int offset, int count);
 
   void zrevrangeByScoreWithScores(String key, double max, double min);
 
-  void zrevrangeByScoreWithScores(String key, double max, double min,
-      int offset, int count);
+  void zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
   void zrevrangeByScoreWithScores(String key, String max, String min);
 
-  void zrevrangeByScoreWithScores(String key, String max, String min,
-      int offset, int count);
+  void zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
   void zremrangeByRank(String key, long start, long stop);
 
@@ -354,6 +354,9 @@ public interface Commands {
 
   void dump(String key);
 
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
+   */
   @Deprecated
   default void restore(String key, int ttl, byte[] serializedValue) {
     restore(key, (long) ttl, serializedValue);
@@ -361,6 +364,9 @@ public interface Commands {
 
   void restore(String key, long ttl, byte[] serializedValue);
 
+  /**
+   * @deprecated Use {@link #restoreReplace(java.lang.String, long, byte[])}.
+   */
   @Deprecated
   default void restoreReplace(String key, int ttl, byte[] serializedValue) {
     restoreReplace(key, (long) ttl, serializedValue);
@@ -442,9 +448,12 @@ public interface Commands {
 
   void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
-  void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
-      boolean force, StreamEntryID... ids);
+  void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, StreamEntryID... ids);
+
   void xinfoStream (String key);
+
   void xinfoGroup (String key);
+
   void xinfoConsumers (String key, String group);
 }

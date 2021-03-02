@@ -38,6 +38,9 @@ public interface BinaryRedisPipeline {
 
   Response<Boolean> exists(byte[] key);
 
+  /**
+   * @deprecated Use {@link #expire(byte[], long)}.
+   */
   @Deprecated
   default Response<Long> expire(byte[] key, int seconds) {
     return expire(key, (long) seconds);
@@ -141,6 +144,9 @@ public interface BinaryRedisPipeline {
 
   Response<Long> setrange(byte[] key, long offset, byte[] value);
 
+  /**
+   * @deprecated Use {@link #setex(byte[], long, byte[])}.
+   */
   @Deprecated
   default Response<String> setex(byte[] key, int seconds, byte[] value) {
     return setex(key, (long) seconds, value);
@@ -214,11 +220,9 @@ public interface BinaryRedisPipeline {
 
   Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset,
-      int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset,
-      int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min);
 
@@ -232,11 +236,9 @@ public interface BinaryRedisPipeline {
 
   Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset,
-      int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset,
-      int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   Response<Set<Tuple>> zrangeWithScores(byte[] key, long start, long stop);
 
@@ -272,13 +274,11 @@ public interface BinaryRedisPipeline {
 
   Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max,
-      int offset, int count);
+  Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min,
-      int offset, int count);
+  Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
@@ -292,6 +292,9 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> dump(byte[] key);
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[])}.
+   */
   @Deprecated
   default Response<String> restore(byte[] key, int ttl, byte[] serializedValue) {
     return restore(key, (long) ttl, serializedValue);
@@ -299,6 +302,9 @@ public interface BinaryRedisPipeline {
 
   Response<String> restore(byte[] key, long ttl, byte[] serializedValue);
 
+  /**
+   * @deprecated Use {@link #restoreReplace(byte[], long, byte[])}.
+   */
   @Deprecated
   default Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
     return restoreReplace(key, (long) ttl, serializedValue);
@@ -337,14 +343,14 @@ public interface BinaryRedisPipeline {
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
-      GeoUnit unit);
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member,
+      double radius, GeoUnit unit);
   
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   Response<List<Long>> bitfield(byte[] key, byte[]... elements);
 
@@ -372,6 +378,9 @@ public interface BinaryRedisPipeline {
   
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
+  /**
+   * @deprecated Use {@link #xpendingBinary(byte[], byte[], byte[], byte[], int, byte[])}.
+   */
   @Deprecated
   Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 

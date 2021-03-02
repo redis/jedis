@@ -37,6 +37,9 @@ public interface JedisClusterCommands {
 
   byte[] dump(String key);
 
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
+   */
   @Deprecated
   default String restore(String key, int ttl, byte[] serializedValue) {
     return restore(key, (long) ttl, serializedValue);
@@ -44,6 +47,9 @@ public interface JedisClusterCommands {
 
   String restore(String key, long ttl, byte[] serializedValue);
 
+  /**
+   * @deprecated Use {@link #expire(java.lang.String, long)}.
+   */
   @Deprecated
   default Long expire(String key, int seconds) {
     return expire(key, (long) seconds);
@@ -77,6 +83,9 @@ public interface JedisClusterCommands {
 
   Long setnx(String key, String value);
 
+  /**
+   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
+   */
   @Deprecated
   default String setex(String key, int seconds, String value) {
     return setex(key, (long) seconds, value);
@@ -325,14 +334,14 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
 
@@ -341,8 +350,8 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 
   /**
    * Executes BITFIELD Redis command

@@ -41,6 +41,9 @@ public interface BinaryJedisCommands {
 
   byte[] dump(byte[] key);
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[])}.
+   */
   @Deprecated
   default String restore(byte[] key, int ttl, byte[] serializedValue) {
     return restore(key, (long) ttl, serializedValue);
@@ -48,6 +51,9 @@ public interface BinaryJedisCommands {
 
   String restore(byte[] key, long ttl, byte[] serializedValue);
 
+  /**
+   * @deprecated Use {@link #restoreReplace(byte[], long, byte[])}.
+   */
   @Deprecated
   default String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
     return restoreReplace(key, (long) ttl, serializedValue);
@@ -55,6 +61,9 @@ public interface BinaryJedisCommands {
 
   String restoreReplace(byte[] key, long ttl, byte[] serializedValue);
 
+  /**
+   * @deprecated Use {@link #expire(byte[], long)}.
+   */
   @Deprecated
   default Long expire(byte[] key, int seconds) {
     return expire(key, (long) seconds);
@@ -88,6 +97,9 @@ public interface BinaryJedisCommands {
 
   Long setnx(byte[] key, byte[] value);
 
+  /**
+   * @deprecated Use {@link #setex(byte[], long, byte[])}.
+   */
   @Deprecated
   default String setex(byte[] key, int seconds, byte[] value) {
     return setex(key, (long) seconds, value);
@@ -328,14 +340,14 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
@@ -344,8 +356,8 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
 
@@ -382,6 +394,9 @@ public interface BinaryJedisCommands {
 
   Long xlen(final byte[] key);
 
+  /**
+   * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
+   */
   @Deprecated
   default List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
     return xrange(key, start, end, (int) Math.max(count, (long) Integer.MAX_VALUE));
@@ -409,16 +424,25 @@ public interface BinaryJedisCommands {
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 
+  /**
+   * @deprecated Use {@link #xinfoStreamBinary(byte[])}.
+   */
   @Deprecated
   StreamInfo xinfoStream(byte[] key);
 
   Object xinfoStreamBinary(byte[] key);
 
+  /**
+   * @deprecated Use {@link #xinfoGroupBinary(byte[])}.
+   */
   @Deprecated
   List<StreamGroupInfo> xinfoGroup(byte[] key);
 
   List<Object> xinfoGroupBinary(byte[] key);
 
+  /**
+   * @deprecated Use {@link #xinfoConsumersBinary(byte[], byte[])}.
+   */
   @Deprecated
   List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group);
 

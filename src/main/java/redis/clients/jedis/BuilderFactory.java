@@ -13,6 +13,29 @@ import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
+
+  public static final Builder<Object> OBJECT = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      return data;
+    }
+    @Override
+    public String toString() {
+      return "Object";
+    }
+  };
+
+  public static final Builder<List<Object>> OBJECT_LIST = new Builder<List<Object>>() {
+    @Override
+    public List<Object> build(Object data) {
+      return (List<Object>) data;
+    }
+    @Override
+    public String toString() {
+      return "List<Object>";
+    }
+  };
+
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
@@ -875,23 +898,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Object> OBJECT = new Builder<Object>() {
-    @Override
-    public Object build(Object data) {
-      return data;
-    }
-    @Override
-    public String toString() {
-      return "Object";
-    }
-  };
-
-
-
-  private BuilderFactory() {
-    throw new InstantiationError( "Must not instantiate this class" );
-  }
-
   private static Map<String,Object> createMapFromDecodingFunctions( Iterator<Object> iterator, Map<String,Builder> mappingFunctions) {
 
     Map<String,Object> resultMap = new HashMap<>();
@@ -914,6 +920,10 @@ public final class BuilderFactory {
       }
     }
     return resultMap;
+  }
+
+  private BuilderFactory() {
+    throw new InstantiationError( "Must not instantiate this class" );
   }
 
 }

@@ -38,7 +38,12 @@ public interface BinaryRedisPipeline {
 
   Response<Boolean> exists(byte[] key);
 
-  Response<Long> expire(byte[] key, int seconds);
+  @Deprecated
+  default Response<Long> expire(byte[] key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Response<Long> expire(byte[] key, long seconds);
 
   Response<Long> pexpire(byte[] key, long milliseconds);
 
@@ -136,7 +141,12 @@ public interface BinaryRedisPipeline {
 
   Response<Long> setrange(byte[] key, long offset, byte[] value);
 
-  Response<String> setex(byte[] key, int seconds, byte[] value);
+  @Deprecated
+  default Response<String> setex(byte[] key, int seconds, byte[] value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  Response<String> setex(byte[] key, long seconds, byte[] value);
 
   Response<Long> setnx(byte[] key, byte[] value);
 
@@ -282,9 +292,19 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> dump(byte[] key);
 
-  Response<String> restore(byte[] key, int ttl, byte[] serializedValue);
+  @Deprecated
+  default Response<String> restore(byte[] key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue);
+  Response<String> restore(byte[] key, long ttl, byte[] serializedValue);
+
+  @Deprecated
+  default Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
+    return restoreReplace(key, (long) ttl, serializedValue);
+  }
+
+  Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
 
   Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
@@ -352,8 +372,8 @@ public interface BinaryRedisPipeline {
   
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
-  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
-  
+  Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
   Response<Long> xdel(byte[] key, byte[]... ids);
   
   Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);

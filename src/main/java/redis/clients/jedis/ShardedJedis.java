@@ -85,19 +85,19 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+  public String restore(final String key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restore(key, ttl, serializedValue);
   }
 
   @Override
-  public String restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restoreReplace(key, ttl, serializedValue);
   }
 
   @Override
-  public Long expire(final String key, final int seconds) {
+  public Long expire(final String key, final long seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
@@ -175,7 +175,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public String setex(final String key, final int seconds, final String value) {
+  public String setex(final String key, final long seconds, final String value) {
     Jedis j = getShard(key);
     return j.setex(key, seconds, value);
   }

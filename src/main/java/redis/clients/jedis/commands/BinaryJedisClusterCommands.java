@@ -35,7 +35,12 @@ public interface BinaryJedisClusterCommands {
 
   byte[] dump(byte[] key);
 
-  String restore(byte[] key, int ttl, byte[] serializedValue);
+  @Deprecated
+  default String restore(byte[] key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
+
+  String restore(byte[] key, long ttl, byte[] serializedValue);
 
   Long expire(byte[] key, int seconds);
 
@@ -65,7 +70,12 @@ public interface BinaryJedisClusterCommands {
 
   Long setnx(byte[] key, byte[] value);
 
-  String setex(byte[] key, int seconds, byte[] value);
+  @Deprecated
+  default String setex(byte[] key, int seconds, byte[] value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(byte[] key, long seconds, byte[] value);
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
@@ -352,8 +362,11 @@ public interface BinaryJedisClusterCommands {
   byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(final byte[] key);
- 
+
+  @Deprecated
   List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+
+  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final int count);
 
   List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
 
@@ -371,7 +384,7 @@ public interface BinaryJedisClusterCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
-  List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 

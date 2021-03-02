@@ -193,7 +193,12 @@ public class BinaryClient extends Connection {
     sendCommand(DBSIZE);
   }
 
+  @Deprecated
   public void expire(final byte[] key, final int seconds) {
+    sendCommand(EXPIRE, key, toByteArray(seconds));
+  }
+
+  public void expire(final byte[] key, final long seconds) {
     sendCommand(EXPIRE, key, toByteArray(seconds));
   }
 
@@ -237,7 +242,12 @@ public class BinaryClient extends Connection {
     sendCommand(SETNX, key, value);
   }
 
+  @Deprecated
   public void setex(final byte[] key, final int seconds, final byte[] value) {
+    sendCommand(SETEX, key, toByteArray(seconds), value);
+  }
+
+  public void setex(final byte[] key, final long seconds, final byte[] value) {
     sendCommand(SETEX, key, toByteArray(seconds), value);
   }
 
@@ -1068,11 +1078,21 @@ public class BinaryClient extends Connection {
     sendCommand(DUMP, key);
   }
 
+  @Deprecated
   public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
   }
 
+  public void restore(final byte[] key, final long ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+  }
+
+  @Deprecated
   public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
+  }
+
+  public void restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }
 
@@ -1441,11 +1461,16 @@ public class BinaryClient extends Connection {
   public void xlen(final byte[] key) {
      sendCommand(XLEN, key);
   }
-  
-  public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) { 
-     sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+
+  @Deprecated
+  public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
+    sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
   }
-  
+
+  public void xrange(final byte[] key, final byte[] start, final byte[] end, final int count) {
+    sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+  }
+
   public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
     sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
   }

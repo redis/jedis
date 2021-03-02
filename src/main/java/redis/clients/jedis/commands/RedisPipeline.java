@@ -40,7 +40,12 @@ public interface RedisPipeline {
 
   Response<Boolean> exists(String key);
 
-  Response<Long> expire(String key, int seconds);
+  @Deprecated
+  default Response<Long> expire(String key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Response<Long> expire(String key, long seconds);
 
   Response<Long> pexpire(String key, long milliseconds);
 
@@ -140,7 +145,12 @@ public interface RedisPipeline {
 
   Response<Boolean> setbit(String key, long offset, boolean value);
 
-  Response<String> setex(String key, int seconds, String value);
+  @Deprecated
+  default Response<String> setex(String key, int seconds, String value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  Response<String> setex(String key, long seconds, String value);
 
   Response<Long> setnx(String key, String value);
 
@@ -283,9 +293,19 @@ public interface RedisPipeline {
 
   Response<byte[]> dump(String key);
 
-  Response<String> restore(String key, int ttl, byte[] serializedValue);
+  @Deprecated
+  default Response<String> restore(String key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  Response<String> restoreReplace(String key, int ttl, byte[] serializedValue);
+  Response<String> restore(String key, long ttl, byte[] serializedValue);
+
+  @Deprecated
+  default Response<String> restoreReplace(String key, int ttl, byte[] serializedValue) {
+    return restoreReplace(key, (long) ttl, serializedValue);
+  }
+
+  Response<String> restoreReplace(String key, long ttl, byte[] serializedValue);
 
   Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
 

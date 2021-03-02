@@ -42,7 +42,12 @@ public interface Commands {
 
   void renamenx(String oldkey, String newkey);
 
-  void expire(String key, int seconds);
+  @Deprecated
+  default void expire(String key, int seconds) {
+    expire(key, (long) seconds);
+  }
+
+  void expire(String key, long seconds);
 
   void expireAt(String key, long unixTime);
 
@@ -70,7 +75,12 @@ public interface Commands {
 
   void setnx(String key, String value);
 
-  void setex(String key, int seconds, String value);
+  @Deprecated
+  default void setex(String key, int seconds, String value) {
+    setex(key, (long) seconds, value);
+  }
+
+  void setex(String key, long seconds, String value);
 
   void mset(String... keysvalues);
 
@@ -344,9 +354,19 @@ public interface Commands {
 
   void dump(String key);
 
-  void restore(String key, int ttl, byte[] serializedValue);
+  @Deprecated
+  default void restore(String key, int ttl, byte[] serializedValue) {
+    restore(key, (long) ttl, serializedValue);
+  }
 
-  void restoreReplace(String key, int ttl, byte[] serializedValue);
+  void restore(String key, long ttl, byte[] serializedValue);
+
+  @Deprecated
+  default void restoreReplace(String key, int ttl, byte[] serializedValue) {
+    restoreReplace(key, (long) ttl, serializedValue);
+  }
+
+  void restoreReplace(String key, long ttl, byte[] serializedValue);
 
   void scan(String cursor, ScanParams params);
 

@@ -41,11 +41,26 @@ public interface BinaryJedisCommands {
 
   byte[] dump(byte[] key);
 
-  String restore(byte[] key, int ttl, byte[] serializedValue);
+  @Deprecated
+  default String restore(byte[] key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  String restoreReplace(byte[] key, int ttl, byte[] serializedValue);
+  String restore(byte[] key, long ttl, byte[] serializedValue);
 
-  Long expire(byte[] key, int seconds);
+  @Deprecated
+  default String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
+    return restoreReplace(key, (long) ttl, serializedValue);
+  }
+
+  String restoreReplace(byte[] key, long ttl, byte[] serializedValue);
+
+  @Deprecated
+  default Long expire(byte[] key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Long expire(byte[] key, long seconds);
 
   Long pexpire(byte[] key, long milliseconds);
 
@@ -73,7 +88,12 @@ public interface BinaryJedisCommands {
 
   Long setnx(byte[] key, byte[] value);
 
-  String setex(byte[] key, int seconds, byte[] value);
+  @Deprecated
+  default String setex(byte[] key, int seconds, byte[] value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(byte[] key, long seconds, byte[] value);
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
@@ -261,13 +281,11 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset,
-      int count);
+  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset,
-      int count);
+  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
@@ -363,8 +381,13 @@ public interface BinaryJedisCommands {
   byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(final byte[] key);
- 
-  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+
+  @Deprecated
+  default List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
+    return xrange(key, start, end, (int) Math.max(count, (long) Integer.MAX_VALUE));
+  }
+
+  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final int count);
 
   List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
 
@@ -382,13 +405,22 @@ public interface BinaryJedisCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
-  List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
-  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
+  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 
-  StreamInfo xinfoStream (byte[] key);
+  @Deprecated
+  StreamInfo xinfoStream(byte[] key);
 
-  List<StreamGroupInfo> xinfoGroup (byte[] key);
+  Object xinfoStreamBinary(byte[] key);
 
-  List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group);
+  @Deprecated
+  List<StreamGroupInfo> xinfoGroup(byte[] key);
+
+  List<Object> xinfoGroupBinary(byte[] key);
+
+  @Deprecated
+  List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group);
+
+  List<Object> xinfoConsumersBinary(byte[] key, byte[] group);
 }

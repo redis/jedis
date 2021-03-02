@@ -37,9 +37,19 @@ public interface JedisClusterCommands {
 
   byte[] dump(String key);
 
-  String restore(String key, int ttl, byte[] serializedValue);
+  @Deprecated
+  default String restore(String key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  Long expire(String key, int seconds);
+  String restore(String key, long ttl, byte[] serializedValue);
+
+  @Deprecated
+  default Long expire(String key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Long expire(String key, long seconds);
 
   Long pexpire(String key, long milliseconds);
 
@@ -67,7 +77,12 @@ public interface JedisClusterCommands {
 
   Long setnx(String key, String value);
 
-  String setex(String key, int seconds, String value);
+  @Deprecated
+  default String setex(String key, int seconds, String value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(String key, long seconds, String value);
 
   String psetex(String key, long milliseconds, String value);
 
@@ -255,13 +270,11 @@ public interface JedisClusterCommands {
 
   Set<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(String key, String min, String max, int offset,
-      int count);
+  Set<String> zrangeByLex(String key, String min, String max, int offset, int count);
 
   Set<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(String key, String max, String min,
-      int offset, int count);
+  Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Long zremrangeByLex(String key, String min, String max);
 

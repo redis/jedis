@@ -240,7 +240,17 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public String restoreReplace(byte[] key, long ttl, byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long expire(final byte[] key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
@@ -1494,16 +1504,6 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.eval(script, keyCount, params);
-      }
-    }.runBinary(Integer.parseInt(SafeEncoder.encode(keyCount)), params);
-  }
-
-  @Override
   public Object eval(final byte[] script, final int keyCount, final byte[]... params) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
@@ -2421,6 +2421,35 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(key);
   }
 
+  @Override
+  public StreamInfo xinfoStream(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Object xinfoStreamBinary(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
   @Override
   public Long waitReplicas(final byte[] key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {

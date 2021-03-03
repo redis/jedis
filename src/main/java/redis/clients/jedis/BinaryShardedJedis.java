@@ -1173,6 +1173,18 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.xinfoConsumersBinary(key, group);
   }
 
+  @Override
+  public Long memoryUsage(byte[] key) {
+    Jedis j = getShard(key);
+    return j.memoryUsage(key);
+  }
+
+  @Override
+  public Long memoryUsage(byte[] key, int samples) {
+    Jedis j = getShard(key);
+    return j.memoryUsage(key, samples);
+  }
+
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     // default since no sample key provided in JedisCommands interface
     byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();

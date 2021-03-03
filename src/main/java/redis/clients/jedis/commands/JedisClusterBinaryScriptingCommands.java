@@ -1,9 +1,17 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import redis.clients.jedis.util.SafeEncoder;
 
 public interface JedisClusterBinaryScriptingCommands {
-  Object eval(byte[] script, byte[] keyCount, byte[]... params);
+
+  /**
+   * @deprecated This method will be removed in future. Use {@link #eval(byte..., int, byte[]...)}.
+   */
+  @Deprecated
+  default Object eval(byte[] script, byte[] keyCount, byte[]... params) {
+    return eval(script, Integer.parseInt(SafeEncoder.encode(keyCount)), params);
+  }
 
   Object eval(byte[] script, int keyCount, byte[]... params);
 

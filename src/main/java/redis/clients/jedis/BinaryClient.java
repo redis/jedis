@@ -1020,6 +1020,10 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
+  /**
+   * @deprecated This method will be removed in future. Use {@link #eval(byte..., int, byte[]...)}.
+   */
+  @Deprecated
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
     sendCommand(EVAL, joinParameters(script, keyCount, params));
   }

@@ -1167,4 +1167,16 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(sampleKey);
     return j.sendBlockingCommand(cmd, args);
   }
+
+  @Override
+  public Long memoryUsage(String key) {
+    Jedis j = getShard(key);
+    return  j.memoryUsage(key);
+  }
+
+  @Override
+  public Long memoryUsage(String key, int samples) {
+    Jedis j = getShard(key);
+    return  j.memoryUsage(key, samples);
+  }
 }

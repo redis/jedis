@@ -3570,25 +3570,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public Object eval(final byte[] script, final List<byte[]> keys, final List<byte[]> args) {
-    return eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
-  }
-
-  protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
-    final int keyCount = keys.size();
-    final int argCount = args.size();
-    byte[][] params = new byte[keyCount + argCount][];
-
-    for (int i = 0; i < keyCount; i++)
-      params[i] = keys.get(i);
-
-    for (int i = 0; i < argCount; i++)
-      params[keyCount + i] = args.get(i);
-
-    return params;
+    return eval(script, keys.size(), getParamsWithBinary(keys, args));
   }
 
   @Override
-  public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
+  public Object eval(final byte[] script, final int keyCount, final byte[]... params) {
     checkIsInMultiOrPipeline();
     client.eval(script, keyCount, params);
     client.setTimeoutInfinite();
@@ -3597,21 +3583,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     } finally {
       client.rollbackTimeout();
     }
-  }
-
-  @Override
-  public Object eval(final byte[] script, final int keyCount, final byte[]... params) {
-    return eval(script, toByteArray(keyCount), params);
-  }
-
-  @Override
-  public Object eval(final byte[] script) {
-    return eval(script, 0);
-  }
-
-  @Override
-  public Object evalsha(final byte[] sha1) {
-    return evalsha(sha1, 0);
   }
 
   @Override
@@ -3629,6 +3600,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     } finally {
       client.rollbackTimeout();
     }
+  }
+
+  protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
+    final int keyCount = keys.size();
+    final int argCount = args.size();
+    byte[][] params = new byte[keyCount + argCount][];
+
+    for (int i = 0; i < keyCount; i++)
+      params[i] = keys.get(i);
+
+    for (int i = 0; i < argCount; i++)
+      params[keyCount + i] = args.get(i);
+
+    return params;
   }
 
   @Override

@@ -883,7 +883,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void evalsha(final String sha1, final int keyCount, final String... params) {
-    evalsha(SafeEncoder.encode(sha1), toByteArray(keyCount), SafeEncoder.encodeMany(params));
+    evalsha(SafeEncoder.encode(sha1), keyCount, SafeEncoder.encodeMany(params));
   }
 
   public void scriptExists(final String... sha1) {

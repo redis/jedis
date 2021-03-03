@@ -327,6 +327,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restoreReplace(key, ttl, serializedValue);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long expire(final String key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -1561,6 +1571,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long bitpos(String key, boolean value) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long bitpos(String key, boolean value, BitPosParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.bitpos(key, value, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Set<String> keys(final String pattern) {
     if (pattern == null || pattern.isEmpty()) {
       throw new IllegalArgumentException(this.getClass().getSimpleName()
@@ -1602,32 +1632,32 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
   
   @Override
-  public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
-    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
-                                                                      maxAttempts) {
+  public ScanResult<Entry<String, String>> hscan(final String key, final String cursor,
+      final ScanParams scanParams) {
+    return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
-        return connection.hscan(key, cursor);
+        return connection.hscan(key, cursor, scanParams);
       }
     }.run(key);
   }
 
   @Override
-  public ScanResult<String> sscan(final String key, final String cursor) {
+  public ScanResult<String> sscan(final String key, final String cursor, final ScanParams scanParams) {
     return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<String> execute(Jedis connection) {
-        return connection.sscan(key, cursor);
+        return connection.sscan(key, cursor, scanParams);
       }
     }.run(key);
   }
 
   @Override
-  public ScanResult<Tuple> zscan(final String key, final String cursor) {
+  public ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams scanParams) {
     return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<Tuple> execute(Jedis connection) {
-        return connection.zscan(key, cursor);
+        return connection.zscan(key, cursor, scanParams);
       }
     }.run(key);
   }
@@ -2396,7 +2426,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xack(final String key, final String group, final StreamEntryID... ids) {
+  public long xack(final String key, final String group, final StreamEntryID... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
@@ -2426,7 +2456,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xgroupDestroy(final String key, final String groupname) {
+  public long xgroupDestroy(final String key, final String groupname) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
@@ -2474,7 +2504,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xdel(final String key, final StreamEntryID... ids) {
+  public long xdel(final String key, final StreamEntryID... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
@@ -2484,7 +2514,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xtrim(final  String key, final long maxLen, final boolean approximateLength) {
+  public long xtrim(final  String key, final long maxLen, final boolean approximateLength) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
@@ -2504,6 +2534,22 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+  @Override
+  public StreamInfo xinfoStream(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
   public Long waitReplicas(final String key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

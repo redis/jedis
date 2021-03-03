@@ -3404,11 +3404,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor) {
-    return hscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
@@ -3426,11 +3421,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public ScanResult<String> sscan(final String key, final String cursor) {
-    return sscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.sscan(key, cursor, params);
@@ -3442,11 +3432,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       results.add(SafeEncoder.encode(bs));
     }
     return new ScanResult<>(newcursor, results);
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(final String key, final String cursor) {
-    return zscan(key, cursor, new ScanParams());
   }
 
   @Override

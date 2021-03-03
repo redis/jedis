@@ -299,6 +299,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.get(key);
     return client.getBinaryBulkReply();
   }
+  
+  /**
+   * Get the value of key and delete the key. This command is similar to GET, except for the fact
+   * that it also deletes the key on success (if and only if the key's value type is a string).
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @return the value of key
+   * @since Redis 6.2
+   */
+  @Override
+  public byte[] getDel(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.getDel(key);
+    return client.getBinaryBulkReply();
+  }
 
   /**
    * Ask the server to silently close the connection.
@@ -528,7 +544,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public Long expire(final byte[] key, final long seconds) {
     checkIsInMultiOrPipeline();
     client.expire(key, seconds);
     return client.getIntegerReply();
@@ -713,7 +729,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Status code reply
    */
   @Override
-  public String setex(final byte[] key, final int seconds, final byte[] value) {
+  public String setex(final byte[] key, final long seconds, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setex(key, seconds, value);
     return client.getStatusCodeReply();
@@ -3669,14 +3685,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restore(key, ttl, serializedValue);
     return client.getStatusCodeReply();
   }
 
   @Override
-  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restoreReplace(key, ttl, serializedValue);
     return client.getStatusCodeReply();
@@ -4326,7 +4342,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
     return client.getBinaryMultiBulkReply();  
@@ -4389,40 +4405,59 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
-    return client.getBinaryMultiBulkReply();  }
+    return client.getObjectMultiBulkReply();
+  }
 
   @Override
-  public   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids){
+  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
-    return client.getBinaryMultiBulkReply();  
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override
   public StreamInfo xinfoStream(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoStream(key);
-
     return BuilderFactory.STREAM_INFO.build(client.getOne());
-
   }
 
   @Override
-  public List<StreamGroupInfo> xinfoGroup (byte[] key) {
+  public Object xinfoStreamBinary(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoStream(key);
+    return client.getOne();
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoGroup(key);
-
     return BuilderFactory.STREAM_GROUP_INFO_LIST.build(client.getBinaryMultiBulkReply());
   }
-  @Override
-  public List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group) {
-    checkIsInMultiOrPipeline();
-    client.xinfoConsumers(key,group);
 
+  @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoGroup(key);
+    return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoConsumers(key, group);
     return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoConsumers(key, group);
+    return client.getObjectMultiBulkReply();
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {

@@ -222,6 +222,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
+  
+  @Override
+  public String getDel(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.getDel(key);
+      }
+    }.run(key);
+  }
 
   @Override
   public Boolean exists(final String key) {
@@ -274,7 +284,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+  public String restore(final String key, final long ttl, final byte[] serializedValue) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public String execute(Jedis connection) {
@@ -284,7 +294,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long expire(final String key, final int seconds) {
+  public Long expire(final String key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -434,7 +444,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String setex(final String key, final int seconds, final String value) {
+  public String setex(final String key, final long seconds, final String value) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public String execute(Jedis connection) {

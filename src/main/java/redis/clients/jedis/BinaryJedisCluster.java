@@ -181,6 +181,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(key);
   }
+  
+  @Override
+  public byte[] getDel(final byte[] key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.getDel(key);
+      }
+    }.runBinary(key);
+  }
 
   @Override
   public Long exists(final byte[]... keys) {
@@ -233,7 +243,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public String execute(Jedis connection) {
@@ -403,7 +413,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public String setex(final byte[] key, final int seconds, final byte[] value) {
+  public String setex(final byte[] key, final long seconds, final byte[] value) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public String execute(Jedis connection) {
@@ -2289,6 +2299,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final int count) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xrange(key, start, end, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -2395,11 +2415,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
   
   @Override
-  public List<byte[]> xpending(final byte[] key, final byte[] groupname, final byte[] start, final byte[] end, 
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final byte[] start, final byte[] end, 
       final int count, final byte[] consumername) {
-    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
+    return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
-      public List<byte[]> execute(Jedis connection) {
+      public List<Object> execute(Jedis connection) {
         return connection.xpending(key, groupname, start, end, count, consumername);
       }
     }.runBinary(key);

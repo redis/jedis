@@ -110,19 +110,19 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restore(key, ttl, serializedValue);
   }
 
   @Override
-  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restoreReplace(key, ttl, serializedValue);
   }
 
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public Long expire(final byte[] key, final long seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
@@ -176,7 +176,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String setex(final byte[] key, final int seconds, final byte[] value) {
+  public String setex(final byte[] key, final long seconds, final byte[] value) {
     Jedis j = getShard(key);
     return j.setex(key, seconds, value);
   }
@@ -1070,7 +1070,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     Jedis j = getShard(key);
     return j.xrange(key, start, end, count);
   }
@@ -1124,14 +1124,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
+      byte[] consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
   }
 
   @Override
-  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime,
-      int retries, boolean force, byte[][] ids) {
+  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      long newIdleTime, int retries, boolean force, byte[]... ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
   }
@@ -1143,15 +1144,33 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Object xinfoStreamBinary(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoStreamBinary(key);
+  }
+
+  @Override
   public List<StreamGroupInfo> xinfoGroup(byte[] key) {
     Jedis j = getShard(key);
     return j.xinfoGroup(key);
   }
 
   @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoGroupBinary(key);
+  }
+
+  @Override
   public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
     Jedis j = getShard(key);
     return j.xinfoConsumers(key, group);
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    Jedis j = getShard(key);
+    return j.xinfoConsumersBinary(key, group);
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {

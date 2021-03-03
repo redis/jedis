@@ -112,7 +112,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void expire(final String key, final int seconds) {
+  public void expire(final String key, final long seconds) {
     expire(SafeEncoder.encode(key), seconds);
   }
 
@@ -152,7 +152,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void setex(final String key, final int seconds, final String value) {
+  public void setex(final String key, final long seconds, final String value) {
     setex(SafeEncoder.encode(key), seconds, SafeEncoder.encode(value));
   }
 
@@ -921,12 +921,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void restore(final String key, final int ttl, final byte[] serializedValue) {
+  public void restore(final String key, final long ttl, final byte[] serializedValue) {
     restore(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
   @Override
-  public void restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public void restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
   }
 

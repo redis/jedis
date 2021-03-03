@@ -40,7 +40,15 @@ public interface RedisPipeline {
 
   Response<Boolean> exists(String key);
 
-  Response<Long> expire(String key, int seconds);
+  /**
+   * @deprecated Use {@link #expire(java.lang.String, long)}.
+   */
+  @Deprecated
+  default Response<Long> expire(String key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Response<Long> expire(String key, long seconds);
 
   Response<Long> pexpire(String key, long milliseconds);
 
@@ -140,7 +148,15 @@ public interface RedisPipeline {
 
   Response<Boolean> setbit(String key, long offset, boolean value);
 
-  Response<String> setex(String key, int seconds, String value);
+  /**
+   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
+   */
+  @Deprecated
+  default Response<String> setex(String key, int seconds, String value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  Response<String> setex(String key, long seconds, String value);
 
   Response<Long> setnx(String key, String value);
 
@@ -202,8 +218,7 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset,
-      int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
   Response<Set<String>> zrevrangeByScore(String key, double max, double min);
 
@@ -217,11 +232,9 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset,
-      int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset,
-      int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
   Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop);
 
@@ -257,13 +270,11 @@ public interface RedisPipeline {
 
   Response<Set<String>> zrangeByLex(String key, String min, String max);
 
-  Response<Set<String>> zrangeByLex(String key, String min, String max,
-      int offset, int count);
+  Response<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count);
 
   Response<Set<String>> zrevrangeByLex(String key, String max, String min);
 
-  Response<Set<String>> zrevrangeByLex(String key, String max, String min,
-      int offset, int count);
+  Response<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Response<Long> zremrangeByLex(String key, String min, String max);
 
@@ -283,9 +294,25 @@ public interface RedisPipeline {
 
   Response<byte[]> dump(String key);
 
-  Response<String> restore(String key, int ttl, byte[] serializedValue);
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
+   */
+  @Deprecated
+  default Response<String> restore(String key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  Response<String> restoreReplace(String key, int ttl, byte[] serializedValue);
+  Response<String> restore(String key, long ttl, byte[] serializedValue);
+
+  /**
+   * @deprecated Use {@link #restoreReplace(java.lang.String, long, byte[])}.
+   */
+  @Deprecated
+  default Response<String> restoreReplace(String key, int ttl, byte[] serializedValue) {
+    return restoreReplace(key, (long) ttl, serializedValue);
+  }
+
+  Response<String> restoreReplace(String key, long ttl, byte[] serializedValue);
 
   Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
 
@@ -318,14 +345,14 @@ public interface RedisPipeline {
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit);
 
-  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
-      GeoUnit unit);
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member,
+      double radius, GeoUnit unit);
 
   Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member,
+      double radius, GeoUnit unit, GeoRadiusParam param);
   
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash);
 
@@ -347,7 +374,8 @@ public interface RedisPipeline {
   
   Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
-  Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname,
+      StreamEntryID start, StreamEntryID end, int count, String consumername);
   
   Response<Long> xdel( String key, StreamEntryID... ids);
   
@@ -366,8 +394,7 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset,
-      int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
   Response<Long> objectRefcount(String key);
 

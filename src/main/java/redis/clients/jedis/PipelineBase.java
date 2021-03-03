@@ -136,13 +136,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> expire(final String key, final int seconds) {
+  public Response<Long> expire(final String key, final long seconds) {
     getClient(key).expire(key, seconds);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> expire(final byte[] key, final int seconds) {
+  public Response<Long> expire(final byte[] key, final long seconds) {
     getClient(key).expire(key, seconds);
     return getResponse(BuilderFactory.LONG);
   }
@@ -722,13 +722,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<String> setex(final String key, final int seconds, final String value) {
+  public Response<String> setex(final String key, final long seconds, final String value) {
     getClient(key).setex(key, seconds, value);
     return getResponse(BuilderFactory.STRING);
   }
 
   @Override
-  public Response<String> setex(final byte[] key, final int seconds, final byte[] value) {
+  public Response<String> setex(final byte[] key, final long seconds, final byte[] value) {
     getClient(key).setex(key, seconds, value);
     return getResponse(BuilderFactory.STRING);
   }
@@ -1656,25 +1656,25 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<String> restore(final String key, final int ttl, final byte[] serializedValue) {
+  public Response<String> restore(final String key, final long ttl, final byte[] serializedValue) {
     getClient(key).restore(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
 
   @Override
-  public Response<String> restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public Response<String> restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     getClient(key).restore(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
 
   @Override
-  public Response<String> restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public Response<String> restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     getClient(key).restoreReplace(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
 
   @Override
-  public Response<String> restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public Response<String> restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     getClient(key).restoreReplace(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
@@ -2092,7 +2092,12 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).xpending(key, groupname, start, end, count, consumername);
     return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);            
   }
-
+  
+  @Override
+  public Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.OBJECT_LIST);            
+  }
   
   @Override
   public Response<Long> xdel( String key, StreamEntryID... ids){

@@ -26,8 +26,19 @@ public class SetParams extends Params {
    * Set the specified expire time, in seconds.
    * @param secondsToExpire
    * @return SetParams
+   * @deprecated Use {@link #ex(long)}.
    */
+  @Deprecated
   public SetParams ex(int secondsToExpire) {
+    return ex((long) secondsToExpire);
+  }
+
+  /**
+   * Set the specified expire time, in seconds.
+   * @param secondsToExpire
+   * @return SetParams
+   */
+  public SetParams ex(long secondsToExpire) {
     addParam(EX, secondsToExpire);
     return this;
   }
@@ -91,7 +102,7 @@ public class SetParams extends Params {
 
     if (contains(EX)) {
       byteParams.add(SafeEncoder.encode(EX));
-      byteParams.add(Protocol.toByteArray((int) getParam(EX)));
+      byteParams.add(Protocol.toByteArray((long) getParam(EX)));
     }
     if (contains(PX)) {
       byteParams.add(SafeEncoder.encode(PX));

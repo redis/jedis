@@ -66,7 +66,8 @@ public class BinaryClient extends Connection {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in future. Use
+   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl) {
@@ -74,7 +75,8 @@ public class BinaryClient extends Connection {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in future. Use
+   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl,
@@ -117,6 +119,11 @@ public class BinaryClient extends Connection {
     this.password = password;
   }
 
+  
+  /**
+   * This method should be called only after a successful SELECT command.
+   * @param db 
+   */
   public void setDb(int db) {
     this.db = db;
   }

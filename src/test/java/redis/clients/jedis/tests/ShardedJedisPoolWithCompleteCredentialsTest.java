@@ -3,7 +3,6 @@ package redis.clients.jedis.tests;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;

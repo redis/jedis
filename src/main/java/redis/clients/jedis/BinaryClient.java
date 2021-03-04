@@ -103,7 +103,8 @@ public class BinaryClient extends Connection {
 
   /**
    * @param user
-   * @deprecated This method will be removed in future.
+   * @deprecated This method will be removed in future. Because this class will be restricted from
+   * holding any user data.
    */
   @Deprecated
   public void setUser(final String user) {
@@ -112,7 +113,8 @@ public class BinaryClient extends Connection {
 
   /**
    * @param password
-   * @deprecated This method will be removed in future.
+   * @deprecated This method will be removed in future. Because this class will be restricted from
+   * holding any user data.
    */
   @Deprecated
   public void setPassword(final String password) {

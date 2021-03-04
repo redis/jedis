@@ -24,6 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+@SuppressWarnings("deprecation")
 public class JedisCluster extends BinaryJedisCluster implements JedisClusterCommands,
     MultiKeyJedisClusterCommands, JedisClusterScriptingCommands {
 
@@ -2536,17 +2537,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public StreamInfo xinfoStream(String key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public List<StreamGroupInfo> xinfoGroup(String key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
@@ -2557,6 +2558,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         return connection.waitReplicas(replicas, timeout);
       }
     }.run(key);
+  }
+
+  @Override
+  @SuppressWarnings("deprecation")
+  public String unwatch() {
+    return MultiKeyJedisClusterCommands.super.unwatch();
   }
 
   public Object sendCommand(final String sampleKey, final ProtocolCommand cmd, final String... args) {

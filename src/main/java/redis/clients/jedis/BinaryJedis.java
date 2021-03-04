@@ -2274,6 +2274,43 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[])
+   * @see #sort(byte[], byte[])
+   * @param key
+   * @param sortingParameters
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, sortingParameters, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Sort a Set or a List and Store the Result at dstkey.
+   * <p>
+   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
+   * at dstkey. By default sorting is numeric with elements being compared as double precision
+   * floating point numbers. This is the simplest form of SORT.
+   * @see #sort(byte[])
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[], SortingParams, byte[])
+   * @param key
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
    * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
    * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
    * lists.
@@ -2338,51 +2375,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public List<byte[]> blpop(final int timeout, final byte[]... keys) {
     return blpop(getArgsAddTimeout(timeout, keys));
-  }
-
-  private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
-    int size = keys.length;
-    final byte[][] args = new byte[size + 1][];
-    System.arraycopy(keys, 0, args, 0, size);
-    args[size] = Protocol.toByteArray(timeout);
-    return args;
-  }
-
-  /**
-   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[])
-   * @see #sort(byte[], byte[])
-   * @param key
-   * @param sortingParameters
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, sortingParameters, dstkey);
-    return client.getIntegerReply();
-  }
-
-  /**
-   * Sort a Set or a List and Store the Result at dstkey.
-   * <p>
-   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
-   * at dstkey. By default sorting is numeric with elements being compared as double precision
-   * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
-   * @param key
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, dstkey);
-    return client.getIntegerReply();
   }
 
   /**
@@ -2474,6 +2466,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     } finally {
       client.rollbackTimeout();
     }
+  }
+
+  private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
+    int size = keys.length;
+    final byte[][] args = new byte[size + 1][];
+    System.arraycopy(keys, 0, args, 0, size);
+    args[size] = Protocol.toByteArray(timeout);
+    return args;
   }
 
   /**
@@ -4027,10 +4027,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
   public ScanResult<byte[]> scan(final byte[] cursor) {
     return scan(cursor, new ScanParams());
   }
 
+  @Override
   public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.scan(cursor, params);
@@ -4038,11 +4040,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     byte[] newcursor = (byte[]) result.get(0);
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     return new ScanResult<>(newcursor, rawResults);
-  }
-
-  @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
-    return hscan(key, cursor, new ScanParams());
   }
 
   @Override
@@ -4062,11 +4059,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor) {
-    return sscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.sscan(key, cursor, params);
@@ -4074,11 +4066,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     byte[] newcursor = (byte[]) result.get(0);
     List<byte[]> rawResults = (List<byte[]>) result.get(1);
     return new ScanResult<>(newcursor, rawResults);
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor) {
-    return zscan(key, cursor, new ScanParams());
   }
 
   @Override

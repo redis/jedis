@@ -12,7 +12,6 @@ import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
-import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.Closeable;
 import java.util.List;
@@ -24,6 +23,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+@SuppressWarnings("deprecation")
 public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
@@ -2139,36 +2139,14 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       }
     }.runBinary(matchPattern);
   }
-  
-  @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
-    return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,
-                                                                          maxAttempts) {
-      @Override
-      public ScanResult<Map.Entry<byte[], byte[]>> execute(Jedis connection) {
-        return connection.hscan(key, cursor);
-      }
-    }.runBinary(key);
-  }
 
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
-    return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler,
-                                                                          maxAttempts) {
+    return new JedisClusterCommand<ScanResult<Map.Entry<byte[], byte[]>>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<Map.Entry<byte[], byte[]>> execute(Jedis connection) {
         return connection.hscan(key, cursor, params);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor) {
-    return new JedisClusterCommand<ScanResult<byte[]>>(connectionHandler, maxAttempts) {
-      @Override
-      public ScanResult<byte[]> execute(Jedis connection) {
-        return connection.sscan(key, cursor);
       }
     }.runBinary(key);
   }
@@ -2179,16 +2157,6 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public ScanResult<byte[]> execute(Jedis connection) {
         return connection.sscan(key, cursor, params);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor) {
-    return new JedisClusterCommand<ScanResult<Tuple>>(connectionHandler, maxAttempts) {
-      @Override
-      public ScanResult<Tuple> execute(Jedis connection) {
-        return connection.zscan(key, cursor);
       }
     }.runBinary(key);
   }
@@ -2423,33 +2391,34 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public StreamInfo xinfoStream(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public Object xinfoStreamBinary(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public List<StreamGroupInfo> xinfoGroup(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public List<Object> xinfoGroupBinary(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override
   public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
+
   @Override
   public Long waitReplicas(final byte[] key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {

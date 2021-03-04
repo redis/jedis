@@ -364,15 +364,21 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
+  default ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
+    return hscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params);
 
-  ScanResult<byte[]> sscan(byte[] key, byte[] cursor);
+  default ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
+    return sscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params);
 
-  ScanResult<Tuple> zscan(byte[] key, byte[] cursor);
+  default ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
+    return zscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
 

@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyBinaryCommands {
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);
@@ -23,8 +26,16 @@ public interface MultiKeyBinaryCommands {
 
   List<byte[]> brpop(int timeout, byte[]... keys);
 
+  /**
+   * @deprecated Use {@link #blpop(int, byte[]...)}.
+   */
+  @Deprecated
   List<byte[]> blpop(byte[]... args);
 
+  /**
+   * @deprecated Use {@link #brpop(int, byte[]...)}.
+   */
+  @Deprecated
   List<byte[]> brpop(byte[]... args);
 
   Set<byte[]> keys(byte[] pattern);
@@ -88,9 +99,13 @@ public interface MultiKeyBinaryCommands {
   Long pfcount(byte[]... keys);
 
   Long touch(byte[]... keys);
-  
+
+  ScanResult<byte[]> scan(byte[] cursor);
+
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
+
   List<byte[]> xread(final int count, final long block, final Map<byte[], byte[]> streams);
-  
+
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams);
 
   Long georadiusStore(byte[] key, double longitude, double latitude, double radius,

@@ -23,38 +23,62 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private JedisSocketFactory jedisSocketFactory;
+  private boolean socketParamModified = false; // for backward compatibility
+  private JedisSocketFactory socketFactory; // TODO: sould be final
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
+  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
   public Connection() {
-    this(Protocol.DEFAULT_HOST);
+    this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future. It can be replaced with
+   * {@link #Connection(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   */
+  @Deprecated
   public Connection(final String host) {
     this(host, Protocol.DEFAULT_PORT);
   }
 
   public Connection(final String host, final int port) {
-    this(host, port, false);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Connection(final String host, final int port, final boolean ssl) {
-    this(host, port, ssl, null, null, null);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl).build());
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(new DefaultJedisSocketFactory(host, port, Protocol.DEFAULT_TIMEOUT,
-        Protocol.DEFAULT_TIMEOUT, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
+  }
+
+  public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
+    this.soTimeout = clientConfig.getSoTimeout();
+    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeout();
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {
-    this.jedisSocketFactory = jedisSocketFactory;
+    this.socketFactory = jedisSocketFactory;
+    this.soTimeout = jedisSocketFactory.getSoTimeout();
   }
 
   public Socket getSocket() {
@@ -62,19 +86,34 @@ public class Connection implements Closeable {
   }
 
   public int getConnectionTimeout() {
-    return jedisSocketFactory.getConnectionTimeout();
+    return socketFactory.getConnectionTimeout();
   }
 
   public int getSoTimeout() {
-    return jedisSocketFactory.getSoTimeout();
+    return soTimeout;
   }
 
+  /**
+   * @param connectionTimeout
+   * @deprecated This method is not supported anymore and is kept for backward compatibility. It
+   * will be removed in future.
+   */
+  @Deprecated
   public void setConnectionTimeout(int connectionTimeout) {
-    jedisSocketFactory.setConnectionTimeout(connectionTimeout);
+    socketFactory.setConnectionTimeout(connectionTimeout);
   }
 
   public void setSoTimeout(int soTimeout) {
-    jedisSocketFactory.setSoTimeout(soTimeout);
+    socketFactory.setSoTimeout(soTimeout);
+    this.soTimeout = soTimeout;
+    if (this.socket != null) {
+      try {
+        this.socket.setSoTimeout(soTimeout);
+      } catch (SocketException ex) {
+        broken = true;
+        throw new JedisConnectionException(ex);
+      }
+    }
   }
 
   public void setInfiniteSoTimeout(int infiniteSoTimeout) {
@@ -95,7 +134,7 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(jedisSocketFactory.getSoTimeout());
+      socket.setSoTimeout(socketFactory.getSoTimeout());
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -142,32 +181,57 @@ public class Connection implements Closeable {
   }
 
   public String getHost() {
-    return jedisSocketFactory.getHost();
+    return socketFactory.getHost();
   }
 
+  /**
+   * @param host
+   * @deprecated This method will be removed in future.
+   */
+  @Deprecated
   public void setHost(final String host) {
-    jedisSocketFactory.setHost(host);
+    socketFactory.setHost(host);
+    socketParamModified = true;
   }
 
   public int getPort() {
-    return jedisSocketFactory.getPort();
+    return socketFactory.getPort();
   }
 
+  /**
+   * @param port
+   * @deprecated This method will be removed in future.
+   */
+  @Deprecated
   public void setPort(final int port) {
-    jedisSocketFactory.setPort(port);
+    socketFactory.setPort(port);
+    socketParamModified = true;
   }
 
-  public void connect() {
+  public void connect() throws JedisConnectionException {
+    if (socketParamModified) { // this is only for backward compatibility
+      try {
+        disconnect();
+      } catch(Exception e) {
+        // swallow
+      }
+    }
     if (!isConnected()) {
       try {
-        socket = jedisSocketFactory.createSocket();
+        socket = socketFactory.createSocket();
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
-      } catch (IOException ex) {
+      } catch (IOException ioe) {
         broken = true;
-        throw new JedisConnectionException("Failed connecting to "
-            + jedisSocketFactory.getDescription(), ex);
+        throw new JedisConnectionException("Failed to create input/output stream", ioe);
+      } catch (JedisConnectionException jce) {
+        broken = true;
+        throw jce;
+      } finally {
+        if (broken) {
+          IOUtils.closeQuietly(socket);
+        }
       }
     }
   }

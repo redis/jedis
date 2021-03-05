@@ -25,17 +25,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   private static final Logger logger = LoggerFactory.getLogger(JedisFactory.class);
 
   private final AtomicReference<HostAndPort> hostAndPort = new AtomicReference<>();
-  private final int connectionTimeout;
-  private final int soTimeout;
-  private final int infiniteSoTimeout;
-  private final String user;
-  private final String password;
-  private final int database;
-  private final String clientName;
-  private final boolean ssl;
-  private final SSLSocketFactory sslSocketFactory;
-  private final SSLParameters sslParameters;
-  private final HostnameVerifier hostnameVerifier;
+
+  private final JedisClientConfig config;
 
   JedisFactory(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final String password, final int database, final String clientName) {
@@ -66,22 +57,21 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
     this(host, port, connectionTimeout, soTimeout, 0, user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  JedisFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+    this.hostAndPort.set(hostAndPort);
+    this.config = DefaultJedisClientConfig.copyConfig(clientConfig);
+  }
+
   JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this.hostAndPort.set(new HostAndPort(host, port));
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
-    this.infiniteSoTimeout = infiniteSoTimeout;
-    this.user = user;
-    this.password = password;
-    this.database = database;
-    this.clientName = clientName;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
+    this.config = DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
+        .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout).withUser(user)
+        .withPassword(password).withDatabse(database).withClientName(clientName)
+        .withSsl(ssl).withSslSocketFactory(sslSocketFactory)
+        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -100,21 +90,15 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
+          "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
-
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
-    this.infiniteSoTimeout = infiniteSoTimeout;
-    this.user = JedisURIHelper.getUser(uri);
-    this.password = JedisURIHelper.getPassword(uri);
-    this.database = JedisURIHelper.getDBIndex(uri);
-    this.clientName = clientName;
-    this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
+    this.config = DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
+        .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
+        .withUser(JedisURIHelper.getUser(uri)).withPassword(JedisURIHelper.getPassword(uri))
+        .withDatabse(JedisURIHelper.getDBIndex(uri)).withClientName(clientName)
+        .withSsl(JedisURIHelper.isRedisSSLScheme(uri)).withSslSocketFactory(sslSocketFactory)
+        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
@@ -124,8 +108,8 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
   @Override
   public void activateObject(PooledObject<Jedis> pooledJedis) throws Exception {
     final BinaryJedis jedis = pooledJedis.getObject();
-    if (jedis.getDB() != database) {
-      jedis.select(database);
+    if (jedis.getDB() != config.getDatabase()) {
+      jedis.select(config.getDatabase());
     }
   }
 
@@ -142,38 +126,36 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
         logger.warn("Error while QUIT", e);
       }
       try {
-        jedis.disconnect();
+        jedis.close();
       } catch (Exception e) {
-        logger.warn("Error while disconnect", e);
+        logger.warn("Error while close", e);
       }
     }
   }
 
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
-    final HostAndPort hp = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
-        infiniteSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-
+    final HostAndPort hostPort = this.hostAndPort.get();
+    Jedis jedis = null;
     try {
+      jedis = new Jedis(hostPort, config);
       jedis.connect();
-      if (user != null) {
-        jedis.auth(user, password);
-      } else if (password != null) {
-        jedis.auth(password);
-      }
-      if (database != 0) {
-        jedis.select(database);
-      }
-      if (clientName != null) {
-        jedis.clientSetname(clientName);
-      }
+      return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      jedis.close();
+      if (jedis != null) {
+        try {
+          jedis.quit();
+        } catch (Exception e) {
+          logger.warn("Error while QUIT", e);
+        }
+        try {
+          jedis.close();
+        } catch (Exception e) {
+          logger.warn("Error while close", e);
+        }
+      }
       throw je;
     }
-
-    return new DefaultPooledObject<>(jedis);
   }
 
   @Override

@@ -40,8 +40,8 @@ public class BinaryClient extends Connection {
 
   private boolean isInMulti;
 
-  private String user;
-  private String password;
+  @Deprecated private String user;
+  @Deprecated private String password;
 
   private int db;
 
@@ -51,6 +51,12 @@ public class BinaryClient extends Connection {
     super();
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future. It can be replaced with
+   * {@link #BinaryClient(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   */
+  @Deprecated
   public BinaryClient(final String host) {
     super(host);
   }
@@ -59,14 +65,28 @@ public class BinaryClient extends Connection {
     super(host, port);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future. Use
+   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future. Use
+   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public BinaryClient(final HostAndPort hostPort, final JedisClientConfig clientConfig) {
+    super(hostPort, clientConfig);
   }
 
   public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
@@ -81,29 +101,37 @@ public class BinaryClient extends Connection {
     return isInWatch;
   }
 
-  private byte[][] joinParameters(byte[] first, byte[][] rest) {
-    byte[][] result = new byte[rest.length + 1][];
-    result[0] = first;
-    System.arraycopy(rest, 0, result, 1, rest.length);
-    return result;
+  /**
+   * @param user
+   * @deprecated This method will be removed in future. Because this class will be restricted from
+   * holding any user data.
+   */
+  @Deprecated
+  public void setUser(final String user) {
+    this.user = user;
   }
 
-  private byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
-    byte[][] result = new byte[rest.length + 2][];
-    result[0] = first;
-    result[1] = second;
-    System.arraycopy(rest, 0, result, 2, rest.length);
-    return result;
-  }
-
-  public void setUser(final String user) { this.user = user; }
-
+  /**
+   * @param password
+   * @deprecated This method will be removed in future. Because this class will be restricted from
+   * holding any user data.
+   */
+  @Deprecated
   public void setPassword(final String password) {
     this.password = password;
   }
 
+  
+  /**
+   * This method should be called only after a successful SELECT command.
+   * @param db 
+   */
   public void setDb(int db) {
     this.db = db;
+  }
+
+  public int getDB() {
+    return db;
   }
 
   @Override
@@ -121,6 +149,25 @@ public class BinaryClient extends Connection {
         select(db);
         getStatusCodeReply();
       }
+    }
+  }
+
+  @Override
+  public void disconnect() {
+    db = 0;
+    super.disconnect();
+  }
+
+  @Override
+  public void close() {
+    db = 0;
+    super.close();
+  }
+
+  public void resetState() {
+    if (isInWatch()) {
+      unwatch();
+      getStatusCodeReply();
     }
   }
 
@@ -973,29 +1020,6 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
-  public int getDB() {
-    return db;
-  }
-
-  @Override
-  public void disconnect() {
-    db = 0;
-    super.disconnect();
-  }
-
-  @Override
-  public void close() {
-    db = 0;
-    super.close();
-  }
-
-  public void resetState() {
-    if (isInWatch()) {
-      unwatch();
-      getStatusCodeReply();
-    }
-  }
-
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
     sendCommand(EVAL, joinParameters(script, keyCount, params));
   }
@@ -1654,4 +1678,18 @@ public class BinaryClient extends Connection {
     sendCommand(XINFO,Keyword.CONSUMERS.getRaw(),key,group);
   }
 
+  private static byte[][] joinParameters(byte[] first, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 1][];
+    result[0] = first;
+    System.arraycopy(rest, 0, result, 1, rest.length);
+    return result;
+  }
+
+  private static byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 2][];
+    result[0] = first;
+    result[1] = second;
+    System.arraycopy(rest, 0, result, 2, rest.length);
+    return result;
+  }
 }

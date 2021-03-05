@@ -233,6 +233,11 @@ public class JedisPool extends JedisPoolAbstract {
         user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
+  public JedisPool(final GenericObjectPoolConfig poolConfig, final HostAndPort hostAndPort,
+      final JedisClientConfig clientConfig) {
+    super(poolConfig, new JedisFactory(hostAndPort, clientConfig));
+  }
+
   public JedisPool(final GenericObjectPoolConfig poolConfig) {
     this(poolConfig, Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }

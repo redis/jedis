@@ -20,6 +20,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class JedisPoolTest {
@@ -355,6 +356,7 @@ public class JedisPoolTest {
         j.getClient().getOne();
         fail();
       } catch (Exception e) {
+        assertTrue(e instanceof JedisConnectionException);
       }
       assertTrue(j.isBroken());
       j.close();

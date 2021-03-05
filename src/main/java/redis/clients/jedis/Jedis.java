@@ -45,12 +45,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super();
   }
 
-  public Jedis(final String host) {
-    super(host);
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #Jedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uri
+   */
+  @Deprecated
+  public Jedis(final String uri) {
+    super(uri);
   }
 
   public Jedis(final HostAndPort hp) {
     super(hp);
+  }
+
+  public Jedis(final HostAndPort hp, final JedisClientConfig config) {
+    super(hp, config);
   }
 
   public Jedis(final String host, final int port) {
@@ -145,6 +157,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     super(uri, connectionTimeout, soTimeout, infiniteSoTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Jedis(final URI uri, JedisClientConfig config) {
+    super(uri, config);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {

@@ -43,7 +43,7 @@ import redis.clients.jedis.util.JedisURIHelper;
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
 
-  protected Client client = null;
+  protected final Client client;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
@@ -52,31 +52,85 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client();
   }
 
-  public BinaryJedis(final String host) {
-    URI uri = URI.create(host);
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #BinaryJedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uriString
+   */
+  @Deprecated
+  public BinaryJedis(final String uriString) {
+    URI uri = URI.create(uriString);
     if (JedisURIHelper.isValid(uri)) {
-      initializeClientFromURI(uri);
+      client = createClientFromURI(uri);
+      initializeFromURI(uri);
     } else {
-      client = new Client(host);
+      client = new Client(uriString);
     }
   }
 
   public BinaryJedis(final HostAndPort hp) {
-    this(hp.getHost(), hp.getPort());
+    this(hp, DefaultJedisClientConfig.builder().build());
   }
 
   public BinaryJedis(final String host, final int port) {
     client = new Client(host, port);
   }
 
+  public BinaryJedis(final String host, final int port, final JedisClientConfig config) {
+    this(new HostAndPort(host, port), config);
+  }
+
+  public BinaryJedis(final HostAndPort hostPort, final JedisClientConfig config) {
+    client = new Client(hostPort, config);
+    initializeFromClientConfig(config);
+  }
+
+  private void initializeFromClientConfig(JedisClientConfig config) {
+    try {
+      connect();
+      String password = config.getPassword();
+      if (password != null) {
+        String user = config.getUser();
+        if (user != null) {
+          auth(user, password);
+        } else {
+          auth(password);
+        }
+      }
+      int dbIndex = config.getDatabase();
+      if (dbIndex > 0) {
+        select(dbIndex);
+      }
+      String clientName = config.getClientName();
+      if (clientName != null) {
+        // TODO: need to figure out something without encoding
+        clientSetname(redis.clients.jedis.util.SafeEncoder.encode(clientName));
+      }
+    } catch (JedisException je) {
+      try {
+        if (isConnected()) {
+          quit();
+        }
+        disconnect();
+      } catch (Exception e) {
+        //
+      }
+      throw je;
+    }
+  }
+
   public BinaryJedis(final String host, final int port, final boolean ssl) {
-    client = new Client(host, port, ssl);
+    this(host, port, DefaultJedisClientConfig.builder().withSsl(ssl).build());
   }
 
   public BinaryJedis(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    this(host, port, DefaultJedisClientConfig.builder().withSsl(ssl)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final String host, final int port, final int timeout) {
@@ -95,62 +149,61 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout) {
-    client = new Client(host, port);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout) {
-    client = new Client(host, port);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
-    client.setInfiniteSoTimeout(infiniteSoTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout)
+        .withInfiniteSoTimeout(infiniteSoTimeout).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl) {
-    client = new Client(host, port, ssl);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout).withSsl(ssl).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout).withSsl(ssl)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
-    client.setInfiniteSoTimeout(infiniteSoTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout)
+        .withInfiniteSoTimeout(infiniteSoTimeout).withSsl(ssl)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
-    client = new Client(shardInfo.getHost(), shardInfo.getPort(), shardInfo.getSsl(),
-        shardInfo.getSslSocketFactory(), shardInfo.getSslParameters(),
-        shardInfo.getHostnameVerifier());
-    client.setConnectionTimeout(shardInfo.getConnectionTimeout());
-    client.setSoTimeout(shardInfo.getSoTimeout());
-    client.setUser(shardInfo.getUser());
-    client.setPassword(shardInfo.getPassword());
-    client.setDb(shardInfo.getDb());
+    this(shardInfo.getHost(), shardInfo.getPort(), DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(shardInfo.getConnectionTimeout()).withSoTimeout(shardInfo.getSoTimeout())
+        .withUser(shardInfo.getUser()).withPassword(shardInfo.getPassword()).withDatabse(shardInfo.getDb())
+        .withSsl(shardInfo.getSsl()).withSslSocketFactory(shardInfo.getSslSocketFactory())
+        .withSslParameters(shardInfo.getSslParameters()).withHostnameVerifier(shardInfo.getHostnameVerifier()).build());
   }
 
   public BinaryJedis(URI uri) {
-    initializeClientFromURI(uri);
+    client = createClientFromURI(uri);
+    initializeFromURI(uri);
   }
 
   public BinaryJedis(URI uri, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    this(uri, DefaultJedisClientConfig.builder()
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final URI uri, final int timeout) {
@@ -163,63 +216,70 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout) {
-    initializeClientFromURI(uri);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(uri, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout).build());
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
       final SSLSocketFactory sslSocketFactory,final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(uri, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout)
+        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
+        .withHostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
-    client.setInfiniteSoTimeout(infiniteSoTimeout);
+    this(uri, DefaultJedisClientConfig.builder()
+        .withConnectionTimeout(connectionTimeout).withSoTimeout(soTimeout)
+        .withInfiniteSoTimeout(infiniteSoTimeout).withSslSocketFactory(sslSocketFactory)
+        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build());
+  }
+
+  public BinaryJedis(final URI uri, JedisClientConfig config) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+    }
+    client = new Client(new HostAndPort(uri.getHost(), uri.getPort()),
+        DefaultJedisClientConfig.builder().withConnectionTimeout(config.getConnectionTimeout())
+            .withSoTimeout(config.getSoTimeout()).withInfiniteSoTimeout(config.getInfiniteSoTimeout())
+            .withUser(JedisURIHelper.getUser(uri)).withPassword(JedisURIHelper.getPassword(uri))
+            .withDatabse(JedisURIHelper.getDBIndex(uri)).withClientName(config.getClientName())
+            .withSsl(JedisURIHelper.isRedisSSLScheme(uri))
+            .withSslSocketFactory(config.getSslSocketFactory())
+            .withSslParameters(config.getSslParameters())
+            .withHostnameVerifier(config.getHostnameVerifier()).build());
+    initializeFromURI(uri);
+  }
+
+  private static Client createClientFromURI(URI uri) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+    }
+    return new Client(new HostAndPort(uri.getHost(), uri.getPort()),
+        DefaultJedisClientConfig.builder().withSsl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+  }
+
+  private void initializeFromURI(URI uri) {
+    String password = JedisURIHelper.getPassword(uri);
+    if (password != null) {
+      String user = JedisURIHelper.getUser(uri);
+      if (user != null) {
+        auth(user, password);
+      } else {
+        auth(password);
+      }
+    }
+    int dbIndex = JedisURIHelper.getDBIndex(uri);
+    if (dbIndex > 0) {
+      select(dbIndex);
+    }
   }
 
   public BinaryJedis(final JedisSocketFactory jedisSocketFactory) {
     client = new Client(jedisSocketFactory);
-  }
-
-  private void initializeClientFromURI(URI uri) {
-    initializeClientFromURI(uri, null, null, null);
-  }
-
-  private void initializeClientFromURI(URI uri, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
-    }
-
-    client = new Client(uri.getHost(), uri.getPort(), JedisURIHelper.isRedisSSLScheme(uri),
-      sslSocketFactory, sslParameters, hostnameVerifier);
-
-    String password = JedisURIHelper.getPassword(uri);
-    if (password != null) {
-      String user = JedisURIHelper.getUser(uri);
-      if (user == null) {
-        client.auth(password);
-      } else {
-        client.auth(user, password);
-      }
-      client.getStatusCodeReply();
-    }
-
-    int dbIndex = JedisURIHelper.getDBIndex(uri);
-    if (dbIndex > 0) {
-      client.select(dbIndex);
-      client.getStatusCodeReply();
-      client.setDb(dbIndex);
-    }
   }
 
   public boolean isConnected() {
@@ -230,6 +290,44 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.isBroken();
   }
 
+  public void connect() {
+    client.connect();
+  }
+
+  public void disconnect() {
+    client.disconnect();
+  }
+
+  public void resetState() {
+    if (isConnected()) {
+      if (transaction != null) {
+        transaction.close();
+      }
+
+      if (pipeline != null) {
+        pipeline.close();
+      }
+
+      client.resetState();
+    }
+
+    transaction = null;
+    pipeline = null;
+  }
+
+  @Override
+  public void close() {
+    client.close();
+  }
+
+  @Override
+  public int getDB() {
+    return client.getDB();
+  }
+
+  /**
+   * @return <code>PONG</code>
+   */
   @Override
   public String ping() {
     checkIsInMultiOrPipeline();
@@ -238,7 +336,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
+   * Works same as {@link #ping()} but returns argument message instead of <code>PONG</code>.
    * @param message
    * @return message
    */
@@ -1454,6 +1552,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #lpos(byte[], byte[], LPosParams, long)
    * @param key
    * @param element
+   * @param params
    * @param count
    * @return Returns value will be a list containing position of the matching elements inside the list.
    */
@@ -2059,31 +2158,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
-  public void connect() {
-    client.connect();
-  }
-
-  public void disconnect() {
-    client.disconnect();
-  }
-
-  public void resetState() {
-    if (isConnected()) {
-      if (transaction != null) {
-        transaction.close();
-      }
-
-      if (pipeline != null) {
-        pipeline.close();
-      }
-
-      client.resetState();
-    }
-
-    transaction = null;
-    pipeline = null;
-  }
-
   @Override
   public String watch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
@@ -2096,11 +2170,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.unwatch();
     return client.getStatusCodeReply();
-  }
-
-  @Override
-  public void close() {
-    client.close();
   }
 
   /**
@@ -3489,11 +3558,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     } finally {
       client.rollbackTimeout();
     }
-  }
-
-  @Override
-  public int getDB() {
-    return client.getDB();
   }
 
   /**

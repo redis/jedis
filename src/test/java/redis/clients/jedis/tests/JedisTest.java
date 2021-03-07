@@ -20,6 +20,7 @@ import org.junit.Test;
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -65,6 +66,26 @@ public class JedisTest extends JedisCommandTestBase {
   public void connectWithConfig() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().build())) {
       jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
+        .withPassword("foobared").build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {})) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+      @Override
+      public String getPassword() {
+        return "foobared";
+      }
+    })) {
       assertEquals("PONG", jedis.ping());
     }
   }

@@ -32,6 +32,7 @@ import org.junit.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -63,7 +64,22 @@ public class SSLJedisTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig.builder().withSsl(true).build())) {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
+        DefaultJedisClientConfig.builder().withSsl(true).build())) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
+        new JedisClientConfig() {
+      @Override
+      public boolean isSsl() {
+        return true;
+      }
+    })) {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }

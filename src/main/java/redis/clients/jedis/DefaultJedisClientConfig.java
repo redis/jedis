@@ -6,9 +6,9 @@ import javax.net.ssl.SSLSocketFactory;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
-  private final int connectionTimeout;
-  private final int soTimeout;
-  private final int infiniteSoTimeout;
+  private final int connectionTimeoutMillis;
+  private final int soTimeoutMillis;
+  private final int infiniteSoTimeoutMillis;
 
   private final String user;
   private final String password;
@@ -26,9 +26,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
-    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.connectionTimeoutMillis = connectionTimeout;
+    this.soTimeoutMillis = soTimeout;
+    this.infiniteSoTimeoutMillis = infiniteSoTimeout;
     this.user = user;
     this.password = password;
     this.database = database;
@@ -41,18 +41,18 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public int getConnectionTimeout() {
-    return connectionTimeout;
+  public int getConnectionTimeoutMillis() {
+    return connectionTimeoutMillis;
   }
 
   @Override
-  public int getSoTimeout() {
-    return soTimeout;
+  public int getSoTimeoutMillis() {
+    return soTimeoutMillis;
   }
 
   @Override
-  public int getInfiniteSoTimeout() {
-    return infiniteSoTimeout;
+  public int getInfiniteSoTimeoutMillis() {
+    return infiniteSoTimeoutMillis;
   }
 
   @Override
@@ -131,17 +131,17 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
           ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
-    public Builder withConnectionTimeout(int connectionTimeout) {
+    public Builder withConnectionTimeoutMillis(int connectionTimeout) {
       this.connectionTimeout = connectionTimeout;
       return this;
     }
 
-    public Builder withSoTimeout(int soTimeout) {
+    public Builder withSoTimeoutMillis(int soTimeout) {
       this.soTimeout = soTimeout;
       return this;
     }
 
-    public Builder withInfiniteSoTimeout(int infiniteSoTimeout) {
+    public Builder withInfiniteSoTimeoutMillis(int infiniteSoTimeout) {
       this.infiniteSoTimeout = infiniteSoTimeout;
       return this;
     }
@@ -193,8 +193,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
   
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(copy.getConnectionTimeout(), copy.getSoTimeout(),
-        copy.getInfiniteSoTimeout(), copy.getUser(), copy.getPassword(), copy.getDatabase(),
+    return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(), copy.getSoTimeoutMillis(),
+        copy.getInfiniteSoTimeoutMillis(), copy.getUser(), copy.getPassword(), copy.getDatabase(),
         copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(), copy.getSslParameters(),
         copy.getHostnameVerifier(), copy.getHostAndPortMapper());
   }

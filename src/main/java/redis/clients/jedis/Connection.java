@@ -24,7 +24,7 @@ public class Connection implements Closeable {
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
   private boolean socketParamModified = false; // for backward compatibility
-  private JedisSocketFactory socketFactory; // TODO: sould be final
+  private JedisSocketFactory socketFactory; // TODO: should be final
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
@@ -72,8 +72,8 @@ public class Connection implements Closeable {
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
-    this.soTimeout = clientConfig.getSoTimeout();
-    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeout();
+    this.soTimeout = clientConfig.getSoTimeoutMillis();
+    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeoutMillis();
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {

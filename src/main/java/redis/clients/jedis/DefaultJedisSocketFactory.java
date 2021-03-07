@@ -47,8 +47,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
     this.hostAndPort = hostAndPort;
     if (config != null) {
-      this.connectionTimeout = config.getConnectionTimeout();
-      this.soTimeout = config.getSoTimeout();
+      this.connectionTimeout = config.getConnectionTimeoutMillis();
+      this.soTimeout = config.getSoTimeoutMillis();
       this.ssl = config.isSsl();
       this.sslSocketFactory = config.getSslSocketFactory();
       this.sslParameters = config.getSslParameters();

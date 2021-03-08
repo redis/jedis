@@ -2,14 +2,12 @@ package redis.clients.jedis.tests;
 
 import org.junit.*;
 import redis.clients.jedis.*;
-import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.SSLJedisTest.BasicHostnameVerifier;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import javax.net.ssl.*;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.cert.CertificateException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -104,10 +102,11 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
         DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true,
         null, sslParameters, null, portMap)){
       jc.get("foo");
-      Assert.fail("The code did not throw the expected JedisClusterMaxAttemptsException.");
-    } catch (JedisClusterMaxAttemptsException e) {
+      Assert.fail("It should fail after all cluster attempts.");
+    } catch (JedisClusterOperationException e) {
       // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
+      assertEquals("No more cluster attempts left.", e.getMessage());
     }
   }
   
@@ -132,10 +131,9 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
           DEFAULT_REDIRECTIONS, "user", "cluster", null, DEFAULT_POOL_CONFIG, true,
           null, sslParameters, null, hostAndPortMap)){
       jc.get("key");
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-//      Assert.assertEquals(SSLHandshakeException.class, e.getCause().getClass());
-//      Assert.assertEquals(CertificateException.class, e.getCause().getCause().getClass());
+      Assert.fail("There should be no reachable node in cluster.");
+    } catch (JedisClusterOperationException e) {
+      assertEquals("No reachable node in cluster.", e.getMessage());
     }
   }
   
@@ -148,19 +146,23 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
         DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true,
         null, null, hostnameVerifier, portMap)){
       jc.get("foo");
-      Assert.fail("The code did not throw the expected JedisClusterMaxAttemptsException.");
-    } catch (JedisClusterMaxAttemptsException e) {
+      Assert.fail("It should fail after all cluster attempts.");
+    } catch (JedisClusterOperationException e) {
       // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
       // which causes custom hostname verification to fail
+      assertEquals("No more cluster attempts left.", e.getMessage());
     }
 
     try ( JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
           DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true,
           null, null, hostnameVerifier, portMap)){
       jc2.get("key");
-      Assert.fail("The code did not throw the expected NullPointerException.");
-    } catch (JedisConnectionException e) {
-    } 
+      Assert.fail("There should be no reachable node in cluster.");
+    } catch (JedisClusterOperationException e) {
+      // JedisClusterOperationException exception occurs from not being able to connect since
+      // the socket factory fails the hostname verification
+      assertEquals("No reachable node in cluster.", e.getMessage());
+    }
     
     JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
         DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true,
@@ -188,15 +190,10 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
             DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true,
             sslSocketFactory, null, null, null)){
       jc.get("key");
-      Assert.fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-//      Assert.assertEquals("Unexpected first inner exception.",
-//          SSLException.class, e.getCause().getClass());
-//      Assert.assertEquals("Unexpected third inner exception",
-//          RuntimeException.class, e.getCause().getCause().getClass());
-//      Assert.assertEquals("Unexpected fourth inner exception.",
-//          InvalidAlgorithmParameterException.class, e.getCause().getCause().getCause().getClass());
-    } 
+      Assert.fail("There should be no reachable node in cluster.");
+    } catch (JedisClusterOperationException e) {
+      assertEquals("No reachable node in cluster.", e.getMessage());
+    }
   }
   
   @Test

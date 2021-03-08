@@ -4,11 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisAskDataException;
-import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -102,8 +100,9 @@ public abstract class JedisClusterCommand<T> {
 
         return execute(connection);
 
-      } catch (JedisNoReachableClusterNodeException jnrcne) {
-        throw jnrcne;
+      } catch (JedisClusterOperationException jcoe) {
+        // cluster state is unstable, so throw it instantly
+        throw jcoe;
       } catch (JedisConnectionException jce) {
         lastException = jce;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);
@@ -126,8 +125,7 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    JedisClusterMaxAttemptsException maxAttemptsException
-        = new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+    JedisClusterOperationException maxAttemptsException = new JedisClusterOperationException("No more cluster attempts left.");
     maxAttemptsException.addSuppressed(lastException);
     throw maxAttemptsException;
   }

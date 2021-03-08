@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -433,7 +432,7 @@ public class JedisClusterTest {
     }
   }
 
-  @Test(expected = JedisClusterMaxAttemptsException.class)
+  @Test(expected = JedisClusterOperationException.class)
   public void testRedisClusterMaxRedirections() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
@@ -447,7 +446,7 @@ public class JedisClusterTest {
     }
   }
 
-  @Test(expected = JedisClusterMaxAttemptsException.class)
+  @Test(expected = JedisClusterOperationException.class)
   public void testRedisClusterMaxRedirectionsWithConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
     try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -690,7 +689,7 @@ public class JedisClusterTest {
     }
   }
 
-  @Test(expected = JedisClusterMaxAttemptsException.class, timeout = DEFAULT_TIMEOUT)
+  @Test(expected = JedisClusterOperationException.class, timeout = DEFAULT_TIMEOUT)
   public void testReturnConnectionOnRedirection() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));

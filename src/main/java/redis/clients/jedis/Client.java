@@ -29,6 +29,12 @@ public class Client extends BinaryClient implements Commands {
     super();
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future. It can be replaced with
+   * {@link #Client(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   */
+  @Deprecated
   public Client(final String host) {
     super(host);
   }
@@ -37,14 +43,26 @@ public class Client extends BinaryClient implements Commands {
     super(host, port);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Client(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Client(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Client(final HostAndPort hostPort, final JedisClientConfig clientConfig) {
+    super(hostPort, clientConfig);
   }
 
   public Client(final JedisSocketFactory jedisSocketFactory) {
@@ -112,7 +130,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void expire(final String key, final int seconds) {
+  public void expire(final String key, final long seconds) {
     expire(SafeEncoder.encode(key), seconds);
   }
 
@@ -152,7 +170,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void setex(final String key, final int seconds, final String value) {
+  public void setex(final String key, final long seconds, final String value) {
     setex(SafeEncoder.encode(key), seconds, SafeEncoder.encode(value));
   }
 
@@ -921,12 +939,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void restore(final String key, final int ttl, final byte[] serializedValue) {
+  public void restore(final String key, final long ttl, final byte[] serializedValue) {
     restore(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
   @Override
-  public void restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public void restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
   }
 

@@ -45,12 +45,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super();
   }
 
-  public Jedis(final String host) {
-    super(host);
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #Jedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uri
+   */
+  @Deprecated
+  public Jedis(final String uri) {
+    super(uri);
   }
 
   public Jedis(final HostAndPort hp) {
     super(hp);
+  }
+
+  public Jedis(final HostAndPort hp, final JedisClientConfig config) {
+    super(hp, config);
   }
 
   public Jedis(final String host, final int port) {
@@ -145,6 +157,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     super(uri, connectionTimeout, soTimeout, infiniteSoTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Jedis(final URI uri, JedisClientConfig config) {
+    super(uri, config);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -392,7 +408,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long expire(final String key, final int seconds) {
+  public Long expire(final String key, final long seconds) {
     checkIsInMultiOrPipeline();
     client.expire(key, seconds);
     return client.getIntegerReply();
@@ -543,7 +559,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return Status code reply
    */
   @Override
-  public String setex(final String key, final int seconds, final String value) {
+  public String setex(final String key, final long seconds, final String value) {
     checkIsInMultiOrPipeline();
     client.setex(key, seconds, value);
     return client.getStatusCodeReply();
@@ -3267,14 +3283,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+  public String restore(final String key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restore(key, ttl, serializedValue);
     return client.getStatusCodeReply();
   }
 
   @Override
-  public String restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restoreReplace(key, ttl, serializedValue);
     return client.getStatusCodeReply();

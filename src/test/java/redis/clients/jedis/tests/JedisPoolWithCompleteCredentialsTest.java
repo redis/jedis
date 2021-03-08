@@ -11,6 +11,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -72,6 +73,26 @@ public class JedisPoolWithCompleteCredentialsTest {
       Jedis jedis2 = pool.getResource();
       assertEquals(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
+      jedis2.close();
+    }
+  }
+
+  @Test
+  public void checkResourceWithConfigIsClosableAndReusable() {
+    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(false);
+    try (JedisPool pool = new JedisPool(config, hnp, DefaultJedisClientConfig.builder()
+        .withUser("acljedis").withPassword("fizzbuzz").withClientName("closable-resuable-pool").build())) {
+
+      Jedis jedis = pool.getResource();
+      jedis.set("hello", "jedis");
+      jedis.close();
+
+      Jedis jedis2 = pool.getResource();
+      assertEquals(jedis, jedis2);
+      assertEquals("jedis", jedis2.get("hello"));
+      assertEquals("closable-resuable-pool", jedis2.clientGetname());
       jedis2.close();
     }
   }

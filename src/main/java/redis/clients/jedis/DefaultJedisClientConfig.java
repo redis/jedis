@@ -22,13 +22,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final HostAndPortMapper hostAndPortMapper;
 
-  private DefaultJedisClientConfig(int connectionTimeout, int soTimeout, int infiniteSoTimeout,
-      String user, String password, int database, String clientName,
+  private DefaultJedisClientConfig(int connectionTimeoutMillis, int soTimeoutMillis,
+      int infiniteSoTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    this.connectionTimeoutMillis = connectionTimeout;
-    this.soTimeoutMillis = soTimeout;
-    this.infiniteSoTimeoutMillis = infiniteSoTimeout;
+    this.connectionTimeoutMillis = connectionTimeoutMillis;
+    this.soTimeoutMillis = soTimeoutMillis;
+    this.infiniteSoTimeoutMillis = infiniteSoTimeoutMillis;
     this.user = user;
     this.password = password;
     this.database = database;
@@ -106,9 +106,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   public static class Builder {
 
-    private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
-    private int soTimeout = Protocol.DEFAULT_TIMEOUT;
-    private int infiniteSoTimeout = 0;
+    private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
+    private int soTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
+    private int infiniteSoTimeoutMillis = 0;
 
     private String user = null;
     private String password = null;
@@ -126,23 +126,23 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     public DefaultJedisClientConfig build() {
-      return new DefaultJedisClientConfig(connectionTimeout, soTimeout, infiniteSoTimeout,
-          user, password, databse, clientName,
+      return new DefaultJedisClientConfig(connectionTimeoutMillis, soTimeoutMillis,
+          infiniteSoTimeoutMillis, user, password, databse, clientName,
           ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
-    public Builder withConnectionTimeoutMillis(int connectionTimeout) {
-      this.connectionTimeout = connectionTimeout;
+    public Builder withConnectionTimeoutMillis(int connectionTimeoutMillis) {
+      this.connectionTimeoutMillis = connectionTimeoutMillis;
       return this;
     }
 
-    public Builder withSoTimeoutMillis(int soTimeout) {
-      this.soTimeout = soTimeout;
+    public Builder withSoTimeoutMillis(int soTimeoutMillis) {
+      this.soTimeoutMillis = soTimeoutMillis;
       return this;
     }
 
-    public Builder withInfiniteSoTimeoutMillis(int infiniteSoTimeout) {
-      this.infiniteSoTimeout = infiniteSoTimeout;
+    public Builder withInfiniteSoTimeoutMillis(int infiniteSoTimeoutMillis) {
+      this.infiniteSoTimeoutMillis = infiniteSoTimeoutMillis;
       return this;
     }
 

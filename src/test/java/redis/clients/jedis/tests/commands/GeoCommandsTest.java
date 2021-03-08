@@ -36,7 +36,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     size = jedis.geoadd("foo", 2, 3, "a");
     assertEquals(0, size);
 
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("a", new GeoCoordinate(3, 4));
     coordinateMap.put("b", new GeoCoordinate(2, 3));
     coordinateMap.put("c", new GeoCoordinate(3.314, 2.3241));
@@ -50,7 +50,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     size = jedis.geoadd(bfoo, 2, 3, bA);
     assertEquals(0, size);
 
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(3, 4));
     bcoordinateMap.put(bB, new GeoCoordinate(2, 3));
     bcoordinateMap.put(bC, new GeoCoordinate(3.314, 2.3241));
@@ -131,7 +131,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadius() {
     // prepare datas
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd("Sicily", coordinateMap);
@@ -172,7 +172,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusStore() {
     // prepare datas
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd("Sicily", coordinateMap);
@@ -180,7 +180,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     long size = jedis.georadiusStore("Sicily", 15, 37, 200, GeoUnit.KM,
         GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<String>();
+    Set<String> expected = new LinkedHashSet<>();
     expected.add("Palermo");
     expected.add("Catania");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -189,7 +189,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusReadonly() {
     // prepare datas
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd("Sicily", coordinateMap);
@@ -222,7 +222,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusBinary() {
     // prepare datas
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(13.361389, 38.115556));
     bcoordinateMap.put(bB, new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd(bfoo, bcoordinateMap);
@@ -255,7 +255,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusStoreBinary() {
     // prepare datas
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(13.361389, 38.115556));
     bcoordinateMap.put(bB, new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd(bfoo, bcoordinateMap);
@@ -263,7 +263,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     long size = jedis.georadiusStore(bfoo, 15, 37, 200, GeoUnit.KM,
         GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    Set<byte[]> bexpected = new LinkedHashSet<>();
     bexpected.add(bA);
     bexpected.add(bB);
     assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
@@ -272,7 +272,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusReadonlyBinary() {
     // prepare datas
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(13.361389, 38.115556));
     bcoordinateMap.put(bB, new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd(bfoo, bcoordinateMap);
@@ -338,7 +338,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     long size = jedis.georadiusByMemberStore("Sicily", "Agrigento", 100,
         GeoUnit.KM, GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<String>();
+    Set<String> expected = new LinkedHashSet<>();
     expected.add("Agrigento");
     expected.add("Palermo");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -406,7 +406,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     long size = jedis.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
         GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    Set<byte[]> bexpected = new LinkedHashSet<>();
     bexpected.add(bA);
     bexpected.add(bB);
     assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
@@ -439,7 +439,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   }
 
   private void prepareGeoData() {
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("a", new GeoCoordinate(3, 4));
     coordinateMap.put("b", new GeoCoordinate(2, 3));
     coordinateMap.put("c", new GeoCoordinate(3.314, 2.3241));
@@ -447,7 +447,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     long size = jedis.geoadd("foo", coordinateMap);
     assertEquals(3, size);
 
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(3, 4));
     bcoordinateMap.put(bB, new GeoCoordinate(2, 3));
     bcoordinateMap.put(bC, new GeoCoordinate(3.314, 2.3241));

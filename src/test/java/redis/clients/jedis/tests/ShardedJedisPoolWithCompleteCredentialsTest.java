@@ -53,7 +53,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkConnections() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
@@ -63,7 +63,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
@@ -74,7 +74,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkConnectionWithDefaultPort() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
@@ -84,7 +84,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkJedisIsReusedWhenReturned() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "0");
     jedis.close();
@@ -97,7 +97,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkPoolRepairedWhenJedisIsBroken() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.disconnect();
     jedis.close();
@@ -110,7 +110,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test(expected = JedisExhaustedPoolException.class)
   public void checkPoolOverflow() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
@@ -125,7 +125,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void shouldNotShareInstances() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(2);
 
     ShardedJedisPool pool = new ShardedJedisPool(config, shards);
@@ -138,7 +138,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkFailedJedisServer() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.incr("foo");
     jedis.close();
@@ -159,7 +159,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     shards.add(new JedisShardInfo("redis://default:foobared@localhost:6380"));
     shards.add(new JedisShardInfo("redis://default:foobared@localhost:6379"));
 
-    GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> redisConfig = new GenericObjectPoolConfig<>();
     ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
 
     Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
@@ -187,7 +187,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6379")));
 
-    GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> redisConfig = new GenericObjectPoolConfig<>();
     ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
 
     Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
@@ -222,7 +222,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     shards.add(new JedisShardInfo(new URI("redis://alice:alicePassword@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://alice:alicePassword@localhost:6379")));
 
-    GenericObjectPoolConfig redisConfig = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> redisConfig = new GenericObjectPoolConfig<>();
     ShardedJedisPool pool = new ShardedJedisPool(redisConfig, shards);
 
     Jedis[] jedises = pool.getResource().getAllShards().toArray(new Jedis[2]);
@@ -242,7 +242,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void returnResourceShouldResetState() throws URISyntaxException {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
@@ -275,7 +275,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkResourceIsCloseable() throws URISyntaxException {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<ShardedJedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 

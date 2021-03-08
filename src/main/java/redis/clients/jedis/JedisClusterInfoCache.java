@@ -59,7 +59,7 @@ public class JedisClusterInfoCache {
   /**
    * @deprecated This constructor will be removed in future.
    */
-  @Deprecated  
+  @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, final int connectionTimeout,
       final int soTimeout, final String password, final String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, 

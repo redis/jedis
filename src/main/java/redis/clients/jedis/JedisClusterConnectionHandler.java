@@ -37,7 +37,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   /**
    * @deprecated This constructor will be removed in future.
    */
-  @Deprecated  
+  @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig<Jedis> poolConfig,
       int connectionTimeout, int soTimeout, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -48,7 +48,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   /**
    * @deprecated This constructor will be removed in future.
    */
-  @Deprecated  
+  @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig<Jedis> poolConfig,
       int connectionTimeout, int soTimeout, String user, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -59,7 +59,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   /**
    * @deprecated This constructor will be removed in future.
    */
-  @Deprecated  
+  @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes, final GenericObjectPoolConfig<Jedis> poolConfig,
       int connectionTimeout, int soTimeout, int infiniteSoTimeout, String user, String password, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,

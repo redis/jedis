@@ -67,21 +67,18 @@ public abstract class Params {
     params.put(name, null);
   }
 
-  @Override public String toString() {
-    ArrayList<String> paramsAsString = new ArrayList<>();
+  @Override
+  public String toString() {
+    ArrayList<Object> paramsFlatList = new ArrayList<>();
     if (params != null) {
       for (Entry<String, Object> param : params.entrySet()) {
-        paramsAsString.add(param.getKey());
+        paramsFlatList.add(param.getKey());
         Object value = param.getValue();
         if (value != null) {
-          if (value instanceof byte[]) {
-            paramsAsString.add( SafeEncoder.encode((byte[]) value));
-          } else {
-            paramsAsString.add(value.toString());
-          }
+          paramsFlatList.add(SafeEncoder.encodeObject(value));
         }
       }
     }
-    return paramsAsString.toString();
+    return paramsFlatList.toString();
   }
 }

@@ -66,7 +66,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   public void repeatedSentinelPoolInitialization() {
 
     for(int i=0; i<20 ; ++i) {
-      GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+      GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
 
       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
           "default","foobared", 2);
@@ -94,7 +94,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
         "default","foobared", 2);
@@ -110,7 +110,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   @Test
   public void ensureSafeTwiceFailover() throws InterruptedException {
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-        new GenericObjectPoolConfig(), 1000, "default", "foobared", 2);
+        new GenericObjectPoolConfig<Jedis>(), 1000, "default", "foobared", 2);
 
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new
@@ -123,7 +123,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   @Test
   public void returnResourceShouldResetState() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
@@ -147,7 +147,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkResourceIsCloseable() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try(JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
@@ -167,7 +167,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   @Test
   public void customClientName() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,

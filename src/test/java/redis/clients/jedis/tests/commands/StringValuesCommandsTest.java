@@ -215,4 +215,15 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     long ttl = jedis.ttl("foo");
     assertTrue(ttl > 0 && ttl <= 20000);
   }
+  
+  @Test
+  public void getDel() {
+    String status = jedis.set("foo", "bar");
+    assertEquals("OK", status);
+
+    String value = jedis.getDel("foo");
+    assertEquals("bar", value);
+
+    assertNull(jedis.get("foo"));
+  }
 }

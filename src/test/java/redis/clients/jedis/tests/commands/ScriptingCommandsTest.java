@@ -234,7 +234,7 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
       // ignore it
     }
 
-    assertEquals(true, deadClient.getClient().isBroken());
+    assertEquals(true, deadClient.isBroken());
 
     deadClient.close();
   }

@@ -8,7 +8,6 @@ import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -102,8 +101,9 @@ public abstract class JedisClusterCommand<T> {
 
         return execute(connection);
 
-      } catch (JedisNoReachableClusterNodeException jnrcne) {
-        throw jnrcne;
+      } catch (JedisClusterOperationException jcoe) {
+        // cluster state is unstable, so throw the exception immediately
+        throw jcoe;
       } catch (JedisConnectionException jce) {
         lastException = jce;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);

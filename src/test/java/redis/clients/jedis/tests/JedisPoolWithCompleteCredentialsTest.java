@@ -79,7 +79,7 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkResourceWithConfigIsClosableAndReusable() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp, DefaultJedisClientConfig.builder()

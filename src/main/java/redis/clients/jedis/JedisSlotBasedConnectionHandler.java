@@ -64,7 +64,7 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
     super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig,
+  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes, GenericObjectPoolConfig<Jedis> poolConfig,
       JedisClientConfig clientConfig) {
     super(nodes, poolConfig, clientConfig);
   }

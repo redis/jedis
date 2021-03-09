@@ -133,7 +133,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setAndPxat() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().pxat(System.currentTimeMillis() + expireMillis));
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().pxAt(System.currentTimeMillis() + expireMillis));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
@@ -141,7 +141,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setAndExat() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().exat(System.currentTimeMillis() / 1000 + expireSeconds));
+    String status = jedis.set(bfoo, binaryValue, setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);

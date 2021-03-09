@@ -78,7 +78,7 @@ public class SetParams extends Params {
    * @param seconds
    * @return SetParams
    */
-  public SetParams exat(long seconds) {
+  public SetParams exAt(long seconds) {
     addParam(EXAT, seconds);
     return this;
   }
@@ -88,7 +88,7 @@ public class SetParams extends Params {
    * @param milliseconds
    * @return SetParams
    */
-  public SetParams pxat(long milliseconds) {
+  public SetParams pxAt(long milliseconds) {
     addParam(PXAT, milliseconds);
     return this;
   }

@@ -2977,7 +2977,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.eval(script, keyCount, params);
     client.setTimeoutInfinite();
     try {
-      return getEvalResult();
+      return SafeEncoder.encodeObject(client.getOne());
     } finally {
       client.rollbackTimeout();
     }
@@ -2998,26 +2998,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return evalsha(sha1, 0);
   }
 
-  private Object getEvalResult() {
-    return evalResult(client.getOne());
-  }
-
-  private Object evalResult(Object result) {
-    if (result instanceof byte[]) return SafeEncoder.encode((byte[]) result);
-
-    if (result instanceof List<?>) {
-      List<?> list = (List<?>) result;
-      List<Object> listResult = new ArrayList<>(list.size());
-      for (Object bin : list) {
-        listResult.add(evalResult(bin));
-      }
-
-      return listResult;
-    }
-
-    return result;
-  }
-
   @Override
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
     return evalsha(sha1, keys.size(), getParams(keys, args));
@@ -3027,7 +3007,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Object evalsha(final String sha1, final int keyCount, final String... params) {
     checkIsInMultiOrPipeline();
     client.evalsha(sha1, keyCount, params);
-    return getEvalResult();
+    return SafeEncoder.encodeObject(client.getOne());
   }
 
   @Override

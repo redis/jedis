@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
@@ -52,6 +53,30 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
   public void connectWithConfig() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().build())) {
       jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
+        .withUser("acljedis").withPassword("fizzbuzz").build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {})) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+      @Override
+      public String getUser() {
+        return "acljedis";
+      }
+      @Override
+      public String getPassword() {
+        return "fizzbuzz";
+      }
+    })) {
       assertEquals("PONG", jedis.ping());
     }
   }

@@ -65,14 +65,14 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     this(nodes,
-        DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
-            .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
+        DefaultJedisClientConfig.builder().withConnectionTimeoutMillis(connectionTimeout)
+            .withSoTimeoutMillis(soTimeout).withInfiniteSoTimeoutMillis(infiniteSoTimeout)
             .withUser(user).withPassword(password).withClientName(clientName)
             .withSsl(ssl).withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
             .withHostnameVerifier(hostnameVerifier).build(),
         poolConfig,
-        DefaultJedisClientConfig.builder().withConnectionTimeout(connectionTimeout)
-            .withSoTimeout(soTimeout).withInfiniteSoTimeout(infiniteSoTimeout)
+        DefaultJedisClientConfig.builder().withConnectionTimeoutMillis(connectionTimeout)
+            .withSoTimeoutMillis(soTimeout).withInfiniteSoTimeoutMillis(infiniteSoTimeout)
             .withUser(user).withPassword(password).withClientName(clientName)
             .withSsl(ssl).withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
             .withHostnameVerifier(hostnameVerifier).withHostAndPortMapper(portMap).build());

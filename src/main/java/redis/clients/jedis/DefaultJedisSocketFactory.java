@@ -13,7 +13,8 @@ import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+  protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST,
+      Protocol.DEFAULT_PORT);
 
   private HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
@@ -89,7 +90,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         if (null != hostnameVerifier
             && !hostnameVerifier.verify(hostAndPort.getHost(), ((SSLSocket) socket).getSession())) {
           String message = String.format(
-              "The connection to '%s' failed ssl/tls hostname verification.", hostAndPort.getHost());
+            "The connection to '%s' failed ssl/tls hostname verification.", hostAndPort.getHost());
           throw new JedisConnectionException(message);
         }
       }

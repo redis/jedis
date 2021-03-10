@@ -52,59 +52,69 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     this(Collections.singleton(node), timeout, maxAttempts, poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, final GenericObjectPoolConfig<Jedis> poolConfig) {
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
     this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, poolConfig);
   }
 
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, final GenericObjectPoolConfig<Jedis> poolConfig) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
-  }
-
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
-  }
-
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig);
-  }
-
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl);
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String password, final GenericObjectPoolConfig<Jedis> poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+        poolConfig);
   }
 
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
-      String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl);
+      String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+        clientName, poolConfig);
+  }
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password,
+        clientName, poolConfig);
+  }
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
+      boolean ssl) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+        clientName, poolConfig, ssl);
+  }
+
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password,
+        clientName, poolConfig, ssl);
   }
 
   /**
    * @deprecated This constructor will be removed in future.
    */
   @Deprecated
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig,
-        ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
+        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
+        hostAndPortMap);
   }
 
   /**
    * @deprecated This constructor will be removed in future.
    */
   @Deprecated
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout,
-      int maxAttempts, String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
+      String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig,
-            ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password,
+        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
+        hostAndPortMap);
   }
 
   public JedisCluster(HostAndPort node, final JedisClientConfig clientConfig, int maxAttempts,
@@ -128,7 +138,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> nodes, int timeout, final GenericObjectPoolConfig<Jedis> poolConfig) {
+  public JedisCluster(Set<HostAndPort> nodes, int timeout,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
     this(nodes, timeout, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
@@ -143,35 +154,43 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-                      int maxAttempts, String password, final GenericObjectPoolConfig<Jedis> poolConfig) {
+      int maxAttempts, String password, final GenericObjectPoolConfig<Jedis> poolConfig) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-          int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
+      int maxAttempts, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName,
+        poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-          int maxAttempts, String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig);
+      int maxAttempts, String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName,
+        poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user, password, clientName, poolConfig);
+      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user,
+        password, clientName, poolConfig);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl);
+      int maxAttempts, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName,
+        poolConfig, ssl);
   }
 
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
       int maxAttempts, String user, String password, String clientName,
       final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl);
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName,
+        poolConfig, ssl);
   }
 
   /**
@@ -179,23 +198,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      int maxAttempts, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig,
-        ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int infiniteSoTimeout,
-      int maxAttempts, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, null, password,
-        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName,
+        poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
   /**
@@ -203,27 +211,44 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int maxAttempts, String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      int infiniteSoTimeout, int maxAttempts, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user,password, clientName, poolConfig,
-            ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    this(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, null,
+        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
+        hostAndPortMap);
   }
 
   /**
    * @deprecated This constructor will be removed in future.
    */
   @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int infiniteSoTimeout,
-      int maxAttempts, String user, String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+      int maxAttempts, String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user, password,
-        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName,
+        poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
-  public JedisCluster(Set<HostAndPort> nodes, final JedisClientConfig clientConfig, int maxAttempts,
-      final GenericObjectPoolConfig<Jedis> poolConfig) {
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user,
+        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
+        hostAndPortMap);
+  }
+
+  public JedisCluster(Set<HostAndPort> nodes, final JedisClientConfig clientConfig,
+      int maxAttempts, final GenericObjectPoolConfig<Jedis> poolConfig) {
     super(nodes, clientConfig, maxAttempts, poolConfig);
   }
 
@@ -256,7 +281,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
   public String getDel(final String key) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
@@ -828,7 +853,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<Long> lpos(final String key, final String element, final LPosParams params, final long count) {
+  public List<Long> lpos(final String key, final String element, final LPosParams params,
+      final long count) {
     return new JedisClusterCommand<List<Long>>(connectionHandler, maxAttempts) {
       @Override
       public List<Long> execute(Jedis connection) {
@@ -1568,8 +1594,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           + " only supports KEYS commands with non-empty patterns");
     }
     if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(pattern)) {
-      throw new IllegalArgumentException(this.getClass().getSimpleName()
-          + " only supports KEYS commands with patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(
+          this.getClass().getSimpleName()
+          + " only supports KEYS commands with patterns containing hash-tags"
+          + " ( curly-brackets enclosed strings )");
     }
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
       @Override
@@ -1590,22 +1618,24 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }
 
     if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
-      throw new IllegalArgumentException(JedisCluster.class.getSimpleName()
-          + " only supports SCAN commands with MATCH patterns containing hash-tags ( curly-brackets enclosed strings )");
+      throw new IllegalArgumentException(
+          JedisCluster.class.getSimpleName()
+          + " only supports SCAN commands with MATCH patterns containing hash-tags"
+          + " ( curly-brackets enclosed strings )");
     }
 
-    return new JedisClusterCommand< ScanResult<String>>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<ScanResult<String>>(connectionHandler, maxAttempts) {
       @Override
       public ScanResult<String> execute(Jedis connection) {
         return connection.scan(cursor, params);
       }
     }.run(matchPattern);
   }
-  
+
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
-                                                                      maxAttempts) {
+        maxAttempts) {
       @Override
       public ScanResult<Entry<String, String>> execute(Jedis connection) {
         return connection.hscan(key, cursor);
@@ -2203,7 +2233,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public Long georadiusStore(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+      final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     String[] keys = storeParam.getStringKeys(key);
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -2258,8 +2289,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long georadiusByMemberStore(final String key, final String member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+  public Long georadiusByMemberStore(final String key, final String member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
     String[] keys = storeParam.getStringKeys(key);
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
@@ -2310,7 +2341,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
-  
   @Override
   public Long memoryUsage(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
@@ -2320,7 +2350,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
   public Long memoryUsage(final String key, final int samples) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
@@ -2330,7 +2360,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
@@ -2342,7 +2372,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
+  public StreamEntryID xadd(final String key, final StreamEntryID id,
+      final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
     return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
       @Override
       public StreamEntryID execute(Jedis connection) {
@@ -2362,7 +2393,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end, final int count) {
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start,
+      final StreamEntryID end, final int count) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
       @Override
       public List<StreamEntry> execute(Jedis connection) {
@@ -2372,28 +2404,31 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end, final StreamEntryID start, final int count) {
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
+      final StreamEntryID start, final int count) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
       @Override
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xrevrange(key, end, start, count);
       }
-    }.run(key);  
+    }.run(key);
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
+  public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block,
+      final Entry<String, StreamEntryID>... streams) {
     String[] keys = new String[streams.length];
-    for(int i=0; i<streams.length; ++i) {
+    for (int i = 0; i < streams.length; ++i) {
       keys[i] = streams[i].getKey();
     }
-    
-    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
+
+    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler,
+        maxAttempts) {
       @Override
       public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
         return connection.xread(count, block, streams);
       }
-    }.run(keys.length, keys);  
+    }.run(keys.length, keys);
   }
 
   @Override
@@ -2403,17 +2438,18 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.xack(key, group, ids);
       }
-    }.run(key);   
+    }.run(key);
   }
 
   @Override
-  public String xgroupCreate(final String key, final String groupname, final StreamEntryID id, final boolean makeStream) {
+  public String xgroupCreate(final String key, final String groupname, final StreamEntryID id,
+      final boolean makeStream) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
         return connection.xgroupCreate(key, groupname, id, makeStream);
       }
-    }.run(key);  
+    }.run(key);
   }
 
   @Override
@@ -2447,15 +2483,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
-      final boolean noAck, final Entry<String, StreamEntryID>... streams) {
-    
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
+      final String consumer, final int count, final long block, final boolean noAck,
+      final Entry<String, StreamEntryID>... streams) {
+
     String[] keys = new String[streams.length];
-    for(int i=0; i<streams.length; ++i) {
+    for (int i = 0; i < streams.length; ++i) {
       keys[i] = streams[i].getKey();
     }
-    
-    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
+
+    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler,
+        maxAttempts) {
       @Override
       public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
         return connection.xreadGroup(groupname, consumer, count, block, noAck, streams);
@@ -2464,8 +2502,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(final String key, final String groupname, final StreamEntryID start, final StreamEntryID end, final int count,
-      final String consumername) {
+  public List<StreamPendingEntry> xpending(final String key, final String groupname,
+      final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     return new JedisClusterCommand<List<StreamPendingEntry>>(connectionHandler, maxAttempts) {
       @Override
       public List<StreamPendingEntry> execute(Jedis connection) {
@@ -2485,7 +2523,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xtrim(final  String key, final long maxLen, final boolean approximateLength) {
+  public Long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
@@ -2495,12 +2533,14 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<StreamEntry> xclaim(final String key, final String group, final String consumername, final long minIdleTime, final long newIdleTime,
-      final int retries, final boolean force, final StreamEntryID... ids) {
+  public List<StreamEntry> xclaim(final String key, final String group, final String consumername,
+      final long minIdleTime, final long newIdleTime, final int retries, final boolean force,
+      final StreamEntryID... ids) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
       @Override
       public List<StreamEntry> execute(Jedis connection) {
-        return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+        return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries,
+          force, ids);
       }
     }.run(key);
   }
@@ -2517,16 +2557,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   public Object sendCommand(final String sampleKey, final ProtocolCommand cmd, final String... args) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
-      public Object execute(Jedis connection){
+      public Object execute(Jedis connection) {
         return connection.sendCommand(cmd, args);
       }
     }.run(sampleKey);
   }
 
-  public Object sendBlockingCommand(final String sampleKey, final ProtocolCommand cmd, final String... args) {
+  public Object sendBlockingCommand(final String sampleKey, final ProtocolCommand cmd,
+      final String... args) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
-      public Object execute(Jedis connection){
+      public Object execute(Jedis connection) {
         return connection.sendBlockingCommand(cmd, args);
       }
     }.run(sampleKey);

@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 /**
  * This test class is a copy of {@link SSLJedisTest}.
- *
+ * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class SSLJedisWithCompleteCredentialsTest {
@@ -32,7 +32,8 @@ public class SSLJedisWithCompleteCredentialsTest {
   @BeforeClass
   public static void prepare() {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
+        RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
     SSLJedisTest.setupTrustStore();
   }
@@ -47,7 +48,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig.builder().withSsl(true).build())) {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig
+        .builder().withSsl(true).build())) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -98,10 +100,9 @@ public class SSLJedisWithCompleteCredentialsTest {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis.
-   * NOTE: This test relies on a feature that is only available as of Java 7 and later.
-   * It is commented out but not removed in case support for Java 6 is dropped or
-   * we find a way to have the CI run a specific set of tests on Java 7 and above.
+   * Tests opening an SSL/TLS connection to redis. NOTE: This test relies on a feature that is only
+   * available as of Java 7 and later. It is commented out but not removed in case support for Java
+   * 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and above.
    */
   @Test
   public void connectWithShardInfo() throws Exception {
@@ -123,14 +124,12 @@ public class SSLJedisWithCompleteCredentialsTest {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis using the loopback address of
-   * 127.0.0.1. This test should fail because "127.0.0.1" does not match the
-   * certificate subject common name and there are no subject alternative names
-   * in the certificate.
-   * 
-   * NOTE: This test relies on a feature that is only available as of Java 7 and later.
-   * It is commented out but not removed in case support for Java 6 is dropped or
-   * we find a way to have the CI run a specific set of tests on Java 7 and above.
+   * Tests opening an SSL/TLS connection to redis using the loopback address of 127.0.0.1. This test
+   * should fail because "127.0.0.1" does not match the certificate subject common name and there
+   * are no subject alternative names in the certificate. NOTE: This test relies on a feature that
+   * is only available as of Java 7 and later. It is commented out but not removed in case support
+   * for Java 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and
+   * above.
    */
   @Test
   public void connectWithShardInfoByIpAddress() throws Exception {
@@ -150,16 +149,15 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.",
-          SSLHandshakeException.class, e.getCause().getClass());
-      assertEquals("Unexpected second inner exception.",
-          CertificateException.class, e.getCause().getCause().getClass());
+      assertEquals("Unexpected first inner exception.", SSLHandshakeException.class, e.getCause()
+          .getClass());
+      assertEquals("Unexpected second inner exception.", CertificateException.class, e.getCause()
+          .getCause().getClass());
     }
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis with a custom hostname
-   * verifier.
+   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier.
    */
   @Test
   public void connectWithShardInfoAndCustomHostnameVerifier() {
@@ -168,7 +166,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
+        hostnameVerifier);
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
@@ -187,7 +186,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
+        hostnameVerifier);
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
@@ -197,10 +197,9 @@ public class SSLJedisWithCompleteCredentialsTest {
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis with a custom hostname
-   * verifier. This test should fail because "127.0.0.1" does not match the
-   * certificate subject common name and there are no subject alternative names
-   * in the certificate.
+   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier. This test should
+   * fail because "127.0.0.1" does not match the certificate subject common name and there are no
+   * subject alternative names in the certificate.
    */
   @Test
   public void connectWithShardInfoAndCustomHostnameVerifierByIpAddress() {
@@ -209,7 +208,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     final SSLParameters sslParameters = new SSLParameters();
 
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
+        hostnameVerifier);
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
@@ -218,15 +218,13 @@ public class SSLJedisWithCompleteCredentialsTest {
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
       assertEquals("The JedisConnectionException does not contain the expected message.",
-          "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
+        "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
     }
   }
 
   /**
-   * Tests opening an SSL/TLS connection to redis with an empty certificate
-   * trust store. This test should fail because there is no trust anchor for the
-   * redis server certificate.
-   * 
+   * Tests opening an SSL/TLS connection to redis with an empty certificate trust store. This test
+   * should fail because there is no trust anchor for the redis server certificate.
    * @throws Exception
    */
   @Test
@@ -243,25 +241,23 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.", SSLException.class,
-          e.getCause().getClass());
-      assertEquals("Unexpected second inner exception.", RuntimeException.class,
-          e.getCause().getCause().getClass());
-      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
-          e.getCause().getCause().getCause().getClass());
+      assertEquals("Unexpected first inner exception.", SSLException.class, e.getCause().getClass());
+      assertEquals("Unexpected second inner exception.", RuntimeException.class, e.getCause()
+          .getCause().getClass());
+      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class, e
+          .getCause().getCause().getCause().getClass());
     }
   }
 
   /**
-   * Creates an SSLSocketFactory that trusts all certificates in
-   * truststore.jceks.
+   * Creates an SSLSocketFactory that trusts all certificates in truststore.jceks.
    */
   static SSLSocketFactory createTrustStoreSslSocketFactory() throws Exception {
 
     KeyStore trustStore = KeyStore.getInstance("jceks");
-    try (InputStream inputStream = new FileInputStream("src/test/resources/truststore.jceks")){
+    try (InputStream inputStream = new FileInputStream("src/test/resources/truststore.jceks")) {
       trustStore.load(inputStream, null);
-    } 
+    }
 
     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
     trustManagerFactory.init(trustStore);
@@ -273,34 +269,29 @@ public class SSLJedisWithCompleteCredentialsTest {
   }
 
   /**
-   * Creates an SSLSocketFactory with a trust manager that does not trust any
-   * certificates.
+   * Creates an SSLSocketFactory with a trust manager that does not trust any certificates.
    */
   static SSLSocketFactory createTrustNoOneSslSocketFactory() throws Exception {
-    TrustManager[] unTrustManagers = new TrustManager[] {
-      new X509TrustManager() {
-        public X509Certificate[] getAcceptedIssuers() {
-          return new X509Certificate[0];
-        }
-  
-        public void checkClientTrusted(X509Certificate[] chain, String authType) {
-          throw new RuntimeException(new InvalidAlgorithmParameterException());
-        }
-  
-        public void checkServerTrusted(X509Certificate[] chain, String authType) {
-          throw new RuntimeException(new InvalidAlgorithmParameterException());
-        }
+    TrustManager[] unTrustManagers = new TrustManager[] { new X509TrustManager() {
+      public X509Certificate[] getAcceptedIssuers() {
+        return new X509Certificate[0];
       }
-    };
+
+      public void checkClientTrusted(X509Certificate[] chain, String authType) {
+        throw new RuntimeException(new InvalidAlgorithmParameterException());
+      }
+
+      public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        throw new RuntimeException(new InvalidAlgorithmParameterException());
+      }
+    } };
     SSLContext sslContext = SSLContext.getInstance("TLS");
     sslContext.init(null, unTrustManagers, new SecureRandom());
     return sslContext.getSocketFactory();
   }
 
   /**
-   * Very basic hostname verifier implementation for testing. NOT recommended
-   * for production.
-   * 
+   * Very basic hostname verifier implementation for testing. NOT recommended for production.
    */
   static class BasicHostnameVerifier implements HostnameVerifier {
 
@@ -312,7 +303,7 @@ public class SSLJedisWithCompleteCredentialsTest {
       try {
         peerCertificate = (X509Certificate) session.getPeerCertificates()[0];
       } catch (SSLPeerUnverifiedException e) {
-        throw new IllegalStateException("The session does not contain a peer X.509 certificate.",  e);
+        throw new IllegalStateException("The session does not contain a peer X.509 certificate.", e);
       }
       String peerCertificateCN = getCommonName(peerCertificate);
       return hostname.equals(peerCertificateCN);

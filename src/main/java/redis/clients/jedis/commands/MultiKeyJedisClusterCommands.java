@@ -86,8 +86,8 @@ public interface MultiKeyJedisClusterCommands {
 
   Set<String> keys(String pattern);
 
-  Long georadiusStore(String key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+  Long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
   Long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
@@ -100,7 +100,8 @@ public interface MultiKeyJedisClusterCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
+  List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block,
+      Map.Entry<String, StreamEntryID>... streams);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
@@ -113,6 +114,7 @@ public interface MultiKeyJedisClusterCommands {
    * @param streams
    * @return
    */
-  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
+      int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
 }

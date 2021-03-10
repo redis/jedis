@@ -212,7 +212,7 @@ public class Connection implements Closeable {
     if (socketParamModified) { // this is only for backward compatibility
       try {
         disconnect();
-      } catch(Exception e) {
+      } catch (Exception e) {
         // swallow
       }
     }

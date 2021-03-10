@@ -540,5 +540,5 @@ public interface JedisClusterCommands {
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
-  Long waitReplicas(final String key, final int replicas, final long timeout);
+  Long waitReplicas(String key, int replicas, long timeout);
 }

@@ -68,15 +68,16 @@ public class JedisTest extends JedisCommandTestBase {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .withPassword("foobared").build())) {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().withPassword("foobared")
+        .build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithConfigInterface() {
-    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {})) {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+    })) {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }
@@ -100,7 +101,7 @@ public class JedisTest extends JedisCommandTestBase {
     try {
       jedis.hmget("foobar", "foo");
       fail("Operation should throw JedisConnectionException");
-    } catch(JedisConnectionException jce) {
+    } catch (JedisConnectionException jce) {
       // expected
     }
     jedis.close();
@@ -119,7 +120,7 @@ public class JedisTest extends JedisCommandTestBase {
       try {
         timeoutJedis.blpop(0, "foo");
         fail("SocketTimeoutException should occur");
-      } catch(JedisConnectionException jce) {
+      } catch (JedisConnectionException jce) {
         assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
         assertEquals("Read timed out", jce.getCause().getMessage());
         assertTrue(timeoutJedis.isBroken());

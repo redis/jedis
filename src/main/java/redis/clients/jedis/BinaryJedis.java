@@ -392,7 +392,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.get(key);
     return client.getBinaryBulkReply();
   }
-  
+
   /**
    * Get the value of key and delete the key. This command is similar to GET, except for the fact
    * that it also deletes the key on success (if and only if the key's value type is a string).
@@ -1835,14 +1835,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
    * <b>Example:</b>
-   * 
+   *
    * <pre>
    * key1 = [x, a, b, c]
    * key2 = [c]
    * key3 = [a, d]
    * SDIFF key1,key2,key3 =&gt; [x, b]
    * </pre>
-   * 
+   *
    * Non existing keys are considered like empty sets.
    * <p>
    * <b>Time complexity:</b>
@@ -1939,6 +1939,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zaddIncr(key, score, member, params);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
@@ -2198,65 +2205,65 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <b>examples:</b>
    * <p>
    * Given are the following sets and key/values:
-   * 
+   *
    * <pre>
    * x = [1, 2, 3]
    * y = [a, b, c]
-   * 
+   *
    * k1 = z
    * k2 = y
    * k3 = x
-   * 
+   *
    * w1 = 9
    * w2 = 8
    * w3 = 7
    * </pre>
-   * 
+   *
    * Sort Order:
-   * 
+   *
    * <pre>
    * sort(x) or sort(x, sp.asc())
    * -&gt; [1, 2, 3]
-   * 
+   *
    * sort(x, sp.desc())
    * -&gt; [3, 2, 1]
-   * 
+   *
    * sort(y)
    * -&gt; [c, a, b]
-   * 
+   *
    * sort(y, sp.alpha())
    * -&gt; [a, b, c]
-   * 
+   *
    * sort(y, sp.alpha().desc())
    * -&gt; [c, a, b]
    * </pre>
-   * 
+   *
    * Limit (e.g. for Pagination):
-   * 
+   *
    * <pre>
    * sort(x, sp.limit(0, 2))
    * -&gt; [1, 2]
-   * 
+   *
    * sort(y, sp.alpha().desc().limit(1, 2))
    * -&gt; [b, a]
    * </pre>
-   * 
+   *
    * Sorting by external keys:
-   * 
+   *
    * <pre>
    * sort(x, sb.by(w*))
    * -&gt; [3, 2, 1]
-   * 
+   *
    * sort(x, sb.by(w*).desc())
    * -&gt; [1, 2, 3]
    * </pre>
-   * 
+   *
    * Getting external keys:
-   * 
+   *
    * <pre>
    * sort(x, sp.by(w*).get(k*))
    * -&gt; [x, y, z]
-   * 
+   *
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
@@ -3190,7 +3197,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <b>Format of the returned String:</b>
    * <p>
    * All the fields are in the form field:value
-   * 
+   *
    * <pre>
    * edis_version:0.07
    * connected_clients:1
@@ -3203,7 +3210,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * uptime_in_seconds:25
    * uptime_in_days:0
    * </pre>
-   * 
+   *
    * <b>Notes</b>
    * <p>
    * used_memory is returned in bytes, and is the total number of bytes allocated by the program
@@ -3285,7 +3292,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * are reported as a list of key-value pairs.
    * <p>
    * <b>Example:</b>
-   * 
+   *
    * <pre>
    * $ redis-cli config get '*'
    * 1. "dbfilename"
@@ -3300,7 +3307,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * 10. "everysec"
    * 11. "save"
    * 12. "3600 1 300 100 60 10000"
-   * 
+   *
    * $ redis-cli config get 'm*'
    * 1. "masterauth"
    * 2. (nil)
@@ -3332,7 +3339,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * The CONFIG REWRITE command rewrites the redis.conf file the server was started with, applying
    * the minimal changes needed to make it reflect the configuration currently used by the server,
    * which may be different compared to the original one because of the use of the CONFIG SET command.
-   * 
+   *
    * The rewrite is performed in a very conservative way:
    * <ul>
    * <li>Comments and the overall structure of the original redis.conf are preserved as much as possible.</li>
@@ -3342,7 +3349,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <li>Non used lines are blanked. For instance if you used to have multiple save directives, but
    * the current configuration has fewer or none as you disabled RDB persistence, all the lines will be blanked.</li>
    * </ul>
-   * 
+   *
    * CONFIG REWRITE is also able to rewrite the configuration file from scratch if the original one
    * no longer exists for some reason. However if the server was started without a configuration
    * file at all, the CONFIG REWRITE will just return an error.
@@ -3820,14 +3827,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.memoryDoctor();
     return client.getBinaryBulkReply();
   }
-  
+
   @Override
   public Long memoryUsage(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.memoryUsage(key);
     return client.getIntegerReply();
   }
-  
+
   @Override
   public Long memoryUsage(final byte[] key, final int samples) {
     checkIsInMultiOrPipeline();
@@ -4192,7 +4199,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.georadiusReadonly(key, longitude, latitude, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
-  
+
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit) {
@@ -4390,28 +4397,28 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
     checkIsInMultiOrPipeline();
     client.xadd(key, id, hash, maxLen, approximateLength);
-    return client.getBinaryBulkReply();  
+    return client.getBinaryBulkReply();
   }
 
   @Override
   public Long xlen(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xlen(key);
-    return client.getIntegerReply();  
+    return client.getIntegerReply();
   }
 
   @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
-    return client.getBinaryMultiBulkReply();  
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     checkIsInMultiOrPipeline();
     client.xrevrange(key, end, start, count);
-    return client.getBinaryMultiBulkReply();  
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override

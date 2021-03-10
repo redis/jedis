@@ -53,7 +53,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.get(key);
   }
-  
+
   @Override
   public String getDel(final String key) {
     Jedis j = getShard(key);
@@ -548,6 +548,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers, params);
+  }
+
+  @Override
+  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
   }
 
   @Override
@@ -1052,7 +1058,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.xadd(key, id, hash);
   }
-  
+
   @Override
   public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
@@ -1064,7 +1070,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     Jedis j = getShard(key);
     return j.xlen(key);
   }
-  
+
   @Override
   public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
     Jedis j = getShard(key);

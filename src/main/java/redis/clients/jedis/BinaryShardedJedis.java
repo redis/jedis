@@ -90,7 +90,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     Jedis j = getShard(key);
     return j.getDel(key);
   }
-  
+
   @Override
   public Boolean exists(final byte[] key) {
     Jedis j = getShard(key);
@@ -521,6 +521,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers, params);
+  }
+
+  @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
   }
 
   @Override

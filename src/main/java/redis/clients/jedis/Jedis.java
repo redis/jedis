@@ -241,7 +241,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.getDel(key);
     return client.getBulkReply();
   }
-  
+
   /**
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
@@ -1519,14 +1519,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
    * <b>Example:</b>
-   * 
+   *
    * <pre>
    * key1 = [x, a, b, c]
    * key2 = [c]
    * key3 = [a, d]
    * SDIFF key1,key2,key3 =&gt; [x, b]
    * </pre>
-   * 
+   *
    * Non existing keys are considered like empty sets.
    * <p>
    * <b>Time complexity:</b>
@@ -1624,6 +1624,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zaddIncr(key, score, member, params);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
@@ -1861,65 +1868,65 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <b>examples:</b>
    * <p>
    * Given are the following sets and key/values:
-   * 
+   *
    * <pre>
    * x = [1, 2, 3]
    * y = [a, b, c]
-   * 
+   *
    * k1 = z
    * k2 = y
    * k3 = x
-   * 
+   *
    * w1 = 9
    * w2 = 8
    * w3 = 7
    * </pre>
-   * 
+   *
    * Sort Order:
-   * 
+   *
    * <pre>
    * sort(x) or sort(x, sp.asc())
    * -&gt; [1, 2, 3]
-   * 
+   *
    * sort(x, sp.desc())
    * -&gt; [3, 2, 1]
-   * 
+   *
    * sort(y)
    * -&gt; [c, a, b]
-   * 
+   *
    * sort(y, sp.alpha())
    * -&gt; [a, b, c]
-   * 
+   *
    * sort(y, sp.alpha().desc())
    * -&gt; [c, a, b]
    * </pre>
-   * 
+   *
    * Limit (e.g. for Pagination):
-   * 
+   *
    * <pre>
    * sort(x, sp.limit(0, 2))
    * -&gt; [1, 2]
-   * 
+   *
    * sort(y, sp.alpha().desc().limit(1, 2))
    * -&gt; [b, a]
    * </pre>
-   * 
+   *
    * Sorting by external keys:
-   * 
+   *
    * <pre>
    * sort(x, sb.by(w*))
    * -&gt; [3, 2, 1]
-   * 
+   *
    * sort(x, sb.by(w*).desc())
    * -&gt; [1, 2, 3]
    * </pre>
-   * 
+   *
    * Getting external keys:
-   * 
+   *
    * <pre>
    * sort(x, sp.by(w*).get(k*))
    * -&gt; [x, y, z]
-   * 
+   *
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
@@ -2006,8 +2013,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   private String[] getArgsAddTimeout(int timeout, String[] keys) {
     final int keyCount = keys.length;
     final String[] args = new String[keyCount + 1];
-    
-    System.arraycopy(keys, 0, args, 0, keyCount);  
+
+    System.arraycopy(keys, 0, args, 0, keyCount);
 
     args[keyCount] = String.valueOf(timeout);
     return args;
@@ -2488,7 +2495,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @param key
    * @param start
    * @param stop
-   * @return 
+   * @return
    */
   @Override
   public Long zremrangeByRank(final String key, final long start, final long stop) {
@@ -2860,7 +2867,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * are reported as a list of key-value pairs.
    * <p>
    * <b>Example:</b>
-   * 
+   *
    * <pre>
    * $ redis-cli config get '*'
    * 1. "dbfilename"
@@ -2875,7 +2882,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * 10. "everysec"
    * 11. "save"
    * 12. "3600 1 300 100 60 10000"
-   * 
+   *
    * $ redis-cli config get 'm*'
    * 1. "masterauth"
    * 2. (nil)
@@ -3125,7 +3132,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *    22) "2"
    *    23) "quorum"
    *    24) "2"
-   * 
+   *
    * </pre>
    * @return
    */
@@ -3919,26 +3926,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.memoryDoctor();
     return client.getBulkReply();
   }
-  
+
   @Override
   public Long memoryUsage(final String key) {
     checkIsInMultiOrPipeline();
     client.memoryUsage(key);
     return client.getIntegerReply();
   }
-  
+
   @Override
   public Long memoryUsage(final String key, final int samples) {
     checkIsInMultiOrPipeline();
     client.memoryUsage(key, samples);
     return client.getIntegerReply();
   }
-      
+
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     return xadd(key, id, hash, Long.MAX_VALUE, false);
   }
-  
+
   @Override
   public StreamEntryID xadd(final String key, StreamEntryID id, final Map<String, String> hash, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
@@ -3963,7 +3970,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xrange(key, start, end, count);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
-  
+
   /**
    * {@inheritDoc}
    */
@@ -3983,13 +3990,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.xread(count, block, streams);
     client.setTimeoutInfinite();
-    
+
     try {
       List<Object> streamsEntries = client.getObjectMultiBulkReply();
       if(streamsEntries == null) {
         return new ArrayList<>();
       }
-      
+
       List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
       for(Object streamObj : streamsEntries) {
         List<Object> stream = (List<Object>)streamObj;
@@ -3997,7 +4004,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
         List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
         result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
       }
-      
+
       return result;
     } finally {
       client.rollbackTimeout();
@@ -4071,7 +4078,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       if(streamsEntries == null) {
         return null;
       }
-      
+
       List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
       for(Object streamObj : streamsEntries) {
         List<Object> stream = (List<Object>)streamObj;
@@ -4092,7 +4099,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xpending(key, groupname, start, end, count, consumername);
 
     // TODO handle consumername == NULL case
-    
+
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
@@ -4101,7 +4108,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       int retries, boolean force, StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim( key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
-    
+
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 

@@ -73,7 +73,7 @@ public class Client extends BinaryClient implements Commands {
   public void ping(final String message) {
     ping(SafeEncoder.encode(message));
   }
-  
+
   @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));
@@ -88,7 +88,7 @@ public class Client extends BinaryClient implements Commands {
   public void get(final String key) {
     get(SafeEncoder.encode(key));
   }
-  
+
   @Override
   public void getDel(final String key) {
     getDel(SafeEncoder.encode(key));
@@ -468,6 +468,11 @@ public class Client extends BinaryClient implements Commands {
   public void zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
     HashMap<byte[], Double> binaryScoreMembers = convertScoreMembersToBinary(scoreMembers);
     zadd(SafeEncoder.encode(key), binaryScoreMembers, params);
+  }
+
+  @Override
+  public void zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    zaddIncr(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
   }
 
   @Override
@@ -973,11 +978,11 @@ public class Client extends BinaryClient implements Commands {
   public void srandmember(final String key, final int count) {
     srandmember(SafeEncoder.encode(key), count);
   }
-  
+
   public void memoryUsage(final String key) {
     memoryUsage(SafeEncoder.encode(key));
   }
-  
+
   public void memoryUsage(final String key, final int samples) {
     memoryUsage(SafeEncoder.encode(key), samples);
   }
@@ -1301,22 +1306,22 @@ public class Client extends BinaryClient implements Commands {
     }
     xadd(SafeEncoder.encode(key), SafeEncoder.encode(id==null ? "*" : id.toString()), bhash, maxLen, approximateLength);
   }
-  
+
   @Override
   public void xlen(final String key) {
 	  xlen(SafeEncoder.encode(key));
   }
-  
+
   @Override
   public void xrange(final String key, final StreamEntryID start, final  StreamEntryID end, final long count) {
 	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
   }
-  
+
   @Override
   public void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
     xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end==null ? "+" : end.toString()), SafeEncoder.encode(start==null ? "-" : start.toString()), count);
   }
-  
+
   @Override
   public void xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
@@ -1325,17 +1330,17 @@ public class Client extends BinaryClient implements Commands {
     }
     xread(count, block, bhash);
   }
-  
+
   @Override
   public void xack(final String key, final String group, final StreamEntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
     for (int i=0 ; i< ids.length; ++i ) {
       StreamEntryID id = ids[i];
-      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
+      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString());
     }
     xack(SafeEncoder.encode(key), SafeEncoder.encode(group), bids);
   }
-  
+
   @Override
   public void xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
     xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()), makeStream);
@@ -1343,17 +1348,17 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void xgroupSetID(String key, String groupname, StreamEntryID id) {
-    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()));    
+    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()));
   }
 
   @Override
   public void xgroupDestroy(String key, String groupname) {
-    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(groupname));    
+    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
   }
 
   @Override
   public void xgroupDelConsumer(String key, String groupname, String consumerName) {
-    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(consumerName));    
+    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(consumerName));
   }
 
   @Override
@@ -1361,14 +1366,14 @@ public class Client extends BinaryClient implements Commands {
     final byte[][] bids = new byte[ids.length][];
     for (int i=0 ; i< ids.length; ++i ) {
       StreamEntryID id = ids[i];
-      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
+      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString());
     }
-    xdel(SafeEncoder.encode(key), bids);    
+    xdel(SafeEncoder.encode(key), bids);
   }
 
   @Override
   public void xtrim(String key, long maxLen, boolean approximateLength) {
-    xtrim(SafeEncoder.encode(key), maxLen, approximateLength);    
+    xtrim(SafeEncoder.encode(key), maxLen, approximateLength);
   }
 
   @Override
@@ -1377,24 +1382,24 @@ public class Client extends BinaryClient implements Commands {
     for (final Entry<String, StreamEntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? ">" : entry.getValue().toString()));
     }
-    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);    
+    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);
   }
 
   @Override
   public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
-        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));    
+        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));
   }
 
   @Override
   public void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
       boolean force, StreamEntryID... ids) {
-    
+
     final byte[][] bids = new byte[ids.length][];
     for (int i = 0; i < ids.length; i++) {
       bids[i] = SafeEncoder.encode(ids[i].toString());
     }
-    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);
   }
 
   @Override
@@ -1417,5 +1422,5 @@ public class Client extends BinaryClient implements Commands {
     xinfoConsumers(SafeEncoder.encode(key),SafeEncoder.encode(group));
 
   }
- 
+
 }

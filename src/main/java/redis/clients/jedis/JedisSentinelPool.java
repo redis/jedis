@@ -22,13 +22,22 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected static Logger log = LoggerFactory.getLogger(JedisSentinelPool.class);
 
   protected final GenericObjectPoolConfig<Jedis> poolConfig;
-  protected final JedisFactory factory;
+  private final JedisFactory factory;
 
-  protected int sentinelConnectionTimeout;
-  protected int sentinelSoTimeout;
-  protected String sentinelUser;
-  protected String sentinelPassword;
-  protected String sentinelClientName;
+  @Deprecated protected int connectionTimeout;
+  @Deprecated protected int soTimeout;
+  @Deprecated protected int infiniteSoTimeout;
+
+  @Deprecated protected String user;
+  @Deprecated protected String password;
+  @Deprecated protected int database;
+  @Deprecated protected String clientName;
+
+  @Deprecated protected int sentinelConnectionTimeout;
+  @Deprecated protected int sentinelSoTimeout;
+  @Deprecated protected String sentinelUser;
+  @Deprecated protected String sentinelPassword;
+  @Deprecated protected String sentinelClientName;
 
   protected final Set<MasterListener> masterListeners = new HashSet<>();
 
@@ -152,25 +161,25 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
       final String sentinelPassword, final String sentinelClientName) {
     this(masterName, sentinels, poolConfig, new JedisFactory(connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName));
-  }
-
-  public JedisSentinelPool(String masterName, Set<String> sentinels, final GenericObjectPoolConfig poolConfig, final JedisFactory factory) {
-    this(masterName, sentinels, poolConfig, factory, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, null, null);
-  }
-
-  public JedisSentinelPool(String masterName, Set<String> sentinels,
-      final GenericObjectPoolConfig poolConfig, final JedisFactory factory,
-      final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
-      final String sentinelPassword, final String sentinelClientName) {
-    super(poolConfig, factory);
-    this.poolConfig = poolConfig;
-    this.factory = factory;
-
+    this.connectionTimeout = connectionTimeout;
+    this.soTimeout = soTimeout;
+    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.user = user;
+    this.password = password;
+    this.database = database;
+    this.clientName = clientName;
     this.sentinelConnectionTimeout = sentinelConnectionTimeout;
     this.sentinelSoTimeout = sentinelSoTimeout;
     this.sentinelUser = sentinelUser;
     this.sentinelPassword = sentinelPassword;
     this.sentinelClientName = sentinelClientName;
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig<Jedis> poolConfig, final JedisFactory factory) {
+    super(poolConfig, factory);
+    this.poolConfig = poolConfig;
+    this.factory = factory;
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initMaster(master);

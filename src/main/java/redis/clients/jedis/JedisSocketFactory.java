@@ -8,7 +8,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * JedisSocketFactory: responsible for creating socket connections
  * from the within the Jedis client, the default socket factory will
  * create TCP sockets with the recommended configuration.
- *
+ * <p>
  * You can use a custom JedisSocketFactory for many use cases, such as:
  * - a custom address resolver
  * - a unix domain socket
@@ -24,21 +24,30 @@ public interface JedisSocketFactory {
    */
   Socket createSocket() throws IOException, JedisConnectionException;
 
-  @Deprecated String getDescription();
+  @Deprecated
+  String getDescription();
 
-  @Deprecated String getHost();
+  @Deprecated
+  String getHost();
 
-  @Deprecated void setHost(String host);
+  @Deprecated
+  void setHost(String host);
 
-  @Deprecated int getPort();
+  @Deprecated
+  int getPort();
 
-  @Deprecated void setPort(int port);
+  @Deprecated
+  void setPort(int port);
 
-  @Deprecated int getConnectionTimeout();
+  @Deprecated
+  int getConnectionTimeout();
 
-  @Deprecated void setConnectionTimeout(int connectionTimeout);
+  @Deprecated
+  void setConnectionTimeout(int connectionTimeout);
 
-  @Deprecated int getSoTimeout();
+  @Deprecated
+  int getSoTimeout();
 
-  @Deprecated void setSoTimeout(int soTimeout);
+  @Deprecated
+  void setSoTimeout(int soTimeout);
 }

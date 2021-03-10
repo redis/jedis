@@ -194,44 +194,45 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void testBitfield() {
-    List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    List<Long> responses = jedis.bitfield("mykey", "INCRBY", "i5", "100", "1", "GET", "u4", "0");
     assertEquals(1L, responses.get(0).longValue());
     assertEquals(0L, responses.get(1).longValue());
   }
 
   @Test
   public void testBitfieldReadonly() {
-    List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    List<Long> responses = jedis.bitfield("mykey", "INCRBY", "i5", "100", "1", "GET", "u4", "0");
     assertEquals(1L, responses.get(0).longValue());
     assertEquals(0L, responses.get(1).longValue());
 
     List<Long> responses2 = jedis.bitfieldReadonly("mykey", "GET", "i5", "100");
     assertEquals(1L, responses2.get(0).longValue());
-    
+
     try {
-      jedis.bitfieldReadonly("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+      jedis.bitfieldReadonly("mykey", "INCRBY", "i5", "100", "1", "GET", "u4", "0");
       fail("Readonly command shouldn't allow INCRBY");
-    }catch(JedisDataException e) {}
+    } catch (JedisDataException e) {
+    }
   }
 
   @Test
   public void testBinaryBitfield() {
-    List<Long> responses = jedis.bitfield(SafeEncoder.encode("mykey"), SafeEncoder.encode("INCRBY"),
-            SafeEncoder.encode("i5"), SafeEncoder.encode("100"), SafeEncoder.encode("1"),
-            SafeEncoder.encode("GET"), SafeEncoder.encode("u4"), SafeEncoder.encode("0")
-    );
+    List<Long> responses = jedis.bitfield(SafeEncoder.encode("mykey"),
+      SafeEncoder.encode("INCRBY"), SafeEncoder.encode("i5"), SafeEncoder.encode("100"),
+      SafeEncoder.encode("1"), SafeEncoder.encode("GET"), SafeEncoder.encode("u4"),
+      SafeEncoder.encode("0"));
     assertEquals(1L, responses.get(0).longValue());
     assertEquals(0L, responses.get(1).longValue());
   }
 
   @Test
   public void testBinaryBitfieldReadonly() {
-    List<Long> responses = jedis.bitfield("mykey", "INCRBY","i5","100","1", "GET", "u4", "0");
+    List<Long> responses = jedis.bitfield("mykey", "INCRBY", "i5", "100", "1", "GET", "u4", "0");
     assertEquals(1L, responses.get(0).longValue());
     assertEquals(0L, responses.get(1).longValue());
 
-    List<Long> responses2 = jedis.bitfieldReadonly(SafeEncoder.encode("mykey"), SafeEncoder.encode("GET"),
-        SafeEncoder.encode("i5"), SafeEncoder.encode("100"));
+    List<Long> responses2 = jedis.bitfieldReadonly(SafeEncoder.encode("mykey"),
+      SafeEncoder.encode("GET"), SafeEncoder.encode("i5"), SafeEncoder.encode("100"));
     assertEquals(1L, responses2.get(0).longValue());
   }
 

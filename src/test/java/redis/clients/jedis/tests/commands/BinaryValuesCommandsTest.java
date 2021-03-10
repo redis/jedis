@@ -133,7 +133,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setAndPxat() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().pxAt(System.currentTimeMillis() + expireMillis));
+    String status = jedis.set(bfoo, binaryValue,
+      setParams().nx().pxAt(System.currentTimeMillis() + expireMillis));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
@@ -141,7 +142,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setAndExat() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds));
+    String status = jedis.set(bfoo, binaryValue,
+      setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
@@ -320,7 +322,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void sendCommandTest(){
+  public void sendCommandTest() {
     Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
     String returnValue = SafeEncoder.encode((byte[]) obj);
     assertEquals("OK", returnValue);
@@ -328,11 +330,11 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     returnValue = SafeEncoder.encode((byte[]) obj);
     assertEquals("1", returnValue);
 
-    jedis.sendCommand(RPUSH,"foo".getBytes(), "a".getBytes());
-    jedis.sendCommand(RPUSH,"foo".getBytes(), "b".getBytes());
-    jedis.sendCommand(RPUSH,"foo".getBytes(), "c".getBytes());
+    jedis.sendCommand(RPUSH, "foo".getBytes(), "a".getBytes());
+    jedis.sendCommand(RPUSH, "foo".getBytes(), "b".getBytes());
+    jedis.sendCommand(RPUSH, "foo".getBytes(), "c".getBytes());
 
-    obj = jedis.sendCommand(LRANGE,"foo".getBytes(), "0".getBytes(), "2".getBytes());
+    obj = jedis.sendCommand(LRANGE, "foo".getBytes(), "0".getBytes(), "2".getBytes());
     List<byte[]> list = (List<byte[]>) obj;
     List<byte[]> expected = new ArrayList<>(3);
     expected.add("a".getBytes());
@@ -347,7 +349,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
 
     jedis.sendCommand(RPUSH, bfoo, bbar);
-    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L));
+    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo,
+      Protocol.toByteArray(1L));
     assertEquals(2, blpop.size());
     assertArrayEquals(bfoo, blpop.get(0));
     assertArrayEquals(bbar, blpop.get(1));

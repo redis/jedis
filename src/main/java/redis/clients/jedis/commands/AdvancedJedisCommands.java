@@ -33,7 +33,8 @@ public interface AdvancedJedisCommands {
 
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      String... keys);
 
   String clientKill(String ipPort);
 
@@ -50,9 +51,9 @@ public interface AdvancedJedisCommands {
   Long clientId();
 
   String memoryDoctor();
-  
+
   Long memoryUsage(String key);
-  
+
   Long memoryUsage(String key, int samples);
 
   String aclWhoAmI();

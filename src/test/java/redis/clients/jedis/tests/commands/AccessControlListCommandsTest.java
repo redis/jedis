@@ -26,7 +26,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   @BeforeClass
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
+        RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -74,7 +75,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     AccessControlUser userInfo = jedis.aclGetUser("default");
 
     System.err.println("userInfo.getFlags(): " + userInfo.getFlags());
-    
+
     assertEquals(4, userInfo.getFlags().size());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
@@ -299,12 +300,12 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   @Test
   public void aclCatTest() {
     List<String> categories = jedis.aclCat();
-    assertTrue( !categories.isEmpty() );
+    assertTrue(!categories.isEmpty());
 
     // test binary
     List<byte[]> categoriesBinary = jedis.aclCatBinary();
-    assertTrue( !categories.isEmpty() );
-    assertEquals( categories.size() , categoriesBinary.size());
+    assertTrue(!categories.isEmpty());
+    assertEquals(categories.size(), categoriesBinary.size());
 
     // test commands in a category
     assertTrue(!jedis.aclCat("scripting").isEmpty());
@@ -331,7 +332,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     try {
       jedis.get("foo");
       fail("Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
-    } catch(JedisAccessControlException e) {}
+    } catch (JedisAccessControlException e) {
+    }
 
     // test the ACL Log
     jedis.auth("default", "foobared");
@@ -349,12 +351,13 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
     jedis.auth("antirez", "foo");
 
-    for(int i = 0; i < 10 ; i++ ) {
+    for (int i = 0; i < 10; i++) {
       // generate an error (antirez user does not have the permission to access foo)
       try {
         jedis.get("foo");
         fail("Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
-      } catch (JedisAccessControlException e) {}
+      } catch (JedisAccessControlException e) {
+      }
     }
 
     // test the ACL Log
@@ -368,7 +371,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     try {
       jedis.set("somekeynotallowed", "1234");
       fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"somekeynotallowed\", \"1234\")");
-    } catch (JedisAccessControlException e) {}
+    } catch (JedisAccessControlException e) {
+    }
 
     // test the ACL Log
     jedis.auth("default", "foobared");
@@ -383,10 +387,11 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.auth("antirez", "foo");
     Transaction t = jedis.multi();
     t.incr("foo");
-    try{
+    try {
       t.exec();
       fail("Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
-    } catch (Exception e){}
+    } catch (Exception e) {
+    }
     t.close();
 
     jedis.auth("default", "foobared");
@@ -395,24 +400,26 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("multi", jedis.aclLog().get(0).getContext());
     assertEquals("incr", jedis.aclLog().get(0).getObject());
 
-     // ACL LOG can accept a numerical argument to show less entries
+    // ACL LOG can accept a numerical argument to show less entries
     jedis.auth("antirez", "foo");
     for (int i = 0; i < 5; i++) {
-      try{
+      try {
         jedis.incr("foo");
         fail("Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
-      } catch (JedisAccessControlException e){}
+      } catch (JedisAccessControlException e) {
+      }
     }
-    try{
+    try {
       jedis.set("foo-2", "bar");
       fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"foo-2\", \"bar\")");
-    } catch (JedisAccessControlException e){}
+    } catch (JedisAccessControlException e) {
+    }
 
     jedis.auth("default", "foobared");
     assertEquals("Number of log messages ", 3, jedis.aclLog().size());
     assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
 
-     // Binary tests
+    // Binary tests
     assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
     assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
     byte[] status = jedis.aclLog("RESET".getBytes());
@@ -424,12 +431,12 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void aclGenPass() {
-    assertNotNull( jedis.aclGenPass() );
+    assertNotNull(jedis.aclGenPass());
   }
 
   @Test
   public void aclGenPassBinary() {
-    assertNotNull( jedis.aclGenPassBinary() );
+    assertNotNull(jedis.aclGenPassBinary());
   }
 
   @Test
@@ -439,14 +446,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
     assertEquals(Long.valueOf(1L), jedis.aclDelUser(USER_ZZZ.getBytes()));
 
-    jedis.aclSetUser(USER_ZZZ.getBytes(),
-            "reset".getBytes(),
-            "+@all".getBytes(),
-            "~*".getBytes(),
-            "-@string".getBytes(),
-            "+incr".getBytes(),
-            "-debug".getBytes(),
-            "+debug|digest".getBytes());
+    jedis.aclSetUser(USER_ZZZ.getBytes(), "reset".getBytes(), "+@all".getBytes(), "~*".getBytes(),
+      "-@string".getBytes(), "+incr".getBytes(), "-debug".getBytes(), "+debug|digest".getBytes());
 
     AccessControlUser userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
 

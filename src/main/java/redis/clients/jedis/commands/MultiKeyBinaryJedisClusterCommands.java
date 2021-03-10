@@ -82,13 +82,14 @@ public interface MultiKeyBinaryJedisClusterCommands {
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
   Set<byte[]> keys(byte[] pattern);
-  
-  List<byte[]> xread(final int count, final long block, final Map<byte[], byte[]> streams);
-  
-  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams);
 
-  Long georadiusStore(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+  List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams);
+
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
+      Map<byte[], byte[]> streams);
+
+  Long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
   Long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

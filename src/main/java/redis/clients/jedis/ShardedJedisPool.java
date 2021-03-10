@@ -17,22 +17,23 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
   private static final Logger logger = LoggerFactory.getLogger(ShardedJedisPool.class);
 
-  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig, List<JedisShardInfo> shards) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards) {
     this(poolConfig, shards, Hashing.MURMUR_HASH);
   }
 
-  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig, List<JedisShardInfo> shards,
-      Hashing algo) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards, Hashing algo) {
     this(poolConfig, shards, algo, null);
   }
 
-  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig, List<JedisShardInfo> shards,
-      Pattern keyTagPattern) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards, Pattern keyTagPattern) {
     this(poolConfig, shards, Hashing.MURMUR_HASH, keyTagPattern);
   }
 
-  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig, List<JedisShardInfo> shards,
-      Hashing algo, Pattern keyTagPattern) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
     super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
   }
 

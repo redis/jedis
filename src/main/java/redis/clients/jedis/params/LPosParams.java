@@ -10,7 +10,7 @@ public class LPosParams extends Params {
 
   private static final String RANK = "RANK";
   private static final String MAXLEN = "MAXLEN";
-  
+
   public static LPosParams lPosParams() {
     return new LPosParams();
   }
@@ -19,7 +19,7 @@ public class LPosParams extends Params {
     addParam(RANK, rank);
     return this;
   }
-  
+
   public LPosParams maxlen(int maxLen) {
     addParam(MAXLEN, maxLen);
     return this;

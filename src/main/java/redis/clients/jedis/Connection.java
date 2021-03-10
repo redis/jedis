@@ -83,7 +83,7 @@ public class Connection implements Closeable {
 
   @Override
   public String toString() {
-    return "Connection{" + jedisSocketFactory + "}";
+    return "Connection{" + socketFactory + "}";
   }
 
   public Socket getSocket() {

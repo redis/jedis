@@ -564,7 +564,7 @@ public class BinaryClient extends Connection {
   }
 
   public void zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
-    sendCommand(ZADD, params.incr().getByteParams(key, toByteArray(score), member));
+    sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
   }
 
   public void zrange(final byte[] key, final long start, final long stop) {

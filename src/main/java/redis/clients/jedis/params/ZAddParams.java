@@ -12,7 +12,6 @@ public class ZAddParams extends Params {
   private static final String CH = "ch";
   private static final String LT = "lt";
   private static final String GT = "gt";
-  private static final String INCR = "incr";
 
   public ZAddParams() {
   }
@@ -67,15 +66,6 @@ public class ZAddParams extends Params {
     return this;
   }
 
-  /**
-   * Acts like ZINCRBY and only one score-element pair can be specified in this mode.
-   * @return ZAddParams
-   */
-  public ZAddParams incr() {
-    addParam(INCR);
-    return this;
-  }
-
   public byte[][] getByteParams(byte[] key, byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
     byteParams.add(key);
@@ -96,9 +86,6 @@ public class ZAddParams extends Params {
       byteParams.add(SafeEncoder.encode(GT));
     }
 
-    if (contains(INCR)) {
-      byteParams.add(SafeEncoder.encode(INCR));
-    }
     Collections.addAll(byteParams, args);
 
     return byteParams.toArray(new byte[byteParams.size()][]);

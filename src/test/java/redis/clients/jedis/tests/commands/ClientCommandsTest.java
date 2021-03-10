@@ -77,7 +77,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     long clientId1 = client.clientId();
     long clientId2 = client2.clientId();
 
-    ///client-id is monotonically increasing
+    // client-id is monotonically increasing
     assertTrue(clientId1 < clientId2);
 
     client2.close();
@@ -182,13 +182,13 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     assertDisconnected(client);
   }
 
-  private void assertDisconnected(Jedis j) {    
+  private void assertDisconnected(Jedis j) {
     try {
       j.ping();
       fail("Jedis connection should be disconnected");
-    } catch(JedisConnectionException jce) {
+    } catch (JedisConnectionException jce) {
       // should be here
-    } 
+    }
   }
 
   private String findInClientList() {

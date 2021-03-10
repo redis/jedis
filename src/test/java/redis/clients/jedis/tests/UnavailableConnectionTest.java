@@ -38,7 +38,8 @@ public class UnavailableConnectionTest {
   public static void setupAvoidQuitInDestroyObject() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
-    poolForBrokenJedis1 = new JedisPool(config, unavailableHostAndPort.getHost(), unavailableHostAndPort.getPort());
+    poolForBrokenJedis1 = new JedisPool(config, unavailableHostAndPort.getHost(),
+        unavailableHostAndPort.getPort());
     brokenJedis1 = poolForBrokenJedis1.getResource();
     threadForBrokenJedis1 = new Thread(new Runnable() {
       @Override
@@ -59,7 +60,7 @@ public class UnavailableConnectionTest {
     try {
       poolForBrokenJedis1.getResource();
       fail("Should not get connection from pool");
-    } catch(Exception ex) {
+    } catch (Exception ex) {
       assertEquals(JedisConnectionException.class, ex.getClass());
       assertEquals(JedisConnectionException.class, ex.getCause().getClass());
       assertEquals(java.net.ConnectException.class, ex.getCause().getCause().getClass());

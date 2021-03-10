@@ -360,7 +360,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void testTransactionWithGeneralCommand(){
+  public void testTransactionWithGeneralCommand() {
     Transaction t = jedis.multi();
     t.set("string", "foo");
     t.lpush("list", "foo");

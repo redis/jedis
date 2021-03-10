@@ -85,11 +85,12 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> touch(byte[]... keys);
 
-  Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
+  Response<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, byte[]... keys);
 
-  Response<Long> georadiusStore(byte[] key, double longitude, double latitude,
-      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
-
-  Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius,
+  Response<Long> georadiusStore(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

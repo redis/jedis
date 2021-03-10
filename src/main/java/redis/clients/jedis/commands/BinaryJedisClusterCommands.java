@@ -187,6 +187,8 @@ public interface BinaryJedisClusterCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
+
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
   Long zrem(byte[] key, byte[]... members);
@@ -348,20 +350,20 @@ public interface BinaryJedisClusterCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
 
   List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
-   * @return 
+   * @return
    */
   Long hstrlen(byte[] key, byte[] field);
-  
+
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(byte[] key);
@@ -377,7 +379,7 @@ public interface BinaryJedisClusterCommands {
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
   Long xack(byte[] key, byte[] group, byte[]... ids);
- 
+
   String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
   String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
@@ -385,7 +387,7 @@ public interface BinaryJedisClusterCommands {
   Long xgroupDestroy(byte[] key, byte[] consumer);
 
   Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
- 
+
   Long xdel(byte[] key, byte[]... ids);
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
@@ -395,8 +397,8 @@ public interface BinaryJedisClusterCommands {
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
   Long waitReplicas(byte[] key, int replicas, long timeout);
-  
+
   Long memoryUsage(byte[] key);
-  
+
   Long memoryUsage(byte[] key, int samples);
 }

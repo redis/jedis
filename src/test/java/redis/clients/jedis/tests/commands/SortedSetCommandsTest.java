@@ -105,12 +105,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
 
     // incr: don't update already existing elements.
-    Double r = jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().nx());
-    assertNull(r);
+    assertNull(jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().nx()));
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
     // incr: update elements that already exist.
-    r = jedis.zaddIncr("foo", 1d,"b", ZAddParams.zAddParams().xx());
-    assertEquals(Double.valueOf(3d), r);
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d,"b", ZAddParams.zAddParams().xx()));
     assertEquals(Double.valueOf(3d), jedis.zscore("foo", "b"));
 
     // binary
@@ -146,12 +144,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, bb));
 
     // incr: don't update already existing elements.
-    r = jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().nx());
-    assertNull(r);
+    assertNull(jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().nx()));
     assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, bb));
     // incr: update elements that already exist.
-    r = jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().xx());
-    assertEquals(Double.valueOf(3d), r);
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().xx()));
     assertEquals(Double.valueOf(3d), jedis.zscore(bfoo, bb));
   }
 

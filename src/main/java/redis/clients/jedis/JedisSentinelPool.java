@@ -19,13 +19,13 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   private static final Logger LOG = LoggerFactory.getLogger(JedisSentinelPool.class);
 
-  private final GenericObjectPoolConfig<Jedis> poolConfig;
+  protected final GenericObjectPoolConfig<Jedis> poolConfig;
 
-  private final JedisClientConfig masterClientConfig;
+  protected final JedisClientConfig masterClientConfig;
 
-  private final JedisClientConfig sentinelClientConfig;
+  protected final JedisClientConfig sentinelClientConfig;
 
-  private final Collection<MasterListener> masterListeners = new LinkedList<>();
+  protected final Collection<MasterListener> masterListeners = new LinkedList<>();
 
   private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;

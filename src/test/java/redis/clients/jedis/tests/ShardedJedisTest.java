@@ -328,7 +328,7 @@ public class ShardedJedisTest {
   }
 
   @Test
-  public void testGeneralCommand(){
+  public void testGeneralCommand() {
 
     List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
     JedisShardInfo si = new JedisShardInfo(redis1);

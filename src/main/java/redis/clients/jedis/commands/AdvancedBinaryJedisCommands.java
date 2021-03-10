@@ -32,7 +32,8 @@ public interface AdvancedBinaryJedisCommands {
 
   String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      byte[]... keys);
 
   String clientKill(byte[] ipPort);
 
@@ -49,7 +50,7 @@ public interface AdvancedBinaryJedisCommands {
   Long clientId();
 
   byte[] memoryDoctorBinary();
-  
+
   Long memoryUsage(byte[] key);
 
   Long memoryUsage(byte[] key, int samples);

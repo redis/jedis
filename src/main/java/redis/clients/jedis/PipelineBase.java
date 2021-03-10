@@ -182,7 +182,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).getDel(key);
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
-  
+
   @Override
   public Response<Boolean> getbit(final String key, final long offset) {
     getClient(key).getbit(key, offset);
@@ -434,13 +434,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> linsert(final String key, final ListPosition where, final String pivot, final String value) {
+  public Response<Long> linsert(final String key, final ListPosition where, final String pivot,
+      final String value) {
     getClient(key).linsert(key, where, pivot, value);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> linsert(final byte[] key, final ListPosition where, final byte[] pivot, final byte[] value) {
+  public Response<Long> linsert(final byte[] key, final ListPosition where, final byte[] pivot,
+      final byte[] value) {
     getClient(key).linsert(key, where, pivot, value);
     return getResponse(BuilderFactory.LONG);
   }
@@ -506,13 +508,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<Long>> lpos(final String key, final String element, final LPosParams params, final long count) {
+  public Response<List<Long>> lpos(final String key, final String element, final LPosParams params,
+      final long count) {
     getClient(key).lpos(key, element, params, count);
     return getResponse(BuilderFactory.LONG_LIST);
   }
 
   @Override
-  public Response<List<Long>> lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+  public Response<List<Long>> lpos(final byte[] key, final byte[] element, final LPosParams params,
+      final long count) {
     getClient(key).lpos(key, element, params, count);
     return getResponse(BuilderFactory.LONG_LIST);
   }
@@ -944,7 +948,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zadd(final String key, final double score, final String member, final ZAddParams params) {
+  public Response<Long> zadd(final String key, final double score, final String member,
+      final ZAddParams params) {
     getClient(key).zadd(key, score, member, params);
     return getResponse(BuilderFactory.LONG);
   }
@@ -956,7 +961,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+  public Response<Long> zadd(final String key, final Map<String, Double> scoreMembers,
+      final ZAddParams params) {
     getClient(key).zadd(key, scoreMembers, params);
     return getResponse(BuilderFactory.LONG);
   }
@@ -968,7 +974,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zadd(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public Response<Long> zadd(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     getClient(key).zadd(key, score, member, params);
     return getResponse(BuilderFactory.LONG);
   }
@@ -980,7 +987,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
+  public Response<Long> zadd(final byte[] key, final Map<byte[], Double> scoreMembers,
+      final ZAddParams params) {
     getClient(key).zadd(key, scoreMembers, params);
     return getResponse(BuilderFactory.LONG);
   }
@@ -1028,7 +1036,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Double> zincrby(final String key, final double increment, final String member, ZIncrByParams params) {
+  public Response<Double> zincrby(final String key, final double increment, final String member,
+      ZIncrByParams params) {
     getClient(key).zincrby(key, increment, member, params);
     return getResponse(BuilderFactory.DOUBLE);
   }
@@ -1040,7 +1049,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Double> zincrby(final byte[] key, final double increment, final byte[] member, ZIncrByParams params) {
+  public Response<Double> zincrby(final byte[] key, final double increment, final byte[] member,
+      ZIncrByParams params) {
     getClient(key).zincrby(key, increment, member);
     return getResponse(BuilderFactory.DOUBLE);
   }
@@ -1082,81 +1092,85 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<String>> zrangeByScore(final String key, final double min, final double max, final int offset,
-      final int count) {
+  public Response<Set<String>> zrangeByScore(final String key, final double min, final double max,
+      final int offset, final int count) {
     getClient(key).zrangeByScore(key, min, max, offset, count);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<String>> zrangeByScore(final String key, final String min, final String max, final int offset,
-      final int count) {
+  public Response<Set<String>> zrangeByScore(final String key, final String min, final String max,
+      final int offset, final int count) {
     getClient(key).zrangeByScore(key, min, max, offset, count);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByScore(final byte[] key, final double min, final double max, final int offset,
-      final int count) {
+  public Response<Set<byte[]>> zrangeByScore(final byte[] key, final double min, final double max,
+      final int offset, final int count) {
     getClient(key).zrangeByScore(key, min, max, offset, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByScore(final byte[] key, final byte[] min, final byte[] max, final int offset,
-      final int count) {
+  public Response<Set<byte[]>> zrangeByScore(final byte[] key, final byte[] min, final byte[] max,
+      final int offset, final int count) {
     getClient(key).zrangeByScore(key, min, max, offset, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final double min, final double max) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final double min,
+      final double max) {
     getClient(key).zrangeByScoreWithScores(key, min, max);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final String min, final String max) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final String min,
+      final String max) {
     getClient(key).zrangeByScoreWithScores(key, min, max);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final double min,
+      final double max) {
     getClient(key).zrangeByScoreWithScores(key, min, max);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final byte[] min,
+      final byte[] max) {
     getClient(key).zrangeByScoreWithScores(key, min, max);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final double min, final double max,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final double min,
+      final double max, final int offset, final int count) {
     getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final String min, final String max,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final String key, final String min,
+      final String max, final int offset, final int count) {
     getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final double min, final double max,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final double min,
+      final double max, final int offset, final int count) {
     getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrangeByScoreWithScores(final byte[] key, final byte[] min,
+      final byte[] max, final int offset, final int count) {
     getClient(key).zrangeByScoreWithScores(key, min, max, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
@@ -1186,81 +1200,85 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(final String key, final double max, final double min, final int offset,
-      final int count) {
+  public Response<Set<String>> zrevrangeByScore(final String key, final double max,
+      final double min, final int offset, final int count) {
     getClient(key).zrevrangeByScore(key, max, min, offset, count);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(final String key, final String max, final String min, final int offset,
-      final int count) {
+  public Response<Set<String>> zrevrangeByScore(final String key, final String max,
+      final String min, final int offset, final int count) {
     getClient(key).zrevrangeByScore(key, max, min, offset, count);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final double max, final double min, final int offset,
-      final int count) {
+  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final double max,
+      final double min, final int offset, final int count) {
     getClient(key).zrevrangeByScore(key, max, min, offset, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min, final int offset,
-      final int count) {
+  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final byte[] max,
+      final byte[] min, final int offset, final int count) {
     getClient(key).zrevrangeByScore(key, max, min, offset, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final double max,
+      final double min) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final String max,
+      final String min) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final double max,
+      final double min) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
+      final byte[] min) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final double max, final double min,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final double max,
+      final double min, final int offset, final int count) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final String max, final String min,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final String key, final String max,
+      final String min, final int offset, final int count) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final double max,
+      final double min, final int offset, final int count) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min,
-      final int offset, final int count) {
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
+      final byte[] min, final int offset, final int count) {
     getClient(key).zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
@@ -1350,13 +1368,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeWithScores(final String key, final long start, final long stop) {
+  public Response<Set<Tuple>> zrevrangeWithScores(final String key, final long start,
+      final long stop) {
     getClient(key).zrevrangeWithScores(key, start, stop);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
+  public Response<Set<Tuple>> zrevrangeWithScores(final byte[] key, final long start,
+      final long stop) {
     getClient(key).zrevrangeWithScores(key, start, stop);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
@@ -1558,15 +1578,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<String> migrate(final String host, final int port,
-      final String key, final int destinationDb, final int timeout) {
+  public Response<String> migrate(final String host, final int port, final String key,
+      final int destinationDb, final int timeout) {
     getClient(key).migrate(host, port, key, destinationDb, timeout);
     return getResponse(BuilderFactory.STRING);
   }
 
   @Override
-  public Response<String> migrate(final String host, final int port,
-      final byte[] key, final int destinationDb, final int timeout) {
+  public Response<String> migrate(final String host, final int port, final byte[] key,
+      final int destinationDb, final int timeout) {
     getClient(key).migrate(host, port, key, destinationDb, timeout);
     return getResponse(BuilderFactory.STRING);
   }
@@ -1668,13 +1688,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<String> restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
+  public Response<String> restoreReplace(final String key, final long ttl,
+      final byte[] serializedValue) {
     getClient(key).restoreReplace(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
 
   @Override
-  public Response<String> restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
+  public Response<String> restoreReplace(final byte[] key, final long ttl,
+      final byte[] serializedValue) {
     getClient(key).restoreReplace(key, ttl, serializedValue);
     return getResponse(BuilderFactory.STRING);
   }
@@ -1740,25 +1762,29 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+  public Response<Long> geoadd(final byte[] key, final double longitude, final double latitude,
+      final byte[] member) {
     getClient(key).geoadd(key, longitude, latitude, member);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  public Response<Long> geoadd(final byte[] key,
+      final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     getClient(key).geoadd(key, memberCoordinateMap);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> geoadd(final String key, final double longitude, final double latitude, final String member) {
+  public Response<Long> geoadd(final String key, final double longitude, final double latitude,
+      final String member) {
     getClient(key).geoadd(key, longitude, latitude, member);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
+  public Response<Long> geoadd(final String key,
+      final Map<String, GeoCoordinate> memberCoordinateMap) {
     getClient(key).geoadd(key, memberCoordinateMap);
     return getResponse(BuilderFactory.LONG);
   }
@@ -1770,7 +1796,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Double> geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+  public Response<Double> geodist(final byte[] key, final byte[] member1, final byte[] member2,
+      final GeoUnit unit) {
     getClient(key).geodist(key, member1, member2, unit);
     return getResponse(BuilderFactory.DOUBLE);
   }
@@ -1782,7 +1809,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Double> geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
+  public Response<Double> geodist(final String key, final String member1, final String member2,
+      final GeoUnit unit) {
     getClient(key).geodist(key, member1, member2);
     return getResponse(BuilderFactory.DOUBLE);
   }
@@ -1812,57 +1840,59 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public Response<List<GeoRadiusResponse>> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     getClient(key).georadius(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public Response<List<GeoRadiusResponse>> georadiusReadonly(final byte[] key,
+      final double longitude, final double latitude, final double radius, final GeoUnit unit) {
     getClient(key).georadiusReadonly(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public Response<List<GeoRadiusResponse>> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     getClient(key).georadius(key, longitude, latitude, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public Response<List<GeoRadiusResponse>> georadiusReadonly(final byte[] key,
+      final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
     getClient(key).georadiusReadonly(key, longitude, latitude, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public Response<List<GeoRadiusResponse>> georadius(final String key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     getClient(key).georadius(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusReadonly(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public Response<List<GeoRadiusResponse>> georadiusReadonly(final String key,
+      final double longitude, final double latitude, final double radius, final GeoUnit unit) {
     getClient(key).georadiusReadonly(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadius(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public Response<List<GeoRadiusResponse>> georadius(final String key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     getClient(key).georadius(key, longitude, latitude, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusReadonly(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public Response<List<GeoRadiusResponse>> georadiusReadonly(final String key,
+      final double longitude, final double latitude, final double radius, final GeoUnit unit,
+      final GeoRadiusParam param) {
     getClient(key).georadiusReadonly(key, longitude, latitude, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
@@ -1875,8 +1905,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final byte[] key, final byte[] member,
-      final double radius, final GeoUnit unit) {
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final byte[] key,
+      final byte[] member, final double radius, final GeoUnit unit) {
     getClient(key).georadiusByMemberReadonly(key, member, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
@@ -1889,8 +1919,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final byte[] key, final byte[] member,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final byte[] key,
+      final byte[] member, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     getClient(key).georadiusByMemberReadonly(key, member, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
@@ -1903,8 +1933,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final String key, final String member,
-      final double radius, final GeoUnit unit) {
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final String key,
+      final String member, final double radius, final GeoUnit unit) {
     getClient(key).georadiusByMemberReadonly(key, member, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
@@ -1917,8 +1947,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final String key, final String member,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(final String key,
+      final String member, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     getClient(key).georadiusByMemberReadonly(key, member, radius, unit, param);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
@@ -1958,191 +1988,197 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     getClient(key).hstrlen(key, field);
     return getResponse(BuilderFactory.LONG);
   }
-  
+
   @Override
-  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash){
-    return xadd(key, id, hash, Long.MAX_VALUE, true);    
-  }
-  
-  @Override
-  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash){
+  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
     return xadd(key, id, hash, Long.MAX_VALUE, true);
   }
 
-
   @Override
-  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength){
-    getClient(key).xadd(key, id, hash, maxLen, approximateLength);
-    return getResponse(BuilderFactory.STREAM_ENTRY_ID);    
-  }
-  
-
-  @Override
-  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength){
-    getClient(key).xadd(key, id, hash, maxLen, approximateLength);
-    return getResponse(BuilderFactory.BYTE_ARRAY);        
+  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash) {
+    return xadd(key, id, hash, Long.MAX_VALUE, true);
   }
 
-  
   @Override
-  public Response<Long> xlen(String key){
+  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash,
+      long maxLen, boolean approximateLength) {
+    getClient(key).xadd(key, id, hash, maxLen, approximateLength);
+    return getResponse(BuilderFactory.STREAM_ENTRY_ID);
+  }
+
+  @Override
+  public Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen,
+      boolean approximateLength) {
+    getClient(key).xadd(key, id, hash, maxLen, approximateLength);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<Long> xlen(String key) {
     getClient(key).xlen(key);
     return getResponse(BuilderFactory.LONG);
   }
-  
+
   @Override
-  public Response<Long> xlen(byte[] key){
+  public Response<Long> xlen(byte[] key) {
     getClient(key).xlen(key);
-    return getResponse(BuilderFactory.LONG);    
+    return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count){
+  public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end,
+      int count) {
     getClient(key).xrange(key, start, end, count);
-    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);        
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   @Override
-  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count){
+  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count) {
     getClient(key).xrange(key, start, end, count);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);            
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override
-  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count){
+  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start,
+      int count) {
     getClient(key).xrevrange(key, start, end, count);
-    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);            
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   @Override
-  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count){
+  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     getClient(key).xrevrange(key, start, end, count);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);                
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
-   
   @Override
-  public Response<Long> xack(String key, String group,  StreamEntryID... ids){
+  public Response<Long> xack(String key, String group, StreamEntryID... ids) {
     getClient(key).xack(key, group, ids);
-    return getResponse(BuilderFactory.LONG);                
+    return getResponse(BuilderFactory.LONG);
   }
-  
+
   @Override
-  public Response<Long> xack(byte[] key, byte[] group,  byte[]... ids){
+  public Response<Long> xack(byte[] key, byte[] group, byte[]... ids) {
     getClient(key).xack(key, group, ids);
-    return getResponse(BuilderFactory.LONG);                    
+    return getResponse(BuilderFactory.LONG);
   }
-  
+
   @Override
-  public Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream){
+  public Response<String> xgroupCreate(String key, String groupname, StreamEntryID id,
+      boolean makeStream) {
     getClient(key).xgroupCreate(key, groupname, id, makeStream);
     return getResponse(BuilderFactory.STRING);
   }
-  
+
   @Override
-  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream){
+  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
     getClient(key).xgroupCreate(key, groupname, id, makeStream);
-    return getResponse(BuilderFactory.STRING);    
+    return getResponse(BuilderFactory.STRING);
   }
-  
+
   @Override
-  public Response<String> xgroupSetID( String key, String groupname, StreamEntryID id){
+  public Response<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
     getClient(key).xgroupSetID(key, groupname, id);
     return getResponse(BuilderFactory.STRING);
   }
-  
+
   @Override
-  public Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id){
+  public Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
     getClient(key).xgroupSetID(key, groupname, id);
-    return getResponse(BuilderFactory.STRING);    
+    return getResponse(BuilderFactory.STRING);
   }
-  
+
   @Override
-  public Response<Long> xgroupDestroy( String key, String groupname){
+  public Response<Long> xgroupDestroy(String key, String groupname) {
     getClient(key).xgroupDestroy(key, groupname);
     return getResponse(BuilderFactory.LONG);
   }
-  
+
   @Override
-  public Response<Long> xgroupDestroy(byte[] key, byte[] groupname){
+  public Response<Long> xgroupDestroy(byte[] key, byte[] groupname) {
     getClient(key).xgroupDestroy(key, groupname);
     return getResponse(BuilderFactory.LONG);
   }
-  
+
   @Override
-  public Response<Long> xgroupDelConsumer( String key, String groupname, String consumername){
-    getClient(key).xgroupDelConsumer(key, groupname, consumername);
-    return getResponse(BuilderFactory.LONG);
-  }
-  
-  @Override
-  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername){
+  public Response<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
     getClient(key).xgroupDelConsumer(key, groupname, consumername);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername){
-    getClient(key).xpending(key, groupname, start, end, count, consumername);
-    return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);        
-  }
-  
-  @Override
-  public Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername){
-    getClient(key).xpending(key, groupname, start, end, count, consumername);
-    return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);            
-  }
-  
-  @Override
-  public Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    getClient(key).xpending(key, groupname, start, end, count, consumername);
-    return getResponse(BuilderFactory.OBJECT_LIST);            
-  }
-  
-  @Override
-  public Response<Long> xdel( String key, StreamEntryID... ids){
-    getClient(key).xdel(key, ids);
-    return getResponse(BuilderFactory.LONG);        
+  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername) {
+    getClient(key).xgroupDelConsumer(key, groupname, consumername);
+    return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> xdel(byte[] key, byte[]... ids){
-    getClient(key).xdel(key, ids);
-    return getResponse(BuilderFactory.LONG);            
-  }
-  
-  @Override
-  public Response<Long> xtrim( String key, long maxLen, boolean approximateLength){
-    getClient(key).xtrim(key, maxLen, approximateLength);
-    return getResponse(BuilderFactory.LONG);        
-  }
-  
-  @Override
-  public Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength){
-    getClient(key).xtrim(key, maxLen, approximateLength);
-    return getResponse(BuilderFactory.LONG);            
-  }
- 
-  @Override
-  public Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
-      long newIdleTime, int retries, boolean force, StreamEntryID... ids){
-    getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
-    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);        
-  }
- 
-  @Override
-  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
-      long newIdleTime, int retries, boolean force, byte[]... ids){
-    getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);            
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname,
+      StreamEntryID start, StreamEntryID end, int count, String consumername) {
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
-  public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd, final String... args) {
+  @Override
+  public Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start,
+      byte[] end, int count, byte[] consumername) {
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);
+  }
+
+  @Override
+  public Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start,
+      byte[] end, int count, byte[] consumername) {
+    getClient(key).xpending(key, groupname, start, end, count, consumername);
+    return getResponse(BuilderFactory.OBJECT_LIST);
+  }
+
+  @Override
+  public Response<Long> xdel(String key, StreamEntryID... ids) {
+    getClient(key).xdel(key, ids);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xdel(byte[] key, byte[]... ids) {
+    getClient(key).xdel(key, ids);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xtrim(String key, long maxLen, boolean approximateLength) {
+    getClient(key).xtrim(key, maxLen, approximateLength);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength) {
+    getClient(key).xtrim(key, maxLen, approximateLength);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xclaim(String key, String group, String consumername,
+      long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
+    getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids) {
+    getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd,
+      final String... args) {
     getClient(sampleKey).sendCommand(cmd, args);
     return getResponse(BuilderFactory.OBJECT);
   }
 
-  public Response<Object> sendCommand(final byte[] sampleKey, final ProtocolCommand cmd, final byte[]... args) {
+  public Response<Object> sendCommand(final byte[] sampleKey, final ProtocolCommand cmd,
+      final byte[]... args) {
     getClient(sampleKey).sendCommand(cmd, args);
     return getResponse(BuilderFactory.OBJECT);
   }

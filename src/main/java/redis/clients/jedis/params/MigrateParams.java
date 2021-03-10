@@ -22,7 +22,7 @@ public class MigrateParams extends Params {
     addParam(REPLACE);
     return this;
   }
-  
+
   public MigrateParams auth(String password) {
     addParam(AUTH, password);
     return this;

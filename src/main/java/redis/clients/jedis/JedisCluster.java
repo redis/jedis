@@ -256,7 +256,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
   public String getDel(final String key) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
@@ -1601,7 +1601,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(matchPattern);
   }
-  
+
   @Override
   public ScanResult<Entry<String, String>> hscan(final String key, final String cursor) {
     return new JedisClusterCommand<ScanResult<Entry<String, String>>>(connectionHandler,
@@ -2310,7 +2310,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
-  
+
   @Override
   public Long memoryUsage(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
@@ -2320,7 +2320,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
   public Long memoryUsage(final String key, final int samples) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
@@ -2330,7 +2330,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       }
     }.run(key);
   }
-  
+
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
@@ -2378,7 +2378,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xrevrange(key, end, start, count);
       }
-    }.run(key);  
+    }.run(key);
   }
 
   @Override
@@ -2387,13 +2387,13 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     for(int i=0; i<streams.length; ++i) {
       keys[i] = streams[i].getKey();
     }
-    
+
     return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
       @Override
       public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
         return connection.xread(count, block, streams);
       }
-    }.run(keys.length, keys);  
+    }.run(keys.length, keys);
   }
 
   @Override
@@ -2403,7 +2403,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.xack(key, group, ids);
       }
-    }.run(key);   
+    }.run(key);
   }
 
   @Override
@@ -2413,7 +2413,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public String execute(Jedis connection) {
         return connection.xgroupCreate(key, groupname, id, makeStream);
       }
-    }.run(key);  
+    }.run(key);
   }
 
   @Override
@@ -2449,12 +2449,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname, final String consumer, final int count, final long block,
       final boolean noAck, final Entry<String, StreamEntryID>... streams) {
-    
+
     String[] keys = new String[streams.length];
     for(int i=0; i<streams.length; ++i) {
       keys[i] = streams[i].getKey();
     }
-    
+
     return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
       @Override
       public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
@@ -2470,6 +2470,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public List<StreamPendingEntry> execute(Jedis connection) {
         return connection.xpending(key, groupname, start, end, count, consumername);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamPendingSummary xpendingSummary(final String key, final String groupname) {
+    return new JedisClusterCommand<StreamPendingSummary>(connectionHandler, maxAttempts) {
+      @Override
+      public StreamPendingSummary execute(Jedis connection) {
+        return connection.xpendingSummary(key, groupname);
       }
     }.run(key);
   }

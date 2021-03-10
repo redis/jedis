@@ -90,7 +90,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     Jedis j = getShard(key);
     return j.getDel(key);
   }
-  
+
   @Override
   public Boolean exists(final byte[] key) {
     Jedis j = getShard(key);
@@ -1128,6 +1128,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       byte[] consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+    Jedis j = getShard(key);
+    return j.xpendingSummary(key, groupname);
   }
 
   @Override

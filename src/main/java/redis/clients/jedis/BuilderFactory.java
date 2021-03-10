@@ -323,7 +323,7 @@ public final class BuilderFactory {
     }
 
   };
-  
+
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
 
     @Override
@@ -665,7 +665,7 @@ public final class BuilderFactory {
       return "StreamEntryID";
     }
   };
-  
+
 
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override
@@ -689,7 +689,7 @@ public final class BuilderFactory {
         String entryIdString = SafeEncoder.encode((byte[])res.get(0));
         StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>)res.get(1);
-        
+
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<String, String> map = new HashMap<>(hash.size()/2);
         while(hashIterator.hasNext()) {
@@ -738,7 +738,7 @@ public final class BuilderFactory {
       return "StreamEntry";
     }
   };
-  
+
   public static final Builder<List<StreamPendingEntry>> STREAM_PENDING_ENTRY_LIST = new Builder<List<StreamPendingEntry>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -746,14 +746,14 @@ public final class BuilderFactory {
       if (null == data) {
         return null;
       }
-      
+
       List<Object> streamsEntries = (List<Object>)data;
       List<StreamPendingEntry> result = new ArrayList<>(streamsEntries.size());
       for(Object streamObj : streamsEntries) {
         List<Object> stream = (List<Object>)streamObj;
         String id = SafeEncoder.encode((byte[])stream.get(0));
         String consumerName = SafeEncoder.encode((byte[])stream.get(1));
-        long idleTime = BuilderFactory.LONG.build(stream.get(2));      
+        long idleTime = BuilderFactory.LONG.build(stream.get(2));
         long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
         result.add(new StreamPendingEntry(new StreamEntryID(id), consumerName, idleTime, deliveredTimes));
       }
@@ -895,6 +895,32 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<StreamConsumersInfo>";
+    }
+  };
+
+  public static final Builder<StreamPendingSummary> STREAM_PENDING_SUMMARY = new Builder<StreamPendingSummary>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamPendingSummary build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+      long total = BuilderFactory.LONG.build(objectList.get(0));
+      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
+      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
+      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
+      Map<String, Long> map = new HashMap<>(consumerObjList.size());
+      for (List<Object> consumerObj : consumerObjList) {
+        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
+      }
+      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamPendingSummary";
     }
   };
 

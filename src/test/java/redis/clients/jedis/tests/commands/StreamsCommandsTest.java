@@ -37,7 +37,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void xadd() {
-    
+
     try {
       Map<String,String> map1 = new HashMap<>();
       jedis.xadd("stream1", null, map1);
@@ -45,11 +45,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     } catch (JedisDataException expected) {
       assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
     }
-    
+
     Map<String,String> map1 = new HashMap<>();
     map1.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xadd-stream1", null, map1);
-    assertNotNull(id1);	
+    assertNotNull(id1);
 
     Map<String,String> map2 = new HashMap<>();
     map2.put("f1", "v1");
@@ -69,13 +69,13 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     StreamEntryID id4 = jedis.xadd("xadd-stream2", idIn, map4);
     assertEquals(idIn, id4);
     assertTrue(id4.compareTo(id3) > 0);
-    
+
     Map<String,String> map5 = new HashMap<>();
     map5.put("f4", "v4");
     map5.put("f5", "v5");
     StreamEntryID id5 = jedis.xadd("xadd-stream2", null, map5);
-    assertTrue(id5.compareTo(id4) > 0);    
-    
+    assertTrue(id5.compareTo(id4) > 0);
+
     Map<String,String> map6 = new HashMap<>();
     map6.put("f4", "v4");
     map6.put("f5", "v5");
@@ -83,15 +83,15 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertTrue(id6.compareTo(id5) > 0);
     assertEquals(3L, jedis.xlen("xadd-stream2").longValue());
   }
-  
+
   @Test
   public void xdel() {
     Map<String,String> map1 = new HashMap<>();
     map1.put("f1", "v1");
-    
+
     StreamEntryID id1 = jedis.xadd("xdel-stream", null, map1);
-    assertNotNull(id1); 
-    
+    assertNotNull(id1);
+
     StreamEntryID id2 = jedis.xadd("xdel-stream", null, map1);
     assertNotNull(id2);
     assertEquals(2L, jedis.xlen("xdel-stream").longValue());
@@ -104,76 +104,76 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   @Test
   public void xlen() {
     assertEquals(0L, jedis.xlen("xlen-stream").longValue());
-    
+
     Map<String,String> map = new HashMap<>();
     map.put("f1", "v1");
     jedis.xadd("xlen-stream", null, map);
     assertEquals(1L, jedis.xlen("xlen-stream").longValue());
-    
+
     jedis.xadd("xlen-stream", null, map);
     assertEquals(2L, jedis.xlen("xlen-stream").longValue());
   }
 
   @Test
   public void xrange() {
-    List<StreamEntry> range = jedis.xrange("xrange-stream", (StreamEntryID)null, (StreamEntryID)null, Integer.MAX_VALUE); 
+    List<StreamEntry> range = jedis.xrange("xrange-stream", (StreamEntryID)null, (StreamEntryID)null, Integer.MAX_VALUE);
     assertEquals(0, range.size());
-        
+
     Map<String,String> map = new HashMap<>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xrange-stream", null, map);
     StreamEntryID id2 = jedis.xadd("xrange-stream", null, map);
-    List<StreamEntry> range2 = jedis.xrange("xrange-stream", (StreamEntryID)null, (StreamEntryID)null, 3); 
+    List<StreamEntry> range2 = jedis.xrange("xrange-stream", (StreamEntryID)null, (StreamEntryID)null, 3);
     assertEquals(2, range2.size());
-    
-    List<StreamEntry> range3 = jedis.xrange("xrange-stream", id1, null, 2); 
+
+    List<StreamEntry> range3 = jedis.xrange("xrange-stream", id1, null, 2);
     assertEquals(2, range3.size());
-    
-    List<StreamEntry> range4 = jedis.xrange("xrange-stream", id1, id2, 2); 
+
+    List<StreamEntry> range4 = jedis.xrange("xrange-stream", id1, id2, 2);
     assertEquals(2, range4.size());
 
-    List<StreamEntry> range5 = jedis.xrange("xrange-stream", id1, id2, 1); 
+    List<StreamEntry> range5 = jedis.xrange("xrange-stream", id1, id2, 1);
     assertEquals(1, range5.size());
-    
-    List<StreamEntry> range6 = jedis.xrange("xrange-stream", id2, null, 4); 
+
+    List<StreamEntry> range6 = jedis.xrange("xrange-stream", id2, null, 4);
     assertEquals(1, range6.size());
-    
+
     StreamEntryID id3 = jedis.xadd("xrange-stream", null, map);
-    List<StreamEntry> range7 = jedis.xrange("xrange-stream", id2, id2, 4); 
+    List<StreamEntry> range7 = jedis.xrange("xrange-stream", id2, id2, 4);
     assertEquals(1, range7.size());
   }
-  
+
   @Test
   public void xread() {
-    
+
     Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>("xread-stream1", new StreamEntryID());
 
     // Empty Stream
-    List<Entry<String, List<StreamEntry>>> range = jedis.xread(1, 1L, streamQeury1); 
+    List<Entry<String, List<StreamEntry>>> range = jedis.xread(1, 1L, streamQeury1);
     assertEquals(0, range.size());
-    
+
     Map<String,String> map = new HashMap<>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xread-stream1", null, map);
     StreamEntryID id2 = jedis.xadd("xread-stream2", null, map);
-    
+
     // Read only a single Stream
-    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamQeury1); 
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(1, 1L, streamQeury1);
     assertEquals(1, streams1.size());
 
     // Read from two Streams
     Entry<String, StreamEntryID> streamQuery2 = new AbstractMap.SimpleImmutableEntry<>("xread-stream1", new StreamEntryID());
     Entry<String, StreamEntryID> streamQuery3 = new AbstractMap.SimpleImmutableEntry<>("xread-stream2", new StreamEntryID());
-    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(2, 1L, streamQuery2, streamQuery3); 
+    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(2, 1L, streamQuery2, streamQuery3);
     assertEquals(2, streams2.size());
 
   }
-  
+
   @Test
   public void xtrim() {
     Map<String,String> map1 = new HashMap<String, String>();
     map1.put("f1", "v1");
-    
+
     jedis.xadd("xtrim-stream", null, map1);
     jedis.xadd("xtrim-stream", null, map1);
     jedis.xadd("xtrim-stream", null, map1);
@@ -184,44 +184,44 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     jedis.xtrim("xtrim-stream", 3, false);
     assertEquals(3L, jedis.xlen("xtrim-stream").longValue());
   }
-  
+
   @Test
   public void xrevrange() {
-    List<StreamEntry> range = jedis.xrevrange("xrevrange-stream", (StreamEntryID)null, (StreamEntryID)null, Integer.MAX_VALUE); 
+    List<StreamEntry> range = jedis.xrevrange("xrevrange-stream", (StreamEntryID)null, (StreamEntryID)null, Integer.MAX_VALUE);
     assertEquals(0, range.size());
-        
+
     Map<String,String> map = new HashMap<>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xrevrange-stream", null, map);
     StreamEntryID id2 = jedis.xadd("xrevrange-stream", null, map);
-    List<StreamEntry> range2 = jedis.xrange("xrevrange-stream", (StreamEntryID)null, (StreamEntryID)null, 3); 
+    List<StreamEntry> range2 = jedis.xrange("xrevrange-stream", (StreamEntryID)null, (StreamEntryID)null, 3);
     assertEquals(2, range2.size());
-    
-    List<StreamEntry> range3 = jedis.xrevrange("xrevrange-stream", null, id1, 2); 
+
+    List<StreamEntry> range3 = jedis.xrevrange("xrevrange-stream", null, id1, 2);
     assertEquals(2, range3.size());
-    
-    List<StreamEntry> range4 = jedis.xrevrange("xrevrange-stream", id2, id1, 2); 
+
+    List<StreamEntry> range4 = jedis.xrevrange("xrevrange-stream", id2, id1, 2);
     assertEquals(2, range4.size());
 
-    List<StreamEntry> range5 = jedis.xrevrange("xrevrange-stream", id2, id1, 1); 
+    List<StreamEntry> range5 = jedis.xrevrange("xrevrange-stream", id2, id1, 1);
     assertEquals(1, range5.size());
-    
-    List<StreamEntry> range6 = jedis.xrevrange("xrevrange-stream", null, id2, 4); 
+
+    List<StreamEntry> range6 = jedis.xrevrange("xrevrange-stream", null, id2, 4);
     assertEquals(1, range6.size());
-    
+
     StreamEntryID id3 = jedis.xadd("xrevrange-stream", null, map);
-    List<StreamEntry> range7 = jedis.xrevrange("xrevrange-stream", id2, id2, 4); 
+    List<StreamEntry> range7 = jedis.xrevrange("xrevrange-stream", id2, id2, 4);
     assertEquals(1, range7.size());
 
   }
-  
+
   @Test
   public void xgroup() {
-    
+
     Map<String,String> map = new HashMap<String, String>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xgroup-stream", null, map);
-    
+
     String status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name", null, false);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
 
@@ -231,112 +231,118 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     status = jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.LAST_ENTRY, false);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
-    
+
     jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
 
     Long pendingMessageNum = jedis.xgroupDelConsumer("xgroup-stream", "consumer-group-name1", "myconsumer1");
-    assertEquals(0L, pendingMessageNum.longValue());  
+    assertEquals(0L, pendingMessageNum.longValue());
   }
-  
+
   @Test
   public void xreadGroup() {
-    
+
     // Simple xreadGroup with NOACK
     Map<String,String> map = new HashMap<>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xreadGroup-stream1", null, map);
     String status1 = jedis.xgroupCreate("xreadGroup-stream1", "xreadGroup-group", null, false);
     Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
-    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 0, true, streamQeury1); 
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 0, true, streamQeury1);
     assertEquals(1, range.size());
     assertEquals(1, range.get(0).getValue().size());
-    
+
     StreamEntryID id2 = jedis.xadd("xreadGroup-stream1", null, map);
     StreamEntryID id3 = jedis.xadd("xreadGroup-stream2", null, map);
     String status2 = jedis.xgroupCreate("xreadGroup-stream2", "xreadGroup-group", null, false);
-   
+
     // Read only a single Stream
     Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
-    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, true, streamQeury11); 
+    List<Entry<String, List<StreamEntry>>> streams1 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, true, streamQeury11);
     assertEquals(1, streams1.size());
     assertEquals(1, streams1.get(0).getValue().size());
 
     // Read from two Streams
     Entry<String, StreamEntryID> streamQuery2 = new AbstractMap.SimpleImmutableEntry<String, StreamEntryID>("xreadGroup-stream1", new StreamEntryID());
     Entry<String, StreamEntryID> streamQuery3 = new AbstractMap.SimpleImmutableEntry<String, StreamEntryID>("xreadGroup-stream2", new StreamEntryID());
-    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, true, streamQuery2, streamQuery3); 
+    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 1, 1L, true, streamQuery2, streamQuery3);
     assertEquals(2, streams2.size());
 
     // Read only fresh messages
     StreamEntryID id4 = jedis.xadd("xreadGroup-stream1", null, map);
     Entry<String, StreamEntryID> streamQeuryFresh = new AbstractMap.SimpleImmutableEntry<String, StreamEntryID>("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
-    List<Entry<String, List<StreamEntry>>> streams3 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 4, 100L, true, streamQeuryFresh); 
-    assertEquals(1, streams3.size());  
+    List<Entry<String, List<StreamEntry>>> streams3 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer", 4, 100L, true, streamQeuryFresh);
+    assertEquals(1, streams3.size());
     assertEquals(id4, streams3.get(0).getValue().get(0).getID());
   }
 
-  
-  
+
+
   @Test
   public void xack() {
-       
+
     Map<String,String> map = new HashMap<String, String>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xack-stream", null, map);
-    
+
     String status = jedis.xgroupCreate("xack-stream", "xack-group", null, false);
-    
+
     Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>("xack-stream", StreamEntryID.UNRECEIVED_ENTRY);
 
     // Empty Stream
-    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xack-group", "xack-consumer", 1, 1L, false, streamQeury1); 
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xack-group", "xack-consumer", 1, 1L, false, streamQeury1);
     assertEquals(1, range.size());
 
     assertEquals(1L, jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
   }
-  
+
   @Test
-  public void xpendeing() {       
+  public void xpendeing() {
     Map<String,String> map = new HashMap<String, String>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xpendeing-stream", null, map);
-    
+
     assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
-    
-    
+
+
     Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY);
 
-    // Read the event from Stream put it on pending 
-    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false, streamQeury1); 
+    // Read the event from Stream put it on pending
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false, streamQeury1);
     assertEquals(1, range.size());
     assertEquals(1, range.get(0).getValue().size());
     assertEquals(map, range.get(0).getValue().get(0).getFields());
-    
+
+    // Get the summary about the pending messages
+    StreamPendingSummary pendingSummary = jedis.xpendingSummary("xpendeing-stream", "xpendeing-group");
+    assertEquals(1, pendingSummary.getTotal());
+    assertEquals(id1, pendingSummary.getMinId());
+    assertEquals(1l, pendingSummary.getConsumerMessageCount().get("xpendeing-consumer").longValue());
+
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", null, null, 3, "xpendeing-consumer");
     assertEquals(1, pendingRange.size());
     assertEquals(id1, pendingRange.get(0).getID());
     assertEquals(1, pendingRange.get(0).getDeliveredTimes());
     assertEquals("xpendeing-consumer", pendingRange.get(0).getConsumerName());
-    
+
     // Sleep for 1000ms so we can claim events pending for more than 500ms
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    
+
     List<StreamEntry> claimRange = jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 500, 0, 0, false, id1);
     assertEquals(1, claimRange.size());
 
-    // Deleted events should return as null on XClaim 
-    assertEquals(1, jedis.xdel("xpendeing-stream", id1));    
+    // Deleted events should return as null on XClaim
+    assertEquals(1, jedis.xdel("xpendeing-stream", id1));
     List<StreamEntry> claimRangeDel = jedis.xclaim("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2", 0, 0, 0, false, id1);
     assertEquals(1, claimRangeDel.size());
     assertNull(claimRangeDel.get(0));
-    
+
     Long pendingMessageNum = jedis.xgroupDelConsumer("xpendeing-stream", "xpendeing-group", "xpendeing-consumer2");
-    assertEquals(1L, pendingMessageNum.longValue()); 
+    assertEquals(1L, pendingMessageNum.longValue());
   }
 
   @Test

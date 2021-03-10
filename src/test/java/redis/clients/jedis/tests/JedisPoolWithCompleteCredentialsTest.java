@@ -9,9 +9,10 @@ import static org.junit.Assert.fail;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisFactory;
@@ -31,21 +32,10 @@ import redis.clients.jedis.tests.utils.RedisVersionUtil;
 public class JedisPoolWithCompleteCredentialsTest {
   private static final HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
+  @BeforeClass
+  public static void prepare() throws Exception {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -72,7 +62,7 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkResourceIsClosableAndReusable() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(),
@@ -86,6 +76,26 @@ public class JedisPoolWithCompleteCredentialsTest {
       Jedis jedis2 = pool.getResource();
       assertEquals(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
+      jedis2.close();
+    }
+  }
+
+  @Test
+  public void checkResourceWithConfigIsClosableAndReusable() {
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    config.setMaxTotal(1);
+    config.setBlockWhenExhausted(false);
+    try (JedisPool pool = new JedisPool(config, hnp, DefaultJedisClientConfig.builder()
+        .withUser("acljedis").withPassword("fizzbuzz").withClientName("closable-resuable-pool").build())) {
+
+      Jedis jedis = pool.getResource();
+      jedis.set("hello", "jedis");
+      jedis.close();
+
+      Jedis jedis2 = pool.getResource();
+      assertEquals(jedis, jedis2);
+      assertEquals("jedis", jedis2.get("hello"));
+      assertEquals("closable-resuable-pool", jedis2.clientGetname());
       jedis2.close();
     }
   }
@@ -109,7 +119,7 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test(expected = JedisExhaustedPoolException.class)
   public void checkPoolOverflow() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort());

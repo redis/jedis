@@ -1,16 +1,6 @@
 package redis.clients.jedis.tests;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.tests.utils.RedisVersionUtil;
-
 import javax.net.ssl.*;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
@@ -20,6 +10,16 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.tests.utils.RedisVersionUtil;
+
 import static org.junit.Assert.*;
 
 /**
@@ -28,40 +28,31 @@ import static org.junit.Assert.*;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class SSLJedisWithCompleteCredentialsTest {
-  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
+  @BeforeClass
+  public static void prepare() {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
+    SSLJedisTest.setupTrustStore();
+  }
+
+  @Test
+  public void connectWithSsl() {
+    try (Jedis jedis = new Jedis("localhost", 6390, true)) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
     }
   }
 
-  @BeforeClass
-  public static void setupTrustStore() {
-    setJvmTrustStore("src/test/resources/truststore.jceks", "jceks");
+  @Test
+  public void connectWithConfig() {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig.builder().withSsl(true).build())) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
-  private static void setJvmTrustStore(String trustStoreFilePath, String trustStoreType) {
-    assertTrue(String.format("Could not find trust store at '%s'.", trustStoreFilePath),
-        new File(trustStoreFilePath).exists());
-    System.setProperty("javax.net.ssl.trustStore", trustStoreFilePath);
-    System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
-  }
-
-  /**
-   * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
-   */
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
@@ -75,11 +66,8 @@ public class SSLJedisWithCompleteCredentialsTest {
     }
   }
 
-  /**
-   * Tests opening a default SSL/TLS connection to redis using "rediss://" scheme url.
-   */
   @Test
-  public void connectWithUrlAndCompleteCredentials() {
+  public void connectWithCompleteCredentialsUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390")) {
       assertEquals("PONG", jedis.ping());
@@ -89,15 +77,22 @@ public class SSLJedisWithCompleteCredentialsTest {
     }
   }
 
-
-  /**
-   * Tests opening a default SSL/TLS connection to redis.
-   */
   @Test
-  public void connectWithoutShardInfo() {
+  public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
     try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
       jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithCompleteCredentialsUri() {
+    // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
+    try (Jedis jedis = new Jedis(URI.create("rediss://default:foobared@localhost:6390"))) {
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(URI.create("rediss://acljedis:fizzbuzz@localhost:6390"))) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -122,10 +117,9 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    assertEquals("PONG", jedis.ping());
-    jedis.disconnect();
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -152,8 +146,7 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    try {
+    try (Jedis jedis = new Jedis(shardInfo)) {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
@@ -161,12 +154,6 @@ public class SSLJedisWithCompleteCredentialsTest {
           SSLHandshakeException.class, e.getCause().getClass());
       assertEquals("Unexpected second inner exception.",
           CertificateException.class, e.getCause().getCause().getClass());
-    }
-
-    try {
-      jedis.close();
-    } catch (Throwable e1) {
-      // Expected.
     }
   }
 
@@ -185,10 +172,9 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    assertEquals("PONG", jedis.ping());
-    jedis.disconnect();
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -205,10 +191,9 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    assertEquals("PONG", jedis.ping());
-    jedis.disconnect();
-    jedis.close();
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   /**
@@ -228,19 +213,12 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    try {
+    try (Jedis jedis = new Jedis(shardInfo)) {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
       assertEquals("The JedisConnectionException does not contain the expected message.",
           "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
-    }
-
-    try {
-      jedis.close();
-    } catch (Throwable e1) {
-      // Expected.
     }
   }
 
@@ -261,8 +239,7 @@ public class SSLJedisWithCompleteCredentialsTest {
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
 
-    Jedis jedis = new Jedis(shardInfo);
-    try {
+    try (Jedis jedis = new Jedis(shardInfo)) {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
@@ -272,12 +249,6 @@ public class SSLJedisWithCompleteCredentialsTest {
           e.getCause().getCause().getClass());
       assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
           e.getCause().getCause().getCause().getClass());
-    }
-
-    try {
-      jedis.close();
-    } catch (Throwable e1) {
-      // Expected.
     }
   }
 

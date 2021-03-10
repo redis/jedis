@@ -14,20 +14,21 @@ import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 public abstract class Pool<T> implements Closeable {
 
   /**
-   * This will be private in future update.
+   * @deprecated This will be private in future.
    */
+  @Deprecated
   protected GenericObjectPool<T> internalPool;
 
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
    *
-   * @deprecated
+   * @deprecated This will be removed in future.
    */
   @Deprecated
   public Pool() {
   }
 
-  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public Pool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
     initPool(poolConfig, factory);
   }
 
@@ -43,10 +44,10 @@ public abstract class Pool<T> implements Closeable {
   /**
    * @param poolConfig
    * @param factory
-   * @deprecated This could be private in future.
+   * @deprecated This will be private in future.
    */
   @Deprecated
-  public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public void initPool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {
       try {
@@ -85,9 +86,6 @@ public abstract class Pool<T> implements Closeable {
   }
 
   protected void returnResourceObject(final T resource) {
-    if (resource == null) {
-      return;
-    }
     try {
       internalPool.returnObject(resource);
     } catch (Exception e) {
@@ -95,13 +93,13 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  protected void returnBrokenResource(final T resource) {
+  public void returnBrokenResource(final T resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  protected void returnResource(final T resource) {
+  public void returnResource(final T resource) {
     if (resource != null) {
       returnResourceObject(resource);
     }

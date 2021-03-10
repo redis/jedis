@@ -3,9 +3,8 @@ package redis.clients.jedis.tests.commands;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.List;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.AccessControlUser;
@@ -15,24 +14,19 @@ import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-// TODO :properly define and test exceptions
+/**
+ * TODO: properly define and test exceptions
+ */
 public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
   public static String USER_YYY = "yyy";
   public static String USER_ZZZ = "zzz";
   public static String USER_ZZZ_PASSWORD = "secret";
 
-  /**
-   * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
-   * @throws Exception
-   */
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL test on this version of Redis", shouldNotRun);
-    }
+  @BeforeClass
+  public static void prepare() throws Exception {
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -113,7 +107,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     // create a new client to try to authenticate
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     String authResult = null;
 
     // the user is just created without any permission the authentication should fail
@@ -174,7 +168,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     // connect with this new user and try to get/set keys
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     String authResult = jedis2.auth(USER_ZZZ, "any password");
     assertEquals("OK", authResult);
 
@@ -199,7 +193,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
 
     // connect with this new user and try to get/set keys
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     String authResult = jedis2.auth(USER_ZZZ, "any password");
     assertEquals("OK", authResult);
 
@@ -244,7 +238,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     String authResult = jedis.aclSetUser(USER_ZZZ, "on", "+acl");
 
     // connect with this new user and try to get/set keys
-    Jedis jedis2 = new Jedis("localhost");
+    Jedis jedis2 = new Jedis();
     jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
 
     String result = null;

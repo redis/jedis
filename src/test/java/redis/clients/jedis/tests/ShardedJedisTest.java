@@ -1,7 +1,7 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
@@ -64,20 +64,20 @@ public class ShardedJedisTest {
 
     ClientKillerUtil.killClient(deadClient, "DEAD");
 
-    assertEquals(true, deadClient.isConnected());
-    assertEquals(false, deadClient.getClient().getSocket().isClosed());
-    assertEquals(false, deadClient.getClient().isBroken()); // normal - not found
+    assertTrue(deadClient.isConnected());
+    assertFalse(deadClient.getClient().getSocket().isClosed());
+    assertFalse(deadClient.isBroken()); // normal - not found
 
     shardedJedis.disconnect();
 
-    assertEquals(false, deadClient.isConnected());
-    assertEquals(true, deadClient.getClient().getSocket().isClosed());
-    assertEquals(true, deadClient.getClient().isBroken());
+    assertFalse(deadClient.isConnected());
+    assertTrue(deadClient.getClient().getSocket().isClosed());
+    assertTrue(deadClient.isBroken());
 
     Jedis jedis2 = it.next();
-    assertEquals(false, jedis2.isConnected());
-    assertEquals(true, jedis2.getClient().getSocket().isClosed());
-    assertEquals(false, jedis2.getClient().isBroken());
+    assertFalse(jedis2.isConnected());
+    assertTrue(jedis2.getClient().getSocket().isClosed());
+    assertFalse(jedis2.isBroken());
 
   }
 
@@ -270,9 +270,9 @@ public class ShardedJedisTest {
         Hashing.MURMUR_HASH);
 
     List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 1));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 2));
     Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(otherShards,
         Hashing.MURMUR_HASH);
 
@@ -294,9 +294,9 @@ public class ShardedJedisTest {
         Hashing.MURMUR_HASH);
 
     List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT, "HOST2:1234"));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 1, "HOST3:1234"));
-    otherShards.add(new JedisShardInfo("otherhost", Protocol.DEFAULT_PORT + 2, "HOST1:1234"));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT, "HOST2:1234"));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 1, "HOST3:1234"));
+    otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 2, "HOST1:1234"));
     Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(otherShards,
         Hashing.MURMUR_HASH);
 

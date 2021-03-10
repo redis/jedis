@@ -25,6 +25,8 @@ public interface BinaryJedisClusterCommands {
 
   byte[] get(byte[] key);
 
+  byte[] getDel(byte[] key);
+
   Boolean exists(byte[] key);
 
   Long persist(byte[] key);
@@ -33,7 +35,15 @@ public interface BinaryJedisClusterCommands {
 
   byte[] dump(byte[] key);
 
-  String restore(byte[] key, int ttl, byte[] serializedValue);
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[])}.
+   */
+  @Deprecated
+  default String restore(byte[] key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
+
+  String restore(byte[] key, long ttl, byte[] serializedValue);
 
   Long expire(byte[] key, int seconds);
 
@@ -63,7 +73,15 @@ public interface BinaryJedisClusterCommands {
 
   Long setnx(byte[] key, byte[] value);
 
-  String setex(byte[] key, int seconds, byte[] value);
+  /**
+   * @deprecated Use {@link #setex(byte[], long, byte[])}.
+   */
+  @Deprecated
+  default String setex(byte[] key, int seconds, byte[] value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(byte[] key, long seconds, byte[] value);
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
@@ -127,6 +145,8 @@ public interface BinaryJedisClusterCommands {
 
   byte[] lpop(byte[] key);
 
+  List<byte[]> lpop(byte[] key, int count);
+
   Long lpos(byte[] key, byte[] element);
 
   Long lpos(byte[] key, byte[] element, LPosParams params);
@@ -134,6 +154,8 @@ public interface BinaryJedisClusterCommands {
   List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count);
 
   byte[] rpop(byte[] key);
+
+  List<byte[]> rpop(byte[] key, int count);
 
   Long sadd(byte[] key, byte[]... member);
 
@@ -247,13 +269,11 @@ public interface BinaryJedisClusterCommands {
 
   Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset,
-      int count);
+  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset,
-      int count);
+  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
@@ -291,17 +311,16 @@ public interface BinaryJedisClusterCommands {
 
   List<GeoCoordinate> geopos(byte[] key, byte[]... members);
 
-  List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
@@ -310,8 +329,8 @@ public interface BinaryJedisClusterCommands {
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
 
@@ -346,8 +365,14 @@ public interface BinaryJedisClusterCommands {
   byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(final byte[] key);
- 
+
+  /**
+   * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
+   */
+  @Deprecated
   List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+
+  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final int count);
 
   List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
 
@@ -365,7 +390,7 @@ public interface BinaryJedisClusterCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
-  List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 

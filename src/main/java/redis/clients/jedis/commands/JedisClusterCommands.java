@@ -26,6 +26,8 @@ public interface JedisClusterCommands {
   String set(String key, String value, SetParams params);
 
   String get(String key);
+  
+  String getDel(String key);
 
   Boolean exists(String key);
 
@@ -35,9 +37,25 @@ public interface JedisClusterCommands {
 
   byte[] dump(String key);
 
-  String restore(String key, int ttl, byte[] serializedValue);
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
+   */
+  @Deprecated
+  default String restore(String key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  Long expire(String key, int seconds);
+  String restore(String key, long ttl, byte[] serializedValue);
+
+  /**
+   * @deprecated Use {@link #expire(java.lang.String, long)}.
+   */
+  @Deprecated
+  default Long expire(String key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Long expire(String key, long seconds);
 
   Long pexpire(String key, long milliseconds);
 
@@ -65,7 +83,15 @@ public interface JedisClusterCommands {
 
   Long setnx(String key, String value);
 
-  String setex(String key, int seconds, String value);
+  /**
+   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
+   */
+  @Deprecated
+  default String setex(String key, int seconds, String value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(String key, long seconds, String value);
 
   String psetex(String key, long milliseconds, String value);
 
@@ -129,6 +155,8 @@ public interface JedisClusterCommands {
 
   String lpop(String key);
 
+  List<String> lpop(String key, int count);
+
   Long lpos(String key, String element);
 
   Long lpos(String key, String element, LPosParams params);
@@ -136,6 +164,8 @@ public interface JedisClusterCommands {
   List<Long> lpos(String key, String element, LPosParams params, long count);
 
   String rpop(String key);
+
+  List<String> rpop(String key, int count);
 
   Long sadd(String key, String... member);
 
@@ -249,13 +279,11 @@ public interface JedisClusterCommands {
 
   Set<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(String key, String min, String max, int offset,
-      int count);
+  Set<String> zrangeByLex(String key, String min, String max, int offset, int count);
 
   Set<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(String key, String max, String min,
-      int offset, int count);
+  Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Long zremrangeByLex(String key, String min, String max);
 
@@ -306,14 +334,14 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
 
@@ -322,8 +350,8 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 
   /**
    * Executes BITFIELD Redis command
@@ -416,6 +444,7 @@ public interface JedisClusterCommands {
    * @deprecated Will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
   
   /**
@@ -469,6 +498,7 @@ public interface JedisClusterCommands {
    * @deprecated Will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xreadGroup(java.lang.String, java.lang.String, int, long, boolean, java.util.Map.Entry...)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
   

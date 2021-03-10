@@ -35,18 +35,34 @@ import redis.clients.jedis.util.Slowlog;
 public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
   protected JedisPoolAbstract dataSource = null;
 
   public Jedis() {
     super();
   }
 
-  public Jedis(final String host) {
-    super(host);
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #Jedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uri
+   */
+  @Deprecated
+  public Jedis(final String uri) {
+    super(uri);
   }
 
   public Jedis(final HostAndPort hp) {
     super(hp);
+  }
+
+  public Jedis(final HostAndPort hp, final JedisClientConfig config) {
+    super(hp, config);
   }
 
   public Jedis(final String host, final int port) {
@@ -143,6 +159,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(uri, connectionTimeout, soTimeout, infiniteSoTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
+  public Jedis(final URI uri, JedisClientConfig config) {
+    super(uri, config);
+  }
+
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     super(jedisSocketFactory);
   }
@@ -191,8 +211,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Get the value of the specified key. If the key does not exist null is returned. If the value
-   * stored at key is not a string an error is returned because GET can only handle string values.
+   * Get the value of the specified key. If the key does not exist the special value 'nil' is
+   * returned. If the value stored at key is not a string an error is returned because GET can only
+   * handle string values.
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -205,6 +226,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  /**
+   * Get the value of key and delete the key. This command is similar to GET, except for the fact
+   * that it also deletes the key on success (if and only if the key's value type is a string).
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @return the value of key
+   * @since Redis 6.2
+   */
+  @Override
+  public String getDel(final String key) {
+    checkIsInMultiOrPipeline();
+    client.getDel(key);
+    return client.getBulkReply();
+  }
+  
   /**
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
@@ -371,7 +408,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long expire(final String key, final int seconds) {
+  public Long expire(final String key, final long seconds) {
     checkIsInMultiOrPipeline();
     client.expire(key, seconds);
     return client.getIntegerReply();
@@ -522,7 +559,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return Status code reply
    */
   @Override
-  public String setex(final String key, final int seconds, final String value) {
+  public String setex(final String key, final long seconds, final String value) {
     checkIsInMultiOrPipeline();
     client.setex(key, seconds, value);
     return client.getStatusCodeReply();
@@ -1180,6 +1217,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<String> lpop(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.lpop(key, count);
+    return client.getMultiBulkReply();
+  }
+
+  @Override
   public Long lpos(final String key, final String element) {
     checkIsInMultiOrPipeline();
     client.lpos(key, element);
@@ -1215,6 +1259,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.rpop(key);
     return client.getBulkReply();
+  }
+
+  @Override
+  public List<String> rpop(final String key, final int count) {
+    checkIsInMultiOrPipeline();
+    client.rpop(key, count);
+    return client.getMultiBulkReply();
   }
 
   /**
@@ -2926,7 +2977,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.eval(script, keyCount, params);
     client.setTimeoutInfinite();
     try {
-      return getEvalResult();
+      return SafeEncoder.encodeObject(client.getOne());
     } finally {
       client.rollbackTimeout();
     }
@@ -2947,26 +2998,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return evalsha(sha1, 0);
   }
 
-  private Object getEvalResult() {
-    return evalResult(client.getOne());
-  }
-
-  private Object evalResult(Object result) {
-    if (result instanceof byte[]) return SafeEncoder.encode((byte[]) result);
-
-    if (result instanceof List<?>) {
-      List<?> list = (List<?>) result;
-      List<Object> listResult = new ArrayList<>(list.size());
-      for (Object bin : list) {
-        listResult.add(evalResult(bin));
-      }
-
-      return listResult;
-    }
-
-    return result;
-  }
-
   @Override
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
     return evalsha(sha1, keys.size(), getParams(keys, args));
@@ -2976,7 +3007,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Object evalsha(final String sha1, final int keyCount, final String... params) {
     checkIsInMultiOrPipeline();
     client.evalsha(sha1, keyCount, params);
-    return getEvalResult();
+    return SafeEncoder.encodeObject(client.getOne());
   }
 
   @Override
@@ -3106,7 +3137,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     final List<Map<String, String>> masters = new ArrayList<>();
     for (Object obj : reply) {
-      masters.add(BuilderFactory.STRING_MAP.build((List) obj));
+      masters.add(BuilderFactory.STRING_MAP.build( obj));
     }
     return masters;
   }
@@ -3177,7 +3208,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return
    */
   @Override
-  @SuppressWarnings("rawtypes")
   public List<Map<String, String>> sentinelSlaves(final String masterName) {
     client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
     final List<Object> reply = client.getObjectMultiBulkReply();
@@ -3233,14 +3263,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String restore(final String key, final int ttl, final byte[] serializedValue) {
+  public String restore(final String key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restore(key, ttl, serializedValue);
     return client.getStatusCodeReply();
   }
 
   @Override
-  public String restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restoreReplace(key, ttl, serializedValue);
     return client.getStatusCodeReply();
@@ -3590,7 +3620,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     if (dataSource != null) {
       JedisPoolAbstract pool = this.dataSource;
       this.dataSource = null;
-      if (client.isBroken()) {
+      if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);

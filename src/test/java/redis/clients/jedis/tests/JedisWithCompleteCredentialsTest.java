@@ -4,10 +4,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
@@ -24,13 +26,9 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
    * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
    * @throws Exception
    */
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
-    }
+  @BeforeClass
+  public static void prepare() throws Exception {
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -52,7 +50,39 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void startWithUrlString() {
+  public void connectWithConfig() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().build())) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
+        .withUser("acljedis").withPassword("fizzbuzz").build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {})) {
+      jedis.auth("acljedis", "fizzbuzz");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+      @Override
+      public String getUser() {
+        return "acljedis";
+      }
+      @Override
+      public String getPassword() {
+        return "fizzbuzz";
+      }
+    })) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void startWithUrl() {
     try(Jedis j = new Jedis("localhost", 6379)){
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       assertEquals("OK", j.select(2));
@@ -65,7 +95,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void startWithUrl() throws URISyntaxException {
+  public void startWithUri() throws URISyntaxException {
     try(Jedis j = new Jedis("localhost", 6379)){
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       assertEquals("OK", j.select(2));

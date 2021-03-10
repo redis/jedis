@@ -583,7 +583,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    assertEquals(Arrays.asList(10d, 0.1d, null), jedis.zmscore(bfoo, bb, bc, SafeEncoder.encode("s")));
+    assertEquals(Arrays.asList(10d, 0.1d, null),
+      jedis.zmscore(bfoo, bb, bc, SafeEncoder.encode("s")));
   }
 
   @Test
@@ -702,12 +703,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   @Test
   public void zpopmin() {
 
-    jedis.zadd("foo", 1d, "a",ZAddParams.zAddParams().nx());
-    jedis.zadd("foo", 10d, "b",ZAddParams.zAddParams().nx());
-    jedis.zadd("foo", 0.1d, "c",ZAddParams.zAddParams().nx());
-    jedis.zadd("foo", 2d, "a",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    Set<Tuple> range = jedis.zpopmin("foo",  2);
+    Set<Tuple> range = jedis.zpopmin("foo", 2);
 
     Set<Tuple> expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("c", 0.1d));

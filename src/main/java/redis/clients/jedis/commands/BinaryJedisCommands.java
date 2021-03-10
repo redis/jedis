@@ -390,33 +390,33 @@ public interface BinaryJedisCommands {
   Long hstrlen(byte[] key, byte[] field);
   
   
-  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
-  Long xlen(final byte[] key);
+  Long xlen(byte[] key);
 
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
    */
   @Deprecated
-  default List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
+  default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
     return xrange(key, start, end, (int) Math.max(count, (long) Integer.MAX_VALUE));
   }
 
-  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final int count);
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
 
-  List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
-  Long xack(final byte[] key, final byte[] group, final byte[]... ids);
+  Long xack(byte[] key, byte[] group, byte[]... ids);
  
-  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id, boolean makeStream);
+  String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
-  String xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id);
+  String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
 
-  Long xgroupDestroy(final byte[] key, final byte[] consumer);
+  Long xgroupDestroy(byte[] key, byte[] consumer);
 
-  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
+  Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
  
-  Long xdel(final byte[] key, final byte[]... ids);
+  Long xdel(byte[] key, byte[]... ids);
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 

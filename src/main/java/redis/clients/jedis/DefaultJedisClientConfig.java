@@ -127,8 +127,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public DefaultJedisClientConfig build() {
       return new DefaultJedisClientConfig(connectionTimeoutMillis, soTimeoutMillis,
-          infiniteSoTimeoutMillis, user, password, databse, clientName,
-          ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
+          infiniteSoTimeoutMillis, user, password, databse, clientName, ssl, sslSocketFactory,
+          sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
     public Builder withConnectionTimeoutMillis(int connectionTimeoutMillis) {
@@ -191,11 +191,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
   }
-  
+
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(), copy.getSoTimeoutMillis(),
-        copy.getInfiniteSoTimeoutMillis(), copy.getUser(), copy.getPassword(), copy.getDatabase(),
-        copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(), copy.getSslParameters(),
-        copy.getHostnameVerifier(), copy.getHostAndPortMapper());
+    return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(),
+        copy.getSoTimeoutMillis(), copy.getInfiniteSoTimeoutMillis(), copy.getUser(),
+        copy.getPassword(), copy.getDatabase(), copy.getClientName(), copy.isSsl(),
+        copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
+        copy.getHostAndPortMapper());
   }
 }

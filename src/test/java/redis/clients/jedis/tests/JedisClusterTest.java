@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -167,13 +166,13 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       assertEquals(3, jc.getClusterNodes().size());
     }
 
-    try(JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT,
+        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       assertEquals(3, jc2.getClusterNodes().size());
     }
   }
@@ -182,7 +181,8 @@ public class JedisClusterTest {
   public void testDiscoverNodesAutomaticallyWithSocketConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
 
-    try (JedisCluster jc = new JedisCluster(hp, DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(hp, DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS,
+        DEFAULT_POOL_CONFIG)) {
       assertEquals(3, jc.getClusterNodes().size());
     }
 
@@ -198,8 +198,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     String clientName = "myAppName";
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", clientName, DEFAULT_POOL_CONFIG)) {
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Collection<JedisPool> values = clusterNodes.values();
       for (JedisPool jedisPool : values) {
@@ -233,16 +233,16 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       jc.set("foo", "bar");
       jc.set("test", "test");
       assertEquals("bar", node3.get("foo"));
       assertEquals("test", node2.get("test"));
     }
 
-    try(JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 7379), DEFAULT_TIMEOUT,
+        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       jc2.set("foo", "bar");
       jc2.set("test", "test");
       assertEquals("bar", node3.get("foo"));
@@ -281,8 +281,8 @@ public class JedisClusterTest {
     log.info("test migrate slot");
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(nodeInfo1);
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
       String node2Id = JedisClusterTestUtil.getNodeId(node2.clusterNodes());
       node3.clusterSetSlotMigrating(15363, node2Id);
@@ -332,8 +332,8 @@ public class JedisClusterTest {
     log.info("test migrate slot to new node");
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(nodeInfo1);
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       node3.clusterMeet(LOCAL_IP, nodeInfo4.getPort());
 
       String node3Id = JedisClusterTestUtil.getNodeId(node3.clusterNodes());
@@ -393,8 +393,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       node2.clusterDelSlots(slot51);
       node3.clusterDelSlots(slot51);
@@ -411,8 +411,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -424,7 +424,8 @@ public class JedisClusterTest {
   @Test
   public void testAskResponseWithConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG,
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -438,8 +439,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       // This will cause an infinite redirection loop
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -450,7 +451,8 @@ public class JedisClusterTest {
   @Test(expected = JedisClusterMaxAttemptsException.class)
   public void testRedisClusterMaxRedirectionsWithConfig() {
     HostAndPort hp = new HostAndPort("127.0.0.1", 7379);
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(Collections.singleton(hp), DEFAULT_CLIENT_CONFIG,
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       int slot51 = JedisClusterCRC16.getSlot("51");
       // This will cause an infinite redirection loop
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
@@ -470,7 +472,7 @@ public class JedisClusterTest {
     JedisClusterTestUtil.assertNodeIsKnown(node1, node4Id, 1000);
     JedisClusterTestUtil.assertNodeIsKnown(node2, node4Id, 1000);
     JedisClusterTestUtil.assertNodeIsKnown(node3, node4Id, 1000);
-    
+
     assertNodeHandshakeEnded(node1, 1000);
     assertNodeHandshakeEnded(node2, 1000);
     assertNodeHandshakeEnded(node3, 1000);
@@ -519,7 +521,7 @@ public class JedisClusterTest {
   public void testClusterKeySlot() {
     // It assumes JedisClusterCRC16 is correctly implemented
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
-        node1.clusterKeySlot("{user1000}.following").intValue());
+      node1.clusterKeySlot("{user1000}.following").intValue());
     assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
         node1.clusterKeySlot("foo{bar}{zap}").intValue());
     assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
@@ -533,8 +535,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       int count = 5;
       for (int index = 0; index < count; index++) {
@@ -552,8 +554,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       int slot51 = JedisClusterCRC16.getSlot("51");
       jc.set("51", "foo");
@@ -578,8 +580,8 @@ public class JedisClusterTest {
     config.setMaxWaitMillis(DEFAULT_TIMEOUT);
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", config)) {
       jc.set("52", "poolTestValue");
     }
   }
@@ -600,7 +602,8 @@ public class JedisClusterTest {
   @Test
   public void testCloseableWithConfig() {
     HostAndPort hp = nodeInfo1;
-    try(JedisCluster jc = new JedisCluster(hp, DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(hp, DEFAULT_CLIENT_CONFIG, DEFAULT_REDIRECTIONS,
+        DEFAULT_POOL_CONFIG)) {
       jc.set("51", "foo");
       jc.close();
 
@@ -613,8 +616,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, 4000, 4000, DEFAULT_REDIRECTIONS,
-        "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, 4000, 4000, DEFAULT_REDIRECTIONS,
+        "cluster", DEFAULT_POOL_CONFIG)) {
 
       for (JedisPool pool : jc.getClusterNodes().values()) {
         Jedis jedis = pool.getResource();
@@ -678,10 +681,10 @@ public class JedisClusterTest {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", config)) {
 
-      try(Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource()){
+      try (Jedis j = jc.getClusterNodes().get("127.0.0.1:7380").getResource()) {
         ClientKillerUtil.tagClient(j, "DEAD");
         ClientKillerUtil.killClient(j, "DEAD");
       }
@@ -696,8 +699,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", config)) {
 
       // This will cause an infinite redirection between node 2 and 3
       node3.clusterSetSlotMigrating(15363, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
@@ -715,8 +718,8 @@ public class JedisClusterTest {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
 
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
@@ -731,8 +734,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     JedisPoolConfig config = new JedisPoolConfig();
     config.setMaxTotal(1);
-    try(JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", config)){
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", config)) {
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(invalidHost)));
@@ -744,11 +747,11 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try(JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
+        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       String foo = "foo";
-      byte[] bfoo = new byte[]{0x0b, 0x0f, 0x00, 0x00};
+      byte[] bfoo = new byte[] { 0x0b, 0x0f, 0x00, 0x00 };
 
       try {
         cluster.exists((String) null);
@@ -801,8 +804,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(nodeInfo2);
     jedisClusterNode.add(nodeInfo3);
 
-    try(JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
+        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       // prepare datas
       Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
@@ -811,7 +814,8 @@ public class JedisClusterTest {
       cluster.geoadd("{Sicily}", coordinateMap);
 
       long size = cluster.georadiusStore("{Sicily}", 15, 37, 200, GeoUnit.KM,
-          GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
+        GeoRadiusParam.geoRadiusParam(),
+        GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
       assertEquals(2, size);
       Set<String> expected = new LinkedHashSet<String>();
       expected.add("Palermo");
@@ -827,8 +831,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(nodeInfo2);
     jedisClusterNode.add(nodeInfo3);
 
-    try(JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)){
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
+        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       // prepare datas
       Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
@@ -837,7 +841,8 @@ public class JedisClusterTest {
       cluster.geoadd("{Sicily}".getBytes(), bcoordinateMap);
 
       long size = cluster.georadiusStore("{Sicily}".getBytes(), 15, 37, 200, GeoUnit.KM,
-          GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
+        GeoRadiusParam.geoRadiusParam(),
+        GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
       assertEquals(2, size);
       Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
       bexpected.add("Palermo".getBytes());

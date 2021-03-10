@@ -17,7 +17,7 @@ import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 /**
  * This test class is a copy of {@link JedisTest}.
- *
+ * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
@@ -28,12 +28,13 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
    */
   @BeforeClass
   public static void prepare() throws Exception {
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
+        RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
   public void useWithoutConnecting() {
-    try(Jedis j = new Jedis()){
+    try (Jedis j = new Jedis()) {
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       j.dbSize();
     }
@@ -44,7 +45,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
     JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
     shardInfo.setUser("acljedis");
     shardInfo.setPassword("fizzbuzz");
-    try(Jedis jedis = new Jedis(shardInfo)){
+    try (Jedis jedis = new Jedis(shardInfo)) {
       jedis.get("foo");
     }
   }
@@ -55,15 +56,16 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .withUser("acljedis").withPassword("fizzbuzz").build())) {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().withUser("acljedis")
+        .withPassword("fizzbuzz").build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithConfigInterface() {
-    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {})) {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+    })) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -72,6 +74,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
       public String getUser() {
         return "acljedis";
       }
+
       @Override
       public String getPassword() {
         return "fizzbuzz";
@@ -83,12 +86,12 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void startWithUrl() {
-    try(Jedis j = new Jedis("localhost", 6379)){
+    try (Jedis j = new Jedis("localhost", 6379)) {
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try(Jedis j2 = new Jedis("redis://acljedis:fizzbuzz@localhost:6379/2")){
+    try (Jedis j2 = new Jedis("redis://acljedis:fizzbuzz@localhost:6379/2")) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -96,12 +99,12 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void startWithUri() throws URISyntaxException {
-    try(Jedis j = new Jedis("localhost", 6379)){
+    try (Jedis j = new Jedis("localhost", 6379)) {
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try(Jedis j2 = new Jedis(new URI("redis://acljedis:fizzbuzz@localhost:6379/2"))){
+    try (Jedis j2 = new Jedis(new URI("redis://acljedis:fizzbuzz@localhost:6379/2"))) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -110,7 +113,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
   @Test
   public void connectWithURICredentials() throws URISyntaxException {
     jedis.set("foo", "bar");
-    
+
     try (Jedis j1 = new Jedis(new URI("redis://default:foobared@localhost:6379"))) {
       assertEquals("PONG", j1.ping());
       assertEquals("bar", j1.get("foo"));
@@ -124,14 +127,14 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    try(Jedis j1 = new Jedis("redis://localhost:6379")){
+    try (Jedis j1 = new Jedis("redis://localhost:6379")) {
       assertEquals("OK", j1.auth("acljedis", "fizzbuzz"));
       assertEquals("localhost", j1.getClient().getHost());
       assertEquals(6379, j1.getClient().getPort());
       assertEquals(0, j1.getDB());
     }
 
-    try(Jedis j2 = new Jedis("redis://localhost:6379/")) {
+    try (Jedis j2 = new Jedis("redis://localhost:6379/")) {
       assertEquals("OK", j2.auth("acljedis", "fizzbuzz"));
       assertEquals("localhost", j2.getClient().getHost());
       assertEquals(6379, j2.getClient().getPort());

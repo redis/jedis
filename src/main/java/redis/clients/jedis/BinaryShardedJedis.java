@@ -11,6 +11,7 @@ import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -89,6 +90,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public byte[] getDel(final byte[] key) {
     Jedis j = getShard(key);
     return j.getDel(key);
+  }
+
+  @Override
+  public byte[] getEx(byte[] key, GetExParams params) {
+    Jedis j = getShard(key);
+    return j.getEx(key, params);
   }
 
   @Override

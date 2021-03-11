@@ -8,6 +8,7 @@ import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisPipeline;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -180,6 +181,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<byte[]> getDel(final byte[] key) {
     getClient(key).getDel(key);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<String> getEx(String key, GetExParams params) {
+    getClient(key).getEx(key, params);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<byte[]> getEx(byte[] key, GetExParams params) {
+    getClient(key).getEx(key, params);
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 

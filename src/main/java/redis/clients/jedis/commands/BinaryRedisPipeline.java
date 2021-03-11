@@ -10,6 +10,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -55,8 +56,10 @@ public interface BinaryRedisPipeline {
   Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp);
 
   Response<byte[]> get(byte[] key);
-  
+
   Response<byte[]> getDel(byte[] key);
+
+  Response<byte[]> getEx(byte[] key, GetExParams params);
 
   Response<Boolean> getbit(byte[] key, long offset);
 
@@ -345,7 +348,7 @@ public interface BinaryRedisPipeline {
 
   Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member,
       double radius, GeoUnit unit);
-  
+
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
@@ -357,25 +360,25 @@ public interface BinaryRedisPipeline {
   Response<List<Long>> bitfieldReadonly(byte[] key, byte[]... elements);
 
   Response<Long> hstrlen(byte[] key, byte[] field);
-  
+
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
 
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
-  
+
   Response<Long> xlen(byte[] key);
 
   Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count);
 
   Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
-   
+
   Response<Long> xack(byte[] key, byte[] group,  byte[]... ids);
-  
+
   Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
-  
+
   Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id);
-  
+
   Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
-  
+
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
   /**
@@ -387,10 +390,10 @@ public interface BinaryRedisPipeline {
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
-  
+
   Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
- 
-  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
+
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids);
 
   Response<Long> bitpos(byte[] key, boolean value);

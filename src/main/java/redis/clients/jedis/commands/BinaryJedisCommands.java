@@ -15,6 +15,7 @@ import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamGroupInfo;
 import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -333,6 +334,8 @@ public interface BinaryJedisCommands {
   Long geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
   Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
+  Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
   Double geodist(byte[] key, byte[] member1, byte[] member2);
 

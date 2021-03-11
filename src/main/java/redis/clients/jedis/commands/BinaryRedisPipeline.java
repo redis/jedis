@@ -9,6 +9,7 @@ import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -324,6 +325,8 @@ public interface BinaryRedisPipeline {
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
   Response<Long> geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
+  Response<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
   Response<Double> geodist(byte[] key, byte[] member1, byte[] member2);
 

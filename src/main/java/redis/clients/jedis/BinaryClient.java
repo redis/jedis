@@ -27,6 +27,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
@@ -1312,14 +1313,17 @@ public class BinaryClient extends Connection {
   }
 
   public void geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3 + 1);
-    args.add(key);
+    geoadd(key, GeoAddParams.geoAddParams(), memberCoordinateMap);
+  }
+
+  public void geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3);
     args.addAll(convertGeoCoordinateMapToByteArrays(memberCoordinateMap));
 
     byte[][] argsArray = new byte[args.size()][];
     args.toArray(argsArray);
 
-    sendCommand(GEOADD, argsArray);
+    sendCommand(GEOADD, params.getByteParams(key, argsArray));
   }
 
   public void geodist(final byte[] key, final byte[] member1, final byte[] member2) {

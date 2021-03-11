@@ -7,6 +7,7 @@ import java.util.Set;
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisPipeline;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -1811,6 +1812,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<Long> geoadd(final String key,
       final Map<String, GeoCoordinate> memberCoordinateMap) {
     getClient(key).geoadd(key, memberCoordinateMap);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    getClient(key).geoadd(key, params, memberCoordinateMap);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    getClient(key).geoadd(key, params, memberCoordinateMap);
     return getResponse(BuilderFactory.LONG);
   }
 

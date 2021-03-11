@@ -14,6 +14,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.Commands;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
@@ -1179,6 +1180,10 @@ public class Client extends BinaryClient implements Commands {
 
   public void geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     geoadd(SafeEncoder.encode(key), convertMemberCoordinateMapToBinary(memberCoordinateMap));
+  }
+
+  public void geoadd(final String key, final GeoAddParams params, final Map<String, GeoCoordinate> memberCoordinateMap) {
+    geoadd(SafeEncoder.encode(key), params, convertMemberCoordinateMapToBinary(memberCoordinateMap));
   }
 
   public void geodist(final String key, final String member1, final String member2) {

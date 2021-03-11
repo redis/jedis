@@ -12,6 +12,7 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -329,6 +330,8 @@ public interface JedisClusterCommands {
   Long geoadd(String key, double longitude, double latitude, String member);
 
   Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
+
+  Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap);
 
   Double geodist(String key, String member1, String member2);
 

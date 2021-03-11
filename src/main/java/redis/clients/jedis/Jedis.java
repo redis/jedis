@@ -3910,12 +3910,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String aclLoad() {
+    checkIsInMultiOrPipeline();
     client.aclLoad();
     return client.getStatusCodeReply();
   }
 
   @Override
   public String aclSave() {
+    checkIsInMultiOrPipeline();
     client.aclSave();
     return client.getStatusCodeReply();
   }

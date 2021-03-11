@@ -82,5 +82,7 @@ public interface AdvancedJedisCommands {
 
   String aclLog(String options);
 
-  // TODO: Implements ACL LOAD/SAVE commands
+  String aclLoad();
+
+  String aclSave();
 }

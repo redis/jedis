@@ -81,5 +81,7 @@ public interface AdvancedBinaryJedisCommands {
 
   byte[] aclLog(byte[] options);
 
-  // TODO: Implements ACL LOAD/SAVE commands
+  byte[] aclLoadBinary();
+
+  byte[] aclSaveBinary();
 }

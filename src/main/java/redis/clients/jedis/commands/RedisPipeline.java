@@ -13,6 +13,7 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -60,6 +61,8 @@ public interface RedisPipeline {
   Response<String> get(String key);
 
   Response<String> getDel(String key);
+
+  Response<String> getEx(String key, GetExParams params);
 
   Response<Boolean> getbit(String key, long offset);
 

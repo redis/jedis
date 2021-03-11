@@ -10,6 +10,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -57,6 +58,8 @@ public interface BinaryRedisPipeline {
   Response<byte[]> get(byte[] key);
 
   Response<byte[]> getDel(byte[] key);
+
+  Response<byte[]> getEx(byte[] key, GetExParams params);
 
   Response<Boolean> getbit(byte[] key, long offset);
 

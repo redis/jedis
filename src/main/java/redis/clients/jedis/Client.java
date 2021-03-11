@@ -16,6 +16,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -92,6 +93,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void getDel(final String key) {
     getDel(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void getEx(String key, GetExParams params) {
+    getEx(SafeEncoder.encode(key), params);
   }
 
   @Override

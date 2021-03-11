@@ -9,6 +9,7 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -26,6 +27,8 @@ public interface BinaryJedisClusterCommands {
   byte[] get(byte[] key);
 
   byte[] getDel(byte[] key);
+
+  byte[] getEx(byte[] key, GetExParams params);
 
   Boolean exists(byte[] key);
 

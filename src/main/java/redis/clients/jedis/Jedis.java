@@ -24,6 +24,7 @@ import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -241,6 +242,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public String getDel(final String key) {
     checkIsInMultiOrPipeline();
     client.getDel(key);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String getEx(String key, GetExParams params) {
+    checkIsInMultiOrPipeline();
+    client.getEx(key, params);
     return client.getBulkReply();
   }
 
@@ -3905,6 +3913,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public String aclGenPass() {
     client.aclGenPass();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclLoad() {
+    checkIsInMultiOrPipeline();
+    client.aclLoad();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSave() {
+    checkIsInMultiOrPipeline();
+    client.aclSave();
     return client.getStatusCodeReply();
   }
 

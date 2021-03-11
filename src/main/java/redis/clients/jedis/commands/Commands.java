@@ -19,13 +19,13 @@ import redis.clients.jedis.params.LPosParams;
 public interface Commands {
 
   void ping(String message);
-  
+
   void set(String key, String value);
 
   void set(String key, String value, SetParams params);
 
   void get(String key);
-  
+
   void getDel(String key);
 
   void exists(String... keys);
@@ -206,6 +206,8 @@ public interface Commands {
 
   void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  void zaddIncr(String key, double score, String member, ZAddParams params);
+
   void zrange(String key, long start, long stop);
 
   void zrem(String key, String... members);
@@ -229,9 +231,9 @@ public interface Commands {
   void zscore(String key, String member);
 
   void zmscore(String key, String... members);
-  
+
   void zpopmax(String key);
-  
+
   void zpopmax(String key, int count);
 
   void zpopmin(String key);
@@ -421,17 +423,17 @@ public interface Commands {
   void memoryDoctor();
 
   void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
-  
+
   void xlen(String key);
 
   void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
-  
+
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-  
+
   void xread(int count, long block, Entry<String, StreamEntryID>... streams);
-  
+
   void xack(String key, String group, StreamEntryID... ids);
-  
+
   void xgroupCreate(String key, String consumer, StreamEntryID id, boolean makeStream);
 
   void xgroupSetID(String key, String consumer, StreamEntryID id);

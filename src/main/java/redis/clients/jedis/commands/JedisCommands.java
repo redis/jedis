@@ -34,7 +34,7 @@ public interface JedisCommands {
   String set(String key, String value, SetParams params);
 
   String get(String key);
-  
+
   String getDel(String key);
 
   Boolean exists(String key);
@@ -65,7 +65,7 @@ public interface JedisCommands {
 
   String restoreReplace(String key, long ttl, byte[] serializedValue);
 
-  
+
   /**
    * @deprecated Use {@link #expire(java.lang.String, long)}.
    */
@@ -215,6 +215,8 @@ public interface JedisCommands {
   Long zadd(String key, Map<String, Double> scoreMembers);
 
   Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
+
+  Double zaddIncr(String key, double score, String member, ZAddParams params);
 
   Set<String> zrange(String key, long start, long stop);
 
@@ -388,7 +390,7 @@ public interface JedisCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(String key, String...arguments);
 
@@ -396,7 +398,7 @@ public interface JedisCommands {
 
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    * @return length of the value for key
    */
@@ -404,7 +406,7 @@ public interface JedisCommands {
 
   /**
    * XADD key ID field string [field string ...]
-   * 
+   *
    * @param key
    * @param id
    * @param hash
@@ -414,7 +416,7 @@ public interface JedisCommands {
 
   /**
    * XADD key MAXLEN ~ LEN ID field string [field string ...]
-   * 
+   *
    * @param key
    * @param id
    * @param hash
@@ -423,10 +425,10 @@ public interface JedisCommands {
    * @return
    */
   StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
-  
+
   /**
    * XLEN key
-   * 
+   *
    * @param key
    * @return
    */
@@ -434,39 +436,39 @@ public interface JedisCommands {
 
   /**
    * XRANGE key start end [COUNT count]
-   * 
+   *
    * @param key
-   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream  
+   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
    * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
-   * @param count maximum number of entries returned 
-   * @return The entries with IDs matching the specified range. 
+   * @param count maximum number of entries returned
+   * @return The entries with IDs matching the specified range.
    */
   List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
   /**
    * XREVRANGE key end start [COUNT <n>]
-   * 
+   *
    * @param key
-   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream  
+   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
    * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
-   * @param count The entries with IDs matching the specified range. 
+   * @param count The entries with IDs matching the specified range.
    * @return the entries with IDs matching the specified range, from the higher ID to the lower ID matching.
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-    
+
   /**
    * XACK key group ID [ID ...]
-   * 
+   *
    * @param key
    * @param group
    * @param ids
    * @return
    */
   long xack(String key, String group,  StreamEntryID... ids);
-  
+
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
-   * 
+   *
    * @param key
    * @param groupname
    * @param id
@@ -474,28 +476,28 @@ public interface JedisCommands {
    * @return
    */
   String xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
-  
+
   /**
    * XGROUP SETID <key> <groupname> <id or $>
-   * 
+   *
    * @param key
    * @param groupname
    * @param id
    * @return
    */
   String xgroupSetID( String key, String groupname, StreamEntryID id);
-  
+
   /**
    * XGROUP DESTROY <key> <groupname>
-   * 
+   *
    * @param key
    * @param groupname
    * @return
    */
   long xgroupDestroy( String key, String groupname);
-  
+
   /**
-   * XGROUP DELCONSUMER <key> <groupname> <consumername> 
+   * XGROUP DELCONSUMER <key> <groupname> <consumername>
    * @param key
    * @param groupname
    * @param consumername
@@ -505,7 +507,7 @@ public interface JedisCommands {
 
   /**
    * XPENDING key group [start end count] [consumer]
-   * 
+   *
    * @param key
    * @param groupname
    * @param start
@@ -515,7 +517,7 @@ public interface JedisCommands {
    * @return
    */
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
-  
+
   /**
    * XDEL key ID [ID ...]
    * @param key
@@ -523,7 +525,7 @@ public interface JedisCommands {
    * @return
    */
   long xdel( String key, StreamEntryID... ids);
-  
+
   /**
    * XTRIM key MAXLEN [~] count
    * @param key
@@ -532,13 +534,13 @@ public interface JedisCommands {
    * @return
    */
   long xtrim( String key, long maxLen, boolean approximate);
- 
+
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] [JUSTID]
-   */        
-  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
+   */
+  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   /**

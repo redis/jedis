@@ -526,6 +526,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zrange(key, start, stop);

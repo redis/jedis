@@ -1467,6 +1467,14 @@ public class BinaryClient extends Connection {
     sendCommand(ACL, Keyword.DELUSER.getRaw(), name);
   }
 
+  public void aclLoad() {
+    sendCommand(ACL, Keyword.LOAD.getRaw());
+  }
+
+  public void aclSave() {
+    sendCommand(ACL, Keyword.SAVE.getRaw());
+  }
+
   private List<byte[]> convertGeoCoordinateMapToByteArrays(
       final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3);

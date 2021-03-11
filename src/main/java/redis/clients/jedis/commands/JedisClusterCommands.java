@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
@@ -12,6 +13,7 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -29,6 +31,8 @@ public interface JedisClusterCommands {
   String get(String key);
 
   String getDel(String key);
+
+  String getEx(String key, GetExParams params);
 
   Boolean exists(String key);
 

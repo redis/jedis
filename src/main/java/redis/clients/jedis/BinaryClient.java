@@ -29,6 +29,7 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -194,6 +195,10 @@ public class BinaryClient extends Connection {
 
   public void getDel(final byte[] key) {
     sendCommand(GETDEL, key);
+  }
+
+  public void getEx(final byte[] key, final GetExParams params) {
+    sendCommand(GETEX, params.getByteParams(key));
   }
 
   public void quit() {

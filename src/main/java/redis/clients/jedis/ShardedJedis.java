@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -58,6 +59,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String getDel(final String key) {
     Jedis j = getShard(key);
     return j.getDel(key);
+  }
+
+  @Override
+  public String getEx(String key, GetExParams params) {
+    Jedis j = getShard(key);
+    return j.getEx(key, params);
   }
 
   @Override

@@ -32,6 +32,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -410,6 +411,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public byte[] getDel(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.getDel(key);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] getEx(final byte[] key, final GetExParams params) {
+    checkIsInMultiOrPipeline();
+    client.getEx(key, params);
     return client.getBinaryBulkReply();
   }
 

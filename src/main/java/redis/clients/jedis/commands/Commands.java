@@ -9,6 +9,7 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
@@ -27,6 +28,8 @@ public interface Commands {
   void get(String key);
 
   void getDel(String key);
+
+  void getEx(String key, GetExParams params);
 
   void exists(String... keys);
 

@@ -3948,17 +3948,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public byte[] aclLoadBinary() {
+  public String aclLoad() {
     checkIsInMultiOrPipeline();
     client.aclLoad();
-    return client.getBinaryBulkReply();
+    return client.getStatusCodeReply();
   }
 
   @Override
-  public byte[] aclSaveBinary() {
+  public String aclSave() {
     checkIsInMultiOrPipeline();
     client.aclSave();
-    return client.getBinaryBulkReply();
+    return client.getStatusCodeReply();
   }
 
   @Override

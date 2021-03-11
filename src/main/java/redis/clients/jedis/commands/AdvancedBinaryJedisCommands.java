@@ -81,7 +81,7 @@ public interface AdvancedBinaryJedisCommands {
 
   byte[] aclLog(byte[] options);
 
-  byte[] aclLoadBinary();
+  String aclLoad();
 
-  byte[] aclSaveBinary();
+  String aclSave();
 }

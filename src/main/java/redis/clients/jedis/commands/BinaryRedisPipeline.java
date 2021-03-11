@@ -199,6 +199,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
+  Response<Double> zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
+
   Response<Long> zcard(byte[] key);
 
   Response<Long> zcount(byte[] key, double min, double max);
@@ -388,6 +390,8 @@ public interface BinaryRedisPipeline {
   Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  Response<Object> xpendingSummary(byte[] key, byte[] groupname);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
 

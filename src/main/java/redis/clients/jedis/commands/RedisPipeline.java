@@ -10,6 +10,7 @@ import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
@@ -199,6 +200,8 @@ public interface RedisPipeline {
 
   Response<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  Response<Double> zaddIncr(String key, double score, String member, ZAddParams params);
+
   Response<Long> zcard(String key);
 
   Response<Long> zcount(String key, double min, double max);
@@ -379,6 +382,8 @@ public interface RedisPipeline {
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername);
+
+  Response<StreamPendingSummary> xpendingSummary(String key, String groupname);
 
   Response<Long> xdel( String key, StreamEntryID... ids);
 

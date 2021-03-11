@@ -394,6 +394,8 @@ public interface BinaryJedisClusterCommands {
 
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
+  Object xpendingSummary(final byte[] key, final byte[] groupname);
+
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
   Long waitReplicas(byte[] key, int replicas, long timeout);

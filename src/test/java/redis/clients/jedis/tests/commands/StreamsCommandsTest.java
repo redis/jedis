@@ -329,6 +329,12 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(1, range.get(0).getValue().size());
     assertEquals(map, range.get(0).getValue().get(0).getFields());
 
+    // Get the summary about the pending messages
+    StreamPendingSummary pendingSummary = jedis.xpendingSummary("xpendeing-stream", "xpendeing-group");
+    assertEquals(1, pendingSummary.getTotal());
+    assertEquals(id1, pendingSummary.getMinId());
+    assertEquals(1l, pendingSummary.getConsumerMessageCount().get("xpendeing-consumer").longValue());
+
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
       null, null, 3, "xpendeing-consumer");

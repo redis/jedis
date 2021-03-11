@@ -1150,6 +1150,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+    Jedis j = getShard(key);
+    return j.xpendingSummary(key, groupname);
+  }
+
+  @Override
   public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     Jedis j = getShard(key);

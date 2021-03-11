@@ -898,6 +898,32 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<StreamPendingSummary> STREAM_PENDING_SUMMARY = new Builder<StreamPendingSummary>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamPendingSummary build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+      long total = BuilderFactory.LONG.build(objectList.get(0));
+      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
+      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
+      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
+      Map<String, Long> map = new HashMap<>(consumerObjList.size());
+      for (List<Object> consumerObj : consumerObjList) {
+        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
+      }
+      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamPendingSummary";
+    }
+  };
+
   private static Map<String, Object> createMapFromDecodingFunctions(Iterator<Object> iterator,
       Map<String, Builder> mappingFunctions) {
 

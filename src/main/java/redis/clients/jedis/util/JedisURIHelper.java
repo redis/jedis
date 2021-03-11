@@ -9,8 +9,8 @@ public final class JedisURIHelper {
   private static final String REDIS = "redis";
   private static final String REDISS = "rediss";
 
-  private JedisURIHelper(){
-    throw new InstantiationError( "Must not instantiate this class" );
+  private JedisURIHelper() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   public static String getUser(URI uri) {
@@ -18,7 +18,7 @@ public final class JedisURIHelper {
     if (userInfo != null) {
       String user = userInfo.split(":", 2)[0];
       if (user.isEmpty()) {
-        user = null; //return null user is not specified
+        user = null; // return null user is not specified
       }
       return user;
     }

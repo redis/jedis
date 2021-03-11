@@ -390,8 +390,8 @@ public interface BinaryJedisCommands {
    * @return lenth of the value for key
    */
   Long hstrlen(byte[] key, byte[] field);
-  
-  
+
+
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(byte[] key);
@@ -409,7 +409,7 @@ public interface BinaryJedisCommands {
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
   Long xack(byte[] key, byte[] group, byte[]... ids);
- 
+
   String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
   String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
@@ -417,12 +417,14 @@ public interface BinaryJedisCommands {
   Long xgroupDestroy(byte[] key, byte[] consumer);
 
   Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
- 
+
   Long xdel(byte[] key, byte[]... ids);
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  Object xpendingSummary(byte[] key, byte[] groupname);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 

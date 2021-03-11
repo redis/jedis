@@ -4498,6 +4498,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+    checkIsInMultiOrPipeline();
+    client.xpendingSummary(key, groupname);
+    return client.getOne();
+  }
+
+  @Override
   public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();

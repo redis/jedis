@@ -1666,6 +1666,10 @@ public class BinaryClient extends Connection {
     }
   }
 
+  public void xpendingSummary(final byte[] key, final byte[] groupname) {
+    sendCommand(XPENDING, key, groupname);
+  }
+
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[][] ids) {
 

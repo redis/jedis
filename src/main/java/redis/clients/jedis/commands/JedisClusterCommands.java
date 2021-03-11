@@ -9,6 +9,7 @@ import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.SetParams;
@@ -516,6 +517,15 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+
+  /**
+   * XPENDING key group
+   *
+   * @param key
+   * @param groupname
+   * @return
+   */
+  StreamPendingSummary xpendingSummary(String key, String groupname);
 
   /**
    * XDEL key ID [ID ...]

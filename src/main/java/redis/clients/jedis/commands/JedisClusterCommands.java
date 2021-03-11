@@ -26,7 +26,7 @@ public interface JedisClusterCommands {
   String set(String key, String value, SetParams params);
 
   String get(String key);
-  
+
   String getDel(String key);
 
   Boolean exists(String key);
@@ -197,6 +197,8 @@ public interface JedisClusterCommands {
 
   Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(String key, double score, String member, ZAddParams params);
+
   Set<String> zrange(String key, long start, long stop);
 
   Long zrem(String key, String... members);
@@ -357,15 +359,15 @@ public interface JedisClusterCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(String key, String...arguments);
 
   List<Long> bitfieldReadonly(String key, String...arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    * @return lenth of the value for key
    */
@@ -373,25 +375,25 @@ public interface JedisClusterCommands {
 
   /**
    *  MEMORY USAGE key
-   * 
+   *
    * @param key
    * @return the memory usage
    */
   Long memoryUsage(String key);
 
   /**
-   *  MEMORY USAGE key [SAMPLES count] 
-   * 
+   *  MEMORY USAGE key [SAMPLES count]
+   *
    * @param key
    * @param samples
    * @return the memory usage
    */
   Long memoryUsage(String key, int samples);
 
-  
+
   /**
    * XADD key ID field string [field string ...]
-   * 
+   *
    * @param key
    * @param id
    * @param hash
@@ -401,7 +403,7 @@ public interface JedisClusterCommands {
 
   /**
    * XADD key MAXLEN ~ LEN ID field string [field string ...]
-   * 
+   *
    * @param key
    * @param id
    * @param hash
@@ -410,10 +412,10 @@ public interface JedisClusterCommands {
    * @return
    */
   StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
-  
+
   /**
    * XLEN key
-   * 
+   *
    * @param key
    * @return
    */
@@ -421,7 +423,7 @@ public interface JedisClusterCommands {
 
   /**
    * XRANGE key start end [COUNT count]
-   * 
+   *
    * @param key
    * @param start
    * @param end
@@ -439,14 +441,14 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-  
+
   /**
    * @deprecated Will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
    */
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
-  
+
   /**
    * XACK key group ID [ID ...]
    * @param key
@@ -455,38 +457,38 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xack(String key, String group,  StreamEntryID... ids);
-  
+
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
-   * 
+   *
    * @param key
    * @param groupname
    * @param id
    * @return
    */
   String xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
-  
+
   /**
    * XGROUP SETID <key> <groupname> <id or $>
-   * 
+   *
    * @param key
    * @param groupname
    * @param id
    * @return
    */
   String xgroupSetID( String key, String groupname, StreamEntryID id);
-  
+
   /**
    * XGROUP DESTROY <key> <groupname>
-   * 
+   *
    * @param key
    * @param groupname
    * @return
    */
   Long xgroupDestroy( String key, String groupname);
-  
+
   /**
-   * XGROUP DELCONSUMER <key> <groupname> <consumername> 
+   * XGROUP DELCONSUMER <key> <groupname> <consumername>
    * @param key
    * @param groupname
    * @param consumername
@@ -501,10 +503,10 @@ public interface JedisClusterCommands {
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
-  
+
   /**
    * XPENDING key group [start end count] [consumer]
-   * 
+   *
    * @param key
    * @param groupname
    * @param start
@@ -514,7 +516,7 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
-  
+
   /**
    * XDEL key ID [ID ...]
    * @param key
@@ -522,7 +524,7 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xdel( String key, StreamEntryID... ids);
-  
+
   /**
    * XTRIM key MAXLEN [~] count
    * @param key
@@ -531,13 +533,13 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xtrim( String key, long maxLen, boolean approximateLength);
- 
+
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] [JUSTID]
-   */        
-  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
+   */
+  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   Long waitReplicas(String key, int replicas, long timeout);

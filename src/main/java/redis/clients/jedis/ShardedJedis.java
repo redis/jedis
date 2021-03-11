@@ -553,6 +553,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zrange(key, start, stop);

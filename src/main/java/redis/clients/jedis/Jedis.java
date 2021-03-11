@@ -22,6 +22,7 @@ import redis.clients.jedis.commands.MultiKeyCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.ScriptingCommands;
 import redis.clients.jedis.commands.SentinelCommands;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
@@ -3706,6 +3707,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
     client.geoadd(key, memberCoordinateMap);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long geoadd(final String key, final GeoAddParams params, final Map<String, GeoCoordinate> memberCoordinateMap) {
+    checkIsInMultiOrPipeline();
+    client.geoadd(key, params, memberCoordinateMap);
     return client.getIntegerReply();
   }
 

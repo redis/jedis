@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
@@ -2174,6 +2175,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Long execute(Jedis connection) {
         return connection.geoadd(key, memberCoordinateMap);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, params, memberCoordinateMap);
       }
     }.run(key);
   }

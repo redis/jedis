@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -971,6 +972,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     Jedis j = getShard(key);
     return j.geoadd(key, memberCoordinateMap);
+  }
+
+  @Override
+  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, params, memberCoordinateMap);
   }
 
   @Override

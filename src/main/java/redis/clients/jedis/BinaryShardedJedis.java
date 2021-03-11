@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -944,6 +945,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Long geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     Jedis j = getShard(key);
     return j.geoadd(key, memberCoordinateMap);
+  }
+
+  @Override
+  public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, params, memberCoordinateMap);
   }
 
   @Override

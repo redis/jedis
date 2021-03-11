@@ -8,6 +8,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -307,6 +308,8 @@ public interface BinaryJedisClusterCommands {
   Long geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
   Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
+  Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
   Double geodist(byte[] key, byte[] member1, byte[] member2);
 

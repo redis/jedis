@@ -4,6 +4,7 @@ import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
@@ -1984,6 +1985,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public Long execute(Jedis connection) {
         return connection.geoadd(key, memberCoordinateMap);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, params, memberCoordinateMap);
       }
     }.runBinary(key);
   }

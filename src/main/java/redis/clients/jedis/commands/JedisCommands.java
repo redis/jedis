@@ -217,6 +217,8 @@ public interface JedisCommands {
 
   Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(String key, double score, String member, ZAddParams params);
+
   Set<String> zrange(String key, long start, long stop);
 
   Long zrem(String key, String... members);

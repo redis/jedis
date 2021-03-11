@@ -1631,6 +1631,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zaddIncr(key, score, member, params);
+    return BuilderFactory.DOUBLE.build(client.getOne());
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrange(key, start, stop);

@@ -1948,6 +1948,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zaddIncr(key, score, member, params);
+    return BuilderFactory.DOUBLE.build(client.getOne());
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrange(key, start, stop);

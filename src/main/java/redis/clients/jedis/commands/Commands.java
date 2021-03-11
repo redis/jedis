@@ -206,6 +206,8 @@ public interface Commands {
 
   void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  void zaddIncr(String key, double score, String member, ZAddParams params);
+
   void zrange(String key, long start, long stop);
 
   void zrem(String key, String... members);

@@ -211,6 +211,8 @@ public interface BinaryJedisCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
+
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
   Long zrem(byte[] key, byte[]... members);

@@ -471,6 +471,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    zaddIncr(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long stop) {
     zrange(SafeEncoder.encode(key), start, stop);
   }

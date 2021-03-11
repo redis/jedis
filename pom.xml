@@ -50,6 +50,7 @@
 		<cluster-hosts>localhost:7379,localhost:7380,localhost:7381,localhost:7382,localhost:7383,localhost:7384,localhost:7385</cluster-hosts>
 		<github.global.server>github</github.global.server>
 		<log4j.version>2.13.3</log4j.version>
+		<module.name>redis.clients.jedis</module.name>
 	</properties>
 
 	<dependencies>
@@ -203,7 +204,7 @@
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						<manifestEntries>
-							<Automatic-Module-Name>redis.clients.jedis</Automatic-Module-Name>
+							<Automatic-Module-Name>${jedis.module.name}</Automatic-Module-Name>
 						</manifestEntries>
 					</archive>
 				</configuration>

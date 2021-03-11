@@ -204,7 +204,7 @@
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						<manifestEntries>
-							<Automatic-Module-Name>${jedis.module.name}</Automatic-Module-Name>
+							<Automatic-Module-Name>${module.name}</Automatic-Module-Name>
 						</manifestEntries>
 					</archive>
 				</configuration>

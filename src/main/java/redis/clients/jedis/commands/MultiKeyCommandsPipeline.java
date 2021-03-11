@@ -84,11 +84,12 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> touch(String... keys);
 
-  Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+  Response<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, String... keys);
 
-  Response<Long> georadiusStore(String key, double longitude, double latitude,
-      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
-
-  Response<Long> georadiusByMemberStore(String key, String member, double radius,
+  Response<Long> georadiusStore(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

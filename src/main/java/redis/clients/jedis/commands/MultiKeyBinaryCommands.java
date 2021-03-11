@@ -96,12 +96,14 @@ public interface MultiKeyBinaryCommands {
 
   List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams);
 
-  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams);
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
+      Map<byte[], byte[]> streams);
 
-  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams);
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
+      Entry<byte[], byte[]>... streams);
 
-  Long georadiusStore(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+  Long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
   Long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

@@ -1,8 +1,8 @@
 package redis.clients.jedis.tests;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -15,13 +15,14 @@ import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.junit.After;
 
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of @JedisSentinelPoolTest where all authentications are made with
- * default:foobared credentialsinformation
- *
+ * This test class is a copy of {@link JedisSentinelPoolTest} where all authentications are made
+ * with default:foobared credentials information
+ * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class JedisSentinelPoolWithCompleteCredentialsTest {
@@ -40,17 +41,14 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   protected Set<String> sentinels = new HashSet<String>();
 
+  @BeforeClass
+  public static void prepare() throws Exception {
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
+        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+  }
+
   @Before
   public void setUp() throws Exception {
-    Jedis jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    // run the test only if the verison support ACL (6 or later)
-    boolean shouldNotRun = ((new RedisVersionUtil(jedis)).getRedisMajorVersionNumber() < 6);
-    if ( shouldNotRun ) {
-      org.junit.Assume.assumeFalse("Not running ACL tests on this version of Redis", shouldNotRun);
-    }
-
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
@@ -67,11 +65,11 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   @Test
   public void repeatedSentinelPoolInitialization() {
 
-    for(int i=0; i<20 ; ++i) {
-      GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    for (int i = 0; i < 20; ++i) {
+      GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
 
       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-          "default","foobared", 2);
+          "default", "foobared", 2);
       pool.getResource().close();
       pool.destroy();
     }
@@ -96,15 +94,15 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default","foobared", 2);
-    Jedis jedis = pool.getResource();
-    jedis.auth("default", "foobared");
-    jedis.set("foo", "bar");
-    assertEquals("bar", jedis.get("foo"));
-    jedis.close();
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default",
+        "foobared", 2);
+    try (Jedis jedis = pool.getResource()) {
+      jedis.auth("default", "foobared");
+      jedis.set("foo", "bar");
+      assertEquals("bar", jedis.get("foo"));
+    }
     pool.close();
     assertTrue(pool.isClosed());
   }
@@ -112,7 +110,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   @Test
   public void ensureSafeTwiceFailover() throws InterruptedException {
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-        new GenericObjectPoolConfig(), 1000, "default", "foobared", 2);
+        new GenericObjectPoolConfig<Jedis>(), 1000, "default", "foobared", 2);
 
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new
@@ -125,74 +123,60 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   @Test
   public void returnResourceShouldResetState() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default", "foobared", 2);
 
-    Jedis jedis = pool.getResource();
-    Jedis jedis2 = null;
-
-    try {
-      jedis.set("hello", "jedis");
-      Transaction t = jedis.multi();
-      t.set("hello", "world");
-      jedis.close();
-
-      jedis2 = pool.getResource();
-
-      assertTrue(jedis == jedis2);
-      assertEquals("jedis", jedis2.get("hello"));
-    } catch (JedisConnectionException e) {
-      if (jedis2 != null) {
-        jedis2 = null;
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "default", "foobared", 2)) {
+      Jedis jedis;
+      try (Jedis jedis1 = pool.getResource()) {
+        jedis = jedis1;
+        jedis1.set("hello", "jedis");
+        Transaction t = jedis1.multi();
+        t.set("hello", "world");
       }
-    } finally {
-      jedis2.close();
 
-      pool.destroy();
+      try (Jedis jedis2 = pool.getResource()) {
+
+        assertSame(jedis, jedis2);
+        assertEquals("jedis", jedis2.get("hello"));
+      }
     }
   }
 
   @Test
   public void checkResourceIsCloseable() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default", "foobared", 2);
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
+        "default", "foobared", 2)) {
 
-    Jedis jedis = pool.getResource();
-    try {
-      jedis.set("hello", "jedis");
-    } finally {
-      jedis.close();
-    }
+      Jedis jedis;
+      try (Jedis jedis1 = pool.getResource()) {
+        jedis = jedis1;
+        jedis1.set("hello", "jedis");
+      }
 
-    Jedis jedis2 = pool.getResource();
-    try {
-      assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
+      try (Jedis jedis2 = pool.getResource()) {
+        assertEquals(jedis, jedis2);
+      }
     }
   }
 
   @Test
   public void customClientName() {
-    GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default", "foobared", 0, "my_shiny_client_name");
+    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default",
+        "foobared", 0, "my_shiny_client_name");
 
-    Jedis jedis = pool.getResource();
-
-    try {
+    try (Jedis jedis = pool.getResource()) {
       assertEquals("my_shiny_client_name", jedis.clientGetname());
     } finally {
-      jedis.close();
-      pool.destroy();
+      pool.close();
     }
 
     assertTrue(pool.isClosed());

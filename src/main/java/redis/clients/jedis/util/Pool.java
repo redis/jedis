@@ -12,6 +12,11 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
+
+  /**
+   * @deprecated This will be private in future.
+   */
+  @Deprecated
   protected GenericObjectPool<T> internalPool;
 
   /**
@@ -20,7 +25,7 @@ public abstract class Pool<T> implements Closeable {
   public Pool() {
   }
 
-  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public Pool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
     initPool(poolConfig, factory);
   }
 
@@ -33,7 +38,7 @@ public abstract class Pool<T> implements Closeable {
     return this.internalPool.isClosed();
   }
 
-  public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public void initPool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {
       try {
@@ -43,6 +48,12 @@ public abstract class Pool<T> implements Closeable {
     }
 
     this.internalPool = new GenericObjectPool<>(factory, poolConfig);
+  }
+
+  protected void clearInternalPool() {
+    if (internalPool != null) {
+      internalPool.clear();
+    }
   }
 
   public T getResource() {
@@ -61,9 +72,6 @@ public abstract class Pool<T> implements Closeable {
   }
 
   protected void returnResourceObject(final T resource) {
-    if (resource == null) {
-      return;
-    }
     try {
       internalPool.returnObject(resource);
     } catch (Exception e) {
@@ -71,13 +79,13 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  protected void returnBrokenResource(final T resource) {
+  public void returnBrokenResource(final T resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  protected void returnResource(final T resource) {
+  public void returnResource(final T resource) {
     if (resource != null) {
       returnResourceObject(resource);
     }

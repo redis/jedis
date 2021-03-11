@@ -15,23 +15,23 @@ public class HostAndPortTest {
     String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e:1999";
     String port = "6379";
 
-    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
+    assertArrayEquals(new String[] { host, port }, HostAndPort.extractParts(host + ":" + port));
 
     host = "";
     port = "";
-    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
+    assertArrayEquals(new String[] { host, port }, HostAndPort.extractParts(host + ":" + port));
 
     host = "localhost";
     port = "";
-    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
+    assertArrayEquals(new String[] { host, port }, HostAndPort.extractParts(host + ":" + port));
 
     host = "";
     port = "6379";
-    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
+    assertArrayEquals(new String[] { host, port }, HostAndPort.extractParts(host + ":" + port));
 
     host = "11:22:33:44:55";
     port = "";
-    assertArrayEquals(new String[]{host, port}, HostAndPort.extractParts(host + ":" + port));
+    assertArrayEquals(new String[] { host, port }, HostAndPort.extractParts(host + ":" + port));
   }
 
   @Test

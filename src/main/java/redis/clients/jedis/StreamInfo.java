@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * This class holds information about stream
- * They can be access via getters.
- * For future purpose there is also {@link #getStreamInfo} method
- * that returns a generic {@code Map} - in case where more info is returned from a server
- *
+ * This class holds information about stream. They can be access via getters. For future purpose
+ * there is also {@link #getStreamInfo} method that returns a generic {@code Map} - in case where
+ * more info is returned from the server.
  */
 
 public class StreamInfo implements Serializable {
@@ -28,13 +26,12 @@ public class StreamInfo implements Serializable {
   private final StreamEntryID lastGeneratedId;
   private final StreamEntry firstEntry;
   private final StreamEntry lastEntry;
-  private final Map<String,Object> streamInfo;
+  private final Map<String, Object> streamInfo;
 
   /**
    * @param map contains key-value pairs with stream info
-   *
    */
-  public StreamInfo(Map<String,Object> map) {
+  public StreamInfo(Map<String, Object> map) {
 
     streamInfo = map;
     length = (Long) map.get(LENGTH);
@@ -78,7 +75,7 @@ public class StreamInfo implements Serializable {
   /**
    * @return Generic map containing all key-value pairs returned by the server
    */
-  public Map<String,Object> getStreamInfo() {
+  public Map<String, Object> getStreamInfo() {
     return streamInfo;
   }
 

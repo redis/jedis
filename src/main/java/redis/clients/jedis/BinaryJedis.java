@@ -3956,6 +3956,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public String aclLoad() {
+    checkIsInMultiOrPipeline();
+    client.aclLoad();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSave() {
+    checkIsInMultiOrPipeline();
+    client.aclSave();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
     this.client.clientKill(ipPort);

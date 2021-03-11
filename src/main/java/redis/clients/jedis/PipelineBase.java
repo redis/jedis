@@ -994,6 +994,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<Double> zaddIncr(String key, double score, String member, ZAddParams params) {
+    getClient(key).zaddIncr(key, score, member, params);
+    return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
+  public Response<Double> zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
+    getClient(key).zaddIncr(key, score, member, params);
+    return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
   public Response<Long> zcard(final String key) {
     getClient(key).zcard(key);
     return getResponse(BuilderFactory.LONG);
@@ -2131,6 +2143,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
       byte[] end, int count, byte[] consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
     return getResponse(BuilderFactory.OBJECT_LIST);
+  }
+
+  @Override
+  public Response<StreamPendingSummary> xpendingSummary(String key, String groupname) {
+    getClient(key).xpendingSummary(key, groupname);
+    return getResponse(BuilderFactory.STREAM_PENDING_SUMMARY);
+  }
+
+  @Override
+  public Response<Object> xpendingSummary(byte[] key, byte[] groupname) {
+    getClient(key).xpendingSummary(key, groupname);
+    return getResponse(BuilderFactory.OBJECT);
   }
 
   @Override

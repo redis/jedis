@@ -2024,6 +2024,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return blpop(getArgsAddTimeout(timeout, keys));
   }
 
+  @Override
+  public ScoreValueTuple bzpopmax(int timeout, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    return BuilderFactory.SCORE_VALUE_TUPLE.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public ScoreValueTuple bzpopmin(int timeout, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
+    return BuilderFactory.SCORE_VALUE_TUPLE.build(client.getObjectMultiBulkReply());
+  }
+
   private String[] getArgsAddTimeout(int timeout, String[] keys) {
     final int keyCount = keys.length;
     final String[] args = new String[keyCount + 1];

@@ -692,6 +692,22 @@ public class BinaryClient extends Connection {
     blpop(args.toArray(new byte[args.size()][]));
   }
 
+  public void bzpopmax(final int timeout, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    Collections.addAll(args, keys);
+
+    args.add(Protocol.toByteArray(timeout));
+    sendCommand(BZPOPMAX, args.toArray(new byte[args.size()][]));
+  }
+
+  public void bzpopmin(final int timeout, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    Collections.addAll(args, keys);
+
+    args.add(Protocol.toByteArray(timeout));
+    sendCommand(BZPOPMIN, args.toArray(new byte[args.size()][]));
+  }
+
   public void sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
     final List<byte[]> args = new ArrayList<>();
     args.add(key);

@@ -1212,6 +1212,14 @@ public class BinaryClient extends Connection {
     sendCommand(CLIENT, Keyword.ID.getRaw());
   }
 
+  public void clientUnblock(final long clientId, final UnblockType unblockType) {
+    if (unblockType == null) {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId));
+    } else {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.raw);
+    }
+  }
+
   public void time() {
     sendCommand(TIME);
   }

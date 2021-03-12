@@ -632,7 +632,7 @@ public class JedisClusterTest {
   public void testJedisClusterTimeoutWithConfig() {
     HostAndPort hp = nodeInfo1;
     try (JedisCluster jc = new JedisCluster(hp, DefaultJedisClientConfig.builder()
-        .withConnectionTimeoutMillis(4000).withSoTimeoutMillis(4000).withPassword("cluster").build(),
+        .withConnectionTimeoutMillis(4000).withSocketTimeoutMillis(4000).withPassword("cluster").build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       jc.getClusterNodes().values().forEach(pool -> {

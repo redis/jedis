@@ -124,8 +124,8 @@ public class JedisClusterInfoCache {
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap) {
     this(poolConfig, DefaultJedisClientConfig.builder()
-        .withConnectionTimeoutMillis(connectionTimeout).withSoTimeoutMillis(soTimeout)
-        .withInfiniteSoTimeoutMillis(infiniteSoTimeout).withUser(user).withPassword(password)
+        .withConnectionTimeoutMillis(connectionTimeout).withSocketTimeoutMillis(soTimeout)
+        .withBlockingSocketTimeoutMillis(infiniteSoTimeout).withUser(user).withPassword(password)
         .withClientName(clientName).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
         .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier)
         .withHostAndPortMapper(hostAndPortMap).build());

@@ -72,8 +72,8 @@ public class Connection implements Closeable {
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
-    this.soTimeout = clientConfig.getSoTimeoutMillis();
-    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeoutMillis();
+    this.soTimeout = clientConfig.getSocketTimeoutMillis();
+    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {

@@ -7,8 +7,8 @@ import javax.net.ssl.SSLSocketFactory;
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final int connectionTimeoutMillis;
-  private final int soTimeoutMillis;
-  private final int infiniteSoTimeoutMillis;
+  private final int socketTimeoutMillis;
+  private final int blockingSocketTimeoutMillis;
 
   private final String user;
   private final String password;
@@ -23,12 +23,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final HostAndPortMapper hostAndPortMapper;
 
   private DefaultJedisClientConfig(int connectionTimeoutMillis, int soTimeoutMillis,
-      int infiniteSoTimeoutMillis, String user, String password, int database, String clientName,
+      int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
     this.connectionTimeoutMillis = connectionTimeoutMillis;
-    this.soTimeoutMillis = soTimeoutMillis;
-    this.infiniteSoTimeoutMillis = infiniteSoTimeoutMillis;
+    this.socketTimeoutMillis = soTimeoutMillis;
+    this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
     this.user = user;
     this.password = password;
     this.database = database;
@@ -46,13 +46,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public int getSoTimeoutMillis() {
-    return soTimeoutMillis;
+  public int getSocketTimeoutMillis() {
+    return socketTimeoutMillis;
   }
 
   @Override
-  public int getInfiniteSoTimeoutMillis() {
-    return infiniteSoTimeoutMillis;
+  public int getBlockingSocketTimeoutMillis() {
+    return blockingSocketTimeoutMillis;
   }
 
   @Override
@@ -107,8 +107,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   public static class Builder {
 
     private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
-    private int soTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
-    private int infiniteSoTimeoutMillis = 0;
+    private int socketTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
+    private int blockingSocketTimeoutMillis = 0;
 
     private String user = null;
     private String password = null;
@@ -126,8 +126,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     public DefaultJedisClientConfig build() {
-      return new DefaultJedisClientConfig(connectionTimeoutMillis, soTimeoutMillis,
-          infiniteSoTimeoutMillis, user, password, databse, clientName, ssl, sslSocketFactory,
+      return new DefaultJedisClientConfig(connectionTimeoutMillis, socketTimeoutMillis,
+          blockingSocketTimeoutMillis, user, password, databse, clientName, ssl, sslSocketFactory,
           sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
@@ -136,13 +136,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder withSoTimeoutMillis(int soTimeoutMillis) {
-      this.soTimeoutMillis = soTimeoutMillis;
+    public Builder withSocketTimeoutMillis(int socketTimeoutMillis) {
+      this.socketTimeoutMillis = socketTimeoutMillis;
       return this;
     }
 
-    public Builder withInfiniteSoTimeoutMillis(int infiniteSoTimeoutMillis) {
-      this.infiniteSoTimeoutMillis = infiniteSoTimeoutMillis;
+    public Builder withBlockingSocketTimeoutMillis(int blockingSocketTimeoutMillis) {
+      this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
       return this;
     }
 
@@ -194,7 +194,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
     return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(),
-        copy.getSoTimeoutMillis(), copy.getInfiniteSoTimeoutMillis(), copy.getUser(),
+        copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(), copy.getUser(),
         copy.getPassword(), copy.getDatabase(), copy.getClientName(), copy.isSsl(),
         copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
         copy.getHostAndPortMapper());

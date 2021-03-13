@@ -155,6 +155,16 @@ public class MigrateTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void migrateAuth2() {
+    jedis.set("foo", "bar");
+    destAuth.aclSetUser("acljedis", "on", "allcommands", "allkeys", ">fizzbuzz");
+    assertEquals("OK",
+            jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth2("acljedis", "fizzbuzz"), "foo"));
+    assertEquals("bar", destAuth.get("foo"));
+    assertNull(jedis.get("foo"));
+  }
+
+  @Test
   public void migrateCopyReplaceAuth() {
     jedis.set("foo", "bar1");
     destAuth.set("foo", "bar2");

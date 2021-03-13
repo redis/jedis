@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -2221,8 +2222,22 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
+  @Override
+  public Response<List<StreamEntryID>> xclaimIds(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    getClient(key).xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_ID_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xclaimIds(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids) {
+    getClient(key).xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
   public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd,
-      final String... args) {
+                                      final String... args) {
     getClient(sampleKey).sendCommand(cmd, args);
     return getResponse(BuilderFactory.OBJECT);
   }

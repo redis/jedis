@@ -33,6 +33,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -1711,6 +1712,18 @@ public class BinaryClient extends Connection {
       arguments.add(Keyword.FORCE.getRaw());
     }
     sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
+  }
+
+  public void xclaimIds(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[][] ids) {
+    List<byte[]> arguments = new ArrayList<>(4 + ids.length);
+    arguments.add(groupname);
+    arguments.add(consumername);
+    arguments.add(toByteArray(minIdleTime));
+    Collections.addAll(arguments, ids);
+    arguments.add(Keyword.JUSTID.getRaw());
+
+    sendCommand(XCLAIM, params.getByteParams(key, arguments.toArray(new byte[arguments.size()][])));
   }
 
   public void xinfoStream(byte[] key) {

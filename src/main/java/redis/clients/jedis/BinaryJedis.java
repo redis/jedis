@@ -36,6 +36,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -4539,6 +4540,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaimIds(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaimIds(key, group, consumername, minIdleTime, params, ids);
     return client.getBinaryMultiBulkReply();
   }
 

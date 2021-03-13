@@ -6,6 +6,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -2583,6 +2584,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries,
           force, ids);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntryID> xclaimIds(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntryID>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntryID> execute(Jedis connection) {
+        return connection.xclaimIds(key, group, consumername, minIdleTime, params, ids);
       }
     }.run(key);
   }

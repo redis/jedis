@@ -39,6 +39,7 @@ public class MigrateParams extends Params {
     return this;
   }
 
+  @Override
   public byte[][] getByteParams() {
     List<byte[]> byteParams = new ArrayList<>();
 
@@ -51,8 +52,7 @@ public class MigrateParams extends Params {
     if (contains(AUTH)) {
       byteParams.add(SafeEncoder.encode(AUTH));
       byteParams.add(SafeEncoder.encode((String) getParam(AUTH)));
-    }
-    if (contains(AUTH2)) {
+    } else if (contains(AUTH2)) {
       byteParams.add(SafeEncoder.encode(AUTH2));
       String[] nameAndPass = (String[]) getParam(AUTH2);
       byteParams.add(SafeEncoder.encode(nameAndPass[0]));

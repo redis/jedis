@@ -407,7 +407,7 @@ public interface BinaryJedisCommands {
    */
   @Deprecated
   default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
-    return xrange(key, start, end, (int) Math.max(count, (long) Integer.MAX_VALUE));
+    return xrange(key, start, end, (int) Math.min(count, (long) Integer.MAX_VALUE));
   }
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);

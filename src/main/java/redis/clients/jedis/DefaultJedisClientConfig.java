@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.Objects;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
@@ -11,7 +12,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final int infiniteSoTimeoutMillis;
 
   private final String user;
-  private final String password;
+  private volatile String password;
   private final int database;
   private final String clientName;
 
@@ -63,6 +64,21 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public String getPassword() {
     return password;
+  }
+
+  /**
+   * @param user has to be the same one with which the factory is created
+   * @param password
+   * @throws IllegalArgumentException if the user is not the original user
+   */
+  @Override
+  public synchronized void updatePassword(String user, String password) {
+    if (!Objects.equals(this.user, user)) {
+      throw new IllegalArgumentException();
+    }
+    if (!Objects.equals(this.password, password)) {
+      this.password = password;
+    }
   }
 
   @Override

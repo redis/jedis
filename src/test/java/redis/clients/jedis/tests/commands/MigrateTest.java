@@ -166,7 +166,7 @@ public class MigrateTest extends JedisCommandTestBase {
     dest.set(bfoo1, bbar1);
     assertEquals("OK", dest.migrate(host, hnp.getPort(), 0, timeout,
       new MigrateParams().auth2("acljedis", "fizzbuzz"), bfoo1));
-    assertEquals(bbar1, jedis.get(bfoo1));
+    assertArrayEquals(bbar1, jedis.get(bfoo1));
     assertNull(dest.get(bfoo1));
   }
 

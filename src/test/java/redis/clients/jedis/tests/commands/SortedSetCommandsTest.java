@@ -104,6 +104,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 2d, "b", ZAddParams.zAddParams().gt());
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
 
+    // incr: don't update already existing elements.
+    assertNull(jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().nx()));
+    assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
+    // incr: update elements that already exist.
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d,"b", ZAddParams.zAddParams().xx()));
+    assertEquals(Double.valueOf(3d), jedis.zscore("foo", "b"));
+
     // binary
     jedis.del(bfoo);
 
@@ -135,6 +142,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(Double.valueOf(1d), jedis.zscore(bfoo, bb));
     jedis.zadd(bfoo, 2d, bb, ZAddParams.zAddParams().gt());
     assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, bb));
+
+    // incr: don't update already existing elements.
+    assertNull(jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().nx()));
+    assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, bb));
+    // incr: update elements that already exist.
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().xx()));
+    assertEquals(Double.valueOf(3d), jedis.zscore(bfoo, bb));
   }
 
   @Test
@@ -583,7 +597,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    assertEquals(Arrays.asList(10d, 0.1d, null), jedis.zmscore(bfoo, bb, bc, SafeEncoder.encode("s")));
+    assertEquals(Arrays.asList(10d, 0.1d, null),
+      jedis.zmscore(bfoo, bb, bc, SafeEncoder.encode("s")));
   }
 
   @Test
@@ -702,12 +717,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   @Test
   public void zpopmin() {
 
-    jedis.zadd("foo", 1d, "a",ZAddParams.zAddParams().nx());
-    jedis.zadd("foo", 10d, "b",ZAddParams.zAddParams().nx());
-    jedis.zadd("foo", 0.1d, "c",ZAddParams.zAddParams().nx());
-    jedis.zadd("foo", 2d, "a",ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    Set<Tuple> range = jedis.zpopmin("foo",  2);
+    Set<Tuple> range = jedis.zpopmin("foo", 2);
 
     Set<Tuple> expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("c", 0.1d));

@@ -8,7 +8,9 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -26,6 +28,8 @@ public interface BinaryJedisClusterCommands {
   byte[] get(byte[] key);
 
   byte[] getDel(byte[] key);
+
+  byte[] getEx(byte[] key, GetExParams params);
 
   Boolean exists(byte[] key);
 
@@ -187,6 +191,8 @@ public interface BinaryJedisClusterCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
+
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
   Long zrem(byte[] key, byte[]... members);
@@ -303,6 +309,8 @@ public interface BinaryJedisClusterCommands {
 
   Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
+  Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
   Double geodist(byte[] key, byte[] member1, byte[] member2);
 
   Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit);
@@ -348,55 +356,57 @@ public interface BinaryJedisClusterCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
 
   List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
-   * @return 
+   * @return
    */
   Long hstrlen(byte[] key, byte[] field);
-  
-  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
-  Long xlen(final byte[] key);
+  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+
+  Long xlen(byte[] key);
 
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
    */
   @Deprecated
-  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count);
 
-  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final int count);
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
 
-  List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
-  Long xack(final byte[] key, final byte[] group, final byte[]... ids);
- 
-  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id, boolean makeStream);
+  Long xack(byte[] key, byte[] group, byte[]... ids);
 
-  String xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id);
+  String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
-  Long xgroupDestroy(final byte[] key, final byte[] consumer);
+  String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
 
-  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
- 
-  Long xdel(final byte[] key, final byte[]... ids);
+  Long xgroupDestroy(byte[] key, byte[] consumer);
+
+  Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
+
+  Long xdel(byte[] key, byte[]... ids);
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
+  Object xpendingSummary(final byte[] key, final byte[] groupname);
+
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 
-  Long waitReplicas(byte[] key, final int replicas, final long timeout);
-  
-  Long memoryUsage(final byte[] key);
-  
-  Long memoryUsage(final byte[] key, final int samples);
+  Long waitReplicas(byte[] key, int replicas, long timeout);
+
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
 }

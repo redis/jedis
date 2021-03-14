@@ -84,23 +84,22 @@ public class ClusterBinaryValuesCommandsTest extends ClusterJedisCommandsTestBas
   }
 
   @Test
-  public void testBinaryGeneralCommand(){
+  public void testBinaryGeneralCommand() {
     byte[] key = "x".getBytes();
     byte[] value = "1".getBytes();
     jedisCluster.sendCommand("z".getBytes(), SET, key, value);
     jedisCluster.sendCommand("y".getBytes(), INCR, key);
     Object returnObj = jedisCluster.sendCommand("w".getBytes(), GET, key);
-    assertEquals("2", SafeEncoder.encode((byte[])returnObj));
+    assertEquals("2", SafeEncoder.encode((byte[]) returnObj));
   }
 
   @Test
-  public void testGeneralCommand(){
+  public void testGeneralCommand() {
     jedisCluster.sendCommand("z", SET, "x", "1");
     jedisCluster.sendCommand("y", INCR, "x");
     Object returnObj = jedisCluster.sendCommand("w", GET, "x");
-    assertEquals("2", SafeEncoder.encode((byte[])returnObj));
+    assertEquals("2", SafeEncoder.encode((byte[]) returnObj));
   }
-
 
   @Test(expected = IllegalArgumentException.class)
   public void failKeys() {

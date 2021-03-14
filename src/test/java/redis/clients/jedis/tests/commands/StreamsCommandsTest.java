@@ -140,6 +140,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     StreamEntryID id3 = jedis.xadd("xrange-stream", null, map);
     List<StreamEntry> range7 = jedis.xrange("xrange-stream", id2, id2, 4);
     assertEquals(1, range7.size());
+
+    // count parameter - backward compatibility
+    List<byte[]> cRange = jedis.xrange("xrange-stream".getBytes(), id1.toString().getBytes(),
+        id2.toString().getBytes(), 10L + Integer.MAX_VALUE);
+    assertEquals(2, cRange.size());
   }
 
   @Test

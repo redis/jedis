@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 public class Module {
+
   private String name;
   private int version;
 
@@ -8,7 +9,6 @@ public class Module {
     this.name = name;
     this.version = version;
   }
-
 
   public String getName() {
     return name;
@@ -37,6 +37,5 @@ public class Module {
     result = 31 * result + version;
     return result;
   }
-
 
 }

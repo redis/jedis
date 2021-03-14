@@ -4,15 +4,15 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.Arrays;
 
-public class ScoreValueTuple extends Tuple {
+public class KeyedTuple extends Tuple {
   private byte[] key;
 
-  public ScoreValueTuple(byte[] key, byte[] element, Double score) {
+  public KeyedTuple(byte[] key, byte[] element, Double score) {
     super(element, score);
     this.key = key;
   }
 
-  public ScoreValueTuple(String key, String element, Double score) {
+  public KeyedTuple(String key, String element, Double score) {
     super(element, score);
     this.key = SafeEncoder.encode(key);
   }
@@ -27,24 +27,21 @@ public class ScoreValueTuple extends Tuple {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof ScoreValueTuple)) return false;
+    if (!(o instanceof KeyedTuple)) return false;
     if (!super.equals(o)) return false;
 
-    ScoreValueTuple that = (ScoreValueTuple) o;
+    KeyedTuple that = (KeyedTuple) o;
     return Arrays.equals(key, that.key);
   }
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (key != null ? Arrays.hashCode(key) : 0);
-    return result;
+    return 31 * (key != null ? Arrays.hashCode(key) : 0) + super.hashCode();
   }
 
   @Override
   public String toString() {
-    return "ScoreValueTuple{" +
-            "key=" + SafeEncoder.encode(key) +
-            "} " + super.toString();
+    return "KeyedTuple{" + "key=" + SafeEncoder.encode(key) + ", element='" + getElement() + "'"
+        + ", score=" + getScore() + "} ";
   }
 }

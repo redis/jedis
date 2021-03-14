@@ -70,25 +70,25 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<ScoreValueTuple> bzpopmax(int timeout, String... keys) {
+  public Response<KeyedTuple> bzpopmax(int timeout, String... keys) {
     client.bzpopmax(timeout, keys);
     return getResponse(BuilderFactory.SCORE_VALUE_TUPLE);
   }
 
   @Override
-  public Response<ScoreValueTuple> bzpopmin(int timeout, String... keys) {
+  public Response<KeyedTuple> bzpopmin(int timeout, String... keys) {
     client.bzpopmin(timeout, keys);
     return getResponse(BuilderFactory.SCORE_VALUE_TUPLE);
   }
 
   @Override
-  public Response<ScoreValueTuple> bzpopmax(int timeout, byte[]... keys) {
+  public Response<KeyedTuple> bzpopmax(int timeout, byte[]... keys) {
     client.bzpopmax(timeout, keys);
     return getResponse(BuilderFactory.SCORE_VALUE_TUPLE);
   }
 
   @Override
-  public Response<ScoreValueTuple> bzpopmin(int timeout, byte[]... keys) {
+  public Response<KeyedTuple> bzpopmin(int timeout, byte[]... keys) {
     client.bzpopmin(timeout, keys);
     return getResponse(BuilderFactory.SCORE_VALUE_TUPLE);
   }

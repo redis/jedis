@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.ScoreValueTuple;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -1419,18 +1419,15 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
-    ScoreValueTuple actual = jedis.bzpopmax(0, "foo", "bar");
-    assertEquals(new ScoreValueTuple("foo", "b", 10d), actual);
-
-    jedis.del("foo");
-    jedis.del("bar");
+    KeyedTuple actual = jedis.bzpopmax(0, "foo", "bar");
+    assertEquals(new KeyedTuple("foo", "b", 10d), actual);
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
     actual = jedis.bzpopmax(0, bfoo, bbar);
-    assertEquals(new ScoreValueTuple(bfoo, bb, 10d), actual);
+    assertEquals(new KeyedTuple(bfoo, bb, 10d), actual);
   }
 
   @Test
@@ -1438,17 +1435,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
-    ScoreValueTuple actual = jedis.bzpopmin(0, "bar", "foo");
-    assertEquals(new ScoreValueTuple("bar", "c", 0.1d), actual);
-
-    jedis.del("foo");
-    jedis.del("bar");
+    KeyedTuple actual = jedis.bzpopmin(0, "bar", "foo");
+    assertEquals(new KeyedTuple("bar", "c", 0.1d), actual);
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
     actual = jedis.bzpopmin(0, bbar, bfoo);
-    assertEquals(new ScoreValueTuple(bbar, bc, 0.1d), actual);
+    assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
   }
 }

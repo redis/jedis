@@ -2025,14 +2025,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public ScoreValueTuple bzpopmax(int timeout, String... keys) {
+  public KeyedTuple bzpopmax(int timeout, String... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmax(timeout, keys);
     return BuilderFactory.SCORE_VALUE_TUPLE.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public ScoreValueTuple bzpopmin(int timeout, String... keys) {
+  public KeyedTuple bzpopmin(int timeout, String... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmin(timeout, keys);
     return BuilderFactory.SCORE_VALUE_TUPLE.build(client.getObjectMultiBulkReply());

@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.ScoreValueTuple;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
@@ -32,9 +32,9 @@ public interface MultiKeyCommands {
 
   List<String> brpop(String... args);
 
-  ScoreValueTuple bzpopmax(int timeout, String... keys);
+  KeyedTuple bzpopmax(int timeout, String... keys);
 
-  ScoreValueTuple bzpopmin(int timeout, String... keys);
+  KeyedTuple bzpopmin(int timeout, String... keys);
 
   /**
    * Returns all the keys matching the glob-style pattern. For example if you have in the database

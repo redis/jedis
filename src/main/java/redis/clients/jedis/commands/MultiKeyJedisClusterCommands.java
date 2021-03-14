@@ -5,7 +5,7 @@ import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.ScoreValueTuple;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
@@ -29,9 +29,9 @@ public interface MultiKeyJedisClusterCommands {
 
   List<String> brpop(int timeout, String... keys);
 
-  ScoreValueTuple bzpopmax(int timeout, String... keys);
+  KeyedTuple bzpopmax(int timeout, String... keys);
 
-  ScoreValueTuple bzpopmin(int timeout, String... keys);
+  KeyedTuple bzpopmin(int timeout, String... keys);
 
   List<String> mget(String... keys);
 

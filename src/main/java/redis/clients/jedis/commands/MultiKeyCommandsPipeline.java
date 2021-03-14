@@ -3,7 +3,7 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.ScoreValueTuple;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -27,9 +27,9 @@ public interface MultiKeyCommandsPipeline {
 
   Response<List<String>> brpop(String... args);
 
-  Response<ScoreValueTuple> bzpopmax(int timeout, String... keys);
+  Response<KeyedTuple> bzpopmax(int timeout, String... keys);
 
-  Response<ScoreValueTuple> bzpopmin(int timeout, String... keys);
+  Response<KeyedTuple> bzpopmin(int timeout, String... keys);
 
   Response<Set<String>> keys(String pattern);
 

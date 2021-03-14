@@ -1667,20 +1667,20 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public ScoreValueTuple bzpopmax(int timeout, byte[]... keys) {
-    return new JedisClusterCommand<ScoreValueTuple>(connectionHandler, maxAttempts) {
+  public KeyedTuple bzpopmax(int timeout, byte[]... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
       @Override
-      public ScoreValueTuple execute(Jedis connection) {
+      public KeyedTuple execute(Jedis connection) {
         return connection.bzpopmax(timeout, keys);
       }
     }.runBinary(keys.length, keys);
   }
 
   @Override
-  public ScoreValueTuple bzpopmin(int timeout, byte[]... keys) {
-    return new JedisClusterCommand<ScoreValueTuple>(connectionHandler, maxAttempts) {
+  public KeyedTuple bzpopmin(int timeout, byte[]... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
       @Override
-      public ScoreValueTuple execute(Jedis connection) {
+      public KeyedTuple execute(Jedis connection) {
         return connection.bzpopmin(timeout, keys);
       }
     }.runBinary(keys.length, keys);

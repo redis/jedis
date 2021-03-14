@@ -326,15 +326,15 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<ScoreValueTuple> SCORE_VALUE_TUPLE = new Builder<ScoreValueTuple>() {
+  public static final Builder<KeyedTuple> SCORE_VALUE_TUPLE = new Builder<KeyedTuple>() {
     @Override
     @SuppressWarnings("unchecked")
-    public ScoreValueTuple build(Object data) {
+    public KeyedTuple build(Object data) {
       List<byte[]> l = (List<byte[]>) data; // never null
       if (l.isEmpty()) {
         return null;
       }
-      return new ScoreValueTuple(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+      return new KeyedTuple(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
     }
 
     @Override

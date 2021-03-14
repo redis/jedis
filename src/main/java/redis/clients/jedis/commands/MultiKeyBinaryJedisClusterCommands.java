@@ -5,7 +5,7 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.ScoreValueTuple;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -26,9 +26,9 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   List<byte[]> brpop(int timeout, byte[]... keys);
 
-  ScoreValueTuple bzpopmax(int timeout, byte[]... keys);
+  KeyedTuple bzpopmax(int timeout, byte[]... keys);
 
-  ScoreValueTuple bzpopmin(int timeout, byte[]... keys);
+  KeyedTuple bzpopmin(int timeout, byte[]... keys);
 
   List<byte[]> mget(byte[]... keys);
 

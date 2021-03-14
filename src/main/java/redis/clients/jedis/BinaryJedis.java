@@ -2364,14 +2364,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public ScoreValueTuple bzpopmax(final int timeout, final byte[]... keys) {
+  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmax(timeout, keys);
     return BuilderFactory.SCORE_VALUE_TUPLE.build(client.getBinaryMultiBulkReply());
   }
 
   @Override
-  public ScoreValueTuple bzpopmin(final int timeout, final byte[]... keys) {
+  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmin(timeout, keys);
     return BuilderFactory.SCORE_VALUE_TUPLE.build(client.getBinaryMultiBulkReply());

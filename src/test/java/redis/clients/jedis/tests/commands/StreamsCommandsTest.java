@@ -561,6 +561,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(map, entries.get(0).getFields());
     assertEquals(id2.get(), entries.get(1).getID());
     assertEquals(map, entries.get(1).getFields());
+
+    p = jedis.pipelined();
+    Response<List<StreamEntry>> results2 = p.xrevrange("stream1", null, id1.get(), 2);
+    p.sync();
+    assertEquals(2, results2.get().size());
   }
 
   @Test

@@ -15,7 +15,9 @@ import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamGroupInfo;
 import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -30,8 +32,10 @@ public interface BinaryJedisCommands {
   String set(byte[] key, byte[] value, SetParams params);
 
   byte[] get(byte[] key);
-  
+
   byte[] getDel(byte[] key);
+
+  byte[] getEx(byte[] key, GetExParams params);
 
   Boolean exists(byte[] key);
 
@@ -211,6 +215,8 @@ public interface BinaryJedisCommands {
 
   Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
+
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
   Long zrem(byte[] key, byte[]... members);
@@ -329,6 +335,8 @@ public interface BinaryJedisCommands {
 
   Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
+  Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
   Double geodist(byte[] key, byte[] member1, byte[] member2);
 
   Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit);
@@ -375,21 +383,21 @@ public interface BinaryJedisCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
 
   List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    * @return lenth of the value for key
    */
   Long hstrlen(byte[] key, byte[] field);
-  
-  
+
+
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   Long xlen(byte[] key);
@@ -399,7 +407,7 @@ public interface BinaryJedisCommands {
    */
   @Deprecated
   default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
-    return xrange(key, start, end, (int) Math.max(count, (long) Integer.MAX_VALUE));
+    return xrange(key, start, end, (int) Math.min(count, (long) Integer.MAX_VALUE));
   }
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
@@ -407,7 +415,7 @@ public interface BinaryJedisCommands {
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
   Long xack(byte[] key, byte[] group, byte[]... ids);
- 
+
   String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
   String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
@@ -415,12 +423,14 @@ public interface BinaryJedisCommands {
   Long xgroupDestroy(byte[] key, byte[] consumer);
 
   Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
- 
+
   Long xdel(byte[] key, byte[]... ids);
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  Object xpendingSummary(byte[] key, byte[] groupname);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 

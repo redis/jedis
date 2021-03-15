@@ -89,6 +89,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void getEx(String key, GetExParams params) {
+    getEx(SafeEncoder.encode(key), params);
+  }
+
+  @Override
   public void exists(final String... keys) {
     exists(SafeEncoder.encodeMany(keys));
   }
@@ -465,6 +470,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    zaddIncr(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long stop) {
     zrange(SafeEncoder.encode(key), start, stop);
   }
@@ -572,6 +582,14 @@ public class Client extends BinaryClient implements Commands {
 
     args.add(String.valueOf(timeout));
     blpop(args.toArray(new String[size]));
+  }
+
+  public void bzpopmax(final int timeout, final String... keys) {
+    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  public void bzpopmin(final int timeout, final String... keys) {
+    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -1164,6 +1182,10 @@ public class Client extends BinaryClient implements Commands {
     geoadd(SafeEncoder.encode(key), convertMemberCoordinateMapToBinary(memberCoordinateMap));
   }
 
+  public void geoadd(final String key, final GeoAddParams params, final Map<String, GeoCoordinate> memberCoordinateMap) {
+    geoadd(SafeEncoder.encode(key), params, convertMemberCoordinateMapToBinary(memberCoordinateMap));
+  }
+
   public void geodist(final String key, final String member1, final String member2) {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2));
   }
@@ -1412,7 +1434,7 @@ public class Client extends BinaryClient implements Commands {
     for (final Entry<String, StreamEntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? ">" : entry.getValue().toString()));
     }
-    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);    
+    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);
   }
 
   @Override
@@ -1443,7 +1465,12 @@ public class Client extends BinaryClient implements Commands {
   public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
       int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
-        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));    
+        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));
+  }
+
+  @Override
+  public void xpendingSummary(String key, String groupname) {
+    xpendingSummary(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
   }
 
   @Override
@@ -1454,7 +1481,7 @@ public class Client extends BinaryClient implements Commands {
     for (int i = 0; i < ids.length; i++) {
       bids[i] = SafeEncoder.encode(ids[i].toString());
     }
-    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);
   }
 
   @Override

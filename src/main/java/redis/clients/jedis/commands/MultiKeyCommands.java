@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
@@ -32,6 +33,10 @@ public interface MultiKeyCommands {
   List<String> blpop(String... args);
 
   List<String> brpop(String... args);
+
+  KeyedTuple bzpopmax(int timeout, String... keys);
+
+  KeyedTuple bzpopmin(int timeout, String... keys);
 
   /**
    * Returns all the keys matching the glob-style pattern. For example if you have in the database
@@ -120,7 +125,7 @@ public interface MultiKeyCommands {
 
   /**
    * @see #scan(String, ScanParams)
-   * 
+   *
    * @param cursor
    * @return
    */
@@ -180,7 +185,7 @@ public interface MultiKeyCommands {
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
+   *
    * @param count
    * @param block
    * @param streams
@@ -193,7 +198,7 @@ public interface MultiKeyCommands {
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   * 
+   *
    * @param groupname
    * @param consumer
    * @param count

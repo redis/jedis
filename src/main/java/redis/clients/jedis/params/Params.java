@@ -67,4 +67,18 @@ public abstract class Params {
     params.put(name, null);
   }
 
+  @Override
+  public String toString() {
+    ArrayList<Object> paramsFlatList = new ArrayList<>();
+    if (params != null) {
+      for (Entry<String, Object> param : params.entrySet()) {
+        paramsFlatList.add(param.getKey());
+        Object value = param.getValue();
+        if (value != null) {
+          paramsFlatList.add(SafeEncoder.encodeObject(value));
+        }
+      }
+    }
+    return paramsFlatList.toString();
+  }
 }

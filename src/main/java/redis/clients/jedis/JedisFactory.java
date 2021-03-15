@@ -123,11 +123,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   public void setPassword(final String password) {
-    setPassword(null, password);
-  }
-
-  public void setPassword(final String user, final String password) {
-    this.config.updatePassword(user, password);
+    this.config.updatePassword(password);
   }
 
   @Override

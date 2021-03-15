@@ -39,7 +39,7 @@ public interface JedisClientConfig {
     return null;
   }
 
-  default void updatePassword(String user, String password) {
+  default void updatePassword(String password) {
   }
 
   default int getDatabase() {

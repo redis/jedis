@@ -296,7 +296,7 @@ public class JedisPoolWithCompleteCredentialsTest {
       try (Jedis obj1_2 = pool.getResource()) {
         assertSame(obj1_ref, obj1_2);
         assertEquals(1, pool.getNumActive());
-        factory.setPassword("acljedis", "wrong password");
+        factory.setPassword("wrong password");
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
         } catch (JedisConnectionException jce) { }
@@ -317,12 +317,7 @@ public class JedisPoolWithCompleteCredentialsTest {
       } catch (JedisConnectionException e) { }
       assertEquals(0, pool.getNumActive());
 
-      try {
-        factory.setPassword("fizzbuzz");
-        fail("Factory created with user='fizzbuzz'. Setting password without user should fail.");
-      } catch (IllegalArgumentException e) { }
-
-      factory.setPassword("acljedis", "fizzbuzz");
+      factory.setPassword("fizzbuzz");
       try (Jedis obj2 = pool.getResource()) {
         obj2.set("foo", "bar");
         assertEquals("bar", obj2.get("foo"));

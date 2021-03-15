@@ -66,16 +66,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return password;
   }
 
-  /**
-   * @param user has to be the same one with which the factory is created
-   * @param password
-   * @throws IllegalArgumentException if the user is not the original user
-   */
   @Override
-  public synchronized void updatePassword(String user, String password) {
-    if (!Objects.equals(this.user, user)) {
-      throw new IllegalArgumentException();
-    }
+  public synchronized void updatePassword(String password) {
     if (!Objects.equals(this.password, password)) {
       this.password = password;
     }

@@ -423,11 +423,6 @@ public class JedisPoolTest {
       } catch (JedisConnectionException e) { }
       assertEquals(0, pool.getNumActive());
 
-      try {
-        factory.setPassword("default", "foobared");
-        fail("Factory created without user. Setting password for user='default' should fail.");
-      } catch (IllegalArgumentException e) { }
-
       factory.setPassword("foobared");
       try (Jedis obj2 = pool.getResource()) {
         obj2.set("foo", "bar");

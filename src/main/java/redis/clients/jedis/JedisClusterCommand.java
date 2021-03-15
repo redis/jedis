@@ -100,9 +100,6 @@ public abstract class JedisClusterCommand<T> {
 
         return execute(connection);
 
-      } catch (JedisClusterOperationException jcoe) {
-        // cluster state is unstable, so throw it instantly
-        throw jcoe;
       } catch (JedisConnectionException jce) {
         lastException = jce;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);

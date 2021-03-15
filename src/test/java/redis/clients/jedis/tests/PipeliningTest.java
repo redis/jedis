@@ -352,19 +352,19 @@ public class PipeliningTest extends JedisCommandTestBase {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void pipelineExecShoudThrowBatchExceptionWhenNotInMulti() {
+  public void pipelineExecWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.exec();
   }
 
   @Test(expected = IllegalStateException.class)
-  public void pipelineDiscardShoudThrowBatchExceptionWhenNotInMulti() {
+  public void pipelineDiscardWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.discard();
   }
 
   @Test(expected = IllegalStateException.class)
-  public void pipelineMultiShoudThrowBatchExceptionWhenAlreadyInMulti() {
+  public void pipelineMultiWhenAlreadyInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.multi();
     pipeline.set("foo", "3");
@@ -372,7 +372,7 @@ public class PipeliningTest extends JedisCommandTestBase {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testJedisThowExceptionWhenInPipeline() {
+  public void testJedisThrowExceptionWhenInPipeline() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.set("foo", "3");
     jedis.get("somekey");

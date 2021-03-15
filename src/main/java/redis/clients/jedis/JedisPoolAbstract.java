@@ -16,7 +16,8 @@ public class JedisPoolAbstract extends Pool<Jedis> {
     super();
   }
 
-  public JedisPoolAbstract(GenericObjectPoolConfig<Jedis> poolConfig, PooledObjectFactory<Jedis> factory) {
+  public JedisPoolAbstract(GenericObjectPoolConfig<Jedis> poolConfig,
+      PooledObjectFactory<Jedis> factory) {
     super(poolConfig, factory);
   }
 }

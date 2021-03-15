@@ -1997,15 +1997,16 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count){
-    getClient(key).xrevrange(key, start, end, count);
-    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);            
+  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start,
+      int count) {
+    getClient(key).xrevrange(key, end, start, count);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   @Override
-  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count){
-    getClient(key).xrevrange(key, start, end, count);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);                
+  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+    getClient(key).xrevrange(key, end, start, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
    

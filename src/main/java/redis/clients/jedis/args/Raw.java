@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.args;
 
 public interface Raw {
 

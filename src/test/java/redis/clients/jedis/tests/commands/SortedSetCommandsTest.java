@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -1411,5 +1412,37 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(Double.NEGATIVE_INFINITY, itr.next().getScore(), 0d);
     assertEquals(0d, itr.next().getScore(), 0d);
     assertEquals(Double.POSITIVE_INFINITY, itr.next().getScore(), 0d);
+  }
+
+  @Test
+  public void bzpopmax() {
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
+    KeyedTuple actual = jedis.bzpopmax(0, "foo", "bar");
+    assertEquals(new KeyedTuple("foo", "b", 10d), actual);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bbar, 0.1d, bc);
+    actual = jedis.bzpopmax(0, bfoo, bbar);
+    assertEquals(new KeyedTuple(bfoo, bb, 10d), actual);
+  }
+
+  @Test
+  public void bzpopmin() {
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
+    KeyedTuple actual = jedis.bzpopmin(0, "bar", "foo");
+    assertEquals(new KeyedTuple("bar", "c", 0.1d), actual);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bbar, 0.1d, bc);
+    actual = jedis.bzpopmin(0, bbar, bfoo);
+    assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
   }
 }

@@ -326,6 +326,24 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<KeyedTuple> KEYED_TUPLE = new Builder<KeyedTuple>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyedTuple build(Object data) {
+      List<byte[]> l = (List<byte[]>) data; // never null
+      if (l.isEmpty()) {
+        return null;
+      }
+      return new KeyedTuple(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyedTuple";
+    }
+
+  };
+
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
 
     @Override

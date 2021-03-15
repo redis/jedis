@@ -9,7 +9,9 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -58,6 +60,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String getDel(final String key) {
     Jedis j = getShard(key);
     return j.getDel(key);
+  }
+
+  @Override
+  public String getEx(String key, GetExParams params) {
+    Jedis j = getShard(key);
+    return j.getEx(key, params);
   }
 
   @Override
@@ -553,6 +561,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zrange(key, start, stop);
@@ -961,6 +975,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, params, memberCoordinateMap);
+  }
+
+  @Override
   public Double geodist(final String key, final String member1, final String member2) {
     Jedis j = getShard(key);
     return j.geodist(key, member1, member2);
@@ -1137,6 +1157,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       StreamEntryID end, int count, String consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public StreamPendingSummary xpendingSummary(String key, String groupname) {
+    Jedis j = getShard(key);
+    return j.xpendingSummary(key, groupname);
   }
 
   @Override

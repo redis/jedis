@@ -17,6 +17,7 @@ import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.util.SafeEncoder;
@@ -57,6 +58,36 @@ public class GeoCommandsTest extends JedisCommandTestBase {
 
     size = jedis.geoadd(bfoo, bcoordinateMap);
     assertEquals(2, size);
+  }
+
+  @Test
+  public void geoaddWithParams() {
+    assertEquals(1, jedis.geoadd("foo", 1, 2, "a").longValue());
+
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
+    coordinateMap.put("a", new GeoCoordinate(3, 4));
+    assertEquals(0, jedis.geoadd("foo", GeoAddParams.geoAddParams().nx(), coordinateMap).longValue());
+    assertEquals(1, jedis.geoadd("foo", GeoAddParams.geoAddParams().xx().ch(), coordinateMap).longValue());
+
+    coordinateMap.clear();
+    coordinateMap.put("b", new GeoCoordinate(6, 7));
+    // never add elements.
+    assertEquals(0, jedis.geoadd("foo", GeoAddParams.geoAddParams().xx(), coordinateMap).longValue());
+    assertEquals(1, jedis.geoadd("foo", GeoAddParams.geoAddParams().nx(), coordinateMap).longValue());
+
+    // binary
+    assertEquals(1, jedis.geoadd(bfoo, 1, 2, bA).longValue());
+
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
+    bcoordinateMap.put(bA, new GeoCoordinate(3, 4));
+    assertEquals(0, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().nx(), bcoordinateMap).longValue());
+    assertEquals(1, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().xx().ch(), bcoordinateMap).longValue());
+
+    bcoordinateMap.clear();
+    bcoordinateMap.put(bB, new GeoCoordinate(6, 7));
+    // never add elements.
+    assertEquals(0, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().xx(), bcoordinateMap).longValue());
+    assertEquals(1, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().nx(), bcoordinateMap).longValue());
   }
 
   @Test

@@ -1,8 +1,10 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -288,6 +290,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.getDel(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String getEx(String key, GetExParams params) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.getEx(key, params);
       }
     }.run(key);
   }
@@ -1035,6 +1047,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Double zaddIncr(String key, double score, String member, ZAddParams params) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.zaddIncr(key, score, member, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
       @Override
@@ -1735,6 +1757,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public KeyedTuple bzpopmax(int timeout, String... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmax(timeout, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(int timeout, String... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmin(timeout, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public List<String> mget(final String... keys) {
     return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
       @Override
@@ -2158,6 +2200,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, params, memberCoordinateMap);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Double geodist(final String key, final String member1, final String member2) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
       @Override
@@ -2508,6 +2560,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public List<StreamPendingEntry> execute(Jedis connection) {
         return connection.xpending(key, groupname, start, end, count, consumername);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamPendingSummary xpendingSummary(final String key, final String groupname) {
+    return new JedisClusterCommand<StreamPendingSummary>(connectionHandler, maxAttempts) {
+      @Override
+      public StreamPendingSummary execute(Jedis connection) {
+        return connection.xpendingSummary(key, groupname);
       }
     }.run(key);
   }

@@ -326,6 +326,24 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<KeyedTuple> KEYED_TUPLE = new Builder<KeyedTuple>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyedTuple build(Object data) {
+      List<byte[]> l = (List<byte[]>) data; // never null
+      if (l.isEmpty()) {
+        return null;
+      }
+      return new KeyedTuple(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyedTuple";
+    }
+
+  };
+
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
 
     @Override
@@ -895,6 +913,32 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<StreamConsumersInfo>";
+    }
+  };
+
+  public static final Builder<StreamPendingSummary> STREAM_PENDING_SUMMARY = new Builder<StreamPendingSummary>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamPendingSummary build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+      long total = BuilderFactory.LONG.build(objectList.get(0));
+      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
+      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
+      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
+      Map<String, Long> map = new HashMap<>(consumerObjList.size());
+      for (List<Object> consumerObj : consumerObjList) {
+        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
+      }
+      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamPendingSummary";
     }
   };
 

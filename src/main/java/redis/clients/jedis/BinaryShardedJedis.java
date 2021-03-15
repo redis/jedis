@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.commands.BinaryJedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -89,6 +91,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public byte[] getDel(final byte[] key) {
     Jedis j = getShard(key);
     return j.getDel(key);
+  }
+
+  @Override
+  public byte[] getEx(byte[] key, GetExParams params) {
+    Jedis j = getShard(key);
+    return j.getEx(key, params);
   }
 
   @Override
@@ -526,6 +534,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zrange(key, start, stop);
@@ -934,6 +948,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, params, memberCoordinateMap);
+  }
+
+  @Override
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     Jedis j = getShard(key);
     return j.geodist(key, member1, member2);
@@ -1141,6 +1161,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       byte[] consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+    Jedis j = getShard(key);
+    return j.xpendingSummary(key, groupname);
   }
 
   @Override

@@ -140,6 +140,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     StreamEntryID id3 = jedis.xadd("xrange-stream", null, map);
     List<StreamEntry> range7 = jedis.xrange("xrange-stream", id2, id2, 4);
     assertEquals(1, range7.size());
+
+    // count parameter - backward compatibility
+    List<byte[]> cRange = jedis.xrange("xrange-stream".getBytes(), id1.toString().getBytes(),
+        id2.toString().getBytes(), 10L + Integer.MAX_VALUE);
+    assertEquals(2, cRange.size());
   }
 
   @Test
@@ -328,6 +333,12 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(1, range.size());
     assertEquals(1, range.get(0).getValue().size());
     assertEquals(map, range.get(0).getValue().get(0).getFields());
+
+    // Get the summary about the pending messages
+    StreamPendingSummary pendingSummary = jedis.xpendingSummary("xpendeing-stream", "xpendeing-group");
+    assertEquals(1, pendingSummary.getTotal());
+    assertEquals(id1, pendingSummary.getMinId());
+    assertEquals(1l, pendingSummary.getConsumerMessageCount().get("xpendeing-consumer").longValue());
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
@@ -550,6 +561,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(map, entries.get(0).getFields());
     assertEquals(id2.get(), entries.get(1).getID());
     assertEquals(map, entries.get(1).getFields());
+
+    p = jedis.pipelined();
+    Response<List<StreamEntry>> results2 = p.xrevrange("stream1", null, id1.get(), 2);
+    p.sync();
+    assertEquals(2, results2.get().size());
   }
 
   @Test

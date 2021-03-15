@@ -4,8 +4,10 @@ import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -195,6 +197,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public byte[] execute(Jedis connection) {
         return connection.getDel(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public byte[] getEx(byte[] key, GetExParams params) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.getEx(key, params);
       }
     }.runBinary(key);
   }
@@ -932,6 +944,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.zaddIncr(key, score, member, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
       @Override
@@ -1645,6 +1667,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public KeyedTuple bzpopmax(int timeout, byte[]... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmax(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(int timeout, byte[]... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmin(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
@@ -1963,6 +2005,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public Long execute(Jedis connection) {
         return connection.geoadd(key, memberCoordinateMap);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, params, memberCoordinateMap);
       }
     }.runBinary(key);
   }
@@ -2436,6 +2488,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public List<Object> execute(Jedis connection) {
         return connection.xpending(key, groupname, start, end, count, consumername);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.xpendingSummary(key, groupname);
       }
     }.runBinary(key);
   }

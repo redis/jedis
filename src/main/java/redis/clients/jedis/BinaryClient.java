@@ -27,8 +27,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -194,6 +196,10 @@ public class BinaryClient extends Connection {
 
   public void getDel(final byte[] key) {
     sendCommand(GETDEL, key);
+  }
+
+  public void getEx(final byte[] key, final GetExParams params) {
+    sendCommand(GETEX, params.getByteParams(key));
   }
 
   public void quit() {
@@ -566,6 +572,10 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
+  public void zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
+  }
+
   public void zrange(final byte[] key, final long start, final long stop) {
     sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop));
   }
@@ -680,6 +690,22 @@ public class BinaryClient extends Connection {
 
     args.add(Protocol.toByteArray(timeout));
     blpop(args.toArray(new byte[args.size()][]));
+  }
+
+  public void bzpopmax(final int timeout, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    Collections.addAll(args, keys);
+
+    args.add(Protocol.toByteArray(timeout));
+    sendCommand(BZPOPMAX, args.toArray(new byte[args.size()][]));
+  }
+
+  public void bzpopmin(final int timeout, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    Collections.addAll(args, keys);
+
+    args.add(Protocol.toByteArray(timeout));
+    sendCommand(BZPOPMIN, args.toArray(new byte[args.size()][]));
   }
 
   public void sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
@@ -1303,14 +1329,17 @@ public class BinaryClient extends Connection {
   }
 
   public void geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3 + 1);
-    args.add(key);
+    geoadd(key, GeoAddParams.geoAddParams(), memberCoordinateMap);
+  }
+
+  public void geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3);
     args.addAll(convertGeoCoordinateMapToByteArrays(memberCoordinateMap));
 
     byte[][] argsArray = new byte[args.size()][];
     args.toArray(argsArray);
 
-    sendCommand(GEOADD, argsArray);
+    sendCommand(GEOADD, params.getByteParams(key, argsArray));
   }
 
   public void geodist(final byte[] key, final byte[] member1, final byte[] member2) {
@@ -1461,6 +1490,14 @@ public class BinaryClient extends Connection {
 
   public void aclDelUser(final byte[] name) {
     sendCommand(ACL, Keyword.DELUSER.getRaw(), name);
+  }
+
+  public void aclLoad() {
+    sendCommand(ACL, Keyword.LOAD.getRaw());
+  }
+
+  public void aclSave() {
+    sendCommand(ACL, Keyword.SAVE.getRaw());
   }
 
   private List<byte[]> convertGeoCoordinateMapToByteArrays(
@@ -1660,6 +1697,10 @@ public class BinaryClient extends Connection {
     } else {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
     }
+  }
+
+  public void xpendingSummary(final byte[] key, final byte[] groupname) {
+    sendCommand(XPENDING, key, groupname);
   }
 
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,

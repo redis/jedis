@@ -7,7 +7,9 @@ import java.util.Set;
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisPipeline;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -180,6 +182,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<byte[]> getDel(final byte[] key) {
     getClient(key).getDel(key);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<String> getEx(String key, GetExParams params) {
+    getClient(key).getEx(key, params);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<byte[]> getEx(byte[] key, GetExParams params) {
+    getClient(key).getEx(key, params);
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
@@ -994,6 +1008,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<Double> zaddIncr(String key, double score, String member, ZAddParams params) {
+    getClient(key).zaddIncr(key, score, member, params);
+    return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
+  public Response<Double> zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
+    getClient(key).zaddIncr(key, score, member, params);
+    return getResponse(BuilderFactory.DOUBLE);
+  }
+
+  @Override
   public Response<Long> zcard(final String key) {
     getClient(key).zcard(key);
     return getResponse(BuilderFactory.LONG);
@@ -1790,6 +1816,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    getClient(key).geoadd(key, params, memberCoordinateMap);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    getClient(key).geoadd(key, params, memberCoordinateMap);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Double> geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     getClient(key).geodist(key, member1, member2);
     return getResponse(BuilderFactory.DOUBLE);
@@ -2041,13 +2079,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start,
       int count) {
-    getClient(key).xrevrange(key, start, end, count);
+    getClient(key).xrevrange(key, end, start, count);
     return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   @Override
   public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
-    getClient(key).xrevrange(key, start, end, count);
+    getClient(key).xrevrange(key, end, start, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
@@ -2131,6 +2169,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
       byte[] end, int count, byte[] consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
     return getResponse(BuilderFactory.OBJECT_LIST);
+  }
+
+  @Override
+  public Response<StreamPendingSummary> xpendingSummary(String key, String groupname) {
+    getClient(key).xpendingSummary(key, groupname);
+    return getResponse(BuilderFactory.STREAM_PENDING_SUMMARY);
+  }
+
+  @Override
+  public Response<Object> xpendingSummary(byte[] key, byte[] groupname) {
+    getClient(key).xpendingSummary(key, groupname);
+    return getResponse(BuilderFactory.OBJECT);
   }
 
   @Override

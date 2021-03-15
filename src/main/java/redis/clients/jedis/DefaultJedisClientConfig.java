@@ -131,62 +131,62 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
           sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
-    public Builder withConnectionTimeoutMillis(int connectionTimeoutMillis) {
+    public Builder connectionTimeoutMillis(int connectionTimeoutMillis) {
       this.connectionTimeoutMillis = connectionTimeoutMillis;
       return this;
     }
 
-    public Builder withSocketTimeoutMillis(int socketTimeoutMillis) {
+    public Builder socketTimeoutMillis(int socketTimeoutMillis) {
       this.socketTimeoutMillis = socketTimeoutMillis;
       return this;
     }
 
-    public Builder withBlockingSocketTimeoutMillis(int blockingSocketTimeoutMillis) {
+    public Builder blockingSocketTimeoutMillis(int blockingSocketTimeoutMillis) {
       this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
       return this;
     }
 
-    public Builder withUser(String user) {
+    public Builder user(String user) {
       this.user = user;
       return this;
     }
 
-    public Builder withPassword(String password) {
+    public Builder password(String password) {
       this.password = password;
       return this;
     }
 
-    public Builder withDatabse(int databse) {
+    public Builder databse(int databse) {
       this.databse = databse;
       return this;
     }
 
-    public Builder withClientName(String clientName) {
+    public Builder clientName(String clientName) {
       this.clientName = clientName;
       return this;
     }
 
-    public Builder withSsl(boolean ssl) {
+    public Builder ssl(boolean ssl) {
       this.ssl = ssl;
       return this;
     }
 
-    public Builder withSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+    public Builder sslSocketFactory(SSLSocketFactory sslSocketFactory) {
       this.sslSocketFactory = sslSocketFactory;
       return this;
     }
 
-    public Builder withSslParameters(SSLParameters sslParameters) {
+    public Builder sslParameters(SSLParameters sslParameters) {
       this.sslParameters = sslParameters;
       return this;
     }
 
-    public Builder withHostnameVerifier(HostnameVerifier hostnameVerifier) {
+    public Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
       this.hostnameVerifier = hostnameVerifier;
       return this;
     }
 
-    public Builder withHostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
+    public Builder hostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
     }

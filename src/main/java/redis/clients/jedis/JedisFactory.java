@@ -67,11 +67,11 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this.hostAndPort.set(new HostAndPort(host, port));
-    this.config = DefaultJedisClientConfig.builder().withConnectionTimeoutMillis(connectionTimeout)
-        .withSocketTimeoutMillis(soTimeout).withBlockingSocketTimeoutMillis(infiniteSoTimeout).withUser(user)
-        .withPassword(password).withDatabse(database).withClientName(clientName)
-        .withSsl(ssl).withSslSocketFactory(sslSocketFactory)
-        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
+    this.config = DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).user(user)
+        .password(password).databse(database).clientName(clientName)
+        .ssl(ssl).sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
   }
 
   JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -93,12 +93,12 @@ class JedisFactory implements PooledObjectFactory<Jedis> {
           "Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
     this.hostAndPort.set(new HostAndPort(uri.getHost(), uri.getPort()));
-    this.config = DefaultJedisClientConfig.builder().withConnectionTimeoutMillis(connectionTimeout)
-        .withSocketTimeoutMillis(soTimeout).withBlockingSocketTimeoutMillis(infiniteSoTimeout)
-        .withUser(JedisURIHelper.getUser(uri)).withPassword(JedisURIHelper.getPassword(uri))
-        .withDatabse(JedisURIHelper.getDBIndex(uri)).withClientName(clientName)
-        .withSsl(JedisURIHelper.isRedisSSLScheme(uri)).withSslSocketFactory(sslSocketFactory)
-        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier).build();
+    this.config = DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+        .databse(JedisURIHelper.getDBIndex(uri)).clientName(clientName)
+        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {

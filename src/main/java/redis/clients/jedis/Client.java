@@ -592,6 +592,14 @@ public class Client extends BinaryClient implements Commands {
     blpop(args.toArray(new String[size]));
   }
 
+  public void bzpopmax(final int timeout, final String... keys) {
+    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  public void bzpopmin(final int timeout, final String... keys) {
+    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
+  }
+
   @Override
   public void sort(final String key, final SortingParams sortingParameters, final String dstkey) {
     sort(SafeEncoder.encode(key), sortingParameters, SafeEncoder.encode(dstkey));

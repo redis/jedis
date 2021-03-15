@@ -2363,6 +2363,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return blpop(getArgsAddTimeout(timeout, keys));
   }
 
+  @Override
+  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
+    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+  }
+
   private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
     int size = keys.length;
     final byte[][] args = new byte[size + 1][];

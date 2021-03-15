@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -25,6 +26,10 @@ public interface MultiKeyCommandsPipeline {
   Response<List<String>> blpop(String... args);
 
   Response<List<String>> brpop(String... args);
+
+  Response<KeyedTuple> bzpopmax(int timeout, String... keys);
+
+  Response<KeyedTuple> bzpopmin(int timeout, String... keys);
 
   Response<Set<String>> keys(String pattern);
 
@@ -84,11 +89,12 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> touch(String... keys);
 
-  Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+  Response<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, String... keys);
 
-  Response<Long> georadiusStore(String key, double longitude, double latitude,
-      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
-
-  Response<Long> georadiusByMemberStore(String key, String member, double radius,
+  Response<Long> georadiusStore(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

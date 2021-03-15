@@ -130,7 +130,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertEquals(expected, range);
 
     range = jedis.lrange("foo", 2, 1);
-    assertEquals(Collections.<String>emptyList(), range);
+    assertEquals(Collections.<String> emptyList(), range);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -156,7 +156,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertByteArrayListEquals(bexpected, brange);
 
     brange = jedis.lrange(bfoo, 2, 1);
-    assertByteArrayListEquals(Collections.<byte[]>emptyList(), brange);
+    assertByteArrayListEquals(Collections.<byte[]> emptyList(), brange);
 
   }
 
@@ -609,22 +609,22 @@ public class ListCommandsTest extends JedisCommandTestBase {
     expected.add(1L);
     expected.add(4L);
     expected.add(5L);
-    List<Long> posList = jedis.lpos("foo","b", LPosParams.lPosParams() , 2);
-    assertEquals(expected.subList(0,2), posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams(), 0);
+    List<Long> posList = jedis.lpos("foo", "b", LPosParams.lPosParams(), 2);
+    assertEquals(expected.subList(0, 2), posList);
+    posList = jedis.lpos("foo", "b", LPosParams.lPosParams(), 0);
     assertEquals(expected, posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2), 0);
-    assertEquals(expected.subList(1,3), posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(2).maxlen(5), 0);
-    assertEquals(expected.subList(1,2), posList);
+    posList = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(2), 0);
+    assertEquals(expected.subList(1, 3), posList);
+    posList = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(2).maxlen(5), 0);
+    assertEquals(expected.subList(1, 2), posList);
 
     Collections.reverse(expected);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-2), 0);
-    assertEquals(expected.subList(1,3), posList);
-    posList = jedis.lpos("foo","b", LPosParams.lPosParams().rank(-1).maxlen(5), 2);
-    assertEquals(expected.subList(0,2), posList);
+    posList = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-2), 0);
+    assertEquals(expected.subList(1, 3), posList);
+    posList = jedis.lpos("foo", "b", LPosParams.lPosParams().rank(-1).maxlen(5), 2);
+    assertEquals(expected.subList(0, 2), posList);
 
-    //Binary
+    // Binary
     jedis.rpush(bfoo, bA);
     jedis.rpush(bfoo, bB);
     jedis.rpush(bfoo, bC);
@@ -648,10 +648,10 @@ public class ListCommandsTest extends JedisCommandTestBase {
     expected.add(3L);
     expected.add(5L);
 
-    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6), 0);
+    posList = jedis.lpos(bfoo, bA, LPosParams.lPosParams().maxlen(6), 0);
     assertEquals(expected, posList);
-    posList = jedis.lpos(bfoo,bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
-    assertEquals(expected.subList(1,2), posList);
+    posList = jedis.lpos(bfoo, bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
+    assertEquals(expected.subList(1, 2), posList);
 
   }
 }

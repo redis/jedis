@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
@@ -9,8 +10,11 @@ import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -27,6 +31,10 @@ public interface JedisClusterCommands {
 
   String get(String key);
 
+  String getDel(String key);
+
+  String getEx(String key, GetExParams params);
+
   Boolean exists(String key);
 
   Long persist(String key);
@@ -35,9 +43,25 @@ public interface JedisClusterCommands {
 
   byte[] dump(String key);
 
-  String restore(String key, int ttl, byte[] serializedValue);
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
+   */
+  @Deprecated
+  default String restore(String key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  Long expire(String key, int seconds);
+  String restore(String key, long ttl, byte[] serializedValue);
+
+  /**
+   * @deprecated Use {@link #expire(java.lang.String, long)}.
+   */
+  @Deprecated
+  default Long expire(String key, int seconds) {
+    return expire(key, (long) seconds);
+  }
+
+  Long expire(String key, long seconds);
 
   Long pexpire(String key, long milliseconds);
 
@@ -65,7 +89,15 @@ public interface JedisClusterCommands {
 
   Long setnx(String key, String value);
 
-  String setex(String key, int seconds, String value);
+  /**
+   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
+   */
+  @Deprecated
+  default String setex(String key, int seconds, String value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(String key, long seconds, String value);
 
   String psetex(String key, long milliseconds, String value);
 
@@ -171,6 +203,8 @@ public interface JedisClusterCommands {
 
   Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  Double zaddIncr(String key, double score, String member, ZAddParams params);
+
   Set<String> zrange(String key, long start, long stop);
 
   Long zrem(String key, String... members);
@@ -253,13 +287,11 @@ public interface JedisClusterCommands {
 
   Set<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(String key, String min, String max, int offset,
-      int count);
+  Set<String> zrangeByLex(String key, String min, String max, int offset, int count);
 
   Set<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(String key, String max, String min,
-      int offset, int count);
+  Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Long zremrangeByLex(String key, String min, String max);
 
@@ -299,6 +331,8 @@ public interface JedisClusterCommands {
 
   Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
 
+  Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap);
+
   Double geodist(String key, String member1, String member2);
 
   Double geodist(String key, String member1, String member2, GeoUnit unit);
@@ -310,14 +344,14 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
 
@@ -326,22 +360,22 @@ public interface JedisClusterCommands {
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 
   /**
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(String key, String...arguments);
 
   List<Long> bitfieldReadonly(String key, String...arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    * @return lenth of the value for key
    */
@@ -349,25 +383,25 @@ public interface JedisClusterCommands {
 
   /**
    *  MEMORY USAGE key
-   * 
+   *
    * @param key
    * @return the memory usage
    */
   Long memoryUsage(String key);
 
   /**
-   *  MEMORY USAGE key [SAMPLES count] 
-   * 
+   *  MEMORY USAGE key [SAMPLES count]
+   *
    * @param key
    * @param samples
    * @return the memory usage
    */
   Long memoryUsage(String key, int samples);
 
-  
+
   /**
    * XADD key ID field string [field string ...]
-   * 
+   *
    * @param key
    * @param id
    * @param hash
@@ -377,7 +411,7 @@ public interface JedisClusterCommands {
 
   /**
    * XADD key MAXLEN ~ LEN ID field string [field string ...]
-   * 
+   *
    * @param key
    * @param id
    * @param hash
@@ -386,10 +420,10 @@ public interface JedisClusterCommands {
    * @return
    */
   StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
-  
+
   /**
    * XLEN key
-   * 
+   *
    * @param key
    * @return
    */
@@ -397,7 +431,7 @@ public interface JedisClusterCommands {
 
   /**
    * XRANGE key start end [COUNT count]
-   * 
+   *
    * @param key
    * @param start
    * @param end
@@ -415,13 +449,14 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-  
+
   /**
    * @deprecated Will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block, Map.Entry<String, StreamEntryID>... streams);
-  
+
   /**
    * XACK key group ID [ID ...]
    * @param key
@@ -430,38 +465,38 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xack(String key, String group,  StreamEntryID... ids);
-  
+
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
-   * 
+   *
    * @param key
    * @param groupname
    * @param id
    * @return
    */
   String xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
-  
+
   /**
    * XGROUP SETID <key> <groupname> <id or $>
-   * 
+   *
    * @param key
    * @param groupname
    * @param id
    * @return
    */
   String xgroupSetID( String key, String groupname, StreamEntryID id);
-  
+
   /**
    * XGROUP DESTROY <key> <groupname>
-   * 
+   *
    * @param key
    * @param groupname
    * @return
    */
   Long xgroupDestroy( String key, String groupname);
-  
+
   /**
-   * XGROUP DELCONSUMER <key> <groupname> <consumername> 
+   * XGROUP DELCONSUMER <key> <groupname> <consumername>
    * @param key
    * @param groupname
    * @param consumername
@@ -473,12 +508,13 @@ public interface JedisClusterCommands {
    * @deprecated Will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xreadGroup(java.lang.String, java.lang.String, int, long, boolean, java.util.Map.Entry...)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
-  
+
   /**
    * XPENDING key group [start end count] [consumer]
-   * 
+   *
    * @param key
    * @param groupname
    * @param start
@@ -488,7 +524,16 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
-  
+
+  /**
+   * XPENDING key group
+   *
+   * @param key
+   * @param groupname
+   * @return
+   */
+  StreamPendingSummary xpendingSummary(String key, String groupname);
+
   /**
    * XDEL key ID [ID ...]
    * @param key
@@ -496,7 +541,7 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xdel( String key, StreamEntryID... ids);
-  
+
   /**
    * XTRIM key MAXLEN [~] count
    * @param key
@@ -505,14 +550,14 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xtrim( String key, long maxLen, boolean approximateLength);
- 
+
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] [JUSTID]
-   */        
-  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime, 
+   */
+  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
-  Long waitReplicas(final String key, final int replicas, final long timeout);
+  Long waitReplicas(String key, int replicas, long timeout);
 }

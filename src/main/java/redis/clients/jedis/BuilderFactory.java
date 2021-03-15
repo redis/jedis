@@ -326,7 +326,7 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<KeyedTuple> SCORE_VALUE_TUPLE = new Builder<KeyedTuple>() {
+  public static final Builder<KeyedTuple> KEYED_TUPLE = new Builder<KeyedTuple>() {
     @Override
     @SuppressWarnings("unchecked")
     public KeyedTuple build(Object data) {
@@ -339,7 +339,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "ScoreValueTuple";
+      return "KeyedTuple";
     }
 
   };

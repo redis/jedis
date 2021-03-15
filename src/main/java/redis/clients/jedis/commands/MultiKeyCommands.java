@@ -190,11 +190,15 @@ public interface MultiKeyCommands {
    * @param block
    * @param streams
    * @return
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams);
 
-  List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams);
+  List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
+      Map<String, StreamEntryID> streams);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
@@ -206,7 +210,10 @@ public interface MultiKeyCommands {
    * @param noAck
    * @param streams
    * @return
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 

@@ -1567,6 +1567,11 @@ public class BinaryClient extends Connection {
     sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
     final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
 
@@ -1657,6 +1662,11 @@ public class BinaryClient extends Connection {
     }
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
       Map<byte[], byte[]> streams) {
 

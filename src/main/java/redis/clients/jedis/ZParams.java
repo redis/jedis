@@ -23,7 +23,7 @@ public class ZParams {
     Aggregate() {
       raw = SafeEncoder.encode(name());
     }
-    
+
     public byte[] getRaw() {
       return raw;
     }
@@ -34,7 +34,7 @@ public class ZParams {
   /**
    * Set weights.
    * @param weights weights.
-   * @return 
+   * @return
    */
   public ZParams weights(final double... weights) {
     params.add(WEIGHTS.getRaw());

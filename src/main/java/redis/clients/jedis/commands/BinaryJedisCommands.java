@@ -435,7 +435,7 @@ public interface BinaryJedisCommands {
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 
-  List<byte[]> xclaimIds(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+  List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
 
   /**
    * @deprecated Use {@link #xinfoStreamBinary(byte[])}.

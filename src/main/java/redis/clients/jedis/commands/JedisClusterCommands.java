@@ -560,7 +560,7 @@ public interface JedisClusterCommands {
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
-  List<StreamEntryID> xclaimIds(String key, String group, String consumername, long minIdleTime,
+  List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
 
   Long waitReplicas(String key, int replicas, long timeout);

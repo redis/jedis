@@ -565,7 +565,7 @@ public interface JedisCommands {
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] JUSTID
    */
-  List<StreamEntryID> xclaimIds(String key, String group, String consumername, long minIdleTime,
+  List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
 
   /**

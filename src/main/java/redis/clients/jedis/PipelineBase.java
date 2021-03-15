@@ -2223,21 +2223,21 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<StreamEntryID>> xclaimIds(String key, String group, String consumername,
+  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    getClient(key).xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    getClient(key).xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return getResponse(BuilderFactory.STREAM_ENTRY_ID_LIST);
   }
 
   @Override
-  public Response<List<byte[]>> xclaimIds(byte[] key, byte[] group, byte[] consumername,
+  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
       long minIdleTime, XClaimParams params, byte[]... ids) {
-    getClient(key).xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    getClient(key).xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd,
-                                      final String... args) {
+      final String... args) {
     getClient(sampleKey).sendCommand(cmd, args);
     return getResponse(BuilderFactory.OBJECT);
   }

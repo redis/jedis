@@ -4544,10 +4544,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> xclaimIds(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    client.xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return client.getBinaryMultiBulkReply();
   }
 

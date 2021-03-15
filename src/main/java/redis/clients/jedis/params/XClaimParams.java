@@ -1,12 +1,5 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
-
 public class XClaimParams extends Params {
 
   private static final String IDLE = "IDLE";
@@ -60,29 +53,4 @@ public class XClaimParams extends Params {
     addParam(FORCE);
     return this;
   }
-
-  public byte[][] getByteParams(byte[] key, byte[]... args) {
-    List<byte[]> byteParams = new ArrayList<>();
-    byteParams.add(key);
-    Collections.addAll(byteParams, args);
-
-    if (contains(IDLE)) {
-      byteParams.add(SafeEncoder.encode(IDLE));
-      byteParams.add(Protocol.toByteArray((long) getParam(IDLE)));
-    }
-    if (contains(TIME)) {
-      byteParams.add(SafeEncoder.encode(TIME));
-      byteParams.add(Protocol.toByteArray((long) getParam(TIME)));
-    }
-    if (contains(RETRYCOUNT)) {
-      byteParams.add(SafeEncoder.encode(RETRYCOUNT));
-      byteParams.add(Protocol.toByteArray((int) getParam(RETRYCOUNT)));
-    }
-    if (contains(FORCE)) {
-      byteParams.add(SafeEncoder.encode(FORCE));
-    }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
-  }
-
 }

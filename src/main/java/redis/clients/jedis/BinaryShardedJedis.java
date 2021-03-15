@@ -1178,10 +1178,10 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<byte[]> xclaimIds(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     Jedis j = getShard(key);
-    return j.xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    return j.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
   }
 
   @Override

@@ -1174,10 +1174,10 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<StreamEntryID> xclaimIds(String key, String group, String consumername,
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     Jedis j = getShard(key);
-    return j.xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    return j.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
   }
 
   @Override

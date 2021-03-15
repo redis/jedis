@@ -396,7 +396,7 @@ public interface RedisPipeline {
   Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
-  Response<List<StreamEntryID>> xclaimIds(String key, String group, String consumername,
+  Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids);
 
   Response<Long> bitpos(String key, boolean value);

@@ -2589,12 +2589,12 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<StreamEntryID> xclaimIds(String key, String group, String consumername,
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return new JedisClusterCommand<List<StreamEntryID>>(connectionHandler, maxAttempts) {
       @Override
       public List<StreamEntryID> execute(Jedis connection) {
-        return connection.xclaimIds(key, group, consumername, minIdleTime, params, ids);
+        return connection.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
       }
     }.run(key);
   }

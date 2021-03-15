@@ -1691,7 +1691,7 @@ public class BinaryClient extends Connection {
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[][] ids) {
 
-    ArrayList<byte[]> arguments = new ArrayList<>(10 + ids.length);
+    List<byte[]> arguments = new ArrayList<>(10 + ids.length);
 
     arguments.add(key);
     arguments.add(groupname);
@@ -1714,16 +1714,23 @@ public class BinaryClient extends Connection {
     sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
   }
 
-  public void xclaimIds(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+  public void xclaimJustId(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
       XClaimParams params, byte[][] ids) {
-    List<byte[]> arguments = new ArrayList<>(4 + ids.length);
-    arguments.add(groupname);
-    arguments.add(consumername);
-    arguments.add(toByteArray(minIdleTime));
-    Collections.addAll(arguments, ids);
-    arguments.add(Keyword.JUSTID.getRaw());
-
-    sendCommand(XCLAIM, params.getByteParams(key, arguments.toArray(new byte[arguments.size()][])));
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+    final int idsLength = ids.length;
+    final byte[][] args = new byte[4 + paramLength + idsLength + 1][];
+    int index = 0;
+    args[index++] = key;
+    args[index++] = groupname;
+    args[index++] = consumername;
+    args[index++] = toByteArray(minIdleTime);
+    System.arraycopy(ids, 0, args, index, idsLength);
+    index += idsLength;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+    args[index++] = Keyword.JUSTID.getRaw();
+    sendCommand(XCLAIM, args);
   }
 
   public void xinfoStream(byte[] key) {

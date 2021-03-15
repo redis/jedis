@@ -4165,10 +4165,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<StreamEntryID> xclaimIds(String key, String group, String consumername,
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    client.xclaimIds(key, group, consumername, minIdleTime, params, ids);
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
 
     return BuilderFactory.STREAM_ENTRY_ID_LIST.build(client.getObjectMultiBulkReply());
   }

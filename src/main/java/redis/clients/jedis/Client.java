@@ -1439,10 +1439,10 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xclaimIds(String key, String group, String consumername, long minIdleTime,
+  public void xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids) {
     final byte[][] bids = convertStreamEntryIDsToBinary(ids);
-    xclaimIds(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+    xclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
       minIdleTime, params, bids);
   }
 

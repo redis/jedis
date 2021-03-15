@@ -2497,12 +2497,12 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<byte[]> xclaimIds(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
       public List<byte[]> execute(Jedis connection) {
-        return connection.xclaimIds(key, group, consumername, minIdleTime, params, ids);
+        return connection.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
       }
     }.runBinary(key);
   }

@@ -24,6 +24,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -558,6 +559,22 @@ public interface JedisCommands {
    */
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  /**
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> ... <ID-N>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE]
+   */
+  List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
+
+  /**
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> ... <ID-N>
+   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
+   *        [FORCE] JUSTID
+   */
+  List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
 
   /**
    * Introspection command used in order to retrieve different information about the stream

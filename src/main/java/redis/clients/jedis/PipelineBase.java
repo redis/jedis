@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -2218,6 +2219,34 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername,
       long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids) {
     getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xclaim(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    getClient(key).xclaim(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids) {
+    getClient(key).xclaim(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    getClient(key).xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_ID_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids) {
+    getClient(key).xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 

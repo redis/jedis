@@ -23,6 +23,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.util.SafeEncoder;
@@ -467,6 +468,65 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void xclaimWithParams() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xpendeing-stream", null, map);
+
+    assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
+
+    // Read the event from Stream put it on pending
+    jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false,
+            new AbstractMap.SimpleImmutableEntry<>("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY));
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
+            null, null, 3, "xpendeing-consumer");
+    // Sleep for 100ms so we can claim events pending for more than 50ms
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    List<StreamEntry> streamEntrys = jedis.xclaim("xpendeing-stream", "xpendeing-group",
+            "xpendeing-consumer2", 50, XClaimParams.xclaimParams().idle(0).retryCount(0),
+            pendingRange.get(0).getID());
+    assertEquals(1, streamEntrys.size());
+    assertEquals(pendingRange.get(0).getID(), streamEntrys.get(0).getID());
+    assertEquals("v1", streamEntrys.get(0).getFields().get("f1"));
+  }
+
+  @Test
+  public void xclaimJustId() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xpendeing-stream", null, map);
+
+    assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
+
+    // Read the event from Stream put it on pending
+    jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false,
+      new AbstractMap.SimpleImmutableEntry<>("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY));
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
+      null, null, 3, "xpendeing-consumer");
+    // Sleep for 100ms so we can claim events pending for more than 50ms
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    List<StreamEntryID> streamEntryIDS = jedis.xclaimJustId("xpendeing-stream", "xpendeing-group",
+      "xpendeing-consumer2", 50, XClaimParams.xclaimParams().idle(0).retryCount(0),
+      pendingRange.get(0).getID());
+    assertEquals(1, streamEntryIDS.size());
+    assertEquals(pendingRange.get(0).getID(), streamEntryIDS.get(0));
+  }
+
+  @Test
   public void xinfo() throws InterruptedException {
 
     final String STREAM_NAME = "xadd-stream1";
@@ -656,6 +716,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(map, entries.get(0).getFields());
     assertEquals(id2.get(), entries.get(1).getID());
     assertEquals(map, entries.get(1).getFields());
+
+    p = jedis.pipelined();
+    Response<List<StreamEntry>> results2 = p.xrevrange("stream1", null, id1.get(), 2);
+    p.sync();
+    assertEquals(2, results2.get().size());
   }
 
   @Test

@@ -1476,12 +1476,24 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void xclaim(String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
-
-    final byte[][] bids = new byte[ids.length][];
-    for (int i = 0; i < ids.length; i++) {
-      bids[i] = SafeEncoder.encode(ids[i].toString());
-    }
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
     xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);
+  }
+
+  @Override
+  public void xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+      minIdleTime, params, bids);
+  }
+
+  @Override
+  public void xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+      minIdleTime, params, bids);
   }
 
   @Override
@@ -1499,4 +1511,11 @@ public class Client extends BinaryClient implements Commands {
     xinfoConsumers(SafeEncoder.encode(key), SafeEncoder.encode(group));
   }
 
+  private byte[][] convertStreamEntryIDsToBinary(StreamEntryID... ids) {
+    final byte[][] bids = new byte[ids.length][];
+    for (int i = 0; i < ids.length; i++) {
+      bids[i] = SafeEncoder.encode(ids[i].toString());
+    }
+    return bids;
+  }
 }

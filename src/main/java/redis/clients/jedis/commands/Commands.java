@@ -459,7 +459,11 @@ public interface Commands {
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, StreamEntryID... ids);
 
-  void xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids);
+  void xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params,
+      StreamEntryID... ids);
+
+  void xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
 
   void xinfoStream (String key);
 

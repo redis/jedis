@@ -1736,12 +1736,12 @@ public class BinaryClient extends Connection {
   }
 
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
-      XClaimParams params, byte[][] ids) {
+      XClaimParams params, byte[]... ids) {
     xclaim(key, groupname, consumername, minIdleTime, params, ids, false);
   }
 
   public void xclaimJustId(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
-      XClaimParams params, byte[][] ids) {
+      XClaimParams params, byte[]... ids) {
     xclaim(key, groupname, consumername, minIdleTime, params, ids, true);
   }
 

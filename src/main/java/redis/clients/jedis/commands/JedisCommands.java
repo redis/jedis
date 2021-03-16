@@ -561,7 +561,7 @@ public interface JedisCommands {
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   /**
-   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> ... <ID-N>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE]
    */
@@ -569,7 +569,7 @@ public interface JedisCommands {
       XClaimParams params, StreamEntryID... ids);
 
   /**
-   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
+   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> ... <ID-N>
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] JUSTID
    */

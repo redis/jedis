@@ -28,6 +28,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -1008,6 +1009,48 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Map<String, String> hgetAll(final String key) {
     checkIsInMultiOrPipeline();
     client.hgetAll(key);
+    return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Get one random field from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one random field from a hash.
+   */
+  @Override
+  public String hrandfield(final String key) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key);
+    return client.getStatusCodeReply();
+  }
+
+  /**
+   * Get multiple random fields from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return multiple random fields from a hash.
+   */
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key, count);
+    return client.getMultiBulkReply();
+  }
+
+  /**
+   * Get one or multiple random fields with values from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one or multiple random fields with values from a hash.
+   */
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfieldWithValues(key, count);
     return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
   }
 
@@ -4175,6 +4218,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
 
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(key, group, consumername, minIdleTime, params, ids);
+
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+
+    return BuilderFactory.STREAM_ENTRY_ID_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override

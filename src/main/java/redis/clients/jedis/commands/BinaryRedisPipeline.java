@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -93,6 +94,12 @@ public interface BinaryRedisPipeline {
   Response<Long> hsetnx(byte[] key, byte[] field, byte[] value);
 
   Response<List<byte[]>> hvals(byte[] key);
+
+  Response<byte[]> hrandfield(byte[] key);
+
+  Response<List<byte[]>> hrandfield(byte[] key, long count);
+
+  Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count);
 
   Response<Long> incr(byte[] key);
 
@@ -402,6 +409,12 @@ public interface BinaryRedisPipeline {
 
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids);
+
+  Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids);
 
   Response<Long> bitpos(byte[] key, boolean value);
 

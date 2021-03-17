@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -409,6 +410,42 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<List<byte[]>> hvals(final byte[] key) {
     getClient(key).hvals(key);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<byte[]> hrandfield(final byte[] key) {
+    getClient(key).hrandfield(key);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<List<byte[]>> hrandfield(final byte[] key, final long count) {
+    getClient(key).hrandfield(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<Map<byte[], byte[]>> hrandfieldWithValues(final byte[] key, final long count) {
+    getClient(key).hrandfieldWithValues(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_MAP);
+  }
+
+  @Override
+  public Response<String> hrandfield(final String key) {
+    getClient(key).hrandfield(key);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<List<String>> hrandfield(final String key, final long count) {
+    getClient(key).hrandfield(key, count);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<Map<String, String>> hrandfieldWithValues(final String key, final long count) {
+    getClient(key).hrandfieldWithValues(key, count);
+    return getResponse(BuilderFactory.STRING_MAP);
   }
 
   @Override
@@ -2079,13 +2116,13 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start,
       int count) {
-    getClient(key).xrevrange(key, start, end, count);
+    getClient(key).xrevrange(key, end, start, count);
     return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   @Override
   public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
-    getClient(key).xrevrange(key, start, end, count);
+    getClient(key).xrevrange(key, end, start, count);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
@@ -2218,6 +2255,34 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername,
       long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids) {
     getClient(key).xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xclaim(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    getClient(key).xclaim(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids) {
+    getClient(key).xclaim(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    getClient(key).xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+    return getResponse(BuilderFactory.STREAM_ENTRY_ID_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids) {
+    getClient(key).xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 

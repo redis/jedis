@@ -6,6 +6,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -740,6 +741,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Map<String, String> execute(Jedis connection) {
         return connection.hgetAll(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String hrandfield(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.hrandfield(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.hrandfield(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    return new JedisClusterCommand<Map<String, String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Map<String, String> execute(Jedis connection) {
+        return connection.hrandfieldWithValues(key, count);
       }
     }.run(key);
   }
@@ -2603,6 +2634,28 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries,
           force, ids);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xclaim(key, group, consumername, minIdleTime, params, ids);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntryID>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntryID> execute(Jedis connection) {
+        return connection.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
       }
     }.run(key);
   }

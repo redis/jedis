@@ -36,6 +36,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -1285,6 +1286,48 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
 
     return hash;
+  }
+
+  /**
+   * Get one random field from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one random field from a hash.
+   */
+  @Override
+  public byte[] hrandfield(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Get multiple random fields from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return multiple random fields from a hash.
+   */
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  /**
+   * Get one or multiple random fields with values from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one or multiple random fields with values from a hash.
+   */
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfieldWithValues(key, count);
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -4553,6 +4596,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(key, group, consumername, minIdleTime, params, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return client.getBinaryMultiBulkReply();
   }
 

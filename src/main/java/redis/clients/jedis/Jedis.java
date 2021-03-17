@@ -13,6 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
 import redis.clients.jedis.commands.ClusterCommands;

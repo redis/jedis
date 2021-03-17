@@ -26,6 +26,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -1233,7 +1234,7 @@ public class BinaryClient extends Connection {
     if (unblockType == null) {
       sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId));
     } else {
-      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.raw);
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.getRaw());
     }
   }
 

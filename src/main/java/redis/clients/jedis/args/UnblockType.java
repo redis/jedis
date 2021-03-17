@@ -1,16 +1,21 @@
-package redis.clients.jedis;
+package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Unblock type for {@code CLIENT UNBLOCK} command.
  */
-public enum UnblockType {
+public enum UnblockType implements Rawable {
   TIMEOUT, ERROR;
 
-  public final byte[] raw;
+  private final byte[] raw;
 
   UnblockType() {
     raw = SafeEncoder.encode(this.name().toLowerCase());
+  }
+
+  @Override
+  public byte[] getRaw() {
+    return new byte[0];
   }
 }

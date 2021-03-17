@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.RedisInputStream;
@@ -275,7 +276,7 @@ public final class Protocol {
     }
   }
 
-  public static enum Keyword {
+  public static enum Keyword implements Rawable {
     AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
@@ -294,6 +295,7 @@ public final class Protocol {
       raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));
     }
 
+    @Override
     public byte[] getRaw() {
       return raw;
     }

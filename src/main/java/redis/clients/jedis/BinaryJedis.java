@@ -1289,6 +1289,48 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Get one random field from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one random field from a hash.
+   */
+  @Override
+  public byte[] hrandfield(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Get multiple random fields from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return multiple random fields from a hash.
+   */
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  /**
+   * Get one or multiple random fields with values from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one or multiple random fields with values from a hash.
+   */
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfieldWithValues(key, count);
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
    * Add the string value to the head (LPUSH) or tail (RPUSH) of the list stored at key. If the key
    * does not exist an empty list is created just before the append operation. If the key exists but
    * is not a List an error is returned.

@@ -136,6 +136,12 @@ public interface Commands {
 
   void hvals(String key);
 
+  void hrandfield(String key);
+
+  void hrandfield(String key, long count);
+
+  void hrandfieldWithValues(String key, long count);
+
   void hgetAll(String key);
 
   void rpush(String key, String... strings);

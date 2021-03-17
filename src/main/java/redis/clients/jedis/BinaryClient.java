@@ -2,18 +2,19 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
-import static redis.clients.jedis.Protocol.Keyword.FREQ;
-import static redis.clients.jedis.Protocol.Keyword.HELP;
+import static redis.clients.jedis.Protocol.Command.EXISTS;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.INCR;
+import static redis.clients.jedis.Protocol.Command.KEYS;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.SAVE;
+import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.TIME;
+import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,17 +27,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -413,6 +404,18 @@ public class BinaryClient extends Connection {
 
   public void hgetAll(final byte[] key) {
     sendCommand(HGETALL, key);
+  }
+
+  public void hrandfield(final byte[] key) {
+    sendCommand(HRANDFIELD, key);
+  }
+
+  public void hrandfield(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count));
+  }
+
+  public void hrandfieldWithValues(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count), WITHVALUES.getRaw());
   }
 
   public void rpush(final byte[] key, final byte[]... strings) {

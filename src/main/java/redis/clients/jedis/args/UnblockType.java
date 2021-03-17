@@ -11,11 +11,11 @@ public enum UnblockType implements Rawable {
   private final byte[] raw;
 
   UnblockType() {
-    raw = SafeEncoder.encode(this.name().toLowerCase());
+    raw = SafeEncoder.encode(this.name());
   }
 
   @Override
   public byte[] getRaw() {
-    return new byte[0];
+    return raw;
   }
 }

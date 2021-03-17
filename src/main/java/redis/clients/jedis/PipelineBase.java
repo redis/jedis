@@ -1445,6 +1445,42 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<byte[]> zrandmember(final byte[] key) {
+    getClient(key).zrandmember(key);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<Set<byte[]>> zrandmember(final byte[] key, final long count) {
+    getClient(key).zrandmember(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrandmemberWithScores(final byte[] key, final long count) {
+    getClient(key).zrandmemberWithScores(key, count);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<String> zrandmember(final String key) {
+    getClient(key).zrandmember(key);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<Set<String>> zrandmember(final String key, final long count) {
+    getClient(key).zrandmember(key, count);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrandmemberWithScores(final String key, final long count) {
+    getClient(key).zrandmemberWithScores(key, count);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
   public Response<Long> zrevrank(final String key, final String member) {
     getClient(key).zrevrank(key, member);
     return getResponse(BuilderFactory.LONG);

@@ -252,6 +252,12 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop);
 
+  Response<String> zrandmember(String key);
+
+  Response<Set<String>> zrandmember(String key, long count);
+
+  Response<Set<Tuple>> zrandmemberWithScores(String key, long count);
+
   Response<Long> zrank(String key, String member);
 
   Response<Long> zrem(String key, String... members);

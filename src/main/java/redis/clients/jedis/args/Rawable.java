@@ -1,6 +1,6 @@
 package redis.clients.jedis.args;
 
-public interface Raw {
+public interface Rawable {
 
   byte[] getRaw();
 }

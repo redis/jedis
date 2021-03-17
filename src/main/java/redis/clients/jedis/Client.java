@@ -14,10 +14,13 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.Commands;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -29,6 +32,12 @@ public class Client extends BinaryClient implements Commands {
     super();
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future. It can be replaced with
+   * {@link #Client(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   */
+  @Deprecated
   public Client(final String host) {
     super(host);
   }
@@ -37,14 +46,26 @@ public class Client extends BinaryClient implements Commands {
     super(host, port);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Client(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public Client(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public Client(final HostAndPort hostPort, final JedisClientConfig clientConfig) {
+    super(hostPort, clientConfig);
   }
 
   public Client(final JedisSocketFactory jedisSocketFactory) {
@@ -55,7 +76,7 @@ public class Client extends BinaryClient implements Commands {
   public void ping(final String message) {
     ping(SafeEncoder.encode(message));
   }
-  
+
   @Override
   public void set(final String key, final String value) {
     set(SafeEncoder.encode(key), SafeEncoder.encode(value));
@@ -69,6 +90,16 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void get(final String key) {
     get(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void getDel(final String key) {
+    getDel(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void getEx(String key, GetExParams params) {
+    getEx(SafeEncoder.encode(key), params);
   }
 
   @Override
@@ -107,7 +138,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void expire(final String key, final int seconds) {
+  public void expire(final String key, final long seconds) {
     expire(SafeEncoder.encode(key), seconds);
   }
 
@@ -147,7 +178,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void setex(final String key, final int seconds, final String value) {
+  public void setex(final String key, final long seconds, final String value) {
     setex(SafeEncoder.encode(key), seconds, SafeEncoder.encode(value));
   }
 
@@ -310,23 +341,33 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void lpos(final String key, final String element){
+  public void lpop(final String key, final int count) {
+    lpop(SafeEncoder.encode(key), count);
+  }
+
+  @Override
+  public void lpos(final String key, final String element) {
     lpos(SafeEncoder.encode(key), SafeEncoder.encode(element));
   }
 
   @Override
-  public void lpos(final String key, final String element, final LPosParams params){
+  public void lpos(final String key, final String element, final LPosParams params) {
     lpos(SafeEncoder.encode(key), SafeEncoder.encode(element), params);
   }
 
   @Override
-  public void lpos(final String key, final String element, final LPosParams params, final long count){
+  public void lpos(final String key, final String element, final LPosParams params, final long count) {
     lpos(SafeEncoder.encode(key), SafeEncoder.encode(element), params, count);
   }
 
   @Override
   public void rpop(final String key) {
     rpop(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void rpop(final String key, final int count) {
+    rpop(SafeEncoder.encode(key), count);
   }
 
   @Override
@@ -438,6 +479,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+    zaddIncr(SafeEncoder.encode(key), score, SafeEncoder.encode(member), params);
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long stop) {
     zrange(SafeEncoder.encode(key), start, stop);
   }
@@ -453,7 +499,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zincrby(final String key, final double increment, final String member, final ZIncrByParams params) {
+  public void zincrby(final String key, final double increment, final String member,
+      final ZIncrByParams params) {
     zincrby(SafeEncoder.encode(key), increment, SafeEncoder.encode(member), params);
   }
 
@@ -544,6 +591,14 @@ public class Client extends BinaryClient implements Commands {
 
     args.add(String.valueOf(timeout));
     blpop(args.toArray(new String[size]));
+  }
+
+  public void bzpopmax(final int timeout, final String... keys) {
+    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  public void bzpopmin(final int timeout, final String... keys) {
+    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -729,7 +784,8 @@ public class Client extends BinaryClient implements Commands {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min));
   }
 
-  public void zrevrangeByLex(final String key, final String max, final String min, final int offset, final int count) {
+  public void zrevrangeByLex(final String key, final String max, final String min,
+      final int offset, final int count) {
     zrevrangeByLex(SafeEncoder.encode(key), SafeEncoder.encode(max), SafeEncoder.encode(min),
       offset, count);
   }
@@ -906,12 +962,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void restore(final String key, final int ttl, final byte[] serializedValue) {
+  public void restore(final String key, final long ttl, final byte[] serializedValue) {
     restore(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
   @Override
-  public void restoreReplace(final String key, final int ttl, final byte[] serializedValue) {
+  public void restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
@@ -940,11 +996,11 @@ public class Client extends BinaryClient implements Commands {
   public void srandmember(final String key, final int count) {
     srandmember(SafeEncoder.encode(key), count);
   }
-  
+
   public void memoryUsage(final String key) {
     memoryUsage(SafeEncoder.encode(key));
   }
-  
+
   public void memoryUsage(final String key, final int samples) {
     memoryUsage(SafeEncoder.encode(key), samples);
   }
@@ -958,8 +1014,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void migrate(final String host, final int port, final String key,
-      final int destinationDb, final int timeout) {
+  public void migrate(final String host, final int port, final String key, final int destinationDb,
+      final int timeout) {
     migrate(host, port, SafeEncoder.encode(key), destinationDb, timeout);
   }
 
@@ -1126,7 +1182,8 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_SLOTS);
   }
 
-  public void geoadd(final String key, final double longitude, final double latitude, final String member) {
+  public void geoadd(final String key, final double longitude, final double latitude,
+      final String member) {
     geoadd(SafeEncoder.encode(key), longitude, latitude, SafeEncoder.encode(member));
   }
 
@@ -1134,11 +1191,16 @@ public class Client extends BinaryClient implements Commands {
     geoadd(SafeEncoder.encode(key), convertMemberCoordinateMapToBinary(memberCoordinateMap));
   }
 
+  public void geoadd(final String key, final GeoAddParams params, final Map<String, GeoCoordinate> memberCoordinateMap) {
+    geoadd(SafeEncoder.encode(key), params, convertMemberCoordinateMapToBinary(memberCoordinateMap));
+  }
+
   public void geodist(final String key, final String member1, final String member2) {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2));
   }
 
-  public void geodist(final String key, final String member1, final String member2, final GeoUnit unit) {
+  public void geodist(final String key, final String member1, final String member2,
+      final GeoUnit unit) {
     geodist(SafeEncoder.encode(key), SafeEncoder.encode(member1), SafeEncoder.encode(member2), unit);
   }
 
@@ -1150,50 +1212,57 @@ public class Client extends BinaryClient implements Commands {
     geopos(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
-  public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+  public void georadius(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }
 
-  public void georadiusReadonly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+  public void georadiusReadonly(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
     georadiusReadonly(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }
 
-  public void georadius(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadius(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
-  public void georadiusStore(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+  public void georadiusStore(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      GeoRadiusStoreParam storeParam) {
     georadiusStore(SafeEncoder.encode(key), longitude, latitude, radius, unit, param, storeParam);
   }
 
-  public void georadiusReadonly(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadiusReadonly(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     georadiusReadonly(SafeEncoder.encode(key), longitude, latitude, radius, unit, param);
   }
 
-  public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit) {
+  public void georadiusByMember(final String key, final String member, final double radius,
+      final GeoUnit unit) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
   }
 
-  public void georadiusByMemberReadonly(final String key, final String member, final double radius, final GeoUnit unit) {
+  public void georadiusByMemberReadonly(final String key, final String member, final double radius,
+      final GeoUnit unit) {
     georadiusByMemberReadonly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit);
   }
 
-  public void georadiusByMember(final String key, final String member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadiusByMember(final String key, final String member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
     georadiusByMember(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
   }
 
-  public void georadiusByMemberStore(final String key, final String member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
-    georadiusByMemberStore(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param, storeParam);
+  public void georadiusByMemberStore(final String key, final String member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    georadiusByMemberStore(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit,
+      param, storeParam);
   }
 
-  public void georadiusByMemberReadonly(final String key, final String member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
-    georadiusByMemberReadonly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, param);
+  public void georadiusByMemberReadonly(final String key, final String member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
+    georadiusByMemberReadonly(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit,
+      param);
   }
 
   public void moduleLoad(final String path) {
@@ -1261,128 +1330,158 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xadd(final String key, final  StreamEntryID id, final Map<String, String> hash, long maxLen, boolean approximateLength) {
+  public void xadd(final String key, final StreamEntryID id, final Map<String, String> hash,
+      long maxLen, boolean approximateLength) {
     final Map<byte[], byte[]> bhash = new HashMap<>(hash.size());
     for (final Entry<String, String> entry : hash.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
-    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id==null ? "*" : id.toString()), bhash, maxLen, approximateLength);
+    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id == null ? "*" : id.toString()), bhash,
+      maxLen, approximateLength);
   }
-  
+
   @Override
   public void xlen(final String key) {
-	  xlen(SafeEncoder.encode(key));
+    xlen(SafeEncoder.encode(key));
   }
-  
+
   @Override
-  public void xrange(final String key, final StreamEntryID start, final  StreamEntryID end, final long count) {
-	  xrange(SafeEncoder.encode(key), SafeEncoder.encode(start==null ? "-" : start.toString()), SafeEncoder.encode(end==null ? "+" : end.toString()), count);
+  public void xrange(final String key, final StreamEntryID start, final StreamEntryID end,
+      final long count) {
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
+      SafeEncoder.encode(end == null ? "+" : end.toString()), count);
   }
-  
+
   @Override
   public void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
-    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end==null ? "+" : end.toString()), SafeEncoder.encode(start==null ? "-" : start.toString()), count);
+    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end == null ? "+" : end.toString()),
+      SafeEncoder.encode(start == null ? "-" : start.toString()), count);
   }
-  
+
   @Override
-  public void xread(final int count, final long block, final Entry<String, StreamEntryID>... streams) {
+  public void xread(final int count, final long block,
+      final Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
     for (final Entry<String, StreamEntryID> entry : streams) {
-      bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? "0-0" : entry.getValue().toString()));
+      bhash.put(SafeEncoder.encode(entry.getKey()),
+        SafeEncoder.encode(entry.getValue() == null ? "0-0" : entry.getValue().toString()));
     }
     xread(count, block, bhash);
   }
-  
+
   @Override
   public void xack(final String key, final String group, final StreamEntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
-    for (int i=0 ; i< ids.length; ++i ) {
+    for (int i = 0; i < ids.length; ++i) {
       StreamEntryID id = ids[i];
-      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
+      bids[i] = SafeEncoder.encode(id == null ? "0-0" : id.toString());
     }
     xack(SafeEncoder.encode(key), SafeEncoder.encode(group), bids);
   }
-  
+
   @Override
   public void xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
-    xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()), makeStream);
+    xgroupCreate(SafeEncoder.encode(key), SafeEncoder.encode(groupname),
+      SafeEncoder.encode(id == null ? "0-0" : id.toString()), makeStream);
   }
 
   @Override
   public void xgroupSetID(String key, String groupname, StreamEntryID id) {
-    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(id==null ? "0-0" : id.toString()));    
+    xgroupSetID(SafeEncoder.encode(key), SafeEncoder.encode(groupname),
+      SafeEncoder.encode(id == null ? "0-0" : id.toString()));
   }
 
   @Override
   public void xgroupDestroy(String key, String groupname) {
-    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(groupname));    
+    xgroupDestroy(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
   }
 
   @Override
   public void xgroupDelConsumer(String key, String groupname, String consumerName) {
-    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(consumerName));    
+    xgroupDelConsumer(SafeEncoder.encode(key), SafeEncoder.encode(groupname),
+      SafeEncoder.encode(consumerName));
   }
 
   @Override
   public void xdel(final String key, final StreamEntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
-    for (int i=0 ; i< ids.length; ++i ) {
+    for (int i = 0; i < ids.length; ++i) {
       StreamEntryID id = ids[i];
-      bids[i] = SafeEncoder.encode(id==null ? "0-0" : id.toString()); 
+      bids[i] = SafeEncoder.encode(id == null ? "0-0" : id.toString());
     }
-    xdel(SafeEncoder.encode(key), bids);    
+    xdel(SafeEncoder.encode(key), bids);
   }
 
   @Override
   public void xtrim(String key, long maxLen, boolean approximateLength) {
-    xtrim(SafeEncoder.encode(key), maxLen, approximateLength);    
+    xtrim(SafeEncoder.encode(key), maxLen, approximateLength);
   }
 
   @Override
-  public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams) {
+  public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck,
+      Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
     for (final Entry<String, StreamEntryID> entry : streams) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()==null ? ">" : entry.getValue().toString()));
     }
-    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);    
+    xreadGroup(SafeEncoder.encode(groupname), SafeEncoder.encode(consumer), count, block, noAck, bhash);
   }
 
   @Override
-  public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
+  public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
+      int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
-        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));    
+        SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));
   }
 
   @Override
-  public void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
-      boolean force, StreamEntryID... ids) {
-    
-    final byte[][] bids = new byte[ids.length][];
-    for (int i = 0; i < ids.length; i++) {
-      bids[i] = SafeEncoder.encode(ids[i].toString());
-    }
-    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);    
+  public void xpendingSummary(String key, String groupname) {
+    xpendingSummary(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
+  }
+
+  @Override
+  public void xclaim(String key, String group, String consumername, long minIdleTime,
+      long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);
+  }
+
+  @Override
+  public void xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+      minIdleTime, params, bids);
+  }
+
+  @Override
+  public void xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+      minIdleTime, params, bids);
   }
 
   @Override
   public void xinfoStream(String key) {
-
     xinfoStream(SafeEncoder.encode(key));
-
   }
 
   @Override
   public void xinfoGroup(String key) {
-
     xinfoGroup(SafeEncoder.encode(key));
-
   }
 
   @Override
   public void xinfoConsumers(String key, String group) {
-
-    xinfoConsumers(SafeEncoder.encode(key),SafeEncoder.encode(group));
-
+    xinfoConsumers(SafeEncoder.encode(key), SafeEncoder.encode(group));
   }
- 
+
+  private byte[][] convertStreamEntryIDsToBinary(StreamEntryID... ids) {
+    final byte[][] bids = new byte[ids.length][];
+    for (int i = 0; i < ids.length; i++) {
+      bids[i] = SafeEncoder.encode(ids[i].toString());
+    }
+    return bids;
+  }
 }

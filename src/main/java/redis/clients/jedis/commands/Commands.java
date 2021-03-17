@@ -9,9 +9,11 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -19,12 +21,16 @@ import redis.clients.jedis.params.LPosParams;
 public interface Commands {
 
   void ping(String message);
-  
+
   void set(String key, String value);
 
   void set(String key, String value, SetParams params);
 
   void get(String key);
+
+  void getDel(String key);
+
+  void getEx(String key, GetExParams params);
 
   void exists(String... keys);
 
@@ -40,7 +46,15 @@ public interface Commands {
 
   void renamenx(String oldkey, String newkey);
 
-  void expire(String key, int seconds);
+  /**
+   * @deprecated Use {@link #expire(java.lang.String, long)}.
+   */
+  @Deprecated
+  default void expire(String key, int seconds) {
+    expire(key, (long) seconds);
+  }
+
+  void expire(String key, long seconds);
 
   void expireAt(String key, long unixTime);
 
@@ -68,7 +82,15 @@ public interface Commands {
 
   void setnx(String key, String value);
 
-  void setex(String key, int seconds, String value);
+  /**
+   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
+   */
+  @Deprecated
+  default void setex(String key, int seconds, String value) {
+    setex(key, (long) seconds, value);
+  }
+
+  void setex(String key, long seconds, String value);
 
   void mset(String... keysvalues);
 
@@ -134,6 +156,8 @@ public interface Commands {
 
   void lpop(String key);
 
+  void lpop(String key, int count);
+
   void lpos(String key, String element);
 
   void lpos(String key, String element, LPosParams params);
@@ -141,6 +165,8 @@ public interface Commands {
   void lpos(String key, String element, LPosParams params, long count);
 
   void rpop(String key);
+
+  void rpop(String key, int count);
 
   void rpoplpush(String srckey, String dstkey);
 
@@ -184,6 +210,8 @@ public interface Commands {
 
   void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  void zaddIncr(String key, double score, String member, ZAddParams params);
+
   void zrange(String key, long start, long stop);
 
   void zrem(String key, String... members);
@@ -207,9 +235,9 @@ public interface Commands {
   void zscore(String key, String member);
 
   void zmscore(String key, String... members);
-  
+
   void zpopmax(String key);
-  
+
   void zpopmax(String key, int count);
 
   void zpopmin(String key);
@@ -240,39 +268,33 @@ public interface Commands {
 
   void zrangeByScore(String key, String min, String max);
 
-  void zrangeByScore(String key, double min, double max, int offset,
-      int count);
+  void zrangeByScore(String key, double min, double max, int offset, int count);
 
   void zrangeByScore(String key, String min, String max, int offset, int count);
 
   void zrangeByScoreWithScores(String key, double min, double max);
 
-  void zrangeByScoreWithScores(String key, double min, double max,
-      int offset, int count);
+  void zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
   void zrangeByScoreWithScores(String key, String min, String max);
 
-  void zrangeByScoreWithScores(String key, String min, String max,
-      int offset, int count);
+  void zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
   void zrevrangeByScore(String key, double max, double min);
 
   void zrevrangeByScore(String key, String max, String min);
 
-  void zrevrangeByScore(String key, double max, double min, int offset,
-      int count);
+  void zrevrangeByScore(String key, double max, double min, int offset, int count);
 
   void zrevrangeByScore(String key, String max, String min, int offset, int count);
 
   void zrevrangeByScoreWithScores(String key, double max, double min);
 
-  void zrevrangeByScoreWithScores(String key, double max, double min,
-      int offset, int count);
+  void zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
   void zrevrangeByScoreWithScores(String key, String max, String min);
 
-  void zrevrangeByScoreWithScores(String key, String max, String min,
-      int offset, int count);
+  void zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
   void zremrangeByRank(String key, long start, long stop);
 
@@ -338,9 +360,25 @@ public interface Commands {
 
   void dump(String key);
 
-  void restore(String key, int ttl, byte[] serializedValue);
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
+   */
+  @Deprecated
+  default void restore(String key, int ttl, byte[] serializedValue) {
+    restore(key, (long) ttl, serializedValue);
+  }
 
-  void restoreReplace(String key, int ttl, byte[] serializedValue);
+  void restore(String key, long ttl, byte[] serializedValue);
+
+  /**
+   * @deprecated Use {@link #restoreReplace(java.lang.String, long, byte[])}.
+   */
+  @Deprecated
+  default void restoreReplace(String key, int ttl, byte[] serializedValue) {
+    restoreReplace(key, (long) ttl, serializedValue);
+  }
+
+  void restoreReplace(String key, long ttl, byte[] serializedValue);
 
   void scan(String cursor, ScanParams params);
 
@@ -389,17 +427,17 @@ public interface Commands {
   void memoryDoctor();
 
   void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
-  
+
   void xlen(String key);
 
   void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
-  
+
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-  
+
   void xread(int count, long block, Entry<String, StreamEntryID>... streams);
-  
+
   void xack(String key, String group, StreamEntryID... ids);
-  
+
   void xgroupCreate(String key, String consumer, StreamEntryID id, boolean makeStream);
 
   void xgroupSetID(String key, String consumer, StreamEntryID id);
@@ -416,9 +454,20 @@ public interface Commands {
 
   void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
-  void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries,
-      boolean force, StreamEntryID... ids);
+  void xpendingSummary(String key, String groupname);
+
+  void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
+      int retries, boolean force, StreamEntryID... ids);
+
+  void xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params,
+      StreamEntryID... ids);
+
+  void xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
+
   void xinfoStream (String key);
+
   void xinfoGroup (String key);
+
   void xinfoConsumers (String key, String group);
 }

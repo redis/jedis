@@ -481,7 +481,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     Map<String, String> actual = jedis.hrandfieldWithValues("foo", 2);
     assertNotNull(actual);
     assertEquals(2, actual.size());
-    assertTrue(hash.containsKey(actual.entrySet().iterator().next().getKey()));
+    Map.Entry entry = actual.entrySet().iterator().next();
+    assertEquals(hash.get(entry.getKey()), entry.getValue());
 
     // binary
     Map<byte[], byte[]> bhash = new JedisByteHashMap();
@@ -497,6 +498,7 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     Map<byte[], byte[]> bactual = jedis.hrandfieldWithValues(bfoo, 2);
     assertNotNull(bactual);
     assertEquals(2, bactual.size());
-    assertTrue(bactual.containsKey(bactual.entrySet().iterator().next().getKey()));
+    Map.Entry bentry = bactual.entrySet().iterator().next();
+    assertArrayEquals(bhash.get(bentry.getKey()), (byte[]) bentry.getValue());
   }
 }

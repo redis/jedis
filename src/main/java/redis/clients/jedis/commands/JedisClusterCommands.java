@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
@@ -143,6 +142,12 @@ public interface JedisClusterCommands {
   List<String> hvals(String key);
 
   Map<String, String> hgetAll(String key);
+
+  String hrandfield(String key);
+
+  List<String> hrandfield(String key, long count);
+
+  Map<String, String> hrandfieldWithValues(String key, long count);
 
   Long rpush(String key, String... string);
 

@@ -12,6 +12,12 @@ import redis.clients.jedis.util.Pool;
 @Deprecated
 public class JedisPoolAbstract extends Pool<Jedis> {
 
+  /**
+   * Using this constructor means you have to set and initialize the internalPool yourself.
+   *
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
   public JedisPoolAbstract() {
     super();
   }

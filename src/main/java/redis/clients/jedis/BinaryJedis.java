@@ -4077,6 +4077,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  /**
+   * Unblock a client blocked in a blocking command from a different connection.
+   * @param clientId
+   * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
+   *          of the command was reached
+   * @return
+   */
   @Override
   public Long clientUnblock(final long clientId, final UnblockType unblockType) {
     checkIsInMultiOrPipeline();

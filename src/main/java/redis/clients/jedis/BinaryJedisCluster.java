@@ -653,6 +653,36 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public byte[] hrandfield(final byte[] key) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.hrandfield(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.hrandfield(key, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    return new JedisClusterCommand<Map<byte[], byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public Map<byte[], byte[]> execute(Jedis connection) {
+        return connection.hrandfieldWithValues(key, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Long rpush(final byte[] key, final byte[]... args) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

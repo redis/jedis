@@ -156,6 +156,12 @@ public interface BinaryJedisCommands {
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
+  byte[] hrandfield(byte[] key);
+
+  List<byte[]> hrandfield(byte[] key, long count);
+
+  Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count);
+
   Long rpush(byte[] key, byte[]... args);
 
   Long lpush(byte[] key, byte[]... args);

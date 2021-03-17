@@ -296,6 +296,21 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void hrandfield(final String key) {
+    hrandfield(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void hrandfield(final String key, final long count) {
+    hrandfield(SafeEncoder.encode(key), count);
+  }
+
+  @Override
+  public void hrandfieldWithValues(final String key, final long count) {
+    hrandfieldWithValues(SafeEncoder.encode(key), count);
+  }
+
+  @Override
   public void rpush(final String key, final String... string) {
     rpush(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
   }

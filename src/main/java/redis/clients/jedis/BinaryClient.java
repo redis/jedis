@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Keyword.WITHVALUES;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.ENCODING;
@@ -413,6 +414,18 @@ public class BinaryClient extends Connection {
 
   public void hgetAll(final byte[] key) {
     sendCommand(HGETALL, key);
+  }
+
+  public void hrandfield(final byte[] key) {
+    sendCommand(HRANDFIELD, key);
+  }
+
+  public void hrandfield(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count));
+  }
+
+  public void hrandfieldWithValues(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count), WITHVALUES.getRaw());
   }
 
   public void rpush(final byte[] key, final byte[]... strings) {

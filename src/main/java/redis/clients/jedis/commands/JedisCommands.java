@@ -162,6 +162,12 @@ public interface JedisCommands {
 
   Map<String, String> hgetAll(String key);
 
+  String hrandfield(String key);
+
+  List<String> hrandfield(String key, long count);
+
+  Map<String, String> hrandfieldWithValues(String key, long count);
+
   Long rpush(String key, String... string);
 
   Long lpush(String key, String... string);

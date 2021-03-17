@@ -6,6 +6,7 @@ public class ClientKillParams extends Params {
   private static final String TYPE = "TYPE";
   private static final String ADDR = "ADDR";
   private static final String SKIPME = "SKIPME";
+  private static final String USER = "USER";
 
   public static enum Type {
     NORMAL, MASTER, SLAVE, PUBSUB;
@@ -54,6 +55,11 @@ public class ClientKillParams extends Params {
 
   public ClientKillParams skipMe(SkipMe skipMe) {
     addParam(SKIPME, skipMe);
+    return this;
+  }
+
+  public ClientKillParams user(String username) {
+    addParam(USER, username);
     return this;
   }
 

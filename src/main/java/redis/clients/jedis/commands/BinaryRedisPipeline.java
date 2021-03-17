@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -402,6 +403,12 @@ public interface BinaryRedisPipeline {
 
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids);
+
+  Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids);
 
   Response<Long> bitpos(byte[] key, boolean value);
 

@@ -9,6 +9,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -1667,6 +1668,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public KeyedTuple bzpopmax(int timeout, byte[]... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmax(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(int timeout, byte[]... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmin(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
@@ -2491,6 +2512,28 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public List<byte[]> execute(Jedis connection) {
         return connection.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries,
           force, ids);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xclaim(key, group, consumername, minIdleTime, params, ids);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
       }
     }.runBinary(key);
   }

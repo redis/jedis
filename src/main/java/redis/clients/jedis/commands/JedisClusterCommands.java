@@ -16,6 +16,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -558,6 +559,12 @@ public interface JedisClusterCommands {
    */
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
+
+  List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
 
   Long waitReplicas(String key, int replicas, long timeout);
 }

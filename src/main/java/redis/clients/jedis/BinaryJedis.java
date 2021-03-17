@@ -36,6 +36,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -2363,6 +2364,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return blpop(getArgsAddTimeout(timeout, keys));
   }
 
+  @Override
+  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
+    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+  }
+
   private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
     int size = keys.length;
     final byte[][] args = new byte[size + 1][];
@@ -4546,6 +4561,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(key, group, consumername, minIdleTime, params, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return client.getBinaryMultiBulkReply();
   }
 

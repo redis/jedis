@@ -356,6 +356,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public String hrandfield(final String key) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key);
+  }
+
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key, count);
+  }
+
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfieldWithValues(key, count);
+  }
+
+  @Override
   public Long rpush(final String key, String... strings) {
     Jedis j = getShard(key);
     return j.rpush(key, strings);

@@ -746,6 +746,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String hrandfield(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.hrandfield(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.hrandfield(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    return new JedisClusterCommand<Map<String, String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Map<String, String> execute(Jedis connection) {
+        return connection.hrandfieldWithValues(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long rpush(final String key, final String... string) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

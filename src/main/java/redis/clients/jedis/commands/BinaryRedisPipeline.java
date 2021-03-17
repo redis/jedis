@@ -95,6 +95,12 @@ public interface BinaryRedisPipeline {
 
   Response<List<byte[]>> hvals(byte[] key);
 
+  Response<byte[]> hrandfield(byte[] key);
+
+  Response<List<byte[]>> hrandfield(byte[] key, long count);
+
+  Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count);
+
   Response<Long> incr(byte[] key);
 
   Response<Long> incrBy(byte[] key, long increment);

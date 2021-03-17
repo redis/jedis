@@ -65,7 +65,8 @@ public class AssertUtil {
     }
   }
 
-  public static void assertByteArrayCollectionContainsAll(Collection<byte[]> all, Collection<byte[]> few) {
+  public static void assertByteArrayCollectionContainsAll(Collection<byte[]> all,
+      Collection<byte[]> few) {
     Iterator<byte[]> fi = few.iterator();
     while (fi.hasNext()) {
       byte[] fo = fi.next();

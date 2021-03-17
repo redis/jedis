@@ -15,7 +15,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public class ModuleTest extends JedisCommandTestBase {
 
   static enum ModuleCommand implements ProtocolCommand {
-    SIMPLE("testmodule.simple")  ;
+    SIMPLE("testmodule.simple");
 
     private final byte[] raw;
 

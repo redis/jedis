@@ -3,6 +3,7 @@ package redis.clients.jedis.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,8 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisFactory;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -162,6 +165,44 @@ public class JedisSentinelPoolTest {
     }
 
     assertTrue(pool.isClosed());
+  }
+
+  @Test
+  public void testResetInvalidPassword() {
+    JedisFactory factory = new JedisFactory(null, 0, 2000, 2000, "foobared", 0, "my_shiny_client_name") { };
+
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
+      Jedis obj1_ref;
+      try (Jedis obj1_1 = pool.getResource()) {
+        obj1_ref = obj1_1;
+        obj1_1.set("foo", "bar");
+        assertEquals("bar", obj1_1.get("foo"));
+      }
+      try (Jedis obj1_2 = pool.getResource()) {
+        assertSame(obj1_ref, obj1_2);
+        factory.setPassword("wrong password");
+        try (Jedis obj2 = pool.getResource()) {
+          fail("Should not get resource from pool");
+        } catch (JedisConnectionException e) { }
+      }
+    }
+  }
+
+  @Test
+  public void testResetValidPassword() {
+    JedisFactory factory = new JedisFactory(null, 0, 2000, 2000, "wrong password", 0, "my_shiny_client_name") { };
+
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
+      try (Jedis obj1 = pool.getResource()) {
+        fail("Should not get resource from pool");
+      } catch (JedisConnectionException e) { }
+
+      factory.setPassword("foobared");
+      try (Jedis obj2 = pool.getResource()) {
+        obj2.set("foo", "bar");
+        assertEquals("bar", obj2.get("foo"));
+      }
+    }
   }
 
   @Test

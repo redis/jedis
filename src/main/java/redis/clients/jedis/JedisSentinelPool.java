@@ -22,25 +22,25 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   protected static Logger log = LoggerFactory.getLogger(JedisSentinelPool.class);
 
   protected final GenericObjectPoolConfig<Jedis> poolConfig;
+  private final JedisFactory factory;
 
-  protected final int connectionTimeout;
-  protected final int soTimeout;
-  protected final int infiniteSoTimeout;
+  @Deprecated protected int connectionTimeout;
+  @Deprecated protected int soTimeout;
+  @Deprecated protected int infiniteSoTimeout;
 
-  protected final String user;
-  protected final String password;
-  protected final int database;
-  protected final String clientName;
+  @Deprecated protected String user;
+  @Deprecated protected String password;
+  @Deprecated protected int database;
+  @Deprecated protected String clientName;
 
-  protected int sentinelConnectionTimeout;
-  protected int sentinelSoTimeout;
-  protected String sentinelUser;
-  protected String sentinelPassword;
-  protected String sentinelClientName;
+  @Deprecated protected int sentinelConnectionTimeout;
+  @Deprecated protected int sentinelSoTimeout;
+  @Deprecated protected String sentinelUser;
+  @Deprecated protected String sentinelPassword;
+  @Deprecated protected String sentinelClientName;
 
   protected final Set<MasterListener> masterListeners = new HashSet<>();
 
-  private volatile JedisFactory factory;
   private volatile HostAndPort currentHostMaster;
   
   private final Object initPoolLock = new Object();
@@ -160,8 +160,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final String user, final String password, final int database, final String clientName,
       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
       final String sentinelPassword, final String sentinelClientName) {
-
-    this.poolConfig = poolConfig;
+    this(masterName, sentinels, poolConfig, new JedisFactory(connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName));
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.infiniteSoTimeout = infiniteSoTimeout;
@@ -174,9 +173,16 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     this.sentinelUser = sentinelUser;
     this.sentinelPassword = sentinelPassword;
     this.sentinelClientName = sentinelClientName;
+  }
+
+  public JedisSentinelPool(String masterName, Set<String> sentinels,
+      final GenericObjectPoolConfig<Jedis> poolConfig, final JedisFactory factory) {
+    super(poolConfig, factory);
+    this.poolConfig = poolConfig;
+    this.factory = factory;
 
     HostAndPort master = initSentinels(sentinels, masterName);
-    initPool(master);
+    initMaster(master);
   }
 
   @Override
@@ -192,22 +198,16 @@ public class JedisSentinelPool extends JedisPoolAbstract {
     return currentHostMaster;
   }
 
-  private void initPool(HostAndPort master) {
-    synchronized(initPoolLock){
+  private void initMaster(HostAndPort master) {
+    synchronized (initPoolLock) {
       if (!master.equals(currentHostMaster)) {
         currentHostMaster = master;
-        if (factory == null) {
-          factory = new JedisFactory(master.getHost(), master.getPort(), connectionTimeout,
-              soTimeout, infiniteSoTimeout, user, password, database, clientName);
-          initPool(poolConfig, factory);
-        } else {
-          factory.setHostAndPort(currentHostMaster);
-          // although we clear the pool, we still have to check the returned object in getResource,
-          // this call only clears idle instances, not borrowed instances
-          clearInternalPool();
-        }
+        factory.setHostAndPort(currentHostMaster);
+        // although we clear the pool, we still have to check the returned object in getResource,
+        // this call only clears idle instances, not borrowed instances
+        clearInternalPool();
 
-        log.info("Created JedisPool to master at {}", master);
+        log.info("Created JedisSentinelPool to master at {}", master);
       }
     }
   }
@@ -224,8 +224,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
       log.debug("Connecting to Sentinel {}", hap);
 
-      
-      try (Jedis jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout)){
+      try (Jedis jedis = new Jedis(hap.getHost(), hap.getPort(), sentinelConnectionTimeout, sentinelSoTimeout)) {
         if (sentinelUser != null) {
           jedis.auth(sentinelUser, sentinelPassword);
         } else if (sentinelPassword != null) {
@@ -249,10 +248,8 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         log.debug("Found Redis master at {}", master);
         break;
       } catch (JedisException e) {
-        // resolves #1036, it should handle JedisException there's another chance
-        // of raising JedisDataException
-        log.warn(
-          "Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap, e);
+        // resolves #1036, it should handle JedisException there's another chance of raising JedisDataException
+        log.warn("Cannot get master address from sentinel running @ {}. Reason: {}. Trying next one.", hap, e);
       }
     }
 
@@ -375,7 +372,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
           if (masterAddr == null || masterAddr.size() != 2) {
             log.warn("Can not get master addr, master name: {}. Sentinel: {}:{}.", masterName, host, port);
           } else {
-            initPool(toHostAndPort(masterAddr));
+            initMaster(toHostAndPort(masterAddr));
           }
 
           j.subscribe(new JedisPubSub() {
@@ -388,7 +385,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
               if (switchMasterMsg.length > 3) {
 
                 if (masterName.equals(switchMasterMsg[0])) {
-                  initPool(toHostAndPort(Arrays.asList(switchMasterMsg[3], switchMasterMsg[4])));
+                  initMaster(toHostAndPort(Arrays.asList(switchMasterMsg[3], switchMasterMsg[4])));
                 } else {
                   log.debug(
                     "Ignoring message on +switch-master for master name {}, our master name is {}",

@@ -335,6 +335,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public byte[] hrandfield(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key);
+  }
+
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key, count);
+  }
+
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfieldWithValues(key, count);
+  }
+
+  @Override
   public Long rpush(final byte[] key, final byte[]... strings) {
     Jedis j = getShard(key);
     return j.rpush(key, strings);

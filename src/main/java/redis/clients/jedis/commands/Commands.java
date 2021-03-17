@@ -8,6 +8,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
@@ -137,6 +138,12 @@ public interface Commands {
   void hkeys(String key);
 
   void hvals(String key);
+
+  void hrandfield(String key);
+
+  void hrandfield(String key, long count);
+
+  void hrandfieldWithValues(String key, long count);
 
   void hgetAll(String key);
 
@@ -425,6 +432,8 @@ public interface Commands {
   void clientSetname(String name);
 
   void clientId();
+
+  void clientUnblock(long clientId, UnblockType unblockType);
 
   void memoryDoctor();
 

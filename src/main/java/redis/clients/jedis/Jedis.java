@@ -15,6 +15,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -992,6 +993,48 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Map<String, String> hgetAll(final String key) {
     checkIsInMultiOrPipeline();
     client.hgetAll(key);
+    return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Get one random field from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one random field from a hash.
+   */
+  @Override
+  public String hrandfield(final String key) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key);
+    return client.getStatusCodeReply();
+  }
+
+  /**
+   * Get multiple random fields from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return multiple random fields from a hash.
+   */
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key, count);
+    return client.getMultiBulkReply();
+  }
+
+  /**
+   * Get one or multiple random fields with values from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one or multiple random fields with values from a hash.
+   */
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfieldWithValues(key, count);
     return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
   }
 
@@ -3366,6 +3409,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Long clientId() {
     checkIsInMultiOrPipeline();
     client.clientId();
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Unblock a client blocked in a blocking command from a different connection.
+   * @param clientId
+   * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
+   *          of the command was reached
+   * @return
+   */
+  @Override
+  public Long clientUnblock(final long clientId, final UnblockType unblockType) {
+    checkIsInMultiOrPipeline();
+    client.clientUnblock(clientId, unblockType);
     return client.getIntegerReply();
   }
 

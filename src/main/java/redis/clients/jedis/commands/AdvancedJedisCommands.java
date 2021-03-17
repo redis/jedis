@@ -4,6 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
@@ -49,6 +50,8 @@ public interface AdvancedJedisCommands {
   String clientSetname(String name);
 
   Long clientId();
+
+  Long clientUnblock(long clientId, UnblockType unblockType);
 
   String memoryDoctor();
 

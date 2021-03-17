@@ -98,6 +98,12 @@ public interface RedisPipeline {
 
   Response<List<String>> hvals(String key);
 
+  Response<String> hrandfield(String key);
+
+  Response<List<String>> hrandfield(String key, long count);
+
+  Response<Map<String, String>> hrandfieldWithValues(String key, long count);
+
   Response<Long> incr(String key);
 
   Response<Long> incrBy(String key, long increment);

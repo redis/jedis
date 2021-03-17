@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.RedisInputStream;
@@ -246,7 +247,7 @@ public final class Protocol {
     PING, SET, GET, GETDEL, GETEX, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME,
     RENAMENX, RENAMEX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET, SETNX,
     SETEX, MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET,
-    HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, RPUSH, LPUSH, LLEN, LRANGE, LTRIM,
+    HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HRANDFIELD, RPUSH, LPUSH, LLEN, LRANGE, LTRIM,
     LINDEX, LSET, LREM, LPOP, RPOP, RPOPLPUSH, SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SISMEMBER,
     SINTER, SINTERSTORE, SUNION, SUNIONSTORE, SDIFF, SDIFFSTORE, SRANDMEMBER, ZADD, ZRANGE, ZREM,
     ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZCARD, ZSCORE, ZPOPMAX, ZPOPMIN, MULTI, DISCARD, EXEC,
@@ -275,14 +276,14 @@ public final class Protocol {
     }
   }
 
-  public static enum Keyword {
+  public static enum Keyword implements Rawable {
     AGGREGATE, ALPHA, ASC, BY, DESC, GET, LIMIT, MESSAGE, NO, NOSORT, PMESSAGE, PSUBSCRIBE,
     PUNSUBSCRIBE, OK, ONE, QUEUED, SET, STORE, SUBSCRIBE, UNSUBSCRIBE, WEIGHTS, WITHSCORES,
     RESETSTAT, REWRITE, RESET, FLUSH, EXISTS, LOAD, KILL, LEN, REFCOUNT, ENCODING, IDLETIME,
     GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR, BLOCK,
     NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, ID, IDLE,
     TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ, SETUSER,
-    GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG, INCR, SAVE, JUSTID;
+    GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG, INCR, SAVE, JUSTID, WITHVALUES, UNBLOCK;
 
     /**
      * @deprecated This will be private in future. Use {@link #getRaw()}.
@@ -294,6 +295,7 @@ public final class Protocol {
       raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));
     }
 
+    @Override
     public byte[] getRaw() {
       return raw;
     }

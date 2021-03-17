@@ -7,6 +7,11 @@ import static org.junit.Assert.fail;
 import static redis.clients.jedis.params.ClientKillParams.Type;
 import static redis.clients.jedis.params.ClientKillParams.SkipMe;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +21,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -91,6 +97,22 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     long clientIdAfterReconnect = client.clientId();
 
     assertTrue(clientIdInitial < clientIdAfterReconnect);
+  }
+
+  @Test
+  public void clientUnblock() throws InterruptedException, TimeoutException {
+    long clientId = client.clientId();
+    assertEquals(0, jedis.clientUnblock(clientId, UnblockType.ERROR).longValue());
+    Future<?> future = Executors.newSingleThreadExecutor().submit(() -> client.brpop(100000, "foo"));
+
+    try {
+      // to make true command already executed
+      TimeUnit.MILLISECONDS.sleep(500);
+      assertEquals(1, jedis.clientUnblock(clientId, UnblockType.ERROR).longValue());
+      future.get(1, TimeUnit.SECONDS);
+    } catch (ExecutionException e) {
+      assertEquals("redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK", e.getMessage());
+    }
   }
 
   @Test

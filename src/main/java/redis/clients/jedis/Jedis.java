@@ -13,6 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
 import redis.clients.jedis.commands.ClusterCommands;
@@ -3425,6 +3426,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Long clientId() {
     checkIsInMultiOrPipeline();
     client.clientId();
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Unblock a client blocked in a blocking command from a different connection.
+   * @param clientId
+   * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
+   *          of the command was reached
+   * @return
+   */
+  @Override
+  public Long clientUnblock(final long clientId, final UnblockType unblockType) {
+    checkIsInMultiOrPipeline();
+    client.clientUnblock(clientId, unblockType);
     return client.getIntegerReply();
   }
 

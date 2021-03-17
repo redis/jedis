@@ -27,6 +27,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -1230,6 +1231,14 @@ public class BinaryClient extends Connection {
 
   public void clientId() {
     sendCommand(CLIENT, Keyword.ID.getRaw());
+  }
+
+  public void clientUnblock(final long clientId, final UnblockType unblockType) {
+    if (unblockType == null) {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId));
+    } else {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.getRaw());
+    }
   }
 
   public void time() {

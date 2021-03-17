@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -98,4 +99,9 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams);
+
+  Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
+      boolean noAck, Map<byte[], byte[]> streams);
 }

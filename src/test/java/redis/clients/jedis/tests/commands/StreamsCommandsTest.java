@@ -490,7 +490,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
 
     List<StreamEntry> streamEntrys = jedis.xclaim("xpendeing-stream", "xpendeing-group",
-            "xpendeing-consumer2", 50, XClaimParams.xclaimParams().idle(0).retryCount(0),
+            "xpendeing-consumer2", 50, XClaimParams.xClaimParams().idle(0).retryCount(0),
             pendingRange.get(0).getID());
     assertEquals(1, streamEntrys.size());
     assertEquals(pendingRange.get(0).getID(), streamEntrys.get(0).getID());
@@ -520,7 +520,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
 
     List<StreamEntryID> streamEntryIDS = jedis.xclaimJustId("xpendeing-stream", "xpendeing-group",
-      "xpendeing-consumer2", 50, XClaimParams.xclaimParams().idle(0).retryCount(0),
+      "xpendeing-consumer2", 50, XClaimParams.xClaimParams().idle(0).retryCount(0),
       pendingRange.get(0).getID());
     assertEquals(1, streamEntryIDS.size());
     assertEquals(pendingRange.get(0).getID(), streamEntryIDS.get(0));

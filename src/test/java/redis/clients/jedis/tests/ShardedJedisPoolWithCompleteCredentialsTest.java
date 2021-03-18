@@ -16,10 +16,9 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * This test class is a copy of {@link ShardedJedisPoolTest}
- * where all authentications are made with
- * default:foobared credentialsinformation
- *
+ * This test class is a copy of {@link ShardedJedisPoolTest} where all authentications are made with
+ * default:foobared credentials information
+ * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class ShardedJedisPoolWithCompleteCredentialsTest {
@@ -31,7 +30,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @BeforeClass
   public static void shouldRun() throws Exception {
-    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis", RedisVersionUtil.checkRedisMajorVersionNumber(6));
+    org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
+        RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Before
@@ -53,7 +53,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkConnections() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
+        shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
@@ -63,7 +64,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkCloseableConnections() throws Exception {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
+        shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
@@ -74,7 +76,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkConnectionWithDefaultPort() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
+        shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
@@ -84,7 +87,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkJedisIsReusedWhenReturned() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
+        shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "0");
     jedis.close();
@@ -97,7 +101,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkPoolRepairedWhenJedisIsBroken() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
+        shards);
     ShardedJedis jedis = pool.getResource();
     jedis.disconnect();
     jedis.close();
@@ -138,7 +143,8 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkFailedJedisServer() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(), shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
+        shards);
     ShardedJedis jedis = pool.getResource();
     jedis.incr("foo");
     jedis.close();
@@ -209,7 +215,6 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
     // create user in shard 1
     j1.aclSetUser("alice", "on", ">alicePassword", "~*", "+@all");
-
 
     Jedis j2 = new Jedis("localhost", 6379);
     j2.auth("default", "foobared");

@@ -9,8 +9,11 @@ import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -55,8 +58,10 @@ public interface BinaryRedisPipeline {
   Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp);
 
   Response<byte[]> get(byte[] key);
-  
+
   Response<byte[]> getDel(byte[] key);
+
+  Response<byte[]> getEx(byte[] key, GetExParams params);
 
   Response<Boolean> getbit(byte[] key, long offset);
 
@@ -89,6 +94,12 @@ public interface BinaryRedisPipeline {
   Response<Long> hsetnx(byte[] key, byte[] field, byte[] value);
 
   Response<List<byte[]>> hvals(byte[] key);
+
+  Response<byte[]> hrandfield(byte[] key);
+
+  Response<List<byte[]>> hrandfield(byte[] key, long count);
+
+  Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count);
 
   Response<Long> incr(byte[] key);
 
@@ -196,6 +207,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
+  Response<Double> zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
+
   Response<Long> zcard(byte[] key);
 
   Response<Long> zcount(byte[] key, double min, double max);
@@ -255,6 +268,12 @@ public interface BinaryRedisPipeline {
   Response<Set<byte[]>> zrevrange(byte[] key, long start, long stop);
 
   Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop);
+
+  Response<byte[]> zrandmember(byte[] key);
+
+  Response<Set<byte[]>> zrandmember(byte[] key, long count);
+
+  Response<Set<Tuple>> zrandmemberWithScores(byte[] key, long count);
 
   Response<Long> zrevrank(byte[] key, byte[] member);
 
@@ -320,6 +339,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
+  Response<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
   Response<Double> geodist(byte[] key, byte[] member1, byte[] member2);
 
   Response<Double> geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit);
@@ -345,7 +366,7 @@ public interface BinaryRedisPipeline {
 
   Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member,
       double radius, GeoUnit unit);
-  
+
   Response<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
@@ -357,25 +378,25 @@ public interface BinaryRedisPipeline {
   Response<List<Long>> bitfieldReadonly(byte[] key, byte[]... elements);
 
   Response<Long> hstrlen(byte[] key, byte[] field);
-  
+
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
 
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
-  
+
   Response<Long> xlen(byte[] key);
 
   Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count);
 
   Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
-   
+
   Response<Long> xack(byte[] key, byte[] group,  byte[]... ids);
-  
+
   Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
-  
+
   Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id);
-  
+
   Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
-  
+
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
   /**
@@ -386,12 +407,20 @@ public interface BinaryRedisPipeline {
 
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
+  Response<Object> xpendingSummary(byte[] key, byte[] groupname);
+
   Response<Long> xdel(byte[] key, byte[]... ids);
-  
+
   Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
- 
-  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, 
+
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids);
+
+  Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids);
 
   Response<Long> bitpos(byte[] key, boolean value);
 

@@ -12,6 +12,8 @@ public class SetParams extends Params {
   private static final String NX = "nx";
   private static final String PX = "px";
   private static final String EX = "ex";
+  private static final String EXAT = "exat";
+  private static final String PXAT = "pxat";
   private static final String KEEPTTL = "keepttl";
   private static final String GET = "get";
 
@@ -72,6 +74,26 @@ public class SetParams extends Params {
   }
 
   /**
+   * Set the specified Unix time at which the key will expire, in seconds.
+   * @param seconds
+   * @return SetParams
+   */
+  public SetParams exAt(long seconds) {
+    addParam(EXAT, seconds);
+    return this;
+  }
+
+  /**
+   * Set the specified Unix time at which the key will expire, in milliseconds.
+   * @param milliseconds
+   * @return SetParams
+   */
+  public SetParams pxAt(long milliseconds) {
+    addParam(PXAT, milliseconds);
+    return this;
+  }
+
+  /**
    * Retain the time to live associated with the key.
    * @return SetParams
    */
@@ -79,7 +101,7 @@ public class SetParams extends Params {
     addParam(KEEPTTL);
     return this;
   }
-  
+
   /**
    * Return the old value stored at key, or nil when key did not exist.
    * @return SetParams
@@ -107,6 +129,14 @@ public class SetParams extends Params {
     if (contains(PX)) {
       byteParams.add(SafeEncoder.encode(PX));
       byteParams.add(Protocol.toByteArray((long) getParam(PX)));
+    }
+    if (contains(EXAT)) {
+      byteParams.add(SafeEncoder.encode(EXAT));
+      byteParams.add(Protocol.toByteArray((long) getParam(EXAT)));
+    }
+    if (contains(PXAT)) {
+      byteParams.add(SafeEncoder.encode(PXAT));
+      byteParams.add(Protocol.toByteArray((long) getParam(PXAT)));
     }
     if (contains(KEEPTTL)) {
       byteParams.add(SafeEncoder.encode(KEEPTTL));

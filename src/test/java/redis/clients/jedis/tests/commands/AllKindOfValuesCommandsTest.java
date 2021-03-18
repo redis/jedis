@@ -66,7 +66,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   public void pingWithMessage() {
     String argument = "message";
     assertEquals(argument, jedis.ping(argument));
-    
+
     assertArrayEquals(bfoobar, jedis.ping(bfoobar));
   }
 
@@ -651,7 +651,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     try {
       jedis2.restore("foo", 0, serialized);
       fail("Simple restore on a existing key should fail");
-    } catch(JedisDataException e) {
+    } catch (JedisDataException e) {
       // should be here
     }
     assertEquals("bar", jedis2.get("foo"));
@@ -863,7 +863,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void sendCommandTest(){
+  public void sendCommandTest() {
     Object obj = jedis.sendCommand(SET, "x", "1");
     String returnValue = SafeEncoder.encode((byte[]) obj);
     assertEquals("OK", returnValue);
@@ -871,11 +871,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     returnValue = SafeEncoder.encode((byte[]) obj);
     assertEquals("1", returnValue);
 
-    jedis.sendCommand(RPUSH,"foo", "a");
-    jedis.sendCommand(RPUSH,"foo", "b");
-    jedis.sendCommand(RPUSH,"foo", "c");
+    jedis.sendCommand(RPUSH, "foo", "a");
+    jedis.sendCommand(RPUSH, "foo", "b");
+    jedis.sendCommand(RPUSH, "foo", "c");
 
-    obj = jedis.sendCommand(LRANGE,"foo", "0", "2");
+    obj = jedis.sendCommand(LRANGE, "foo", "0", "2");
     List<byte[]> list = (List<byte[]>) obj;
     List<byte[]> expected = new ArrayList<>(3);
     expected.add("a".getBytes());
@@ -888,42 +888,43 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void sendBlockingCommandTest(){
+  public void sendBlockingCommandTest() {
     assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
 
     jedis.sendCommand(RPUSH, "foo", "bar");
-    assertEquals(Arrays.asList("foo", "bar"), SafeEncoder.encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
+    assertEquals(Arrays.asList("foo", "bar"),
+      SafeEncoder.encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
 
     assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
   }
 
   @Test
-  public void encodeCompleteResponse(){
-    HashMap<String,String> entry = new HashMap<>();
+  public void encodeCompleteResponse() {
+    HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
-    jedis.xadd( "mystream", StreamEntryID.NEW_ENTRY, entry );
+    jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
     String status = jedis.xgroupCreate("mystream", "mygroup", null, false);
 
     Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
-    List encodeObj =  (List)SafeEncoder.encodeObject(obj);
+    List encodeObj = (List) SafeEncoder.encodeObject(obj);
 
-    assertEquals( 14, encodeObj.size() );
-    assertEquals( "length", encodeObj.get(0) );
-    assertEquals( 1L, encodeObj.get(1) );
+    assertEquals(14, encodeObj.size());
+    assertEquals("length", encodeObj.get(0));
+    assertEquals(1L, encodeObj.get(1));
 
     List<String> entryAsList = new ArrayList<>(2);
     entryAsList.add("foo");
     entryAsList.add("bar");
 
-    assertEquals( entryAsList, ((List)encodeObj.get(11)).get(1) );
+    assertEquals(entryAsList, ((List) encodeObj.get(11)).get(1));
 
     assertEquals("PONG", SafeEncoder.encodeObject(jedis.sendCommand(PING)));
 
     entry.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entry);
-    encodeObj =   (List)SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    encodeObj = (List) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
 
-    assertEquals( 4, encodeObj.size() );
+    assertEquals(4, encodeObj.size());
     assertTrue(encodeObj.contains("foo"));
     assertTrue(encodeObj.contains("foo2"));
 

@@ -20,6 +20,7 @@ import org.junit.Test;
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -67,6 +68,27 @@ public class JedisTest extends JedisCommandTestBase {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
+        .build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+    })) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+      @Override
+      public String getPassword() {
+        return "foobared";
+      }
+    })) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   @Test
@@ -79,7 +101,7 @@ public class JedisTest extends JedisCommandTestBase {
     try {
       jedis.hmget("foobar", "foo");
       fail("Operation should throw JedisConnectionException");
-    } catch(JedisConnectionException jce) {
+    } catch (JedisConnectionException jce) {
       // expected
     }
     jedis.close();
@@ -98,7 +120,7 @@ public class JedisTest extends JedisCommandTestBase {
       try {
         timeoutJedis.blpop(0, "foo");
         fail("SocketTimeoutException should occur");
-      } catch(JedisConnectionException jce) {
+      } catch (JedisConnectionException jce) {
         assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
         assertEquals("Read timed out", jce.getCause().getMessage());
         assertTrue(timeoutJedis.isBroken());

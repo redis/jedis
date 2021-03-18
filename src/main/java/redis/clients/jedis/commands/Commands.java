@@ -18,6 +18,8 @@ import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 public interface Commands {
 
@@ -443,7 +445,14 @@ public interface Commands {
 
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
+   */
+  @Deprecated
   void xread(int count, long block, Entry<String, StreamEntryID>... streams);
+
+  void xread(XReadParams params, Map<String, StreamEntryID> streams);
 
   void xack(String key, String group, StreamEntryID... ids);
 
@@ -459,7 +468,14 @@ public interface Commands {
 
   void xtrim(String key, long maxLen, boolean approximateLength);
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   */
+  @Deprecated
   void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
+
+  void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams);
 
   void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 

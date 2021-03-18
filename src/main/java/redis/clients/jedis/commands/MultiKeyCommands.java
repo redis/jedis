@@ -12,6 +12,8 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 import java.util.List;
 import java.util.Map;
@@ -188,9 +190,15 @@ public interface MultiKeyCommands {
    * @param block
    * @param streams
    * @return
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams);
+
+  List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
+      Map<String, StreamEntryID> streams);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
@@ -202,9 +210,15 @@ public interface MultiKeyCommands {
    * @param noAck
    * @param streams
    * @return
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
   Long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

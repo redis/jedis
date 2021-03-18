@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.net.ssl.HostnameVerifier;
@@ -30,17 +31,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -4501,10 +4492,45 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(xReadParams, streams);
+
+    if (!xReadParams.hasBlock()) {
+      return client.getBinaryMultiBulkReply();
+    }
+
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
   public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
       boolean noAck, Map<byte[], byte[]> streams) {
     checkIsInMultiOrPipeline();
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+
+    if (!xReadGroupParams.hasBlock()) {
+      return client.getBinaryMultiBulkReply();
+    }
+
     client.setTimeoutInfinite();
     try {
       return client.getBinaryMultiBulkReply();

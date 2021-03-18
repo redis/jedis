@@ -1800,6 +1800,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return getTupledSet();
   }
 
+  @Override
+  public String zrandmember(final String key) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    return members == null ? null : SetFromList.of(members);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmemberWithScores(key, count);
+    return getTupledSet();
+  }
+
   /**
    * Return the sorted set cardinality (number of elements). If the key does not exist 0 is
    * returned, like for empty sorted sets.

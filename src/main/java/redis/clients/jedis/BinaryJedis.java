@@ -2123,6 +2123,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return getTupledSet();
   }
 
+  @Override
+  public byte[] zrandmember(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public Set<byte[]> zrandmember(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key, count);
+    return SetFromList.of(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmemberWithScores(key, count);
+    return getTupledSet();
+  }
+
   /**
    * Return the sorted set cardinality (number of elements). If the key does not exist 0 is
    * returned, like for empty sorted sets.
@@ -2856,6 +2877,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   protected Set<Tuple> getTupledSet() {
     List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
+    // If response from Redis nil, we should return null.
+    if (membersWithScores == null) {
+      return null;
+    }
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
     }

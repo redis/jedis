@@ -269,6 +269,12 @@ public interface BinaryRedisPipeline {
 
   Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop);
 
+  Response<byte[]> zrandmember(byte[] key);
+
+  Response<Set<byte[]>> zrandmember(byte[] key, long count);
+
+  Response<Set<Tuple>> zrandmemberWithScores(byte[] key, long count);
+
   Response<Long> zrevrank(byte[] key, byte[] member);
 
   Response<Double> zscore(byte[] key, byte[] member);

@@ -641,6 +641,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public String zrandmember(final String key) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key);
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key, count);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmemberWithScores(key, count);
+  }
+
+  @Override
   public Long zcard(final String key) {
     Jedis j = getShard(key);
     return j.zcard(key);

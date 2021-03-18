@@ -229,6 +229,12 @@ public interface JedisClusterCommands {
 
   Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
+  String zrandmember(String key);
+
+  Set<String> zrandmember(String key, long count);
+
+  Set<Tuple> zrandmemberWithScores(String key, long count);
+
   Long zcard(String key);
 
   Double zscore(String key, String member);

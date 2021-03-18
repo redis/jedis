@@ -536,6 +536,21 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zrandmember(final String key) {
+    zrandmember(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void zrandmember(final String key, final long count) {
+    zrandmember(SafeEncoder.encode(key), count);
+  }
+
+  @Override
+  public void zrandmemberWithScores(final String key, final long count) {
+    zrandmemberWithScores(SafeEncoder.encode(key), count);
+  }
+
+  @Override
   public void zcard(final String key) {
     zcard(SafeEncoder.encode(key));
   }

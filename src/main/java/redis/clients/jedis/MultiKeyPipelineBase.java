@@ -8,6 +8,8 @@ import redis.clients.jedis.params.MigrateParams;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 public abstract class MultiKeyPipelineBase extends PipelineBase implements
     MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
@@ -777,10 +779,15 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.LONG);
   }
 
-
   @Override
   public Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams) {
     client.xread(count, block, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+    client.xread(xReadParams, streams);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
@@ -792,9 +799,23 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<List<byte[]>> xreadGroup(final byte[] groupname, final byte[] consumer,
+      final XReadGroupParams xReadGroupParams, final Map.Entry<byte[], byte[]>... streams) {
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams) {
     client.xread(count, block, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(final XReadParams xReadParams,
+      final Map<String, StreamEntryID> streams) {
+    client.xread(xReadParams, streams);
     return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
   }
 
@@ -803,6 +824,14 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
       String consumer, int count, long block, boolean noAck,
       Map.Entry<String, StreamEntryID>... streams) {
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(final String groupname,
+      final String consumer, final XReadGroupParams xReadGroupParams,
+      final Map<String, StreamEntryID> streams) {
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
     return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
   }
 }

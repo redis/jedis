@@ -15,6 +15,8 @@ import redis.clients.jedis.params.MigrateParams;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 /**
  * Multikey related commands (these are split out because they are non-shardable)
@@ -104,6 +106,12 @@ public interface MultiKeyCommandsPipeline {
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams);
 
+  Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams,
+      Map<String, StreamEntryID> streams);
+
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
       int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+
+  Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 }

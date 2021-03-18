@@ -13,6 +13,8 @@ import redis.clients.jedis.params.MigrateParams;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 /**
  * Multikey related commands (these are split out because they are non-shardable)
@@ -102,6 +104,11 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams);
 
+  Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
+
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
       boolean noAck, Map<byte[], byte[]> streams);
+
+  Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
 }

@@ -50,6 +50,7 @@
 		<cluster-hosts>localhost:7379,localhost:7380,localhost:7381,localhost:7382,localhost:7383,localhost:7384,localhost:7385</cluster-hosts>
 		<github.global.server>github</github.global.server>
 		<log4j.version>2.13.3</log4j.version>
+		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 	</properties>
 
 	<dependencies>
@@ -200,9 +201,12 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.0.2</version>
 				<configuration>
-					<archive>  
+					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive> 
+						<manifestEntries>
+							<Automatic-Module-Name>${jedis.module.name}</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
 				</configuration>
 			</plugin> 
 			<plugin>

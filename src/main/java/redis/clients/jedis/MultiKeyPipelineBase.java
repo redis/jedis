@@ -601,7 +601,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(String script, int keyCount, String... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
+    return getResponse(BuilderFactory.ENCODED_OBJECT);
   }
 
   @Override
@@ -618,7 +618,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> evalsha(String sha1, int keyCount, String... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
+    return getResponse(BuilderFactory.ENCODED_OBJECT);
   }
 
   @Override
@@ -629,7 +629,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -641,7 +641,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -658,7 +658,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -737,12 +737,12 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
 
   public Response<Object> sendCommand(final ProtocolCommand cmd, final String... args) {
     client.sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   public Response<Object> sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     client.sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override

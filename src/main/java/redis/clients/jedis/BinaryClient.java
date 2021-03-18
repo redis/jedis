@@ -16,10 +16,7 @@ import static redis.clients.jedis.Protocol.Command.TIME;
 import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HostnameVerifier;
@@ -617,6 +614,18 @@ public class BinaryClient extends Connection {
 
   public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.getRaw());
+  }
+
+  public void zrandmember(final byte[] key) {
+    sendCommand(ZRANDMEMBER, key);
+  }
+
+  public void zrandmember(final byte[] key, final long count) {
+    sendCommand(ZRANDMEMBER, key, toByteArray(count));
+  }
+
+  public void zrandmemberWithScores(final byte[] key, final long count) {
+    sendCommand(ZRANDMEMBER, key, toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zcard(final byte[] key) {
@@ -1589,6 +1598,11 @@ public class BinaryClient extends Connection {
     sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
     final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
 
@@ -1609,6 +1623,24 @@ public class BinaryClient extends Connection {
     }
 
     sendCommand(XREAD, params);
+  }
+
+  public void xread(final XReadParams params, final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[paramLength + 1 + streams.length * 2][];
+    System.arraycopy(bparams, 0, args, 0, paramLength);
+
+    args[paramLength] = Keyword.STREAMS.raw;
+    int keyIndex = paramLength + 1;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREAD, args);
   }
 
   public void xack(final byte[] key, final byte[] group, final byte[]... ids) {
@@ -1661,6 +1693,11 @@ public class BinaryClient extends Connection {
     }
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
       Map<byte[], byte[]> streams) {
 
@@ -1701,6 +1738,30 @@ public class BinaryClient extends Connection {
     }
 
     sendCommand(XREADGROUP, params);
+  }
+
+  public void xreadGroup(byte[] groupname, byte[] consumer, final XReadGroupParams params,
+      final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[3 + paramLength + 1 + streams.length * 2][];
+    int index = 0;
+    args[index++] = Keyword.GROUP.raw;
+    args[index++] = groupname;
+    args[index++] = consumer;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+
+    args[index++] = Keyword.STREAMS.raw;
+    int keyIndex = index;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREADGROUP, args);
   }
 
   public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,

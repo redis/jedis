@@ -1445,6 +1445,42 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<byte[]> zrandmember(final byte[] key) {
+    getClient(key).zrandmember(key);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<Set<byte[]>> zrandmember(final byte[] key, final long count) {
+    getClient(key).zrandmember(key, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrandmemberWithScores(final byte[] key, final long count) {
+    getClient(key).zrandmemberWithScores(key, count);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<String> zrandmember(final String key) {
+    getClient(key).zrandmember(key);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<Set<String>> zrandmember(final String key, final long count) {
+    getClient(key).zrandmember(key, count);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrandmemberWithScores(final String key, final long count) {
+    getClient(key).zrandmemberWithScores(key, count);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
   public Response<Long> zrevrank(final String key, final String member) {
     getClient(key).zrevrank(key, member);
     return getResponse(BuilderFactory.LONG);
@@ -2205,7 +2241,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start,
       byte[] end, int count, byte[] consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
-    return getResponse(BuilderFactory.OBJECT_LIST);
+    return getResponse(BuilderFactory.RAW_OBJECT_LIST);
   }
 
   @Override
@@ -2217,7 +2253,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<Object> xpendingSummary(byte[] key, byte[] groupname) {
     getClient(key).xpendingSummary(key, groupname);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -2289,12 +2325,12 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd,
       final String... args) {
     getClient(sampleKey).sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   public Response<Object> sendCommand(final byte[] sampleKey, final ProtocolCommand cmd,
       final byte[]... args) {
     getClient(sampleKey).sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 }

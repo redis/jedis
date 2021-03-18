@@ -13,26 +13,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.commands.*;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.args.UnblockType;
-import redis.clients.jedis.commands.AdvancedJedisCommands;
-import redis.clients.jedis.commands.BasicCommands;
-import redis.clients.jedis.commands.ClusterCommands;
-import redis.clients.jedis.commands.JedisCommands;
-import redis.clients.jedis.commands.ModuleCommands;
-import redis.clients.jedis.commands.MultiKeyCommands;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.ScriptingCommands;
-import redis.clients.jedis.commands.SentinelCommands;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -1814,6 +1797,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrevrangeWithScores(key, start, stop);
+    return getTupledSet();
+  }
+
+  @Override
+  public String zrandmember(final String key) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    return members == null ? null : SetFromList.of(members);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmemberWithScores(key, count);
     return getTupledSet();
   }
 
@@ -3925,6 +3930,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  @Override
   public String aclSetUser(String name, String... params) {
     client.aclSetUser(name, params);
     return client.getStatusCodeReply();
@@ -4106,7 +4112,29 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.setTimeoutInfinite();
 
     try {
-      return BuilderFactory.STREAM_MAP_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+      List<Object> streamsEntries = client.getObjectMultiBulkReply();
+      if (streamsEntries == null) { // backward compatibility
+        return new ArrayList<>();
+      }
+
+      return BuilderFactory.STREAM_READ_RESPONSE.build(streamsEntries);
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<Map.Entry<String, List<StreamEntry>>> xread(final XReadParams xReadParams, final Map<String, StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(xReadParams, streams);
+
+    if (!xReadParams.hasBlock()) {
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
+    }
+
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -4177,7 +4205,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.setTimeoutInfinite();
 
     try {
-      return BuilderFactory.STREAM_MAP_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
+      final String consumer, final XReadGroupParams xReadGroupParams,
+      final Map<String, StreamEntryID> streams) {
+    checkIsInMultiOrPipeline();
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+
+    if (!xReadGroupParams.hasBlock()) {
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
+    }
+
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -4188,9 +4235,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
-
-    // TODO handle consumername == NULL case
-
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 

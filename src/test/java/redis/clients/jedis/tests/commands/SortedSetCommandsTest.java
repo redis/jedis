@@ -1,12 +1,11 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1444,5 +1443,52 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bbar, 0.1d, bc);
     actual = jedis.bzpopmin(0, bbar, bfoo);
     assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
+  }
+
+  @Test
+  public void zrandmember() {
+    assertNull(jedis.zrandmember("foo"));
+    assertNull(jedis.zrandmember("foo", 1));
+    assertNull(jedis.zrandmemberWithScores("foo", 1));
+
+    Map<String, Double> hash = new HashMap<>();
+    hash.put("bar1", 1d);
+    hash.put("bar2", 10d);
+    hash.put("bar3", 0.1d);
+    jedis.zadd("foo", hash);
+
+    assertTrue(hash.containsKey(jedis.zrandmember("foo")));
+    assertEquals(2, jedis.zrandmember("foo", 2).size());
+
+    Set<Tuple> actual = jedis.zrandmemberWithScores("foo", 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    Tuple tuple = actual.iterator().next();
+    assertEquals(hash.get(tuple.getElement()), Double.valueOf(tuple.getScore()));
+
+    // Binary
+    Map<byte[], Double> bhash = new HashMap<>();
+    bhash.put(bbar1, 1d);
+    bhash.put(bbar2, 10d);
+    bhash.put(bbar3, 0.1d);
+    jedis.zadd(bfoo, bhash);
+
+    assertCollectionContains(bhash.keySet(), jedis.zrandmember(bfoo));
+    assertEquals(2, jedis.zrandmember(bfoo, 2).size());
+
+    Set<Tuple> bactual = jedis.zrandmemberWithScores(bfoo, 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    tuple = bactual.iterator().next();
+    assertEquals(getScoreFromByteMap(bhash, tuple.getBinaryElement()), Double.valueOf(tuple.getScore()));
+  }
+
+  private Double getScoreFromByteMap(Map<byte[], Double> bhash, byte[] key) {
+    for (Map.Entry<byte[], Double> en : bhash.entrySet()) {
+      if (Arrays.equals(en.getKey(), key)) {
+        return en.getValue();
+      }
+    }
+    return null;
   }
 }

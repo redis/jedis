@@ -218,6 +218,12 @@ public interface BinaryJedisClusterCommands {
 
   Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
+  byte[] zrandmember(byte[] key);
+
+  Set<byte[]> zrandmember(byte[] key, long count);
+
+  Set<Tuple> zrandmemberWithScores(byte[] key, long count);
+
   Long zcard(byte[] key);
 
   Double zscore(byte[] key, byte[] member);

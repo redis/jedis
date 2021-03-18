@@ -16,7 +16,7 @@ public interface JedisClientConfig {
   /**
    * @return Socket timeout in milliseconds
    */
-  default int getSoTimeoutMillis() {
+  default int getSocketTimeoutMillis() {
     return Protocol.DEFAULT_TIMEOUT;
   }
 
@@ -24,7 +24,7 @@ public interface JedisClientConfig {
    * @return Socket timeout (in milliseconds) to use during blocking operation. Default is '0',
    * which means to block forever.
    */
-  default int getInfiniteSoTimeoutMillis() {
+  default int getBlockingSocketTimeoutMillis() {
     return 0;
   }
 

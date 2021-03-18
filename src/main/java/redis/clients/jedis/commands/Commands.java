@@ -483,9 +483,9 @@ public interface Commands {
 
   void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams);
 
-  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  void xpending(String key, String groupname);
 
-  void xpendingSummary(String key, String groupname);
+  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, StreamEntryID... ids);

@@ -2568,11 +2568,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+  public Object xpending(final byte[] key, final byte[] groupname) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
-        return connection.xpendingSummary(key, groupname);
+        return connection.xpending(key, groupname);
       }
     }.runBinary(key);
   }

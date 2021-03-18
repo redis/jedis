@@ -1492,15 +1492,15 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xpending(String key, String groupname) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
+  }
+
+  @Override
   public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
       int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
         SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));
-  }
-
-  @Override
-  public void xpendingSummary(String key, String groupname) {
-    xpendingSummary(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
   }
 
   @Override

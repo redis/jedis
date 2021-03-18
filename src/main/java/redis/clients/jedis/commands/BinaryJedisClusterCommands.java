@@ -411,9 +411,9 @@ public interface BinaryJedisClusterCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
-  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  Object xpending(final byte[] key, final byte[] groupname);
 
-  Object xpendingSummary(final byte[] key, final byte[] groupname);
+  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
 

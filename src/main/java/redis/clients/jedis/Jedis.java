@@ -4231,18 +4231,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public StreamPendingSummary xpending(final String key, final String groupname) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname);
+    return BuilderFactory.STREAM_PENDING_SUMMARY.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public StreamPendingSummary xpendingSummary(final String key, final String groupname) {
-    checkIsInMultiOrPipeline();
-    client.xpendingSummary(key, groupname);
-    return BuilderFactory.STREAM_PENDING_SUMMARY.build(client.getObjectMultiBulkReply());
   }
 
   @Override

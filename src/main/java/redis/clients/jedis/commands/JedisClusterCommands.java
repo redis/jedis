@@ -517,7 +517,6 @@ public interface JedisClusterCommands {
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
-
   /**
    * XPENDING key group [start end count] [consumer]
    *

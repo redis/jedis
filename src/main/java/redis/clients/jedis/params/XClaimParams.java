@@ -10,7 +10,7 @@ public class XClaimParams extends Params {
   public XClaimParams() {
   }
 
-  public static XClaimParams xclaimParams() {
+  public static XClaimParams xClaimParams() {
     return new XClaimParams();
   }
 

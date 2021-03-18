@@ -6,15 +6,11 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.MigrateParams;
+import redis.clients.jedis.params.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
 
 /**
  * Multikey related commands (these are split out because they are non-shardable)

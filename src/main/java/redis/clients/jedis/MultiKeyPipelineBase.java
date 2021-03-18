@@ -776,4 +776,33 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
     return getResponse(BuilderFactory.LONG);
   }
+
+
+  @Override
+  public Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams) {
+    client.xread(count, block, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
+      boolean noAck, Map<byte[], byte[]> streams) {
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
+      Map.Entry<String, StreamEntryID>... streams) {
+    client.xread(count, block, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname,
+      String consumer, int count, long block, boolean noAck,
+      Map.Entry<String, StreamEntryID>... streams) {
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
 }

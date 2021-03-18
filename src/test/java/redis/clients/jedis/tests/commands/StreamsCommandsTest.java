@@ -195,7 +195,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(1, streams1.get(0).getValue().size());
     assertEquals(id1, streams1.get(0).getValue().get(0).getID());
     assertEquals(map, streams1.get(0).getValue().get(0).getFields());
-    
+
     assertNull(jedis.xread(XReadParams.xReadParams().block(1), Collections.singletonMap("xread-stream1", id1)));
     assertNull(jedis.xread(XReadParams.xReadParams(), Collections.singletonMap("xread-stream1", id1)));
 
@@ -439,6 +439,13 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
       null, null, 3, "xpendeing-consumer");
+    assertEquals(1, pendingRange.size());
+    assertEquals(id1, pendingRange.get(0).getID());
+    assertEquals(1, pendingRange.get(0).getDeliveredTimes());
+    assertEquals("xpendeing-consumer", pendingRange.get(0).getConsumerName());
+
+    // Without consumer
+    pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", null, null, 3, null);
     assertEquals(1, pendingRange.size());
     assertEquals(id1, pendingRange.get(0).getID());
     assertEquals(1, pendingRange.get(0).getDeliveredTimes());

@@ -16,10 +16,7 @@ import static redis.clients.jedis.Protocol.Command.TIME;
 import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HostnameVerifier;
@@ -617,6 +614,18 @@ public class BinaryClient extends Connection {
 
   public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.getRaw());
+  }
+
+  public void zrandmember(final byte[] key) {
+    sendCommand(ZRANDMEMBER, key);
+  }
+
+  public void zrandmember(final byte[] key, final long count) {
+    sendCommand(ZRANDMEMBER, key, toByteArray(count));
+  }
+
+  public void zrandmemberWithScores(final byte[] key, final long count) {
+    sendCommand(ZRANDMEMBER, key, toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zcard(final byte[] key) {

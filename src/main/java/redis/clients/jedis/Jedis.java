@@ -1800,6 +1800,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return getTupledSet();
   }
 
+  @Override
+  public String zrandmember(final String key) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key, count);
+    final List<String> members = client.getMultiBulkReply();
+    return members == null ? null : SetFromList.of(members);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmemberWithScores(key, count);
+    return getTupledSet();
+  }
+
   /**
    * Return the sorted set cardinality (number of elements). If the key does not exist 0 is
    * returned, like for empty sorted sets.
@@ -4232,9 +4254,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
-
-    // TODO handle consumername == NULL case
-
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 

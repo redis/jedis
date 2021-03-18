@@ -239,6 +239,12 @@ public interface Commands {
 
   void zrevrangeWithScores(String key, long start, long stop);
 
+  void zrandmember(String key);
+
+  void zrandmember(String key, long count);
+
+  void zrandmemberWithScores(String key, long count);
+
   void zcard(String key);
 
   void zscore(String key, String member);

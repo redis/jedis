@@ -614,6 +614,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public byte[] zrandmember(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key);
+  }
+
+  @Override
+  public Set<byte[]> zrandmember(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key, count);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmemberWithScores(key, count);
+  }
+
+  @Override
   public Long zcard(final byte[] key) {
     Jedis j = getShard(key);
     return j.zcard(key);

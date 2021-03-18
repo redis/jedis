@@ -1171,6 +1171,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String zrandmember(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.zrandmember(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zrandmember(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zrandmemberWithScores(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long zcard(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

@@ -4079,6 +4079,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -4087,6 +4094,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final StreamEntryID end, final int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
+      final StreamEntryID start) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 

@@ -1140,9 +1140,21 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end);
+  }
+
+  @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     Jedis j = getShard(key);
     return j.xrange(key, start, end, count);
+  }
+
+  @Override
+  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start);
   }
 
   @Override

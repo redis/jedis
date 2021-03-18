@@ -447,7 +447,17 @@ public interface Commands {
 
   void xlen(String key);
 
+  void xrange(String key, StreamEntryID start, StreamEntryID end);
+
+  void xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  /**
+   * @deprecated Use {@link #xrange(java.lang.String, redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
+   */
+  @Deprecated
   void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
+
+  void xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 

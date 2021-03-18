@@ -2407,6 +2407,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xrange(key, start, end);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end,
       final long count) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
@@ -2423,6 +2433,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public List<byte[]> execute(Jedis connection) {
         return connection.xrange(key, start, end, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xrevrange(key, end, start);
       }
     }.runBinary(key);
   }

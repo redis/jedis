@@ -2499,11 +2499,33 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<StreamEntry> xrange(final String key, final StreamEntryID start,
+      final StreamEntryID end) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrange(key, start, end);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start,
       final StreamEntryID end, final int count) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
       @Override
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xrange(key, start, end, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
+      final StreamEntryID start) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrevrange(key, end, start);
       }
     }.run(key);
   }

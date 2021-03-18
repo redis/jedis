@@ -442,7 +442,17 @@ public interface JedisClusterCommands {
   Long xlen(String key);
 
   /**
-   * XRANGE key start end [COUNT count]
+   * XRANGE key start end
+   *
+   * @param key
+   * @param start
+   * @param end
+   * @return
+   */
+  List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end);
+
+  /**
+   * XRANGE key start end COUNT count
    *
    * @param key
    * @param start
@@ -453,7 +463,16 @@ public interface JedisClusterCommands {
   List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
   /**
-   * XREVRANGE key end start [COUNT <n>]
+   * XREVRANGE key end start
+   * @param key
+   * @param end
+   * @param start
+   * @return
+   */
+  List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start);
+
+  /**
+   * XREVRANGE key end start COUNT count
    * @param key
    * @param end
    * @param start

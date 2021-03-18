@@ -382,7 +382,11 @@ public interface RedisPipeline {
 
   Response<Long> xlen(String key);
 
+  Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end);
+
   Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 

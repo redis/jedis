@@ -1582,6 +1582,10 @@ public class BinaryClient extends Connection {
     sendCommand(XLEN, key);
   }
 
+  public void xrange(final byte[] key, final byte[] start, final byte[] end) {
+    sendCommand(XRANGE, key, start, end);
+  }
+
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
    */
@@ -1592,6 +1596,10 @@ public class BinaryClient extends Connection {
 
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final int count) {
     sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+  }
+
+  public void xrevrange(final byte[] key, final byte[] end, final byte[] start) {
+    sendCommand(XREVRANGE, key, end, start);
   }
 
   public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {

@@ -67,6 +67,8 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<String> unwatch();
 
+  Response<Long> zdiffstore(byte[] dstkey, byte[]... keys);
+
   Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
 
   Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets);

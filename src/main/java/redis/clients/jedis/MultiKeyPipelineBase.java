@@ -338,6 +338,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Long> zdiffstore(final byte[] dstkey, final byte[]... keys) {
+    client.zdiffstore(dstkey, keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> zdiffstore(final String dstkey, final String... keys) {
+    client.zdiffstore(dstkey, keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> zinterstore(String dstkey, String... sets) {
     client.zinterstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);

@@ -2623,6 +2623,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long zdiffstore(final byte[] dstkey, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffstore(dstkey, keys);
+    return client.getIntegerReply();
+  }
+
   /**
    * Return the all the elements in the sorted set at key with a score between min and max
    * (including elements with score equal to min or max).

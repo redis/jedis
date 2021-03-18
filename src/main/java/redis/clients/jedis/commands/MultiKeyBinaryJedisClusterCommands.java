@@ -63,6 +63,8 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Long sunionstore(byte[] dstkey, byte[]... keys);
 
+  Long zdiffstore(byte[] dstkey, byte[]... keys);
+
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);

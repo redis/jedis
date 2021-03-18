@@ -71,6 +71,8 @@ public interface MultiKeyBinaryCommands {
 
   String unwatch();
 
+  Long zdiffstore(byte[] dstkey, byte[]... keys);
+
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);

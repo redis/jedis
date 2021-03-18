@@ -1674,6 +1674,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Long zdiffstore(final String dstkey, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffstore(dstkey, keys);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrange(key, start, stop);

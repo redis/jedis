@@ -1080,6 +1080,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long zdiffstore(final String dstkey, final String... keys) {
+    String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zdiffstore(dstkey, keys);
+      }
+    }.run(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
       @Override

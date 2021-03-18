@@ -103,6 +103,8 @@ public interface MultiKeyCommands {
 
   String unwatch();
 
+  Long zdiffstore(String dstkey, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);

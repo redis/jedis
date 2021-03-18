@@ -65,6 +65,8 @@ public interface MultiKeyJedisClusterCommands {
 
   Long sunionstore(String dstkey, String... keys);
 
+  Long zdiffstore(String dstkey, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
@@ -115,7 +117,7 @@ public interface MultiKeyJedisClusterCommands {
 
   List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
-  
+
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    *

@@ -1764,6 +1764,10 @@ public class BinaryClient extends Connection {
     sendCommand(XREADGROUP, args);
   }
 
+  public void xpending(final byte[] key, final byte[] groupname) {
+    sendCommand(XPENDING, key, groupname);
+  }
+
   public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     if (consumername == null) {
@@ -1771,10 +1775,6 @@ public class BinaryClient extends Connection {
     } else {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
     }
-  }
-
-  public void xpendingSummary(final byte[] key, final byte[] groupname) {
-    sendCommand(XPENDING, key, groupname);
   }
 
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,

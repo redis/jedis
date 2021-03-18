@@ -526,6 +526,15 @@ public interface JedisCommands {
   Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
+   * XPENDING key group
+   *
+   * @param key
+   * @param groupname
+   * @return
+   */
+  StreamPendingSummary xpending(String key, String groupname);
+
+  /**
    * XPENDING key group [start end count] [consumer]
    *
    * @param key
@@ -536,16 +545,8 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
-
-  /**
-   * XPENDING key group
-   *
-   * @param key
-   * @param groupname
-   * @return
-   */
-  StreamPendingSummary xpendingSummary(String key, String groupname);
+  List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start,
+      StreamEntryID end, int count, String consumername);
 
   /**
    * XDEL key ID [ID ...]

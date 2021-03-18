@@ -396,10 +396,10 @@ public interface RedisPipeline {
 
   Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
+  Response<StreamPendingSummary> xpending(String key, String groupname);
+
   Response<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername);
-
-  Response<StreamPendingSummary> xpendingSummary(String key, String groupname);
 
   Response<Long> xdel( String key, StreamEntryID... ids);
 

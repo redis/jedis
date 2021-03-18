@@ -463,7 +463,7 @@ public interface JedisClusterCommands {
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
   /**
-   * @deprecated Will be removed in future version. Use
+   * @deprecated This will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xread(int, long, java.util.Map.Entry...)}.
    */
   @Deprecated
@@ -517,11 +517,20 @@ public interface JedisClusterCommands {
   Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
-   * @deprecated Will be removed in future version. Use
+   * @deprecated This will be removed in future version. Use
    * {@link MultiKeyJedisClusterCommands#xreadGroup(java.lang.String, java.lang.String, int, long, boolean, java.util.Map.Entry...)}.
    */
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+
+  /**
+   * XPENDING key group
+   *
+   * @param key
+   * @param groupname
+   * @return
+   */
+  StreamPendingSummary xpending(String key, String groupname);
 
   /**
    * XPENDING key group [start end count] [consumer]
@@ -535,15 +544,6 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
-
-  /**
-   * XPENDING key group
-   *
-   * @param key
-   * @param groupname
-   * @return
-   */
-  StreamPendingSummary xpendingSummary(String key, String groupname);
 
   /**
    * XDEL key ID [ID ...]

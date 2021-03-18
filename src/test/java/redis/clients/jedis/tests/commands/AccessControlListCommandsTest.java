@@ -11,6 +11,7 @@ import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -458,4 +459,27 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.aclDelUser(USER_ZZZ.getBytes());
   }
 
+  @Test
+  public void aclLoadTest() {
+    try {
+      jedis.aclLoad();
+      fail("Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
+    } catch (JedisDataException e) {
+      assertTrue(e.getMessage().contains("ERR This Redis instance is not configured to use an ACL file."));
+    }
+
+    // TODO test with ACL file
+  }
+
+  @Test
+  public void aclSaveTest() {
+    try {
+      jedis.aclSave();
+      fail("Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
+    } catch (JedisDataException e) {
+      assertTrue(e.getMessage().contains("ERR This Redis instance is not configured to use an ACL file."));
+    }
+
+    // TODO test with ACL file
+  }
 }

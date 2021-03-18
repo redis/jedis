@@ -1,15 +1,10 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 
@@ -288,6 +283,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public String execute(Jedis connection) {
         return connection.getDel(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String getEx(String key, GetExParams params) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.getEx(key, params);
       }
     }.run(key);
   }
@@ -733,6 +738,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String hrandfield(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.hrandfield(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<String> execute(Jedis connection) {
+        return connection.hrandfield(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    return new JedisClusterCommand<Map<String, String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Map<String, String> execute(Jedis connection) {
+        return connection.hrandfieldWithValues(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long rpush(final String key, final String... string) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -1035,6 +1070,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Double zaddIncr(String key, double score, String member, ZAddParams params) {
+    return new JedisClusterCommand<Double>(connectionHandler, maxAttempts) {
+      @Override
+      public Double execute(Jedis connection) {
+        return connection.zaddIncr(key, score, member, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -1121,6 +1166,36 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Set<Tuple> execute(Jedis connection) {
         return connection.zrevrangeWithScores(key, start, stop);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public String zrandmember(final String key) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.zrandmember(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zrandmember(key, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zrandmemberWithScores(key, count);
       }
     }.run(key);
   }
@@ -1737,6 +1812,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public KeyedTuple bzpopmax(int timeout, String... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmax(timeout, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(int timeout, String... keys) {
+    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+      @Override
+      public KeyedTuple execute(Jedis connection) {
+        return connection.bzpopmin(timeout, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public List<String> mget(final String... keys) {
     return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -2160,6 +2255,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.geoadd(key, params, memberCoordinateMap);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Double geodist(final String key, final String member1, final String member2) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -2434,6 +2539,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<Entry<String, List<StreamEntry>>> xread(final XReadParams xReadParams, final Map<String, StreamEntryID> streams) {
+    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
+        return connection.xread(xReadParams, streams);
+      }
+    }.run(streams.size(), getKeys(streams));
+  }
+
+  @Override
   public Long xack(final String key, final String group, final StreamEntryID... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -2504,12 +2619,34 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
+      final String consumer, final XReadGroupParams xReadGroupParams,
+      final Map<String, StreamEntryID> streams) {
+    return new JedisClusterCommand<List<Entry<String, List<StreamEntry>>>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Entry<String, List<StreamEntry>>> execute(Jedis connection) {
+        return connection.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+      }
+    }.run(streams.size(), getKeys(streams));
+  }
+
+  @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     return new JedisClusterCommand<List<StreamPendingEntry>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public List<StreamPendingEntry> execute(Jedis connection) {
         return connection.xpending(key, groupname, start, end, count, consumername);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamPendingSummary xpendingSummary(final String key, final String groupname) {
+    return new JedisClusterCommand<StreamPendingSummary>(connectionHandler, maxAttempts) {
+      @Override
+      public StreamPendingSummary execute(Jedis connection) {
+        return connection.xpendingSummary(key, groupname);
       }
     }.run(key);
   }
@@ -2547,6 +2684,28 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(key);
   }
 
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xclaim(key, group, consumername, minIdleTime, params, ids);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return new JedisClusterCommand<List<StreamEntryID>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntryID> execute(Jedis connection) {
+        return connection.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+      }
+    }.run(key);
+  }
+
   public Long waitReplicas(final String key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -2575,4 +2734,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(sampleKey);
   }
 
+  private static String[] getKeys(final Map<String, ?> map) {
+    return map.keySet().toArray(new String[map.size()]);
+  }
 }

@@ -1,12 +1,11 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -104,6 +104,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 2d, "b", ZAddParams.zAddParams().gt());
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
 
+    // incr: don't update already existing elements.
+    assertNull(jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().nx()));
+    assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
+    // incr: update elements that already exist.
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d,"b", ZAddParams.zAddParams().xx()));
+    assertEquals(Double.valueOf(3d), jedis.zscore("foo", "b"));
+
     // binary
     jedis.del(bfoo);
 
@@ -135,6 +142,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(Double.valueOf(1d), jedis.zscore(bfoo, bb));
     jedis.zadd(bfoo, 2d, bb, ZAddParams.zAddParams().gt());
     assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, bb));
+
+    // incr: don't update already existing elements.
+    assertNull(jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().nx()));
+    assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, bb));
+    // incr: update elements that already exist.
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr(bfoo, 1d, bb, ZAddParams.zAddParams().xx()));
+    assertEquals(Double.valueOf(3d), jedis.zscore(bfoo, bb));
   }
 
   @Test
@@ -1397,5 +1411,84 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(Double.NEGATIVE_INFINITY, itr.next().getScore(), 0d);
     assertEquals(0d, itr.next().getScore(), 0d);
     assertEquals(Double.POSITIVE_INFINITY, itr.next().getScore(), 0d);
+  }
+
+  @Test
+  public void bzpopmax() {
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
+    KeyedTuple actual = jedis.bzpopmax(0, "foo", "bar");
+    assertEquals(new KeyedTuple("foo", "b", 10d), actual);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bbar, 0.1d, bc);
+    actual = jedis.bzpopmax(0, bfoo, bbar);
+    assertEquals(new KeyedTuple(bfoo, bb, 10d), actual);
+  }
+
+  @Test
+  public void bzpopmin() {
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
+    KeyedTuple actual = jedis.bzpopmin(0, "bar", "foo");
+    assertEquals(new KeyedTuple("bar", "c", 0.1d), actual);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bbar, 0.1d, bc);
+    actual = jedis.bzpopmin(0, bbar, bfoo);
+    assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
+  }
+
+  @Test
+  public void zrandmember() {
+    assertNull(jedis.zrandmember("foo"));
+    assertNull(jedis.zrandmember("foo", 1));
+    assertNull(jedis.zrandmemberWithScores("foo", 1));
+
+    Map<String, Double> hash = new HashMap<>();
+    hash.put("bar1", 1d);
+    hash.put("bar2", 10d);
+    hash.put("bar3", 0.1d);
+    jedis.zadd("foo", hash);
+
+    assertTrue(hash.containsKey(jedis.zrandmember("foo")));
+    assertEquals(2, jedis.zrandmember("foo", 2).size());
+
+    Set<Tuple> actual = jedis.zrandmemberWithScores("foo", 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    Tuple tuple = actual.iterator().next();
+    assertEquals(hash.get(tuple.getElement()), Double.valueOf(tuple.getScore()));
+
+    // Binary
+    Map<byte[], Double> bhash = new HashMap<>();
+    bhash.put(bbar1, 1d);
+    bhash.put(bbar2, 10d);
+    bhash.put(bbar3, 0.1d);
+    jedis.zadd(bfoo, bhash);
+
+    assertCollectionContains(bhash.keySet(), jedis.zrandmember(bfoo));
+    assertEquals(2, jedis.zrandmember(bfoo, 2).size());
+
+    Set<Tuple> bactual = jedis.zrandmemberWithScores(bfoo, 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    tuple = bactual.iterator().next();
+    assertEquals(getScoreFromByteMap(bhash, tuple.getBinaryElement()), Double.valueOf(tuple.getScore()));
+  }
+
+  private Double getScoreFromByteMap(Map<byte[], Double> bhash, byte[] key) {
+    for (Map.Entry<byte[], Double> en : bhash.entrySet()) {
+      if (Arrays.equals(en.getKey(), key)) {
+        return en.getValue();
+      }
+    }
+    return null;
   }
 }

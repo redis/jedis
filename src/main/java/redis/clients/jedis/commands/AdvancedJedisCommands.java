@@ -4,6 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
@@ -50,6 +51,8 @@ public interface AdvancedJedisCommands {
 
   Long clientId();
 
+  Long clientUnblock(long clientId, UnblockType unblockType);
+
   String memoryDoctor();
 
   Long memoryUsage(String key);
@@ -82,5 +85,7 @@ public interface AdvancedJedisCommands {
 
   String aclLog(String options);
 
-  // TODO: Implements ACL LOAD/SAVE commands
+  String aclLoad();
+
+  String aclSave();
 }

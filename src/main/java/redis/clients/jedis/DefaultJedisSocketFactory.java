@@ -18,7 +18,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   private HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
-  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int socketTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean ssl = false;
   private SSLSocketFactory sslSocketFactory = null;
   private SSLParameters sslParameters = null;
@@ -33,12 +33,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   @Deprecated
-  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
+  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int socketTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
     this.hostAndPort = new HostAndPort(host, port);
     this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
+    this.socketTimeout = socketTimeout;
     this.ssl = ssl;
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
@@ -49,7 +49,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this.hostAndPort = hostAndPort;
     if (config != null) {
       this.connectionTimeout = config.getConnectionTimeoutMillis();
-      this.soTimeout = config.getSoTimeoutMillis();
+      this.socketTimeout = config.getSocketTimeoutMillis();
       this.ssl = config.isSsl();
       this.sslSocketFactory = config.getSslSocketFactory();
       this.sslParameters = config.getSslParameters();
@@ -162,12 +162,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   @Override
   public int getSoTimeout() {
-    return this.soTimeout;
+    return this.socketTimeout;
   }
 
   @Override
   public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
+    this.socketTimeout = soTimeout;
   }
 
   public boolean isSsl() {

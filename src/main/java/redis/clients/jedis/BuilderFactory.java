@@ -717,7 +717,7 @@ public final class BuilderFactory {
     public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
       List<Object> streamsEntries = (List<Object>) data;
       if (streamsEntries == null) {
-        return new ArrayList<>();
+        return null;
       }
 
       List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());

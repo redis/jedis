@@ -8,6 +8,7 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEqual
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -1452,12 +1453,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("bar", 1.0, "a");
 
     assertEquals(0, jedis.zdiff("bar1", "bar2").size());
-    Set<String> actual = jedis.zdiff("foo", "bar");
-    assertEquals(1, actual.size());
-    assertEquals("b", actual.iterator().next());
-    Set<Tuple> actualWithScore = jedis.zdiffWithScores("foo", "bar");
-    assertEquals(1, actualWithScore.size());
-    assertEquals(new Tuple("b", 2.0d), actualWithScore.iterator().next());
+    assertEquals(Collections.singleton("b"), jedis.zdiff("foo", "bar"));
+    assertEquals(Collections.singleton(new Tuple("b", 2.0d)), jedis.zdiffWithScores("foo", "bar"));
 
     // binary
 
@@ -1469,9 +1466,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     Set<byte[]> bactual = jedis.zdiff(bfoo, bbar);
     assertEquals(1, bactual.size());
     assertArrayEquals(bb, bactual.iterator().next());
-    actualWithScore = jedis.zdiffWithScores(bfoo, bbar);
-    assertEquals(1, actualWithScore.size());
-    assertEquals(new Tuple(bb, 2.0d), actualWithScore.iterator().next());
+    assertEquals(Collections.singleton(new Tuple(bb, 2.0d)), jedis.zdiffWithScores(bfoo, bbar));
   }
 
   @Test

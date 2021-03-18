@@ -2627,7 +2627,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<byte[]> zdiff(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.zdiff(keys);
-    return SetFromList.of(client.getBinaryMultiBulkReply());
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
   }
 
   @Override

@@ -98,10 +98,18 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
+  /**
+   * @deprecated Use {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams);
 
   Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
+  /**
+   * @deprecated Use {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
       boolean noAck, Map<byte[], byte[]> streams);
 

@@ -99,12 +99,20 @@ public interface MultiKeyCommandsPipeline {
   Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
+  /**
+   * @deprecated Use {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
+   */
+  @Deprecated
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams);
 
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
+  /**
+   * @deprecated Use {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   */
+  @Deprecated
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
       int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 

@@ -794,7 +794,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams) {
     client.xread(count, block, streams);
-    return getResponse(BuilderFactory.STREAM_MAP_ENTRY_LIST);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
   }
 
   @Override
@@ -802,6 +802,6 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
       String consumer, int count, long block, boolean noAck,
       Map.Entry<String, StreamEntryID>... streams) {
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
-    return getResponse(BuilderFactory.STREAM_MAP_ENTRY_LIST);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
   }
 }

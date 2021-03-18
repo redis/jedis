@@ -747,26 +747,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_MAP_ENTRY_LIST = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
-
-    @Override
-    public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
-      List<Object> streamsEntries = (List<Object>) data;
-      if (streamsEntries == null) {
-        return new ArrayList<>();
-      }
-
-      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
-      for (Object streamObj : streamsEntries) {
-        List<Object> stream = (List<Object>) streamObj;
-        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
-        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
-      }
-      return result;
-    }
-  };
-
   public static final Builder<List<StreamEntry>> STREAM_ENTRY_LIST = new Builder<List<StreamEntry>>() {
     @Override
     @SuppressWarnings("unchecked")

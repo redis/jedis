@@ -1587,7 +1587,7 @@ public class BinaryClient extends Connection {
    */
   @Deprecated
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
-    sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+    xrange(key, start, end, (int) count);
   }
 
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final int count) {

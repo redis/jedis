@@ -8,9 +8,12 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryCommands {
@@ -94,10 +97,25 @@ public interface MultiKeyBinaryCommands {
 
   Long touch(byte[]... keys);
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams);
 
+  List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams);
+
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
       Map<byte[], byte[]> streams);
+
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
+      Entry<byte[], byte[]>... streams);
 
   Long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

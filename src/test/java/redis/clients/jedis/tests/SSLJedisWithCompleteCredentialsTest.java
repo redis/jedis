@@ -49,7 +49,7 @@ public class SSLJedisWithCompleteCredentialsTest {
   @Test
   public void connectWithConfig() {
     try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig
-        .builder().withSsl(true).build())) {
+        .builder().ssl(true).build())) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }

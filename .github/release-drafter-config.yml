@@ -1,7 +1,7 @@
-name-template: '$NEXT_PATCH_VERSION🌈'
+name-template: '$NEXT_PATCH_VERSION'
 tag-template: 'jedis-$NEXT_PATCH_VERSION'
 categories:
-  - title: '🚀Features'
+  - title: 'Features'
     labels:
       - 'feature'
       - 'enhancement'
@@ -10,7 +10,7 @@ categories:
       - 'fix'
       - 'bugfix'
       - 'bug'
-  - title: '🧰Maintenance'
+  - title: 'Maintenance'
     label: 'chore'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 exclude-labels:

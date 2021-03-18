@@ -68,7 +68,7 @@ public class JedisTest extends JedisCommandTestBase {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().withPassword("foobared")
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
         .build())) {
       assertEquals("PONG", jedis.ping());
     }

@@ -88,7 +88,7 @@ public class JedisPoolWithCompleteCredentialsTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp, DefaultJedisClientConfig.builder()
-        .withUser("acljedis").withPassword("fizzbuzz").withClientName("closable-resuable-pool")
+        .user("acljedis").password("fizzbuzz").clientName("closable-resuable-pool")
         .build())) {
 
       Jedis jedis = pool.getResource();

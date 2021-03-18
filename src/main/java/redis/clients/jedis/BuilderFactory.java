@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -703,10 +704,36 @@ public final class BuilderFactory {
       }
       return responses;
     }
+  };
+
+  public static final Builder<StreamEntry> STREAM_ENTRY = new Builder<StreamEntry>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamEntry build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<Object> objectList = (List<Object>) data;
+
+      if (objectList.isEmpty()) {
+        return null;
+      }
+
+      String entryIdString = SafeEncoder.encode((byte[]) objectList.get(0));
+      StreamEntryID entryID = new StreamEntryID(entryIdString);
+      List<byte[]> hash = (List<byte[]>) objectList.get(1);
+
+      Iterator<byte[]> hashIterator = hash.iterator();
+      Map<String, String> map = new HashMap<>(hash.size() / 2);
+      while (hashIterator.hasNext()) {
+        map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
+      }
+      return new StreamEntry(entryID, map);
+    }
 
     @Override
     public String toString() {
-      return "List<StreamEntryID>";
+      return "StreamEntry";
     }
   };
 
@@ -750,34 +777,29 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamEntry> STREAM_ENTRY = new Builder<StreamEntry>() {
+  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
+      = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override
-    @SuppressWarnings("unchecked")
-    public StreamEntry build(Object data) {
-      if (null == data) {
+    public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
+      if (data == null) {
         return null;
       }
-      List<Object> objectList = (List<Object>) data;
+      List<Object> streams = (List<Object>) data;
 
-      if (objectList.isEmpty()) {
-        return null;
+      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streams.size());
+      for (Object streamObj : streams) {
+        List<Object> stream = (List<Object>) streamObj;
+        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
+        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
       }
 
-      String entryIdString = SafeEncoder.encode((byte[]) objectList.get(0));
-      StreamEntryID entryID = new StreamEntryID(entryIdString);
-      List<byte[]> hash = (List<byte[]>) objectList.get(1);
-
-      Iterator<byte[]> hashIterator = hash.iterator();
-      Map<String, String> map = new HashMap<>(hash.size() / 2);
-      while (hashIterator.hasNext()) {
-        map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
-      }
-      return new StreamEntry(entryID, map);
+      return result;
     }
 
     @Override
     public String toString() {
-      return "StreamEntry";
+      return "List<Entry<String, List<StreamEntry>>>";
     }
   };
 

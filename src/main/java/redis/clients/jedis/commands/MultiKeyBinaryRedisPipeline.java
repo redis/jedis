@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -26,6 +27,10 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<List<byte[]>> blpop(byte[]... args);
 
   Response<List<byte[]>> brpop(byte[]... args);
+
+  Response<KeyedTuple> bzpopmax(int timeout, byte[]... keys);
+
+  Response<KeyedTuple> bzpopmin(int timeout, byte[]... keys);
 
   Response<Set<byte[]>> keys(byte[] pattern);
 
@@ -85,11 +90,12 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> touch(byte[]... keys);
 
-  Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
+  Response<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, byte[]... keys);
 
-  Response<Long> georadiusStore(byte[] key, double longitude, double latitude,
-      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
-
-  Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius,
+  Response<Long> georadiusStore(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
+      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

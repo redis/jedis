@@ -70,6 +70,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<KeyedTuple> bzpopmax(int timeout, String... keys) {
+    client.bzpopmax(timeout, keys);
+    return getResponse(BuilderFactory.KEYED_TUPLE);
+  }
+
+  @Override
+  public Response<KeyedTuple> bzpopmin(int timeout, String... keys) {
+    client.bzpopmin(timeout, keys);
+    return getResponse(BuilderFactory.KEYED_TUPLE);
+  }
+
+  @Override
+  public Response<KeyedTuple> bzpopmax(int timeout, byte[]... keys) {
+    client.bzpopmax(timeout, keys);
+    return getResponse(BuilderFactory.KEYED_TUPLE);
+  }
+
+  @Override
+  public Response<KeyedTuple> bzpopmin(int timeout, byte[]... keys) {
+    client.bzpopmin(timeout, keys);
+    return getResponse(BuilderFactory.KEYED_TUPLE);
+  }
+
+  @Override
   public Response<Long> del(String... keys) {
     client.del(keys);
     return getResponse(BuilderFactory.LONG);
@@ -577,7 +601,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(String script, int keyCount, String... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
+    return getResponse(BuilderFactory.ENCODED_OBJECT);
   }
 
   @Override
@@ -594,7 +618,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> evalsha(String sha1, int keyCount, String... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
+    return getResponse(BuilderFactory.ENCODED_OBJECT);
   }
 
   @Override
@@ -605,7 +629,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -617,7 +641,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -634,7 +658,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -695,8 +719,8 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<String> moduleLoad(String path) {
     client.moduleLoad(path);
     return getResponse(BuilderFactory.STRING);
-  }  
-  
+  }
+
   @Override
   public Response<String> migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final String... keys) {
@@ -713,38 +737,42 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
 
   public Response<Object> sendCommand(final ProtocolCommand cmd, final String... args) {
     client.sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   public Response<Object> sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     client.sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
-  public Response<Long> georadiusStore(final String key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+  public Response<Long> georadiusStore(final String key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> georadiusStore(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+  public Response<Long> georadiusStore(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
   public Response<Long> georadiusByMemberStore(final byte[] key, final byte[] member,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+      final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
   public Response<Long> georadiusByMemberStore(final String key, final String member,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+      final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
     return getResponse(BuilderFactory.LONG);
   }

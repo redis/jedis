@@ -2,23 +2,21 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
-import static redis.clients.jedis.Protocol.Keyword.FREQ;
-import static redis.clients.jedis.Protocol.Keyword.HELP;
+import static redis.clients.jedis.Protocol.Command.EXISTS;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.INCR;
+import static redis.clients.jedis.Protocol.Command.KEYS;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.SAVE;
+import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.TIME;
+import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HostnameVerifier;
@@ -26,21 +24,17 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.args.UnblockType;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
 
   private boolean isInMulti;
 
+  @Deprecated
   private String user;
+  @Deprecated
   private String password;
 
   private int db;
@@ -51,6 +45,12 @@ public class BinaryClient extends Connection {
     super();
   }
 
+  /**
+   * @param host
+   * @deprecated This constructor will be removed in future. It can be replaced with
+   * {@link #BinaryClient(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   */
+  @Deprecated
   public BinaryClient(final String host) {
     super(host);
   }
@@ -59,14 +59,28 @@ public class BinaryClient extends Connection {
     super(host, port);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future. Use
+   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl) {
     super(host, port, ssl);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future. Use
+   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
     super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  }
+
+  public BinaryClient(final HostAndPort hostPort, final JedisClientConfig clientConfig) {
+    super(hostPort, clientConfig);
   }
 
   public BinaryClient(final JedisSocketFactory jedisSocketFactory) {
@@ -81,29 +95,36 @@ public class BinaryClient extends Connection {
     return isInWatch;
   }
 
-  private byte[][] joinParameters(byte[] first, byte[][] rest) {
-    byte[][] result = new byte[rest.length + 1][];
-    result[0] = first;
-    System.arraycopy(rest, 0, result, 1, rest.length);
-    return result;
+  /**
+   * @param user
+   * @deprecated This method will be removed in future. Because this class will be restricted from
+   * holding any user data.
+   */
+  @Deprecated
+  public void setUser(final String user) {
+    this.user = user;
   }
 
-  private byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
-    byte[][] result = new byte[rest.length + 2][];
-    result[0] = first;
-    result[1] = second;
-    System.arraycopy(rest, 0, result, 2, rest.length);
-    return result;
-  }
-
-  public void setUser(final String user) { this.user = user; }
-
+  /**
+   * @param password
+   * @deprecated This method will be removed in future. Because this class will be restricted from
+   * holding any user data.
+   */
+  @Deprecated
   public void setPassword(final String password) {
     this.password = password;
   }
 
+  /**
+   * This method should be called only after a successful SELECT command.
+   * @param db
+   */
   public void setDb(int db) {
     this.db = db;
+  }
+
+  public int getDB() {
+    return db;
   }
 
   @Override
@@ -121,6 +142,25 @@ public class BinaryClient extends Connection {
         select(db);
         getStatusCodeReply();
       }
+    }
+  }
+
+  @Override
+  public void disconnect() {
+    db = 0;
+    super.disconnect();
+  }
+
+  @Override
+  public void close() {
+    db = 0;
+    super.close();
+  }
+
+  public void resetState() {
+    if (isInWatch()) {
+      unwatch();
+      getStatusCodeReply();
     }
   }
 
@@ -142,6 +182,14 @@ public class BinaryClient extends Connection {
 
   public void get(final byte[] key) {
     sendCommand(GET, key);
+  }
+
+  public void getDel(final byte[] key) {
+    sendCommand(GETDEL, key);
+  }
+
+  public void getEx(final byte[] key, final GetExParams params) {
+    sendCommand(GETEX, params.getByteParams(key));
   }
 
   public void quit() {
@@ -189,7 +237,15 @@ public class BinaryClient extends Connection {
     sendCommand(DBSIZE);
   }
 
+  /**
+   * @deprecated Use {@link #expire(byte[], long)}.
+   */
+  @Deprecated
   public void expire(final byte[] key, final int seconds) {
+    sendCommand(EXPIRE, key, toByteArray(seconds));
+  }
+
+  public void expire(final byte[] key, final long seconds) {
     sendCommand(EXPIRE, key, toByteArray(seconds));
   }
 
@@ -233,7 +289,15 @@ public class BinaryClient extends Connection {
     sendCommand(SETNX, key, value);
   }
 
+  /**
+   * @deprecated Use {@link #setex(byte[], long, byte[])}.
+   */
+  @Deprecated
   public void setex(final byte[] key, final int seconds, final byte[] value) {
+    sendCommand(SETEX, key, toByteArray(seconds), value);
+  }
+
+  public void setex(final byte[] key, final long seconds, final byte[] value) {
     sendCommand(SETEX, key, toByteArray(seconds), value);
   }
 
@@ -340,6 +404,18 @@ public class BinaryClient extends Connection {
     sendCommand(HGETALL, key);
   }
 
+  public void hrandfield(final byte[] key) {
+    sendCommand(HRANDFIELD, key);
+  }
+
+  public void hrandfield(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count));
+  }
+
+  public void hrandfieldWithValues(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count), WITHVALUES.getRaw());
+  }
+
   public void rpush(final byte[] key, final byte[]... strings) {
     sendCommand(RPUSH, joinParameters(key, strings));
   }
@@ -380,7 +456,7 @@ public class BinaryClient extends Connection {
     sendCommand(LPOP, key, toByteArray(count));
   }
 
-  public void lpos(final byte[] key, final byte[] element){
+  public void lpos(final byte[] key, final byte[] element) {
     sendCommand(LPOS, key, element);
   }
 
@@ -388,8 +464,10 @@ public class BinaryClient extends Connection {
     sendCommand(LPOS, joinParameters(key, element, params.getByteParams()));
   }
 
-  public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count){
-    sendCommand(LPOS, joinParameters(key, element, params.getByteParams(Keyword.COUNT.getRaw(), toByteArray(count))));
+  public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+    sendCommand(
+      LPOS,
+      joinParameters(key, element, params.getByteParams(Keyword.COUNT.getRaw(), toByteArray(count))));
   }
 
   public void rpop(final byte[] key) {
@@ -496,6 +574,10 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
+  public void zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
+  }
+
   public void zrange(final byte[] key, final long start, final long stop) {
     sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop));
   }
@@ -532,6 +614,18 @@ public class BinaryClient extends Connection {
 
   public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.getRaw());
+  }
+
+  public void zrandmember(final byte[] key) {
+    sendCommand(ZRANDMEMBER, key);
+  }
+
+  public void zrandmember(final byte[] key, final long count) {
+    sendCommand(ZRANDMEMBER, key, toByteArray(count));
+  }
+
+  public void zrandmemberWithScores(final byte[] key, final long count) {
+    sendCommand(ZRANDMEMBER, key, toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zcard(final byte[] key) {
@@ -610,6 +704,22 @@ public class BinaryClient extends Connection {
 
     args.add(Protocol.toByteArray(timeout));
     blpop(args.toArray(new byte[args.size()][]));
+  }
+
+  public void bzpopmax(final int timeout, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    Collections.addAll(args, keys);
+
+    args.add(Protocol.toByteArray(timeout));
+    sendCommand(BZPOPMAX, args.toArray(new byte[args.size()][]));
+  }
+
+  public void bzpopmin(final int timeout, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    Collections.addAll(args, keys);
+
+    args.add(Protocol.toByteArray(timeout));
+    sendCommand(BZPOPMIN, args.toArray(new byte[args.size()][]));
   }
 
   public void sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
@@ -706,14 +816,14 @@ public class BinaryClient extends Connection {
 
   public void zrangeByScore(final byte[] key, final double min, final double max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count));
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(),
+      toByteArray(offset), toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count));
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(),
+      toByteArray(offset), toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
@@ -726,24 +836,26 @@ public class BinaryClient extends Connection {
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count), WITHSCORES.getRaw());
+    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(),
+      toByteArray(offset), toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count), WITHSCORES.getRaw());
+    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(),
+      toByteArray(offset), toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrangeByScore(final byte[] key, final byte[] min, final byte[] max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
+    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
+    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
@@ -756,8 +868,8 @@ public class BinaryClient extends Connection {
 
   public void zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count),
-      WITHSCORES.getRaw());
+    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min,
@@ -825,7 +937,8 @@ public class BinaryClient extends Connection {
 
   public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
+    sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count));
   }
 
   public void zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
@@ -953,29 +1066,6 @@ public class BinaryClient extends Connection {
     sendCommand(GETRANGE, key, toByteArray(startOffset), toByteArray(endOffset));
   }
 
-  public int getDB() {
-    return db;
-  }
-
-  @Override
-  public void disconnect() {
-    db = 0;
-    super.disconnect();
-  }
-
-  @Override
-  public void close() {
-    db = 0;
-    super.close();
-  }
-
-  public void resetState() {
-    if (isInWatch()) {
-      unwatch();
-      getStatusCodeReply();
-    }
-  }
-
   public void eval(final byte[] script, final byte[] keyCount, final byte[][] params) {
     sendCommand(EVAL, joinParameters(script, keyCount, params));
   }
@@ -1064,11 +1154,27 @@ public class BinaryClient extends Connection {
     sendCommand(DUMP, key);
   }
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[])}.
+   */
+  @Deprecated
   public void restore(final byte[] key, final int ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
   }
 
+  public void restore(final byte[] key, final long ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+  }
+
+  /**
+   * @deprecated Use {@link #restoreReplace(byte[], long, byte[])}.
+   */
+  @Deprecated
   public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+    sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
+  }
+
+  public void restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }
 
@@ -1095,11 +1201,11 @@ public class BinaryClient extends Connection {
   public void memoryDoctor() {
     sendCommand(MEMORY, Keyword.DOCTOR.getRaw());
   }
-  
+
   public void memoryUsage(final byte[] key) {
     sendCommand(MEMORY, Keyword.USAGE.getRaw(), key);
   }
-  
+
   public void memoryUsage(final byte[] key, final int samples) {
     sendCommand(MEMORY, Keyword.USAGE.getRaw(), key, Keyword.SAMPLES.getRaw(), toByteArray(samples));
   }
@@ -1136,6 +1242,14 @@ public class BinaryClient extends Connection {
     sendCommand(CLIENT, Keyword.ID.getRaw());
   }
 
+  public void clientUnblock(final long clientId, final UnblockType unblockType) {
+    if (unblockType == null) {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId));
+    } else {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.getRaw());
+    }
+  }
+
   public void time() {
     sendCommand(TIME);
   }
@@ -1143,7 +1257,7 @@ public class BinaryClient extends Connection {
   public void migrate(final String host, final int port, final byte[] key, final int destinationDb,
       final int timeout) {
     sendCommand(MIGRATE, SafeEncoder.encode(host), toByteArray(port), key,
-        toByteArray(destinationDb), toByteArray(timeout));
+      toByteArray(destinationDb), toByteArray(timeout));
   }
 
   public void migrate(final String host, final int port, final int destinationDB,
@@ -1231,26 +1345,31 @@ public class BinaryClient extends Connection {
     sendCommand(READONLY);
   }
 
-  public void geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+  public void geoadd(final byte[] key, final double longitude, final double latitude,
+      final byte[] member) {
     sendCommand(GEOADD, key, toByteArray(longitude), toByteArray(latitude), member);
   }
 
   public void geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3 + 1);
-    args.add(key);
+    geoadd(key, GeoAddParams.geoAddParams(), memberCoordinateMap);
+  }
+
+  public void geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3);
     args.addAll(convertGeoCoordinateMapToByteArrays(memberCoordinateMap));
 
     byte[][] argsArray = new byte[args.size()][];
     args.toArray(argsArray);
 
-    sendCommand(GEOADD, argsArray);
+    sendCommand(GEOADD, params.getByteParams(key, argsArray));
   }
 
   public void geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     sendCommand(GEODIST, key, member1, member2);
   }
 
-  public void geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+  public void geodist(final byte[] key, final byte[] member1, final byte[] member2,
+      final GeoUnit unit) {
     sendCommand(GEODIST, key, member1, member2, unit.raw);
   }
 
@@ -1262,56 +1381,62 @@ public class BinaryClient extends Connection {
     sendCommand(GEOPOS, joinParameters(key, members));
   }
 
-  public void georadius(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+  public void georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
     sendCommand(GEORADIUS, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
       unit.raw);
   }
 
-  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
-    sendCommand(GEORADIUS_RO, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),
-      unit.raw);
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit) {
+    sendCommand(GEORADIUS_RO, key, toByteArray(longitude), toByteArray(latitude),
+      toByteArray(radius), unit.raw);
   }
 
-  public void georadius(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadius(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
       toByteArray(radius), unit.raw));
   }
 
-  public void georadiusStore(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+  public void georadiusStore(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     sendCommand(GEORADIUS, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
-        toByteArray(radius), unit.raw, storeParam.getOption(), storeParam.getKey()));
+      toByteArray(radius), unit.raw, storeParam.getOption(), storeParam.getKey()));
   }
 
-  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
-    sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude), toByteArray(latitude),
-      toByteArray(radius), unit.raw));
+  public void georadiusReadonly(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+    sendCommand(GEORADIUS_RO, param.getByteParams(key, toByteArray(longitude),
+      toByteArray(latitude), toByteArray(radius), unit.raw));
   }
 
-  public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
+  public void georadiusByMember(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit) {
     sendCommand(GEORADIUSBYMEMBER, key, member, toByteArray(radius), unit.raw);
   }
 
-  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit) {
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit) {
     sendCommand(GEORADIUSBYMEMBER_RO, key, member, toByteArray(radius), unit.raw);
   }
 
-  public void georadiusByMember(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
+  public void georadiusByMember(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 
-  public void georadiusByMemberStore(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+  public void georadiusByMemberStore(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
     sendCommand(GEORADIUSBYMEMBER, param.getByteParams(key, member, toByteArray(radius), unit.raw,
-        storeParam.getOption(), storeParam.getKey()));
+      storeParam.getOption(), storeParam.getKey()));
   }
 
-  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius, final GeoUnit unit,
-      final GeoRadiusParam param) {
-    sendCommand(GEORADIUSBYMEMBER_RO, param.getByteParams(key, member, toByteArray(radius), unit.raw));
+  public void georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
+      final GeoUnit unit, final GeoRadiusParam param) {
+    sendCommand(GEORADIUSBYMEMBER_RO,
+      param.getByteParams(key, member, toByteArray(radius), unit.raw));
   }
 
   public void moduleLoad(final byte[] path) {
@@ -1337,15 +1462,25 @@ public class BinaryClient extends Connection {
     return args;
   }
 
-  public void aclWhoAmI() { sendCommand(ACL, Keyword.WHOAMI.getRaw()); }
+  public void aclWhoAmI() {
+    sendCommand(ACL, Keyword.WHOAMI.getRaw());
+  }
 
-  public void aclGenPass() { sendCommand(ACL, Keyword.GENPASS.getRaw()); }
+  public void aclGenPass() {
+    sendCommand(ACL, Keyword.GENPASS.getRaw());
+  }
 
-  public void aclList() { sendCommand(ACL, Keyword.LIST.getRaw()); }
+  public void aclList() {
+    sendCommand(ACL, Keyword.LIST.getRaw());
+  }
 
-  public void aclUsers() { sendCommand(ACL, Keyword.USERS.getRaw()); }
+  public void aclUsers() {
+    sendCommand(ACL, Keyword.USERS.getRaw());
+  }
 
-  public void aclCat() { sendCommand(ACL, Keyword.CAT.getRaw()); }
+  public void aclCat() {
+    sendCommand(ACL, Keyword.CAT.getRaw());
+  }
 
   public void aclCat(final byte[] category) {
     sendCommand(ACL, Keyword.CAT.getRaw(), category);
@@ -1372,11 +1507,19 @@ public class BinaryClient extends Connection {
   }
 
   public void aclSetUser(final byte[] name, byte[][] parameters) {
-    sendCommand(ACL, joinParameters(Keyword.SETUSER.getRaw(),name, parameters));
+    sendCommand(ACL, joinParameters(Keyword.SETUSER.getRaw(), name, parameters));
   }
 
   public void aclDelUser(final byte[] name) {
     sendCommand(ACL, Keyword.DELUSER.getRaw(), name);
+  }
+
+  public void aclLoad() {
+    sendCommand(ACL, Keyword.LOAD.getRaw());
+  }
+
+  public void aclSave() {
+    sendCommand(ACL, Keyword.SAVE.getRaw());
   }
 
   private List<byte[]> convertGeoCoordinateMapToByteArrays(
@@ -1404,48 +1547,57 @@ public class BinaryClient extends Connection {
   public void hstrlen(final byte[] key, final byte[] field) {
     sendCommand(HSTRLEN, key, field);
   }
-  
-  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
-      int maxLexArgs = 0;
-      if(maxLen < Long.MAX_VALUE) { // optional arguments
-        if(approximateLength) {
-          maxLexArgs = 3; // e.g. MAXLEN ~ 1000 
-        } else {
-          maxLexArgs = 2; // e.g. MAXLEN 1000
-        }
+
+  public void xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen,
+      boolean approximateLength) {
+    int maxLexArgs = 0;
+    if (maxLen < Long.MAX_VALUE) { // optional arguments
+      if (approximateLength) {
+        maxLexArgs = 3; // e.g. MAXLEN ~ 1000
+      } else {
+        maxLexArgs = 2; // e.g. MAXLEN 1000
       }
-    
-	  final byte[][] params = new byte[2 + maxLexArgs + hash.size() * 2][];
-	  int index = 0;
-	  params[index++] = key;
-	  if(maxLen < Long.MAX_VALUE) {
-	    params[index++] = Keyword.MAXLEN.getRaw();
-	    if(approximateLength) {
-	      params[index++] = Protocol.BYTES_TILDE;
-	    }
-	    params[index++] = toByteArray(maxLen);
-	  }
-	  
-	  params[index++] = id;
-	  for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
-	    params[index++] = entry.getKey();
-	    params[index++] = entry.getValue();
-	  }
-	  sendCommand(XADD, params);
+    }
+
+    final byte[][] params = new byte[2 + maxLexArgs + hash.size() * 2][];
+    int index = 0;
+    params[index++] = key;
+    if (maxLen < Long.MAX_VALUE) {
+      params[index++] = Keyword.MAXLEN.getRaw();
+      if (approximateLength) {
+        params[index++] = Protocol.BYTES_TILDE;
+      }
+      params[index++] = toByteArray(maxLen);
+    }
+
+    params[index++] = id;
+    for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+      params[index++] = entry.getKey();
+      params[index++] = entry.getValue();
+    }
+    sendCommand(XADD, params);
   }
-  
+
   public void xlen(final byte[] key) {
-     sendCommand(XLEN, key);
+    sendCommand(XLEN, key);
   }
-  
+
+  /**
+   * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
+   */
+  @Deprecated
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final long count) {
+    sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+  }
+
+  public void xrange(final byte[] key, final byte[] start, final byte[] end, final int count) {
     if (count > 0) {
       sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
     } else {
       sendCommand(XRANGE, key, start, end);
     }
   }
-  
+
   public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
     if (count > 0) {
       sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
@@ -1454,17 +1606,22 @@ public class BinaryClient extends Connection {
     }
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
     final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
 
     int streamsIndex = 0;
     params[streamsIndex++] = Keyword.COUNT.getRaw();
     params[streamsIndex++] = toByteArray(count);
-    if(block > 0) {
+    if (block > 0) {
       params[streamsIndex++] = Keyword.BLOCK.getRaw();
       params[streamsIndex++] = toByteArray(block);
     }
-    
+
     params[streamsIndex++] = Keyword.STREAMS.getRaw();
     int idsIndex = streamsIndex + streams.size();
 
@@ -1472,10 +1629,28 @@ public class BinaryClient extends Connection {
       params[streamsIndex++] = entry.getKey();
       params[idsIndex++] = entry.getValue();
     }
-    
+
     sendCommand(XREAD, params);
- }
-  
+  }
+
+  public void xread(final XReadParams params, final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[paramLength + 1 + streams.length * 2][];
+    System.arraycopy(bparams, 0, args, 0, paramLength);
+
+    args[paramLength] = Keyword.STREAMS.raw;
+    int keyIndex = paramLength + 1;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREAD, args);
+  }
+
   public void xack(final byte[] key, final byte[] group, final byte[]... ids) {
     final byte[][] params = new byte[2 + ids.length][];
     int index = 0;
@@ -1486,27 +1661,28 @@ public class BinaryClient extends Connection {
     }
     sendCommand(XACK, params);
   }
-   
-  public void xgroupCreate(final byte[] key, final byte[] groupname, final byte[] id, boolean makeStream) {
-    if(makeStream) {
-      sendCommand(XGROUP, Keyword.CREATE.getRaw(), key, groupname, id, Keyword.MKSTREAM.getRaw());  
+
+  public void xgroupCreate(final byte[] key, final byte[] groupname, final byte[] id,
+      boolean makeStream) {
+    if (makeStream) {
+      sendCommand(XGROUP, Keyword.CREATE.getRaw(), key, groupname, id, Keyword.MKSTREAM.getRaw());
     } else {
-      sendCommand(XGROUP, Keyword.CREATE.getRaw(), key, groupname, id);  
+      sendCommand(XGROUP, Keyword.CREATE.getRaw(), key, groupname, id);
     }
   }
 
   public void xgroupSetID(final byte[] key, final byte[] groupname, final byte[] id) {
-    sendCommand(XGROUP, Keyword.SETID.getRaw(), key, groupname, id);    
+    sendCommand(XGROUP, Keyword.SETID.getRaw(), key, groupname, id);
   }
 
   public void xgroupDestroy(final byte[] key, final byte[] groupname) {
-    sendCommand(XGROUP, Keyword.DESTROY.getRaw(), key, groupname);    
+    sendCommand(XGROUP, Keyword.DESTROY.getRaw(), key, groupname);
   }
 
   public void xgroupDelConsumer(final byte[] key, final byte[] groupname, final byte[] consumerName) {
-    sendCommand(XGROUP, Keyword.DELCONSUMER.getRaw(), key, groupname, consumerName);    
+    sendCommand(XGROUP, Keyword.DELCONSUMER.getRaw(), key, groupname, consumerName);
   }
-   
+
   public void xdel(final byte[] key, final byte[]... ids) {
     final byte[][] params = new byte[1 + ids.length][];
     int index = 0;
@@ -1516,106 +1692,180 @@ public class BinaryClient extends Connection {
     }
     sendCommand(XDEL, params);
   }
-  
+
   public void xtrim(byte[] key, long maxLen, boolean approximateLength) {
-    if(approximateLength) {
-      sendCommand(XTRIM, key, Keyword.MAXLEN.getRaw(), Protocol.BYTES_TILDE ,toByteArray(maxLen));
+    if (approximateLength) {
+      sendCommand(XTRIM, key, Keyword.MAXLEN.getRaw(), Protocol.BYTES_TILDE, toByteArray(maxLen));
     } else {
       sendCommand(XTRIM, key, Keyword.MAXLEN.getRaw(), toByteArray(maxLen));
     }
   }
-  
-  public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
-    
+
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
+  public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
+      Map<byte[], byte[]> streams) {
+
     int optional = 0;
-    if(count>0) {
+    if (count > 0) {
       optional += 2;
     }
-    if(block > 0) {
+    if (block > 0) {
       optional += 2;
     }
-    if(noAck) {
+    if (noAck) {
       optional += 1;
     }
-    
-    
+
     final byte[][] params = new byte[4 + optional + streams.size() * 2][];
 
     int streamsIndex = 0;
     params[streamsIndex++] = Keyword.GROUP.getRaw();
     params[streamsIndex++] = groupname;
     params[streamsIndex++] = consumer;
-    if(count>0) {
+    if (count > 0) {
       params[streamsIndex++] = Keyword.COUNT.getRaw();
       params[streamsIndex++] = toByteArray(count);
     }
-    if(block > 0) {
+    if (block > 0) {
       params[streamsIndex++] = Keyword.BLOCK.getRaw();
       params[streamsIndex++] = toByteArray(block);
     }
-    if(noAck) {
+    if (noAck) {
       params[streamsIndex++] = Keyword.NOACK.getRaw();
     }
     params[streamsIndex++] = Keyword.STREAMS.getRaw();
-    
+
     int idsIndex = streamsIndex + streams.size();
     for (final Entry<byte[], byte[]> entry : streams.entrySet()) {
       params[streamsIndex++] = entry.getKey();
       params[idsIndex++] = entry.getValue();
     }
-    
+
     sendCommand(XREADGROUP, params);
   }
 
-  
-  public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    if(consumername == null) {
+  public void xreadGroup(byte[] groupname, byte[] consumer, final XReadGroupParams params,
+      final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[3 + paramLength + 1 + streams.length * 2][];
+    int index = 0;
+    args[index++] = Keyword.GROUP.raw;
+    args[index++] = groupname;
+    args[index++] = consumer;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+
+    args[index++] = Keyword.STREAMS.raw;
+    int keyIndex = index;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREADGROUP, args);
+  }
+
+  public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
+      byte[] consumername) {
+    if (consumername == null) {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count));
     } else {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
     }
   }
 
-  public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids) {
-      
-      ArrayList<byte[]> arguments = new ArrayList<>(10 + ids.length);
+  public void xpendingSummary(final byte[] key, final byte[] groupname) {
+    sendCommand(XPENDING, key, groupname);
+  }
 
-      arguments.add(key);
-      arguments.add(groupname);
-      arguments.add(consumername);
-      arguments.add(toByteArray(minIdleTime));
-      
-      Collections.addAll(arguments, ids);
+  public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      long newIdleTime, int retries, boolean force, byte[][] ids) {
 
-      if(newIdleTime > 0) {
-        arguments.add(Keyword.IDLE.getRaw());
-        arguments.add(toByteArray(newIdleTime));
-      }
-      if(retries > 0) {
-        arguments.add(Keyword.RETRYCOUNT.getRaw());
-        arguments.add(toByteArray(retries));        
-      }
-      if(force) {
-        arguments.add(Keyword.FORCE.getRaw());        
-      }
-      sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
+    List<byte[]> arguments = new ArrayList<>(10 + ids.length);
+
+    arguments.add(key);
+    arguments.add(groupname);
+    arguments.add(consumername);
+    arguments.add(toByteArray(minIdleTime));
+
+    Collections.addAll(arguments, ids);
+
+    if (newIdleTime > 0) {
+      arguments.add(Keyword.IDLE.getRaw());
+      arguments.add(toByteArray(newIdleTime));
+    }
+    if (retries > 0) {
+      arguments.add(Keyword.RETRYCOUNT.getRaw());
+      arguments.add(toByteArray(retries));
+    }
+    if (force) {
+      arguments.add(Keyword.FORCE.getRaw());
+    }
+    sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
+  }
+
+  private void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+                           XClaimParams params, byte[][] ids, boolean justId) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+    final int idsLength = ids.length;
+    final byte[][] args = new byte[4 + paramLength + idsLength + (justId ? 1 : 0)][];
+    int index = 0;
+    args[index++] = key;
+    args[index++] = groupname;
+    args[index++] = consumername;
+    args[index++] = toByteArray(minIdleTime);
+    System.arraycopy(ids, 0, args, index, idsLength);
+    index += idsLength;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+    if (justId) {
+      args[index++] = Keyword.JUSTID.getRaw();
+    }
+    sendCommand(XCLAIM, args);
+  }
+
+  public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    xclaim(key, groupname, consumername, minIdleTime, params, ids, false);
+  }
+
+  public void xclaimJustId(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    xclaim(key, groupname, consumername, minIdleTime, params, ids, true);
   }
 
   public void xinfoStream(byte[] key) {
-
-    sendCommand(XINFO,Keyword.STREAM.getRaw(),key);
-
+    sendCommand(XINFO, Keyword.STREAM.getRaw(), key);
   }
 
   public void xinfoGroup(byte[] key) {
-
-    sendCommand(XINFO,Keyword.GROUPS.getRaw(),key);
-
+    sendCommand(XINFO, Keyword.GROUPS.getRaw(), key);
   }
 
-  public void xinfoConsumers (byte[] key, byte[] group) {
-
-    sendCommand(XINFO,Keyword.CONSUMERS.getRaw(),key,group);
+  public void xinfoConsumers(byte[] key, byte[] group) {
+    sendCommand(XINFO, Keyword.CONSUMERS.getRaw(), key, group);
   }
 
+  private static byte[][] joinParameters(byte[] first, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 1][];
+    result[0] = first;
+    System.arraycopy(rest, 0, result, 1, rest.length);
+    return result;
+  }
+
+  private static byte[][] joinParameters(byte[] first, byte[] second, byte[][] rest) {
+    byte[][] result = new byte[rest.length + 2][];
+    result[0] = first;
+    result[1] = second;
+    System.arraycopy(rest, 0, result, 2, rest.length);
+    return result;
+  }
 }

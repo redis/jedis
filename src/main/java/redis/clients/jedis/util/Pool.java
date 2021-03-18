@@ -21,11 +21,14 @@ public abstract class Pool<T> implements Closeable {
 
   /**
    * Using this constructor means you have to set and initialize the internalPool yourself.
+   *
+   * @deprecated This constructor will be removed in future.
    */
+  @Deprecated
   public Pool() {
   }
 
-  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  public Pool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
     initPool(poolConfig, factory);
   }
 
@@ -38,7 +41,13 @@ public abstract class Pool<T> implements Closeable {
     return this.internalPool.isClosed();
   }
 
-  public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
+  /**
+   * @param poolConfig
+   * @param factory
+   * @deprecated This method will be private in future.
+   */
+  @Deprecated
+  public void initPool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
 
     if (this.internalPool != null) {
       try {
@@ -50,9 +59,14 @@ public abstract class Pool<T> implements Closeable {
     this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
+  /**
+   * This call only clears idle instances, not borrowed instances.
+   */
   protected void clearInternalPool() {
-    if (internalPool != null) {
-      internalPool.clear();
+    try {
+      this.internalPool.clear();
+    } catch (Exception e) {
+      throw new JedisException("Could not clear the pool", e);
     }
   }
 

@@ -152,7 +152,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     // Empty Stream
     List<Entry<String, List<StreamEntry>>> range = jedis.xread(1, 1L, streamQeury1);
-    assertEquals(0, range.size());
+    assertNull(range);
 
     Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");

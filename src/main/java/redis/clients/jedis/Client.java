@@ -490,6 +490,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zdiff(final String... keys) {
+    zdiff(SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zdiffWithScores(final String... keys) {
+    zdiffWithScores(SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long stop) {
     zrange(SafeEncoder.encode(key), start, stop);
   }

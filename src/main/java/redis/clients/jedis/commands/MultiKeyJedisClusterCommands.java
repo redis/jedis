@@ -9,6 +9,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -65,6 +66,10 @@ public interface MultiKeyJedisClusterCommands {
 
   Long sunionstore(String dstkey, String... keys);
 
+  Set<String> zdiff(String... keys);
+
+  Set<Tuple> zdiffWithScores(String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
@@ -115,7 +120,7 @@ public interface MultiKeyJedisClusterCommands {
 
   List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
-  
+
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    *

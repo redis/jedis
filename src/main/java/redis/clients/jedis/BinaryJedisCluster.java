@@ -978,6 +978,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Set<byte[]> zdiff(final byte[]... keys) {
+    return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<byte[]> execute(Jedis connection) {
+        return connection.zdiff(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(final byte[]... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zdiffWithScores(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
       @Override

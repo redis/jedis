@@ -1080,6 +1080,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Set<String> zdiff(String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zdiff(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(String... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zdiffWithScores(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
       @Override

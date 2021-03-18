@@ -338,6 +338,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+    client.zdiff(keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+    client.zdiffWithScores(keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zdiff(String... keys) {
+    client.zdiff(keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+    client.zdiffWithScores(keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
   public Response<Long> zinterstore(String dstkey, String... sets) {
     client.zinterstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);

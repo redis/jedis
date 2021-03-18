@@ -574,6 +574,18 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
+  public void zdiff(final byte[]... keys) {
+    sendCommand(ZDIFF, joinParameters(toByteArray(keys.length), keys));
+  }
+
+  public void zdiffWithScores(final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>(keys.length + 2);
+    args.add(toByteArray(keys.length));
+    Collections.addAll(args, keys);
+    args.add(WITHSCORES.getRaw());
+    sendCommand(ZDIFF, args.toArray(new byte[args.size()][]));
+  }
+
   public void zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
     sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
   }

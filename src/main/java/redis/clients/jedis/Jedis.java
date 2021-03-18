@@ -3930,6 +3930,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  @Override
   public String aclSetUser(String name, String... params) {
     client.aclSetUser(name, params);
     return client.getStatusCodeReply();
@@ -4112,19 +4113,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     try {
       List<Object> streamsEntries = client.getObjectMultiBulkReply();
-      if (streamsEntries == null) {
+      if (streamsEntries == null) { // backward compatibility
         return new ArrayList<>();
       }
 
-      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
-      for (Object streamObj : streamsEntries) {
-        List<Object> stream = (List<Object>) streamObj;
-        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
-        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
-      }
-
-      return result;
+      return BuilderFactory.STREAM_READ_RESPONSE.build(streamsEntries);
     } finally {
       client.rollbackTimeout();
     }
@@ -4212,19 +4205,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.setTimeoutInfinite();
 
     try {
-      List<Object> streamsEntries = client.getObjectMultiBulkReply();
-      if (streamsEntries == null) {
-        return null;
-      }
-
-      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
-      for (Object streamObj : streamsEntries) {
-        List<Object> stream = (List<Object>) streamObj;
-        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
-        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
-      }
-      return result;
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }

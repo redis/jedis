@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
@@ -16,6 +15,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -142,6 +142,12 @@ public interface JedisClusterCommands {
   List<String> hvals(String key);
 
   Map<String, String> hgetAll(String key);
+
+  String hrandfield(String key);
+
+  List<String> hrandfield(String key, long count);
+
+  Map<String, String> hrandfieldWithValues(String key, long count);
 
   Long rpush(String key, String... string);
 
@@ -511,7 +517,6 @@ public interface JedisClusterCommands {
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
-
   /**
    * XPENDING key group [start end count] [consumer]
    *
@@ -558,6 +563,12 @@ public interface JedisClusterCommands {
    */
   List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
+
+  List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
 
   Long waitReplicas(String key, int replicas, long timeout);
 }

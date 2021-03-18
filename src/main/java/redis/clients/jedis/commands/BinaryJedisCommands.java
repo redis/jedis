@@ -19,6 +19,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -154,6 +155,12 @@ public interface BinaryJedisCommands {
   List<byte[]> hvals(byte[] key);
 
   Map<byte[], byte[]> hgetAll(byte[] key);
+
+  byte[] hrandfield(byte[] key);
+
+  List<byte[]> hrandfield(byte[] key, long count);
+
+  Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count);
 
   Long rpush(byte[] key, byte[]... args);
 
@@ -433,6 +440,10 @@ public interface BinaryJedisCommands {
   Object xpendingSummary(byte[] key, byte[] groupname);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+
+  List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
 
   /**
    * @deprecated Use {@link #xinfoStreamBinary(byte[])}.

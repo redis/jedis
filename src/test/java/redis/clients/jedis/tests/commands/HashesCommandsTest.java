@@ -3,6 +3,7 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
@@ -25,6 +26,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.util.JedisByteHashMap;
 
 public class HashesCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -464,4 +466,39 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     assertEquals(4l, response.longValue());
   }
 
+  @Test
+  public void hrandfield() {
+    Map<String, String> hash = new LinkedHashMap<>();
+    hash.put("bar", "bar");
+    hash.put("car", "car");
+    hash.put("bar1", "bar1");
+
+    jedis.hset("foo", hash);
+
+    assertTrue(hash.containsKey(jedis.hrandfield("foo")));
+    assertEquals(2, jedis.hrandfield("foo", 2).size());
+
+    Map<String, String> actual = jedis.hrandfieldWithValues("foo", 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    Map.Entry entry = actual.entrySet().iterator().next();
+    assertEquals(hash.get(entry.getKey()), entry.getValue());
+
+    // binary
+    Map<byte[], byte[]> bhash = new JedisByteHashMap();
+    bhash.put(bbar, bbar);
+    bhash.put(bcar, bcar);
+    bhash.put(bbar1, bbar1);
+
+    jedis.hset(bfoo, bhash);
+
+    assertTrue(bhash.containsKey(jedis.hrandfield(bfoo)));
+    assertEquals(2, jedis.hrandfield(bfoo, 2).size());
+
+    Map<byte[], byte[]> bactual = jedis.hrandfieldWithValues(bfoo, 2);
+    assertNotNull(bactual);
+    assertEquals(2, bactual.size());
+    Map.Entry bentry = bactual.entrySet().iterator().next();
+    assertArrayEquals(bhash.get(bentry.getKey()), (byte[]) bentry.getValue());
+  }
 }

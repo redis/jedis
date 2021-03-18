@@ -2,18 +2,19 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.Protocol.Command.*;
-import static redis.clients.jedis.Protocol.Keyword.ENCODING;
-import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.LIMIT;
-import static redis.clients.jedis.Protocol.Keyword.NO;
-import static redis.clients.jedis.Protocol.Keyword.ONE;
-import static redis.clients.jedis.Protocol.Keyword.REFCOUNT;
-import static redis.clients.jedis.Protocol.Keyword.RESET;
-import static redis.clients.jedis.Protocol.Keyword.STORE;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
-import static redis.clients.jedis.Protocol.Keyword.FREQ;
-import static redis.clients.jedis.Protocol.Keyword.HELP;
+import static redis.clients.jedis.Protocol.Command.EXISTS;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.INCR;
+import static redis.clients.jedis.Protocol.Command.KEYS;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.SAVE;
+import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.TIME;
+import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,16 +27,8 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.args.UnblockType;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryClient extends Connection {
@@ -412,6 +405,18 @@ public class BinaryClient extends Connection {
 
   public void hgetAll(final byte[] key) {
     sendCommand(HGETALL, key);
+  }
+
+  public void hrandfield(final byte[] key) {
+    sendCommand(HRANDFIELD, key);
+  }
+
+  public void hrandfield(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count));
+  }
+
+  public void hrandfieldWithValues(final byte[] key, final long count) {
+    sendCommand(HRANDFIELD, key, toByteArray(count), WITHVALUES.getRaw());
   }
 
   public void rpush(final byte[] key, final byte[]... strings) {
@@ -1228,6 +1233,14 @@ public class BinaryClient extends Connection {
     sendCommand(CLIENT, Keyword.ID.getRaw());
   }
 
+  public void clientUnblock(final long clientId, final UnblockType unblockType) {
+    if (unblockType == null) {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId));
+    } else {
+      sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.getRaw());
+    }
+  }
+
   public void time() {
     sendCommand(TIME);
   }
@@ -1576,6 +1589,11 @@ public class BinaryClient extends Connection {
     sendCommand(XREVRANGE, key, end, start, Keyword.COUNT.getRaw(), toByteArray(count));
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
     final byte[][] params = new byte[3 + streams.size() * 2 + (block > 0 ? 2 : 0)][];
 
@@ -1596,6 +1614,24 @@ public class BinaryClient extends Connection {
     }
 
     sendCommand(XREAD, params);
+  }
+
+  public void xread(final XReadParams params, final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[paramLength + 1 + streams.length * 2][];
+    System.arraycopy(bparams, 0, args, 0, paramLength);
+
+    args[paramLength] = Keyword.STREAMS.raw;
+    int keyIndex = paramLength + 1;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREAD, args);
   }
 
   public void xack(final byte[] key, final byte[] group, final byte[]... ids) {
@@ -1648,6 +1684,11 @@ public class BinaryClient extends Connection {
     }
   }
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
       Map<byte[], byte[]> streams) {
 
@@ -1690,6 +1731,30 @@ public class BinaryClient extends Connection {
     sendCommand(XREADGROUP, params);
   }
 
+  public void xreadGroup(byte[] groupname, byte[] consumer, final XReadGroupParams params,
+      final Entry<byte[], byte[]>... streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[3 + paramLength + 1 + streams.length * 2][];
+    int index = 0;
+    args[index++] = Keyword.GROUP.raw;
+    args[index++] = groupname;
+    args[index++] = consumer;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+
+    args[index++] = Keyword.STREAMS.raw;
+    int keyIndex = index;
+    int idsIndex = keyIndex + streams.length;
+    for (final Entry<byte[], byte[]> entry : streams) {
+      args[keyIndex++] = entry.getKey();
+      args[idsIndex++] = entry.getValue();
+    }
+
+    sendCommand(XREADGROUP, args);
+  }
+
   public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     if (consumername == null) {
@@ -1706,7 +1771,7 @@ public class BinaryClient extends Connection {
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[][] ids) {
 
-    ArrayList<byte[]> arguments = new ArrayList<>(10 + ids.length);
+    List<byte[]> arguments = new ArrayList<>(10 + ids.length);
 
     arguments.add(key);
     arguments.add(groupname);
@@ -1727,6 +1792,37 @@ public class BinaryClient extends Connection {
       arguments.add(Keyword.FORCE.getRaw());
     }
     sendCommand(XCLAIM, arguments.toArray(new byte[arguments.size()][]));
+  }
+
+  private void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+                           XClaimParams params, byte[][] ids, boolean justId) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+    final int idsLength = ids.length;
+    final byte[][] args = new byte[4 + paramLength + idsLength + (justId ? 1 : 0)][];
+    int index = 0;
+    args[index++] = key;
+    args[index++] = groupname;
+    args[index++] = consumername;
+    args[index++] = toByteArray(minIdleTime);
+    System.arraycopy(ids, 0, args, index, idsLength);
+    index += idsLength;
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+    if (justId) {
+      args[index++] = Keyword.JUSTID.getRaw();
+    }
+    sendCommand(XCLAIM, args);
+  }
+
+  public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    xclaim(key, groupname, consumername, minIdleTime, params, ids, false);
+  }
+
+  public void xclaimJustId(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    xclaim(key, groupname, consumername, minIdleTime, params, ids, true);
   }
 
   public void xinfoStream(byte[] key) {

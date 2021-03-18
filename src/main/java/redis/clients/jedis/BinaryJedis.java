@@ -14,12 +14,14 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
 import redis.clients.jedis.commands.BinaryJedisCommands;
@@ -29,16 +31,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -1285,6 +1278,48 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
 
     return hash;
+  }
+
+  /**
+   * Get one random field from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one random field from a hash.
+   */
+  @Override
+  public byte[] hrandfield(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Get multiple random fields from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return multiple random fields from a hash.
+   */
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  /**
+   * Get one or multiple random fields with values from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one or multiple random fields with values from a hash.
+   */
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfieldWithValues(key, count);
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -4033,6 +4068,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  /**
+   * Unblock a client blocked in a blocking command from a different connection.
+   * @param clientId
+   * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
+   *          of the command was reached
+   * @return
+   */
+  @Override
+  public Long clientUnblock(final long clientId, final UnblockType unblockType) {
+    checkIsInMultiOrPipeline();
+    client.clientUnblock(clientId, unblockType);
+    return client.getIntegerReply();
+  }
+
   public String clientPause(final long timeout) {
     checkIsInMultiOrPipeline();
     client.clientPause(timeout);
@@ -4443,10 +4492,45 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(xReadParams, streams);
+
+    if (!xReadParams.hasBlock()) {
+      return client.getBinaryMultiBulkReply();
+    }
+
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
   public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
       boolean noAck, Map<byte[], byte[]> streams) {
     checkIsInMultiOrPipeline();
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+
+    if (!xReadGroupParams.hasBlock()) {
+      return client.getBinaryMultiBulkReply();
+    }
+
     client.setTimeoutInfinite();
     try {
       return client.getBinaryMultiBulkReply();
@@ -4553,6 +4637,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(key, group, consumername, minIdleTime, params, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return client.getBinaryMultiBulkReply();
   }
 

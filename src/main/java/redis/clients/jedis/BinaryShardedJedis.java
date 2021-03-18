@@ -14,6 +14,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -331,6 +332,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Map<byte[], byte[]> hgetAll(final byte[] key) {
     Jedis j = getShard(key);
     return j.hgetAll(key);
+  }
+
+  @Override
+  public byte[] hrandfield(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key);
+  }
+
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key, count);
+  }
+
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfieldWithValues(key, count);
   }
 
   @Override
@@ -1174,6 +1193,20 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       long newIdleTime, int retries, boolean force, byte[]... ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xclaim(key, group, consumername, minIdleTime, params, ids);
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
   }
 
   @Override

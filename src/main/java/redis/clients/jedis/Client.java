@@ -14,15 +14,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.commands.Commands;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class Client extends BinaryClient implements Commands {
@@ -292,6 +284,21 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void hgetAll(final String key) {
     hgetAll(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void hrandfield(final String key) {
+    hrandfield(SafeEncoder.encode(key));
+  }
+
+  @Override
+  public void hrandfield(final String key, final long count) {
+    hrandfield(SafeEncoder.encode(key), count);
+  }
+
+  @Override
+  public void hrandfieldWithValues(final String key, final long count) {
+    hrandfieldWithValues(SafeEncoder.encode(key), count);
   }
 
   @Override
@@ -1369,6 +1376,25 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xread(final XReadParams params, final Map<String, StreamEntryID> streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[paramLength + 1 + streams.size() * 2][];
+    System.arraycopy(bparams, 0, args, 0, paramLength);
+
+    args[paramLength] = Protocol.Keyword.STREAMS.raw;
+    int keyIndex = paramLength + 1;
+    int idsIndex = keyIndex + streams.size();
+    for (Entry<String, StreamEntryID> entry : streams.entrySet()) {
+      args[keyIndex++] = SafeEncoder.encode(entry.getKey());
+      args[idsIndex++] = SafeEncoder.encode(entry.getValue().toString());
+    }
+
+    sendCommand(Protocol.Command.XREAD, args);
+  }
+
+  @Override
   public void xack(final String key, final String group, final StreamEntryID... ids) {
     final byte[][] bids = new byte[ids.length][];
     for (int i = 0; i < ids.length; ++i) {
@@ -1427,6 +1453,30 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams) {
+    final byte[][] bparams = params.getByteParams();
+    final int paramLength = bparams.length;
+
+    final byte[][] args = new byte[3 + paramLength + 1 + streams.size() * 2][];
+    int index = 0;
+    args[index++] = Protocol.Keyword.GROUP.raw;
+    args[index++] = SafeEncoder.encode(groupname);
+    args[index++] = SafeEncoder.encode(consumer);
+    System.arraycopy(bparams, 0, args, index, paramLength);
+    index += paramLength;
+
+    args[index++] = Protocol.Keyword.STREAMS.raw;
+    int keyIndex = index;
+    int idsIndex = keyIndex + streams.size();
+    for (Entry<String, StreamEntryID> entry : streams.entrySet()) {
+      args[keyIndex++] = SafeEncoder.encode(entry.getKey());
+      args[idsIndex++] = SafeEncoder.encode(entry.getValue().toString());
+    }
+
+    sendCommand(Protocol.Command.XREADGROUP, args);
+  }
+
+  @Override
   public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
       int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
@@ -1441,12 +1491,24 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void xclaim(String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
-
-    final byte[][] bids = new byte[ids.length][];
-    for (int i = 0; i < ids.length; i++) {
-      bids[i] = SafeEncoder.encode(ids[i].toString());
-    }
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
     xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername), minIdleTime, newIdleTime, retries, force, bids);
+  }
+
+  @Override
+  public void xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+      minIdleTime, params, bids);
+  }
+
+  @Override
+  public void xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    final byte[][] bids = convertStreamEntryIDsToBinary(ids);
+    xclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumername),
+      minIdleTime, params, bids);
   }
 
   @Override
@@ -1464,4 +1526,11 @@ public class Client extends BinaryClient implements Commands {
     xinfoConsumers(SafeEncoder.encode(key), SafeEncoder.encode(group));
   }
 
+  private byte[][] convertStreamEntryIDsToBinary(StreamEntryID... ids) {
+    final byte[][] bids = new byte[ids.length][];
+    for (int i = 0; i < ids.length; i++) {
+      bids[i] = SafeEncoder.encode(ids[i].toString());
+    }
+    return bids;
+  }
 }

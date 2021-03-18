@@ -5,6 +5,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,29 +28,43 @@ public class JedisPool extends JedisPoolAbstract {
     this(new GenericObjectPoolConfig<Jedis>(), host, port);
   }
 
-  public JedisPool(final String host) {
-    URI uri = URI.create(host);
+  /**
+   * @param url
+   * @deprecated This constructor will not accept a host string in future. It will accept only a uri
+   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
+   */
+  @Deprecated
+  public JedisPool(final String url) {
+    URI uri = URI.create(url);
     if (JedisURIHelper.isValid(uri)) {
       initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null));
     } else {
-      initPool(new GenericObjectPoolConfig<Jedis>(),
-        new JedisFactory(host, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
-            Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
+      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(url, Protocol.DEFAULT_PORT,
+          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
     }
   }
 
-  public JedisPool(final String host, final SSLSocketFactory sslSocketFactory,
+  /**
+   * @param url
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   * @deprecated This constructor will not accept a host string in future. It will accept only a uri
+   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
+   */
+  @Deprecated
+  public JedisPool(final String url, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    URI uri = URI.create(host);
+    URI uri = URI.create(url);
     if (JedisURIHelper.isValid(uri)) {
       initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri,
           Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory,
           sslParameters, hostnameVerifier));
     } else {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(host, Protocol.DEFAULT_PORT,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE,
-          null, false, null, null, null));
+      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(url, Protocol.DEFAULT_PORT,
+          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null,
+          false, null, null, null));
     }
   }
 
@@ -335,6 +350,10 @@ public class JedisPool extends JedisPoolAbstract {
       final HostnameVerifier hostnameVerifier) {
     super(poolConfig, new JedisFactory(uri, connectionTimeout, soTimeout, infiniteSoTimeout, null,
         sslSocketFactory, sslParameters, hostnameVerifier));
+  }
+
+  public JedisPool(GenericObjectPoolConfig poolConfig, PooledObjectFactory<Jedis> factory) {
+    super(poolConfig, factory);
   }
 
   @Override

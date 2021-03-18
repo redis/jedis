@@ -1829,7 +1829,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zrandmember(key, count);
     final List<String> members = client.getMultiBulkReply();
-    return SetFromList.of(members);
+    return members == null ? null : SetFromList.of(members);
   }
 
   @Override

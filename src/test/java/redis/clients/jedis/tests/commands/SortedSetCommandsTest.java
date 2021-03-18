@@ -1447,6 +1447,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void zrandmember() {
+    assertNull(jedis.zrandmember("foo"));
+    assertNull(jedis.zrandmember("foo", 1));
+    assertNotNull(jedis.zrandmemberWithScores("foo", 1));
+
     Map<String, Double> hash = new HashMap<>();
     hash.put("bar1", 1d);
     hash.put("bar2", 10d);

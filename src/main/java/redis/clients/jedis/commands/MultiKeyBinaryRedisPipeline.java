@@ -5,6 +5,7 @@ import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.*;
 
@@ -66,6 +67,10 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<String> watch(byte[]... keys);
 
   Response<String> unwatch();
+
+  Response<Set<byte[]>> zdiff(byte[]... keys);
+
+  Response<Set<Tuple>> zdiffWithScores(byte[]... keys);
 
   Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
 

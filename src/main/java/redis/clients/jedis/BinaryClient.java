@@ -1095,6 +1095,10 @@ public class BinaryClient extends Connection {
     sendCommand(SCRIPT, Keyword.FLUSH.getRaw());
   }
 
+  public void scriptFlush(FlushMode flushMode) {
+    sendCommand(SCRIPT, Keyword.FLUSH.getRaw(), flushMode.getRaw());
+  }
+
   public void scriptExists(final byte[]... sha1) {
     sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.getRaw(), sha1));
   }

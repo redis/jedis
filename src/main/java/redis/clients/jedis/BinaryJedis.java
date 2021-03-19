@@ -3767,6 +3767,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public String scriptFlush(final FlushMode flushMode) {
+    client.scriptFlush(flushMode);
+    return client.getStatusCodeReply();
+  }
+
   public Long scriptExists(final byte[] sha1) {
     byte[][] a = new byte[1][];
     a[0] = sha1;

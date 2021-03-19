@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
@@ -1686,6 +1687,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public String execute(Jedis connection) {
         return connection.scriptFlush();
+      }
+    }.runBinary(sampleKey);
+  }
+
+  @Override
+  public String scriptFlush(final byte[] sampleKey, final FlushMode flushMode) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.scriptFlush(flushMode);
       }
     }.runBinary(sampleKey);
   }

@@ -667,6 +667,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zdiffStore(final String dstkey, final String... keys) {
+    zdiffStore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zrangeByScore(final String key, final double min, final double max) {
     zrangeByScore(SafeEncoder.encode(key), toByteArray(min), toByteArray(max));
   }

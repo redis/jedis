@@ -73,6 +73,8 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Set<Tuple>> zdiffWithScores(String... keys);
 
+  Response<Long> zdiffStore(String dstkey, String... keys);
+
   Response<Long> zinterstore(String dstkey, String... sets);
 
   Response<Long> zinterstore(String dstkey, ZParams params, String... sets);

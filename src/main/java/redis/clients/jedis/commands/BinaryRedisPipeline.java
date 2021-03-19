@@ -385,7 +385,11 @@ public interface BinaryRedisPipeline {
 
   Response<Long> xlen(byte[] key);
 
+  Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end);
+
   Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start);
 
   Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 

@@ -415,6 +415,8 @@ public interface BinaryJedisCommands {
 
   Long xlen(byte[] key);
 
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
+
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
    */
@@ -424,6 +426,8 @@ public interface BinaryJedisCommands {
   }
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start);
 
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 

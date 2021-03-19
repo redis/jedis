@@ -8,12 +8,12 @@ import redis.clients.jedis.util.SafeEncoder;
 public enum FlushMode implements Rawable {
 
   /**
-   * flushes asynchronously
+   * flushes synchronously
    */
   SYNC,
 
   /**
-   * flushes synchronously
+   * flushes asynchronously
    */
   ASYNC;
 

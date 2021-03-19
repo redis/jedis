@@ -21,6 +21,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
@@ -531,6 +532,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Delete all the keys of the currently selected DB. This command never fails.
+   * @param flushMode
+   * @return Status code reply
+   */
+  @Override
+  public String flushDB(FlushMode flushMode) {
+    checkIsInMultiOrPipeline();
+    client.flushDB(flushMode);
+    return client.getStatusCodeReply();
+  }
+
+  /**
    * Returns all the keys matching the glob-style pattern as space separated strings. For example if
    * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
    * "foo foobar".
@@ -764,6 +777,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String flushAll() {
     checkIsInMultiOrPipeline();
     client.flushAll();
+    return client.getStatusCodeReply();
+  }
+
+  /**
+   * Delete all the keys of all the existing databases, not just the currently selected one. This
+   * command never fails.
+   * @param flushMode
+   * @return Status code reply
+   */
+  @Override
+  public String flushAll(FlushMode flushMode) {
+    checkIsInMultiOrPipeline();
+    client.flushAll(flushMode);
     return client.getStatusCodeReply();
   }
 

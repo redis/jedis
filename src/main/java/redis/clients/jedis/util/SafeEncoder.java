@@ -2,7 +2,9 @@ package redis.clients.jedis.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -66,5 +68,13 @@ public final class SafeEncoder {
     }
 
     return dataToEncode;
+  }
+
+  public static Map<byte[], byte[]> encodeStringMap(Map<String, String> map) {
+    final Map<byte[], byte[]> bhash = new HashMap<>(map.size());
+    for (final Map.Entry<String, String> entry : map.entrySet()) {
+      bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
+    }
+    return bhash;
   }
 }

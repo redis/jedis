@@ -24,6 +24,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -217,6 +218,10 @@ public class BinaryClient extends Connection {
     sendCommand(FLUSHDB);
   }
 
+  public void flushDB(FlushMode flushMode) {
+    sendCommand(FLUSHDB, flushMode.getRaw());
+  }
+
   public void keys(final byte[] pattern) {
     sendCommand(KEYS, pattern);
   }
@@ -275,6 +280,10 @@ public class BinaryClient extends Connection {
 
   public void flushAll() {
     sendCommand(FLUSHALL);
+  }
+
+  public void flushAll(FlushMode flushMode) {
+    sendCommand(FLUSHALL, flushMode.getRaw());
   }
 
   public void getSet(final byte[] key, final byte[] value) {
@@ -1096,6 +1105,10 @@ public class BinaryClient extends Connection {
 
   public void scriptFlush() {
     sendCommand(SCRIPT, Keyword.FLUSH.getRaw());
+  }
+
+  public void scriptFlush(FlushMode flushMode) {
+    sendCommand(SCRIPT, Keyword.FLUSH.getRaw(), flushMode.getRaw());
   }
 
   public void scriptExists(final byte[]... sha1) {

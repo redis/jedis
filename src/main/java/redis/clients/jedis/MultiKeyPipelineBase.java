@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 
@@ -496,6 +497,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<String> flushAll() {
     client.flushAll();
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> flushDB(FlushMode flushMode) {
+    client.flushDB(flushMode);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> flushAll(FlushMode flushMode) {
+    client.flushAll(flushMode);
     return getResponse(BuilderFactory.STRING);
   }
 

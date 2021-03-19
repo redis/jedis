@@ -2656,9 +2656,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long zdiffstore(final byte[] dstkey, final byte[]... keys) {
+  public Long zdiffStore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    client.zdiffstore(dstkey, keys);
+    client.zdiffStore(dstkey, keys);
     return client.getIntegerReply();
   }
 

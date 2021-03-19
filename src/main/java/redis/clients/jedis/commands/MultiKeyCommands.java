@@ -108,7 +108,7 @@ public interface MultiKeyCommands {
 
   Set<Tuple> zdiffWithScores(String... keys);
 
-  Long zdiffstore(String dstkey, String... keys);
+  Long zdiffStore(String dstkey, String... keys);
 
   Long zinterstore(String dstkey, String... sets);
 

@@ -76,7 +76,7 @@ public interface MultiKeyBinaryCommands {
 
   Set<Tuple> zdiffWithScores(byte[]... keys);
 
-  Long zdiffstore(byte[] dstkey, byte[]... keys);
+  Long zdiffStore(byte[] dstkey, byte[]... keys);
 
   Long zinterstore(byte[] dstkey, byte[]... sets);
 

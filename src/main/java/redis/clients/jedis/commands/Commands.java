@@ -225,7 +225,7 @@ public interface Commands {
 
   void zaddIncr(String key, double score, String member, ZAddParams params);
 
-  void zdiffstore(String dstkey, String... keys);
+  void zdiffStore(String dstkey, String... keys);
 
   void zrange(String key, long start, long stop);
 

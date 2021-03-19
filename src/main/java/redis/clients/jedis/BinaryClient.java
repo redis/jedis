@@ -599,8 +599,8 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
   }
 
-  public void zdiffstore(final byte[] dstkey, final byte[]... keys) {
-    sendCommand(ZDIFFSTORE, joinParameters(dstkey, toByteArray(keys.length), keys));
+  public void zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    sendCommand(zdiffStore, joinParameters(dstkey, toByteArray(keys.length), keys));
   }
 
   public void zrange(final byte[] key, final long start, final long stop) {

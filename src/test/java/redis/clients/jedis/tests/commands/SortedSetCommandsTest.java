@@ -1470,13 +1470,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void zdiffstore() {
+  public void zdiffStore() {
     jedis.zadd("foo", 1.0, "a");
     jedis.zadd("foo", 2.0, "b");
     jedis.zadd("bar", 1.0, "a");
 
-    assertEquals(0, jedis.zdiffstore("bar3", "bar1", "bar2").longValue());
-    assertEquals(1, jedis.zdiffstore("bar3", "foo", "bar").longValue());
+    assertEquals(0, jedis.zdiffStore("bar3", "bar1", "bar2").longValue());
+    assertEquals(1, jedis.zdiffStore("bar3", "foo", "bar").longValue());
     assertEquals(Collections.singleton("b"), jedis.zrange("bar3", 0, -1));
 
     // binary
@@ -1485,8 +1485,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 2.0, bb);
     jedis.zadd(bbar, 1.0, ba);
 
-    assertEquals(0, jedis.zdiffstore(bbar3, bbar1, bbar2).longValue());
-    assertEquals(1, jedis.zdiffstore(bbar3, bfoo, bbar).longValue());
+    assertEquals(0, jedis.zdiffStore(bbar3, bbar1, bbar2).longValue());
+    assertEquals(1, jedis.zdiffStore(bbar3, bfoo, bbar).longValue());
     Set<byte[]> bactual = jedis.zrange(bbar3, 0, -1);
     assertArrayEquals(bb, bactual.iterator().next());
   }

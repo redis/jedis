@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 
@@ -338,6 +339,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+    client.zdiff(keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+    client.zdiffWithScores(keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zdiff(String... keys) {
+    client.zdiff(keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+    client.zdiffWithScores(keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
   public Response<Long> zdiffstore(final byte[] dstkey, final byte[]... keys) {
     client.zdiffstore(dstkey, keys);
     return getResponse(BuilderFactory.LONG);
@@ -484,6 +509,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<String> flushAll() {
     client.flushAll();
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> flushDB(FlushMode flushMode) {
+    client.flushDB(flushMode);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> flushAll(FlushMode flushMode) {
+    client.flushAll(flushMode);
     return getResponse(BuilderFactory.STRING);
   }
 

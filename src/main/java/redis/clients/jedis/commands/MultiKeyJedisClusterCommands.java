@@ -9,6 +9,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -64,6 +65,10 @@ public interface MultiKeyJedisClusterCommands {
   Set<String> sunion(String... keys);
 
   Long sunionstore(String dstkey, String... keys);
+
+  Set<String> zdiff(String... keys);
+
+  Set<Tuple> zdiffWithScores(String... keys);
 
   Long zdiffstore(String dstkey, String... keys);
 

@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.DebugParams;
+import redis.clients.jedis.args.FlushMode;
 
 public interface BasicCommands {
 
@@ -23,6 +24,14 @@ public interface BasicCommands {
    * @return OK
    */
   String flushDB();
+
+  /**
+   * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
+   * for this operation is O(N), N being the number of keys in the database.
+   * @param flushMode
+   * @return OK
+   */
+  String flushDB(FlushMode flushMode);
 
   /**
    * Return the number of keys in the currently-selected database.
@@ -51,6 +60,13 @@ public interface BasicCommands {
    * @return a simple string reply (OK)
    */
   String flushAll();
+
+  /**
+   * Delete all the keys of all the existing databases, not just the currently selected one.
+   * @param flushMode
+   * @return a simple string reply (OK)
+   */
+  String flushAll(FlushMode flushMode);
 
   /**
    * Request for authentication in a password-protected Redis server. Redis can be instructed to

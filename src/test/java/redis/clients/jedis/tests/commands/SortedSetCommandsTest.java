@@ -1447,6 +1447,29 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zdiff() {
+    jedis.zadd("foo", 1.0, "a");
+    jedis.zadd("foo", 2.0, "b");
+    jedis.zadd("bar", 1.0, "a");
+
+    assertEquals(0, jedis.zdiff("bar1", "bar2").size());
+    assertEquals(Collections.singleton("b"), jedis.zdiff("foo", "bar"));
+    assertEquals(Collections.singleton(new Tuple("b", 2.0d)), jedis.zdiffWithScores("foo", "bar"));
+
+    // binary
+
+    jedis.zadd(bfoo, 1.0, ba);
+    jedis.zadd(bfoo, 2.0, bb);
+    jedis.zadd(bbar, 1.0, ba);
+
+    assertEquals(0, jedis.zdiff(bbar1, bbar2).size());
+    Set<byte[]> bactual = jedis.zdiff(bfoo, bbar);
+    assertEquals(1, bactual.size());
+    assertArrayEquals(bb, bactual.iterator().next());
+    assertEquals(Collections.singleton(new Tuple(bb, 2.0d)), jedis.zdiffWithScores(bfoo, bbar));
+  }
+
+  @Test
   public void zdiffstore() {
     jedis.zadd("foo", 1.0, "a");
     jedis.zadd("foo", 2.0, "b");

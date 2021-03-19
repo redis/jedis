@@ -209,6 +209,10 @@ public interface Commands {
 
   void sdiffstore(String dstkey, String... keys);
 
+  void zdiff(String... keys);
+
+  void zdiffWithScores(String... keys);
+
   void srandmember(String key);
 
   void zadd(String key, double score, String member);

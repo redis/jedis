@@ -32,7 +32,6 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
@@ -1270,14 +1269,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Map<byte[], byte[]> hgetAll(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.hgetAll(key);
-    final List<byte[]> flatHash = client.getBinaryMultiBulkReply();
-    final Map<byte[], byte[]> hash = new JedisByteHashMap();
-    final Iterator<byte[]> iterator = flatHash.iterator();
-    while (iterator.hasNext()) {
-      hash.put(iterator.next(), iterator.next());
-    }
-
-    return hash;
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
   }
 
   /**

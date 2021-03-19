@@ -7,6 +7,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -62,6 +63,10 @@ public interface MultiKeyBinaryJedisClusterCommands {
   Set<byte[]> sunion(byte[]... keys);
 
   Long sunionstore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> zdiff(byte[]... keys);
+
+  Set<Tuple> zdiffWithScores(byte[]... keys);
 
   Long zinterstore(byte[] dstkey, byte[]... sets);
 

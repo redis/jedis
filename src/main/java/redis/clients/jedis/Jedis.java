@@ -1674,6 +1674,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Set<String> zdiff(String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiff(keys);
+    return SetFromList.of(client.getMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffWithScores(keys);
+    return getTupledSet();
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrange(key, start, stop);

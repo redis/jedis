@@ -7,6 +7,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.*;
 
@@ -67,6 +68,10 @@ public interface MultiKeyCommandsPipeline {
   Response<String> watch(String... keys);
 
   Response<String> unwatch();
+
+  Response<Set<String>> zdiff(String... keys);
+
+  Response<Set<Tuple>> zdiffWithScores(String... keys);
 
   Response<Long> zinterstore(String dstkey, String... sets);
 

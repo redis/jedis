@@ -2615,6 +2615,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
+  public Set<byte[]> zdiff(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiff(keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffWithScores(keys);
+    return getTupledSet();
+  }
+
   /**
    * Return the all the elements in the sorted set at key with a score between min and max
    * (including elements with score equal to min or max).

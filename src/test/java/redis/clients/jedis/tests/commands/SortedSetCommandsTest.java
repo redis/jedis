@@ -8,6 +8,7 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEqual
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -1443,6 +1444,29 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bbar, 0.1d, bc);
     actual = jedis.bzpopmin(0, bbar, bfoo);
     assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
+  }
+
+  @Test
+  public void zdiff() {
+    jedis.zadd("foo", 1.0, "a");
+    jedis.zadd("foo", 2.0, "b");
+    jedis.zadd("bar", 1.0, "a");
+
+    assertEquals(0, jedis.zdiff("bar1", "bar2").size());
+    assertEquals(Collections.singleton("b"), jedis.zdiff("foo", "bar"));
+    assertEquals(Collections.singleton(new Tuple("b", 2.0d)), jedis.zdiffWithScores("foo", "bar"));
+
+    // binary
+
+    jedis.zadd(bfoo, 1.0, ba);
+    jedis.zadd(bfoo, 2.0, bb);
+    jedis.zadd(bbar, 1.0, ba);
+
+    assertEquals(0, jedis.zdiff(bbar1, bbar2).size());
+    Set<byte[]> bactual = jedis.zdiff(bfoo, bbar);
+    assertEquals(1, bactual.size());
+    assertArrayEquals(bb, bactual.iterator().next());
+    assertEquals(Collections.singleton(new Tuple(bb, 2.0d)), jedis.zdiffWithScores(bfoo, bbar));
   }
 
   @Test

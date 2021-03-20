@@ -208,7 +208,7 @@
 						</manifestEntries>
 					</archive>
 				</configuration>
-			</plugin> 
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -217,11 +217,11 @@
 					<execution>
 						<id>bundle-manifest</id>
 						<phase>process-classes</phase>
-						<goals>    
+						<goals>
 							<goal>manifest</goal>
-						</goals>   
+						</goals>
 					</execution>
-				</executions>		
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

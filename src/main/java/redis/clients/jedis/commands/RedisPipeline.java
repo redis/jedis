@@ -17,6 +17,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -408,6 +409,8 @@ public interface RedisPipeline {
   Response<Long> xdel( String key, StreamEntryID... ids);
 
   Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
+
+  Response<Long> xtrim(String key, XTrimParams params);
 
   Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);

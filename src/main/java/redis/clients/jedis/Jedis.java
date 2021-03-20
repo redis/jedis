@@ -4229,6 +4229,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public long xtrim(final String key, final XTrimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, params);
+    return client.getIntegerReply();
+  }
+
   /**
    * {@inheritDoc}
    */

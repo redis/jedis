@@ -4702,6 +4702,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Long xtrim(byte[] key, XTrimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, params);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();

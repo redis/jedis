@@ -1,9 +1,8 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.*;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.MigrateParams;
+import redis.clients.jedis.params.*;
 
 import java.util.List;
 import java.util.Map;
@@ -340,6 +339,42 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+    client.zdiff(keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+    client.zdiffWithScores(keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zdiff(String... keys) {
+    client.zdiff(keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+    client.zdiffWithScores(keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Long> zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    client.zdiffStore(dstkey, keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> zdiffStore(final String dstkey, final String... keys) {
+    client.zdiffStore(dstkey, keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> zinterstore(String dstkey, String... sets) {
     client.zinterstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);
@@ -361,6 +396,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     client.zinterstore(dstkey, params, sets);
     return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+    client.zunion(params, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+    client.zunionWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zunion(ZParams params, String... keys) {
+    client.zunion(params, keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+    client.zunionWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
@@ -474,6 +533,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<String> flushAll() {
     client.flushAll();
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> flushDB(FlushMode flushMode) {
+    client.flushDB(flushMode);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> flushAll(FlushMode flushMode) {
+    client.flushAll(flushMode);
     return getResponse(BuilderFactory.STRING);
   }
 
@@ -601,7 +672,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(String script, int keyCount, String... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
+    return getResponse(BuilderFactory.ENCODED_OBJECT);
   }
 
   @Override
@@ -618,7 +689,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> evalsha(String sha1, int keyCount, String... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_RESULT);
+    return getResponse(BuilderFactory.ENCODED_OBJECT);
   }
 
   @Override
@@ -629,7 +700,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -641,7 +712,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> eval(byte[] script, int keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -658,7 +729,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   @Override
   public Response<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
     getClient(sha1).evalsha(sha1, keyCount, params);
-    return getResponse(BuilderFactory.EVAL_BINARY_RESULT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -737,12 +808,12 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
 
   public Response<Object> sendCommand(final ProtocolCommand cmd, final String... args) {
     client.sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   public Response<Object> sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     client.sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   @Override
@@ -775,5 +846,61 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
       final GeoRadiusStoreParam storeParam) {
     client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
     return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams) {
+    client.xread(count, block, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+    client.xread(xReadParams, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
+      boolean noAck, Map<byte[], byte[]> streams) {
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xreadGroup(final byte[] groupname, final byte[] consumer,
+      final XReadGroupParams xReadGroupParams, final Map.Entry<byte[], byte[]>... streams) {
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
+      Map.Entry<String, StreamEntryID>... streams) {
+    client.xread(count, block, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(final XReadParams xReadParams,
+      final Map<String, StreamEntryID> streams) {
+    client.xread(xReadParams, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname,
+      String consumer, int count, long block, boolean noAck,
+      Map.Entry<String, StreamEntryID>... streams) {
+    client.xreadGroup(groupname, consumer, count, block, noAck, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(final String groupname,
+      final String consumer, final XReadGroupParams xReadGroupParams,
+      final Map<String, StreamEntryID> streams) {
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+    return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
   }
 }

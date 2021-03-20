@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
@@ -1010,6 +1011,37 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Set<byte[]> zdiff(final byte[]... keys) {
+    return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<byte[]> execute(Jedis connection) {
+        return connection.zdiff(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(final byte[]... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zdiffWithScores(keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public Long zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    byte[][] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zdiffStore(dstkey, keys);
+      }
+    }.runBinary(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -1723,6 +1755,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public String scriptFlush(final byte[] sampleKey, final FlushMode flushMode) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.scriptFlush(flushMode);
+      }
+    }.runBinary(sampleKey);
+  }
+
+  @Override
   public String scriptKill(final byte[] sampleKey) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -1972,6 +2014,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.zinterstore(dstkey, params, sets);
       }
     }.runBinary(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
+  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+    return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<byte[]> execute(Jedis connection) {
+        return connection.zunion(params, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zunionWithScores(params, keys);
+      }
+    }.runBinary(keys.length, keys);
   }
 
   @Override
@@ -2442,6 +2504,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xrange(key, start, end);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end,
       final long count) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
@@ -2458,6 +2530,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public List<byte[]> execute(Jedis connection) {
         return connection.xrange(key, start, end, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.xrevrange(key, end, start);
       }
     }.runBinary(key);
   }
@@ -2603,11 +2685,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+  public Object xpending(final byte[] key, final byte[] groupname) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts) {
       @Override
       public Object execute(Jedis connection) {
-        return connection.xpendingSummary(key, groupname);
+        return connection.xpending(key, groupname);
       }
     }.runBinary(key);
   }

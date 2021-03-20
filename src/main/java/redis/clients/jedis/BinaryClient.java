@@ -24,6 +24,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -217,6 +218,10 @@ public class BinaryClient extends Connection {
     sendCommand(FLUSHDB);
   }
 
+  public void flushDB(FlushMode flushMode) {
+    sendCommand(FLUSHDB, flushMode.getRaw());
+  }
+
   public void keys(final byte[] pattern) {
     sendCommand(KEYS, pattern);
   }
@@ -275,6 +280,10 @@ public class BinaryClient extends Connection {
 
   public void flushAll() {
     sendCommand(FLUSHALL);
+  }
+
+  public void flushAll(FlushMode flushMode) {
+    sendCommand(FLUSHALL, flushMode.getRaw());
   }
 
   public void getSet(final byte[] key, final byte[] value) {
@@ -574,8 +583,24 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, argsArray));
   }
 
+  public void zdiff(final byte[]... keys) {
+    sendCommand(ZDIFF, joinParameters(toByteArray(keys.length), keys));
+  }
+
+  public void zdiffWithScores(final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>(keys.length + 2);
+    args.add(toByteArray(keys.length));
+    Collections.addAll(args, keys);
+    args.add(WITHSCORES.getRaw());
+    sendCommand(ZDIFF, args.toArray(new byte[args.size()][]));
+  }
+
   public void zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
     sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
+  }
+
+  public void zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    sendCommand(ZDIFFSTORE, joinParameters(dstkey, toByteArray(keys.length), keys));
   }
 
   public void zrange(final byte[] key, final long start, final long stop) {
@@ -890,6 +915,26 @@ public class BinaryClient extends Connection {
     sendCommand(ZREMRANGEBYSCORE, key, min, max);
   }
 
+  public void zunion(final ZParams params, final byte[]... keys) {
+    sendCommand(ZUNION, buildZunionByteParams(params, false, keys));
+  }
+
+  public void zunionWithScores(final ZParams params, final byte[]... keys) {
+    sendCommand(ZUNION, buildZunionByteParams(params, true, keys));
+  }
+
+  private byte[][] buildZunionByteParams(final ZParams params, final boolean withScores, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    args.add(Protocol.toByteArray(keys.length));
+    Collections.addAll(args, keys);
+
+    args.addAll(params.getParams());
+    if (withScores) {
+      args.add(WITHSCORES.getRaw());
+    }
+    return args.toArray(new byte[args.size()][]);
+  }
+
   public void zunionstore(final byte[] dstkey, final byte[]... sets) {
     sendCommand(ZUNIONSTORE, joinParameters(dstkey, toByteArray(sets.length), sets));
   }
@@ -1084,6 +1129,10 @@ public class BinaryClient extends Connection {
 
   public void scriptFlush() {
     sendCommand(SCRIPT, Keyword.FLUSH.getRaw());
+  }
+
+  public void scriptFlush(FlushMode flushMode) {
+    sendCommand(SCRIPT, Keyword.FLUSH.getRaw(), flushMode.getRaw());
   }
 
   public void scriptExists(final byte[]... sha1) {
@@ -1582,6 +1631,10 @@ public class BinaryClient extends Connection {
     sendCommand(XLEN, key);
   }
 
+  public void xrange(final byte[] key, final byte[] start, final byte[] end) {
+    sendCommand(XRANGE, key, start, end);
+  }
+
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
    */
@@ -1592,6 +1645,10 @@ public class BinaryClient extends Connection {
 
   public void xrange(final byte[] key, final byte[] start, final byte[] end, final int count) {
     sendCommand(XRANGE, key, start, end, Keyword.COUNT.getRaw(), toByteArray(count));
+  }
+
+  public void xrevrange(final byte[] key, final byte[] end, final byte[] start) {
+    sendCommand(XREVRANGE, key, end, start);
   }
 
   public void xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count) {
@@ -1764,6 +1821,10 @@ public class BinaryClient extends Connection {
     sendCommand(XREADGROUP, args);
   }
 
+  public void xpending(final byte[] key, final byte[] groupname) {
+    sendCommand(XPENDING, key, groupname);
+  }
+
   public void xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     if (consumername == null) {
@@ -1771,10 +1832,6 @@ public class BinaryClient extends Connection {
     } else {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
     }
-  }
-
-  public void xpendingSummary(final byte[] key, final byte[] groupname) {
-    sendCommand(XPENDING, key, groupname);
   }
 
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,

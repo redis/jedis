@@ -9,6 +9,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -103,9 +104,19 @@ public interface MultiKeyCommands {
 
   String unwatch();
 
+  Set<String> zdiff(String... keys);
+
+  Set<Tuple> zdiffWithScores(String... keys);
+
+  Long zdiffStore(String dstkey, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
+
+  Set<String> zunion(ZParams params, String... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, String... keys);
 
   Long zunionstore(String dstkey, String... sets);
 

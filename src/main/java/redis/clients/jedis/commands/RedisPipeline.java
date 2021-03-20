@@ -382,7 +382,11 @@ public interface RedisPipeline {
 
   Response<Long> xlen(String key);
 
+  Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end);
+
   Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
@@ -396,10 +400,10 @@ public interface RedisPipeline {
 
   Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
+  Response<StreamPendingSummary> xpending(String key, String groupname);
+
   Response<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername);
-
-  Response<StreamPendingSummary> xpendingSummary(String key, String groupname);
 
   Response<Long> xdel( String key, StreamEntryID... ids);
 

@@ -2137,6 +2137,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end) {
+    getClient(key).xrange(key, start, end);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end) {
+    getClient(key).xrange(key, start, end);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
   public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end,
       int count) {
     getClient(key).xrange(key, start, end, count);
@@ -2146,6 +2158,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count) {
     getClient(key).xrange(key, start, end, count);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    getClient(key).xrevrange(key, end, start);
+    return getResponse(BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  @Override
+  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start) {
+    getClient(key).xrevrange(key, end, start);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
@@ -2224,6 +2248,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<StreamPendingSummary> xpending(String key, String groupname) {
+    getClient(key).xpending(key, groupname);
+    return getResponse(BuilderFactory.STREAM_PENDING_SUMMARY);
+  }
+
+  @Override
+  public Response<Object> xpending(byte[] key, byte[] groupname) {
+    getClient(key).xpending(key, groupname);
+    return getResponse(BuilderFactory.RAW_OBJECT);
+  }
+
+  @Override
   public Response<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
@@ -2241,19 +2277,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start,
       byte[] end, int count, byte[] consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
-    return getResponse(BuilderFactory.OBJECT_LIST);
-  }
-
-  @Override
-  public Response<StreamPendingSummary> xpendingSummary(String key, String groupname) {
-    getClient(key).xpendingSummary(key, groupname);
-    return getResponse(BuilderFactory.STREAM_PENDING_SUMMARY);
-  }
-
-  @Override
-  public Response<Object> xpendingSummary(byte[] key, byte[] groupname) {
-    getClient(key).xpendingSummary(key, groupname);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT_LIST);
   }
 
   @Override
@@ -2325,12 +2349,12 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd,
       final String... args) {
     getClient(sampleKey).sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 
   public Response<Object> sendCommand(final byte[] sampleKey, final ProtocolCommand cmd,
       final byte[]... args) {
     getClient(sampleKey).sendCommand(cmd, args);
-    return getResponse(BuilderFactory.OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT);
   }
 }

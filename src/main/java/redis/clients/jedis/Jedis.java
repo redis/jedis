@@ -1674,6 +1674,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Set<String> zdiff(String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiff(keys);
+    return SetFromList.of(client.getMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffWithScores(keys);
+    return getTupledSet();
+  }
+
+  @Override
+  public Long zdiffStore(final String dstkey, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffStore(dstkey, keys);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrange(key, start, stop);
@@ -2606,6 +2627,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<String> zunion(ZParams params, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunion(params, keys);
+    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunionWithScores(params, keys);
+    return getTupledSet();
   }
 
   /**
@@ -3930,6 +3979,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  @Override
   public String aclSetUser(String name, String... params) {
     client.aclSetUser(name, params);
     return client.getStatusCodeReply();
@@ -4078,6 +4128,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -4086,6 +4143,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final StreamEntryID end, final int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
+      final StreamEntryID start) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
@@ -4112,19 +4177,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
     try {
       List<Object> streamsEntries = client.getObjectMultiBulkReply();
-      if (streamsEntries == null) {
+      if (streamsEntries == null) { // backward compatibility
         return new ArrayList<>();
       }
 
-      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
-      for (Object streamObj : streamsEntries) {
-        List<Object> stream = (List<Object>) streamObj;
-        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
-        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
-      }
-
-      return result;
+      return BuilderFactory.STREAM_READ_RESPONSE.build(streamsEntries);
     } finally {
       client.rollbackTimeout();
     }
@@ -4212,19 +4269,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.setTimeoutInfinite();
 
     try {
-      List<Object> streamsEntries = client.getObjectMultiBulkReply();
-      if (streamsEntries == null) {
-        return null;
-      }
-
-      List<Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamsEntries.size());
-      for (Object streamObj : streamsEntries) {
-        List<Object> stream = (List<Object>) streamObj;
-        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
-        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
-      }
-      return result;
+      return BuilderFactory.STREAM_READ_RESPONSE.build(client.getObjectMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -4250,18 +4295,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public StreamPendingSummary xpending(final String key, final String groupname) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname);
+    return BuilderFactory.STREAM_PENDING_SUMMARY.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public StreamPendingSummary xpendingSummary(final String key, final String groupname) {
-    checkIsInMultiOrPipeline();
-    client.xpendingSummary(key, groupname);
-    return BuilderFactory.STREAM_PENDING_SUMMARY.build(client.getObjectMultiBulkReply());
   }
 
   @Override

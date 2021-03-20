@@ -1136,6 +1136,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end) {
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end);
+  }
+
+  @Override
   public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
     Jedis j = getShard(key);
     return j.xrange(key, start, end, count);
@@ -1184,9 +1190,21 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start);
+  }
+
+  @Override
   public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
     Jedis j = getShard(key);
     return j.xrevrange(key, end, start, count);
+  }
+
+  @Override
+  public StreamPendingSummary xpending(String key, String groupname) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname);
   }
 
   @Override
@@ -1194,12 +1212,6 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       StreamEntryID end, int count, String consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
-  }
-
-  @Override
-  public StreamPendingSummary xpendingSummary(String key, String groupname) {
-    Jedis j = getShard(key);
-    return j.xpendingSummary(key, groupname);
   }
 
   @Override

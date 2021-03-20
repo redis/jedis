@@ -35,6 +35,7 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -555,7 +556,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.dbSize().intValue());
     jedis.select(1);
     assertEquals(1, jedis.dbSize().intValue());
-    jedis.del("bar");
+    assertEquals("OK", jedis.flushDB(FlushMode.SYNC));
+    assertEquals(0, jedis.dbSize().intValue());
 
     // Binary
     jedis.select(0);
@@ -568,7 +570,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.dbSize().intValue());
     jedis.select(1);
     assertEquals(1, jedis.dbSize().intValue());
-
+    assertEquals("OK", jedis.flushDB(FlushMode.ASYNC));
+    assertEquals(0, jedis.dbSize().intValue());
   }
 
   @Test
@@ -582,6 +585,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.dbSize().intValue());
     jedis.select(1);
     assertEquals(0, jedis.dbSize().intValue());
+    jedis.set("foo", "bar");
+    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals("OK", jedis.flushAll(FlushMode.SYNC));
+    assertEquals(0, jedis.dbSize().intValue());
 
     // Binary
     jedis.select(0);
@@ -594,7 +601,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.dbSize().intValue());
     jedis.select(1);
     assertEquals(0, jedis.dbSize().intValue());
-
+    jedis.set(bfoo, bbar);
+    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals("OK", jedis.flushAll(FlushMode.ASYNC));
+    assertEquals(0, jedis.dbSize().intValue());
   }
 
   @Test

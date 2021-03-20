@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.Module;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.FlushMode;
 
 import java.util.List;
 
@@ -26,7 +27,11 @@ public interface BasicRedisPipeline {
 
   Response<String> flushDB();
 
+  Response<String> flushDB(FlushMode flushMode);
+
   Response<String> flushAll();
+
+  Response<String> flushAll(FlushMode flushMode);
 
   Response<String> info();
 

@@ -455,7 +455,17 @@ public interface JedisCommands {
   Long xlen(String key);
 
   /**
-   * XRANGE key start end [COUNT count]
+   * XRANGE key start end
+   *
+   * @param key
+   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
+   * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
+   * @return The entries with IDs matching the specified range.
+   */
+  List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end);
+
+  /**
+   * XRANGE key start end COUNT count
    *
    * @param key
    * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
@@ -466,7 +476,17 @@ public interface JedisCommands {
   List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
   /**
-   * XREVRANGE key end start [COUNT <n>]
+   * XREVRANGE key end start
+   *
+   * @param key
+   * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
+   * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
+   * @return the entries with IDs matching the specified range, from the higher ID to the lower ID matching.
+   */
+  List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start);
+
+  /**
+   * XREVRANGE key end start COUNT count
    *
    * @param key
    * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
@@ -526,6 +546,15 @@ public interface JedisCommands {
   Long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
+   * XPENDING key group
+   *
+   * @param key
+   * @param groupname
+   * @return
+   */
+  StreamPendingSummary xpending(String key, String groupname);
+
+  /**
    * XPENDING key group [start end count] [consumer]
    *
    * @param key
@@ -536,16 +565,8 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
-
-  /**
-   * XPENDING key group
-   *
-   * @param key
-   * @param groupname
-   * @return
-   */
-  StreamPendingSummary xpendingSummary(String key, String groupname);
+  List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start,
+      StreamEntryID end, int count, String consumername);
 
   /**
    * XDEL key ID [ID ...]

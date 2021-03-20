@@ -1080,6 +1080,37 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Set<String> zdiff(String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zdiff(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(String... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zdiffWithScores(keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Long zdiffStore(final String dstkey, final String... keys) {
+    String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zdiffStore(dstkey, keys);
+      }
+    }.run(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
@@ -2024,6 +2055,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Set<String> zunion(final ZParams params, final String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zunion(params, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final String... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zunionWithScores(params, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public Long zunionstore(final String dstkey, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
@@ -2501,11 +2552,33 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<StreamEntry> xrange(final String key, final StreamEntryID start,
+      final StreamEntryID end) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrange(key, start, end);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start,
       final StreamEntryID end, final int count) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public List<StreamEntry> execute(Jedis connection) {
         return connection.xrange(key, start, end, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
+      final StreamEntryID start) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrevrange(key, end, start);
       }
     }.run(key);
   }
@@ -2631,22 +2704,22 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public StreamPendingSummary xpending(final String key, final String groupname) {
+    return new JedisClusterCommand<StreamPendingSummary>(connectionHandler, maxAttempts) {
+      @Override
+      public StreamPendingSummary execute(Jedis connection) {
+        return connection.xpending(key, groupname);
+      }
+    }.run(key);
+  }
+
+  @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     return new JedisClusterCommand<List<StreamPendingEntry>>(connectionHandler, maxAttempts, this.maxTotalRetriesDuration) {
       @Override
       public List<StreamPendingEntry> execute(Jedis connection) {
         return connection.xpending(key, groupname, start, end, count, consumername);
-      }
-    }.run(key);
-  }
-
-  @Override
-  public StreamPendingSummary xpendingSummary(final String key, final String groupname) {
-    return new JedisClusterCommand<StreamPendingSummary>(connectionHandler, maxAttempts) {
-      @Override
-      public StreamPendingSummary execute(Jedis connection) {
-        return connection.xpendingSummary(key, groupname);
       }
     }.run(key);
   }

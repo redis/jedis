@@ -490,6 +490,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zdiff(final String... keys) {
+    zdiff(SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zdiffWithScores(final String... keys) {
+    zdiffWithScores(SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long stop) {
     zrange(SafeEncoder.encode(key), start, stop);
   }
@@ -657,6 +667,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zdiffStore(final String dstkey, final String... keys) {
+    zdiffStore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zrangeByScore(final String key, final double min, final double max) {
     zrangeByScore(SafeEncoder.encode(key), toByteArray(min), toByteArray(max));
   }
@@ -765,6 +780,16 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zremrangeByScore(final String key, final String min, final String max) {
     zremrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+  }
+
+  @Override
+  public void zunion(final ZParams params, final String... keys) {
+    zunion(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zunionWithScores(final ZParams params, final String... keys) {
+    zunionWithScores(params, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -1367,10 +1392,29 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xrange(final String key, final StreamEntryID start, final StreamEntryID end) {
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
+      SafeEncoder.encode(end == null ? "+" : end.toString()));
+  }
+
+  @Override
+  public void xrange(final String key, final StreamEntryID start, final StreamEntryID end,
+      final int count) {
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
+      SafeEncoder.encode(end == null ? "+" : end.toString()), count);
+  }
+
+  @Override
   public void xrange(final String key, final StreamEntryID start, final StreamEntryID end,
       final long count) {
     xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
       SafeEncoder.encode(end == null ? "+" : end.toString()), count);
+  }
+
+  @Override
+  public void xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end == null ? "+" : end.toString()),
+      SafeEncoder.encode(start == null ? "-" : start.toString()));
   }
 
   @Override
@@ -1492,15 +1536,15 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xpending(String key, String groupname) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
+  }
+
+  @Override
   public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
       int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
         SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));
-  }
-
-  @Override
-  public void xpendingSummary(String key, String groupname) {
-    xpendingSummary(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
   }
 
   @Override

@@ -21,6 +21,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
@@ -32,7 +33,6 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
@@ -536,6 +536,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Delete all the keys of the currently selected DB. This command never fails.
+   * @param flushMode
+   * @return Status code reply
+   */
+  @Override
+  public String flushDB(FlushMode flushMode) {
+    checkIsInMultiOrPipeline();
+    client.flushDB(flushMode);
+    return client.getStatusCodeReply();
+  }
+
+  /**
    * Returns all the keys matching the glob-style pattern as space separated strings. For example if
    * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
    * "foo foobar".
@@ -769,6 +781,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public String flushAll() {
     checkIsInMultiOrPipeline();
     client.flushAll();
+    return client.getStatusCodeReply();
+  }
+
+  /**
+   * Delete all the keys of all the existing databases, not just the currently selected one. This
+   * command never fails.
+   * @param flushMode
+   * @return Status code reply
+   */
+  @Override
+  public String flushAll(FlushMode flushMode) {
+    checkIsInMultiOrPipeline();
+    client.flushAll(flushMode);
     return client.getStatusCodeReply();
   }
 
@@ -1275,14 +1300,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Map<byte[], byte[]> hgetAll(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.hgetAll(key);
-    final List<byte[]> flatHash = client.getBinaryMultiBulkReply();
-    final Map<byte[], byte[]> hash = new JedisByteHashMap();
-    final Iterator<byte[]> iterator = flatHash.iterator();
-    while (iterator.hasNext()) {
-      hash.put(iterator.next(), iterator.next());
-    }
-
-    return hash;
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -2628,6 +2646,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
+  public Set<byte[]> zdiff(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiff(keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffWithScores(keys);
+    return getTupledSet();
+  }
+
+  @Override
+  public Long zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffStore(dstkey, keys);
+    return client.getIntegerReply();
+  }
+
   /**
    * Return the all the elements in the sorted set at key with a score between min and max
    * (including elements with score equal to min or max).
@@ -3003,6 +3042,34 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunion(params, keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunionWithScores(params, keys);
+    return BuilderFactory.TUPLE_ZSET.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -3743,6 +3810,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public String scriptFlush() {
     client.scriptFlush();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String scriptFlush(final FlushMode flushMode) {
+    client.scriptFlush(flushMode);
     return client.getStatusCodeReply();
   }
 
@@ -4585,9 +4658,23 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start);
     return client.getBinaryMultiBulkReply();
   }
 
@@ -4656,9 +4743,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Object xpendingSummary(final byte[] key, final byte[] groupname) {
+  public Object xpending(final byte[] key, final byte[] groupname) {
     checkIsInMultiOrPipeline();
-    client.xpendingSummary(key, groupname);
+    client.xpending(key, groupname);
     return client.getOne();
   }
 

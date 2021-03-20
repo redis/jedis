@@ -209,6 +209,10 @@ public interface Commands {
 
   void sdiffstore(String dstkey, String... keys);
 
+  void zdiff(String... keys);
+
+  void zdiffWithScores(String... keys);
+
   void srandmember(String key);
 
   void zadd(String key, double score, String member);
@@ -220,6 +224,8 @@ public interface Commands {
   void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
   void zaddIncr(String key, double score, String member, ZAddParams params);
+
+  void zdiffStore(String dstkey, String... keys);
 
   void zrange(String key, long start, long stop);
 
@@ -316,6 +322,10 @@ public interface Commands {
   void zremrangeByScore(String key, double min, double max);
 
   void zremrangeByScore(String key, String min, String max);
+
+  void zunion(ZParams params, String... keys);
+
+  void zunionWithScores(ZParams params, String... keys);
 
   void zunionstore(String dstkey, String... sets);
 
@@ -447,7 +457,17 @@ public interface Commands {
 
   void xlen(String key);
 
+  void xrange(String key, StreamEntryID start, StreamEntryID end);
+
+  void xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  /**
+   * @deprecated Use {@link #xrange(java.lang.String, redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
+   */
+  @Deprecated
   void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
+
+  void xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
@@ -483,9 +503,9 @@ public interface Commands {
 
   void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams);
 
-  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  void xpending(String key, String groupname);
 
-  void xpendingSummary(String key, String groupname);
+  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, StreamEntryID... ids);

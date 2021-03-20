@@ -415,6 +415,8 @@ public interface BinaryJedisCommands {
 
   Long xlen(byte[] key);
 
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
+
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
    */
@@ -424,6 +426,8 @@ public interface BinaryJedisCommands {
   }
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start);
 
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
@@ -441,9 +445,9 @@ public interface BinaryJedisCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
-  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  Object xpending(byte[] key, byte[] groupname);
 
-  Object xpendingSummary(byte[] key, byte[] groupname);
+  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 

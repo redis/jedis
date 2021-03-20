@@ -2459,6 +2459,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.xadd(key, hash, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Long xlen(final byte[] key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

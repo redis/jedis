@@ -16,6 +16,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -380,6 +381,8 @@ public interface RedisPipeline {
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash);
 
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+
+  Response<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params);
 
   Response<Long> xlen(String key);
 

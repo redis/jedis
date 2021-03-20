@@ -14,6 +14,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -455,6 +456,8 @@ public interface Commands {
   void memoryDoctor();
 
   void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+
+  void xadd(String key, Map<String, String> hash, XAddParams params);
 
   void xlen(String key);
 

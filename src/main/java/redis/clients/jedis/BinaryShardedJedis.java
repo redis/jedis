@@ -14,6 +14,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -1132,6 +1133,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       boolean approximateLength) {
     Jedis j = getShard(key);
     return j.xadd(key, id, hash, maxLen, approximateLength);
+  }
+
+  @Override
+  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    Jedis j = getShard(key);
+    return j.xadd(key, hash, params);
   }
 
   @Override

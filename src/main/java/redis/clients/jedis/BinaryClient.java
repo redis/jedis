@@ -1627,6 +1627,16 @@ public class BinaryClient extends Connection {
     sendCommand(XADD, params);
   }
 
+  public void xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams xAddParams) {
+    final byte[][] params = new byte[hash.size() * 2][];
+    int index = 0;
+    for (final Entry<byte[], byte[]> entry : hash.entrySet()) {
+      params[index++] = entry.getKey();
+      params[index++] = entry.getValue();
+    }
+    sendCommand(XADD, xAddParams.getByteParams(key, params));
+  }
+
   public void xlen(final byte[] key) {
     sendCommand(XLEN, key);
   }

@@ -12,6 +12,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -385,6 +386,8 @@ public interface BinaryJedisClusterCommands {
   Long hstrlen(byte[] key, byte[] field);
 
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+
+  byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
 
   Long xlen(byte[] key);
 

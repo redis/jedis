@@ -74,6 +74,7 @@ public final class Protocol {
   public static final byte[] BYTES_FALSE = toByteArray(0);
   public static final byte[] BYTES_TILDE = SafeEncoder.encode("~");
   public static final byte[] BYTES_EQUAL = SafeEncoder.encode("=");
+  public static final byte[] BYTES_ASTERISK = SafeEncoder.encode("*");
 
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
@@ -284,7 +285,8 @@ public final class Protocol {
     GETNAME, SETNAME, LIST, MATCH, COUNT, PING, PONG, UNLOAD, REPLACE, KEYS, PAUSE, DOCTOR, BLOCK,
     NOACK, STREAMS, KEY, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, ID, IDLE,
     TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ, SETUSER,
-    GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG, INCR, SAVE, JUSTID, WITHVALUES, UNBLOCK, MINID;
+    GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG, INCR, SAVE, JUSTID, WITHVALUES, UNBLOCK,
+    NOMKSTREAM, MINID;
 
     /**
      * @deprecated This will be private in future. Use {@link #getRaw()}.

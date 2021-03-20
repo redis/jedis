@@ -11,6 +11,7 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -2123,6 +2124,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
       boolean approximateLength) {
     getClient(key).xadd(key, id, hash, maxLen, approximateLength);
     return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<byte[]> xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    getClient(key).xadd(key, hash, params);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<StreamEntryID> xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+    getClient(key).xadd(key, hash, params);
+    return getResponse(BuilderFactory.STREAM_ENTRY_ID);
   }
 
   @Override

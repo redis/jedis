@@ -2539,6 +2539,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+    return new JedisClusterCommand<StreamEntryID>(connectionHandler, maxAttempts) {
+      @Override
+      public StreamEntryID execute(Jedis connection) {
+        return connection.xadd(key, hash, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long xlen(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

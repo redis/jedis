@@ -323,6 +323,10 @@ public interface Commands {
 
   void zremrangeByScore(String key, String min, String max);
 
+  void zunion(ZParams params, String... keys);
+
+  void zunionWithScores(ZParams params, String... keys);
+
   void zunionstore(String dstkey, String... sets);
 
   void zunionstore(String dstkey, ZParams params, String... sets);

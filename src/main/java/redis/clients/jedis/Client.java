@@ -783,6 +783,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zunion(final ZParams params, final String... keys) {
+    zunion(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zunionWithScores(final ZParams params, final String... keys) {
+    zunionWithScores(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zunionstore(final String dstkey, final String... sets) {
     zunionstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(sets));
   }

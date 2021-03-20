@@ -2630,6 +2630,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<String> zunion(ZParams params, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunion(params, keys);
+    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunionWithScores(params, keys);
+    return getTupledSet();
+  }
+
+  /**
    * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.

@@ -28,11 +28,11 @@ public class XAddParams extends Params {
 
   private Long limit;
 
-  public static XAddParams xaddParams() {
+  public static XAddParams xAddParams() {
     return new XAddParams();
   }
 
-  public XAddParams nomkstream() {
+  public XAddParams noMkStream() {
     this.nomkstream = true;
     return this;
   }
@@ -78,21 +78,19 @@ public class XAddParams extends Params {
       byteParams.add(MAXLEN.getRaw());
 
       if (approximateTrimming) {
-        byteParams.add(SafeEncoder.encode("~"));
+        byteParams.add(Protocol.BYTES_TILDE);
       } else if (exactTrimming) {
-        byteParams.add(SafeEncoder.encode("="));
+        byteParams.add(Protocol.BYTES_EQUAL);
       }
 
       byteParams.add(Protocol.toByteArray(maxLen));
-    }
-
-    if (minId != null) {
+    } else if (minId != null) {
       byteParams.add(MINID.getRaw());
 
       if (approximateTrimming) {
-        byteParams.add(SafeEncoder.encode("~"));
+        byteParams.add(Protocol.BYTES_TILDE);
       } else if (exactTrimming) {
-        byteParams.add(SafeEncoder.encode("="));
+        byteParams.add(Protocol.BYTES_EQUAL);
       }
 
       byteParams.add(SafeEncoder.encode(minId));
@@ -106,7 +104,7 @@ public class XAddParams extends Params {
     if (id != null) {
       byteParams.add(SafeEncoder.encode(id));
     } else {
-      byteParams.add(SafeEncoder.encode("*"));
+      byteParams.add(Protocol.BYTES_ASTERISK);
     }
 
     Collections.addAll(byteParams, args);

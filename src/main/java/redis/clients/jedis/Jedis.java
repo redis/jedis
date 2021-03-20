@@ -4125,8 +4125,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
     checkIsInMultiOrPipeline();
     client.xadd(key, hash, params);
-    String result = client.getBulkReply();
-    return result == null ? null : new StreamEntryID(result);
+    return BuilderFactory.STREAM_ENTRY_ID.build(client.getBinaryBulkReply());
   }
 
   @Override

@@ -86,7 +86,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   public void xaddWithParams() {
 
     try {
-      jedis.xadd("stream1", new HashMap<>(), XAddParams.xaddParams());
+      jedis.xadd("stream1", new HashMap<>(), XAddParams.xAddParams());
       fail();
     } catch (JedisDataException expected) {
       assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
@@ -98,46 +98,46 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     Map<String, String> map2 = new HashMap<>();
     map2.put("f1", "v1");
     map2.put("f2", "v2");
-    StreamEntryID id2 = jedis.xadd("xadd-stream1", map2, XAddParams.xaddParams());
+    StreamEntryID id2 = jedis.xadd("xadd-stream1", map2, XAddParams.xAddParams());
     assertTrue(id2.compareTo(id1) > 0);
 
     Map<String, String> map3 = new HashMap<>();
     map3.put("f2", "v2");
     map3.put("f3", "v3");
-    StreamEntryID id3 = jedis.xadd("xadd-stream2", map3, XAddParams.xaddParams());
+    StreamEntryID id3 = jedis.xadd("xadd-stream2", map3, XAddParams.xAddParams());
 
     Map<String, String> map4 = new HashMap<>();
     map4.put("f2", "v2");
     map4.put("f3", "v3");
     StreamEntryID idIn = new StreamEntryID(id3.getTime() + 1, 1L);
-    StreamEntryID id4 = jedis.xadd("xadd-stream2", map4, XAddParams.xaddParams().id(idIn.toString()));
+    StreamEntryID id4 = jedis.xadd("xadd-stream2", map4, XAddParams.xAddParams().id(idIn.toString()));
     assertEquals(idIn, id4);
     assertTrue(id4.compareTo(id3) > 0);
 
     Map<String, String> map5 = new HashMap<>();
     map5.put("f4", "v4");
     map5.put("f5", "v5");
-    StreamEntryID id5 = jedis.xadd("xadd-stream2", map5, XAddParams.xaddParams());
+    StreamEntryID id5 = jedis.xadd("xadd-stream2", map5, XAddParams.xAddParams());
     assertTrue(id5.compareTo(id4) > 0);
 
     Map<String, String> map6 = new HashMap<>();
     map6.put("f4", "v4");
     map6.put("f5", "v5");
     StreamEntryID id6 = jedis.xadd("xadd-stream2", map6,
-      XAddParams.xaddParams().maxLen(3).exactTrimming());
+      XAddParams.xAddParams().maxLen(3).exactTrimming());
     assertTrue(id6.compareTo(id5) > 0);
     assertEquals(3L, jedis.xlen("xadd-stream2").longValue());
 
     // nomkstream
     StreamEntryID id7 = jedis.xadd("xadd-stream3", map6,
-      XAddParams.xaddParams().nomkstream().maxLen(3).exactTrimming());
+      XAddParams.xAddParams().noMkStream().maxLen(3).exactTrimming());
     assertNull(id7);
     assertFalse(jedis.exists("xadd-stream3"));
 
     // minid
-    jedis.xadd("xadd-stream3", map6, XAddParams.xaddParams().minId("2").id("2"));
+    jedis.xadd("xadd-stream3", map6, XAddParams.xAddParams().minId("2").id("2"));
     assertEquals(1, jedis.xlen("xadd-stream3").longValue());
-    jedis.xadd("xadd-stream3", map6, XAddParams.xaddParams().minId("4").id("3"));
+    jedis.xadd("xadd-stream3", map6, XAddParams.xAddParams().minId("4").id("3"));
     assertEquals(0, jedis.xlen("xadd-stream3").longValue());
   }
 

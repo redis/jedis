@@ -915,6 +915,26 @@ public class BinaryClient extends Connection {
     sendCommand(ZREMRANGEBYSCORE, key, min, max);
   }
 
+  public void zunion(final ZParams params, final byte[]... keys) {
+    sendCommand(ZUNION, buildZunionByteParams(params, false, keys));
+  }
+
+  public void zunionWithScores(final ZParams params, final byte[]... keys) {
+    sendCommand(ZUNION, buildZunionByteParams(params, true, keys));
+  }
+
+  private byte[][] buildZunionByteParams(final ZParams params, final boolean withScores, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    args.add(Protocol.toByteArray(keys.length));
+    Collections.addAll(args, keys);
+
+    args.addAll(params.getParams());
+    if (withScores) {
+      args.add(WITHSCORES.getRaw());
+    }
+    return args.toArray(new byte[args.size()][]);
+  }
+
   public void zunionstore(final byte[] dstkey, final byte[]... sets) {
     sendCommand(ZUNIONSTORE, joinParameters(dstkey, toByteArray(sets.length), sets));
   }

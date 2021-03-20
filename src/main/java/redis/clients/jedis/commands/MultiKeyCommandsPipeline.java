@@ -79,6 +79,10 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> zinterstore(String dstkey, ZParams params, String... sets);
 
+  Response<Set<String>> zunion(ZParams params, String... keys);
+
+  Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys);
+
   Response<Long> zunionstore(String dstkey, String... sets);
 
   Response<Long> zunionstore(String dstkey, ZParams params, String... sets);

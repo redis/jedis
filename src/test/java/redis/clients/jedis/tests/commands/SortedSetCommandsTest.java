@@ -1185,6 +1185,46 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zunion() {
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+    jedis.zadd("bar", 2, "a");
+    jedis.zadd("bar", 2, "b");
+
+    ZParams params = new ZParams();
+    params.weights(2, 2.5);
+    params.aggregate(ZParams.Aggregate.SUM);
+    Set<String> expected = new LinkedHashSet<>();
+    expected.add("a");
+    expected.add("b");
+    assertEquals(expected, jedis.zunion(params, "foo", "bar"));
+
+    Set<Tuple> expectedTuple = new LinkedHashSet<>();
+    expectedTuple.add(new Tuple("b", new Double(9)));
+    expectedTuple.add(new Tuple("a", new Double(7)));
+    assertEquals(expectedTuple, jedis.zunionWithScores(params, "foo", "bar"));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 2, bb);
+    jedis.zadd(bbar, 2, ba);
+    jedis.zadd(bbar, 2, bb);
+
+    ZParams bparams = new ZParams();
+    bparams.weights(2, 2.5);
+    bparams.aggregate(ZParams.Aggregate.SUM);
+    Set<byte[]> bexpected = new LinkedHashSet<>();
+    bexpected.add(bb);
+    bexpected.add(ba);
+    assertByteArraySetEquals(bexpected, jedis.zunion(params, bfoo, bbar));
+
+    Set<Tuple> bexpectedTuple = new LinkedHashSet<>();
+    bexpectedTuple.add(new Tuple(bb, new Double(9)));
+    bexpectedTuple.add(new Tuple(ba, new Double(7)));
+    assertEquals(bexpectedTuple, jedis.zunionWithScores(bparams, bfoo, bbar));
+  }
+
+  @Test
   public void zunionstore() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");

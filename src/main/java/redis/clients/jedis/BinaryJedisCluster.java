@@ -153,7 +153,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         clientConfig);
     this.maxAttempts = maxAttempts;
-    this.maxTotalRetriesDuration = Duration.ofMillis(clientConfig.getSoTimeoutMillis());
+    this.maxTotalRetriesDuration = Duration.ofMillis(clientConfig.getSocketTimeoutMillis());
   }
 
   /**

@@ -1100,6 +1100,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long zdiffStore(final String dstkey, final String... keys) {
+    String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zdiffStore(dstkey, keys);
+      }
+    }.run(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
       @Override
@@ -2042,6 +2053,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Set<String> zunion(final ZParams params, final String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zunion(params, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final String... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zunionWithScores(params, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public Long zunionstore(final String dstkey, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
@@ -2717,6 +2748,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public Long execute(Jedis connection) {
         return connection.xtrim(key, maxLen, approximateLength);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public Long xtrim(final String key, final XTrimParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xtrim(key, params);
       }
     }.run(key);
   }

@@ -2655,6 +2655,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return getTupledSet();
   }
 
+  @Override
+  public Long zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffStore(dstkey, keys);
+    return client.getIntegerReply();
+  }
+
   /**
    * Return the all the elements in the sorted set at key with a score between min and max
    * (including elements with score equal to min or max).
@@ -3030,6 +3037,34 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunion(params, keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunionWithScores(params, keys);
+    return BuilderFactory.TUPLE_ZSET.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -4698,6 +4733,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
     checkIsInMultiOrPipeline();
     client.xtrim(key, maxLen, approximateLength);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Long xtrim(byte[] key, XTrimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, params);
     return client.getIntegerReply();
   }
 

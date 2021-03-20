@@ -68,9 +68,15 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Set<Tuple> zdiffWithScores(byte[]... keys);
 
+  Long zdiffStore(byte[] dstkey, byte[]... keys);
+
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+
+  Set<byte[]> zunion(ZParams params, byte[]... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
   Long zunionstore(byte[] dstkey, byte[]... sets);
 

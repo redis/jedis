@@ -363,6 +363,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Long> zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    client.zdiffStore(dstkey, keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> zdiffStore(final String dstkey, final String... keys) {
+    client.zdiffStore(dstkey, keys);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> zinterstore(String dstkey, String... sets) {
     client.zinterstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);
@@ -384,6 +396,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     client.zinterstore(dstkey, params, sets);
     return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+    client.zunion(params, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+    client.zunionWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zunion(ZParams params, String... keys) {
+    client.zunion(params, keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+    client.zunionWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override

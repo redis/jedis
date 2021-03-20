@@ -999,6 +999,17 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Long zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    byte[][] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zdiffStore(dstkey, keys);
+      }
+    }.runBinary(wholeKeys.length, wholeKeys);
+  }
+
+  @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
       @Override
@@ -1974,6 +1985,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+    return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<byte[]> execute(Jedis connection) {
+        return connection.zunion(params, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zunionWithScores(params, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public Long zunionstore(final byte[] dstkey, final byte[]... sets) {
     byte[][] wholeKeys = KeyMergeUtil.merge(dstkey, sets);
 
@@ -2613,6 +2644,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public Long execute(Jedis connection) {
         return connection.xtrim(key, maxLen, approximateLength);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Long xtrim(final byte[] key, final XTrimParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xtrim(key, params);
       }
     }.runBinary(key);
   }

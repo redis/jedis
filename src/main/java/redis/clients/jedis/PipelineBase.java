@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -2314,6 +2315,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   @Override
   public Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength) {
     getClient(key).xtrim(key, maxLen, approximateLength);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xtrim(byte[] key, XTrimParams params) {
+    getClient(key).xtrim(key, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> xtrim(String key, XTrimParams params) {
+    getClient(key).xtrim(key, params);
     return getResponse(BuilderFactory.LONG);
   }
 

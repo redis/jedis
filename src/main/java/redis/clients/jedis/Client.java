@@ -667,6 +667,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zdiffStore(final String dstkey, final String... keys) {
+    zdiffStore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zrangeByScore(final String key, final double min, final double max) {
     zrangeByScore(SafeEncoder.encode(key), toByteArray(min), toByteArray(max));
   }
@@ -775,6 +780,16 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zremrangeByScore(final String key, final String min, final String max) {
     zremrangeByScore(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+  }
+
+  @Override
+  public void zunion(final ZParams params, final String... keys) {
+    zunion(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zunionWithScores(final ZParams params, final String... keys) {
+    zunionWithScores(params, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -1485,6 +1500,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void xtrim(String key, long maxLen, boolean approximateLength) {
     xtrim(SafeEncoder.encode(key), maxLen, approximateLength);
+  }
+
+  @Override
+  public void xtrim(String key, XTrimParams params) {
+    xtrim(SafeEncoder.encode(key), params);
   }
 
   @Override

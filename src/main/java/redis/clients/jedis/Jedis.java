@@ -1688,6 +1688,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public Long zdiffStore(final String dstkey, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffStore(dstkey, keys);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrange(key, start, stop);
@@ -2620,6 +2627,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zremrangeByScore(key, min, max);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<String> zunion(ZParams params, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunion(params, keys);
+    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunionWithScores(params, keys);
+    return getTupledSet();
   }
 
   /**
@@ -4227,6 +4262,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
     client.xtrim(key, maxLen, approximateLength);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long xtrim(final String key, final XTrimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, params);
     return client.getIntegerReply();
   }
 

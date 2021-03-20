@@ -70,9 +70,15 @@ public interface MultiKeyJedisClusterCommands {
 
   Set<Tuple> zdiffWithScores(String... keys);
 
+  Long zdiffStore(String dstkey, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
+
+  Set<String> zunion(ZParams params, String... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, String... keys);
 
   Long zunionstore(String dstkey, String... sets);
 

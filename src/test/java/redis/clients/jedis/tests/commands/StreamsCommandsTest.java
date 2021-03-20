@@ -28,6 +28,7 @@ import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
@@ -300,15 +301,30 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     Map<String, String> map1 = new HashMap<String, String>();
     map1.put("f1", "v1");
 
-    jedis.xadd("xtrim-stream", null, map1);
-    jedis.xadd("xtrim-stream", null, map1);
-    jedis.xadd("xtrim-stream", null, map1);
-    jedis.xadd("xtrim-stream", null, map1);
-    jedis.xadd("xtrim-stream", null, map1);
+    for (int i = 1; i <= 5; i++) {
+      jedis.xadd("xtrim-stream", null, map1);
+    }
     assertEquals(5L, jedis.xlen("xtrim-stream").longValue());
 
     jedis.xtrim("xtrim-stream", 3, false);
     assertEquals(3L, jedis.xlen("xtrim-stream").longValue());
+  }
+
+  @Test
+  public void xtrimWithParams() {
+    Map<String, String> map1 = new HashMap<>();
+    map1.put("f1", "v1");
+    for (int i = 1; i <= 5; i++) {
+      jedis.xadd("xtrim-stream", new StreamEntryID("0-" + i), map1);
+    }
+    assertEquals(5L, jedis.xlen("xtrim-stream").longValue());
+
+    jedis.xtrim("xtrim-stream", XTrimParams.xTrimParams().maxLen(3).exactTrimming());
+    assertEquals(3L, jedis.xlen("xtrim-stream").longValue());
+
+    // minId
+    jedis.xtrim("xtrim-stream", XTrimParams.xTrimParams().minId("0-4").exactTrimming());
+    assertEquals(2L, jedis.xlen("xtrim-stream").longValue());
   }
 
   @Test

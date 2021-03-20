@@ -599,6 +599,10 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
   }
 
+  public void zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    sendCommand(ZDIFFSTORE, joinParameters(dstkey, toByteArray(keys.length), keys));
+  }
+
   public void zrange(final byte[] key, final long start, final long stop) {
     sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop));
   }
@@ -909,6 +913,26 @@ public class BinaryClient extends Connection {
 
   public void zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     sendCommand(ZREMRANGEBYSCORE, key, min, max);
+  }
+
+  public void zunion(final ZParams params, final byte[]... keys) {
+    sendCommand(ZUNION, buildZunionByteParams(params, false, keys));
+  }
+
+  public void zunionWithScores(final ZParams params, final byte[]... keys) {
+    sendCommand(ZUNION, buildZunionByteParams(params, true, keys));
+  }
+
+  private byte[][] buildZunionByteParams(final ZParams params, final boolean withScores, final byte[]... keys) {
+    final List<byte[]> args = new ArrayList<>();
+    args.add(Protocol.toByteArray(keys.length));
+    Collections.addAll(args, keys);
+
+    args.addAll(params.getParams());
+    if (withScores) {
+      args.add(WITHSCORES.getRaw());
+    }
+    return args.toArray(new byte[args.size()][]);
   }
 
   public void zunionstore(final byte[] dstkey, final byte[]... sets) {
@@ -1734,6 +1758,10 @@ public class BinaryClient extends Connection {
     } else {
       sendCommand(XTRIM, key, Keyword.MAXLEN.getRaw(), toByteArray(maxLen));
     }
+  }
+
+  public void xtrim(byte[] key, XTrimParams params) {
+    sendCommand(XTRIM, params.getByteParams(key));
   }
 
   /**

@@ -258,11 +258,11 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
     assertEquals(5L, jedis.xlen("xtrim-stream").longValue());
 
-    jedis.xtrim("xtrim-stream", XTrimParams.xtrimParams().maxLen(3).exactTrimming());
+    jedis.xtrim("xtrim-stream", XTrimParams.xTrimParams().maxLen(3).exactTrimming());
     assertEquals(3L, jedis.xlen("xtrim-stream").longValue());
 
     // minId
-    jedis.xtrim("xtrim-stream", XTrimParams.xtrimParams().minId("0-4").exactTrimming());
+    jedis.xtrim("xtrim-stream", XTrimParams.xTrimParams().minId("0-4").exactTrimming());
     assertEquals(2L, jedis.xlen("xtrim-stream").longValue());
   }
 

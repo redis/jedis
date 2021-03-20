@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -414,6 +415,8 @@ public interface BinaryJedisClusterCommands {
   Long xdel(byte[] key, byte[]... ids);
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
+
+  Long xtrim(byte[] key, XTrimParams params);
 
   Object xpending(final byte[] key, final byte[] groupname);
 

@@ -16,6 +16,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -580,6 +581,14 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xtrim( String key, long maxLen, boolean approximateLength);
+
+  /**
+   * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
+   * @param key
+   * @param params
+   * @return
+   */
+  Long xtrim(String key, XTrimParams params);
 
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>

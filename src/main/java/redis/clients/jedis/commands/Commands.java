@@ -15,6 +15,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -493,6 +494,8 @@ public interface Commands {
   void xdel(String key, StreamEntryID... ids);
 
   void xtrim(String key, long maxLen, boolean approximateLength);
+
+  void xtrim(String key, XTrimParams params);
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use

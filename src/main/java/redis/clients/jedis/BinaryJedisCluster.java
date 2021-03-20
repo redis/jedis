@@ -2639,6 +2639,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Long xtrim(final byte[] key, final XTrimParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xtrim(key, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public List<Object> xpending(final byte[] key, final byte[] groupname, final byte[] start,
       final byte[] end, final int count, final byte[] consumername) {
     return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts) {

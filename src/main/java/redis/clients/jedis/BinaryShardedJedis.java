@@ -15,6 +15,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -1203,6 +1204,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
     return j.xtrim(key, maxLen, approximateLength);
+  }
+
+  @Override
+  public Long xtrim(byte[] key, XTrimParams params) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, params);
   }
 
   @Override

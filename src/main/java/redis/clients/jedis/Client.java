@@ -1502,6 +1502,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xtrim(String key, XTrimParams params) {
+    xtrim(SafeEncoder.encode(key), params);
+  }
+
+  @Override
   public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck,
       Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);

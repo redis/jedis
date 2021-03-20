@@ -1750,6 +1750,10 @@ public class BinaryClient extends Connection {
     }
   }
 
+  public void xtrim(byte[] key, XTrimParams params) {
+    sendCommand(XTRIM, params.getByteParams(key));
+  }
+
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
    * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.

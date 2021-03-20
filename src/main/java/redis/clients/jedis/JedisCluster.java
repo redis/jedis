@@ -2743,6 +2743,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Long xtrim(final String key, final XTrimParams params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.xtrim(key, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public List<StreamEntry> xclaim(final String key, final String group, final String consumername,
       final long minIdleTime, final long newIdleTime, final int retries, final boolean force,
       final StreamEntryID... ids) {

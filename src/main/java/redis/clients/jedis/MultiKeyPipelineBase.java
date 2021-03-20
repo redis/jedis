@@ -399,6 +399,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+    client.zunion(params, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+    client.zunionWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zunion(ZParams params, String... keys) {
+    client.zunion(params, keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+    client.zunionWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
   public Response<Long> zunionstore(String dstkey, String... sets) {
     client.zunionstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);

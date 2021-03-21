@@ -2733,6 +2733,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
+    return new JedisClusterCommand<List<StreamPendingEntry>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<StreamPendingEntry> execute(Jedis connection) {
+        return connection.xpending(key, groupname, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long xdel(final String key, final StreamEntryID... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

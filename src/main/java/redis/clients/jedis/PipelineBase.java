@@ -13,6 +13,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -2292,6 +2293,18 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
       byte[] end, int count, byte[] consumername) {
     getClient(key).xpending(key, groupname, start, end, count, consumername);
     return getResponse(BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  @Override
+  public Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params) {
+    getClient(key).xpending(key, groupname, params);
+    return getResponse(BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  @Override
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
+    getClient(key).xpending(key, groupname, params);
+    return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
   @Override

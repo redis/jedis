@@ -17,6 +17,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -575,6 +576,16 @@ public interface JedisClusterCommands {
    * @return
    */
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+
+  /**
+   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
+   *
+   * @param key
+   * @param groupname
+   * @param params
+   * @return
+   */
+  List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params);
 
   /**
    * XDEL key ID [ID ...]

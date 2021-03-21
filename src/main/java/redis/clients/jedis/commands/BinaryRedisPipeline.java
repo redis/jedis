@@ -5,7 +5,6 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
@@ -16,6 +15,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -417,6 +417,8 @@ public interface BinaryRedisPipeline {
   Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
 

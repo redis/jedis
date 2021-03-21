@@ -15,6 +15,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -1226,6 +1227,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       StreamEntryID end, int count, String consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, params);
   }
 
   @Override

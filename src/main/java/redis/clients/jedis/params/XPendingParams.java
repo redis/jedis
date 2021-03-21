@@ -19,7 +19,7 @@ public class XPendingParams extends Params {
 
   private StreamEntryID end;
 
-  private Long count;
+  private Integer count;
 
   public static XPendingParams xPendingParams() {
     return new XPendingParams();
@@ -40,7 +40,7 @@ public class XPendingParams extends Params {
     return this;
   }
 
-  public XPendingParams count(long count) {
+  public XPendingParams count(int count) {
     this.count = count;
     return this;
   }

@@ -916,14 +916,14 @@ public class BinaryClient extends Connection {
   }
 
   public void zunion(final ZParams params, final byte[]... keys) {
-    sendCommand(ZUNION, buildByteZparams(params, false, keys));
+    sendCommand(ZUNION, buildByteZParams(params, false, keys));
   }
 
   public void zunionWithScores(final ZParams params, final byte[]... keys) {
-    sendCommand(ZUNION, buildByteZparams(params, true, keys));
+    sendCommand(ZUNION, buildByteZParams(params, true, keys));
   }
 
-  private byte[][] buildByteZparams(final ZParams params, final boolean withScores, final byte[]... keys) {
+  private byte[][] buildByteZParams(final ZParams params, final boolean withScores, final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
     args.add(Protocol.toByteArray(keys.length));
     Collections.addAll(args, keys);
@@ -950,11 +950,11 @@ public class BinaryClient extends Connection {
   }
 
   public void zinter(final ZParams params, final byte[]... keys) {
-    sendCommand(ZINTER, buildByteZparams(params, false, keys));
+    sendCommand(ZINTER, buildByteZParams(params, false, keys));
   }
 
   public void zinterWithScores(final ZParams params, final byte[]... keys) {
-    sendCommand(ZINTER, buildByteZparams(params, true, keys));
+    sendCommand(ZINTER, buildByteZParams(params, true, keys));
   }
 
   public void zinterstore(final byte[] dstkey, final byte[]... sets) {

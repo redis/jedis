@@ -165,6 +165,14 @@ public class BinaryClient extends Connection {
     }
   }
 
+  public void copy(byte[] srcKey, byte[] dstKey, CopyParams params) {
+    if (params == null) {
+      sendCommand(COPY, srcKey, dstKey);
+    } else {
+      sendCommand(COPY, params.getByteParams(srcKey, dstKey));
+    }
+  }
+
   public void ping() {
     sendCommand(PING);
   }

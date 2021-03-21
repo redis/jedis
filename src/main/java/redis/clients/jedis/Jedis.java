@@ -157,6 +157,21 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param params
+   * @return
+   */
+  @Override
+  public Long copy(String srcKey, String dstKey, CopyParams params) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, params);
+    return client.getIntegerReply();
+  }
+
+  /**
    * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
    * @param message
    * @return message

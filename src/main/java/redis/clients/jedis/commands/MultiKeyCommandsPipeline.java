@@ -19,6 +19,8 @@ import java.util.Set;
  * Multikey related commands (these are split out because they are non-shardable)
  */
 public interface MultiKeyCommandsPipeline {
+  Response<Long> copy(String srcKey, String dstKey, CopyParams params);
+
   Response<Long> del(String... keys);
 
   Response<Long> unlink(String... keys);

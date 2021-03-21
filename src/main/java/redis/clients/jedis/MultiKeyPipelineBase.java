@@ -15,6 +15,18 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   protected Client client = null;
 
   @Override
+  public Response<Long> copy(byte[] srcKey, byte[] dstKey, CopyParams params) {
+    client.copy(srcKey, dstKey, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> copy(String srcKey, String dstKey, CopyParams params) {
+    client.copy(srcKey, dstKey, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<List<String>> brpop(String... args) {
     client.brpop(args);
     return getResponse(BuilderFactory.STRING_LIST);

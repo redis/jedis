@@ -17,6 +17,7 @@ import java.util.Set;
  * Multikey related commands (these are split out because they are non-shardable)
  */
 public interface MultiKeyBinaryRedisPipeline {
+  Response<Long> copy(byte[] srcKey, byte[] dstKey, CopyParams params);
 
   Response<Long> del(byte[]... keys);
 

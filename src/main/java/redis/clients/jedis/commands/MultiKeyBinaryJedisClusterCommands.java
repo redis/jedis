@@ -3,12 +3,14 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.CopyParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -20,6 +22,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
+  Long copy(byte[] srcKey, byte[] dstKey, CopyParams params);
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);

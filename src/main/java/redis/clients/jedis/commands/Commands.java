@@ -10,6 +10,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.CopyParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -24,6 +25,8 @@ import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 
 public interface Commands {
+
+  void copy(String srcKey, String dstKey, CopyParams params);
 
   void ping(String message);
 

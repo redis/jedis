@@ -36,6 +36,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.params.CopyParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -940,4 +941,22 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   }
 
+  @Test
+  public void copy() {
+    jedis.set("foo", "bar");
+    assertEquals(1, jedis.copy("foo", "bar", null).longValue());
+    assertEquals(0, jedis.copy("unknown", "bar1", null).longValue());
+    assertEquals("bar", jedis.get("bar"));
+
+    // with destinationDb
+    assertEquals(1, jedis.copy("foo", "bar1", new CopyParams().destinationDb(2)).longValue());
+    jedis.select(2);
+    assertEquals("bar", jedis.get("bar1"));
+
+    // replace
+    jedis.set("foo", "bar");
+    jedis.set("bar2", "b");
+    assertEquals(1, jedis.copy("foo", "bar2", new CopyParams().replace()).longValue());
+    assertEquals("bar", jedis.get("bar2"));
+  }
 }

@@ -78,6 +78,10 @@ public interface MultiKeyBinaryCommands {
 
   Long zdiffStore(byte[] dstkey, byte[]... keys);
 
+  Set<byte[]> zinter(ZParams params, byte[]... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);

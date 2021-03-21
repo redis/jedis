@@ -1961,6 +1961,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
+    return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<byte[]> execute(Jedis connection) {
+        return connection.zinter(params, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zinterWithScores(params, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public Long zinterstore(final byte[] dstkey, final byte[]... sets) {
     byte[][] wholeKeys = KeyMergeUtil.merge(dstkey, sets);
 

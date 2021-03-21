@@ -74,6 +74,10 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> zdiffStore(byte[] dstkey, byte[]... keys);
 
+  Response<Set<byte[]>> zinter(ZParams params, byte[]... keys);
+
+  Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys);
+
   Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
 
   Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets);

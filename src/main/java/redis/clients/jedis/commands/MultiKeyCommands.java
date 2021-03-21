@@ -114,6 +114,10 @@ public interface MultiKeyCommands {
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
 
+  Set<String> zinter(ZParams params, String... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, String... keys);
+
   Set<String> zunion(ZParams params, String... keys);
 
   Set<Tuple> zunionWithScores(ZParams params, String... keys);

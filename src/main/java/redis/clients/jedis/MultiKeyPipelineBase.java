@@ -375,6 +375,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Set<byte[]>> zinter(final ZParams params, final byte[]... keys) {
+    client.zinter(params, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zinterWithScores(final ZParams params, final byte[]... keys) {
+    client.zinterWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zinter(final ZParams params, final String... keys) {
+    client.zinter(params, keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zinterWithScores(final ZParams params, final String... keys) {
+    client.zinterWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
   public Response<Long> zinterstore(String dstkey, String... sets) {
     client.zinterstore(dstkey, sets);
     return getResponse(BuilderFactory.LONG);

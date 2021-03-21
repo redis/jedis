@@ -2733,6 +2733,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<String> zinter(final ZParams params, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinter(params, keys);
+    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinterWithScores(params, keys);
+    return getTupledSet();
+  }
+
+  /**
    * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.

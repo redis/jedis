@@ -803,6 +803,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zinter(final ZParams params, final String... keys) {
+    zinter(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zinterWithScores(final ZParams params, final String... keys) {
+    zinterWithScores(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zinterstore(final String dstkey, final String... sets) {
     zinterstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(sets));
   }

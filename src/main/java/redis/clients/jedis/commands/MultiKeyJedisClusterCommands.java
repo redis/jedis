@@ -72,6 +72,10 @@ public interface MultiKeyJedisClusterCommands {
 
   Long zdiffStore(String dstkey, String... keys);
 
+  Set<String> zinter(ZParams params, String... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);

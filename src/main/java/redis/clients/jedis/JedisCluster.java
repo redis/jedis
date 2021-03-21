@@ -2029,6 +2029,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Set<String> zinter(final ZParams params, final String... keys) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zinter(params, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
+    return new JedisClusterCommand<Set<Tuple>>(connectionHandler, maxAttempts) {
+      @Override
+      public Set<Tuple> execute(Jedis connection) {
+        return connection.zinterWithScores(params, keys);
+      }
+    }.run(keys.length, keys);
+  }
+
+  @Override
   public Long zinterstore(final String dstkey, final String... sets) {
     String[] wholeKeys = KeyMergeUtil.merge(dstkey, sets);
 

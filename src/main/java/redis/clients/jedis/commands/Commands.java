@@ -334,6 +334,10 @@ public interface Commands {
 
   void zunionstore(String dstkey, ZParams params, String... sets);
 
+  void zinter(ZParams params, String... keys);
+
+  void zinterWithScores(ZParams params, String... keys);
+
   void zinterstore(String dstkey, String... sets);
 
   void zinterstore(String dstkey, ZParams params, String... sets);

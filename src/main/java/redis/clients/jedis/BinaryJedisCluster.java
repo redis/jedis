@@ -2680,6 +2680,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<Object> execute(Jedis connection) {
+        return connection.xpending(key, groupname, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public List<byte[]> xclaim(final byte[] key, final byte[] groupname, final byte[] consumername,
       final long minIdleTime, final long newIdleTime, final int retries, final boolean force,
       final byte[][] ids) {

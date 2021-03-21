@@ -1562,6 +1562,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xpending(String key, String groupname, XPendingParams params) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), params);
+  }
+
+  @Override
   public void xclaim(String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
     final byte[][] bids = convertStreamEntryIDsToBinary(ids);

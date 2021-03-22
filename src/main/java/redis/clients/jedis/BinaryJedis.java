@@ -326,6 +326,37 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param db
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, db, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+  }
+
+  /**
    * @return <code>PONG</code>
    */
   @Override

@@ -940,4 +940,22 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   }
 
+  @Test
+  public void copy() {
+    jedis.set("foo", "bar");
+    assertTrue(jedis.copy("foo", "bar", false));
+    assertFalse(jedis.copy("unknown", "bar1", false));
+    assertEquals("bar", jedis.get("bar"));
+
+    // with destinationDb
+    assertTrue(jedis.copy("foo", "bar1", 2, false));
+    jedis.select(2);
+    assertEquals("bar", jedis.get("bar1"));
+
+    // replace
+    jedis.set("foo", "bar");
+    jedis.set("bar2", "b");
+    assertTrue(jedis.copy("foo", "bar2", true));
+    assertEquals("bar", jedis.get("bar2"));
+  }
 }

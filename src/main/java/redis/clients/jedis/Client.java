@@ -65,6 +65,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void copy(String srcKey, String dstKey, int db, boolean replace) {
+    copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), db, replace);
+  }
+
+  @Override
+  public void copy(String srcKey, String dstKey, boolean replace) {
+    copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), replace);
+  }
+
+  @Override
   public void ping(final String message) {
     ping(SafeEncoder.encode(message));
   }

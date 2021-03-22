@@ -27,6 +27,10 @@ import redis.clients.jedis.params.XReadParams;
 
 public interface Commands {
 
+  void copy(String srcKey, String dstKey, int db, boolean replace);
+
+  void copy(String srcKey, String dstKey, boolean replace);
+
   void ping(String message);
 
   void set(String key, String value);

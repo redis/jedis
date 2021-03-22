@@ -22,6 +22,11 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyCommands {
+
+  Boolean copy(String srcKey, String dstKey, int db, boolean replace);
+
+  Boolean copy(String srcKey, String dstKey, boolean replace);
+
   Long del(String... keys);
 
   Long unlink(String... keys);

@@ -249,6 +249,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Boolean copy(String srcKey, String dstKey, boolean replace) {
+    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts) {
+      @Override
+      public Boolean execute(Jedis connection) {
+        return connection.copy(srcKey, dstKey, replace);
+      }
+    }.run(2, srcKey, dstKey);
+  }
+
+  @Override
   public String set(final String key, final String value) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override

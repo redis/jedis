@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyJedisClusterCommands {
+  Boolean copy(String srcKey, String dstKey, boolean replace);
 
   Long del(String... keys);
 

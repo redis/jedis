@@ -21,6 +21,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
+  Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);

@@ -166,6 +166,22 @@ public class BinaryClient extends Connection {
     }
   }
 
+  public void copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    if (replace) {
+      sendCommand(COPY, srcKey, dstKey, REPLACE.getRaw());
+    } else {
+      sendCommand(COPY, srcKey, dstKey);
+    }
+  }
+
+  public void copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    if (replace) {
+      sendCommand(COPY, srcKey, dstKey, DB.getRaw(), toByteArray(db), REPLACE.getRaw());
+    } else {
+      sendCommand(COPY, srcKey, dstKey, DB.getRaw(), toByteArray(db));
+    }
+  }
+
   public void ping() {
     sendCommand(PING);
   }

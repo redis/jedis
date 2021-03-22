@@ -720,42 +720,6 @@ public class BinaryClient extends Connection {
     sendCommand(SORT, args.toArray(new byte[args.size()][]));
   }
 
-  public void lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
-    sendCommand(LMOVE, srcKey, dstKey, from.getRaw(), to.getRaw());
-  }
-
-  public void blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
-    sendCommand(BLMOVE, srcKey, dstKey, from.getRaw(), to.getRaw(), toByteArray(timeout));
-  }
-
-  public void blpop(final byte[][] args) {
-    sendCommand(BLPOP, args);
-  }
-
-  public void blpop(final int timeout, final byte[]... keys) {
-    final List<byte[]> args = new ArrayList<>();
-    Collections.addAll(args, keys);
-
-    args.add(Protocol.toByteArray(timeout));
-    blpop(args.toArray(new byte[args.size()][]));
-  }
-
-  public void bzpopmax(final int timeout, final byte[]... keys) {
-    final List<byte[]> args = new ArrayList<>();
-    Collections.addAll(args, keys);
-
-    args.add(Protocol.toByteArray(timeout));
-    sendCommand(BZPOPMAX, args.toArray(new byte[args.size()][]));
-  }
-
-  public void bzpopmin(final int timeout, final byte[]... keys) {
-    final List<byte[]> args = new ArrayList<>();
-    Collections.addAll(args, keys);
-
-    args.add(Protocol.toByteArray(timeout));
-    sendCommand(BZPOPMIN, args.toArray(new byte[args.size()][]));
-  }
-
   public void sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
     final List<byte[]> args = new ArrayList<>();
     args.add(key);
@@ -769,16 +733,44 @@ public class BinaryClient extends Connection {
     sendCommand(SORT, key, STORE.getRaw(), dstkey);
   }
 
+  public void lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    sendCommand(LMOVE, srcKey, dstKey, from.getRaw(), to.getRaw());
+  }
+
+  public void blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
+    sendCommand(BLMOVE, srcKey, dstKey, from.getRaw(), to.getRaw(), toByteArray(timeout));
+  }
+
+  public void blpop(final byte[][] args) {
+    sendCommand(BLPOP, args);
+  }
+
+  public void blpop(final int timeout, final byte[]... keys) {
+    blpop(keysAndTimeout(timeout, keys));
+  }
+
   public void brpop(final byte[][] args) {
     sendCommand(BRPOP, args);
   }
 
   public void brpop(final int timeout, final byte[]... keys) {
-    final List<byte[]> args = new ArrayList<>();
-    Collections.addAll(args, keys);
+    brpop(keysAndTimeout(timeout, keys));
+  }
 
-    args.add(Protocol.toByteArray(timeout));
-    brpop(args.toArray(new byte[args.size()][]));
+  public void bzpopmax(final int timeout, final byte[]... keys) {
+    sendCommand(BZPOPMAX, keysAndTimeout(timeout, keys));
+  }
+
+  public void bzpopmin(final int timeout, final byte[]... keys) {
+    sendCommand(BZPOPMIN, keysAndTimeout(timeout, keys));
+  }
+
+  private static byte[][] keysAndTimeout(final int timeout, final byte[]... keys) {
+    int numKeys = keys.length;
+    byte[][] args = new byte[numKeys + 1][];
+    System.arraycopy(keys, 0, args, 0, numKeys);
+    args[numKeys] = toByteArray(timeout);
+    return args;
   }
 
   public void auth(final String password) {

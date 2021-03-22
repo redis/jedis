@@ -44,15 +44,27 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<Long> copy(byte[] srcKey, byte[] dstKey, CopyParams params) {
-    client.copy(srcKey, dstKey, params);
-    return getResponse(BuilderFactory.LONG);
+  public Response<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    client.copy(srcKey, dstKey, db, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
   }
 
   @Override
-  public Response<Long> copy(String srcKey, String dstKey, CopyParams params) {
-    client.copy(srcKey, dstKey, params);
-    return getResponse(BuilderFactory.LONG);
+  public Response<Boolean> copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    client.copy(srcKey, dstKey, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace) {
+    client.copy(srcKey, dstKey, db, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<Boolean> copy(String srcKey, String dstKey, boolean replace) {
+    client.copy(srcKey, dstKey, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
   }
 
   @Override

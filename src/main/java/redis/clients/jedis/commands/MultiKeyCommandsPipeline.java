@@ -20,7 +20,9 @@ import java.util.Set;
  * Multikey related commands (these are split out because they are non-shardable)
  */
 public interface MultiKeyCommandsPipeline {
-  Response<Long> copy(String srcKey, String dstKey, CopyParams params);
+  Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace);
+
+  Response<Boolean> copy(String srcKey, String dstKey, boolean replace);
 
   Response<Long> del(String... keys);
 

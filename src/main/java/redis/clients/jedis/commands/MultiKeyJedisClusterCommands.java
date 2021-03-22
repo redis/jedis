@@ -12,7 +12,6 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.params.CopyParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -23,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyJedisClusterCommands {
-  Long copy(String srcKey, String dstKey, boolean replace);
+  Boolean copy(String srcKey, String dstKey, boolean replace);
 
   Long del(String... keys);
 

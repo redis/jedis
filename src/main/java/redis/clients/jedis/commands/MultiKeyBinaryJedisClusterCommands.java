@@ -9,7 +9,6 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.params.CopyParams;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -22,7 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
-  Long copy(byte[] srcKey, byte[] dstKey, boolean replace);
+  Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
   Long del(byte[]... keys);
 

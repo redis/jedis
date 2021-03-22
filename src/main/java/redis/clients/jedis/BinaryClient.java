@@ -174,11 +174,11 @@ public class BinaryClient extends Connection {
     }
   }
 
-  public void copy(byte[] srcKey, byte[] dstKey, CopyParams params) {
-    if (params == null) {
-      sendCommand(COPY, srcKey, dstKey);
+  public void copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    if (replace) {
+      sendCommand(COPY, srcKey, dstKey, DB.getRaw(), toByteArray(db), REPLACE.getRaw());
     } else {
-      sendCommand(COPY, params.getByteParams(srcKey, dstKey));
+      sendCommand(COPY, srcKey, dstKey, DB.getRaw(), toByteArray(db));
     }
   }
 

@@ -65,8 +65,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void copy(String srcKey, String dstKey, CopyParams params) {
-    copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), params);
+  public void copy(String srcKey, String dstKey, int db, boolean replace) {
+    copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), db, replace);
   }
 
   @Override

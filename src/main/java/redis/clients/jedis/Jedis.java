@@ -13,6 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.Direction;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.args.UnblockType;
@@ -2025,6 +2026,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.sort(key, sortingParameters);
     return client.getMultiBulkReply();
+  }
+
+  @Override
+  public String lmove(final String srcKey, final String dstKey, final Direction from,
+      final Direction to) {
+    checkIsInMultiOrPipeline();
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String blmove(final String srcKey, final String dstKey, final Direction from,
+      final Direction to, final int timeout) {
+    checkIsInMultiOrPipeline();
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return client.getBulkReply();
   }
 
   /**

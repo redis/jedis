@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.args.Direction;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 
@@ -653,5 +654,47 @@ public class ListCommandsTest extends JedisCommandTestBase {
     posList = jedis.lpos(bfoo, bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
     assertEquals(expected.subList(1, 2), posList);
 
+  }
+
+  @Test
+  public void lmove() {
+    jedis.rpush("foo", "bar1", "bar2", "bar3");
+    assertEquals("bar3", jedis.lmove("foo", "bar", Direction.RIGHT, Direction.LEFT));
+    assertEquals(Collections.singletonList("bar3"), jedis.lrange("bar", 0, -1));
+    assertEquals(Arrays.asList("bar1", "bar2"), jedis.lrange("foo", 0, -1));
+
+    // Binary
+    jedis.rpush(bfoo, b1, b2, b3);
+    assertArrayEquals(b3, jedis.lmove(bfoo, bbar, Direction.RIGHT, Direction.LEFT));
+    assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
+    assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
+  }
+
+  @Test
+  public void blmove() {
+    new Thread(() -> {
+      try (Jedis j = createJedis()) {
+        Thread.sleep(100);
+        j.rpush("foo", "bar1", "bar2", "bar3");
+      } catch (InterruptedException e) {
+        org.apache.logging.log4j.LogManager.getLogger().error("Interruption in binary rpush", e);
+      }
+    }).start();
+    assertEquals("bar3", jedis.blmove("foo", "bar", Direction.RIGHT, Direction.LEFT, 0));
+    assertEquals(Collections.singletonList("bar3"), jedis.lrange("bar", 0, -1));
+    assertEquals(Arrays.asList("bar1", "bar2"), jedis.lrange("foo", 0, -1));
+
+    // Binary
+    new Thread(() -> {
+      try (Jedis j = createJedis()) {
+        Thread.sleep(100);
+        j.rpush(bfoo, b1, b2, b3);
+      } catch (InterruptedException e) {
+        org.apache.logging.log4j.LogManager.getLogger().error("Interruption in binary rpush", e);
+      }
+    }).start();
+    assertArrayEquals(b3, jedis.blmove(bfoo, bbar, Direction.RIGHT, Direction.LEFT, 0));
+    assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
+    assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
   }
 }

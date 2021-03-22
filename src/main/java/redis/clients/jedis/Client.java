@@ -612,6 +612,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void sort(final String key, final SortingParams sortingParameters, final String dstkey) {
+    sort(SafeEncoder.encode(key), sortingParameters, SafeEncoder.encode(dstkey));
+  }
+
+  @Override
+  public void sort(final String key, final String dstkey) {
+    sort(SafeEncoder.encode(key), SafeEncoder.encode(dstkey));
+  }
+
+  @Override
   public void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
     lmove(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), from, to);
   }
@@ -626,31 +636,9 @@ public class Client extends BinaryClient implements Commands {
     blpop(SafeEncoder.encodeMany(args));
   }
 
+  @Override
   public void blpop(final int timeout, final String... keys) {
-    final int size = keys.length + 1;
-    List<String> args = new ArrayList<>(size);
-    Collections.addAll(args, keys);
-
-    args.add(String.valueOf(timeout));
-    blpop(args.toArray(new String[size]));
-  }
-
-  public void bzpopmax(final int timeout, final String... keys) {
-    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
-  }
-
-  public void bzpopmin(final int timeout, final String... keys) {
-    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
-  }
-
-  @Override
-  public void sort(final String key, final SortingParams sortingParameters, final String dstkey) {
-    sort(SafeEncoder.encode(key), sortingParameters, SafeEncoder.encode(dstkey));
-  }
-
-  @Override
-  public void sort(final String key, final String dstkey) {
-    sort(SafeEncoder.encode(key), SafeEncoder.encode(dstkey));
+    blpop(timeout, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -658,13 +646,19 @@ public class Client extends BinaryClient implements Commands {
     brpop(SafeEncoder.encodeMany(args));
   }
 
+  @Override
   public void brpop(final int timeout, final String... keys) {
-    final int size = keys.length + 1;
-    List<String> args = new ArrayList<>(size);
-    Collections.addAll(args, keys);
+    brpop(timeout, SafeEncoder.encodeMany(keys));
+  }
 
-    args.add(String.valueOf(timeout));
-    brpop(args.toArray(new String[size]));
+  @Override
+  public void bzpopmax(final int timeout, final String... keys) {
+    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void bzpopmin(final int timeout, final String... keys) {
+    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
   }
 
   @Override

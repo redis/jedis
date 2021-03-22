@@ -275,19 +275,27 @@ public interface Commands {
 
   void sort(String key, SortingParams sortingParameters);
 
+  void sort(String key, SortingParams sortingParameters, String dstkey);
+
+  void sort(String key, String dstkey);
+
   void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
   void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
 
   void blpop(String[] args);
 
-  void sort(String key, SortingParams sortingParameters, String dstkey);
-
-  void sort(String key, String dstkey);
+  void blpop(int timeout, String... keys);
 
   void brpop(String[] args);
 
+  void brpop(int timeout, String... keys);
+
   void brpoplpush(String source, String destination, int timeout);
+
+  void bzpopmax(int timeout, String... keys);
+
+  void bzpopmin(int timeout, String... keys);
 
   void zcount(String key, double min, double max);
 

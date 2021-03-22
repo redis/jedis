@@ -2372,6 +2372,43 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[])
+   * @see #sort(byte[], byte[])
+   * @param key
+   * @param sortingParameters
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, sortingParameters, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Sort a Set or a List and Store the Result at dstkey.
+   * <p>
+   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
+   * at dstkey. By default sorting is numeric with elements being compared as double precision
+   * floating point numbers. This is the simplest form of SORT.
+   * @see #sort(byte[])
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[], SortingParams, byte[])
+   * @param key
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
    * Pop an element from a list, push it to another list and return it
    * @param srcKey
    * @param dstKey
@@ -2471,66 +2508,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> blpop(final int timeout, final byte[]... keys) {
-    return blpop(getArgsAddTimeout(timeout, keys));
-  }
-
-  @Override
-  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
-    checkIsInMultiOrPipeline();
-    client.bzpopmax(timeout, keys);
-    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
-  }
-
-  @Override
-  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
-    checkIsInMultiOrPipeline();
-    client.bzpopmin(timeout, keys);
-    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
-  }
-
-  private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
-    int size = keys.length;
-    final byte[][] args = new byte[size + 1][];
-    System.arraycopy(keys, 0, args, 0, size);
-    args[size] = Protocol.toByteArray(timeout);
-    return args;
-  }
-
-  /**
-   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[])
-   * @see #sort(byte[], byte[])
-   * @param key
-   * @param sortingParameters
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, sortingParameters, dstkey);
-    return client.getIntegerReply();
-  }
-
-  /**
-   * Sort a Set or a List and Store the Result at dstkey.
-   * <p>
-   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
-   * at dstkey. By default sorting is numeric with elements being compared as double precision
-   * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
-   * @param key
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, dstkey);
-    return client.getIntegerReply();
+    return blpop(getKeysAndTimeout(timeout, keys));
   }
 
   /**
@@ -2597,7 +2575,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
-    return brpop(getArgsAddTimeout(timeout, keys));
+    return brpop(getKeysAndTimeout(timeout, keys));
   }
 
   @Override
@@ -2619,6 +2597,38 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setTimeoutInfinite();
     try {
       return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  private byte[][] getKeysAndTimeout(int timeout, byte[][] keys) {
+    int size = keys.length;
+    final byte[][] args = new byte[size + 1][];
+    System.arraycopy(keys, 0, args, 0, size);
+    args[size] = Protocol.toByteArray(timeout);
+    return args;
+  }
+
+  @Override
+  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }

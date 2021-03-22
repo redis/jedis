@@ -8,6 +8,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.CopyParams;
@@ -17,6 +18,7 @@ import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -278,6 +280,10 @@ public interface Commands {
 
   void sort(String key, SortingParams sortingParameters);
 
+  void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
+
   void blpop(String[] args);
 
   void sort(String key, SortingParams sortingParameters, String dstkey);
@@ -337,6 +343,10 @@ public interface Commands {
   void zunionstore(String dstkey, String... sets);
 
   void zunionstore(String dstkey, ZParams params, String... sets);
+
+  void zinter(ZParams params, String... keys);
+
+  void zinterWithScores(ZParams params, String... keys);
 
   void zinterstore(String dstkey, String... sets);
 
@@ -517,6 +527,8 @@ public interface Commands {
   void xpending(String key, String groupname);
 
   void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+
+  void xpending(String key, String groupname, XPendingParams params);
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, StreamEntryID... ids);

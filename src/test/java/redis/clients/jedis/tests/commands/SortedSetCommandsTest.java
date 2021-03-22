@@ -1299,6 +1299,34 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zinter() {
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+    jedis.zadd("bar", 2, "a");
+
+    ZParams params = new ZParams();
+    params.weights(2, 2.5);
+    params.aggregate(ZParams.Aggregate.SUM);
+    assertEquals(Collections.singleton("a"), jedis.zinter(params, "foo", "bar"));
+
+    assertEquals(Collections.singleton(new Tuple("a", new Double(7))),
+      jedis.zinterWithScores(params, "foo", "bar"));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 2, bb);
+    jedis.zadd(bbar, 2, ba);
+
+    ZParams bparams = new ZParams();
+    bparams.weights(2, 2.5);
+    bparams.aggregate(ZParams.Aggregate.SUM);
+    assertByteArraySetEquals(Collections.singleton(ba), jedis.zinter(params, bfoo, bbar));
+
+    assertEquals(Collections.singleton(new Tuple(ba, new Double(7))),
+      jedis.zinterWithScores(bparams, bfoo, bbar));
+  }
+
+  @Test
   public void zinterstore() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");

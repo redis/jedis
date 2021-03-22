@@ -16,6 +16,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -1230,6 +1231,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Object xpending(final byte[] key, final byte[] groupname) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname);
+  }
+
+  @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, params);
   }
 
   @Override

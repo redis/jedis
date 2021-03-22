@@ -13,6 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -621,6 +622,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    lmove(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), from, to);
+  }
+
+  @Override
+  public void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout) {
+    blmove(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), from, to, timeout);
+  }
+
+  @Override
   public void blpop(final String[] args) {
     blpop(SafeEncoder.encodeMany(args));
   }
@@ -810,6 +821,16 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zunionstore(final String dstkey, final ZParams params, final String... sets) {
     zunionstore(SafeEncoder.encode(dstkey), params, SafeEncoder.encodeMany(sets));
+  }
+
+  @Override
+  public void zinter(final ZParams params, final String... keys) {
+    zinter(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zinterWithScores(final ZParams params, final String... keys) {
+    zinterWithScores(params, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -1569,6 +1590,11 @@ public class Client extends BinaryClient implements Commands {
       int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
         SafeEncoder.encode(end==null ? "+" : end.toString()), count, consumername == null? null : SafeEncoder.encode(consumername));
+  }
+
+  @Override
+  public void xpending(String key, String groupname, XPendingParams params) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), params);
   }
 
   @Override

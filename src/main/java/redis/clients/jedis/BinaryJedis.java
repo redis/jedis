@@ -21,6 +21,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
@@ -2393,6 +2394,42 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Pop an element from a list, push it to another list and return it
+   * @param srcKey
+   * @param dstKey
+   * @param from
+   * @param to
+   * @return
+   */
+  @Override
+  public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    checkIsInMultiOrPipeline();
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Pop an element from a list, push it to another list and return it; or block until one is available
+   * @param srcKey
+   * @param dstKey
+   * @param from
+   * @param to
+   * @param timeout
+   * @return
+   */
+  @Override
+  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
+    checkIsInMultiOrPipeline();
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  /**
    * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
    * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
    * lists.
@@ -3160,6 +3197,34 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zunionstore(dstkey, params, sets);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinter(params, keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinterWithScores(params, keys);
+    return BuilderFactory.TUPLE_ZSET.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -4778,6 +4843,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname);
     return client.getOne();
+  }
+
+  @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, params);
+    return client.getObjectMultiBulkReply();
   }
 
   @Override

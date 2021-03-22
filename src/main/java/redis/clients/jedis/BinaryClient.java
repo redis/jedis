@@ -24,6 +24,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
@@ -735,6 +736,14 @@ public class BinaryClient extends Connection {
     sendCommand(SORT, args.toArray(new byte[args.size()][]));
   }
 
+  public void lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    sendCommand(LMOVE, srcKey, dstKey, from.getRaw(), to.getRaw());
+  }
+
+  public void blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
+    sendCommand(BLMOVE, srcKey, dstKey, from.getRaw(), to.getRaw(), toByteArray(timeout));
+  }
+
   public void blpop(final byte[][] args) {
     sendCommand(BLPOP, args);
   }
@@ -932,14 +941,14 @@ public class BinaryClient extends Connection {
   }
 
   public void zunion(final ZParams params, final byte[]... keys) {
-    sendCommand(ZUNION, buildZunionByteParams(params, false, keys));
+    sendCommand(ZUNION, buildByteZParams(params, false, keys));
   }
 
   public void zunionWithScores(final ZParams params, final byte[]... keys) {
-    sendCommand(ZUNION, buildZunionByteParams(params, true, keys));
+    sendCommand(ZUNION, buildByteZParams(params, true, keys));
   }
 
-  private byte[][] buildZunionByteParams(final ZParams params, final boolean withScores, final byte[]... keys) {
+  private byte[][] buildByteZParams(final ZParams params, final boolean withScores, final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
     args.add(Protocol.toByteArray(keys.length));
     Collections.addAll(args, keys);
@@ -963,6 +972,14 @@ public class BinaryClient extends Connection {
 
     args.addAll(params.getParams());
     sendCommand(ZUNIONSTORE, args.toArray(new byte[args.size()][]));
+  }
+
+  public void zinter(final ZParams params, final byte[]... keys) {
+    sendCommand(ZINTER, buildByteZParams(params, false, keys));
+  }
+
+  public void zinterWithScores(final ZParams params, final byte[]... keys) {
+    sendCommand(ZINTER, buildByteZParams(params, true, keys));
   }
 
   public void zinterstore(final byte[] dstkey, final byte[]... sets) {
@@ -1862,6 +1879,10 @@ public class BinaryClient extends Connection {
     } else {
       sendCommand(XPENDING, key, groupname, start, end, toByteArray(count), consumername);
     }
+  }
+
+  public void xpending(byte[] key, byte[] groupname, XPendingParams params) {
+    sendCommand(XPENDING, joinParameters(key, groupname, params.getByteParams()));
   }
 
   public void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,

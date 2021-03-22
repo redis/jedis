@@ -13,6 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.args.UnblockType;
@@ -2049,6 +2050,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getMultiBulkReply();
   }
 
+  @Override
+  public String lmove(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to) {
+    checkIsInMultiOrPipeline();
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String blmove(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final int timeout) {
+    checkIsInMultiOrPipeline();
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
   /**
    * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
    * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
@@ -2752,6 +2774,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zunionstore(dstkey, params, sets);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<String> zinter(final ZParams params, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinter(params, keys);
+    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinterWithScores(params, keys);
+    return getTupledSet();
   }
 
   /**
@@ -4342,6 +4392,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
+    return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, params);
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 

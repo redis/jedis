@@ -7,7 +7,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
@@ -25,9 +25,9 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<Long> exists(byte[]... keys);
 
-  Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to);
+  Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to, int timeout);
+  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
 
   Response<List<byte[]>> blpop(byte[]... args);
 

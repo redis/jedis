@@ -24,7 +24,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
@@ -720,11 +720,11 @@ public class BinaryClient extends Connection {
     sendCommand(SORT, args.toArray(new byte[args.size()][]));
   }
 
-  public void lmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to) {
+  public void lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
     sendCommand(LMOVE, srcKey, dstKey, from.getRaw(), to.getRaw());
   }
 
-  public void blmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to, int timeout) {
+  public void blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
     sendCommand(BLMOVE, srcKey, dstKey, from.getRaw(), to.getRaw(), toByteArray(timeout));
   }
 

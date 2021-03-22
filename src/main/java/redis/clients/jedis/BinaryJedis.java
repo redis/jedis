@@ -21,7 +21,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
@@ -2380,7 +2380,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public byte[] lmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to) {
+  public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
     checkIsInMultiOrPipeline();
     client.lmove(srcKey, dstKey, from, to);
     return client.getBinaryBulkReply();
@@ -2396,10 +2396,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public byte[] blmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to, int timeout) {
+  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
     checkIsInMultiOrPipeline();
     client.blmove(srcKey, dstKey, from, to, timeout);
-    return client.getBinaryBulkReply();
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   /**

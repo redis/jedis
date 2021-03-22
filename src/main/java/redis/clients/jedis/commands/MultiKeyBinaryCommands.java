@@ -7,7 +7,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -25,9 +25,9 @@ public interface MultiKeyBinaryCommands {
 
   Long exists(byte[]... keys);
 
-  byte[] lmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to);
+  byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  byte[] blmove(byte[] srcKey, byte[] dstKey, Direction from, Direction to, int timeout);
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 

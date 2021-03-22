@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
@@ -1821,7 +1821,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String lmove(String srcKey, String dstKey, Direction from, Direction to) {
+  public String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override
       public String execute(Jedis connection) {
@@ -1831,7 +1831,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public String blmove(String srcKey, String dstKey, Direction from, Direction to,
+  public String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
       int timeout) {
     return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
       @Override

@@ -8,7 +8,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GetExParams;
@@ -275,9 +275,9 @@ public interface Commands {
 
   void sort(String key, SortingParams sortingParameters);
 
-  void lmove(String srcKey, String dstKey, Direction from, Direction to);
+  void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  void blmove(String srcKey, String dstKey, Direction from, Direction to, int timeout);
+  void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
 
   void blpop(String[] args);
 

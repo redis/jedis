@@ -9,7 +9,7 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.Direction;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
@@ -26,9 +26,9 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> exists(String... keys);
 
-  Response<String> lmove(String srcKey, String dstKey, Direction from, Direction to);
+  Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  Response<String> blmove(String srcKey, String dstKey, Direction from, Direction to, int timeout);
+  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
 
   Response<List<String>> blpop(String... args);
 

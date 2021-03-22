@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
@@ -1750,6 +1751,28 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.del(keys);
       }
     }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public byte[] lmove(final byte[] srcKey, final byte[] dstKey, final ListDirection from,
+      final ListDirection to) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.lmove(srcKey, dstKey, from, to);
+      }
+    }.runBinary(2, srcKey, dstKey);
+  }
+
+  @Override
+  public byte[] blmove(final byte[] srcKey, final byte[] dstKey, final ListDirection from,
+      final ListDirection to, final int timeout) {
+    return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
+      @Override
+      public byte[] execute(Jedis connection) {
+        return connection.blmove(srcKey, dstKey, from, to, timeout);
+      }
+    }.runBinary(2, srcKey, dstKey);
   }
 
   @Override

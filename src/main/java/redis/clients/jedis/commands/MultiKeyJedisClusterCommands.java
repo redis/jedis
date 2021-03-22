@@ -11,6 +11,7 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -27,6 +28,10 @@ public interface MultiKeyJedisClusterCommands {
   Long unlink(String... keys);
 
   Long exists(String... keys);
+
+  String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
 
   List<String> blpop(int timeout, String... keys);
 

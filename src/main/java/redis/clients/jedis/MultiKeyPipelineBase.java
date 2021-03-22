@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
@@ -13,6 +14,34 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline, BasicRedisPipeline {
 
   protected Client client = null;
+
+  @Override
+  public Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from,
+      ListDirection to) {
+    client.lmove(srcKey, dstKey, from, to);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      int timeout) {
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<String> lmove(String srcKey, String dstKey, ListDirection from,
+      ListDirection to) {
+    client.lmove(srcKey, dstKey, from, to);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      int timeout) {
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return getResponse(BuilderFactory.STRING);
+  }
 
   @Override
   public Response<List<String>> brpop(String... args) {

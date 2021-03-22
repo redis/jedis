@@ -339,6 +339,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, replace);
+    return client.getIntegerReply();
+  }
+
   /**
    * @return <code>PONG</code>
    */

@@ -21,6 +21,8 @@ import java.util.Set;
 public interface MultiKeyBinaryCommands {
   Long copy(byte[] srcKey, byte[] dstKey, CopyParams params);
 
+  Long copy(byte[] srcKey, byte[] dstKey, boolean replace);
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);

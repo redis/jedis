@@ -171,6 +171,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long copy(String srcKey, String dstKey, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, replace);
+    return client.getIntegerReply();
+  }
+
   /**
    * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
    * @param message

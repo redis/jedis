@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
-  Long copy(byte[] srcKey, byte[] dstKey, CopyParams params);
+  Long copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
   Long del(byte[]... keys);
 

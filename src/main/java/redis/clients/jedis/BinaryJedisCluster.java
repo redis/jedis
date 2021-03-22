@@ -157,11 +157,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long copy(byte[] srcKey, byte[] dstKey, CopyParams params) {
+  public Long copy(byte[] srcKey, byte[] dstKey, boolean replace) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.copy(srcKey, dstKey, params);
+        return connection.copy(srcKey, dstKey, replace);
       }
     }.runBinary(2, srcKey, dstKey);
   }

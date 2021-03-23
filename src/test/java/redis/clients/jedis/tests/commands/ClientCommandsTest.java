@@ -191,6 +191,19 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void killLAddr() {
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bladdr=(\\S+)\\b").matcher(info);
+    matcher.find();
+    String laddr = matcher.group(1);
+
+    long clients = jedis.clientKill(new ClientKillParams().laddr(laddr));
+    assertTrue(clients >= 1);
+
+    assertDisconnected(client);
+  }
+
+  @Test
   public void killAddrIpPort() {
     String info = findInClientList();
     Matcher matcher = Pattern.compile("\\baddr=(\\S+)\\b").matcher(info);

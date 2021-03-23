@@ -222,14 +222,8 @@ public class ShardedJedisPoolTest {
 
     pipeline.incr("pipelined");
     pipeline.incr("pipelined2");
-
-    jedis.resetState();
-
-    pipeline = jedis.pipelined();
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
     List<Object> results = pipeline.syncAndReturnAll();
-
+    jedis.resetState();
     assertEquals(2, results.size());
     jedis.close();
     pool.destroy();

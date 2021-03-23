@@ -31,15 +31,19 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 
+  List<byte[]> blpop(double timeout, byte[]... keys);
+
   List<byte[]> brpop(int timeout, byte[]... keys);
 
-  KeyedTuple bzpopmax(int timeout, byte[]... keys);
+  List<byte[]> brpop(double timeout, byte[]... keys);
 
-  KeyedTuple bzpopmin(int timeout, byte[]... keys);
+  KeyedTuple bzpopmax(double timeout, byte[]... keys);
+
+  KeyedTuple bzpopmin(double timeout, byte[]... keys);
 
   List<byte[]> mget(byte[]... keys);
 

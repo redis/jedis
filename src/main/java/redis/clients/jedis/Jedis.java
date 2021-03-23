@@ -2059,27 +2059,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getMultiBulkReply();
   }
 
-  @Override
-  public String lmove(final String srcKey, final String dstKey, final ListDirection from,
-      final ListDirection to) {
-    checkIsInMultiOrPipeline();
-    client.lmove(srcKey, dstKey, from, to);
-    return client.getBulkReply();
-  }
-
-  @Override
-  public String blmove(final String srcKey, final String dstKey, final ListDirection from,
-      final ListDirection to, final int timeout) {
-    checkIsInMultiOrPipeline();
-    client.blmove(srcKey, dstKey, from, to, timeout);
-    client.setTimeoutInfinite();
-    try {
-      return client.getBulkReply();
-    } finally {
-      client.rollbackTimeout();
-    }
-  }
-
   /**
    * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
    * @see #sort(String, SortingParams)
@@ -2115,6 +2094,27 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.sort(key, dstkey);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public String lmove(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to) {
+    checkIsInMultiOrPipeline();
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String blmove(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final double timeout) {
+    checkIsInMultiOrPipeline();
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   /**
@@ -2181,6 +2181,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public List<String> blpop(final int timeout, final String... keys) {
+    return blpop(getKeysAndTimeout(timeout, keys));
+  }
+
+  @Override
+  public List<String> blpop(final double timeout, final String... keys) {
     return blpop(getKeysAndTimeout(timeout, keys));
   }
 
@@ -2251,7 +2256,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return brpop(getKeysAndTimeout(timeout, keys));
   }
 
+  @Override
+  public List<String> brpop(final double timeout, final String... keys) {
+    return brpop(getKeysAndTimeout(timeout, keys));
+  }
+
   private String[] getKeysAndTimeout(int timeout, String[] keys) {
+    final int keyCount = keys.length;
+    final String[] args = new String[keyCount + 1];
+
+    System.arraycopy(keys, 0, args, 0, keyCount);
+
+    args[keyCount] = String.valueOf(timeout);
+    return args;
+  }
+
+  private String[] getKeysAndTimeout(double timeout, String[] keys) {
     final int keyCount = keys.length;
     final String[] args = new String[keyCount + 1];
 
@@ -2286,7 +2306,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public KeyedTuple bzpopmax(int timeout, String... keys) {
+  public KeyedTuple bzpopmax(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
@@ -2298,7 +2318,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public KeyedTuple bzpopmin(int timeout, String... keys) {
+  public KeyedTuple bzpopmin(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
@@ -2307,6 +2327,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     } finally {
       client.rollbackTimeout();
     }
+  }
+
+  @Override
+  public List<String> blpop(final int timeout, final String key) {
+    return blpop(key, String.valueOf(timeout));
+  }
+
+  @Override
+  public List<String> blpop(double timeout, String key) {
+    return blpop(key, String.valueOf(timeout));
+  }
+
+  @Override
+  public List<String> brpop(final int timeout, final String key) {
+    return brpop(key, String.valueOf(timeout));
+  }
+
+  @Override
+  public List<String> brpop(double timeout, String key) {
+    return brpop(key, String.valueOf(timeout));
   }
 
   @Override
@@ -3922,16 +3962,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.pfmerge(destkey, sourcekeys);
     return client.getStatusCodeReply();
-  }
-
-  @Override
-  public List<String> blpop(final int timeout, final String key) {
-    return blpop(key, String.valueOf(timeout));
-  }
-
-  @Override
-  public List<String> brpop(final int timeout, final String key) {
-    return brpop(key, String.valueOf(timeout));
   }
 
   @Override

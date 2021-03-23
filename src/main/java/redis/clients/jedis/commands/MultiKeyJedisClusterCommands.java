@@ -32,15 +32,19 @@ public interface MultiKeyJedisClusterCommands {
 
   String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
 
   List<String> blpop(int timeout, String... keys);
 
+  List<String> blpop(double timeout, String... keys);
+
   List<String> brpop(int timeout, String... keys);
 
-  KeyedTuple bzpopmax(int timeout, String... keys);
+  List<String> brpop(double timeout, String... keys);
 
-  KeyedTuple bzpopmin(int timeout, String... keys);
+  KeyedTuple bzpopmax(double timeout, String... keys);
+
+  KeyedTuple bzpopmin(double timeout, String... keys);
 
   List<String> mget(String... keys);
 

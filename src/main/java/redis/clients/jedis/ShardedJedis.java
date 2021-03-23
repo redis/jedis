@@ -206,6 +206,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.psetex(key, milliseconds, value);
   }
 
+  @Deprecated
   public List<String> blpop(final String arg) {
     Jedis j = getShard(arg);
     return j.blpop(arg);
@@ -217,6 +218,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.blpop(timeout, key);
   }
 
+  @Override
+  public List<String> blpop(final double timeout, final String key) {
+    Jedis j = getShard(key);
+    return j.blpop(timeout, key);
+  }
+
+  @Deprecated
   public List<String> brpop(final String arg) {
     Jedis j = getShard(arg);
     return j.brpop(arg);
@@ -224,6 +232,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
+    Jedis j = getShard(key);
+    return j.brpop(timeout, key);
+  }
+
+  @Override
+  public List<String> brpop(final double timeout, final String key) {
     Jedis j = getShard(key);
     return j.brpop(timeout, key);
   }

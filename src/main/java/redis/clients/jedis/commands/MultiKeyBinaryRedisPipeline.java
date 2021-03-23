@@ -30,15 +30,19 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
+  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
 
   Response<List<byte[]>> blpop(byte[]... args);
 
+  Response<List<byte[]>> blpop(double timeout, byte[]... args);
+
   Response<List<byte[]>> brpop(byte[]... args);
 
-  Response<KeyedTuple> bzpopmax(int timeout, byte[]... keys);
+  Response<List<byte[]>> brpop(double timeout, byte[]... args);
 
-  Response<KeyedTuple> bzpopmin(int timeout, byte[]... keys);
+  Response<KeyedTuple> bzpopmax(double timeout, byte[]... keys);
+
+  Response<KeyedTuple> bzpopmin(double timeout, byte[]... keys);
 
   Response<Set<byte[]>> keys(byte[] pattern);
 

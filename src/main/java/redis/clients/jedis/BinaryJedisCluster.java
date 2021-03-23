@@ -1787,7 +1787,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public byte[] blmove(final byte[] srcKey, final byte[] dstKey, final ListDirection from,
-      final ListDirection to, final int timeout) {
+      final ListDirection to, final double timeout) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts) {
       @Override
       public byte[] execute(Jedis connection) {
@@ -1807,6 +1807,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> blpop(final double timeout, final byte[]... keys) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.blpop(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
@@ -1817,7 +1827,17 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public KeyedTuple bzpopmax(int timeout, byte[]... keys) {
+  public List<byte[]> brpop(final double timeout, final byte[]... keys) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.brpop(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public KeyedTuple bzpopmax(double timeout, byte[]... keys) {
     return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
       @Override
       public KeyedTuple execute(Jedis connection) {
@@ -1827,7 +1847,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public KeyedTuple bzpopmin(int timeout, byte[]... keys) {
+  public KeyedTuple bzpopmin(double timeout, byte[]... keys) {
     return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
       @Override
       public KeyedTuple execute(Jedis connection) {

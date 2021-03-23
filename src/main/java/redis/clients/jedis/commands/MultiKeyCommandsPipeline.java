@@ -32,15 +32,24 @@ public interface MultiKeyCommandsPipeline {
 
   Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
+  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout);
 
   Response<List<String>> blpop(String... args);
 
+  Response<List<String>> blpop(int timeout, String... args);
+
+  Response<List<String>> blpop(double timeout, String... args);
+
   Response<List<String>> brpop(String... args);
 
-  Response<KeyedTuple> bzpopmax(int timeout, String... keys);
+  Response<List<String>> brpop(int timeout, String... args);
 
-  Response<KeyedTuple> bzpopmin(int timeout, String... keys);
+  Response<List<String>> brpop(double timeout, String... args);
+
+  Response<KeyedTuple> bzpopmax(double timeout, String... keys);
+
+  Response<KeyedTuple> bzpopmin(double timeout, String... keys);
 
   Response<Set<String>> keys(String pattern);
 

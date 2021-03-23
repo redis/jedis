@@ -321,7 +321,11 @@ public interface JedisClusterCommands {
 
   List<String> blpop(int timeout, String key);
 
+  List<String> blpop(double timeout, String key);
+
   List<String> brpop(int timeout, String key);
+
+  List<String> brpop(double timeout, String key);
 
   Long del(String key);
 

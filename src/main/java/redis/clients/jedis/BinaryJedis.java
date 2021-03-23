@@ -2464,7 +2464,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
+  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     checkIsInMultiOrPipeline();
     client.blmove(srcKey, dstKey, from, to, timeout);
     client.setTimeoutInfinite();
@@ -2542,6 +2542,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return blpop(getKeysAndTimeout(timeout, keys));
   }
 
+  @Override
+  public List<byte[]> blpop(final double timeout, final byte[]... keys) {
+    return blpop(getKeysAndTimeout(timeout, keys));
+  }
+
   /**
    * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
    * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
@@ -2610,6 +2615,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public List<byte[]> brpop(final double timeout, final byte[]... keys) {
+    return brpop(getKeysAndTimeout(timeout, keys));
+  }
+
+  @Override
   public List<byte[]> blpop(final byte[]... args) {
     checkIsInMultiOrPipeline();
     client.blpop(args);
@@ -2641,8 +2651,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return args;
   }
 
+  private byte[][] getKeysAndTimeout(double timeout, byte[][] keys) {
+    int size = keys.length;
+    final byte[][] args = new byte[size + 1][];
+    System.arraycopy(keys, 0, args, 0, size);
+    args[size] = Protocol.toByteArray(timeout);
+    return args;
+  }
+
   @Override
-  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
+  public KeyedTuple bzpopmax(final double timeout, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
@@ -2654,7 +2672,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
+  public KeyedTuple bzpopmin(final double timeout, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();

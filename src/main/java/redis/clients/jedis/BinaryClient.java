@@ -1248,6 +1248,10 @@ public class BinaryClient extends Connection {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   public void restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }

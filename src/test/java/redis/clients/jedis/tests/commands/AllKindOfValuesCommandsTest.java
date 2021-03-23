@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 
 import redis.clients.jedis.Protocol.Keyword;
@@ -37,6 +38,7 @@ import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
+import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -57,6 +59,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bnx = { 0x6E, 0x78 };
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
+  private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(7);
 
   @Test
   public void ping() {
@@ -676,7 +679,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void restoreParams() {
     // take a separate instance
-    Jedis jedis2 = new Jedis(hnp.getHost(), 6379, 500);
+    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
     jedis2.auth("foobared");
     jedis2.flushAll();
 
@@ -699,15 +702,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
     assertTrue(jedis2.pttl("bar") <= 1000);
 
-    jedis2.configSet("maxmemory-policy", "allkeys-lru");
     jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
     assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
-
-    jedis2.configSet("maxmemory-policy", "allkeys-lfu");
-    jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
-    assertEquals(90, jedis2.objectFreq("bar1").longValue());
-
     jedis2.close();
+
+    Jedis lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
+    lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
+    assertEquals(90, lfuJedis.objectFreq("bar1").longValue());
+    lfuJedis.close();
   }
 
   @Test

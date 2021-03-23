@@ -333,6 +333,10 @@ public interface BinaryRedisPipeline {
     return restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
 
   Response<String> restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);

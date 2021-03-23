@@ -73,6 +73,10 @@ public interface JedisCommands {
     return restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   String restoreReplace(String key, long ttl, byte[] serializedValue);
 
   String restore(String key, long ttl, byte[] serializedValue, RestoreParams params);

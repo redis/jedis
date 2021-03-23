@@ -198,7 +198,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     String laddr = matcher.group(1);
 
     long clients = jedis.clientKill(new ClientKillParams().laddr(laddr));
-    assertEquals(1, clients);
+    assertTrue(clients >= 1);
 
     assertDisconnected(client);
   }

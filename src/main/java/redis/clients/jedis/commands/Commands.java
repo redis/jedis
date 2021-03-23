@@ -14,6 +14,7 @@ import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -428,6 +429,8 @@ public interface Commands {
   }
 
   void restoreReplace(String key, long ttl, byte[] serializedValue);
+
+  void restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
   void scan(String cursor, ScanParams params);
 

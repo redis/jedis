@@ -10,6 +10,7 @@ import redis.clients.jedis.commands.RedisPipeline;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -1800,6 +1801,20 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<String> restoreReplace(final byte[] key, final long ttl,
       final byte[] serializedValue) {
     getClient(key).restoreReplace(key, ttl, serializedValue);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    getClient(key).restore(key, ttl, serializedValue, params);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    getClient(key).restore(key, ttl, serializedValue, params);
     return getResponse(BuilderFactory.STRING);
   }
 

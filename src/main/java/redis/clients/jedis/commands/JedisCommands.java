@@ -23,6 +23,7 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -74,6 +75,7 @@ public interface JedisCommands {
 
   String restoreReplace(String key, long ttl, byte[] serializedValue);
 
+  String restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
   /**
    * @deprecated Use {@link #expire(java.lang.String, long)}.

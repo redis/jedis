@@ -1252,6 +1252,14 @@ public class BinaryClient extends Connection {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }
 
+  public void restore(final byte[] key, final long ttl, final byte[] serializedValue, final RestoreParams params) {
+    if (params == null) {
+      sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
+    } else {
+      sendCommand(RESTORE, params.getByteParams(key, toByteArray(ttl), serializedValue));
+    }
+  }
+
   public void pexpire(final byte[] key, final long milliseconds) {
     sendCommand(PEXPIRE, key, toByteArray(milliseconds));
   }

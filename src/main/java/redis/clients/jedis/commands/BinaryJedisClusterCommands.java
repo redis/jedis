@@ -11,6 +11,7 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -52,6 +53,8 @@ public interface BinaryJedisClusterCommands {
   }
 
   String restore(byte[] key, long ttl, byte[] serializedValue);
+
+  String restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Long expire(byte[] key, int seconds);
 

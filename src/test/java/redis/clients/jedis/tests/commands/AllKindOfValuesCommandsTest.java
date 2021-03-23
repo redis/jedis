@@ -36,6 +36,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -668,6 +669,43 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis2.restoreReplace("foo", 0, serialized);
     assertEquals(map, jedis2.hgetAll("foo"));
+
+    jedis2.close();
+  }
+
+  @Test
+  public void restoreParams() {
+    // take a separate instance
+    Jedis jedis2 = new Jedis(hnp.getHost(), 6379, 500);
+    jedis2.auth("foobared");
+    jedis2.flushAll();
+
+    jedis2.set("foo", "bar");
+    jedis.set("from", "a");
+    byte[] serialized = jedis.dump("from");
+
+    try {
+      jedis2.restore("foo", 0, serialized, null);
+      fail("Simple restore on a existing key should fail");
+    } catch (JedisDataException e) {
+      // should be here
+    }
+    assertEquals("bar", jedis2.get("foo"));
+
+    jedis2.restore("foo", 1000, serialized, RestoreParams.restoreParams().replace());
+    assertEquals("a", jedis2.get("foo"));
+    assertTrue(jedis2.pttl("foo") <= 1000);
+
+    jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
+    assertTrue(jedis2.pttl("bar") <= 1000);
+
+    jedis2.configSet("maxmemory-policy", "allkeys-lru");
+    jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
+    assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
+
+    jedis2.configSet("maxmemory-policy", "allkeys-lfu");
+    jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
+    assertEquals(90, jedis2.objectFreq("bar1").longValue());
 
     jedis2.close();
   }

@@ -1042,6 +1042,12 @@ public class Client extends BinaryClient implements Commands {
     restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
   }
 
+  @Override
+  public void restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    restore(SafeEncoder.encode(key), ttl, serializedValue, params);
+  }
+
   public void pexpire(final String key, final long milliseconds) {
     pexpire(SafeEncoder.encode(key), milliseconds);
   }

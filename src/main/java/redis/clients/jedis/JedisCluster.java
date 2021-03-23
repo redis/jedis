@@ -369,6 +369,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public String restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    return new JedisClusterCommand<String>(connectionHandler, maxAttempts) {
+      @Override
+      public String execute(Jedis connection) {
+        return connection.restore(key, ttl, serializedValue, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public Long expire(final String key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts) {
       @Override

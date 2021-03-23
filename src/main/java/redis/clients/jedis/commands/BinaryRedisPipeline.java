@@ -12,6 +12,7 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -333,6 +334,8 @@ public interface BinaryRedisPipeline {
   }
 
   Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
+
+  Response<String> restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 

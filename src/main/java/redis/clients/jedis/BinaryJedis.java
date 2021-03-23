@@ -4040,6 +4040,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    checkIsInMultiOrPipeline();
+    client.restore(key, ttl, serializedValue, params);
+    return client.getStatusCodeReply();
+  }
+
   /**
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.

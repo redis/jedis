@@ -1,11 +1,12 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 
@@ -1854,10 +1855,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<String> blpop(final double timeout, final String... keys) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+  public KeyedListElement blpop(final double timeout, final String... keys) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
       @Override
-      public List<String> execute(Jedis connection) {
+      public KeyedListElement execute(Jedis connection) {
         return connection.blpop(timeout, keys);
       }
     }.run(keys.length, keys);
@@ -1875,30 +1876,30 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<String> brpop(final double timeout, final String... keys) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+  public KeyedListElement brpop(final double timeout, final String... keys) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
       @Override
-      public List<String> execute(Jedis connection) {
+      public KeyedListElement execute(Jedis connection) {
         return connection.brpop(timeout, keys);
       }
     }.run(keys.length, keys);
   }
 
   @Override
-  public KeyedTuple bzpopmax(double timeout, String... keys) {
-    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
+    return new JedisClusterCommand<KeyedZSetElement>(connectionHandler, maxAttempts) {
       @Override
-      public KeyedTuple execute(Jedis connection) {
+      public KeyedZSetElement execute(Jedis connection) {
         return connection.bzpopmax(timeout, keys);
       }
     }.run(keys.length, keys);
   }
 
   @Override
-  public KeyedTuple bzpopmin(double timeout, String... keys) {
-    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts) {
+  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
+    return new JedisClusterCommand<KeyedZSetElement>(connectionHandler, maxAttempts) {
       @Override
-      public KeyedTuple execute(Jedis connection) {
+      public KeyedZSetElement execute(Jedis connection) {
         return connection.bzpopmin(timeout, keys);
       }
     }.run(keys.length, keys);
@@ -1915,10 +1916,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<String> blpop(double timeout, String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+  public KeyedListElement blpop(double timeout, String key) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
       @Override
-      public List<String> execute(Jedis connection) {
+      public KeyedListElement execute(Jedis connection) {
         return connection.blpop(timeout, key);
       }
     }.run(key);
@@ -1935,10 +1936,10 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<String> brpop(double timeout, String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+  public KeyedListElement brpop(double timeout, String key) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
       @Override
-      public List<String> execute(Jedis connection) {
+      public KeyedListElement execute(Jedis connection) {
         return connection.brpop(timeout, key);
       }
     }.run(key);

@@ -3,11 +3,10 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
@@ -40,9 +39,9 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<List<byte[]>> brpop(double timeout, byte[]... args);
 
-  Response<KeyedTuple> bzpopmax(double timeout, byte[]... keys);
+  Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys);
 
-  Response<KeyedTuple> bzpopmin(double timeout, byte[]... keys);
+  Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys);
 
   Response<Set<byte[]>> keys(byte[] pattern);
 

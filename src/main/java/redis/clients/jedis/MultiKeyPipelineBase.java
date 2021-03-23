@@ -1,9 +1,9 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 
 import java.util.List;
 import java.util.Map;
@@ -97,9 +97,9 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<List<String>> blpop(double timeout, String... keys) {
+  public Response<KeyedListElement> blpop(double timeout, String... keys) {
     client.blpop(timeout, keys);
-    return getResponse(BuilderFactory.STRING_LIST);
+    return getResponse(BuilderFactory.KEYED_LIST_ELEMENT);
   }
 
   @Override
@@ -138,9 +138,9 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<List<String>> brpop(double timeout, String... keys) {
+  public Response<KeyedListElement> brpop(double timeout, String... keys) {
     client.brpop(timeout, keys);
-    return getResponse(BuilderFactory.STRING_LIST);
+    return getResponse(BuilderFactory.KEYED_LIST_ELEMENT);
   }
 
   @Override
@@ -150,27 +150,27 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmax(double timeout, String... keys) {
+  public Response<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
     client.bzpopmax(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmax(double timeout, byte[]... keys) {
+  public Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
     client.bzpopmax(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmin(double timeout, String... keys) {
+  public Response<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
     client.bzpopmin(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmin(double timeout, byte[]... keys) {
+  public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
     client.bzpopmin(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override

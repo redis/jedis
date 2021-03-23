@@ -12,18 +12,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
 
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class SortedSetCommandsTest extends JedisCommandTestBase {
@@ -1487,15 +1489,17 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
-    KeyedTuple actual = jedis.bzpopmax(0, "foo", "bar");
-    assertEquals(new KeyedTuple("foo", "b", 10d), actual);
+    assertEquals(new KeyedZSetElement("foo", "b", 10d), jedis.bzpopmax(0, "foo", "bar"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
-    actual = jedis.bzpopmax(0, bfoo, bbar);
-    assertEquals(new KeyedTuple(bfoo, bb, 10d), actual);
+    List<byte[]> actual = jedis.bzpopmax(0, bfoo, bbar);
+    assertEquals(3, actual.size());
+    assertArrayEquals(bfoo, actual.get(0));
+    assertArrayEquals(bb, actual.get(1));
+    assertEquals(10d, BuilderFactory.DOUBLE.build(actual.get(2)), 1e-10);
   }
 
   @Test
@@ -1503,15 +1507,17 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
-    KeyedTuple actual = jedis.bzpopmin(0, "bar", "foo");
-    assertEquals(new KeyedTuple("bar", "c", 0.1d), actual);
+    assertEquals(new KeyedZSetElement("bar", "c", 0.1d), jedis.bzpopmin(0, "bar", "foo"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
-    actual = jedis.bzpopmin(0, bbar, bfoo);
-    assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
+    List<byte[]> actual = jedis.bzpopmin(0, bbar, bfoo);
+    assertEquals(3, actual.size());
+    assertArrayEquals(bbar, actual.get(0));
+    assertArrayEquals(bc, actual.get(1));
+    assertEquals(0.1d, BuilderFactory.DOUBLE.build(actual.get(2)), 1e-10);
   }
 
   @Test

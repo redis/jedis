@@ -21,9 +21,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.args.FlushMode;
-import redis.clients.jedis.args.UnblockType;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
 import redis.clients.jedis.commands.BinaryJedisCommands;
@@ -34,6 +32,7 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
@@ -2660,24 +2659,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public KeyedTuple bzpopmax(final double timeout, final byte[]... keys) {
+  public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+      return client.getBinaryMultiBulkReply();
     } finally {
       client.rollbackTimeout();
     }
   }
 
   @Override
-  public KeyedTuple bzpopmin(final double timeout, final byte[]... keys) {
+  public List<byte[]> bzpopmin(final double timeout, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+      return client.getBinaryMultiBulkReply();
     } finally {
       client.rollbackTimeout();
     }

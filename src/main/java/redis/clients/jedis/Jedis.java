@@ -13,10 +13,10 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.args.UnblockType;
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -2185,8 +2185,15 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<String> blpop(final double timeout, final String... keys) {
-    return blpop(getKeysAndTimeout(timeout, keys));
+  public KeyedListElement blpop(final double timeout, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.blpop(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   /**
@@ -2257,21 +2264,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<String> brpop(final double timeout, final String... keys) {
-    return brpop(getKeysAndTimeout(timeout, keys));
+  public KeyedListElement brpop(final double timeout, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.brpop(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   private String[] getKeysAndTimeout(int timeout, String[] keys) {
-    final int keyCount = keys.length;
-    final String[] args = new String[keyCount + 1];
-
-    System.arraycopy(keys, 0, args, 0, keyCount);
-
-    args[keyCount] = String.valueOf(timeout);
-    return args;
-  }
-
-  private String[] getKeysAndTimeout(double timeout, String[] keys) {
     final int keyCount = keys.length;
     final String[] args = new String[keyCount + 1];
 
@@ -2306,24 +2310,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public KeyedTuple bzpopmax(double timeout, String... keys) {
+  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_TUPLE.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
   }
 
   @Override
-  public KeyedTuple bzpopmin(double timeout, String... keys) {
+  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_TUPLE.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2335,8 +2339,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<String> blpop(double timeout, String key) {
-    return blpop(key, String.valueOf(timeout));
+  public KeyedListElement blpop(double timeout, String key) {
+    return blpop(timeout, new String[]{key});
   }
 
   @Override
@@ -2345,8 +2349,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<String> brpop(double timeout, String key) {
-    return brpop(key, String.valueOf(timeout));
+  public KeyedListElement brpop(double timeout, String key) {
+    return brpop(timeout, new String[]{key});
   }
 
   @Override

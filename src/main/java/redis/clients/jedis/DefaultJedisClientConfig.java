@@ -120,7 +120,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private String user = null;
     private String password = null;
-    private int databse = Protocol.DEFAULT_DATABASE;
+    private int database = Protocol.DEFAULT_DATABASE;
     private String clientName = null;
 
     private boolean ssl = false;
@@ -135,7 +135,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public DefaultJedisClientConfig build() {
       return new DefaultJedisClientConfig(connectionTimeoutMillis, socketTimeoutMillis,
-          blockingSocketTimeoutMillis, user, password, databse, clientName, ssl, sslSocketFactory,
+          blockingSocketTimeoutMillis, user, password, database, clientName, ssl, sslSocketFactory,
           sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
@@ -164,8 +164,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder databse(int databse) {
-      this.databse = databse;
+    public Builder database(int database) {
+      this.database = database;
       return this;
     }
 

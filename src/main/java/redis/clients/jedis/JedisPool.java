@@ -261,6 +261,11 @@ public class JedisPool extends JedisPoolAbstract {
     super(poolConfig, new JedisFactory(hostAndPort, clientConfig));
   }
 
+  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final JedisSocketFactory jedisSocketFactory,
+      final JedisClientConfig clientConfig) {
+    super(poolConfig, new JedisFactory(jedisSocketFactory, clientConfig));
+  }
+
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig) {
     this(poolConfig, Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }

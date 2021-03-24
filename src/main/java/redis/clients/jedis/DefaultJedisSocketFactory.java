@@ -105,6 +105,21 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
+  @Override
+  public JedisSocketFactory copyWith(HostAndPort hostAndPort) {
+    JedisClientConfig config =
+            DefaultJedisClientConfig.builder()
+                                    .connectionTimeoutMillis(this.connectionTimeout)
+                                    .socketTimeoutMillis(this.socketTimeout)
+                                    .ssl(this.ssl)
+                                    .sslSocketFactory(this.sslSocketFactory)
+                                    .sslParameters(this.sslParameters)
+                                    .hostnameVerifier(this.hostnameVerifier)
+                                    .hostAndPortMapper(this.hostAndPortMapper)
+                                    .build();
+    return new DefaultJedisSocketFactory(hostAndPort, config);
+  }
+
   public HostAndPort getSocketHostAndPort() {
     HostAndPortMapper mapper = getHostAndPortMapper();
     HostAndPort hostAndPort = getHostAndPort();

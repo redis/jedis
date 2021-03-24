@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
 import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PONG;
 import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
@@ -34,6 +35,9 @@ public abstract class BinaryJedisPubSub {
   public void onPSubscribe(byte[] pattern, int subscribedChannels) {
   }
 
+  public void onPong(byte[] pattern) {
+  }
+
   public void unsubscribe() {
     client.unsubscribe();
     client.flush();
@@ -64,6 +68,16 @@ public abstract class BinaryJedisPubSub {
     client.flush();
   }
 
+  public void ping() {
+    client.ping();
+    client.flush();
+  }
+
+  public void ping(byte[] argument) {
+    client.ping(argument);
+    client.flush();
+  }
+
   public boolean isSubscribed() {
     return subscribedChannels > 0;
   }
@@ -84,37 +98,40 @@ public abstract class BinaryJedisPubSub {
 
   private void process(Client client) {
     do {
-      List<Object> reply = client.getRawObjectMultiBulkReply();
+      List<Object> reply = client.getUnflushedObjectMultiBulkReply();
       final Object firstObj = reply.get(0);
       if (!(firstObj instanceof byte[])) {
         throw new JedisException("Unknown message type: " + firstObj);
       }
       final byte[] resp = (byte[]) firstObj;
-      if (Arrays.equals(SUBSCRIBE.raw, resp)) {
+      if (Arrays.equals(SUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bchannel = (byte[]) reply.get(1);
         onSubscribe(bchannel, subscribedChannels);
-      } else if (Arrays.equals(UNSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(UNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bchannel = (byte[]) reply.get(1);
         onUnsubscribe(bchannel, subscribedChannels);
-      } else if (Arrays.equals(MESSAGE.raw, resp)) {
+      } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
         final byte[] bmesg = (byte[]) reply.get(2);
         onMessage(bchannel, bmesg);
-      } else if (Arrays.equals(PMESSAGE.raw, resp)) {
+      } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);
         final byte[] bmesg = (byte[]) reply.get(3);
         onPMessage(bpattern, bchannel, bmesg);
-      } else if (Arrays.equals(PSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(PSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         onPSubscribe(bpattern, subscribedChannels);
-      } else if (Arrays.equals(PUNSUBSCRIBE.raw, resp)) {
+      } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         onPUnsubscribe(bpattern, subscribedChannels);
+      } else if (Arrays.equals(PONG.getRaw(), resp)) {
+        final byte[] bpattern = (byte[]) reply.get(1);
+        onPong(bpattern);
       } else {
         throw new JedisException("Unknown message type: " + firstObj);
       }

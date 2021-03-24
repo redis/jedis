@@ -2,18 +2,25 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -24,11 +31,13 @@ import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisTest extends JedisCommandTestBase {
+
   @Test
   public void useWithoutConnecting() {
-    Jedis jedis = new Jedis("localhost");
-    jedis.auth("foobared");
-    jedis.dbSize();
+    try (Jedis j = new Jedis()) {
+      j.auth("foobared");
+      j.dbSize();
+    }
   }
 
   @Test
@@ -37,11 +46,10 @@ public class JedisTest extends JedisCommandTestBase {
     for (int b = 0; b < bigdata.length; b++) {
       bigdata[b] = (byte) ((byte) b % 255);
     }
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     hash.put("data", SafeEncoder.encode(bigdata));
 
-    String status = jedis.hmset("foo", hash);
-    assertEquals("OK", status);
+    assertEquals("OK", jedis.hmset("foo", hash));
     assertEquals(hash, jedis.hgetAll("foo"));
   }
 
@@ -49,8 +57,38 @@ public class JedisTest extends JedisCommandTestBase {
   public void connectWithShardInfo() {
     JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
     shardInfo.setPassword("foobared");
-    Jedis jedis = new Jedis(shardInfo);
-    jedis.get("foo");
+    try (Jedis jedis = new Jedis(shardInfo)) {
+      jedis.get("foo");
+    }
+  }
+
+  @Test
+  public void connectWithConfig() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().build())) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
+        .build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+    })) {
+      jedis.auth("foobared");
+      assertEquals("PONG", jedis.ping());
+    }
+    try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
+      @Override
+      public String getPassword() {
+        return "foobared";
+      }
+    })) {
+      assertEquals("PONG", jedis.ping());
+    }
   }
 
   @Test
@@ -63,7 +101,7 @@ public class JedisTest extends JedisCommandTestBase {
     try {
       jedis.hmget("foobar", "foo");
       fail("Operation should throw JedisConnectionException");
-    } catch(JedisConnectionException jce) {
+    } catch (JedisConnectionException jce) {
       // expected
     }
     jedis.close();
@@ -76,23 +114,18 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void timeoutConnectionWithURI() throws Exception {
-    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"), 15000);
-    String timeout = jedis.configGet("timeout").get(1);
-    jedis.configSet("timeout", "1");
-    Thread.sleep(2000);
-    try {
-      jedis.hmget("foobar", "foo");
-      fail("Operation should throw JedisConnectionException");
-    } catch(JedisConnectionException jce) {
-      // expected
+  public void infiniteTimeout() throws Exception {
+    try (Jedis timeoutJedis = new Jedis("localhost", 6379, 350, 350, 350)) {
+      timeoutJedis.auth("foobared");
+      try {
+        timeoutJedis.blpop(0, "foo");
+        fail("SocketTimeoutException should occur");
+      } catch (JedisConnectionException jce) {
+        assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
+        assertEquals("Read timed out", jce.getCause().getMessage());
+        assertTrue(timeoutJedis.isBroken());
+      }
     }
-    jedis.close();
-
-    // reset config
-    jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
-    jedis.configSet("timeout", timeout);
-    jedis.close();
   }
 
   @Test(expected = JedisDataException.class)
@@ -103,7 +136,6 @@ public class JedisTest extends JedisCommandTestBase {
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
     Jedis j = new Jedis(new URI("localhost:6380"));
-    j.ping();
   }
 
   @Test
@@ -116,29 +148,35 @@ public class JedisTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void startWithUrlString() {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis("redis://:foobared@localhost:6380/2");
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+  public void startWithUrl() {
+    try (Jedis j = new Jedis("localhost", 6380)) {
+      j.auth("foobared");
+      j.select(2);
+      j.set("foo", "bar");
+    }
+
+    try (Jedis j2 = new Jedis("redis://:foobared@localhost:6380/2")) {
+      assertEquals("PONG", j2.ping());
+      assertEquals("bar", j2.get("foo"));
+    }
   }
 
   @Test
-  public void startWithUrl() throws URISyntaxException {
-    Jedis j = new Jedis("localhost", 6380);
-    j.auth("foobared");
-    j.select(2);
-    j.set("foo", "bar");
-    Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"));
-    assertEquals("PONG", jedis.ping());
-    assertEquals("bar", jedis.get("foo"));
+  public void startWithUri() throws URISyntaxException {
+    try (Jedis j = new Jedis("localhost", 6380)) {
+      j.auth("foobared");
+      j.select(2);
+      j.set("foo", "bar");
+    }
+
+    try (Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"))) {
+      assertEquals("PONG", jedis.ping());
+      assertEquals("bar", jedis.get("foo"));
+    }
   }
 
   @Test
-  public void shouldNotUpdateDbIndexIfSelectFails() throws URISyntaxException {
+  public void shouldNotUpdateDbIndexIfSelectFails() {
     int currentDb = jedis.getDB();
     try {
       int invalidDb = -1;
@@ -152,31 +190,62 @@ public class JedisTest extends JedisCommandTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    Jedis jedis = new Jedis("redis://localhost:6380");
-    jedis.auth("foobared");
-    assertEquals("localhost", jedis.getClient().getHost());
-    assertEquals(6380, jedis.getClient().getPort());
-    assertEquals(0, jedis.getDB());
+    try (Jedis j1 = new Jedis("redis://localhost:6380")) {
+      j1.auth("foobared");
+      assertEquals("localhost", j1.getClient().getHost());
+      assertEquals(6380, j1.getClient().getPort());
+      assertEquals(0, j1.getDB());
+    }
 
-    jedis = new Jedis("redis://localhost:6380/");
-    jedis.auth("foobared");
-    assertEquals("localhost", jedis.getClient().getHost());
-    assertEquals(6380, jedis.getClient().getPort());
-    assertEquals(0, jedis.getDB());
+    try (Jedis j2 = new Jedis("redis://localhost:6380/")) {
+      j2.auth("foobared");
+      assertEquals("localhost", j2.getClient().getHost());
+      assertEquals(6380, j2.getClient().getPort());
+      assertEquals(0, j2.getDB());
+    }
+  }
+
+  @Test
+  public void uriWithDBindexShouldUseTimeout() throws URISyntaxException, IOException {
+    int fakePort = 6378;
+    int timeoutMillis = 3250;
+    int deltaMillis = 500;
+    URI uri = new URI(String.format("redis://localhost:%d/1", fakePort));
+    Instant start = Instant.now();
+
+    try (ServerSocket server = new ServerSocket(fakePort);
+        Jedis jedis = new Jedis(uri, timeoutMillis)) {
+      fail("Jedis should fail to connect to a fake port");
+    } catch (JedisConnectionException ex) {
+      assertEquals(SocketTimeoutException.class, ex.getCause().getClass());
+      assertEquals(timeoutMillis, Duration.between(start, Instant.now()).toMillis(), deltaMillis);
+    }
   }
 
   @Test
   public void checkCloseable() {
-    jedis.close();
-    BinaryJedis bj = new BinaryJedis("localhost");
+    BinaryJedis bj = new BinaryJedis();
+    bj.close();
+  }
+
+  @Test
+  public void checkCloseableAfterConnect() {
+    BinaryJedis bj = new BinaryJedis();
     bj.connect();
+    bj.close();
+  }
+
+  @Test
+  public void checkCloseableAfterCommand() {
+    BinaryJedis bj = new BinaryJedis();
+    bj.auth("foobared");
     bj.close();
   }
 
   @Test
   public void checkDisconnectOnQuit() {
     jedis.quit();
-    assertFalse(jedis.getClient().isConnected());
+    assertFalse(jedis.isConnected());
   }
 
 }

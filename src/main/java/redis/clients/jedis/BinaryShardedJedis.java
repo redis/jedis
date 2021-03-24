@@ -1,22 +1,37 @@
 package redis.clients.jedis;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.commands.BinaryJedisCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Sharded;
 
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
+
+  private static final Logger logger = LoggerFactory.getLogger(BinaryShardedJedis.class);
+
+  private final byte[][] dummyArray = new byte[0][];
+
   public BinaryShardedJedis(List<JedisShardInfo> shards) {
     super(shards);
   }
@@ -37,14 +52,19 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     for (Jedis jedis : getAllShards()) {
       if (jedis.isConnected()) {
         try {
-          jedis.quit();
+          // need a proper test, probably with mock
+          if (!jedis.isBroken()) {
+            jedis.quit();
+          }
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
+          logger.warn("Error while QUIT", e);
         }
         try {
           jedis.disconnect();
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
+          logger.warn("Error while disconnect", e);
         }
       }
     }
@@ -73,6 +93,18 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public byte[] getDel(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.getDel(key);
+  }
+
+  @Override
+  public byte[] getEx(byte[] key, GetExParams params) {
+    Jedis j = getShard(key);
+    return j.getEx(key, params);
+  }
+
+  @Override
   public Boolean exists(final byte[] key) {
     Jedis j = getShard(key);
     return j.exists(key);
@@ -91,19 +123,26 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restore(key, ttl, serializedValue);
   }
 
   @Override
-  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restoreReplace(key, ttl, serializedValue);
   }
 
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    Jedis j = getShard(key);
+    return j.restore(key, ttl, serializedValue, params);
+  }
+
+  @Override
+  public Long expire(final byte[] key, final long seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
@@ -157,7 +196,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public String setex(final byte[] key, final int seconds, final byte[] value) {
+  public String setex(final byte[] key, final long seconds, final byte[] value) {
     Jedis j = getShard(key);
     return j.setex(key, seconds, value);
   }
@@ -295,7 +334,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Collection<byte[]> hvals(final byte[] key) {
+  public List<byte[]> hvals(final byte[] key) {
     Jedis j = getShard(key);
     return j.hvals(key);
   }
@@ -304,6 +343,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Map<byte[], byte[]> hgetAll(final byte[] key) {
     Jedis j = getShard(key);
     return j.hgetAll(key);
+  }
+
+  @Override
+  public byte[] hrandfield(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key);
+  }
+
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key, count);
+  }
+
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfieldWithValues(key, count);
   }
 
   @Override
@@ -385,9 +442,40 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<byte[]> lpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.lpop(key, count);
+  }
+
+  @Override
+  public Long lpos(final byte[] key, final byte[] element) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element);
+  }
+
+  @Override
+  public Long lpos(final byte[] key, final byte[] element, final LPosParams params) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element, params);
+  }
+
+  @Override
+  public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params,
+      final long count) {
+    Jedis j = getShard(key);
+    return j.lpos(key, element, params, count);
+  }
+
+  @Override
   public byte[] rpop(final byte[] key) {
     Jedis j = getShard(key);
     return j.rpop(key);
+  }
+
+  @Override
+  public List<byte[]> rpop(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.rpop(key, count);
   }
 
   @Override
@@ -433,6 +521,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public List<Boolean> smismember(final byte[] key, final byte[]... members) {
+    Jedis j = getShard(key);
+    return j.smismember(key, members);
+  }
+
+  @Override
   public byte[] srandmember(final byte[] key) {
     Jedis j = getShard(key);
     return j.srandmember(key);
@@ -451,7 +545,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long zadd(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public Long zadd(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, score, member, params);
   }
@@ -466,6 +561,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers, params);
+  }
+
+  @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    Jedis j = getShard(key);
+    return j.zaddIncr(key, score, member, params);
   }
 
   @Override
@@ -487,7 +588,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double increment, final byte[] member, ZIncrByParams params) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member,
+      ZIncrByParams params) {
     Jedis j = getShard(key);
     return j.zincrby(key, increment, member, params);
   }
@@ -523,6 +625,24 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public byte[] zrandmember(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key);
+  }
+
+  @Override
+  public Set<byte[]> zrandmember(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key, count);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmemberWithScores(key, count);
+  }
+
+  @Override
   public Long zcard(final byte[] key) {
     Jedis j = getShard(key);
     return j.zcard(key);
@@ -532,6 +652,36 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Double zscore(final byte[] key, final byte[] member) {
     Jedis j = getShard(key);
     return j.zscore(key, member);
+  }
+
+  @Override
+  public List<Double> zmscore(final byte[] key, final byte[]... members) {
+    Jedis j = getShard(key);
+    return j.zmscore(key, members);
+  }
+
+  @Override
+  public Tuple zpopmax(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.zpopmax(key, count);
+  }
+
+  @Override
+  public Tuple zpopmin(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.zpopmin(key);
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(final byte[] key, final int count) {
+    Jedis j = getShard(key);
+    return j.zpopmin(key, count);
   }
 
   @Override
@@ -565,7 +715,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max, final int offset, final int count) {
+  public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrangeByScore(key, min, max, offset, count);
   }
@@ -577,8 +728,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max, final int offset,
-      final int count) {
+  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrangeByScoreWithScores(key, min, max, offset, count);
   }
@@ -596,14 +747,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max, final int offset,
-      final int count) {
+  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrangeByScoreWithScores(key, min, max, offset, count);
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max, final int offset, final int count) {
+  public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrangeByScore(key, min, max, offset, count);
   }
@@ -615,7 +767,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min, final int offset, final int count) {
+  public Set<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScore(key, max, min, offset, count);
   }
@@ -627,8 +780,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min, final int offset,
-      final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
+      final double min, final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
   }
@@ -640,7 +793,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min, final int offset, final int count) {
+  public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScore(key, max, min, offset, count);
   }
@@ -652,8 +806,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min, final int offset,
-      final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
+      final byte[] min, final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
   }
@@ -702,7 +856,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, final int offset, final int count) {
+  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByLex(key, max, min, offset, count);
   }
@@ -714,7 +869,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot, final byte[] value) {
+  public Long linsert(final byte[] key, final ListPosition where, final byte[] pivot,
+      final byte[] value) {
     Jedis j = getShard(key);
     return j.linsert(key, where, pivot, value);
   }
@@ -736,6 +892,16 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   public Long objectIdletime(final byte[] key) {
+    Jedis j = getShard(key);
+    return j.objectIdletime(key);
+  }
+
+  public List<String> objectHelp() {
+    Jedis j = getShard("null");
+    return j.objectHelp();
+  }
+
+  public Long objectFreq(final byte[] key) {
     Jedis j = getShard(key);
     return j.objectIdletime(key);
   }
@@ -817,7 +983,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+  public Long geoadd(final byte[] key, final double longitude, final double latitude,
+      final byte[] member) {
     Jedis j = getShard(key);
     return j.geoadd(key, longitude, latitude, member);
   }
@@ -829,13 +996,20 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    Jedis j = getShard(key);
+    return j.geoadd(key, params, memberCoordinateMap);
+  }
+
+  @Override
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     Jedis j = getShard(key);
     return j.geodist(key, member1, member2);
   }
 
   @Override
-  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2,
+      final GeoUnit unit) {
     Jedis j = getShard(key);
     return j.geodist(key, member1, member2, unit);
   }
@@ -853,57 +1027,57 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     Jedis j = getShard(key);
     return j.georadius(key, longitude, latitude, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     Jedis j = getShard(key);
     return j.georadiusReadonly(key, longitude, latitude, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadius(key, longitude, latitude, radius, unit, param);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadiusReadonly(key, longitude, latitude, radius, unit, param);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit) {
     Jedis j = getShard(key);
     return j.georadiusByMemberReadonly(key, member, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadiusByMember(key, member, radius, unit, param);
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     Jedis j = getShard(key);
     return j.georadiusByMemberReadonly(key, member, radius, unit, param);
   }
@@ -915,7 +1089,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor, final ScanParams params) {
+  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
+      final ScanParams params) {
     Jedis j = getShard(key);
     return j.hscan(key, cursor, params);
   }
@@ -948,12 +1123,202 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public List<Long> bitfield(final byte[] key, final byte[]... arguments) {
     Jedis j = getShard(key);
     return j.bitfield(key, arguments);
- }
+  }
+
+  @Override
+  public List<Long> bitfieldReadonly(byte[] key, final byte[]... arguments) {
+    Jedis j = getShard(key);
+    return j.bitfieldReadonly(key, arguments);
+  }
 
   @Override
   public Long hstrlen(final byte[] key, final byte[] field) {
     Jedis j = getShard(key);
     return j.hstrlen(key, field);
   }
-  
+
+  @Override
+  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen,
+      boolean approximateLength) {
+    Jedis j = getShard(key);
+    return j.xadd(key, id, hash, maxLen, approximateLength);
+  }
+
+  @Override
+  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    Jedis j = getShard(key);
+    return j.xadd(key, hash, params);
+  }
+
+  @Override
+  public Long xlen(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xlen(key);
+  }
+
+  @Override
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end);
+  }
+
+  @Override
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end, count);
+  }
+
+  @Override
+  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start);
+  }
+
+  @Override
+  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start, count);
+  }
+
+  @Override
+  public Long xack(byte[] key, byte[] group, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xack(key, group, ids);
+  }
+
+  @Override
+  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
+    Jedis j = getShard(key);
+    return j.xgroupCreate(key, consumer, id, makeStream);
+  }
+
+  @Override
+  public String xgroupSetID(byte[] key, byte[] consumer, byte[] id) {
+    Jedis j = getShard(key);
+    return j.xgroupSetID(key, consumer, id);
+  }
+
+  @Override
+  public Long xgroupDestroy(byte[] key, byte[] consumer) {
+    Jedis j = getShard(key);
+    return j.xgroupDestroy(key, consumer);
+  }
+
+  @Override
+  public Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+    Jedis j = getShard(key);
+    return j.xgroupDelConsumer(key, consumer, consumerName);
+  }
+
+  @Override
+  public Long xdel(byte[] key, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xdel(key, ids);
+  }
+
+  @Override
+  public Long xtrim(byte[] key, long maxLen, boolean approximateLength) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, maxLen, approximateLength);
+  }
+
+  @Override
+  public Long xtrim(byte[] key, XTrimParams params) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, params);
+  }
+
+  @Override
+  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
+      byte[] consumername) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public Object xpending(final byte[] key, final byte[] groupname) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname);
+  }
+
+  @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, params);
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      long newIdleTime, int retries, boolean force, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xclaim(key, group, consumername, minIdleTime, params, ids);
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    Jedis j = getShard(key);
+    return j.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+  }
+
+  @Override
+  public StreamInfo xinfoStream(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoStream(key);
+  }
+
+  @Override
+  public Object xinfoStreamBinary(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoStreamBinary(key);
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoGroup(key);
+  }
+
+  @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    Jedis j = getShard(key);
+    return j.xinfoGroupBinary(key);
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    Jedis j = getShard(key);
+    return j.xinfoConsumers(key, group);
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    Jedis j = getShard(key);
+    return j.xinfoConsumersBinary(key, group);
+  }
+
+  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(sampleKey);
+    return j.sendCommand(cmd, args);
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
+    // default since no sample key provided in JedisCommands interface
+    byte[] sampleKey = args.length > 0 ? args[0] : cmd.getRaw();
+    Jedis j = getShard(sampleKey);
+    return j.sendBlockingCommand(cmd, args);
+  }
+
+  public Object sendCommand(ProtocolCommand cmd) {
+    return sendCommand(cmd, dummyArray);
+  }
 }

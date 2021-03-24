@@ -6,6 +6,7 @@ daemonize yes
 protected-mode no
 port 6379
 requirepass foobared
+user acljedis on allcommands allkeys >fizzbuzz
 pidfile /tmp/redis1.pid
 logfile /tmp/redis1.log
 save ""
@@ -85,6 +86,17 @@ logfile /tmp/redis7.log
 save ""
 appendonly no
 slaveof localhost 6384
+endef
+
+define REDIS8_CONF
+daemonize yes
+protected-mode no
+port 6386
+pidfile /tmp/redis8.pid
+logfile /tmp/redis8.log
+save ""
+appendonly no
+maxmemory-policy allkeys-lfu
 endef
 
 # SENTINELS
@@ -211,6 +223,30 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node5.conf
 endef
 
+# UDS REDIS NODES
+define REDIS_UDS
+daemonize yes
+protected-mode no
+port 0
+pidfile /tmp/redis_uds.pid
+logfile /tmp/redis_uds.log
+unixsocket /tmp/redis_uds.sock
+unixsocketperm 777
+save ""
+appendonly no
+endef
+
+# UNAVAILABLE REDIS NODES
+define REDIS_UNAVAILABLE_CONF
+daemonize yes
+protected-mode no
+port 6400
+pidfile /tmp/redis_unavailable.pid
+logfile /tmp/redis_unavailable.log
+save ""
+appendonly no
+endef
+
 #STUNNEL
 define STUNNEL_CONF
 cert = src/test/resources/private.pem
@@ -218,6 +254,39 @@ pid = /tmp/stunnel.pid
 [redis]
 accept = 127.0.0.1:6390
 connect = 127.0.0.1:6379
+[redis_3]
+accept = 127.0.0.1:16381
+connect = 127.0.0.1:6381
+[redis_4]
+accept = 127.0.0.1:16382
+connect = 127.0.0.1:6382
+[redis_cluster_1]
+accept = 127.0.0.1:8379
+connect = 127.0.0.1:7379
+[redis_cluster_2]
+accept = 127.0.0.1:8380
+connect = 127.0.001:7380
+[redis_cluster_3]
+accept = 127.0.0.1:8381
+connect = 127.0.001:7381
+[redis_cluster_4]
+accept = 127.0.0.1:8382
+connect = 127.0.0.1:7382
+[redis_cluster_5]
+accept = 127.0.0.1:8383
+connect = 127.0.0.1:7383
+[redis_sentinel_1]
+accept = 127.0.0.1:36379
+connect = 127.0.0.1:26379
+[redis_sentinel_2]
+accept = 127.0.0.1:36380
+connect = 127.0.0.1:26380
+[redis_sentinel_3]
+accept = 127.0.0.1:36381
+connect = 127.0.0.1:26381
+[redis_sentinel_4]
+accept = 127.0.0.1:36382
+connect = 127.0.0.1:26382
 endef
 
 export REDIS1_CONF
@@ -227,6 +296,7 @@ export REDIS4_CONF
 export REDIS5_CONF
 export REDIS6_CONF
 export REDIS7_CONF
+export REDIS8_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
@@ -236,6 +306,8 @@ export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
+export REDIS_UDS
+export REDIS_UNAVAILABLE_CONF
 export STUNNEL_CONF
 export STUNNEL_BIN
 
@@ -253,6 +325,7 @@ start: stunnel cleanup
 	echo "$$REDIS5_CONF" | redis-server -
 	echo "$$REDIS6_CONF" | redis-server -
 	echo "$$REDIS7_CONF" | redis-server -
+	echo "$$REDIS8_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
@@ -265,6 +338,8 @@ start: stunnel cleanup
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_UDS" | redis-server -
+	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -282,6 +357,7 @@ stop:
 	kill `cat /tmp/redis5.pid`
 	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
+	kill `cat /tmp/redis8.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
@@ -291,7 +367,9 @@ stop:
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_uds.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
+	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
@@ -325,9 +403,24 @@ release:
 	make stop
 
 travis-install:
+	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+	sudo apt-get -y update
+	sudo apt-get install -y gcc-8 g++-8
+	cd /usr/bin ;\
+	sudo ln -sf gcc-8 gcc ;\
+	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git -j4
+	$(MAKE) -C redis-git
+	
+circleci-install:
+	sudo apt-get install -y gcc-8 g++-8
+	cd /usr/bin ;\
+	sudo ln -sf gcc-8 gcc ;\
+	sudo ln -sf g++-8 g++
+	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
+	$(MAKE) -C redis-git clean
+	$(MAKE) -C redis-git	
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

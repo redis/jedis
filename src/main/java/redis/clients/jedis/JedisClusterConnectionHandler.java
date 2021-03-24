@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.net.ssl.HostnameVerifier;
@@ -120,7 +119,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, JedisClientConfig clientConfig) {
-    List<HostAndPort> startNodeList = new ArrayList<>(startNodes);
+    ArrayList<HostAndPort> startNodeList = new ArrayList<>(startNodes);
     Collections.shuffle(startNodeList);
 
     for (HostAndPort hostAndPort : startNodeList) {

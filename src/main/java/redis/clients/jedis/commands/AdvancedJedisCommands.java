@@ -47,6 +47,10 @@ public interface AdvancedJedisCommands {
 
   String clientList();
 
+  String clientList(long... clientIds);
+
+  String clientInfo();
+
   String clientSetname(String name);
 
   Long clientId();

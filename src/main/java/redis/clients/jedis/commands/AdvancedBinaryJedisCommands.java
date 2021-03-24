@@ -48,6 +48,10 @@ public interface AdvancedBinaryJedisCommands {
 
   byte[] clientListBinary();
 
+  byte[] clientListBinary(long... clientIds);
+
+  byte[] clientInfoBinary();
+
   String clientSetname(byte[] name);
 
   Long clientId();

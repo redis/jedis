@@ -187,7 +187,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     this(shardInfo.getHost(), shardInfo.getPort(), DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(shardInfo.getConnectionTimeout())
         .socketTimeoutMillis(shardInfo.getSoTimeout()).user(shardInfo.getUser())
-        .password(shardInfo.getPassword()).databse(shardInfo.getDb())
+        .password(shardInfo.getPassword()).database(shardInfo.getDb())
         .ssl(shardInfo.getSsl()).sslSocketFactory(shardInfo.getSslSocketFactory())
         .sslParameters(shardInfo.getSslParameters())
         .hostnameVerifier(shardInfo.getHostnameVerifier()).build());
@@ -245,7 +245,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         .socketTimeoutMillis(config.getSocketTimeoutMillis())
         .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-        .databse(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
         .ssl(JedisURIHelper.isRedisSSLScheme(uri))
         .sslSocketFactory(config.getSslSocketFactory())
         .sslParameters(config.getSslParameters())

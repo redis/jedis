@@ -1313,7 +1313,26 @@ public class BinaryClient extends Connection {
   }
 
   public void clientList() {
-    sendCommand(CLIENT, Keyword.LIST.getRaw());
+    clientList(null);
+  }
+
+  public void clientList(final long... clientIds) {
+    if (clientIds == null) {
+      sendCommand(CLIENT, Keyword.LIST.getRaw());
+    } else {
+      final byte[][] params = new byte[2 + clientIds.length][];
+      int index = 0;
+      params[index++] = Keyword.LIST.getRaw();
+      params[index++] = ID.getRaw();
+      for (final long clientId : clientIds) {
+        params[index++] = toByteArray(clientId);
+      }
+      sendCommand(CLIENT, params);
+    }
+  }
+
+  public void clientInfo() {
+    sendCommand(CLIENT, INFO.getRaw());
   }
 
   public void clientSetname(final byte[] name) {

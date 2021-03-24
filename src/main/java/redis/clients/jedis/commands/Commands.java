@@ -476,6 +476,10 @@ public interface Commands {
 
   void clientList();
 
+  void clientList(long... clientIds);
+
+  void clientInfo();
+
   void clientSetname(String name);
 
   void clientId();

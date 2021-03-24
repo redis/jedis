@@ -239,13 +239,10 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void clientListWithClientId() {
-    String info = client.clientInfo();
-    Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);
-    matcher.find();
-    String id = matcher.group(1);
-    String listInfo = jedis.clientList(Long.valueOf(id));
+    Long id = client.clientId();
+    String listInfo = jedis.clientList(id);
     assertNotNull(listInfo);
-    assertTrue(info.contains(clientName));
+    assertTrue(listInfo.contains(clientName));
   }
 
   private void assertDisconnected(Jedis j) {

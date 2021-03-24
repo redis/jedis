@@ -34,11 +34,10 @@ public class SSLJedisSentinelPoolTest {
   @Test
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .withPassword("foobared").withClientName("sentinel-master-client")
-        .withSsl(true).withHostAndPortMapper(SSL_PORT_MAPPER).build();
+        .password("foobared").clientName("sentinel-master-client").ssl(true)
+        .hostAndPortMapper(SSL_PORT_MAPPER).build();
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .withClientName("sentinel-client")
-        .withSsl(false).build();
+        .clientName("sentinel-client").ssl(false).build();
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, POOL_CONFIG,
         masterConfig, sentinelConfig)) {
       pool.getResource().close();
@@ -48,11 +47,9 @@ public class SSLJedisSentinelPoolTest {
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .withPassword("foobared").withClientName("sentinel-master-client")
-        .withSsl(false).build();
+        .password("foobared").clientName("sentinel-master-client").ssl(false).build();
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .withClientName("sentinel-client")
-        .withSsl(true).withHostAndPortMapper(SSL_PORT_MAPPER).build();
+        .clientName("sentinel-client").ssl(true).hostAndPortMapper(SSL_PORT_MAPPER).build();
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, POOL_CONFIG,
         masterConfig, sentinelConfig)) {
       pool.getResource().close();
@@ -62,11 +59,10 @@ public class SSLJedisSentinelPoolTest {
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
     DefaultJedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
-        .withPassword("foobared").withClientName("sentinel-master-client")
-        .withSsl(true).withHostAndPortMapper(SSL_PORT_MAPPER).build();
+        .password("foobared").clientName("sentinel-master-client").ssl(true)
+        .hostAndPortMapper(SSL_PORT_MAPPER).build();
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .withClientName("sentinel-client")
-        .withSsl(true).withHostAndPortMapper(SSL_PORT_MAPPER).build();
+        .clientName("sentinel-client").ssl(true).hostAndPortMapper(SSL_PORT_MAPPER).build();
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, POOL_CONFIG,
         masterConfig, sentinelConfig)) {
       pool.getResource().close();

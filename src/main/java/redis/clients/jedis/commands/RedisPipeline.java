@@ -10,9 +10,17 @@ import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -57,8 +65,10 @@ public interface RedisPipeline {
   Response<Long> pexpireAt(String key, long millisecondsTimestamp);
 
   Response<String> get(String key);
-  
+
   Response<String> getDel(String key);
+
+  Response<String> getEx(String key, GetExParams params);
 
   Response<Boolean> getbit(String key, long offset);
 
@@ -91,6 +101,12 @@ public interface RedisPipeline {
   Response<Long> hsetnx(String key, String field, String value);
 
   Response<List<String>> hvals(String key);
+
+  Response<String> hrandfield(String key);
+
+  Response<List<String>> hrandfield(String key, long count);
+
+  Response<Map<String, String>> hrandfieldWithValues(String key, long count);
 
   Response<Long> incr(String key);
 
@@ -196,6 +212,8 @@ public interface RedisPipeline {
 
   Response<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
+  Response<Double> zaddIncr(String key, double score, String member, ZAddParams params);
+
   Response<Long> zcard(String key);
 
   Response<Long> zcount(String key, double min, double max);
@@ -237,6 +255,12 @@ public interface RedisPipeline {
   Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
   Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop);
+
+  Response<String> zrandmember(String key);
+
+  Response<Set<String>> zrandmember(String key, long count);
+
+  Response<Set<Tuple>> zrandmemberWithScores(String key, long count);
 
   Response<Long> zrank(String key, String member);
 
@@ -285,11 +309,11 @@ public interface RedisPipeline {
   Response<Long> pfadd(String key, String... elements);
 
   Response<Long> pfcount(String key);
-  
+
   Response<List<Long>> bitfield(String key, String... arguments);
 
   Response<List<Long>> bitfieldReadonly(String key, String... arguments);
-  
+
   Response<Long> hstrlen(String key, String field);
 
   Response<byte[]> dump(String key);
@@ -314,6 +338,8 @@ public interface RedisPipeline {
 
   Response<String> restoreReplace(String key, long ttl, byte[] serializedValue);
 
+  Response<String> restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
+
   Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
 
   // Geo Commands
@@ -321,6 +347,8 @@ public interface RedisPipeline {
   Response<Long> geoadd(String key, double longitude, double latitude, String member);
 
   Response<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
+
+  Response<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap);
 
   Response<Double> geodist(String key, String member1, String member2);
 
@@ -353,36 +381,54 @@ public interface RedisPipeline {
 
   Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member,
       double radius, GeoUnit unit, GeoRadiusParam param);
-  
+
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash);
 
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
-  
+
+  Response<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params);
+
   Response<Long> xlen(String key);
+
+  Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end);
 
   Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start);
+
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
-   
+
   Response<Long> xack(String key, String group,  StreamEntryID... ids);
-  
+
   Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
-  
+
   Response<String> xgroupSetID( String key, String groupname, StreamEntryID id);
-  
+
   Response<Long> xgroupDestroy( String key, String groupname);
-  
+
   Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
+
+  Response<StreamPendingSummary> xpending(String key, String groupname);
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername);
-  
+
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params);
+
   Response<Long> xdel( String key, StreamEntryID... ids);
-  
+
   Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
- 
-  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime, 
+
+  Response<Long> xtrim(String key, XTrimParams params);
+
+  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+
+  Response<List<StreamEntry>> xclaim(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids);
+
+  Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids);
 
   Response<Long> bitpos(String key, boolean value);
 

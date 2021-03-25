@@ -12,8 +12,12 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -329,7 +333,13 @@ public interface BinaryRedisPipeline {
     return restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
+
+  Response<String> restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
@@ -383,6 +393,8 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
+  Response<byte[]> xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
+
   Response<Long> xlen(byte[] key);
 
   Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end);
@@ -413,9 +425,13 @@ public interface BinaryRedisPipeline {
 
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
+  Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);
+
   Response<Long> xdel(byte[] key, byte[]... ids);
 
   Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
+
+  Response<Long> xtrim(byte[] key, XTrimParams params);
 
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids);

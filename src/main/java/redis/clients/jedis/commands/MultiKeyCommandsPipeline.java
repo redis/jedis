@@ -9,6 +9,7 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
@@ -19,11 +20,19 @@ import java.util.Set;
  * Multikey related commands (these are split out because they are non-shardable)
  */
 public interface MultiKeyCommandsPipeline {
+  Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace);
+
+  Response<Boolean> copy(String srcKey, String dstKey, boolean replace);
+
   Response<Long> del(String... keys);
 
   Response<Long> unlink(String... keys);
 
   Response<Long> exists(String... keys);
+
+  Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
 
   Response<List<String>> blpop(String... args);
 
@@ -74,6 +83,10 @@ public interface MultiKeyCommandsPipeline {
   Response<Set<Tuple>> zdiffWithScores(String... keys);
 
   Response<Long> zdiffStore(String dstkey, String... keys);
+
+  Response<Set<String>> zinter(ZParams params, String... keys);
+
+  Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys);
 
   Response<Long> zinterstore(String dstkey, String... sets);
 

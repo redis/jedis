@@ -21,6 +21,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
@@ -186,7 +187,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     this(shardInfo.getHost(), shardInfo.getPort(), DefaultJedisClientConfig.builder()
         .connectionTimeoutMillis(shardInfo.getConnectionTimeout())
         .socketTimeoutMillis(shardInfo.getSoTimeout()).user(shardInfo.getUser())
-        .password(shardInfo.getPassword()).databse(shardInfo.getDb())
+        .password(shardInfo.getPassword()).database(shardInfo.getDb())
         .ssl(shardInfo.getSsl()).sslSocketFactory(shardInfo.getSslSocketFactory())
         .sslParameters(shardInfo.getSslParameters())
         .hostnameVerifier(shardInfo.getHostnameVerifier()).build());
@@ -244,7 +245,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
         .socketTimeoutMillis(config.getSocketTimeoutMillis())
         .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-        .databse(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
         .ssl(JedisURIHelper.isRedisSSLScheme(uri))
         .sslSocketFactory(config.getSslSocketFactory())
         .sslParameters(config.getSslParameters())
@@ -327,6 +328,37 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public int getDB() {
     return client.getDB();
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param db
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, db, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
   }
 
   /**
@@ -2376,6 +2408,79 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[])
+   * @see #sort(byte[], byte[])
+   * @param key
+   * @param sortingParameters
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, sortingParameters, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Sort a Set or a List and Store the Result at dstkey.
+   * <p>
+   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
+   * at dstkey. By default sorting is numeric with elements being compared as double precision
+   * floating point numbers. This is the simplest form of SORT.
+   * @see #sort(byte[])
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[], SortingParams, byte[])
+   * @param key
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Pop an element from a list, push it to another list and return it
+   * @param srcKey
+   * @param dstKey
+   * @param from
+   * @param to
+   * @return
+   */
+  @Override
+  public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    checkIsInMultiOrPipeline();
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Pop an element from a list, push it to another list and return it; or block until one is available
+   * @param srcKey
+   * @param dstKey
+   * @param from
+   * @param to
+   * @param timeout
+   * @return
+   */
+  @Override
+  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout) {
+    checkIsInMultiOrPipeline();
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  /**
    * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
    * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
    * lists.
@@ -2439,66 +2544,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> blpop(final int timeout, final byte[]... keys) {
-    return blpop(getArgsAddTimeout(timeout, keys));
-  }
-
-  @Override
-  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
-    checkIsInMultiOrPipeline();
-    client.bzpopmax(timeout, keys);
-    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
-  }
-
-  @Override
-  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
-    checkIsInMultiOrPipeline();
-    client.bzpopmin(timeout, keys);
-    return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
-  }
-
-  private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
-    int size = keys.length;
-    final byte[][] args = new byte[size + 1][];
-    System.arraycopy(keys, 0, args, 0, size);
-    args[size] = Protocol.toByteArray(timeout);
-    return args;
-  }
-
-  /**
-   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[])
-   * @see #sort(byte[], byte[])
-   * @param key
-   * @param sortingParameters
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, sortingParameters, dstkey);
-    return client.getIntegerReply();
-  }
-
-  /**
-   * Sort a Set or a List and Store the Result at dstkey.
-   * <p>
-   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
-   * at dstkey. By default sorting is numeric with elements being compared as double precision
-   * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
-   * @param key
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, dstkey);
-    return client.getIntegerReply();
+    return blpop(getKeysAndTimeout(timeout, keys));
   }
 
   /**
@@ -2565,7 +2611,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
-    return brpop(getArgsAddTimeout(timeout, keys));
+    return brpop(getKeysAndTimeout(timeout, keys));
   }
 
   @Override
@@ -2587,6 +2633,38 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.setTimeoutInfinite();
     try {
       return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  private byte[][] getKeysAndTimeout(int timeout, byte[][] keys) {
+    int size = keys.length;
+    final byte[][] args = new byte[size + 1][];
+    System.arraycopy(keys, 0, args, 0, size);
+    args[size] = Protocol.toByteArray(timeout);
+    return args;
+  }
+
+  @Override
+  public KeyedTuple bzpopmax(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(final int timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_TUPLE.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -3143,6 +3221,34 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zunionstore(dstkey, params, sets);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinter(params, keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinterWithScores(params, keys);
+    return BuilderFactory.TUPLE_ZSET.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -3939,6 +4045,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    checkIsInMultiOrPipeline();
+    client.restore(key, ttl, serializedValue, params);
+    return client.getStatusCodeReply();
+  }
+
   /**
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
@@ -4154,6 +4268,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public byte[] clientListBinary() {
     checkIsInMultiOrPipeline();
     client.clientList();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] clientListBinary(final long... clientIds) {
+    checkIsInMultiOrPipeline();
+    client.clientList(clientIds);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] clientInfoBinary() {
+    checkIsInMultiOrPipeline();
+    client.clientInfo();
     return client.getBinaryBulkReply();
   }
 
@@ -4651,6 +4779,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.xadd(key, hash, params);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
   public Long xlen(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xlen(key);
@@ -4735,6 +4870,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Long xtrim(byte[] key, XTrimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, params);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();
@@ -4747,6 +4889,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname);
     return client.getOne();
+  }
+
+  @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, params);
+    return client.getObjectMultiBulkReply();
   }
 
   @Override

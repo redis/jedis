@@ -13,8 +13,12 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -128,6 +132,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public String restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restoreReplace(key, ttl, serializedValue);
+  }
+
+  @Override
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    Jedis j = getShard(key);
+    return j.restore(key, ttl, serializedValue, params);
   }
 
   @Override
@@ -1134,6 +1145,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    Jedis j = getShard(key);
+    return j.xadd(key, hash, params);
+  }
+
+  @Override
   public Long xlen(byte[] key) {
     Jedis j = getShard(key);
     return j.xlen(key);
@@ -1206,6 +1223,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public Long xtrim(byte[] key, XTrimParams params) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, params);
+  }
+
+  @Override
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     Jedis j = getShard(key);
@@ -1216,6 +1239,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public Object xpending(final byte[] key, final byte[] groupname) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname);
+  }
+
+  @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, params);
   }
 
   @Override

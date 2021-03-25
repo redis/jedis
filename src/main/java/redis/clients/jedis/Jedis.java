@@ -13,6 +13,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.args.UnblockType;
@@ -154,6 +155,37 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     super(jedisSocketFactory);
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param db
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(String srcKey, String dstKey, int db, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, db, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(String srcKey, String dstKey, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
   }
 
   /**
@@ -2027,116 +2059,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getMultiBulkReply();
   }
 
-  /**
-   * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
-   * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
-   * lists.
-   * <p>
-   * The following is a description of the exact semantic. We describe BLPOP but the two commands
-   * are identical, the only difference is that BLPOP pops the element from the left (head) of the
-   * list, and BRPOP pops from the right (tail).
-   * <p>
-   * <b>Non blocking behavior</b>
-   * <p>
-   * When BLPOP is called, if at least one of the specified keys contain a non empty list, an
-   * element is popped from the head of the list and returned to the caller together with the name
-   * of the key (BLPOP returns a two elements array, the first element is the key, the second the
-   * popped value).
-   * <p>
-   * Keys are scanned from left to right, so for instance if you issue BLPOP list1 list2 list3 0
-   * against a dataset where list1 does not exist but list2 and list3 contain non empty lists, BLPOP
-   * guarantees to return an element from the list stored at list2 (since it is the first non empty
-   * list starting from the left).
-   * <p>
-   * <b>Blocking behavior</b>
-   * <p>
-   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
-   * client performs a LPUSH or an RPUSH operation against one of the lists.
-   * <p>
-   * Once new data is present on one of the lists, the client finally returns with the name of the
-   * key unblocking it and the popped value.
-   * <p>
-   * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
-   * special value if the specified amount of seconds passed without a push operation against at
-   * least one of the specified keys.
-   * <p>
-   * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
-   * block forever.
-   * <p>
-   * <b>Multiple clients blocking for the same keys</b>
-   * <p>
-   * Multiple clients can block for the same key. They are put into a queue, so the first to be
-   * served will be the one that started to wait earlier, in a first-blpopping first-served fashion.
-   * <p>
-   * <b>blocking POP inside a MULTI/EXEC transaction</b>
-   * <p>
-   * BLPOP and BRPOP can be used with pipelining (sending multiple commands and reading the replies
-   * in batch), but it does not make sense to use BLPOP or BRPOP inside a MULTI/EXEC block (a Redis
-   * transaction).
-   * <p>
-   * The behavior of BLPOP inside MULTI/EXEC when the list is empty is to return a multi-bulk nil
-   * reply, exactly what happens when the timeout is reached. If you like science fiction, think at
-   * it like if inside MULTI/EXEC the time will flow at infinite speed :)
-   * <p>
-   * Time complexity: O(1)
-   * @see #brpop(int, String...)
-   * @param timeout
-   * @param keys
-   * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
-   *         unblocking key and the popped value.
-   *         <p>
-   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
-   *         value is a nil multi bulk reply. Most client values will return false or nil
-   *         accordingly to the programming language used.
-   */
   @Override
-  public List<String> blpop(final int timeout, final String... keys) {
-    return blpop(getArgsAddTimeout(timeout, keys));
-  }
-
-  @Override
-  public KeyedTuple bzpopmax(int timeout, String... keys) {
+  public String lmove(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to) {
     checkIsInMultiOrPipeline();
-    client.bzpopmax(timeout, keys);
-    return BuilderFactory.KEYED_TUPLE.build(client.getObjectMultiBulkReply());
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBulkReply();
   }
 
   @Override
-  public KeyedTuple bzpopmin(int timeout, String... keys) {
+  public String blmove(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final int timeout) {
     checkIsInMultiOrPipeline();
-    client.bzpopmin(timeout, keys);
-    return BuilderFactory.KEYED_TUPLE.build(client.getObjectMultiBulkReply());
-  }
-
-  private String[] getArgsAddTimeout(int timeout, String[] keys) {
-    final int keyCount = keys.length;
-    final String[] args = new String[keyCount + 1];
-
-    System.arraycopy(keys, 0, args, 0, keyCount);
-
-    args[keyCount] = String.valueOf(timeout);
-    return args;
-  }
-
-  @Override
-  public List<String> blpop(final String... args) {
-    checkIsInMultiOrPipeline();
-    client.blpop(args);
+    client.blmove(srcKey, dstKey, from, to, timeout);
     client.setTimeoutInfinite();
     try {
-      return client.getMultiBulkReply();
-    } finally {
-      client.rollbackTimeout();
-    }
-  }
-
-  @Override
-  public List<String> brpop(final String... args) {
-    checkIsInMultiOrPipeline();
-    client.brpop(args);
-    client.setTimeoutInfinite();
-    try {
-      return client.getMultiBulkReply();
+      return client.getBulkReply();
     } finally {
       client.rollbackTimeout();
     }
@@ -2231,6 +2169,73 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
+   * @see #brpop(int, String...)
+   * @param timeout
+   * @param keys
+   * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
+   *         unblocking key and the popped value.
+   *         <p>
+   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+   *         value is a nil multi bulk reply. Most client values will return false or nil
+   *         accordingly to the programming language used.
+   */
+  @Override
+  public List<String> blpop(final int timeout, final String... keys) {
+    return blpop(getKeysAndTimeout(timeout, keys));
+  }
+
+  /**
+   * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
+   * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
+   * lists.
+   * <p>
+   * The following is a description of the exact semantic. We describe BLPOP but the two commands
+   * are identical, the only difference is that BLPOP pops the element from the left (head) of the
+   * list, and BRPOP pops from the right (tail).
+   * <p>
+   * <b>Non blocking behavior</b>
+   * <p>
+   * When BLPOP is called, if at least one of the specified keys contain a non empty list, an
+   * element is popped from the head of the list and returned to the caller together with the name
+   * of the key (BLPOP returns a two elements array, the first element is the key, the second the
+   * popped value).
+   * <p>
+   * Keys are scanned from left to right, so for instance if you issue BLPOP list1 list2 list3 0
+   * against a dataset where list1 does not exist but list2 and list3 contain non empty lists, BLPOP
+   * guarantees to return an element from the list stored at list2 (since it is the first non empty
+   * list starting from the left).
+   * <p>
+   * <b>Blocking behavior</b>
+   * <p>
+   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+   * client performs a LPUSH or an RPUSH operation against one of the lists.
+   * <p>
+   * Once new data is present on one of the lists, the client finally returns with the name of the
+   * key unblocking it and the popped value.
+   * <p>
+   * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
+   * special value if the specified amount of seconds passed without a push operation against at
+   * least one of the specified keys.
+   * <p>
+   * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
+   * block forever.
+   * <p>
+   * <b>Multiple clients blocking for the same keys</b>
+   * <p>
+   * Multiple clients can block for the same key. They are put into a queue, so the first to be
+   * served will be the one that started to wait earlier, in a first-blpopping first-served fashion.
+   * <p>
+   * <b>blocking POP inside a MULTI/EXEC transaction</b>
+   * <p>
+   * BLPOP and BRPOP can be used with pipelining (sending multiple commands and reading the replies
+   * in batch), but it does not make sense to use BLPOP or BRPOP inside a MULTI/EXEC block (a Redis
+   * transaction).
+   * <p>
+   * The behavior of BLPOP inside MULTI/EXEC when the list is empty is to return a multi-bulk nil
+   * reply, exactly what happens when the timeout is reached. If you like science fiction, think at
+   * it like if inside MULTI/EXEC the time will flow at infinite speed :)
+   * <p>
+   * Time complexity: O(1)
    * @see #blpop(int, String...)
    * @param timeout
    * @param keys
@@ -2243,7 +2248,65 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    */
   @Override
   public List<String> brpop(final int timeout, final String... keys) {
-    return brpop(getArgsAddTimeout(timeout, keys));
+    return brpop(getKeysAndTimeout(timeout, keys));
+  }
+
+  private String[] getKeysAndTimeout(int timeout, String[] keys) {
+    final int keyCount = keys.length;
+    final String[] args = new String[keyCount + 1];
+
+    System.arraycopy(keys, 0, args, 0, keyCount);
+
+    args[keyCount] = String.valueOf(timeout);
+    return args;
+  }
+
+  @Override
+  public List<String> blpop(final String... args) {
+    checkIsInMultiOrPipeline();
+    client.blpop(args);
+    client.setTimeoutInfinite();
+    try {
+      return client.getMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<String> brpop(final String... args) {
+    checkIsInMultiOrPipeline();
+    client.brpop(args);
+    client.setTimeoutInfinite();
+    try {
+      return client.getMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public KeyedTuple bzpopmax(int timeout, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_TUPLE.build(client.getObjectMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public KeyedTuple bzpopmin(int timeout, String... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return BuilderFactory.KEYED_TUPLE.build(client.getObjectMultiBulkReply());
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   @Override
@@ -2730,6 +2793,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.zunionstore(dstkey, params, sets);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<String> zinter(final ZParams params, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinter(params, keys);
+    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinterWithScores(params, keys);
+    return getTupledSet();
   }
 
   /**
@@ -3412,6 +3503,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public String restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    checkIsInMultiOrPipeline();
+    client.restore(key, ttl, serializedValue, params);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public Long pexpire(final String key, final long milliseconds) {
     checkIsInMultiOrPipeline();
     client.pexpire(key, milliseconds);
@@ -3466,6 +3565,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public String clientList() {
     checkIsInMultiOrPipeline();
     client.clientList();
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String clientList(final long... clientIds) {
+    checkIsInMultiOrPipeline();
+    client.clientList(clientIds);
+    return client.getBulkReply();
+  }
+
+  @Override
+  public String clientInfo() {
+    checkIsInMultiOrPipeline();
+    client.clientInfo();
     return client.getBulkReply();
   }
 
@@ -4122,6 +4235,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.xadd(key, hash, params);
+    return BuilderFactory.STREAM_ENTRY_ID.build(client.getBinaryBulkReply());
+  }
+
+  @Override
   public Long xlen(final String key) {
     checkIsInMultiOrPipeline();
     client.xlen(key);
@@ -4257,6 +4377,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public long xtrim(final String key, final XTrimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xtrim(key, params);
+    return client.getIntegerReply();
+  }
+
   /**
    * {@inheritDoc}
    */
@@ -4306,6 +4433,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
+    return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, params);
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 

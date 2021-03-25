@@ -12,8 +12,12 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -103,6 +107,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restoreReplace(key, ttl, serializedValue);
+  }
+
+  @Override
+  public String restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    Jedis j = getShard(key);
+    return j.restore(key, ttl, serializedValue, params);
   }
 
   @Override
@@ -1130,6 +1141,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+    Jedis j = getShard(key);
+    return j.xadd(key, hash, params);
+  }
+
+  @Override
   public Long xlen(String key) {
     Jedis j = getShard(key);
     return j.xlen(key);
@@ -1190,6 +1207,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public long xtrim(String key, XTrimParams params) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, params);
+  }
+
+  @Override
   public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
     Jedis j = getShard(key);
     return j.xrevrange(key, end, start);
@@ -1212,6 +1235,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       StreamEntryID end, int count, String consumername) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, start, end, count, consumername);
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname, params);
   }
 
   @Override

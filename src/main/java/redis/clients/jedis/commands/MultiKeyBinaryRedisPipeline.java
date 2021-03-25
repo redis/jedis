@@ -7,6 +7,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
@@ -17,12 +18,19 @@ import java.util.Set;
  * Multikey related commands (these are split out because they are non-shardable)
  */
 public interface MultiKeyBinaryRedisPipeline {
+  Response<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
+
+  Response<Boolean> copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
   Response<Long> del(byte[]... keys);
 
   Response<Long> unlink(byte[]... keys);
 
   Response<Long> exists(byte[]... keys);
+
+  Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
+
+  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
 
   Response<List<byte[]>> blpop(byte[]... args);
 
@@ -73,6 +81,10 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<Set<Tuple>> zdiffWithScores(byte[]... keys);
 
   Response<Long> zdiffStore(byte[] dstkey, byte[]... keys);
+
+  Response<Set<byte[]>> zinter(ZParams params, byte[]... keys);
+
+  Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys);
 
   Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
 

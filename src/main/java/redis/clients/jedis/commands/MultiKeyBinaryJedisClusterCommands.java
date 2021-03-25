@@ -9,6 +9,7 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -20,11 +21,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
+  Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);
 
   Long exists(byte[]... keys);
+
+  byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
+
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 
@@ -69,6 +76,10 @@ public interface MultiKeyBinaryJedisClusterCommands {
   Set<Tuple> zdiffWithScores(byte[]... keys);
 
   Long zdiffStore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> zinter(ZParams params, byte[]... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
 
   Long zinterstore(byte[] dstkey, byte[]... sets);
 

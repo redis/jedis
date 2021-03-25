@@ -14,8 +14,12 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -52,6 +56,8 @@ public interface JedisClusterCommands {
   }
 
   String restore(String key, long ttl, byte[] serializedValue);
+
+  String restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
   /**
    * @deprecated Use {@link #expire(java.lang.String, long)}.
@@ -434,6 +440,16 @@ public interface JedisClusterCommands {
   StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
 
   /**
+   * XADD key [NOMKSTREAM] [MAXLEN|MINID [=|~] threshold [LIMIT count]] *|ID field value [field value ...]
+   *
+   * @param key
+   * @param hash
+   * @param params
+   * @return
+   */
+  StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params);
+
+  /**
    * XLEN key
    *
    * @param key
@@ -565,6 +581,16 @@ public interface JedisClusterCommands {
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
   /**
+   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
+   *
+   * @param key
+   * @param groupname
+   * @param params
+   * @return
+   */
+  List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params);
+
+  /**
    * XDEL key ID [ID ...]
    * @param key
    * @param ids
@@ -580,6 +606,14 @@ public interface JedisClusterCommands {
    * @return
    */
   Long xtrim( String key, long maxLen, boolean approximateLength);
+
+  /**
+   * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
+   * @param key
+   * @param params
+   * @return
+   */
+  Long xtrim(String key, XTrimParams params);
 
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>

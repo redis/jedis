@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 
@@ -653,5 +654,52 @@ public class ListCommandsTest extends JedisCommandTestBase {
     posList = jedis.lpos(bfoo, bA, LPosParams.lPosParams().maxlen(6).rank(2), 1);
     assertEquals(expected.subList(1, 2), posList);
 
+  }
+
+  @Test
+  public void lmove() {
+    jedis.rpush("foo", "bar1", "bar2", "bar3");
+    assertEquals("bar3", jedis.lmove("foo", "bar", ListDirection.RIGHT, ListDirection.LEFT));
+    assertEquals(Collections.singletonList("bar3"), jedis.lrange("bar", 0, -1));
+    assertEquals(Arrays.asList("bar1", "bar2"), jedis.lrange("foo", 0, -1));
+
+    // Binary
+    jedis.rpush(bfoo, b1, b2, b3);
+    assertArrayEquals(b3, jedis.lmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT));
+    assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
+    assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
+  }
+
+  @Test
+  public void blmove() {
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        // ignore
+      }
+      try (Jedis j = createJedis()) {
+        j.rpush("foo", "bar1", "bar2", "bar3");
+      }
+    }).start();
+
+    assertEquals("bar3", jedis.blmove("foo", "bar", ListDirection.RIGHT, ListDirection.LEFT, 0));
+    assertEquals(Collections.singletonList("bar3"), jedis.lrange("bar", 0, -1));
+    assertEquals(Arrays.asList("bar1", "bar2"), jedis.lrange("foo", 0, -1));
+
+    // Binary
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        // ignore
+      }
+      try (Jedis j = createJedis()) {
+        j.rpush(bfoo, b1, b2, b3);
+      }
+    }).start();
+    assertArrayEquals(b3, jedis.blmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT, 0));
+    assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
+    assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
   }
 }

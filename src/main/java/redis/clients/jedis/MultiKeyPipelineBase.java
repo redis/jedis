@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
@@ -13,6 +14,58 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline, BasicRedisPipeline {
 
   protected Client client = null;
+
+  @Override
+  public Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from,
+      ListDirection to) {
+    client.lmove(srcKey, dstKey, from, to);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      int timeout) {
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<String> lmove(String srcKey, String dstKey, ListDirection from,
+      ListDirection to) {
+    client.lmove(srcKey, dstKey, from, to);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      int timeout) {
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    client.copy(srcKey, dstKey, db, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<Boolean> copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    client.copy(srcKey, dstKey, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace) {
+    client.copy(srcKey, dstKey, db, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
+  }
+
+  @Override
+  public Response<Boolean> copy(String srcKey, String dstKey, boolean replace) {
+    client.copy(srcKey, dstKey, replace);
+    return getResponse(BuilderFactory.BOOLEAN);
+  }
 
   @Override
   public Response<List<String>> brpop(String... args) {
@@ -372,6 +425,30 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   public Response<Long> zdiffStore(final String dstkey, final String... keys) {
     client.zdiffStore(dstkey, keys);
     return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Set<byte[]>> zinter(final ZParams params, final byte[]... keys) {
+    client.zinter(params, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zinterWithScores(final ZParams params, final byte[]... keys) {
+    client.zinterWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
+  }
+
+  @Override
+  public Response<Set<String>> zinter(final ZParams params, final String... keys) {
+    client.zinter(params, keys);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
+  public Response<Set<Tuple>> zinterWithScores(final ZParams params, final String... keys) {
+    client.zinterWithScores(params, keys);
+    return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override

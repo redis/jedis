@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -24,7 +23,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   private static final Logger logger = LoggerFactory.getLogger(JedisFactory.class);
 
-  private final AtomicReference<JedisSocketFactory> jedisSocketFactory = new AtomicReference<>();
+  private final JedisSocketFactory jedisSocketFactory;
 
   private final JedisClientConfig clientConfig;
 
@@ -67,7 +66,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   protected JedisFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
-    this.jedisSocketFactory.set(new DefaultJedisSocketFactory(hostAndPort, this.clientConfig));
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
   protected JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
@@ -79,12 +78,12 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
         .password(password).database(database).clientName(clientName)
         .ssl(ssl).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
-    this.jedisSocketFactory.set(new DefaultJedisSocketFactory(new HostAndPort(host, port), this.clientConfig));
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(host, port), this.clientConfig);
   }
 
   protected JedisFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
-    this.jedisSocketFactory.set(jedisSocketFactory);
+    this.jedisSocketFactory = jedisSocketFactory;
   }
 
   /**
@@ -105,6 +104,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
    */
   protected JedisFactory(final JedisClientConfig clientConfig) {
     this.clientConfig = clientConfig;
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(clientConfig);
   }
 
   protected JedisFactory(final URI uri, final int connectionTimeout, final int soTimeout,
@@ -131,20 +131,11 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
         .database(JedisURIHelper.getDBIndex(uri)).clientName(clientName)
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
-    this.jedisSocketFactory.set(new DefaultJedisSocketFactory(new HostAndPort(uri.getHost(), uri.getPort()), this.clientConfig));
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(uri.getHost(), uri.getPort()), this.clientConfig);
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
-    // This can only happen if we use a constructor that requires setHostAndPort to be called after,
-    // in that case we need to give it an initial value, so we use the default socket factory
-    if (jedisSocketFactory.get() == null) {
-      JedisSocketFactory factory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
-      // If someone has some logic that can call this code twice in parallel (highly unlikely!)
-      // this should protect against setting it with the default twice
-      if (!this.jedisSocketFactory.compareAndSet(null, factory)) {
-        this.jedisSocketFactory.get().updateHostAndPort(hostAndPort);
-      }
-    }
+    jedisSocketFactory.updateHostAndPort(hostAndPort);
   }
 
   public void setPassword(final String password) {
@@ -183,7 +174,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   public PooledObject<Jedis> makeObject() throws Exception {
     Jedis jedis = null;
     try {
-      jedis = new Jedis(jedisSocketFactory.get(), clientConfig);
+      jedis = new Jedis(jedisSocketFactory, clientConfig);
       jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
@@ -212,9 +203,8 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   public boolean validateObject(PooledObject<Jedis> pooledJedis) {
     final BinaryJedis jedis = pooledJedis.getObject();
     try {
-      JedisSocketFactory factory = this.jedisSocketFactory.get();
-      String host = factory.getHost();
-      int port = factory.getPort();
+      String host = jedisSocketFactory.getHost();
+      int port = jedisSocketFactory.getPort();
 
       String connectionHost = jedis.getClient().getHost();
       int connectionPort = jedis.getClient().getPort();

@@ -33,6 +33,10 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this(hostAndPort, null);
   }
 
+  public DefaultJedisSocketFactory(JedisClientConfig config) {
+    this(null, config);
+  }
+
   @Deprecated
   public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int socketTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,

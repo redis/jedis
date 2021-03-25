@@ -135,18 +135,16 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   public void setHostAndPort(final HostAndPort hostAndPort) {
-    JedisSocketFactory factory = jedisSocketFactory.get();
     // This can only happen if we use a constructor that requires setHostAndPort to be called after,
     // in that case we need to give it an initial value, so we use the default socket factory
-    if (factory == null) {
-      factory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
+    if (jedisSocketFactory.get() == null) {
+      JedisSocketFactory factory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
       // If someone has some logic that can call this code twice in parallel (highly unlikely!)
       // this should protect against setting it with the default twice
-      if (this.jedisSocketFactory.compareAndSet(null, factory)) {
-        return;
+      if (!this.jedisSocketFactory.compareAndSet(null, factory)) {
+        this.jedisSocketFactory.get().updateHostAndPort(hostAndPort);
       }
     }
-    this.jedisSocketFactory.set(this.jedisSocketFactory.get().copyWith(hostAndPort));
   }
 
   public void setPassword(final String password) {

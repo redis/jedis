@@ -40,8 +40,8 @@ public class UdsTest {
     }
 
     @Override
-    public JedisSocketFactory copyWith(HostAndPort hostAndPort) {
-      return this;
+    public void updateHostAndPort(HostAndPort hostAndPort) {
+      throw new UnsupportedOperationException("UDS cannot update host and port");
     }
 
     @Override

@@ -19,7 +19,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
 
   private static final Logger LOG = LoggerFactory.getLogger(JedisSentinelPool.class);
 
-  @Deprecated protected final GenericObjectPoolConfig<Jedis> poolConfig;
   private final JedisFactory factory;
 
   private final JedisClientConfig sentinelClientConfig;
@@ -172,7 +171,6 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final JedisClientConfig sentinelClientConfig) {
     super(poolConfig, factory);
 
-    this.poolConfig = poolConfig;
     this.factory = factory;
     this.sentinelClientConfig = sentinelClientConfig;
 

@@ -51,7 +51,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
-    this.hostAndPort.set(hostAndPort);
+    if (hostAndPort != null) {
+      this.hostAndPort.set(hostAndPort);
+    }
     if (config != null) {
       this.connectionTimeout = config.getConnectionTimeoutMillis();
       this.socketTimeout = config.getSocketTimeoutMillis();

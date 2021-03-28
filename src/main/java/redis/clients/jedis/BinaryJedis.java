@@ -278,8 +278,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
+  /**
+   * @deprecated This constructor will be removed in future major release.
+   *
+   * Use {@link BinaryJedis#BinaryJedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public BinaryJedis(final JedisSocketFactory jedisSocketFactory) {
     client = new Client(jedisSocketFactory);
+  }
+
+  public BinaryJedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
+    client = new Client(jedisSocketFactory);
+    initializeFromClientConfig(clientConfig);
   }
 
   public boolean isConnected() {

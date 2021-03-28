@@ -85,6 +85,11 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
+  /**
+   * @deprecated Use {@link #blpop(double, java.lang.String...)} or
+   * {@link #blpop(int, java.lang.String...)}.
+   */
+  @Deprecated
   public Response<Map<String, String>> blpopMap(int timeout, String... keys) {
     client.blpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_MAP);
@@ -126,6 +131,11 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
+  /**
+   * @deprecated Use {@link #brpop(double, java.lang.String...)} or
+   * {@link #brpop(int, java.lang.String...)}.
+   */
+  @Deprecated
   public Response<Map<String, String>> brpopMap(int timeout, String... keys) {
     client.blpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_MAP);

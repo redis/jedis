@@ -1047,6 +1047,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * <b>Time complexity:</b> O(N), where N is the number of fields returned
    * @param key
+   * @param count
    * @return multiple random fields from a hash.
    */
   @Override
@@ -1061,6 +1062,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * <p>
    * <b>Time complexity:</b> O(N), where N is the number of fields returned
    * @param key
+   * @param count
    * @return one or multiple random fields with values from a hash.
    */
   @Override

@@ -2,6 +2,9 @@ package redis.clients.jedis.resps;
 
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * This class is used to represent a List element when it is returned with respective key name.
+ */
 public class KeyedListElement {
 
   private final String key;

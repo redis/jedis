@@ -762,11 +762,11 @@ public class BinaryClient extends Connection {
   }
 
   public void blpop(final int timeout, final byte[]... keys) {
-    blpop(keysAndTimeout(timeout, keys));
+    blpop(getKeysAndTimeout(timeout, keys));
   }
 
   public void blpop(final double timeout, final byte[]... keys) {
-    blpop(keysAndTimeout(timeout, keys));
+    blpop(getKeysAndTimeout(timeout, keys));
   }
 
   public void brpop(final byte[][] args) {
@@ -774,22 +774,22 @@ public class BinaryClient extends Connection {
   }
 
   public void brpop(final int timeout, final byte[]... keys) {
-    brpop(keysAndTimeout(timeout, keys));
+    brpop(getKeysAndTimeout(timeout, keys));
   }
 
   public void brpop(final double timeout, final byte[]... keys) {
-    brpop(keysAndTimeout(timeout, keys));
+    brpop(getKeysAndTimeout(timeout, keys));
   }
 
   public void bzpopmax(final double timeout, final byte[]... keys) {
-    sendCommand(BZPOPMAX, keysAndTimeout(timeout, keys));
+    sendCommand(BZPOPMAX, getKeysAndTimeout(timeout, keys));
   }
 
   public void bzpopmin(final double timeout, final byte[]... keys) {
-    sendCommand(BZPOPMIN, keysAndTimeout(timeout, keys));
+    sendCommand(BZPOPMIN, getKeysAndTimeout(timeout, keys));
   }
 
-  private static byte[][] keysAndTimeout(final int timeout, final byte[]... keys) {
+  private static byte[][] getKeysAndTimeout(final int timeout, final byte[]... keys) {
     int numKeys = keys.length;
     byte[][] args = new byte[numKeys + 1][];
     System.arraycopy(keys, 0, args, 0, numKeys);
@@ -797,7 +797,7 @@ public class BinaryClient extends Connection {
     return args;
   }
 
-  private static byte[][] keysAndTimeout(final double timeout, final byte[]... keys) {
+  private static byte[][] getKeysAndTimeout(final double timeout, final byte[]... keys) {
     int numKeys = keys.length;
     byte[][] args = new byte[numKeys + 1][];
     System.arraycopy(keys, 0, args, 0, numKeys);

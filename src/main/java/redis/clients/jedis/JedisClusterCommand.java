@@ -18,15 +18,12 @@ public abstract class JedisClusterCommand<T> {
 
   private static final Logger LOG = LoggerFactory.getLogger(JedisClusterCommand.class);
 
-  private static final Duration DEFAULT_MAX_TOTAL_RETRIES_DURATION = Duration.ofMillis(
-      BinaryJedisCluster.DEFAULT_TIMEOUT * BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS);
-
   private final JedisClusterConnectionHandler connectionHandler;
   private final int maxAttempts;
   private final Duration maxTotalRetriesDuration;
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
-    this(connectionHandler, maxAttempts, DEFAULT_MAX_TOTAL_RETRIES_DURATION);
+    this(connectionHandler, maxAttempts, Duration.ofMillis((long) BinaryJedisCluster.DEFAULT_TIMEOUT * maxAttempts));
   }
 
   /**

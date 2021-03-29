@@ -11,7 +11,12 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -48,6 +53,8 @@ public interface BinaryJedisClusterCommands {
   }
 
   String restore(byte[] key, long ttl, byte[] serializedValue);
+
+  String restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Long expire(byte[] key, int seconds);
 
@@ -131,6 +138,12 @@ public interface BinaryJedisClusterCommands {
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
+  byte[] hrandfield(byte[] key);
+
+  List<byte[]> hrandfield(byte[] key, long count);
+
+  Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count);
+
   Long rpush(byte[] key, byte[]... args);
 
   Long lpush(byte[] key, byte[]... args);
@@ -210,6 +223,12 @@ public interface BinaryJedisClusterCommands {
   Set<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
   Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
+
+  byte[] zrandmember(byte[] key);
+
+  Set<byte[]> zrandmember(byte[] key, long count);
+
+  Set<Tuple> zrandmemberWithScores(byte[] key, long count);
 
   Long zcard(byte[] key);
 
@@ -372,7 +391,11 @@ public interface BinaryJedisClusterCommands {
 
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
+  byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
+
   Long xlen(byte[] key);
+
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
 
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
@@ -381,6 +404,8 @@ public interface BinaryJedisClusterCommands {
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count);
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start);
 
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
@@ -398,11 +423,21 @@ public interface BinaryJedisClusterCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
+  Long xtrim(byte[] key, XTrimParams params);
+
+  Object xpending(final byte[] key, final byte[] groupname);
+
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
-  Object xpendingSummary(final byte[] key, final byte[] groupname);
+  List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
+
+  List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids);
+
+  List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids);
 
   Long waitReplicas(byte[] key, int replicas, long timeout);
 

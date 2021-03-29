@@ -9,21 +9,30 @@ import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyJedisClusterCommands {
+  Boolean copy(String srcKey, String dstKey, boolean replace);
 
   Long del(String... keys);
 
   Long unlink(String... keys);
 
   Long exists(String... keys);
+
+  String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
 
   List<String> blpop(int timeout, String... keys);
 
@@ -63,9 +72,23 @@ public interface MultiKeyJedisClusterCommands {
 
   Long sunionstore(String dstkey, String... keys);
 
+  Set<String> zdiff(String... keys);
+
+  Set<Tuple> zdiffWithScores(String... keys);
+
+  Long zdiffStore(String dstkey, String... keys);
+
+  Set<String> zinter(ZParams params, String... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
+
+  Set<String> zunion(ZParams params, String... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, String... keys);
 
   Long zunionstore(String dstkey, String... sets);
 
@@ -104,9 +127,15 @@ public interface MultiKeyJedisClusterCommands {
    * @param block
    * @param streams
    * @return
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block,
       Map.Entry<String, StreamEntryID>... streams);
+
+  List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
+      Map<String, StreamEntryID> streams);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
@@ -118,8 +147,14 @@ public interface MultiKeyJedisClusterCommands {
    * @param noAck
    * @param streams
    * @return
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
+  @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
+
+  List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
 }

@@ -12,7 +12,12 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -93,6 +98,12 @@ public interface BinaryRedisPipeline {
   Response<Long> hsetnx(byte[] key, byte[] field, byte[] value);
 
   Response<List<byte[]>> hvals(byte[] key);
+
+  Response<byte[]> hrandfield(byte[] key);
+
+  Response<List<byte[]>> hrandfield(byte[] key, long count);
+
+  Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count);
 
   Response<Long> incr(byte[] key);
 
@@ -262,6 +273,12 @@ public interface BinaryRedisPipeline {
 
   Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop);
 
+  Response<byte[]> zrandmember(byte[] key);
+
+  Response<Set<byte[]>> zrandmember(byte[] key, long count);
+
+  Response<Set<Tuple>> zrandmemberWithScores(byte[] key, long count);
+
   Response<Long> zrevrank(byte[] key, byte[] member);
 
   Response<Double> zscore(byte[] key, byte[] member);
@@ -316,7 +333,13 @@ public interface BinaryRedisPipeline {
     return restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
+
+  Response<String> restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
@@ -370,9 +393,15 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
+  Response<byte[]> xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
+
   Response<Long> xlen(byte[] key);
 
+  Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end);
+
   Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start);
 
   Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
@@ -386,6 +415,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
+  Response<Object> xpending(byte[] key, byte[] groupname);
+
   /**
    * @deprecated Use {@link #xpendingBinary(byte[], byte[], byte[], byte[], int, byte[])}.
    */
@@ -394,14 +425,22 @@ public interface BinaryRedisPipeline {
 
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
-  Response<Object> xpendingSummary(byte[] key, byte[] groupname);
+  Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
 
   Response<Long> xtrim(byte[] key, long maxLen, boolean approximateLength);
 
+  Response<Long> xtrim(byte[] key, XTrimParams params);
+
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids);
+
+  Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
+      long minIdleTime, XClaimParams params, byte[]... ids);
 
   Response<Long> bitpos(byte[] key, boolean value);
 

@@ -8,16 +8,29 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 public interface Commands {
+
+  void copy(String srcKey, String dstKey, int db, boolean replace);
+
+  void copy(String srcKey, String dstKey, boolean replace);
 
   void ping(String message);
 
@@ -135,6 +148,12 @@ public interface Commands {
 
   void hvals(String key);
 
+  void hrandfield(String key);
+
+  void hrandfield(String key, long count);
+
+  void hrandfieldWithValues(String key, long count);
+
   void hgetAll(String key);
 
   void rpush(String key, String... strings);
@@ -199,6 +218,10 @@ public interface Commands {
 
   void sdiffstore(String dstkey, String... keys);
 
+  void zdiff(String... keys);
+
+  void zdiffWithScores(String... keys);
+
   void srandmember(String key);
 
   void zadd(String key, double score, String member);
@@ -210,6 +233,8 @@ public interface Commands {
   void zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
   void zaddIncr(String key, double score, String member, ZAddParams params);
+
+  void zdiffStore(String dstkey, String... keys);
 
   void zrange(String key, long start, long stop);
 
@@ -228,6 +253,12 @@ public interface Commands {
   void zrangeWithScores(String key, long start, long stop);
 
   void zrevrangeWithScores(String key, long start, long stop);
+
+  void zrandmember(String key);
+
+  void zrandmember(String key, long count);
+
+  void zrandmemberWithScores(String key, long count);
 
   void zcard(String key);
 
@@ -249,15 +280,27 @@ public interface Commands {
 
   void sort(String key, SortingParams sortingParameters);
 
-  void blpop(String[] args);
-
   void sort(String key, SortingParams sortingParameters, String dstkey);
 
   void sort(String key, String dstkey);
 
+  void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
+
+  void blpop(String[] args);
+
+  void blpop(int timeout, String... keys);
+
   void brpop(String[] args);
 
+  void brpop(int timeout, String... keys);
+
   void brpoplpush(String source, String destination, int timeout);
+
+  void bzpopmax(int timeout, String... keys);
+
+  void bzpopmin(int timeout, String... keys);
 
   void zcount(String key, double min, double max);
 
@@ -301,9 +344,17 @@ public interface Commands {
 
   void zremrangeByScore(String key, String min, String max);
 
+  void zunion(ZParams params, String... keys);
+
+  void zunionWithScores(ZParams params, String... keys);
+
   void zunionstore(String dstkey, String... sets);
 
   void zunionstore(String dstkey, ZParams params, String... sets);
+
+  void zinter(ZParams params, String... keys);
+
+  void zinterWithScores(ZParams params, String... keys);
 
   void zinterstore(String dstkey, String... sets);
 
@@ -377,7 +428,13 @@ public interface Commands {
     restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   void restoreReplace(String key, long ttl, byte[] serializedValue);
+
+  void restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
   void scan(String cursor, ScanParams params);
 
@@ -419,21 +476,46 @@ public interface Commands {
 
   void clientList();
 
+  void clientList(long... clientIds);
+
+  void clientInfo();
+
   void clientSetname(String name);
 
   void clientId();
+
+  void clientUnblock(long clientId, UnblockType unblockType);
 
   void memoryDoctor();
 
   void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
 
+  void xadd(String key, Map<String, String> hash, XAddParams params);
+
   void xlen(String key);
 
+  void xrange(String key, StreamEntryID start, StreamEntryID end);
+
+  void xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  /**
+   * @deprecated Use {@link #xrange(java.lang.String, redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
+   */
+  @Deprecated
   void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
+
+  void xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
+   */
+  @Deprecated
   void xread(int count, long block, Entry<String, StreamEntryID>... streams);
+
+  void xread(XReadParams params, Map<String, StreamEntryID> streams);
 
   void xack(String key, String group, StreamEntryID... ids);
 
@@ -449,14 +531,31 @@ public interface Commands {
 
   void xtrim(String key, long maxLen, boolean approximateLength);
 
+  void xtrim(String key, XTrimParams params);
+
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   */
+  @Deprecated
   void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
+
+  void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams);
+
+  void xpending(String key, String groupname);
 
   void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
 
-  void xpendingSummary(String key, String groupname);
+  void xpending(String key, String groupname, XPendingParams params);
 
   void xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime,
       int retries, boolean force, StreamEntryID... ids);
+
+  void xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params,
+      StreamEntryID... ids);
+
+  void xclaimJustId(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids);
 
   void xinfoStream (String key);
 

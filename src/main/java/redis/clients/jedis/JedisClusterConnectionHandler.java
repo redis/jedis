@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import javax.net.ssl.HostnameVerifier;
@@ -74,16 +76,16 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       int infiniteSoTimeout, String user, String password, String clientName, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
-    this(nodes, DefaultJedisClientConfig.builder().withConnectionTimeoutMillis(connectionTimeout)
-        .withSoTimeoutMillis(soTimeout).withInfiniteSoTimeoutMillis(infiniteSoTimeout)
-        .withUser(user).withPassword(password).withClientName(clientName).withSsl(ssl)
-        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
-        .withHostnameVerifier(hostnameVerifier).build(), poolConfig, DefaultJedisClientConfig
-        .builder().withConnectionTimeoutMillis(connectionTimeout).withSoTimeoutMillis(soTimeout)
-        .withInfiniteSoTimeoutMillis(infiniteSoTimeout).withUser(user).withPassword(password)
-        .withClientName(clientName).withSsl(ssl).withSslSocketFactory(sslSocketFactory)
-        .withSslParameters(sslParameters).withHostnameVerifier(hostnameVerifier)
-        .withHostAndPortMapper(portMap).build());
+    this(nodes, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+        .user(user).password(password).clientName(clientName).ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build(), poolConfig, DefaultJedisClientConfig
+        .builder().connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
+        .blockingSocketTimeoutMillis(infiniteSoTimeout).user(user).password(password)
+        .clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier)
+        .hostAndPortMapper(portMap).build());
   }
 
   /**
@@ -117,8 +119,10 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   private void initializeSlotsCache(Set<HostAndPort> startNodes, JedisClientConfig clientConfig) {
+    ArrayList<HostAndPort> startNodeList = new ArrayList<>(startNodes);
+    Collections.shuffle(startNodeList);
 
-    for (HostAndPort hostAndPort : startNodes) {
+    for (HostAndPort hostAndPort : startNodeList) {
       try (Jedis jedis = new Jedis(hostAndPort, clientConfig)) {
         cache.discoverClusterNodesAndSlots(jedis);
         return;

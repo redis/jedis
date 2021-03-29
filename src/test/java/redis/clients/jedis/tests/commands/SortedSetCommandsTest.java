@@ -1,14 +1,14 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -1185,6 +1185,46 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zunion() {
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+    jedis.zadd("bar", 2, "a");
+    jedis.zadd("bar", 2, "b");
+
+    ZParams params = new ZParams();
+    params.weights(2, 2.5);
+    params.aggregate(ZParams.Aggregate.SUM);
+    Set<String> expected = new LinkedHashSet<>();
+    expected.add("a");
+    expected.add("b");
+    assertEquals(expected, jedis.zunion(params, "foo", "bar"));
+
+    Set<Tuple> expectedTuple = new LinkedHashSet<>();
+    expectedTuple.add(new Tuple("b", new Double(9)));
+    expectedTuple.add(new Tuple("a", new Double(7)));
+    assertEquals(expectedTuple, jedis.zunionWithScores(params, "foo", "bar"));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 2, bb);
+    jedis.zadd(bbar, 2, ba);
+    jedis.zadd(bbar, 2, bb);
+
+    ZParams bparams = new ZParams();
+    bparams.weights(2, 2.5);
+    bparams.aggregate(ZParams.Aggregate.SUM);
+    Set<byte[]> bexpected = new LinkedHashSet<>();
+    bexpected.add(bb);
+    bexpected.add(ba);
+    assertByteArraySetEquals(bexpected, jedis.zunion(params, bfoo, bbar));
+
+    Set<Tuple> bexpectedTuple = new LinkedHashSet<>();
+    bexpectedTuple.add(new Tuple(bb, new Double(9)));
+    bexpectedTuple.add(new Tuple(ba, new Double(7)));
+    assertEquals(bexpectedTuple, jedis.zunionWithScores(bparams, bfoo, bbar));
+  }
+
+  @Test
   public void zunionstore() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1256,6 +1296,34 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(new Tuple(ba, new Double(7)));
 
     assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
+  }
+
+  @Test
+  public void zinter() {
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+    jedis.zadd("bar", 2, "a");
+
+    ZParams params = new ZParams();
+    params.weights(2, 2.5);
+    params.aggregate(ZParams.Aggregate.SUM);
+    assertEquals(Collections.singleton("a"), jedis.zinter(params, "foo", "bar"));
+
+    assertEquals(Collections.singleton(new Tuple("a", new Double(7))),
+      jedis.zinterWithScores(params, "foo", "bar"));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 2, bb);
+    jedis.zadd(bbar, 2, ba);
+
+    ZParams bparams = new ZParams();
+    bparams.weights(2, 2.5);
+    bparams.aggregate(ZParams.Aggregate.SUM);
+    assertByteArraySetEquals(Collections.singleton(ba), jedis.zinter(params, bfoo, bbar));
+
+    assertEquals(Collections.singleton(new Tuple(ba, new Double(7))),
+      jedis.zinterWithScores(bparams, bfoo, bbar));
   }
 
   @Test
@@ -1444,5 +1512,97 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bbar, 0.1d, bc);
     actual = jedis.bzpopmin(0, bbar, bfoo);
     assertEquals(new KeyedTuple(bbar, bc, 0.1d), actual);
+  }
+
+  @Test
+  public void zdiff() {
+    jedis.zadd("foo", 1.0, "a");
+    jedis.zadd("foo", 2.0, "b");
+    jedis.zadd("bar", 1.0, "a");
+
+    assertEquals(0, jedis.zdiff("bar1", "bar2").size());
+    assertEquals(Collections.singleton("b"), jedis.zdiff("foo", "bar"));
+    assertEquals(Collections.singleton(new Tuple("b", 2.0d)), jedis.zdiffWithScores("foo", "bar"));
+
+    // binary
+
+    jedis.zadd(bfoo, 1.0, ba);
+    jedis.zadd(bfoo, 2.0, bb);
+    jedis.zadd(bbar, 1.0, ba);
+
+    assertEquals(0, jedis.zdiff(bbar1, bbar2).size());
+    Set<byte[]> bactual = jedis.zdiff(bfoo, bbar);
+    assertEquals(1, bactual.size());
+    assertArrayEquals(bb, bactual.iterator().next());
+    assertEquals(Collections.singleton(new Tuple(bb, 2.0d)), jedis.zdiffWithScores(bfoo, bbar));
+  }
+
+  @Test
+  public void zdiffStore() {
+    jedis.zadd("foo", 1.0, "a");
+    jedis.zadd("foo", 2.0, "b");
+    jedis.zadd("bar", 1.0, "a");
+
+    assertEquals(0, jedis.zdiffStore("bar3", "bar1", "bar2").longValue());
+    assertEquals(1, jedis.zdiffStore("bar3", "foo", "bar").longValue());
+    assertEquals(Collections.singleton("b"), jedis.zrange("bar3", 0, -1));
+
+    // binary
+
+    jedis.zadd(bfoo, 1.0, ba);
+    jedis.zadd(bfoo, 2.0, bb);
+    jedis.zadd(bbar, 1.0, ba);
+
+    assertEquals(0, jedis.zdiffStore(bbar3, bbar1, bbar2).longValue());
+    assertEquals(1, jedis.zdiffStore(bbar3, bfoo, bbar).longValue());
+    Set<byte[]> bactual = jedis.zrange(bbar3, 0, -1);
+    assertArrayEquals(bb, bactual.iterator().next());
+  }
+
+  @Test
+  public void zrandmember() {
+    assertNull(jedis.zrandmember("foo"));
+    assertNull(jedis.zrandmember("foo", 1));
+    assertNull(jedis.zrandmemberWithScores("foo", 1));
+
+    Map<String, Double> hash = new HashMap<>();
+    hash.put("bar1", 1d);
+    hash.put("bar2", 10d);
+    hash.put("bar3", 0.1d);
+    jedis.zadd("foo", hash);
+
+    assertTrue(hash.containsKey(jedis.zrandmember("foo")));
+    assertEquals(2, jedis.zrandmember("foo", 2).size());
+
+    Set<Tuple> actual = jedis.zrandmemberWithScores("foo", 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    Tuple tuple = actual.iterator().next();
+    assertEquals(hash.get(tuple.getElement()), Double.valueOf(tuple.getScore()));
+
+    // Binary
+    Map<byte[], Double> bhash = new HashMap<>();
+    bhash.put(bbar1, 1d);
+    bhash.put(bbar2, 10d);
+    bhash.put(bbar3, 0.1d);
+    jedis.zadd(bfoo, bhash);
+
+    assertCollectionContains(bhash.keySet(), jedis.zrandmember(bfoo));
+    assertEquals(2, jedis.zrandmember(bfoo, 2).size());
+
+    Set<Tuple> bactual = jedis.zrandmemberWithScores(bfoo, 2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    tuple = bactual.iterator().next();
+    assertEquals(getScoreFromByteMap(bhash, tuple.getBinaryElement()), Double.valueOf(tuple.getScore()));
+  }
+
+  private Double getScoreFromByteMap(Map<byte[], Double> bhash, byte[] key) {
+    for (Map.Entry<byte[], Double> en : bhash.entrySet()) {
+      if (Arrays.equals(en.getKey(), key)) {
+        return en.getValue();
+      }
+    }
+    return null;
   }
 }

@@ -7,20 +7,31 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryJedisClusterCommands {
+  Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);
 
   Long exists(byte[]... keys);
+
+  byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
+
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 
@@ -60,9 +71,23 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Long sunionstore(byte[] dstkey, byte[]... keys);
 
+  Set<byte[]> zdiff(byte[]... keys);
+
+  Set<Tuple> zdiffWithScores(byte[]... keys);
+
+  Long zdiffStore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> zinter(ZParams params, byte[]... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+
+  Set<byte[]> zunion(ZParams params, byte[]... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
   Long zunionstore(byte[] dstkey, byte[]... sets);
 
@@ -88,10 +113,25 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   Set<byte[]> keys(byte[] pattern);
 
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams);
 
+  List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams);
+
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   */
+  @Deprecated
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
       Map<byte[], byte[]> streams);
+
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
+      Entry<byte[], byte[]>... streams);
 
   Long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

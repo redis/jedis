@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.FlushMode;
+
 import java.util.List;
 
 public interface JedisClusterBinaryScriptingCommands {
@@ -51,6 +53,14 @@ public interface JedisClusterBinaryScriptingCommands {
    * @return
    */
   String scriptFlush(byte[] sampleKey);
+
+  /**
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @param flushMode
+   * @return
+   */
+  String scriptFlush(byte[] sampleKey, FlushMode flushMode);
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is

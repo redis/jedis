@@ -153,8 +153,18 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(uri, config);
   }
 
+  /**
+   * @deprecated This constructor will be removed in future major release.
+   *
+   * Use {@link Jedis#Jedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     super(jedisSocketFactory);
+  }
+
+  public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
+    super(jedisSocketFactory, clientConfig);
   }
 
   /**

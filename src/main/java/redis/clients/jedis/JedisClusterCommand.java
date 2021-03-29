@@ -155,7 +155,9 @@ public abstract class JedisClusterCommand<T> {
 
     JedisClusterMaxAttemptsException maxAttemptsException
         = new JedisClusterMaxAttemptsException("No more cluster attempts left.");
-    maxAttemptsException.addSuppressed(lastException);
+    if (lastException != null) {
+      maxAttemptsException.addSuppressed(lastException);
+    }
     throw maxAttemptsException;
   }
 

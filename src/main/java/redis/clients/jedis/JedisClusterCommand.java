@@ -28,6 +28,8 @@ public abstract class JedisClusterCommand<T> {
   }
 
   /**
+   * @param connectionHandler
+   * @param maxAttempts
    * @param maxTotalRetriesDuration No more attempts after we have been trying for this long.
    */
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts,
@@ -131,7 +133,10 @@ public abstract class JedisClusterCommand<T> {
           redirect = null;
         }
       } catch (JedisRedirectionException jre) {
-        lastException = jre;
+        // avoid updating lastException if it is a connection exception
+        if (lastException == null || lastException instanceof JedisRedirectionException) {
+          lastException = jre;
+        }
         LOG.debug("Redirected by server to {}", jre.getTargetNode());
         consecutiveConnectionFailures = 0;
         redirect = jre;
@@ -144,11 +149,14 @@ public abstract class JedisClusterCommand<T> {
         releaseConnection(connection);
       }
       if (Instant.now().isAfter(deadline)) {
-        throw new JedisClusterOperationException("Retry deadline exceeded");
+        throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
       }
     }
 
-    throw new JedisClusterMaxAttemptsException("No more cluster attempts left.", lastException);
+    JedisClusterMaxAttemptsException maxAttemptsException
+        = new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+    maxAttemptsException.addSuppressed(lastException);
+    throw maxAttemptsException;
   }
 
   /**
@@ -194,8 +202,7 @@ public abstract class JedisClusterCommand<T> {
 
     long millisLeft = Duration.between(Instant.now(), deadline).toMillis();
     if (millisLeft < 0) {
-      // TODO: change to JedisClusterOperationException or a new sub-class of it
-      throw new JedisClusterMaxAttemptsException("Deadline exceeded");
+      throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
     }
 
     return millisLeft / (attemptsLeft * (attemptsLeft + 1));

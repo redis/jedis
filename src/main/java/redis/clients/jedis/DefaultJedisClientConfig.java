@@ -1,17 +1,18 @@
 package redis.clients.jedis;
 
+import java.util.Objects;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
-  private final int connectionTimeout;
-  private final int soTimeout;
-  private final int infiniteSoTimeout;
+  private final int connectionTimeoutMillis;
+  private final int socketTimeoutMillis;
+  private final int blockingSocketTimeoutMillis;
 
   private final String user;
-  private final String password;
+  private volatile String password;
   private final int database;
   private final String clientName;
 
@@ -22,13 +23,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final HostAndPortMapper hostAndPortMapper;
 
-  private DefaultJedisClientConfig(int connectionTimeout, int soTimeout, int infiniteSoTimeout,
-      String user, String password, int database, String clientName,
+  private DefaultJedisClientConfig(int connectionTimeoutMillis, int soTimeoutMillis,
+      int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
-    this.infiniteSoTimeout = infiniteSoTimeout;
+    this.connectionTimeoutMillis = connectionTimeoutMillis;
+    this.socketTimeoutMillis = soTimeoutMillis;
+    this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
     this.user = user;
     this.password = password;
     this.database = database;
@@ -41,18 +42,18 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public int getConnectionTimeout() {
-    return connectionTimeout;
+  public int getConnectionTimeoutMillis() {
+    return connectionTimeoutMillis;
   }
 
   @Override
-  public int getSoTimeout() {
-    return soTimeout;
+  public int getSocketTimeoutMillis() {
+    return socketTimeoutMillis;
   }
 
   @Override
-  public int getInfiniteSoTimeout() {
-    return infiniteSoTimeout;
+  public int getBlockingSocketTimeoutMillis() {
+    return blockingSocketTimeoutMillis;
   }
 
   @Override
@@ -63,6 +64,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public String getPassword() {
     return password;
+  }
+
+  @Override
+  public synchronized void updatePassword(String password) {
+    if (!Objects.equals(this.password, password)) {
+      this.password = password;
+    }
   }
 
   @Override
@@ -106,13 +114,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   public static class Builder {
 
-    private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
-    private int soTimeout = Protocol.DEFAULT_TIMEOUT;
-    private int infiniteSoTimeout = 0;
+    private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
+    private int socketTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
+    private int blockingSocketTimeoutMillis = 0;
 
     private String user = null;
     private String password = null;
-    private int databse = Protocol.DEFAULT_DATABASE;
+    private int database = Protocol.DEFAULT_DATABASE;
     private String clientName = null;
 
     private boolean ssl = false;
@@ -126,76 +134,77 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     public DefaultJedisClientConfig build() {
-      return new DefaultJedisClientConfig(connectionTimeout, soTimeout, infiniteSoTimeout,
-          user, password, databse, clientName,
-          ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
+      return new DefaultJedisClientConfig(connectionTimeoutMillis, socketTimeoutMillis,
+          blockingSocketTimeoutMillis, user, password, database, clientName, ssl, sslSocketFactory,
+          sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
-    public Builder withConnectionTimeout(int connectionTimeout) {
-      this.connectionTimeout = connectionTimeout;
+    public Builder connectionTimeoutMillis(int connectionTimeoutMillis) {
+      this.connectionTimeoutMillis = connectionTimeoutMillis;
       return this;
     }
 
-    public Builder withSoTimeout(int soTimeout) {
-      this.soTimeout = soTimeout;
+    public Builder socketTimeoutMillis(int socketTimeoutMillis) {
+      this.socketTimeoutMillis = socketTimeoutMillis;
       return this;
     }
 
-    public Builder withInfiniteSoTimeout(int infiniteSoTimeout) {
-      this.infiniteSoTimeout = infiniteSoTimeout;
+    public Builder blockingSocketTimeoutMillis(int blockingSocketTimeoutMillis) {
+      this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
       return this;
     }
 
-    public Builder withUser(String user) {
+    public Builder user(String user) {
       this.user = user;
       return this;
     }
 
-    public Builder withPassword(String password) {
+    public Builder password(String password) {
       this.password = password;
       return this;
     }
 
-    public Builder withDatabse(int databse) {
-      this.databse = databse;
+    public Builder database(int database) {
+      this.database = database;
       return this;
     }
 
-    public Builder withClientName(String clientName) {
+    public Builder clientName(String clientName) {
       this.clientName = clientName;
       return this;
     }
 
-    public Builder withSsl(boolean ssl) {
+    public Builder ssl(boolean ssl) {
       this.ssl = ssl;
       return this;
     }
 
-    public Builder withSslSocketFactory(SSLSocketFactory sslSocketFactory) {
+    public Builder sslSocketFactory(SSLSocketFactory sslSocketFactory) {
       this.sslSocketFactory = sslSocketFactory;
       return this;
     }
 
-    public Builder withSslParameters(SSLParameters sslParameters) {
+    public Builder sslParameters(SSLParameters sslParameters) {
       this.sslParameters = sslParameters;
       return this;
     }
 
-    public Builder withHostnameVerifier(HostnameVerifier hostnameVerifier) {
+    public Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
       this.hostnameVerifier = hostnameVerifier;
       return this;
     }
 
-    public Builder withHostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
+    public Builder hostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
     }
   }
-  
+
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(copy.getConnectionTimeout(), copy.getSoTimeout(),
-        copy.getInfiniteSoTimeout(), copy.getUser(), copy.getPassword(), copy.getDatabase(),
-        copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(), copy.getSslParameters(),
-        copy.getHostnameVerifier(), copy.getHostAndPortMapper());
+    return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(),
+        copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(), copy.getUser(),
+        copy.getPassword(), copy.getDatabase(), copy.getClientName(), copy.isSsl(),
+        copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
+        copy.getHostAndPortMapper());
   }
 }

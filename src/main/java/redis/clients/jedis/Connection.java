@@ -24,7 +24,7 @@ public class Connection implements Closeable {
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
   private boolean socketParamModified = false; // for backward compatibility
-  private JedisSocketFactory socketFactory; // TODO: sould be final
+  private JedisSocketFactory socketFactory; // TODO: should be final
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
@@ -55,7 +55,7 @@ public class Connection implements Closeable {
    */
   @Deprecated
   public Connection(final String host, final int port, final boolean ssl) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl).build());
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl).build());
   }
 
   /**
@@ -65,15 +65,15 @@ public class Connection implements Closeable {
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().withSsl(ssl)
-        .withSslSocketFactory(sslSocketFactory).withSslParameters(sslParameters)
-        .withHostnameVerifier(hostnameVerifier).build());
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
-    this.soTimeout = clientConfig.getSoTimeout();
-    this.infiniteSoTimeout = clientConfig.getInfiniteSoTimeout();
+    this.soTimeout = clientConfig.getSocketTimeoutMillis();
+    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {
@@ -212,7 +212,7 @@ public class Connection implements Closeable {
     if (socketParamModified) { // this is only for backward compatibility
       try {
         disconnect();
-      } catch(Exception e) {
+      } catch (Exception e) {
         // swallow
       }
     }

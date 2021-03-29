@@ -13,11 +13,12 @@ import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+  protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST,
+      Protocol.DEFAULT_PORT);
 
-  private HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
+  private volatile HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
-  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int socketTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean ssl = false;
   private SSLSocketFactory sslSocketFactory = null;
   private SSLParameters sslParameters = null;
@@ -31,13 +32,17 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this(hostAndPort, null);
   }
 
+  public DefaultJedisSocketFactory(JedisClientConfig config) {
+    this(null, config);
+  }
+
   @Deprecated
-  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int soTimeout,
+  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int socketTimeout,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
     this.hostAndPort = new HostAndPort(host, port);
     this.connectionTimeout = connectionTimeout;
-    this.soTimeout = soTimeout;
+    this.socketTimeout = socketTimeout;
     this.ssl = ssl;
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
@@ -45,10 +50,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
-    this.hostAndPort = hostAndPort;
+    if (hostAndPort != null) {
+      this.hostAndPort = hostAndPort;
+    }
     if (config != null) {
-      this.connectionTimeout = config.getConnectionTimeout();
-      this.soTimeout = config.getSoTimeout();
+      this.connectionTimeout = config.getConnectionTimeoutMillis();
+      this.socketTimeout = config.getSocketTimeoutMillis();
       this.ssl = config.isSsl();
       this.sslSocketFactory = config.getSslSocketFactory();
       this.sslParameters = config.getSslParameters();
@@ -89,7 +96,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         if (null != hostnameVerifier
             && !hostnameVerifier.verify(hostAndPort.getHost(), ((SSLSocket) socket).getSession())) {
           String message = String.format(
-              "The connection to '%s' failed ssl/tls hostname verification.", hostAndPort.getHost());
+            "The connection to '%s' failed ssl/tls hostname verification.", hostAndPort.getHost());
           throw new JedisConnectionException(message);
         }
       }
@@ -102,6 +109,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
       throw new JedisConnectionException("Failed to create socket.", ex);
     }
+  }
+
+  @Override
+  public void updateHostAndPort(HostAndPort hostAndPort) {
+    this.hostAndPort = hostAndPort;
   }
 
   public HostAndPort getSocketHostAndPort() {
@@ -161,12 +173,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   @Override
   public int getSoTimeout() {
-    return this.soTimeout;
+    return this.socketTimeout;
   }
 
   @Override
   public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
+    this.socketTimeout = soTimeout;
   }
 
   public boolean isSsl() {

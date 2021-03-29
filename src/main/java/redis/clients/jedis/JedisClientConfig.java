@@ -6,32 +6,71 @@ import javax.net.ssl.SSLSocketFactory;
 
 public interface JedisClientConfig {
 
-  int getConnectionTimeout();
+  /**
+   * @return Connection timeout in milliseconds
+   */
+  default int getConnectionTimeoutMillis() {
+    return Protocol.DEFAULT_TIMEOUT;
+  }
 
-  int getSoTimeout();
+  /**
+   * @return Socket timeout in milliseconds
+   */
+  default int getSocketTimeoutMillis() {
+    return Protocol.DEFAULT_TIMEOUT;
+  }
 
   /**
    * @return Socket timeout (in milliseconds) to use during blocking operation. Default is '0',
    * which means to block forever.
    */
-  int getInfiniteSoTimeout();
+  default int getBlockingSocketTimeoutMillis() {
+    return 0;
+  }
 
-  String getUser();
+  /**
+   * @return Redis ACL user
+   */
+  default String getUser() {
+    return null;
+  }
 
-  String getPassword();
+  default String getPassword() {
+    return null;
+  }
 
-  int getDatabase();
+  default void updatePassword(String password) {
+  }
 
-  String getClientName();
+  default int getDatabase() {
+    return Protocol.DEFAULT_DATABASE;
+  }
 
-  boolean isSsl();
+  default String getClientName() {
+    return null;
+  }
 
-  SSLSocketFactory getSslSocketFactory();
+  /**
+   * @return <code>true</code> - to create a TLS connection. <code>false</code> - otherwise.
+   */
+  default boolean isSsl() {
+    return false;
+  }
 
-  SSLParameters getSslParameters();
+  default SSLSocketFactory getSslSocketFactory() {
+    return null;
+  }
 
-  HostnameVerifier getHostnameVerifier();
+  default SSLParameters getSslParameters() {
+    return null;
+  }
 
-  HostAndPortMapper getHostAndPortMapper();
+  default HostnameVerifier getHostnameVerifier() {
+    return null;
+  }
+
+  default HostAndPortMapper getHostAndPortMapper() {
+    return null;
+  }
 
 }

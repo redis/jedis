@@ -9,6 +9,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -243,9 +244,32 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         hostAndPortMap);
   }
 
+  /**
+   * @param maxTotalRetriesDuration After this amount of time we will do no more retries and report
+   * the operation as failed.
+   * @deprecated This constructor will be removed in future.
+   */
+  @Deprecated
+  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
+      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
+      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
+      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap,
+      Duration maxTotalRetriesDuration) {
+    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user,
+        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
+        hostAndPortMap, maxTotalRetriesDuration);
+  }
+
   public JedisCluster(Set<HostAndPort> nodes, final JedisClientConfig clientConfig,
       int maxAttempts, final GenericObjectPoolConfig<Jedis> poolConfig) {
     super(nodes, clientConfig, maxAttempts, poolConfig);
+  }
+
+  public JedisCluster(Set<HostAndPort> nodes, final JedisClientConfig clientConfig,
+      int maxAttempts, Duration maxTotalRetriesDuration,
+      final GenericObjectPoolConfig<Jedis> poolConfig) {
+    super(nodes, clientConfig, maxAttempts, maxTotalRetriesDuration, poolConfig);
   }
 
   @Override

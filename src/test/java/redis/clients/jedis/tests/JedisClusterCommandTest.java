@@ -36,23 +36,6 @@ public class JedisClusterCommandTest {
 
   private static final Duration ONE_SECOND = Duration.ofSeconds(1);
 
-  @Test(expected = JedisClusterMaxAttemptsException.class)
-  public void runZeroAttempts() {
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(null, 0, Duration.ZERO) {
-      @Override
-      public String execute(Jedis connection) {
-        return null;
-      }
-
-      @Override
-      protected void sleep(long ignored) {
-        throw new RuntimeException("This test should never sleep");
-      }
-    };
-
-    testMe.run("");
-  }
-
   @Test
   public void runSuccessfulExecute() {
     JedisClusterConnectionHandler connectionHandler = mock(JedisClusterConnectionHandler.class);

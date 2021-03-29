@@ -16,7 +16,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST,
       Protocol.DEFAULT_PORT);
 
-  private HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
+  private volatile HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
   private int socketTimeout = Protocol.DEFAULT_TIMEOUT;
   private boolean ssl = false;
@@ -30,6 +30,10 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort) {
     this(hostAndPort, null);
+  }
+
+  public DefaultJedisSocketFactory(JedisClientConfig config) {
+    this(null, config);
   }
 
   @Deprecated
@@ -46,7 +50,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
-    this.hostAndPort = hostAndPort;
+    if (hostAndPort != null) {
+      this.hostAndPort = hostAndPort;
+    }
     if (config != null) {
       this.connectionTimeout = config.getConnectionTimeoutMillis();
       this.socketTimeout = config.getSocketTimeoutMillis();
@@ -103,6 +109,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
       throw new JedisConnectionException("Failed to create socket.", ex);
     }
+  }
+
+  @Override
+  public void updateHostAndPort(HostAndPort hostAndPort) {
+    this.hostAndPort = hostAndPort;
   }
 
   public HostAndPort getSocketHostAndPort() {

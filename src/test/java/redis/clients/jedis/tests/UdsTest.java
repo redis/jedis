@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
@@ -36,6 +37,11 @@ public class UdsTest {
       } catch (IOException ioe) {
         throw new JedisConnectionException("Failed to create UDS connection.", ioe);
       }
+    }
+
+    @Override
+    public void updateHostAndPort(HostAndPort hostAndPort) {
+      throw new UnsupportedOperationException("UDS cannot update host and port");
     }
 
     @Override

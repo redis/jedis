@@ -24,6 +24,8 @@ public interface JedisSocketFactory {
    */
   Socket createSocket() throws IOException, JedisConnectionException;
 
+  void updateHostAndPort(HostAndPort hostAndPort);
+
   @Deprecated
   String getDescription();
 

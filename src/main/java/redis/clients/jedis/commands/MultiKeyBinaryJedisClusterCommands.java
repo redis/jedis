@@ -5,11 +5,10 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -31,15 +30,19 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 
+  List<byte[]> blpop(double timeout, byte[]... keys);
+
   List<byte[]> brpop(int timeout, byte[]... keys);
 
-  KeyedTuple bzpopmax(int timeout, byte[]... keys);
+  List<byte[]> brpop(double timeout, byte[]... keys);
 
-  KeyedTuple bzpopmin(int timeout, byte[]... keys);
+  List<byte[]> bzpopmax(double timeout, byte[]... keys);
+
+  List<byte[]> bzpopmin(double timeout, byte[]... keys);
 
   List<byte[]> mget(byte[]... keys);
 

@@ -21,6 +21,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
@@ -206,24 +207,26 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.psetex(key, milliseconds, value);
   }
 
-  public List<String> blpop(final String arg) {
-    Jedis j = getShard(arg);
-    return j.blpop(arg);
-  }
-
   @Override
   public List<String> blpop(final int timeout, final String key) {
     Jedis j = getShard(key);
     return j.blpop(timeout, key);
   }
 
-  public List<String> brpop(final String arg) {
-    Jedis j = getShard(arg);
-    return j.brpop(arg);
+  @Override
+  public KeyedListElement blpop(final double timeout, final String key) {
+    Jedis j = getShard(key);
+    return j.blpop(timeout, key);
   }
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
+    Jedis j = getShard(key);
+    return j.brpop(timeout, key);
+  }
+
+  @Override
+  public KeyedListElement brpop(final double timeout, final String key) {
     Jedis j = getShard(key);
     return j.brpop(timeout, key);
   }

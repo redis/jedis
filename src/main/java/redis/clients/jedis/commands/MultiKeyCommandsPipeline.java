@@ -3,14 +3,14 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 
 import java.util.List;
 import java.util.Map;
@@ -32,15 +32,24 @@ public interface MultiKeyCommandsPipeline {
 
   Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
+  Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout);
 
   Response<List<String>> blpop(String... args);
 
+  Response<List<String>> blpop(int timeout, String... args);
+
+  Response<KeyedListElement> blpop(double timeout, String... args);
+
   Response<List<String>> brpop(String... args);
 
-  Response<KeyedTuple> bzpopmax(int timeout, String... keys);
+  Response<List<String>> brpop(int timeout, String... args);
 
-  Response<KeyedTuple> bzpopmin(int timeout, String... keys);
+  Response<KeyedListElement> brpop(double timeout, String... args);
+
+  Response<KeyedZSetElement> bzpopmax(double timeout, String... keys);
+
+  Response<KeyedZSetElement> bzpopmin(double timeout, String... keys);
 
   Response<Set<String>> keys(String pattern);
 

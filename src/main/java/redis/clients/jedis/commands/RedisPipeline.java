@@ -15,8 +15,12 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
@@ -334,6 +338,8 @@ public interface RedisPipeline {
 
   Response<String> restoreReplace(String key, long ttl, byte[] serializedValue);
 
+  Response<String> restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
+
   Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
 
   // Geo Commands
@@ -380,9 +386,15 @@ public interface RedisPipeline {
 
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
 
+  Response<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params);
+
   Response<Long> xlen(String key);
 
+  Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end);
+
   Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
@@ -396,14 +408,18 @@ public interface RedisPipeline {
 
   Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
 
+  Response<StreamPendingSummary> xpending(String key, String groupname);
+
   Response<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername);
 
-  Response<StreamPendingSummary> xpendingSummary(String key, String groupname);
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params);
 
   Response<Long> xdel( String key, StreamEntryID... ids);
 
   Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
+
+  Response<Long> xtrim(String key, XTrimParams params);
 
   Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);

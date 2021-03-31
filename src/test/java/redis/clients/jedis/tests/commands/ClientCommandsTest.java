@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.params.ClientKillParams.Type;
@@ -191,6 +192,19 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void killLAddr() {
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bladdr=(\\S+)\\b").matcher(info);
+    matcher.find();
+    String laddr = matcher.group(1);
+
+    long clients = jedis.clientKill(new ClientKillParams().laddr(laddr));
+    assertTrue(clients >= 1);
+
+    assertDisconnected(client);
+  }
+
+  @Test
   public void killAddrIpPort() {
     String info = findInClientList();
     Matcher matcher = Pattern.compile("\\baddr=(\\S+)\\b").matcher(info);
@@ -213,6 +227,22 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     assertEquals(1, clients);
     assertDisconnected(client2);
     jedis.aclDelUser("test_kill");
+  }
+
+  @Test
+  public void clientInfo() {
+    String info = client.clientInfo();
+    assertNotNull(info);
+    assertEquals(1, info.split("\n").length);
+    assertTrue(info.contains(clientName));
+  }
+
+  @Test
+  public void clientListWithClientId() {
+    Long id = client.clientId();
+    String listInfo = jedis.clientList(id);
+    assertNotNull(listInfo);
+    assertTrue(listInfo.contains(clientName));
   }
 
   private void assertDisconnected(Jedis j) {

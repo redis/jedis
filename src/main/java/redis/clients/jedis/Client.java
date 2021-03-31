@@ -2,10 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -13,6 +10,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -61,6 +59,16 @@ public class Client extends BinaryClient implements Commands {
 
   public Client(final JedisSocketFactory jedisSocketFactory) {
     super(jedisSocketFactory);
+  }
+
+  @Override
+  public void copy(String srcKey, String dstKey, int db, boolean replace) {
+    copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), db, replace);
+  }
+
+  @Override
+  public void copy(String srcKey, String dstKey, boolean replace) {
+    copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), replace);
   }
 
   @Override
@@ -490,6 +498,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zdiff(final String... keys) {
+    zdiff(SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zdiffWithScores(final String... keys) {
+    zdiffWithScores(SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zrange(final String key, final long start, final long stop) {
     zrange(SafeEncoder.encode(key), start, stop);
   }
@@ -601,28 +619,6 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void blpop(final String[] args) {
-    blpop(SafeEncoder.encodeMany(args));
-  }
-
-  public void blpop(final int timeout, final String... keys) {
-    final int size = keys.length + 1;
-    List<String> args = new ArrayList<>(size);
-    Collections.addAll(args, keys);
-
-    args.add(String.valueOf(timeout));
-    blpop(args.toArray(new String[size]));
-  }
-
-  public void bzpopmax(final int timeout, final String... keys) {
-    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
-  }
-
-  public void bzpopmin(final int timeout, final String... keys) {
-    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
-  }
-
-  @Override
   public void sort(final String key, final SortingParams sortingParameters, final String dstkey) {
     sort(SafeEncoder.encode(key), sortingParameters, SafeEncoder.encode(dstkey));
   }
@@ -633,17 +629,54 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    lmove(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), from, to);
+  }
+
+  @Override
+  public void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout) {
+    blmove(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), from, to, timeout);
+  }
+
+  @Override
+  public void blpop(final String[] args) {
+    blpop(SafeEncoder.encodeMany(args));
+  }
+
+  @Override
+  public void blpop(final int timeout, final String... keys) {
+    blpop(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void blpop(final double timeout, final String... keys) {
+    blpop(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void brpop(final String[] args) {
     brpop(SafeEncoder.encodeMany(args));
   }
 
+  @Override
   public void brpop(final int timeout, final String... keys) {
-    final int size = keys.length + 1;
-    List<String> args = new ArrayList<>(size);
-    Collections.addAll(args, keys);
+    brpop(timeout, SafeEncoder.encodeMany(keys));
+  }
 
-    args.add(String.valueOf(timeout));
-    brpop(args.toArray(new String[size]));
+  @Override
+  public void brpop(final double timeout, final String... keys) {
+    brpop(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void bzpopmax(final double timeout, final String... keys) {
+    bzpopmax(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void bzpopmin(final double timeout, final String... keys) {
+    bzpopmin(timeout, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -654,6 +687,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zcount(final String key, final String min, final String max) {
     zcount(SafeEncoder.encode(key), SafeEncoder.encode(min), SafeEncoder.encode(max));
+  }
+
+  @Override
+  public void zdiffStore(final String dstkey, final String... keys) {
+    zdiffStore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -768,6 +806,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zunion(final ZParams params, final String... keys) {
+    zunion(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zunionWithScores(final ZParams params, final String... keys) {
+    zunionWithScores(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void zunionstore(final String dstkey, final String... sets) {
     zunionstore(SafeEncoder.encode(dstkey), SafeEncoder.encodeMany(sets));
   }
@@ -775,6 +823,16 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zunionstore(final String dstkey, final ZParams params, final String... sets) {
     zunionstore(SafeEncoder.encode(dstkey), params, SafeEncoder.encodeMany(sets));
+  }
+
+  @Override
+  public void zinter(final ZParams params, final String... keys) {
+    zinter(params, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void zinterWithScores(final ZParams params, final String... keys) {
+    zinterWithScores(params, SafeEncoder.encodeMany(keys));
   }
 
   @Override
@@ -990,6 +1048,12 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     restoreReplace(SafeEncoder.encode(key), ttl, serializedValue);
+  }
+
+  @Override
+  public void restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    restore(SafeEncoder.encode(key), ttl, serializedValue, params);
   }
 
   public void pexpire(final String key, final long milliseconds) {
@@ -1353,12 +1417,21 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void xadd(final String key, final StreamEntryID id, final Map<String, String> hash,
       long maxLen, boolean approximateLength) {
-    final Map<byte[], byte[]> bhash = new HashMap<>(hash.size());
-    for (final Entry<String, String> entry : hash.entrySet()) {
+    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id == null ? "*" : id.toString()),
+      encodeStringMap(hash), maxLen, approximateLength);
+  }
+
+  @Override
+  public void xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+    xadd(SafeEncoder.encode(key), encodeStringMap(hash), params);
+  }
+
+  private static Map<byte[], byte[]> encodeStringMap(Map<String, String> map) {
+    final Map<byte[], byte[]> bhash = new HashMap<>(map.size());
+    for (final Map.Entry<String, String> entry : map.entrySet()) {
       bhash.put(SafeEncoder.encode(entry.getKey()), SafeEncoder.encode(entry.getValue()));
     }
-    xadd(SafeEncoder.encode(key), SafeEncoder.encode(id == null ? "*" : id.toString()), bhash,
-      maxLen, approximateLength);
+    return bhash;
   }
 
   @Override
@@ -1367,10 +1440,29 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xrange(final String key, final StreamEntryID start, final StreamEntryID end) {
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
+      SafeEncoder.encode(end == null ? "+" : end.toString()));
+  }
+
+  @Override
+  public void xrange(final String key, final StreamEntryID start, final StreamEntryID end,
+      final int count) {
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
+      SafeEncoder.encode(end == null ? "+" : end.toString()), count);
+  }
+
+  @Override
   public void xrange(final String key, final StreamEntryID start, final StreamEntryID end,
       final long count) {
     xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
       SafeEncoder.encode(end == null ? "+" : end.toString()), count);
+  }
+
+  @Override
+  public void xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end == null ? "+" : end.toString()),
+      SafeEncoder.encode(start == null ? "-" : start.toString()));
   }
 
   @Override
@@ -1458,6 +1550,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xtrim(String key, XTrimParams params) {
+    xtrim(SafeEncoder.encode(key), params);
+  }
+
+  @Override
   public void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck,
       Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);
@@ -1492,6 +1589,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xpending(String key, String groupname) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
+  }
+
+  @Override
   public void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end,
       int count, String consumername) {
     xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), SafeEncoder.encode(start==null ? "-" : start.toString()),
@@ -1499,8 +1601,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xpendingSummary(String key, String groupname) {
-    xpendingSummary(SafeEncoder.encode(key), SafeEncoder.encode(groupname));
+  public void xpending(String key, String groupname, XPendingParams params) {
+    xpending(SafeEncoder.encode(key), SafeEncoder.encode(groupname), params);
   }
 
   @Override

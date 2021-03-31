@@ -2,41 +2,57 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.KeyedTuple;
+import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
+import redis.clients.jedis.resps.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface MultiKeyCommands {
+
+  Boolean copy(String srcKey, String dstKey, int db, boolean replace);
+
+  Boolean copy(String srcKey, String dstKey, boolean replace);
+
   Long del(String... keys);
 
   Long unlink(String... keys);
 
   Long exists(String... keys);
 
+  String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
+
   List<String> blpop(int timeout, String... keys);
 
+  KeyedListElement blpop(double timeout, String... keys);
+
   List<String> brpop(int timeout, String... keys);
+
+  KeyedListElement brpop(double timeout, String... keys);
 
   List<String> blpop(String... args);
 
   List<String> brpop(String... args);
 
-  KeyedTuple bzpopmax(int timeout, String... keys);
+  KeyedZSetElement bzpopmax(double timeout, String... keys);
 
-  KeyedTuple bzpopmin(int timeout, String... keys);
+  KeyedZSetElement bzpopmin(double timeout, String... keys);
 
   /**
    * Returns all the keys matching the glob-style pattern. For example if you have in the database
@@ -103,9 +119,23 @@ public interface MultiKeyCommands {
 
   String unwatch();
 
+  Set<String> zdiff(String... keys);
+
+  Set<Tuple> zdiffWithScores(String... keys);
+
+  Long zdiffStore(String dstkey, String... keys);
+
   Long zinterstore(String dstkey, String... sets);
 
   Long zinterstore(String dstkey, ZParams params, String... sets);
+
+  Set<String> zinter(ZParams params, String... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, String... keys);
+
+  Set<String> zunion(ZParams params, String... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, String... keys);
 
   Long zunionstore(String dstkey, String... sets);
 

@@ -3,9 +3,10 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -17,23 +18,35 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryCommands {
+  Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
+
+  Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
+
   Long del(byte[]... keys);
 
   Long unlink(byte[]... keys);
 
   Long exists(byte[]... keys);
 
+  byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
+
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
+
   List<byte[]> blpop(int timeout, byte[]... keys);
 
+  List<byte[]> blpop(double timeout, byte[]... keys);
+
   List<byte[]> brpop(int timeout, byte[]... keys);
+
+  List<byte[]> brpop(double timeout, byte[]... keys);
 
   List<byte[]> blpop(byte[]... args);
 
   List<byte[]> brpop(byte[]... args);
 
-  KeyedTuple bzpopmax(int timeout, byte[]... keys);
+  List<byte[]> bzpopmax(double timeout, byte[]... keys);
 
-  KeyedTuple bzpopmin(int timeout, byte[]... keys);
+  List<byte[]> bzpopmin(double timeout, byte[]... keys);
 
   Set<byte[]> keys(byte[] pattern);
 
@@ -71,9 +84,23 @@ public interface MultiKeyBinaryCommands {
 
   String unwatch();
 
+  Set<byte[]> zdiff(byte[]... keys);
+
+  Set<Tuple> zdiffWithScores(byte[]... keys);
+
+  Long zdiffStore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> zinter(ZParams params, byte[]... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+
   Long zinterstore(byte[] dstkey, byte[]... sets);
 
   Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+
+  Set<byte[]> zunion(ZParams params, byte[]... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
   Long zunionstore(byte[] dstkey, byte[]... sets);
 

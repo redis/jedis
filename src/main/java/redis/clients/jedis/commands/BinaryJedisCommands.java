@@ -4,25 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamConsumersInfo;
-import redis.clients.jedis.StreamGroupInfo;
-import redis.clients.jedis.StreamInfo;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.*;
+import redis.clients.jedis.params.*;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -64,7 +47,13 @@ public interface BinaryJedisCommands {
     return restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   String restoreReplace(byte[] key, long ttl, byte[] serializedValue);
+
+  String restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   /**
    * @deprecated Use {@link #expire(byte[], long)}.
@@ -413,7 +402,11 @@ public interface BinaryJedisCommands {
 
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
+  byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
+
   Long xlen(byte[] key);
+
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
 
   /**
    * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
@@ -424,6 +417,8 @@ public interface BinaryJedisCommands {
   }
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
+
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start);
 
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
@@ -441,9 +436,13 @@ public interface BinaryJedisCommands {
 
   Long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
+  Long xtrim(byte[] key, XTrimParams params);
+
+  Object xpending(byte[] key, byte[] groupname);
+
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
-  Object xpendingSummary(byte[] key, byte[] groupname);
+  List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params);
 
   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 

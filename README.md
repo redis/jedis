@@ -87,6 +87,18 @@ and
   </dependencies>
 ```
 
+for upcoming major release
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
+
 
 To use it just:
     

@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.KeyedTuple;
+import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
@@ -11,11 +11,12 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
+import redis.clients.jedis.resps.*;
 
 import java.util.List;
 import java.util.Map;
@@ -35,19 +36,23 @@ public interface MultiKeyCommands {
 
   String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
-  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout);
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
 
   List<String> blpop(int timeout, String... keys);
 
+  KeyedListElement blpop(double timeout, String... keys);
+
   List<String> brpop(int timeout, String... keys);
+
+  KeyedListElement brpop(double timeout, String... keys);
 
   List<String> blpop(String... args);
 
   List<String> brpop(String... args);
 
-  KeyedTuple bzpopmax(int timeout, String... keys);
+  KeyedZSetElement bzpopmax(double timeout, String... keys);
 
-  KeyedTuple bzpopmin(int timeout, String... keys);
+  KeyedZSetElement bzpopmin(double timeout, String... keys);
 
   /**
    * Returns all the keys matching the glob-style pattern. For example if you have in the database

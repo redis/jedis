@@ -23,6 +23,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.KeyedListElement;
 
 import java.util.List;
 import java.util.Map;
@@ -321,7 +322,11 @@ public interface JedisClusterCommands {
 
   List<String> blpop(int timeout, String key);
 
+  KeyedListElement blpop(double timeout, String key);
+
   List<String> brpop(int timeout, String key);
+
+  KeyedListElement brpop(double timeout, String key);
 
   Long del(String key);
 

@@ -3900,12 +3900,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
     checkIsInMultiOrPipeline();
     client.eval(script, keyCount, params);
-    client.setTimeoutInfinite();
-    try {
-      return client.getOne();
-    } finally {
-      client.rollbackTimeout();
-    }
+    return client.getOne();
   }
 
   @Override
@@ -3932,12 +3927,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Object evalsha(final byte[] sha1, final int keyCount, final byte[]... params) {
     checkIsInMultiOrPipeline();
     client.evalsha(sha1, keyCount, params);
-    client.setTimeoutInfinite();
-    try {
-      return client.getOne();
-    } finally {
-      client.rollbackTimeout();
-    }
+    return client.getOne();
   }
 
   @Override

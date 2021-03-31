@@ -3256,12 +3256,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Object eval(final String script, final int keyCount, final String... params) {
     checkIsInMultiOrPipeline();
     client.eval(script, keyCount, params);
-    client.setTimeoutInfinite();
-    try {
-      return SafeEncoder.encodeObject(client.getOne());
-    } finally {
-      client.rollbackTimeout();
-    }
+    return SafeEncoder.encodeObject(client.getOne());
   }
 
   @Override

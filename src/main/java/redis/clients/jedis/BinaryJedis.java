@@ -292,6 +292,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     initializeFromClientConfig(clientConfig);
   }
 
+  @Override
+  public String toString() {
+    return "BinaryJedis{" + client + '}';
+  }
+
   public boolean isConnected() {
     return client.isConnected();
   }

@@ -220,4 +220,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   public void setHostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
     this.hostAndPortMapper = hostAndPortMapper;
   }
+
+  @Override
+  public String toString() {
+    return "DefaultJedisSocketFactory{" + hostAndPort.toString() + "}";
+  }
 }

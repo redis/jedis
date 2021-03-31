@@ -11,7 +11,6 @@ import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisMovedDataException;
-import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -120,8 +119,6 @@ public abstract class JedisClusterCommand<T> {
 
         return execute(connection);
 
-      } catch (JedisNoReachableClusterNodeException jnrcne) {
-        throw jnrcne;
       } catch (JedisConnectionException jce) {
         lastException = jce;
         ++consecutiveConnectionFailures;

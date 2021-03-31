@@ -1,5 +1,5 @@
-name-template: '$NEXT_MINOR_VERSION'
-tag-template: 'jedis-$NEXT_MINOR_VERSION'
+name-template: '$NEXT_MAJOR_VERSION'
+tag-template: 'jedis-$NEXT_MAJOR_VERSION'
 categories:
   - title: 'Features'
     labels:

@@ -1,9 +1,9 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 
 import java.util.List;
 import java.util.Map;
@@ -14,34 +14,6 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline, BasicRedisPipeline {
 
   protected Client client = null;
-
-  @Override
-  public Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from,
-      ListDirection to) {
-    client.lmove(srcKey, dstKey, from, to);
-    return getResponse(BuilderFactory.BYTE_ARRAY);
-  }
-
-  @Override
-  public Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
-      int timeout) {
-    client.blmove(srcKey, dstKey, from, to, timeout);
-    return getResponse(BuilderFactory.BYTE_ARRAY);
-  }
-
-  @Override
-  public Response<String> lmove(String srcKey, String dstKey, ListDirection from,
-      ListDirection to) {
-    client.lmove(srcKey, dstKey, from, to);
-    return getResponse(BuilderFactory.STRING);
-  }
-
-  @Override
-  public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
-      int timeout) {
-    client.blmove(srcKey, dstKey, from, to, timeout);
-    return getResponse(BuilderFactory.STRING);
-  }
 
   @Override
   public Response<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
@@ -68,14 +40,31 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<List<String>> brpop(String... args) {
-    client.brpop(args);
-    return getResponse(BuilderFactory.STRING_LIST);
+  public Response<String> lmove(String srcKey, String dstKey, ListDirection from,
+      ListDirection to) {
+    client.lmove(srcKey, dstKey, from, to);
+    return getResponse(BuilderFactory.STRING);
   }
 
-  public Response<List<String>> brpop(int timeout, String... keys) {
-    client.brpop(timeout, keys);
-    return getResponse(BuilderFactory.STRING_LIST);
+  @Override
+  public Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from,
+      ListDirection to) {
+    client.lmove(srcKey, dstKey, from, to);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
+  }
+
+  @Override
+  public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout) {
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  @Override
+  public Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout) {
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
   @Override
@@ -84,14 +73,50 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
+  @Override
+  public Response<List<byte[]>> blpop(byte[]... args) {
+    client.blpop(args);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
   public Response<List<String>> blpop(int timeout, String... keys) {
     client.blpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
+  /**
+   * @deprecated Use {@link #blpop(double, java.lang.String...)} or
+   * {@link #blpop(int, java.lang.String...)}.
+   */
+  @Deprecated
   public Response<Map<String, String>> blpopMap(int timeout, String... keys) {
     client.blpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_MAP);
+  }
+
+  @Deprecated
+  public Response<List<String>> blpop(int timeout, byte[]... keys) {
+    client.blpop(timeout, keys);
+    return getResponse(BuilderFactory.STRING_LIST);
+  }
+
+  @Override
+  public Response<KeyedListElement> blpop(double timeout, String... keys) {
+    client.blpop(timeout, keys);
+    return getResponse(BuilderFactory.KEYED_LIST_ELEMENT);
+  }
+
+  @Override
+  public Response<List<byte[]>> blpop(double timeout, byte[]... keys) {
+    client.blpop(timeout, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<List<String>> brpop(String... args) {
+    client.brpop(args);
+    return getResponse(BuilderFactory.STRING_LIST);
   }
 
   @Override
@@ -100,49 +125,62 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
-  public Response<List<String>> brpop(int timeout, byte[]... keys) {
+  @Override
+  public Response<List<String>> brpop(int timeout, String... keys) {
     client.brpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
+  /**
+   * @deprecated Use {@link #brpop(double, java.lang.String...)} or
+   * {@link #brpop(int, java.lang.String...)}.
+   */
+  @Deprecated
   public Response<Map<String, String>> brpopMap(int timeout, String... keys) {
     client.blpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_MAP);
   }
 
-  @Override
-  public Response<List<byte[]>> blpop(byte[]... args) {
-    client.blpop(args);
-    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
-  }
-
-  public Response<List<String>> blpop(int timeout, byte[]... keys) {
-    client.blpop(timeout, keys);
+  @Deprecated
+  public Response<List<String>> brpop(int timeout, byte[]... keys) {
+    client.brpop(timeout, keys);
     return getResponse(BuilderFactory.STRING_LIST);
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmax(int timeout, String... keys) {
+  public Response<KeyedListElement> brpop(double timeout, String... keys) {
+    client.brpop(timeout, keys);
+    return getResponse(BuilderFactory.KEYED_LIST_ELEMENT);
+  }
+
+  @Override
+  public Response<List<byte[]>> brpop(double timeout, byte[]... keys) {
+    client.brpop(timeout, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
+  }
+
+  @Override
+  public Response<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
     client.bzpopmax(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmin(int timeout, String... keys) {
-    client.bzpopmin(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
-  }
-
-  @Override
-  public Response<KeyedTuple> bzpopmax(int timeout, byte[]... keys) {
+  public Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
     client.bzpopmax(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override
-  public Response<KeyedTuple> bzpopmin(int timeout, byte[]... keys) {
+  public Response<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
     client.bzpopmin(timeout, keys);
-    return getResponse(BuilderFactory.KEYED_TUPLE);
+    return getResponse(BuilderFactory.KEYED_ZSET_ELEMENT);
+  }
+
+  @Override
+  public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
+    client.bzpopmin(timeout, keys);
+    return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }
 
   @Override

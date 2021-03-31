@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -1825,7 +1825,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public byte[] blmove(final byte[] srcKey, final byte[] dstKey, final ListDirection from,
-      final ListDirection to, final int timeout) {
+      final ListDirection to, final double timeout) {
     return new JedisClusterCommand<byte[]>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public byte[] execute(Jedis connection) {
@@ -1845,6 +1845,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public List<byte[]> blpop(final double timeout, final byte[]... keys) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
+        return connection.blpop(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
     return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
@@ -1855,20 +1865,30 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public KeyedTuple bzpopmax(int timeout, byte[]... keys) {
-    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public List<byte[]> brpop(final double timeout, final byte[]... keys) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
       @Override
-      public KeyedTuple execute(Jedis connection) {
+      public List<byte[]> execute(Jedis connection) {
+        return connection.brpop(timeout, keys);
+      }
+    }.runBinary(keys.length, keys);
+  }
+
+  @Override
+  public List<byte[]> bzpopmax(double timeout, byte[]... keys) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<byte[]> execute(Jedis connection) {
         return connection.bzpopmax(timeout, keys);
       }
     }.runBinary(keys.length, keys);
   }
 
   @Override
-  public KeyedTuple bzpopmin(int timeout, byte[]... keys) {
-    return new JedisClusterCommand<KeyedTuple>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public List<byte[]> bzpopmin(double timeout, byte[]... keys) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public KeyedTuple execute(Jedis connection) {
+      public List<byte[]> execute(Jedis connection) {
         return connection.bzpopmin(timeout, keys);
       }
     }.runBinary(keys.length, keys);

@@ -1,5 +1,8 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * WARNING: This exception will extend {@link JedisClusterOperationException} in upcoming major release.
+ */
 public class JedisNoReachableClusterNodeException extends JedisConnectionException {
     private static final long serialVersionUID = 3878122572474110407L;
 

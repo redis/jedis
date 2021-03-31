@@ -4611,9 +4611,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     private final List<E> list;
 
     private SetFromList(List<E> list) {
-      if (list == null) {
-        throw new NullPointerException("list");
-      }
       this.list = list;
     }
 
@@ -4702,6 +4699,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
 
     protected static <E> SetFromList<E> of(List<E> list) {
+      if (list == null) {
+        return null;
+      }
       return new SetFromList<>(list);
     }
   }

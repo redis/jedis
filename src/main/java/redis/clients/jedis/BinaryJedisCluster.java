@@ -1846,7 +1846,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public List<byte[]> blpop(final double timeout, final byte[]... keys) {
-    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<byte[]> execute(Jedis connection) {
         return connection.blpop(timeout, keys);
@@ -1866,7 +1866,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public List<byte[]> brpop(final double timeout, final byte[]... keys) {
-    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<List<byte[]>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<byte[]> execute(Jedis connection) {
         return connection.brpop(timeout, keys);

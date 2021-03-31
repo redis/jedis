@@ -1881,7 +1881,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public KeyedListElement blpop(final double timeout, final String... keys) {
-    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public KeyedListElement execute(Jedis connection) {
         return connection.blpop(timeout, keys);
@@ -1932,7 +1932,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<String> blpop(final int timeout, final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<String> execute(Jedis connection) {
         return connection.blpop(timeout, key);
@@ -1942,7 +1942,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public KeyedListElement blpop(double timeout, String key) {
-    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public KeyedListElement execute(Jedis connection) {
         return connection.blpop(timeout, key);
@@ -1952,7 +1952,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
-    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<List<String>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<String> execute(Jedis connection) {
         return connection.brpop(timeout, key);
@@ -1962,7 +1962,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public KeyedListElement brpop(double timeout, String key) {
-    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts) {
+    return new JedisClusterCommand<KeyedListElement>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public KeyedListElement execute(Jedis connection) {
         return connection.brpop(timeout, key);

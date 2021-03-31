@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -356,6 +357,21 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyedListElement build(Object data) {
+      if (data == null) return null;
+      List<byte[]> l = (List<byte[]>) data;
+      return new KeyedListElement(l.get(0), l.get(1));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyedListElement";
+    }
+  };
+
   public static final Builder<Tuple> TUPLE = new Builder<Tuple>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -374,22 +390,21 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<KeyedTuple> KEYED_TUPLE = new Builder<KeyedTuple>() {
+  public static final Builder<KeyedZSetElement> KEYED_ZSET_ELEMENT = new Builder<KeyedZSetElement>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedTuple build(Object data) {
+    public KeyedZSetElement build(Object data) {
       List<byte[]> l = (List<byte[]>) data; // never null
       if (l.isEmpty()) {
         return null;
       }
-      return new KeyedTuple(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+      return new KeyedZSetElement(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
     }
 
     @Override
     public String toString() {
-      return "KeyedTuple";
+      return "KeyedZSetElement";
     }
-
   };
 
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {

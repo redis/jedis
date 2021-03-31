@@ -81,6 +81,11 @@ public class Connection implements Closeable {
     this.soTimeout = jedisSocketFactory.getSoTimeout();
   }
 
+  @Override
+  public String toString() {
+    return "Connection{" + socketFactory + "}";
+  }
+
   public Socket getSocket() {
     return socket;
   }

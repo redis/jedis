@@ -3,11 +3,10 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.KeyedTuple;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
-import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
@@ -30,15 +29,19 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, int timeout);
+  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
 
   Response<List<byte[]>> blpop(byte[]... args);
 
+  Response<List<byte[]>> blpop(double timeout, byte[]... args);
+
   Response<List<byte[]>> brpop(byte[]... args);
 
-  Response<KeyedTuple> bzpopmax(int timeout, byte[]... keys);
+  Response<List<byte[]>> brpop(double timeout, byte[]... args);
 
-  Response<KeyedTuple> bzpopmin(int timeout, byte[]... keys);
+  Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys);
+
+  Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys);
 
   Response<Set<byte[]>> keys(byte[] pattern);
 

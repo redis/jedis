@@ -2,10 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.toByteArray;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -637,7 +634,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, int timeout) {
+  public void blmove(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout) {
     blmove(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), from, to, timeout);
   }
 
@@ -652,6 +650,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void blpop(final double timeout, final String... keys) {
+    blpop(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
   public void brpop(final String[] args) {
     brpop(SafeEncoder.encodeMany(args));
   }
@@ -662,12 +665,17 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void bzpopmax(final int timeout, final String... keys) {
+  public void brpop(final double timeout, final String... keys) {
+    brpop(timeout, SafeEncoder.encodeMany(keys));
+  }
+
+  @Override
+  public void bzpopmax(final double timeout, final String... keys) {
     bzpopmax(timeout, SafeEncoder.encodeMany(keys));
   }
 
   @Override
-  public void bzpopmin(final int timeout, final String... keys) {
+  public void bzpopmin(final double timeout, final String... keys) {
     bzpopmin(timeout, SafeEncoder.encodeMany(keys));
   }
 

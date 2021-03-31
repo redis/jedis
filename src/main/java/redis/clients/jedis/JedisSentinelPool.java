@@ -43,7 +43,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   private final JedisClientConfig sentinelClientConfig;
 
   /**
-   * WARNING: This will changed to {@link java.util.Collection} in upcoming major release.
+   * WARNING: This variable will be changed to {@link java.util.Collection} in upcoming major release.
    */
   protected final Set<MasterListener> masterListeners = new HashSet<>();
 

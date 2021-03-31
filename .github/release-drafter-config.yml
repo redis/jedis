@@ -1,21 +1,20 @@
-name-template: 'Version $NEXT_PATCH_VERSION🌈'
-tag-template: 'v$NEXT_PATCH_VERSION'
+name-template: '$NEXT_MAJOR_VERSION'
+tag-template: 'jedis-$NEXT_MAJOR_VERSION'
 categories:
-  - title: '🚀Features'
+  - title: 'Features'
     labels:
-      - 'feature'
-      - 'enhancement'
+      - 'ENHANCEMENT'
   - title: 'Bug Fixes'
     labels:
-      - 'fix'
-      - 'bugfix'
-      - 'bug'
-  - title: '🧰Maintenance'
+      - 'BUG'
+  - title: 'Maintenance'
     label: 'chore'
-change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:
   - 'skip-changelog'
 template: |
   ## Changes
 
   $CHANGES
+
+  $CONTRIBUTORS

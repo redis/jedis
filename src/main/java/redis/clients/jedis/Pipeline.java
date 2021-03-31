@@ -20,8 +20,8 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
       List<Object> values = new ArrayList<>();
 
       if (list.size() != responses.size()) {
-        throw new JedisDataException("Expected data size " + responses.size() + " but was "
-            + list.size());
+        throw new IllegalStateException(
+            "Expected data size " + responses.size() + " but was " + list.size());
       }
 
       for (int i = 0; i < list.size(); i++) {
@@ -126,14 +126,14 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
   }
 
   public Response<String> discard() {
-    if (currentMulti == null) throw new JedisDataException("DISCARD without MULTI");
+    if (currentMulti == null) throw new IllegalStateException("DISCARD without MULTI");
     client.discard();
     currentMulti = null;
     return getResponse(BuilderFactory.STRING);
   }
 
   public Response<List<Object>> exec() {
-    if (currentMulti == null) throw new JedisDataException("EXEC without MULTI");
+    if (currentMulti == null) throw new IllegalStateException("EXEC without MULTI");
 
     client.exec();
     Response<List<Object>> response = super.getResponse(currentMulti);
@@ -143,11 +143,10 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
   }
 
   public Response<String> multi() {
-    if (currentMulti != null) throw new JedisDataException("MULTI calls can not be nested");
+    if (currentMulti != null) throw new IllegalStateException("MULTI calls can not be nested");
 
     client.multi();
-    Response<String> response = getResponse(BuilderFactory.STRING); // Expecting
-    // OK
+    Response<String> response = getResponse(BuilderFactory.STRING); // Expecting OK
     currentMulti = new MultiResponseBuilder();
     return response;
   }

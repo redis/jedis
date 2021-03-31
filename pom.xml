@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>3.6.0-SNAPSHOT</version>
+	<version>4.0.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -50,6 +50,7 @@
 		<cluster-hosts>localhost:7379,localhost:7380,localhost:7381,localhost:7382,localhost:7383,localhost:7384,localhost:7385</cluster-hosts>
 		<github.global.server>github</github.global.server>
 		<log4j.version>2.13.3</log4j.version>
+		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 	</properties>
 
 	<dependencies>
@@ -89,6 +90,12 @@
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
 			<version>2.3.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>3.7.7</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -200,11 +207,14 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.0.2</version>
 				<configuration>
-					<archive>  
+					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive> 
+						<manifestEntries>
+							<Automatic-Module-Name>${jedis.module.name}</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
 				</configuration>
-			</plugin> 
+			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -213,11 +223,11 @@
 					<execution>
 						<id>bundle-manifest</id>
 						<phase>process-classes</phase>
-						<goals>    
+						<goals>
 							<goal>manifest</goal>
-						</goals>   
+						</goals>
 					</execution>
-				</executions>		
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

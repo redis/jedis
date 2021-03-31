@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.FlushMode;
+
 import java.util.List;
 
 public interface BinaryScriptingCommands {
@@ -24,6 +26,8 @@ public interface BinaryScriptingCommands {
   byte[] scriptLoad(byte[] script);
 
   String scriptFlush();
+
+  String scriptFlush(FlushMode flushMode);
 
   String scriptKill();
 }

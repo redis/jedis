@@ -1,5 +1,8 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * This exception is thrown due to a cluster operation error which may occur without any Redis operation.
+ */
 public class JedisClusterOperationException extends JedisException {
   private static final long serialVersionUID = 8124535086306604887L;
 

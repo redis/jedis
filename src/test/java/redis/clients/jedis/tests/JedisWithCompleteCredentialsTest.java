@@ -56,8 +56,8 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().withUser("acljedis")
-        .withPassword("fizzbuzz").build())) {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().user("acljedis")
+        .password("fizzbuzz").build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

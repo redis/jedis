@@ -254,6 +254,12 @@ pid = /tmp/stunnel.pid
 [redis]
 accept = 127.0.0.1:6390
 connect = 127.0.0.1:6379
+[redis_3]
+accept = 127.0.0.1:16381
+connect = 127.0.0.1:6381
+[redis_4]
+accept = 127.0.0.1:16382
+connect = 127.0.0.1:6382
 [redis_cluster_1]
 accept = 127.0.0.1:8379
 connect = 127.0.0.1:7379
@@ -269,6 +275,18 @@ connect = 127.0.0.1:7382
 [redis_cluster_5]
 accept = 127.0.0.1:8383
 connect = 127.0.0.1:7383
+[redis_sentinel_1]
+accept = 127.0.0.1:36379
+connect = 127.0.0.1:26379
+[redis_sentinel_2]
+accept = 127.0.0.1:36380
+connect = 127.0.0.1:26380
+[redis_sentinel_3]
+accept = 127.0.0.1:36381
+connect = 127.0.0.1:26381
+[redis_sentinel_4]
+accept = 127.0.0.1:36382
+connect = 127.0.0.1:26382
 endef
 
 export REDIS1_CONF

@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisNoScriptException;
@@ -150,6 +151,16 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     jedis.eval("return redis.call('get','foo')");
     jedis.scriptFlush();
     assertFalse(jedis.scriptExists("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+  }
+
+  @Test
+  public void scriptFlushMode() {
+    jedis.set("foo", "bar");
+    jedis.eval("return redis.call('get','foo')");
+    String sha1 = "6b1bf486c81ceb7edf3c093f4c48582e38c0e791";
+    assertTrue(jedis.scriptExists(sha1));
+    jedis.scriptFlush(FlushMode.SYNC);
+    assertFalse(jedis.scriptExists(sha1));
   }
 
   @Test

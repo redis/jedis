@@ -12,10 +12,16 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XClaimParams;
+import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
@@ -102,6 +108,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public String restoreReplace(final String key, final long ttl, final byte[] serializedValue) {
     Jedis j = getShard(key);
     return j.restoreReplace(key, ttl, serializedValue);
+  }
+
+  @Override
+  public String restore(final String key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    Jedis j = getShard(key);
+    return j.restore(key, ttl, serializedValue, params);
   }
 
   @Override
@@ -194,24 +207,26 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.psetex(key, milliseconds, value);
   }
 
-  public List<String> blpop(final String arg) {
-    Jedis j = getShard(arg);
-    return j.blpop(arg);
-  }
-
   @Override
   public List<String> blpop(final int timeout, final String key) {
     Jedis j = getShard(key);
     return j.blpop(timeout, key);
   }
 
-  public List<String> brpop(final String arg) {
-    Jedis j = getShard(arg);
-    return j.brpop(arg);
+  @Override
+  public KeyedListElement blpop(final double timeout, final String key) {
+    Jedis j = getShard(key);
+    return j.blpop(timeout, key);
   }
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
+    Jedis j = getShard(key);
+    return j.brpop(timeout, key);
+  }
+
+  @Override
+  public KeyedListElement brpop(final double timeout, final String key) {
     Jedis j = getShard(key);
     return j.brpop(timeout, key);
   }
@@ -352,6 +367,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Map<String, String> hgetAll(final String key) {
     Jedis j = getShard(key);
     return j.hgetAll(key);
+  }
+
+  @Override
+  public String hrandfield(final String key) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key);
+  }
+
+  @Override
+  public List<String> hrandfield(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfield(key, count);
+  }
+
+  @Override
+  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.hrandfieldWithValues(key, count);
   }
 
   @Override
@@ -619,6 +652,24 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zrevrangeWithScores(key, start, stop);
+  }
+
+  @Override
+  public String zrandmember(final String key) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key);
+  }
+
+  @Override
+  public Set<String> zrandmember(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmember(key, count);
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+    Jedis j = getShard(key);
+    return j.zrandmemberWithScores(key, count);
   }
 
   @Override
@@ -1093,9 +1144,21 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+    Jedis j = getShard(key);
+    return j.xadd(key, hash, params);
+  }
+
+  @Override
   public Long xlen(String key) {
     Jedis j = getShard(key);
     return j.xlen(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end) {
+    Jedis j = getShard(key);
+    return j.xrange(key, start, end);
   }
 
   @Override
@@ -1147,9 +1210,27 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public long xtrim(String key, XTrimParams params) {
+    Jedis j = getShard(key);
+    return j.xtrim(key, params);
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    Jedis j = getShard(key);
+    return j.xrevrange(key, end, start);
+  }
+
+  @Override
   public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
     Jedis j = getShard(key);
     return j.xrevrange(key, end, start, count);
+  }
+
+  @Override
+  public StreamPendingSummary xpending(String key, String groupname) {
+    Jedis j = getShard(key);
+    return j.xpending(key, groupname);
   }
 
   @Override
@@ -1160,9 +1241,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamPendingSummary xpendingSummary(String key, String groupname) {
+  public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
     Jedis j = getShard(key);
-    return j.xpendingSummary(key, groupname);
+    return j.xpending(key, groupname, params);
   }
 
   @Override
@@ -1170,6 +1251,20 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
       long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
+  }
+
+  @Override
+  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+      XClaimParams params, StreamEntryID... ids) {
+    Jedis j = getShard(key);
+    return j.xclaim(key, group, consumername, minIdleTime, params, ids);
+  }
+
+  @Override
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
+      long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    Jedis j = getShard(key);
+    return j.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
   }
 
   @Override

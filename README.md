@@ -58,7 +58,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.5.1</version>
+    <version>3.5.2</version>
     <type>jar</type>
     <scope>compile</scope>
 </dependency>
@@ -83,6 +83,18 @@ and
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
       <version>3.6.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
+
+for upcoming major release
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -138,13 +150,14 @@ Thanks for helping!
 
 ![RedisLabs Logo](logo-redislabs.png)
 
+---
+
+![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
 
 YourKit supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
 and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
 innovative and intelligent tools for profiling Java and .NET applications.
-
-![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
 
 ## License
 

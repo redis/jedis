@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -32,7 +33,8 @@ public interface AdvancedBinaryJedisCommands {
 
   String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      byte[]... keys);
 
   String clientKill(byte[] ipPort);
 
@@ -40,16 +42,22 @@ public interface AdvancedBinaryJedisCommands {
 
   Long clientKill(ClientKillParams params);
 
+  Long clientUnblock(long clientId, UnblockType unblockType);
+
   byte[] clientGetnameBinary();
 
   byte[] clientListBinary();
+
+  byte[] clientListBinary(long... clientIds);
+
+  byte[] clientInfoBinary();
 
   String clientSetname(byte[] name);
 
   Long clientId();
 
   byte[] memoryDoctorBinary();
-  
+
   Long memoryUsage(byte[] key);
 
   Long memoryUsage(byte[] key, int samples);
@@ -80,5 +88,7 @@ public interface AdvancedBinaryJedisCommands {
 
   byte[] aclLog(byte[] options);
 
-  // TODO: Implements ACL LOAD/SAVE commands
+  String aclLoad();
+
+  String aclSave();
 }

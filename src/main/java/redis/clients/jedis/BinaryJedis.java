@@ -14,12 +14,14 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
 import redis.clients.jedis.commands.BinaryJedisCommands;
@@ -29,21 +31,14 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.ClientKillParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.MigrateParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
 
-  protected Client client = null;
+  protected final Client client;
   protected Transaction transaction = null;
   protected Pipeline pipeline = null;
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
@@ -52,31 +47,85 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client = new Client();
   }
 
-  public BinaryJedis(final String host) {
-    URI uri = URI.create(host);
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #BinaryJedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uriString
+   */
+  @Deprecated
+  public BinaryJedis(final String uriString) {
+    URI uri = URI.create(uriString);
     if (JedisURIHelper.isValid(uri)) {
-      initializeClientFromURI(uri);
+      client = createClientFromURI(uri);
+      initializeFromURI(uri);
     } else {
-      client = new Client(host);
+      client = new Client(uriString);
     }
   }
 
   public BinaryJedis(final HostAndPort hp) {
-    this(hp.getHost(), hp.getPort());
+    this(hp, DefaultJedisClientConfig.builder().build());
   }
 
   public BinaryJedis(final String host, final int port) {
     client = new Client(host, port);
   }
 
+  public BinaryJedis(final String host, final int port, final JedisClientConfig config) {
+    this(new HostAndPort(host, port), config);
+  }
+
+  public BinaryJedis(final HostAndPort hostPort, final JedisClientConfig config) {
+    client = new Client(hostPort, config);
+    initializeFromClientConfig(config);
+  }
+
+  private void initializeFromClientConfig(JedisClientConfig config) {
+    try {
+      connect();
+      String password = config.getPassword();
+      if (password != null) {
+        String user = config.getUser();
+        if (user != null) {
+          auth(user, password);
+        } else {
+          auth(password);
+        }
+      }
+      int dbIndex = config.getDatabase();
+      if (dbIndex > 0) {
+        select(dbIndex);
+      }
+      String clientName = config.getClientName();
+      if (clientName != null) {
+        // TODO: need to figure out something without encoding
+        clientSetname(redis.clients.jedis.util.SafeEncoder.encode(clientName));
+      }
+    } catch (JedisException je) {
+      try {
+        if (isConnected()) {
+          quit();
+        }
+        disconnect();
+      } catch (Exception e) {
+        //
+      }
+      throw je;
+    }
+  }
+
   public BinaryJedis(final String host, final int port, final boolean ssl) {
-    client = new Client(host, port, ssl);
+    this(host, port, DefaultJedisClientConfig.builder().ssl(ssl).build());
   }
 
   public BinaryJedis(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+    this(host, port, DefaultJedisClientConfig.builder().ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final String host, final int port, final int timeout) {
@@ -95,62 +144,63 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout) {
-    client = new Client(host, port);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout) {
-    client = new Client(host, port);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
-    client.setInfiniteSoTimeout(infiniteSoTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
+        .blockingSocketTimeoutMillis(infiniteSoTimeout).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl) {
-    client = new Client(host, port, ssl);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout).ssl(ssl)
+        .build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout).ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    client = new Client(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
-    client.setInfiniteSoTimeout(infiniteSoTimeout);
+    this(host, port, DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
+        .blockingSocketTimeoutMillis(infiniteSoTimeout).ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
-    client = new Client(shardInfo.getHost(), shardInfo.getPort(), shardInfo.getSsl(),
-        shardInfo.getSslSocketFactory(), shardInfo.getSslParameters(),
-        shardInfo.getHostnameVerifier());
-    client.setConnectionTimeout(shardInfo.getConnectionTimeout());
-    client.setSoTimeout(shardInfo.getSoTimeout());
-    client.setUser(shardInfo.getUser());
-    client.setPassword(shardInfo.getPassword());
-    client.setDb(shardInfo.getDb());
+    this(shardInfo.getHost(), shardInfo.getPort(), DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(shardInfo.getConnectionTimeout())
+        .socketTimeoutMillis(shardInfo.getSoTimeout()).user(shardInfo.getUser())
+        .password(shardInfo.getPassword()).database(shardInfo.getDb())
+        .ssl(shardInfo.getSsl()).sslSocketFactory(shardInfo.getSslSocketFactory())
+        .sslParameters(shardInfo.getSslParameters())
+        .hostnameVerifier(shardInfo.getHostnameVerifier()).build());
   }
 
   public BinaryJedis(URI uri) {
-    initializeClientFromURI(uri);
+    client = createClientFromURI(uri);
+    initializeFromURI(uri);
   }
 
   public BinaryJedis(URI uri, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+    this(uri, DefaultJedisClientConfig.builder().sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final URI uri, final int timeout) {
@@ -163,65 +213,167 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout) {
-    initializeClientFromURI(uri);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(uri, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).build());
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
-      final SSLSocketFactory sslSocketFactory,final SSLParameters sslParameters,
+      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
+    this(uri, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    initializeClientFromURI(uri, sslSocketFactory, sslParameters, hostnameVerifier);
-    client.setConnectionTimeout(connectionTimeout);
-    client.setSoTimeout(soTimeout);
-    client.setInfiniteSoTimeout(infiniteSoTimeout);
+    this(uri, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
+  public BinaryJedis(final URI uri, JedisClientConfig config) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+    }
+    client = new Client(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
+        .builder().connectionTimeoutMillis(config.getConnectionTimeoutMillis())
+        .socketTimeoutMillis(config.getSocketTimeoutMillis())
+        .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
+        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+        .ssl(JedisURIHelper.isRedisSSLScheme(uri))
+        .sslSocketFactory(config.getSslSocketFactory())
+        .sslParameters(config.getSslParameters())
+        .hostnameVerifier(config.getHostnameVerifier()).build());
+    initializeFromURI(uri);
+  }
+
+  private static Client createClientFromURI(URI uri) {
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+    }
+    return new Client(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
+        .builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+  }
+
+  private void initializeFromURI(URI uri) {
+    String password = JedisURIHelper.getPassword(uri);
+    if (password != null) {
+      String user = JedisURIHelper.getUser(uri);
+      if (user != null) {
+        auth(user, password);
+      } else {
+        auth(password);
+      }
+    }
+    int dbIndex = JedisURIHelper.getDBIndex(uri);
+    if (dbIndex > 0) {
+      select(dbIndex);
+    }
+  }
+
+  /**
+   * @deprecated This constructor will be removed in future major release.
+   *
+   * Use {@link BinaryJedis#BinaryJedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
+   */
+  @Deprecated
   public BinaryJedis(final JedisSocketFactory jedisSocketFactory) {
     client = new Client(jedisSocketFactory);
   }
 
-  private void initializeClientFromURI(URI uri) {
-    initializeClientFromURI(uri, null, null, null);
+  public BinaryJedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
+    client = new Client(jedisSocketFactory);
+    initializeFromClientConfig(clientConfig);
   }
 
-  private void initializeClientFromURI(URI uri, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
-    }
+  @Override
+  public String toString() {
+    return "BinaryJedis{" + client + '}';
+  }
 
-    client = new Client(uri.getHost(), uri.getPort(), JedisURIHelper.isRedisSSLScheme(uri),
-      sslSocketFactory, sslParameters, hostnameVerifier);
+  public boolean isConnected() {
+    return client.isConnected();
+  }
 
-    String password = JedisURIHelper.getPassword(uri);
-    if (password != null) {
-      String user = JedisURIHelper.getUser(uri);
-      if (user == null) {
-        client.auth(password);
-      } else {
-        client.auth(user, password);
+  public boolean isBroken() {
+    return client.isBroken();
+  }
+
+  public void connect() {
+    client.connect();
+  }
+
+  public void disconnect() {
+    client.disconnect();
+  }
+
+  public void resetState() {
+    if (isConnected()) {
+      if (transaction != null) {
+        transaction.close();
       }
-      client.getStatusCodeReply();
+
+      if (pipeline != null) {
+        pipeline.close();
+      }
+
+      client.resetState();
     }
 
-    int dbIndex = JedisURIHelper.getDBIndex(uri);
-    if (dbIndex > 0) {
-      client.select(dbIndex);
-      client.getStatusCodeReply();
-      client.setDb(dbIndex);
-    }
+    transaction = null;
+    pipeline = null;
   }
 
+  @Override
+  public void close() {
+    client.close();
+  }
+
+  @Override
+  public int getDB() {
+    return client.getDB();
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param db
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, db, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+  }
+
+  /**
+   * COPY source destination [DB destination-db] [REPLACE]
+   *
+   * @param srcKey the source key.
+   * @param dstKey the destination key.
+   * @param replace
+   * @return
+   */
+  @Override
+  public Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
+    checkIsInMultiOrPipeline();
+    client.copy(srcKey, dstKey, replace);
+    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+  }
+
+  /**
+   * @return <code>PONG</code>
+   */
   @Override
   public String ping() {
     checkIsInMultiOrPipeline();
@@ -230,7 +382,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Works same as <tt>ping()</tt> but returns argument message instead of <tt>PONG</tt>.
+   * Works same as {@link #ping()} but returns argument message instead of <code>PONG</code>.
    * @param message
    * @return message
    */
@@ -284,6 +436,29 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public byte[] get(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.get(key);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Get the value of key and delete the key. This command is similar to GET, except for the fact
+   * that it also deletes the key on success (if and only if the key's value type is a string).
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @return the value of key
+   * @since Redis 6.2
+   */
+  @Override
+  public byte[] getDel(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.getDel(key);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] getEx(final byte[] key, final GetExParams params) {
+    checkIsInMultiOrPipeline();
+    client.getEx(key, params);
     return client.getBinaryBulkReply();
   }
 
@@ -403,6 +578,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Delete all the keys of the currently selected DB. This command never fails.
+   * @param flushMode
+   * @return Status code reply
+   */
+  @Override
+  public String flushDB(FlushMode flushMode) {
+    checkIsInMultiOrPipeline();
+    client.flushDB(flushMode);
+    return client.getStatusCodeReply();
+  }
+
+  /**
    * Returns all the keys matching the glob-style pattern as space separated strings. For example if
    * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
    * "foo foobar".
@@ -515,7 +702,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public Long expire(final byte[] key, final long seconds) {
     checkIsInMultiOrPipeline();
     client.expire(key, seconds);
     return client.getIntegerReply();
@@ -640,6 +827,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Delete all the keys of all the existing databases, not just the currently selected one. This
+   * command never fails.
+   * @param flushMode
+   * @return Status code reply
+   */
+  @Override
+  public String flushAll(FlushMode flushMode) {
+    checkIsInMultiOrPipeline();
+    client.flushAll(flushMode);
+    return client.getStatusCodeReply();
+  }
+
+  /**
    * GETSET is an atomic set this value and return the old value command. Set key to the string
    * value and return the old value stored at key. The string can't be longer than 1073741824 bytes
    * (1 GB).
@@ -700,7 +900,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Status code reply
    */
   @Override
-  public String setex(final byte[] key, final int seconds, final byte[] value) {
+  public String setex(final byte[] key, final long seconds, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setex(key, seconds, value);
     return client.getStatusCodeReply();
@@ -1142,14 +1342,49 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Map<byte[], byte[]> hgetAll(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.hgetAll(key);
-    final List<byte[]> flatHash = client.getBinaryMultiBulkReply();
-    final Map<byte[], byte[]> hash = new JedisByteHashMap();
-    final Iterator<byte[]> iterator = flatHash.iterator();
-    while (iterator.hasNext()) {
-      hash.put(iterator.next(), iterator.next());
-    }
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
+  }
 
-    return hash;
+  /**
+   * Get one random field from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one random field from a hash.
+   */
+  @Override
+  public byte[] hrandfield(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Get multiple random fields from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return multiple random fields from a hash.
+   */
+  @Override
+  public List<byte[]> hrandfield(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfield(key, count);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  /**
+   * Get one or multiple random fields with values from a hash.
+   * <p>
+   * <b>Time complexity:</b> O(N), where N is the number of fields returned
+   * @param key
+   * @return one or multiple random fields with values from a hash.
+   */
+  @Override
+  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.hrandfieldWithValues(key, count);
+    return BuilderFactory.BYTE_ARRAY_MAP.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -1392,7 +1627,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public Long lpos(final byte[] key, final byte[] element) {
     checkIsInMultiOrPipeline();
-    client.lpos(key,element);
+    client.lpos(key, element);
     return client.getIntegerReply();
   }
 
@@ -1416,7 +1651,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public Long lpos(final byte[] key, final byte[] element, final LPosParams params) {
     checkIsInMultiOrPipeline();
-    client.lpos(key,element, params);
+    client.lpos(key, element, params);
     return client.getIntegerReply();
   }
 
@@ -1430,11 +1665,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #lpos(byte[], byte[], LPosParams, long)
    * @param key
    * @param element
+   * @param params
    * @param count
    * @return Returns value will be a list containing position of the matching elements inside the list.
    */
   @Override
-  public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
+  public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params,
+      final long count) {
     checkIsInMultiOrPipeline();
     client.lpos(key, element, params, count);
     return client.getIntegerMultiBulkReply();
@@ -1712,14 +1949,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
    * <b>Example:</b>
-   * 
+   *
    * <pre>
    * key1 = [x, a, b, c]
    * key2 = [c]
    * key3 = [a, d]
    * SDIFF key1,key2,key3 =&gt; [x, b]
    * </pre>
-   * 
+   *
    * Non existing keys are considered like empty sets.
    * <p>
    * <b>Time complexity:</b>
@@ -1798,7 +2035,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long zadd(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public Long zadd(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zadd(key, score, member, params);
     return client.getIntegerReply();
@@ -1816,6 +2054,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.zaddIncr(key, score, member, params);
+    return BuilderFactory.DOUBLE.build(client.getOne());
   }
 
   @Override
@@ -1869,7 +2114,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Double zincrby(final byte[] key, final double increment, final byte[] member, final ZIncrByParams params) {
+  public Double zincrby(final byte[] key, final double increment, final byte[] member,
+      final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
     client.zincrby(key, increment, member, params);
     return BuilderFactory.DOUBLE.build(client.getOne());
@@ -1939,6 +2185,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     client.zrevrangeWithScores(key, start, stop);
+    return getTupledSet();
+  }
+
+  @Override
+  public byte[] zrandmember(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public Set<byte[]> zrandmember(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmember(key, count);
+    return SetFromList.of(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    client.zrandmemberWithScores(key, count);
     return getTupledSet();
   }
 
@@ -2035,31 +2302,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
-  public void connect() {
-    client.connect();
-  }
-
-  public void disconnect() {
-    client.disconnect();
-  }
-
-  public void resetState() {
-    if (client.isConnected()) {
-      if (transaction != null) {
-        transaction.close();
-      }
-
-      if (pipeline != null) {
-        pipeline.close();
-      }
-
-      client.resetState();
-    }
-
-    transaction = null;
-    pipeline = null;
-  }
-
   @Override
   public String watch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
@@ -2072,11 +2314,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.unwatch();
     return client.getStatusCodeReply();
-  }
-
-  @Override
-  public void close() {
-    client.close();
   }
 
   /**
@@ -2105,65 +2342,65 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <b>examples:</b>
    * <p>
    * Given are the following sets and key/values:
-   * 
+   *
    * <pre>
    * x = [1, 2, 3]
    * y = [a, b, c]
-   * 
+   *
    * k1 = z
    * k2 = y
    * k3 = x
-   * 
+   *
    * w1 = 9
    * w2 = 8
    * w3 = 7
    * </pre>
-   * 
+   *
    * Sort Order:
-   * 
+   *
    * <pre>
    * sort(x) or sort(x, sp.asc())
    * -&gt; [1, 2, 3]
-   * 
+   *
    * sort(x, sp.desc())
    * -&gt; [3, 2, 1]
-   * 
+   *
    * sort(y)
    * -&gt; [c, a, b]
-   * 
+   *
    * sort(y, sp.alpha())
    * -&gt; [a, b, c]
-   * 
+   *
    * sort(y, sp.alpha().desc())
    * -&gt; [c, a, b]
    * </pre>
-   * 
+   *
    * Limit (e.g. for Pagination):
-   * 
+   *
    * <pre>
    * sort(x, sp.limit(0, 2))
    * -&gt; [1, 2]
-   * 
+   *
    * sort(y, sp.alpha().desc().limit(1, 2))
    * -&gt; [b, a]
    * </pre>
-   * 
+   *
    * Sorting by external keys:
-   * 
+   *
    * <pre>
    * sort(x, sb.by(w*))
    * -&gt; [3, 2, 1]
-   * 
+   *
    * sort(x, sb.by(w*).desc())
    * -&gt; [1, 2, 3]
    * </pre>
-   * 
+   *
    * Getting external keys:
-   * 
+   *
    * <pre>
    * sort(x, sp.by(w*).get(k*))
    * -&gt; [x, y, z]
-   * 
+   *
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
@@ -2178,6 +2415,79 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.sort(key, sortingParameters);
     return client.getBinaryMultiBulkReply();
+  }
+
+  /**
+   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[])
+   * @see #sort(byte[], byte[])
+   * @param key
+   * @param sortingParameters
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, sortingParameters, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Sort a Set or a List and Store the Result at dstkey.
+   * <p>
+   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
+   * at dstkey. By default sorting is numeric with elements being compared as double precision
+   * floating point numbers. This is the simplest form of SORT.
+   * @see #sort(byte[])
+   * @see #sort(byte[], SortingParams)
+   * @see #sort(byte[], SortingParams, byte[])
+   * @param key
+   * @param dstkey
+   * @return The number of elements of the list at dstkey.
+   */
+  @Override
+  public Long sort(final byte[] key, final byte[] dstkey) {
+    checkIsInMultiOrPipeline();
+    client.sort(key, dstkey);
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Pop an element from a list, push it to another list and return it
+   * @param srcKey
+   * @param dstKey
+   * @param from
+   * @param to
+   * @return
+   */
+  @Override
+  public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    checkIsInMultiOrPipeline();
+    client.lmove(srcKey, dstKey, from, to);
+    return client.getBinaryBulkReply();
+  }
+
+  /**
+   * Pop an element from a list, push it to another list and return it; or block until one is available
+   * @param srcKey
+   * @param dstKey
+   * @param from
+   * @param to
+   * @param timeout
+   * @return
+   */
+  @Override
+  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    checkIsInMultiOrPipeline();
+    client.blmove(srcKey, dstKey, from, to, timeout);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
   }
 
   /**
@@ -2244,52 +2554,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> blpop(final int timeout, final byte[]... keys) {
-    return blpop(getArgsAddTimeout(timeout, keys));
+    return blpop(getKeysAndTimeout(timeout, keys));
   }
 
-  private byte[][] getArgsAddTimeout(int timeout, byte[][] keys) {
-    int size = keys.length;
-    final byte[][] args = new byte[size + 1][];
-    System.arraycopy(keys, 0, args, 0, size);
-    args[size] = Protocol.toByteArray(timeout);
-    return args;
-  }
-
-  /**
-   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[])
-   * @see #sort(byte[], byte[])
-   * @param key
-   * @param sortingParameters
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
   @Override
-  public Long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, sortingParameters, dstkey);
-    return client.getIntegerReply();
-  }
-
-  /**
-   * Sort a Set or a List and Store the Result at dstkey.
-   * <p>
-   * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
-   * at dstkey. By default sorting is numeric with elements being compared as double precision
-   * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
-   * @param key
-   * @param dstkey
-   * @return The number of elements of the list at dstkey.
-   */
-  @Override
-  public Long sort(final byte[] key, final byte[] dstkey) {
-    checkIsInMultiOrPipeline();
-    client.sort(key, dstkey);
-    return client.getIntegerReply();
+  public List<byte[]> blpop(final double timeout, final byte[]... keys) {
+    return blpop(getKeysAndTimeout(timeout, keys));
   }
 
   /**
@@ -2356,7 +2626,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    */
   @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
-    return brpop(getArgsAddTimeout(timeout, keys));
+    return brpop(getKeysAndTimeout(timeout, keys));
+  }
+
+  @Override
+  public List<byte[]> brpop(final double timeout, final byte[]... keys) {
+    return brpop(getKeysAndTimeout(timeout, keys));
   }
 
   @Override
@@ -2375,6 +2650,46 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public List<byte[]> brpop(final byte[]... args) {
     checkIsInMultiOrPipeline();
     client.brpop(args);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  private byte[][] getKeysAndTimeout(int timeout, byte[][] keys) {
+    int size = keys.length;
+    final byte[][] args = new byte[size + 1][];
+    System.arraycopy(keys, 0, args, 0, size);
+    args[size] = Protocol.toByteArray(timeout);
+    return args;
+  }
+
+  private byte[][] getKeysAndTimeout(double timeout, byte[][] keys) {
+    int size = keys.length;
+    final byte[][] args = new byte[size + 1][];
+    System.arraycopy(keys, 0, args, 0, size);
+    args[size] = Protocol.toByteArray(timeout);
+    return args;
+  }
+
+  @Override
+  public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmax(timeout, keys);
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<byte[]> bzpopmin(final double timeout, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
     try {
       return client.getBinaryMultiBulkReply();
@@ -2434,6 +2749,27 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Long zcount(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     client.zcount(key, min, max);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public Set<byte[]> zdiff(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiff(keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffWithScores(keys);
+    return getTupledSet();
+  }
+
+  @Override
+  public Long zdiffStore(final byte[] dstkey, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zdiffStore(dstkey, keys);
     return client.getIntegerReply();
   }
 
@@ -2691,6 +3027,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   protected Set<Tuple> getTupledSet() {
     List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
+    // If response from Redis nil, we should return null.
+    if (membersWithScores == null) {
+      return null;
+    }
     if (membersWithScores.isEmpty()) {
       return Collections.emptySet();
     }
@@ -2811,6 +3151,34 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
+   * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunion(params, keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
+   * resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zunionWithScores(params, keys);
+    return BuilderFactory.TUPLE_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
    * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
@@ -2881,6 +3249,34 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.zunionstore(dstkey, params, sets);
     return client.getIntegerReply();
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinter(params, keys);
+    return BuilderFactory.BYTE_ARRAY_ZSET.build(client.getBinaryMultiBulkReply());
+  }
+
+  /**
+   * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
+   * the resulting sorted set, it is returned to the client.
+   * @param params
+   * @param keys
+   * @return
+   */
+  @Override
+  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    client.zinterWithScores(params, keys);
+    return BuilderFactory.TUPLE_ZSET.build(client.getBinaryMultiBulkReply());
   }
 
   /**
@@ -2986,7 +3382,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, final int offset, final int count) {
+  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+      final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByLex(key, max, min, offset, count);
     return SetFromList.of(client.getBinaryMultiBulkReply());
@@ -3097,7 +3494,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <b>Format of the returned String:</b>
    * <p>
    * All the fields are in the form field:value
-   * 
+   *
    * <pre>
    * edis_version:0.07
    * connected_clients:1
@@ -3110,7 +3507,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * uptime_in_seconds:25
    * uptime_in_days:0
    * </pre>
-   * 
+   *
    * <b>Notes</b>
    * <p>
    * used_memory is returned in bytes, and is the total number of bytes allocated by the program
@@ -3192,7 +3589,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * are reported as a list of key-value pairs.
    * <p>
    * <b>Example:</b>
-   * 
+   *
    * <pre>
    * $ redis-cli config get '*'
    * 1. "dbfilename"
@@ -3207,7 +3604,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * 10. "everysec"
    * 11. "save"
    * 12. "3600 1 300 100 60 10000"
-   * 
+   *
    * $ redis-cli config get 'm*'
    * 1. "masterauth"
    * 2. (nil)
@@ -3238,18 +3635,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   /**
    * The CONFIG REWRITE command rewrites the redis.conf file the server was started with, applying
    * the minimal changes needed to make it reflect the configuration currently used by the server,
-   * which may be different compared to the original one because of the use of the CONFIG SET command.
-   * 
+   * which may be different compared to the original one because of the use of the CONFIG SET
+   * command.
+   * <p>
    * The rewrite is performed in a very conservative way:
    * <ul>
-   * <li>Comments and the overall structure of the original redis.conf are preserved as much as possible.</li>
-   * <li>If an option already exists in the old redis.conf file, it will be rewritten at the same position (line number).</li>
-   * <li>If an option was not already present, but it is set to its default value, it is not added by the rewrite process.</li>
-   * <li>If an option was not already present, but it is set to a non-default value, it is appended at the end of the file.</li>
+   * <li>Comments and the overall structure of the original redis.conf are preserved as much as
+   * possible.</li>
+   * <li>If an option already exists in the old redis.conf file, it will be rewritten at the same
+   * position (line number).</li>
+   * <li>If an option was not already present, but it is set to its default value, it is not added
+   * by the rewrite process.</li>
+   * <li>If an option was not already present, but it is set to a non-default value, it is appended
+   * at the end of the file.</li>
    * <li>Non used lines are blanked. For instance if you used to have multiple save directives, but
-   * the current configuration has fewer or none as you disabled RDB persistence, all the lines will be blanked.</li>
+   * the current configuration has fewer or none as you disabled RDB persistence, all the lines will
+   * be blanked.</li>
    * </ul>
-   * 
+   * <p>
    * CONFIG REWRITE is also able to rewrite the configuration file from scratch if the original one
    * no longer exists for some reason. However if the server was started without a configuration
    * file at all, the CONFIG REWRITE will just return an error.
@@ -3278,12 +3681,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Redis configuration file, with the following exceptions:
    * <p>
    * <ul>
-   * <li>The save parameter is a list of space-separated integers. Every pair of integers specify the
-   * time and number of changes limit to trigger a save. For instance the command CONFIG SET save
-   * "3600 10 60 10000" will configure the server to issue a background saving of the RDB file every
-   * 3600 seconds if there are at least 10 changes in the dataset, and every 60 seconds if there are
-   * at least 10000 changes. To completely disable automatic snapshots just set the parameter as an
-   * empty string.
+   * <li>The save parameter is a list of space-separated integers. Every pair of integers specify
+   * the time and number of changes limit to trigger a save. For instance the command CONFIG SET
+   * save "3600 10 60 10000" will configure the server to issue a background saving of the RDB file
+   * every 3600 seconds if there are at least 10 changes in the dataset, and every 60 seconds if
+   * there are at least 10000 changes. To completely disable automatic snapshots just set the
+   * parameter as an empty string.
    * <li>All the integer parameters representing memory are returned and accepted only using bytes
    * as unit.
    * </ul>
@@ -3296,10 +3699,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getBinaryBulkReply();
-  }
-
-  public boolean isConnected() {
-    return client.isConnected();
   }
 
   @Override
@@ -3471,11 +3870,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     }
   }
 
-  @Override
-  public int getDB() {
-    return client.getDB();
-  }
-
   /**
    * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
    * <p>
@@ -3550,6 +3944,12 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Override
   public String scriptFlush() {
     client.scriptFlush();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String scriptFlush(final FlushMode flushMode) {
+    client.scriptFlush(flushMode);
     return client.getStatusCodeReply();
   }
 
@@ -3660,16 +4060,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public String restore(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restore(key, ttl, serializedValue);
     return client.getStatusCodeReply();
   }
 
   @Override
-  public String restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
+  public String restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
     client.restoreReplace(key, ttl, serializedValue);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
+    checkIsInMultiOrPipeline();
+    client.restore(key, ttl, serializedValue, params);
     return client.getStatusCodeReply();
   }
 
@@ -3677,9 +4085,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
-   * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
-   * not stop the flow of time as Redis stores on disk the time when the key will no longer be
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all
+   * the other aspects of the dataset. Saving a dataset containing expires and stopping the server
+   * does not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining milliseconds.
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
@@ -3736,14 +4144,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.memoryDoctor();
     return client.getBinaryBulkReply();
   }
-  
+
   @Override
   public Long memoryUsage(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.memoryUsage(key);
     return client.getIntegerReply();
   }
-  
+
   @Override
   public Long memoryUsage(final byte[] key, final int samples) {
     checkIsInMultiOrPipeline();
@@ -3834,11 +4242,26 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.aclLog(limit);
     return client.getBinaryMultiBulkReply();
   }
+
   @Override
   public byte[] aclLog(byte[] options) {
     checkIsInMultiOrPipeline();
     client.aclLog(options);
     return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public String aclLoad() {
+    checkIsInMultiOrPipeline();
+    client.aclLoad();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSave() {
+    checkIsInMultiOrPipeline();
+    client.aclSave();
+    return client.getStatusCodeReply();
   }
 
   @Override
@@ -3877,6 +4300,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public byte[] clientListBinary(final long... clientIds) {
+    checkIsInMultiOrPipeline();
+    client.clientList(clientIds);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] clientInfoBinary() {
+    checkIsInMultiOrPipeline();
+    client.clientInfo();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     client.clientSetname(name);
@@ -3887,6 +4324,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Long clientId() {
     checkIsInMultiOrPipeline();
     client.clientId();
+    return client.getIntegerReply();
+  }
+
+  /**
+   * Unblock a client blocked in a blocking command from a different connection.
+   * @param clientId
+   * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
+   *          of the command was reached
+   * @return
+   */
+  @Override
+  public Long clientUnblock(final long clientId, final UnblockType unblockType) {
+    checkIsInMultiOrPipeline();
+    client.clientUnblock(clientId, unblockType);
     return client.getIntegerReply();
   }
 
@@ -4028,7 +4479,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long geoadd(final byte[] key, final double longitude, final double latitude, final byte[] member) {
+  public Long geoadd(final byte[] key, final double longitude, final double latitude,
+      final byte[] member) {
     checkIsInMultiOrPipeline();
     client.geoadd(key, longitude, latitude, member);
     return client.getIntegerReply();
@@ -4042,6 +4494,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Long geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    checkIsInMultiOrPipeline();
+    client.geoadd(key, params, memberCoordinateMap);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2);
@@ -4049,7 +4508,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2, final GeoUnit unit) {
+  public Double geodist(final byte[] key, final byte[] member1, final byte[] member2,
+      final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.geodist(key, member1, member2, unit);
     return BuilderFactory.DOUBLE.build(client.getOne());
@@ -4070,24 +4530,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadius(key, longitude, latitude, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadiusReadonly(key, longitude, latitude, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadius(key, longitude, latitude, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
@@ -4095,39 +4555,40 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   @Override
   public Long georadiusStore(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+      final double radius, final GeoUnit unit, final GeoRadiusParam param,
+      final GeoRadiusStoreParam storeParam) {
     checkIsInMultiOrPipeline();
     client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
     return client.getIntegerReply();
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude, final double latitude,
-      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusReadonly(key, longitude, latitude, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
-  
+
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
     client.georadiusByMemberReadonly(key, member, radius, unit);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMember(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
@@ -4142,8 +4603,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member, final double radius,
-      final GeoUnit unit, final GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     client.georadiusByMemberReadonly(key, member, radius, unit, param);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
@@ -4290,8 +4751,25 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
-      Map<byte[], byte[]> streams) {
+  public List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xread(xReadParams, streams);
+
+    if (!xReadParams.hasBlock()) {
+      return client.getBinaryMultiBulkReply();
+    }
+
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
+      boolean noAck, Map<byte[], byte[]> streams) {
     checkIsInMultiOrPipeline();
     client.xreadGroup(groupname, consumer, count, block, noAck, streams);
     client.setTimeoutInfinite();
@@ -4303,31 +4781,71 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
+  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
+    checkIsInMultiOrPipeline();
+    client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
+
+    if (!xReadGroupParams.hasBlock()) {
+      return client.getBinaryMultiBulkReply();
+    }
+
+    client.setTimeoutInfinite();
+    try {
+      return client.getBinaryMultiBulkReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen,
+      boolean approximateLength) {
     checkIsInMultiOrPipeline();
     client.xadd(key, id, hash, maxLen, approximateLength);
-    return client.getBinaryBulkReply();  
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.xadd(key, hash, params);
+    return client.getBinaryBulkReply();
   }
 
   @Override
   public Long xlen(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xlen(key);
-    return client.getIntegerReply();  
+    return client.getIntegerReply();
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, start, end);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end, count);
-    return client.getBinaryMultiBulkReply();  
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+    checkIsInMultiOrPipeline();
+    client.xrevrange(key, end, start);
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     checkIsInMultiOrPipeline();
     client.xrevrange(key, end, start, count);
-    return client.getBinaryMultiBulkReply();  
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override
@@ -4380,40 +4898,98 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
+  public Long xtrim(byte[] key, XTrimParams params) {
     checkIsInMultiOrPipeline();
-    client.xpending(key, groupname, start, end, count, consumername);
-    return client.getBinaryMultiBulkReply();  }
+    client.xtrim(key, params);
+    return client.getIntegerReply();
+  }
 
   @Override
-  public   List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids){
+  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
+      byte[] consumername) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, start, end, count, consumername);
+    return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public Object xpending(final byte[] key, final byte[] groupname) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname);
+    return client.getOne();
+  }
+
+  @Override
+  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+    checkIsInMultiOrPipeline();
+    client.xpending(key, groupname, params);
+    return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
+      long newIdleTime, int retries, boolean force, byte[]... ids) {
     checkIsInMultiOrPipeline();
     client.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
-    return client.getBinaryMultiBulkReply();  
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaim(key, group, consumername, minIdleTime, params, ids);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+      XClaimParams params, byte[]... ids) {
+    checkIsInMultiOrPipeline();
+    client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+    return client.getBinaryMultiBulkReply();
   }
 
   @Override
   public StreamInfo xinfoStream(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoStream(key);
-
     return BuilderFactory.STREAM_INFO.build(client.getOne());
-
   }
 
   @Override
-  public List<StreamGroupInfo> xinfoGroup (byte[] key) {
+  public Object xinfoStreamBinary(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoStream(key);
+    return client.getOne();
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoGroup(key);
-
     return BuilderFactory.STREAM_GROUP_INFO_LIST.build(client.getBinaryMultiBulkReply());
   }
-  @Override
-  public List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group) {
-    checkIsInMultiOrPipeline();
-    client.xinfoConsumers(key,group);
 
+  @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    checkIsInMultiOrPipeline();
+    client.xinfoGroup(key);
+    return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoConsumers(key, group);
     return BuilderFactory.STREAM_CONSUMERS_INFO_LIST.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    checkIsInMultiOrPipeline();
+    client.xinfoConsumers(key, group);
+    return client.getObjectMultiBulkReply();
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {

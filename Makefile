@@ -393,7 +393,7 @@ deploy: start
 	make stop
 
 format:
-	mvn java-formatter:format
+	mvn compile
 
 release:
 	make start

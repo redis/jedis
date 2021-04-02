@@ -13,9 +13,11 @@ Please post General questions to Google Group. It can be closed without answer w
 ## Code Convention
 
 * Jedis uses ```HBase Formatter``` introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
-* You can import code style file (located to hbase-formatter.xml) to Eclipse, IntelliJ
+* You can import code style file (located in `hbase-formatter.xml`) to Eclipse, IntelliJ
   * line break by column count seems not working with IntelliJ
-* You can run ```make format``` anytime to reformat without IDEs
+* You can run ```mvn compile``` anytime to reformat without IDEs
+
+Formatting will be validated in CI, so make sure to `mvn compile` before making any PR.
 
 ## Adding commands
 

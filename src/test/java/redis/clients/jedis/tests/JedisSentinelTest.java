@@ -61,8 +61,8 @@ public class JedisSentinelTest {
       assertTrue(inMasters);
 
       List<String> masterHostAndPort = j.sentinelGetMasterAddrByName(MASTER_NAME);
-      HostAndPort masterFromSentinel = new HostAndPort(masterHostAndPort.get(0),
-          Integer.parseInt(masterHostAndPort.get(1)));
+      HostAndPort masterFromSentinel =
+          new HostAndPort(masterHostAndPort.get(0), Integer.parseInt(masterHostAndPort.get(1)));
       assertEquals(master, masterFromSentinel);
 
       List<Map<String, String>> slaves = j.sentinelSlaves(MASTER_NAME);
@@ -84,14 +84,14 @@ public class JedisSentinelTest {
 
     try {
       List<String> masterHostAndPort = j.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
-      HostAndPort currentMaster = new HostAndPort(masterHostAndPort.get(0),
-          Integer.parseInt(masterHostAndPort.get(1)));
+      HostAndPort currentMaster =
+          new HostAndPort(masterHostAndPort.get(0), Integer.parseInt(masterHostAndPort.get(1)));
 
       JedisSentinelTestUtil.waitForNewPromotedMaster(FAILOVER_MASTER_NAME, j, j2);
 
       masterHostAndPort = j.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
-      HostAndPort newMaster = new HostAndPort(masterHostAndPort.get(0),
-          Integer.parseInt(masterHostAndPort.get(1)));
+      HostAndPort newMaster =
+          new HostAndPort(masterHostAndPort.get(0), Integer.parseInt(masterHostAndPort.get(1)));
 
       assertNotEquals(newMaster, currentMaster);
     } finally {

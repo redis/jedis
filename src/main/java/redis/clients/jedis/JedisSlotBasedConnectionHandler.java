@@ -113,7 +113,8 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
       }
     }
 
-    JedisNoReachableClusterNodeException noReachableNode = new JedisNoReachableClusterNodeException("No reachable node in cluster.");
+    JedisNoReachableClusterNodeException noReachableNode =
+        new JedisNoReachableClusterNodeException("No reachable node in cluster.");
     if (suppressed != null) {
       noReachableNode.addSuppressed(suppressed);
     }

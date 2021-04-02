@@ -406,8 +406,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     jedis.hset(bfoo, bbar2, bcar);
     jedis.hset(bfoo, bbar3, bcar);
 
-    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-      params);
+    ScanResult<Map.Entry<byte[], byte[]>> bResult =
+        jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
     assertFalse(bResult.getResult().isEmpty());
@@ -435,8 +435,8 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     jedis.hset(bfoo, bbar2, bcar);
     jedis.hset(bfoo, bbar3, bcar);
 
-    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-      params);
+    ScanResult<Map.Entry<byte[], byte[]>> bResult =
+        jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
   }

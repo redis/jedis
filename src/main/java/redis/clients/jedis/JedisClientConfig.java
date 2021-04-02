@@ -22,7 +22,7 @@ public interface JedisClientConfig {
 
   /**
    * @return Socket timeout (in milliseconds) to use during blocking operation. Default is '0',
-   * which means to block forever.
+   *         which means to block forever.
    */
   default int getBlockingSocketTimeoutMillis() {
     return 0;

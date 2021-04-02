@@ -31,8 +31,8 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
 
   @Override
   public Set<java.util.Map.Entry<byte[], byte[]>> entrySet() {
-    Iterator<java.util.Map.Entry<ByteArrayWrapper, byte[]>> iterator = internalMap.entrySet()
-        .iterator();
+    Iterator<java.util.Map.Entry<ByteArrayWrapper, byte[]>> iterator =
+        internalMap.entrySet().iterator();
     HashSet<Entry<byte[], byte[]>> hashSet = new HashSet<>();
     while (iterator.hasNext()) {
       Entry<ByteArrayWrapper, byte[]> entry = iterator.next();
@@ -72,8 +72,8 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
   public void putAll(Map<? extends byte[], ? extends byte[]> m) {
     Iterator<?> iterator = m.entrySet().iterator();
     while (iterator.hasNext()) {
-      Entry<? extends byte[], ? extends byte[]> next = (Entry<? extends byte[], ? extends byte[]>) iterator
-          .next();
+      Entry<? extends byte[], ? extends byte[]> next =
+          (Entry<? extends byte[], ? extends byte[]>) iterator.next();
       internalMap.put(new ByteArrayWrapper(next.getKey()), next.getValue());
     }
   }

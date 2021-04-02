@@ -13,8 +13,8 @@ import redis.clients.jedis.util.IOUtils;
 
 public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
-  protected static final HostAndPort DEFAULT_HOST_AND_PORT = new HostAndPort(Protocol.DEFAULT_HOST,
-      Protocol.DEFAULT_PORT);
+  protected static final HostAndPort DEFAULT_HOST_AND_PORT =
+      new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
 
   private volatile HostAndPort hostAndPort = DEFAULT_HOST_AND_PORT;
   private int connectionTimeout = Protocol.DEFAULT_TIMEOUT;
@@ -73,11 +73,13 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setReuseAddress(true);
       socket.setKeepAlive(true); // Will monitor the TCP connection is valid
       socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
-      socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
+      socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed
+                                   // immediately
       // <-@wjw_add
 
       HostAndPort hostAndPort = getSocketHostAndPort();
-      socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), getConnectionTimeout());
+      socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()),
+        getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());
 
       if (ssl) {
@@ -85,7 +87,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         if (null == sslSocketFactory) {
           sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
-        socket = sslSocketFactory.createSocket(socket, hostAndPort.getHost(), hostAndPort.getPort(), true);
+        socket = sslSocketFactory.createSocket(socket, hostAndPort.getHost(), hostAndPort.getPort(),
+          true);
 
         SSLParameters sslParameters = getSslParameters();
         if (null != sslParameters) {

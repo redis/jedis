@@ -201,25 +201,26 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
-    Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MD5);
+    Sharded<Jedis, JedisShardInfo> sharded =
+        new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MD5);
     int shard_6379 = 0;
     int shard_6380 = 0;
     int shard_6381 = 0;
     for (int i = 0; i < 1000; i++) {
       JedisShardInfo jedisShardInfo = sharded.getShardInfo(Integer.toString(i));
       switch (jedisShardInfo.getPort()) {
-      case 6379:
-        shard_6379++;
-        break;
-      case 6380:
-        shard_6380++;
-        break;
-      case 6381:
-        shard_6381++;
-        break;
-      default:
-        fail("Attempting to use a non-defined shard!!:" + jedisShardInfo);
-        break;
+        case 6379:
+          shard_6379++;
+          break;
+        case 6380:
+          shard_6380++;
+          break;
+        case 6381:
+          shard_6381++;
+          break;
+        default:
+          fail("Attempting to use a non-defined shard!!:" + jedisShardInfo);
+          break;
       }
     }
     assertTrue(shard_6379 > 300 && shard_6379 < 400);
@@ -233,26 +234,26 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
-    Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
-        Hashing.MURMUR_HASH);
+    Sharded<Jedis, JedisShardInfo> sharded =
+        new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MURMUR_HASH);
     int shard_6379 = 0;
     int shard_6380 = 0;
     int shard_6381 = 0;
     for (int i = 0; i < 1000; i++) {
       JedisShardInfo jedisShardInfo = sharded.getShardInfo(Integer.toString(i));
       switch (jedisShardInfo.getPort()) {
-      case 6379:
-        shard_6379++;
-        break;
-      case 6380:
-        shard_6380++;
-        break;
-      case 6381:
-        shard_6381++;
-        break;
-      default:
-        fail("Attempting to use a non-defined shard!!:" + jedisShardInfo);
-        break;
+        case 6379:
+          shard_6379++;
+          break;
+        case 6380:
+          shard_6380++;
+          break;
+        case 6381:
+          shard_6381++;
+          break;
+        default:
+          fail("Attempting to use a non-defined shard!!:" + jedisShardInfo);
+          break;
       }
     }
     assertTrue(shard_6379 > 300 && shard_6379 < 400);
@@ -266,15 +267,15 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
-    Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
-        Hashing.MURMUR_HASH);
+    Sharded<Jedis, JedisShardInfo> sharded =
+        new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MURMUR_HASH);
 
     List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
     otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT));
     otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 1));
     otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 2));
-    Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(otherShards,
-        Hashing.MURMUR_HASH);
+    Sharded<Jedis, JedisShardInfo> sharded2 =
+        new Sharded<Jedis, JedisShardInfo>(otherShards, Hashing.MURMUR_HASH);
 
     for (int i = 0; i < 1000; i++) {
       JedisShardInfo jedisShardInfo = sharded.getShardInfo(Integer.toString(i));
@@ -290,15 +291,15 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT, "HOST1:1234"));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1, "HOST2:1234"));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2, "HOST3:1234"));
-    Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
-        Hashing.MURMUR_HASH);
+    Sharded<Jedis, JedisShardInfo> sharded =
+        new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MURMUR_HASH);
 
     List<JedisShardInfo> otherShards = new ArrayList<JedisShardInfo>(3);
     otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT, "HOST2:1234"));
     otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 1, "HOST3:1234"));
     otherShards.add(new JedisShardInfo("127.0.0.1", Protocol.DEFAULT_PORT + 2, "HOST1:1234"));
-    Sharded<Jedis, JedisShardInfo> sharded2 = new Sharded<Jedis, JedisShardInfo>(otherShards,
-        Hashing.MURMUR_HASH);
+    Sharded<Jedis, JedisShardInfo> sharded2 =
+        new Sharded<Jedis, JedisShardInfo>(otherShards, Hashing.MURMUR_HASH);
 
     for (int i = 0; i < 1000; i++) {
       JedisShardInfo jedisShardInfo = sharded.getShardInfo(Integer.toString(i));

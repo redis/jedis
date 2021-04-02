@@ -218,9 +218,11 @@ public interface BinaryRedisPipeline {
 
   Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset,
+      int count);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset,
+      int count);
 
   Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min);
 
@@ -234,9 +236,11 @@ public interface BinaryRedisPipeline {
 
   Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset,
+      int count);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset,
+      int count);
 
   Response<Set<Tuple>> zrangeWithScores(byte[] key, long start, long stop);
 
@@ -315,7 +319,8 @@ public interface BinaryRedisPipeline {
   }
 
   /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   * @deprecated Use
+   *             {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
@@ -330,7 +335,8 @@ public interface BinaryRedisPipeline {
 
   Response<Long> geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
-  Response<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
+  Response<Long> geoadd(byte[] key, GeoAddParams params,
+      Map<byte[], GeoCoordinate> memberCoordinateMap);
 
   Response<Double> geodist(byte[] key, byte[] member1, byte[] member2);
 
@@ -372,7 +378,8 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash);
 
-  Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+  Response<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen,
+      boolean approximateLength);
 
   Response<byte[]> xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
 
@@ -386,7 +393,7 @@ public interface BinaryRedisPipeline {
 
   Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
-  Response<Long> xack(byte[] key, byte[] group,  byte[]... ids);
+  Response<Long> xack(byte[] key, byte[] group, byte[]... ids);
 
   Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
 
@@ -402,9 +409,11 @@ public interface BinaryRedisPipeline {
    * @deprecated Use {@link #xpendingBinary(byte[], byte[], byte[], byte[], int, byte[])}.
    */
   @Deprecated
-  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start,
+      byte[] end, int count, byte[] consumername);
 
-  Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end,
+      int count, byte[] consumername);
 
   Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);
 

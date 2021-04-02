@@ -44,7 +44,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   @BeforeClass
   public static void prepare() throws Exception {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Before
@@ -68,8 +68,8 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     for (int i = 0; i < 20; ++i) {
       GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
 
-      JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-          "default", "foobared", 2);
+      JedisSentinelPool pool =
+          new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default", "foobared", 2);
       pool.getResource().close();
       pool.destroy();
     }
@@ -96,8 +96,8 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   public void checkCloseableConnections() throws Exception {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
 
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default",
-        "foobared", 2);
+    JedisSentinelPool pool =
+        new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default", "foobared", 2);
     try (Jedis jedis = pool.getResource()) {
       jedis.auth("default", "foobared");
       jedis.set("foo", "bar");
@@ -127,8 +127,8 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default", "foobared", 2)) {
+    try (JedisSentinelPool pool =
+        new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default", "foobared", 2)) {
       Jedis jedis;
       try (Jedis jedis1 = pool.getResource()) {
         jedis = jedis1;
@@ -150,8 +150,8 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
-        "default", "foobared", 2)) {
+    try (JedisSentinelPool pool =
+        new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "default", "foobared", 2)) {
 
       Jedis jedis;
       try (Jedis jedis1 = pool.getResource()) {
@@ -203,8 +203,8 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
 
   private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
       throws InterruptedException {
-    HostAndPort newMaster = JedisSentinelTestUtil.waitForNewPromotedMaster(MASTER_NAME,
-      sentinelJedis1, sentinelJedis2);
+    HostAndPort newMaster =
+        JedisSentinelTestUtil.waitForNewPromotedMaster(MASTER_NAME, sentinelJedis1, sentinelJedis2);
 
     waitForJedisSentinelPoolRecognizeNewMaster(pool, newMaster);
   }

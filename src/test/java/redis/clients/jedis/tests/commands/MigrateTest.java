@@ -111,7 +111,8 @@ public class MigrateTest extends JedisCommandTestBase {
   public void migrateReplace() {
     jedis.set("foo", "bar1");
     dest.set("foo", "bar2");
-    assertEquals("OK", jedis.migrate(host, port, db, timeout, new MigrateParams().replace(), "foo"));
+    assertEquals("OK",
+      jedis.migrate(host, port, db, timeout, new MigrateParams().replace(), "foo"));
     assertEquals("bar1", dest.get("foo"));
     assertNull(jedis.get("foo"));
 
@@ -174,19 +175,15 @@ public class MigrateTest extends JedisCommandTestBase {
   public void migrateCopyReplaceAuth() {
     jedis.set("foo", "bar1");
     destAuth.set("foo", "bar2");
-    assertEquals(
-      "OK",
-      jedis.migrate(host, portAuth, dbAuth, timeout,
-        new MigrateParams().copy().replace().auth("foobared"), "foo"));
+    assertEquals("OK", jedis.migrate(host, portAuth, dbAuth, timeout,
+      new MigrateParams().copy().replace().auth("foobared"), "foo"));
     assertEquals("bar1", destAuth.get("foo"));
     assertEquals("bar1", jedis.get("foo"));
 
     jedis.set(bfoo, bbar1);
     destAuth.set(bfoo, bbar2);
-    assertEquals(
-      "OK",
-      jedis.migrate(host, portAuth, dbAuth, timeout,
-        new MigrateParams().copy().replace().auth("foobared"), bfoo));
+    assertEquals("OK", jedis.migrate(host, portAuth, dbAuth, timeout,
+      new MigrateParams().copy().replace().auth("foobared"), bfoo));
     assertArrayEquals(bbar1, destAuth.get(bfoo));
     assertArrayEquals(bbar1, jedis.get(bfoo));
   }

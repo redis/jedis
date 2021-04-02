@@ -115,12 +115,13 @@ public final class Protocol {
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
-      throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
+      throw new JedisMovedDataException(message,
+          new HostAndPort(movedInfo[1], Integer.parseInt(movedInfo[2])),
+          Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_PREFIX)) {
       String[] askInfo = parseTargetHostAndSlot(message);
-      throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
-          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
+      throw new JedisAskDataException(message,
+          new HostAndPort(askInfo[1], Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_PREFIX)) {
@@ -157,19 +158,19 @@ public final class Protocol {
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
     switch (b) {
-    case PLUS_BYTE:
-      return processStatusCodeReply(is);
-    case DOLLAR_BYTE:
-      return processBulkReply(is);
-    case ASTERISK_BYTE:
-      return processMultiBulkReply(is);
-    case COLON_BYTE:
-      return processInteger(is);
-    case MINUS_BYTE:
-      processError(is);
-      return null;
-    default:
-      throw new JedisConnectionException("Unknown reply: " + (char) b);
+      case PLUS_BYTE:
+        return processStatusCodeReply(is);
+      case DOLLAR_BYTE:
+        return processBulkReply(is);
+      case ASTERISK_BYTE:
+        return processMultiBulkReply(is);
+      case COLON_BYTE:
+        return processInteger(is);
+      case MINUS_BYTE:
+        processError(is);
+        return null;
+      default:
+        throw new JedisConnectionException("Unknown reply: " + (char) b);
     }
   }
 
@@ -187,8 +188,8 @@ public final class Protocol {
     int offset = 0;
     while (offset < len) {
       final int size = is.read(read, offset, (len - offset));
-      if (size == -1) throw new JedisConnectionException(
-          "It seems like server has closed the connection.");
+      if (size == -1)
+        throw new JedisConnectionException("It seems like server has closed the connection.");
       offset += size;
     }
 
@@ -246,25 +247,26 @@ public final class Protocol {
   }
 
   public static enum Command implements ProtocolCommand {
-    PING, SET, GET, GETDEL, GETEX, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY, RENAME,
-    RENAMENX, RENAMEX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET, SETNX,
-    SETEX, MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET,
-    HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HRANDFIELD, RPUSH, LPUSH, LLEN, LRANGE, LTRIM,
-    LINDEX, LSET, LREM, LPOP, RPOP, RPOPLPUSH, SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SISMEMBER,
-    SINTER, SINTERSTORE, SUNION, SUNIONSTORE, SDIFF, SDIFFSTORE, SRANDMEMBER, ZADD, ZDIFF, ZDIFFSTORE, ZRANGE, ZREM,
-    ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZRANDMEMBER, ZCARD, ZSCORE, ZPOPMAX, ZPOPMIN, MULTI, DISCARD, EXEC,
-    WATCH, UNWATCH, SORT, BLPOP, BRPOP, AUTH, SUBSCRIBE, PUBLISH, UNSUBSCRIBE, PSUBSCRIBE,
-    PUNSUBSCRIBE, PUBSUB, ZCOUNT, ZRANGEBYSCORE, ZREVRANGEBYSCORE, ZREMRANGEBYRANK,
-    ZREMRANGEBYSCORE, ZUNION, ZUNIONSTORE, ZINTER, ZINTERSTORE, ZLEXCOUNT, ZRANGEBYLEX, ZREVRANGEBYLEX,
-    ZREMRANGEBYLEX, SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, SHUTDOWN, INFO, MONITOR, SLAVEOF, CONFIG,
-    STRLEN, SYNC, LPUSHX, PERSIST, RPUSHX, ECHO, LINSERT, DEBUG, BRPOPLPUSH, SETBIT, GETBIT,
-    BITPOS, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG, OBJECT, BITCOUNT, BITOP, SENTINEL,
-    DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT, PSETEX, CLIENT, TIME, MIGRATE,
-    HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, PFADD, PFCOUNT, PFMERGE,
-    READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEORADIUSBYMEMBER,
-    GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB, MEMORY, XADD, XLEN, XDEL,
-    XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM, ACL, XINFO,
-    BITFIELD_RO, LPOS, SMISMEMBER, ZMSCORE, BZPOPMIN, BZPOPMAX, BLMOVE, LMOVE, COPY;
+    PING, SET, GET, GETDEL, GETEX, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY,
+    RENAME, RENAMENX, RENAMEX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, MOVE, FLUSHALL, GETSET, MGET,
+    SETNX, SETEX, MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX,
+    HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HRANDFIELD, RPUSH, LPUSH,
+    LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, RPOPLPUSH, SADD, SMEMBERS, SREM, SPOP,
+    SMOVE, SCARD, SISMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE, SDIFF, SDIFFSTORE,
+    SRANDMEMBER, ZADD, ZDIFF, ZDIFFSTORE, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE,
+    ZRANDMEMBER, ZCARD, ZSCORE, ZPOPMAX, ZPOPMIN, MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, BLPOP,
+    BRPOP, AUTH, SUBSCRIBE, PUBLISH, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBSUB, ZCOUNT,
+    ZRANGEBYSCORE, ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZUNION, ZUNIONSTORE, ZINTER,
+    ZINTERSTORE, ZLEXCOUNT, ZRANGEBYLEX, ZREVRANGEBYLEX, ZREMRANGEBYLEX, SAVE, BGSAVE, BGREWRITEAOF,
+    LASTSAVE, SHUTDOWN, INFO, MONITOR, SLAVEOF, CONFIG, STRLEN, SYNC, LPUSHX, PERSIST, RPUSHX, ECHO,
+    LINSERT, DEBUG, BRPOPLPUSH, SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT,
+    SLOWLOG, OBJECT, BITCOUNT, BITOP, SENTINEL, DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL,
+    INCRBYFLOAT, PSETEX, CLIENT, TIME, MIGRATE, HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT,
+    CLUSTER, ASKING, PFADD, PFCOUNT, PFMERGE, READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS,
+    GEORADIUS_RO, GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB,
+    MEMORY, XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING,
+    XCLAIM, ACL, XINFO, BITFIELD_RO, LPOS, SMISMEMBER, ZMSCORE, BZPOPMIN, BZPOPMAX, BLMOVE, LMOVE,
+    COPY;
 
     private final byte[] raw;
 

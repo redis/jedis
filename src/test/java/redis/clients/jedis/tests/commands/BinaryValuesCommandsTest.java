@@ -349,8 +349,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
 
     jedis.sendCommand(RPUSH, bfoo, bbar);
-    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo,
-      Protocol.toByteArray(1L));
+    List<byte[]> blpop =
+        (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L));
     assertEquals(2, blpop.size());
     assertArrayEquals(bfoo, blpop.get(0));
     assertArrayEquals(bbar, blpop.get(1));

@@ -43,8 +43,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     }
   }
 
-  public JedisShardInfo(String host, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
+  public JedisShardInfo(String host, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier) {
     this(host);
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
@@ -99,8 +99,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public JedisShardInfo(String host, int port, int timeout, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT, ssl, sslSocketFactory,
-        sslParameters, hostnameVerifier);
+    this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT, ssl, sslSocketFactory, sslParameters,
+        hostnameVerifier);
   }
 
   public JedisShardInfo(String host, int port, int timeout, String name) {
@@ -168,8 +168,8 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   public JedisShardInfo(URI uri) {
     super(Sharded.DEFAULT_WEIGHT);
     if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI. %s", uri.toString()));
+      throw new InvalidURIException(
+          String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
     }
 
     this.host = uri.getHost();

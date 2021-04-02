@@ -126,7 +126,7 @@ public interface MultiKeyBinaryCommands {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   *             {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams);
@@ -135,7 +135,7 @@ public interface MultiKeyBinaryCommands {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   *             {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,

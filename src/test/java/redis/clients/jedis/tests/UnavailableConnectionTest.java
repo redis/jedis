@@ -38,8 +38,8 @@ public class UnavailableConnectionTest {
   public static void setupAvoidQuitInDestroyObject() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
-    poolForBrokenJedis1 = new JedisPool(config, unavailableHostAndPort.getHost(),
-        unavailableHostAndPort.getPort());
+    poolForBrokenJedis1 =
+        new JedisPool(config, unavailableHostAndPort.getHost(), unavailableHostAndPort.getPort());
     brokenJedis1 = poolForBrokenJedis1.getResource();
     threadForBrokenJedis1 = new Thread(new Runnable() {
       @Override

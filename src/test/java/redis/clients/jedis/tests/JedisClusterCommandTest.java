@@ -39,18 +39,18 @@ public class JedisClusterCommandTest {
   @Test
   public void runSuccessfulExecute() {
     JedisClusterConnectionHandler connectionHandler = mock(JedisClusterConnectionHandler.class);
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        Duration.ZERO) {
-      @Override
-      public String execute(Jedis connection) {
-        return "foo";
-      }
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 10, Duration.ZERO) {
+          @Override
+          public String execute(Jedis connection) {
+            return "foo";
+          }
 
-      @Override
-      protected void sleep(long ignored) {
-        throw new RuntimeException("This test should never sleep");
-      }
-    };
+          @Override
+          protected void sleep(long ignored) {
+            throw new RuntimeException("This test should never sleep");
+          }
+        };
     String actual = testMe.run("");
     assertEquals("foo", actual);
   }
@@ -59,25 +59,25 @@ public class JedisClusterCommandTest {
   public void runFailOnFirstExecSuccessOnSecondExec() {
     JedisClusterConnectionHandler connectionHandler = mock(JedisClusterConnectionHandler.class);
 
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        ONE_SECOND) {
-      boolean isFirstCall = true;
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 10, ONE_SECOND) {
+          boolean isFirstCall = true;
 
-      @Override
-      public String execute(Jedis connection) {
-        if (isFirstCall) {
-          isFirstCall = false;
-          throw new JedisConnectionException("Borkenz");
-        }
+          @Override
+          public String execute(Jedis connection) {
+            if (isFirstCall) {
+              isFirstCall = false;
+              throw new JedisConnectionException("Borkenz");
+            }
 
-        return "foo";
-      }
+            return "foo";
+          }
 
-      @Override
-      protected void sleep(long ignored) {
-        throw new RuntimeException("This test should never sleep");
-      }
-    };
+          @Override
+          protected void sleep(long ignored) {
+            throw new RuntimeException("This test should never sleep");
+          }
+        };
 
     String actual = testMe.run("");
     assertEquals("foo", actual);
@@ -88,18 +88,18 @@ public class JedisClusterCommandTest {
     JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
 
     final LongConsumer sleep = mock(LongConsumer.class);
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 3,
-        ONE_SECOND) {
-      @Override
-      public String execute(Jedis connection) {
-        throw new JedisConnectionException("Connection failed");
-      }
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 3, ONE_SECOND) {
+          @Override
+          public String execute(Jedis connection) {
+            throw new JedisConnectionException("Connection failed");
+          }
 
-      @Override
-      protected void sleep(long sleepMillis) {
-        sleep.accept(sleepMillis);
-      }
-    };
+          @Override
+          protected void sleep(long sleepMillis) {
+            sleep.accept(sleepMillis);
+          }
+        };
 
     try {
       testMe.run("");
@@ -120,27 +120,27 @@ public class JedisClusterCommandTest {
     JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
 
     final HostAndPort movedTarget = new HostAndPort(null, 0);
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        ONE_SECOND) {
-      boolean isFirstCall = true;
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 10, ONE_SECOND) {
+          boolean isFirstCall = true;
 
-      @Override
-      public String execute(Jedis connection) {
-        if (isFirstCall) {
-          isFirstCall = false;
+          @Override
+          public String execute(Jedis connection) {
+            if (isFirstCall) {
+              isFirstCall = false;
 
-          // Slot 0 moved
-          throw new JedisMovedDataException("", movedTarget, 0);
-        }
+              // Slot 0 moved
+              throw new JedisMovedDataException("", movedTarget, 0);
+            }
 
-        return "foo";
-      }
+            return "foo";
+          }
 
-      @Override
-      protected void sleep(long ignored) {
-        throw new RuntimeException("This test should never sleep");
-      }
-    };
+          @Override
+          protected void sleep(long ignored) {
+            throw new RuntimeException("This test should never sleep");
+          }
+        };
 
     String actual = testMe.run("");
     assertEquals("foo", actual);
@@ -159,27 +159,27 @@ public class JedisClusterCommandTest {
     final HostAndPort askTarget = new HostAndPort(null, 0);
     when(connectionHandler.getConnectionFromNode(askTarget)).thenReturn(connection);
 
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        ONE_SECOND) {
-      boolean isFirstCall = true;
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 10, ONE_SECOND) {
+          boolean isFirstCall = true;
 
-      @Override
-      public String execute(Jedis connection) {
-        if (isFirstCall) {
-          isFirstCall = false;
+          @Override
+          public String execute(Jedis connection) {
+            if (isFirstCall) {
+              isFirstCall = false;
 
-          // Slot 0 moved
-          throw new JedisAskDataException("", askTarget, 0);
-        }
+              // Slot 0 moved
+              throw new JedisAskDataException("", askTarget, 0);
+            }
 
-        return "foo";
-      }
+            return "foo";
+          }
 
-      @Override
-      protected void sleep(long ignored) {
-        throw new RuntimeException("This test should never sleep");
-      }
-    };
+          @Override
+          protected void sleep(long ignored) {
+            throw new RuntimeException("This test should never sleep");
+          }
+        };
 
     String actual = testMe.run("");
     assertEquals("foo", actual);
@@ -213,28 +213,28 @@ public class JedisClusterCommandTest {
 
     final LongConsumer sleep = mock(LongConsumer.class);
     final HostAndPort movedTarget = new HostAndPort(null, 0);
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 5,
-        ONE_SECOND) {
-      @Override
-      public String execute(Jedis connection) {
-        if (redirecter == connection) {
-          // First attempt, report moved
-          throw new JedisMovedDataException("Moved", movedTarget, 0);
-        }
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 5, ONE_SECOND) {
+          @Override
+          public String execute(Jedis connection) {
+            if (redirecter == connection) {
+              // First attempt, report moved
+              throw new JedisMovedDataException("Moved", movedTarget, 0);
+            }
 
-        if (failer == connection) {
-          // Second attempt in response to the move, report failure
-          throw new JedisConnectionException("Connection failed");
-        }
+            if (failer == connection) {
+              // Second attempt in response to the move, report failure
+              throw new JedisConnectionException("Connection failed");
+            }
 
-        throw new IllegalStateException("Should have thrown jedis exception");
-      }
+            throw new IllegalStateException("Should have thrown jedis exception");
+          }
 
-      @Override
-      protected void sleep(long sleepMillis) {
-        sleep.accept(sleepMillis);
-      }
-    };
+          @Override
+          protected void sleep(long sleepMillis) {
+            sleep.accept(sleepMillis);
+          }
+        };
 
     try {
       testMe.run("");
@@ -280,28 +280,28 @@ public class JedisClusterCommandTest {
     }).when(connectionHandler).renewSlotCache();
 
     final AtomicLong totalSleepMs = new AtomicLong();
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        ONE_SECOND) {
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 10, ONE_SECOND) {
 
-      @Override
-      public String execute(Jedis connection) {
-        assertNotNull(connection);
+          @Override
+          public String execute(Jedis connection) {
+            assertNotNull(connection);
 
-        if (connection == master) {
-          throw new JedisConnectionException("Master is down");
-        }
+            if (connection == master) {
+              throw new JedisConnectionException("Master is down");
+            }
 
-        assert connection == replica;
+            assert connection == replica;
 
-        return "Success!";
-      }
+            return "Success!";
+          }
 
-      @Override
-      protected void sleep(long sleepMillis) {
-        assert sleepMillis > 0;
-        totalSleepMs.addAndGet(sleepMillis);
-      }
-    };
+          @Override
+          protected void sleep(long sleepMillis) {
+            assert sleepMillis > 0;
+            totalSleepMs.addAndGet(sleepMillis);
+          }
+        };
 
     assertEquals("Success!", testMe.run(""));
     InOrder inOrder = inOrder(connectionHandler);
@@ -315,21 +315,21 @@ public class JedisClusterCommandTest {
   @Test(expected = JedisNoReachableClusterNodeException.class)
   public void runRethrowsJedisNoReachableClusterNodeException() {
     JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
-    when(connectionHandler.getConnectionFromSlot(anyInt())).thenThrow(
-      JedisNoReachableClusterNodeException.class);
+    when(connectionHandler.getConnectionFromSlot(anyInt()))
+        .thenThrow(JedisNoReachableClusterNodeException.class);
 
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
-        Duration.ZERO) {
-      @Override
-      public String execute(Jedis connection) {
-        return null;
-      }
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 10, Duration.ZERO) {
+          @Override
+          public String execute(Jedis connection) {
+            return null;
+          }
 
-      @Override
-      protected void sleep(long ignored) {
-        throw new RuntimeException("This test should never sleep");
-      }
-    };
+          @Override
+          protected void sleep(long ignored) {
+            throw new RuntimeException("This test should never sleep");
+          }
+        };
 
     testMe.run("");
   }
@@ -339,24 +339,24 @@ public class JedisClusterCommandTest {
     JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
 
     final LongConsumer sleep = mock(LongConsumer.class);
-    JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 3,
-        Duration.ZERO) {
-      @Override
-      public String execute(Jedis connection) {
-        try {
-          // exceed deadline
-          Thread.sleep(2L);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-        throw new JedisConnectionException("Connection failed");
-      }
+    JedisClusterCommand<String> testMe =
+        new JedisClusterCommand<String>(connectionHandler, 3, Duration.ZERO) {
+          @Override
+          public String execute(Jedis connection) {
+            try {
+              // exceed deadline
+              Thread.sleep(2L);
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+            throw new JedisConnectionException("Connection failed");
+          }
 
-      @Override
-      protected void sleep(long sleepMillis) {
-        sleep.accept(sleepMillis);
-      }
-    };
+          @Override
+          protected void sleep(long sleepMillis) {
+            sleep.accept(sleepMillis);
+          }
+        };
 
     try {
       testMe.run("");

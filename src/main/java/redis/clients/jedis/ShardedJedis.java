@@ -588,13 +588,15 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+  public Long zadd(final String key, final Map<String, Double> scoreMembers,
+      final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers, params);
   }
 
   @Override
-  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+  public Double zaddIncr(final String key, final double score, final String member,
+      final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zaddIncr(key, score, member, params);
   }
@@ -771,7 +773,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
+      final double min) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min);
   }
@@ -784,8 +787,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
-      final double min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
   }
@@ -823,7 +826,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
+      final String min) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min);
   }
@@ -836,8 +840,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
-      final String min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
   }
@@ -1026,7 +1030,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+  public Long geoadd(String key, GeoAddParams params,
+      Map<String, GeoCoordinate> memberCoordinateMap) {
     Jedis j = getShard(key);
     return j.geoadd(key, params, memberCoordinateMap);
   }
@@ -1144,7 +1149,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+  public StreamEntryID xadd(final String key, final Map<String, String> hash,
+      final XAddParams params) {
     Jedis j = getShard(key);
     return j.xadd(key, hash, params);
   }
@@ -1222,7 +1228,8 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
+  public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start,
+      int count) {
     Jedis j = getShard(key);
     return j.xrevrange(key, end, start, count);
   }

@@ -8,11 +8,9 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   private static final long serialVersionUID = 1L;
 
   /**
-  * Should be used only with XADD  
-  * 
-  * <code>
-   * XADD mystream * field1 value1 
-   * </code>
+   * Should be used only with XADD <code>
+    * XADD mystream * field1 value1 
+    * </code>
    */
   public static final StreamEntryID NEW_ENTRY = new StreamEntryID() {
 
@@ -25,11 +23,9 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
-  * Should be used only with XGROUP CREATE  
-  * 
-  * <code>
-   * XGROUP CREATE mystream consumer-group-name $
-   * </code>
+   * Should be used only with XGROUP CREATE <code>
+    * XGROUP CREATE mystream consumer-group-name $
+    * </code>
    */
   public static final StreamEntryID LAST_ENTRY = new StreamEntryID() {
 
@@ -42,8 +38,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
-   * Should be used only with XREADGROUP
-   * <code>
+   * Should be used only with XREADGROUP <code>
    * XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >
    * </code>
    */

@@ -39,7 +39,8 @@ public class Connection implements Closeable {
   /**
    * @param host
    * @deprecated This constructor will be removed in future. It can be replaced with
-   * {@link #Connection(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   *             {@link #Connection(java.lang.String, int)} with the host and
+   *             {@link Protocol#DEFAULT_PORT}.
    */
   @Deprecated
   public Connection(final String host) {
@@ -65,9 +66,9 @@ public class Connection implements Closeable {
   public Connection(final String host, final int port, final boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build());
+    this(new HostAndPort(host, port),
+        DefaultJedisClientConfig.builder().ssl(ssl).sslSocketFactory(sslSocketFactory)
+            .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
@@ -101,7 +102,7 @@ public class Connection implements Closeable {
   /**
    * @param connectionTimeout
    * @deprecated This method is not supported anymore and is kept for backward compatibility. It
-   * will be removed in future.
+   *             will be removed in future.
    */
   @Deprecated
   public void setConnectionTimeout(int connectionTimeout) {

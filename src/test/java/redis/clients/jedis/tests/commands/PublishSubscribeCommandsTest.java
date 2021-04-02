@@ -65,8 +65,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void pubSubChannels() {
-    final List<String> expectedActiveChannels = Arrays
-        .asList("testchan1", "testchan2", "testchan3");
+    final List<String> expectedActiveChannels =
+        Arrays.asList("testchan1", "testchan2", "testchan3");
     jedis.subscribe(new JedisPubSub() {
       private int count = 0;
 
@@ -327,7 +327,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void binaryPsubscribeMany() throws UnknownHostException, IOException, InterruptedException {
+  public void binaryPsubscribeMany()
+      throws UnknownHostException, IOException, InterruptedException {
     jedis.psubscribe(new BinaryJedisPubSub() {
       public void onPSubscribe(byte[] pattern, int subscribedChannels) {
         publishOne(SafeEncoder.encode(pattern).replace("*", "123"), "exit");
@@ -409,8 +410,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void binarySubscribeLazily() throws UnknownHostException, IOException,
-      InterruptedException {
+  public void binarySubscribeLazily()
+      throws UnknownHostException, IOException, InterruptedException {
     final BinaryJedisPubSub pubsub = new BinaryJedisPubSub() {
       public void onMessage(byte[] channel, byte[] message) {
         unsubscribe(channel);

@@ -3,8 +3,8 @@ package redis.clients.jedis.util;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 /**
- * CRC16 Implementation according to CCITT standard Polynomial : 1021 (x^16 + x^12 + x^5 + 1) See <a
- * href="http://redis.io/topics/cluster-spec">Appendix A. CRC16 reference implementation in ANSI
+ * CRC16 Implementation according to CCITT standard Polynomial : 1021 (x^16 + x^12 + x^5 + 1) See
+ * <a href="http://redis.io/topics/cluster-spec">Appendix A. CRC16 reference implementation in ANSI
  * C</a>
  */
 public final class JedisClusterCRC16 {
@@ -77,8 +77,9 @@ public final class JedisClusterCRC16 {
    * @param bytes
    * @param s
    * @param e
-   * @return CRC16 as integer value See <a
-   *         href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">Issue 733</a>
+   * @return CRC16 as integer value See
+   *         <a href="https://github.com/xetorthio/jedis/pull/733#issuecomment-55840331">Issue
+   *         733</a>
    */
   public static int getCRC16(byte[] bytes, int s, int e) {
     int crc = 0x0000;

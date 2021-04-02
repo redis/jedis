@@ -134,8 +134,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   public void evalshaBinary() {
     jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
     jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
-    byte[] result = (byte[]) jedis.evalsha(SafeEncoder
-        .encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    byte[] result =
+        (byte[]) jedis.evalsha(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
 
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }
@@ -175,9 +175,9 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptExistsBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    List<Long> exists = jedis.scriptExists(
-      SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),
-      SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    List<Long> exists =
+        jedis.scriptExists(SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),
+          SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
     assertEquals(new Long(0), exists.get(0));
     assertEquals(new Long(1), exists.get(1));
   }
@@ -191,8 +191,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptLoadBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    Long exists = jedis
-        .scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    Long exists =
+        jedis.scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
     assertEquals((Long) 1L, exists);
   }
 
@@ -210,7 +210,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     jedis.del("key1");
     jedis.del("key2");
 
-    String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
+    String script =
+        "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
     List<String> results = (List<String>) jedis.eval(script, 2, "key1", "key2", "1", "2");
     assertEquals(2, results.size());
     assertNull(results.get(0));
@@ -222,7 +223,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     jedis.del("key1");
     jedis.del("key2");
 
-    String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
+    String script =
+        "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
     String sha = jedis.scriptLoad(script);
     List<String> results = (List<String>) jedis.evalsha(sha, 2, "key1", "key2", "1", "2");
     assertEquals(2, results.size());

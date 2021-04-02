@@ -8,7 +8,8 @@ import java.util.Collections;
 /**
  * Parameters for ZINCRBY commands <br/>
  * <br/>
- * In fact, Redis doesn't have parameters for ZINCRBY. Instead Redis has INCR parameter for ZADD.<br/>
+ * In fact, Redis doesn't have parameters for ZINCRBY. Instead Redis has INCR parameter for
+ * ZADD.<br/>
  * When users call ZADD with INCR option, its restriction (only one member) and return type is same
  * to ZINCRBY. <br/>
  * Document page for ZADD also describes INCR option to act like ZINCRBY. <br/>

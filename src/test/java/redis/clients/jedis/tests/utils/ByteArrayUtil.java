@@ -17,7 +17,8 @@ public class ByteArrayUtil {
     return false;
   }
 
-  public static boolean byteArrayCollectionRemoveAll(Collection<byte[]> all, Collection<byte[]> few) {
+  public static boolean byteArrayCollectionRemoveAll(Collection<byte[]> all,
+      Collection<byte[]> few) {
     boolean modified = false;
     for (byte[] e : few) {
       modified |= byteArrayCollectionRemove(all, e);

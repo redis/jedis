@@ -29,7 +29,7 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
   @BeforeClass
   public static void prepare() throws Exception {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -56,8 +56,8 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandTestBase {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().user("acljedis")
-        .password("fizzbuzz").build())) {
+    try (Jedis jedis = new Jedis(hnp,
+        DefaultJedisClientConfig.builder().user("acljedis").password("fizzbuzz").build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

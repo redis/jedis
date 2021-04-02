@@ -13,7 +13,8 @@ public class JedisMovedDataException extends JedisRedirectionException {
     super(cause, targetNode, slot);
   }
 
-  public JedisMovedDataException(String message, Throwable cause, HostAndPort targetNode, int slot) {
+  public JedisMovedDataException(String message, Throwable cause, HostAndPort targetNode,
+      int slot) {
     super(message, cause, targetNode, slot);
   }
 }

@@ -19,7 +19,8 @@ public class ScanResult<T> {
 
   /**
    * Returns the new value of the cursor
-   * @return the new cursor value. {@link ScanParams#SCAN_POINTER_START} when a complete iteration has finished
+   * @return the new cursor value. {@link ScanParams#SCAN_POINTER_START} when a complete iteration
+   *         has finished
    */
   public String getCursor() {
     return SafeEncoder.encode(cursor);

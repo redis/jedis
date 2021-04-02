@@ -29,7 +29,8 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
-  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
+  Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout);
 
   Response<List<byte[]>> blpop(byte[]... args);
 
@@ -133,7 +134,8 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
   /**
-   * @deprecated Use {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   * @deprecated Use
+   *             {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,

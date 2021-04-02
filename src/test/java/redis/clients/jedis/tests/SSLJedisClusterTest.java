@@ -51,9 +51,9 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   public void testSSLDiscoverNodesAutomatically() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("localhost", 8379));
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_POOL_CONFIG, true, null, null, null,
-        hostAndPortMap)) {
+    try (JedisCluster jc =
+        new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS,
+            "cluster", null, DEFAULT_POOL_CONFIG, true, null, null, null, hostAndPortMap)) {
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
       assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
@@ -169,7 +169,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       // since the socket factory fails the hostname verification
       assertEquals("No reachable node in cluster.", e.getMessage());
     }
-    
+
     try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT,
         DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_POOL_CONFIG, true, null,
         null, localhostVerifier, portMap)) {

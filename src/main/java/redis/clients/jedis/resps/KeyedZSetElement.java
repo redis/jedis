@@ -40,7 +40,7 @@ public class KeyedZSetElement extends Tuple {
 
   @Override
   public String toString() {
-    return "KeyedZSetElement{" + "key=" + key + ", element='" + getElement() + "'"
-        + ", score=" + getScore() + "} ";
+    return "KeyedZSetElement{" + "key=" + key + ", element='" + getElement() + "'" + ", score="
+        + getScore() + "} ";
   }
 }

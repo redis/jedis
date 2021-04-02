@@ -64,9 +64,8 @@ public class HostAndPort implements Serializable {
   }
 
   /**
-   * Splits String into host and port parts.
-   * String must be in ( host + ":" + port ) format.
-   * Port is optional
+   * Splits String into host and port parts. String must be in ( host + ":" + port ) format. Port is
+   * optional
    * @param from String to parse
    * @return array of host and port strings
    */
@@ -78,17 +77,18 @@ public class HostAndPort implements Serializable {
   }
 
   /**
-   * Creates HostAndPort instance from string.
-   * String must be in ( host + ":" + port ) format.
-   * Port is mandatory. Can convert host part.
+   * Creates HostAndPort instance from string. String must be in ( host + ":" + port ) format. Port
+   * is mandatory. Can convert host part.
    * @see #convertHost(String)
    * @param from String to parse
    * @return HostAndPort instance
    */
   public static HostAndPort parseString(String from) {
     // NOTE: redis answers with
-    // '99aa9999aa9a99aa099aaa990aa99a09aa9a9999 9a09:9a9:a090:9a::99a slave 8c88888888cc08088cc8c8c888c88c8888c88cc8 0 1468251272993 37 connected'
-    // for CLUSTER NODES, ASK and MOVED scenarios. That's why there is no possibility to parse address in 'correct' way.
+    // '99aa9999aa9a99aa099aaa990aa99a09aa9a9999 9a09:9a9:a090:9a::99a slave
+    // 8c88888888cc08088cc8c8c888c88c8888c88cc8 0 1468251272993 37 connected'
+    // for CLUSTER NODES, ASK and MOVED scenarios. That's why there is no possibility to parse
+    // address in 'correct' way.
     // Redis should switch to 'bracketized' (RFC 3986) IPv6 address.
     try {
       String[] parts = extractParts(from);
@@ -103,15 +103,12 @@ public class HostAndPort implements Serializable {
   public static String convertHost(String host) {
     try {
       /*
-         * Validate the host name as an IPV4/IPV6 address.
-         * If this is an AWS ENDPOINT it will not parse.
-         * In that case accept host as is.
-         *
-         * Costs: If this is an IPV4/6 encoding, e.g. 127.0.0.1 then no DNS lookup
-         * is done.  If it is a name then a DNS lookup is done but it is normally cached.
-         * Secondarily, this class is typically used to create a connection once
-         * at the beginning of processing and then not used again.  So even if the DNS
-         * lookup needs to be done then the cost is miniscule.
+       * Validate the host name as an IPV4/IPV6 address. If this is an AWS ENDPOINT it will not
+       * parse. In that case accept host as is. Costs: If this is an IPV4/6 encoding, e.g. 127.0.0.1
+       * then no DNS lookup is done. If it is a name then a DNS lookup is done but it is normally
+       * cached. Secondarily, this class is typically used to create a connection once at the
+       * beginning of processing and then not used again. So even if the DNS lookup needs to be done
+       * then the cost is miniscule.
        */
       InetAddress inetAddress = InetAddress.getByName(host);
 
@@ -121,8 +118,8 @@ public class HostAndPort implements Serializable {
       }
     } catch (Exception e) {
       // Not a valid IP address
-      log.warn("{}.convertHost '{}' is not a valid IP address. ", HostAndPort.class.getName(),
-        host, e);
+      log.warn("{}.convertHost '{}' is not a valid IP address. ", HostAndPort.class.getName(), host,
+        e);
     }
     return host;
   }

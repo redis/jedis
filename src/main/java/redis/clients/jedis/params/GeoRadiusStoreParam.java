@@ -33,10 +33,9 @@ public class GeoRadiusStoreParam extends Params {
   }
 
   /**
-     * WARNING: In Redis, if STOREDIST exists, store will be ignored.
-     * <p>
-     * Refer: https://github.com/antirez/redis/blob/6.0/src/geo.c#L649
-     *
+   * WARNING: In Redis, if STOREDIST exists, store will be ignored.
+   * <p>
+   * Refer: https://github.com/antirez/redis/blob/6.0/src/geo.c#L649
    * @return STORE or STOREDIST
    */
   public byte[] getOption() {
@@ -48,8 +47,8 @@ public class GeoRadiusStoreParam extends Params {
       return SafeEncoder.encode(STORE);
     }
 
-    throw new IllegalArgumentException(this.getClass().getSimpleName()
-        + " must has store or storedist option");
+    throw new IllegalArgumentException(
+        this.getClass().getSimpleName() + " must has store or storedist option");
   }
 
   public byte[] getKey() {
@@ -61,8 +60,8 @@ public class GeoRadiusStoreParam extends Params {
       return SafeEncoder.encode((String) getParam(STORE));
     }
 
-    throw new IllegalArgumentException(this.getClass().getSimpleName()
-        + " must has store or storedist key");
+    throw new IllegalArgumentException(
+        this.getClass().getSimpleName() + " must has store or storedist key");
   }
 
   public String[] getStringKeys(String key) {

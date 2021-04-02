@@ -77,8 +77,8 @@ public class ProtocolTest {
 
   @Test
   public void fragmentedBulkReply() {
-    FragmentedByteArrayInputStream fis = new FragmentedByteArrayInputStream(
-        "$30\r\n012345678901234567890123456789\r\n".getBytes());
+    FragmentedByteArrayInputStream fis =
+        new FragmentedByteArrayInputStream("$30\r\n012345678901234567890123456789\r\n".getBytes());
     byte[] response = (byte[]) Protocol.read(new RedisInputStream(fis));
     assertArrayEquals(SafeEncoder.encode("012345678901234567890123456789"), response);
   }

@@ -38,7 +38,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
   @BeforeClass
   public static void prepare() {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
     SSLJedisTest.setupTrustStore();
   }
@@ -75,9 +75,9 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
   public void testSSLWithoutPortMap() {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("localhost", 8379));
-    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "default", "cluster", null, DEFAULT_POOL_CONFIG, true, null, null,
-        null, null)) {
+    try (JedisCluster jc =
+        new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS,
+            "default", "cluster", null, DEFAULT_POOL_CONFIG, true, null, null, null, null)) {
 
       Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());

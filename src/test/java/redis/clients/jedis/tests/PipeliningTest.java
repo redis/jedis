@@ -159,7 +159,8 @@ public class PipeliningTest extends JedisCommandTestBase {
     verifyHasBothValues(firstValue, secondValue, "v111".getBytes(), "v2222".getBytes());
   }
 
-  private void verifyHasBothValues(byte[] firstKey, byte[] secondKey, byte[] value1, byte[] value2) {
+  private void verifyHasBothValues(byte[] firstKey, byte[] secondKey, byte[] value1,
+      byte[] value2) {
     assertFalse(Arrays.equals(firstKey, secondKey));
     assertTrue(Arrays.equals(firstKey, value1) || Arrays.equals(firstKey, value2));
     assertTrue(Arrays.equals(secondKey, value1) || Arrays.equals(secondKey, value2));
@@ -309,19 +310,27 @@ public class PipeliningTest extends JedisCommandTestBase {
     List<Object> expMulti = null; // MULTI will fail
 
     Pipeline pipe = jedis.pipelined();
-    pipe.watch(key);        expect.add("OK");
-    pipe.incrBy(key, 3L);   expect.add(8L);
-    pipe.multi();           expect.add("OK");
-    pipe.incrBy(key, 6L);   expect.add("QUEUED");
-    assertEquals(expect, pipe.syncAndReturnAll());      expect.clear();
+    pipe.watch(key);
+    expect.add("OK");
+    pipe.incrBy(key, 3L);
+    expect.add(8L);
+    pipe.multi();
+    expect.add("OK");
+    pipe.incrBy(key, 6L);
+    expect.add("QUEUED");
+    assertEquals(expect, pipe.syncAndReturnAll());
+    expect.clear();
 
     try (Jedis tweak = createJedis()) {
       assertEquals(Long.valueOf(10L), tweak.incrBy(key, 2L));
     }
 
-    pipe.incrBy(key, 4L);   expect.add("QUEUED");
-    pipe.exec();            expect.add(expMulti); // failed MULTI
-    pipe.incrBy(key, 7L);   expect.add(17L);
+    pipe.incrBy(key, 4L);
+    expect.add("QUEUED");
+    pipe.exec();
+    expect.add(expMulti); // failed MULTI
+    pipe.incrBy(key, 7L);
+    expect.add(17L);
     assertEquals(expect, pipe.syncAndReturnAll());
   }
 
@@ -334,20 +343,31 @@ public class PipeliningTest extends JedisCommandTestBase {
     List<Object> expMulti = new ArrayList<>();
 
     Pipeline pipe = jedis.pipelined();
-    pipe.watch(key);        expect.add("OK");
-    pipe.incrBy(key, 3L);   expect.add(8L);
-    pipe.unwatch();         expect.add("OK");
-    pipe.multi();           expect.add("OK");
-    pipe.incrBy(key, 6L);   expect.add("QUEUED");   expMulti.add(16L);
-    assertEquals(expect, pipe.syncAndReturnAll());  expect.clear();
+    pipe.watch(key);
+    expect.add("OK");
+    pipe.incrBy(key, 3L);
+    expect.add(8L);
+    pipe.unwatch();
+    expect.add("OK");
+    pipe.multi();
+    expect.add("OK");
+    pipe.incrBy(key, 6L);
+    expect.add("QUEUED");
+    expMulti.add(16L);
+    assertEquals(expect, pipe.syncAndReturnAll());
+    expect.clear();
 
     try (Jedis tweak = createJedis()) {
       assertEquals(Long.valueOf(10L), tweak.incrBy(key, 2L));
     }
 
-    pipe.incrBy(key, 4L);   expect.add("QUEUED");   expMulti.add(20L);
-    pipe.exec();            expect.add(expMulti); // successful MULTI
-    pipe.incrBy(key, 7L);   expect.add(27L);
+    pipe.incrBy(key, 4L);
+    expect.add("QUEUED");
+    expMulti.add(20L);
+    pipe.exec();
+    expect.add(expMulti); // successful MULTI
+    pipe.incrBy(key, 7L);
+    expect.add(27L);
     assertEquals(expect, pipe.syncAndReturnAll());
   }
 
@@ -691,7 +711,8 @@ public class PipeliningTest extends JedisCommandTestBase {
     jedis2.close();
   }
 
-  private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {
+  private void verifyHasBothValues(String firstKey, String secondKey, String value1,
+      String value2) {
     assertFalse(firstKey.equals(secondKey));
     assertTrue(firstKey.equals(value1) || firstKey.equals(value2));
     assertTrue(secondKey.equals(value1) || secondKey.equals(value2));

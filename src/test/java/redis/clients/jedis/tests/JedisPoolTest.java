@@ -129,14 +129,18 @@ public class JedisPoolTest {
 
   @Test
   public void nonDefaultDatabase() {
-    try (JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared"); Jedis jedis0 = pool0.getResource()) {
+    try (
+        JedisPool pool0 =
+            new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "foobared");
+        Jedis jedis0 = pool0.getResource()) {
       jedis0.set("foo", "bar");
       assertEquals("bar", jedis0.get("foo"));
     }
 
-    try (JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared", 1); Jedis jedis1 = pool1.getResource()) {
+    try (
+        JedisPool pool1 =
+            new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "foobared", 1);
+        Jedis jedis1 = pool1.getResource()) {
       assertNull(jedis1.get("foo"));
     }
   }
@@ -183,8 +187,8 @@ public class JedisPoolTest {
 
   @Test
   public void selectDatabaseOnActivation() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared")) {
+    try (JedisPool pool =
+        new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "foobared")) {
 
       Jedis jedis0 = pool.getResource();
       assertEquals(0, jedis0.getDB());
@@ -204,8 +208,10 @@ public class JedisPoolTest {
 
   @Test
   public void customClientName() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared", 0, "my_shiny_client_name"); Jedis jedis = pool.getResource()) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "foobared", 0, "my_shiny_client_name");
+        Jedis jedis = pool.getResource()) {
 
       assertEquals("my_shiny_client_name", jedis.clientGetname());
     }
@@ -306,7 +312,8 @@ public class JedisPoolTest {
 
   @Test
   public void getNumActiveReturnsTheCorrectNumber() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       Jedis jedis = pool.getResource();
       jedis.auth("foobared");
       jedis.set("foo", "bar");
@@ -331,7 +338,8 @@ public class JedisPoolTest {
 
   @Test
   public void testAddObject() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       pool.addObjects(1);
       assertEquals(1, pool.getNumIdle());
     }
@@ -339,7 +347,8 @@ public class JedisPoolTest {
 
   @Test
   public void closeResourceTwice() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       Jedis j = pool.getResource();
       j.auth("foobared");
       j.ping();
@@ -350,7 +359,8 @@ public class JedisPoolTest {
 
   @Test
   public void closeBrokenResourceTwice() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       Jedis j = pool.getResource();
       try {
         // make connection broken
@@ -369,8 +379,10 @@ public class JedisPoolTest {
   public void testCloseConnectionOnMakeObject() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "wrong pass"); Jedis jedis = new Jedis("redis://:foobared@localhost:6379/")) {
+    try (
+        JedisPool pool =
+            new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000, "wrong pass");
+        Jedis jedis = new Jedis("redis://:foobared@localhost:6379/")) {
       int currentClientCount = getClientCount(jedis.clientList());
       try {
         pool.getResource();
@@ -387,8 +399,9 @@ public class JedisPoolTest {
 
   @Test
   public void testResetInvalidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "foobared", 0, "my_shiny_client_name") { };
+    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000, "foobared", 0,
+        "my_shiny_client_name") {
+    };
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       Jedis obj1_ref;
@@ -405,7 +418,8 @@ public class JedisPoolTest {
         factory.setPassword("wrong password");
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
-        } catch (JedisConnectionException e) { }
+        } catch (JedisConnectionException e) {
+        }
         assertEquals(1, pool.getNumActive());
       }
       assertEquals(0, pool.getNumActive());
@@ -415,12 +429,14 @@ public class JedisPoolTest {
   @Test
   public void testResetValidPassword() {
     JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "bad password", 0, "my_shiny_client_name") { };
+        "bad password", 0, "my_shiny_client_name") {
+    };
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
         fail("Should not get resource from pool");
-      } catch (JedisConnectionException e) { }
+      } catch (JedisConnectionException e) {
+      }
       assertEquals(0, pool.getNumActive());
 
       factory.setPassword("foobared");

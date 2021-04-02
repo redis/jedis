@@ -27,7 +27,6 @@ public class XTrimParams extends Params {
     return new XTrimParams();
   }
 
-
   public XTrimParams maxLen(long maxLen) {
     this.maxLen = maxLen;
     return this;

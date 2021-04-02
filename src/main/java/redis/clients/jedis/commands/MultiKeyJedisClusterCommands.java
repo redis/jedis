@@ -126,13 +126,12 @@ public interface MultiKeyJedisClusterCommands {
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   *
    * @param count
    * @param block
    * @param streams
    * @return
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
+   *             {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block,
@@ -143,7 +142,6 @@ public interface MultiKeyJedisClusterCommands {
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
-   *
    * @param groupname
    * @param consumer
    * @param count
@@ -152,7 +150,7 @@ public interface MultiKeyJedisClusterCommands {
    * @param streams
    * @return
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   *             {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,

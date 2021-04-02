@@ -23,7 +23,8 @@ public abstract class JedisClusterCommand<T> {
   private final Duration maxTotalRetriesDuration;
 
   public JedisClusterCommand(JedisClusterConnectionHandler connectionHandler, int maxAttempts) {
-    this(connectionHandler, maxAttempts, Duration.ofMillis((long) BinaryJedisCluster.DEFAULT_TIMEOUT * maxAttempts));
+    this(connectionHandler, maxAttempts,
+        Duration.ofMillis((long) BinaryJedisCluster.DEFAULT_TIMEOUT * maxAttempts));
   }
 
   /**
@@ -124,7 +125,8 @@ public abstract class JedisClusterCommand<T> {
         ++consecutiveConnectionFailures;
         LOG.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
-        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
+        boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures,
+          deadline);
         if (reset) {
           consecutiveConnectionFailures = 0;
           redirect = null;
@@ -150,22 +152,22 @@ public abstract class JedisClusterCommand<T> {
       }
     }
 
-    JedisClusterMaxAttemptsException maxAttemptsException
-        = new JedisClusterMaxAttemptsException("No more cluster attempts left.");
+    JedisClusterMaxAttemptsException maxAttemptsException = new JedisClusterMaxAttemptsException(
+        "No more cluster attempts left.");
     maxAttemptsException.addSuppressed(lastException);
     throw maxAttemptsException;
   }
 
   /**
    * Related values should be reset if <code>TRUE</code> is returned.
-   *
    * @param attemptsLeft
    * @param consecutiveConnectionFailures
    * @param doneDeadline
-   * @return true - if some actions are taken
-   * <br /> false - if no actions are taken
+   * @return true - if some actions are taken <br />
+   *         false - if no actions are taken
    */
-  private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures, Instant doneDeadline) {
+  private boolean handleConnectionProblem(int attemptsLeft, int consecutiveConnectionFailures,
+      Instant doneDeadline) {
     if (this.maxAttempts < 3) {
       // Since we only renew the slots cache after two consecutive connection
       // failures (see consecutiveConnectionFailures above), we need to special
@@ -184,10 +186,10 @@ public abstract class JedisClusterCommand<T> {
     }
 
     sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
-    //We need this because if node is not reachable anymore - we need to finally initiate slots
-    //renewing, or we can stuck with cluster state without one node in opposite case.
-    //TODO make tracking of successful/unsuccessful operations for node - do renewing only
-    //if there were no successful responses from this node last few seconds
+    // We need this because if node is not reachable anymore - we need to finally initiate slots
+    // renewing, or we can stuck with cluster state without one node in opposite case.
+    // TODO make tracking of successful/unsuccessful operations for node - do renewing only
+    // if there were no successful responses from this node last few seconds
     this.connectionHandler.renewSlotCache();
     return true;
   }

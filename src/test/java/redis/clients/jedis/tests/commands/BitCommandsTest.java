@@ -217,10 +217,9 @@ public class BitCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void testBinaryBitfield() {
-    List<Long> responses = jedis.bitfield(SafeEncoder.encode("mykey"),
-      SafeEncoder.encode("INCRBY"), SafeEncoder.encode("i5"), SafeEncoder.encode("100"),
-      SafeEncoder.encode("1"), SafeEncoder.encode("GET"), SafeEncoder.encode("u4"),
-      SafeEncoder.encode("0"));
+    List<Long> responses = jedis.bitfield(SafeEncoder.encode("mykey"), SafeEncoder.encode("INCRBY"),
+      SafeEncoder.encode("i5"), SafeEncoder.encode("100"), SafeEncoder.encode("1"),
+      SafeEncoder.encode("GET"), SafeEncoder.encode("u4"), SafeEncoder.encode("0"));
     assertEquals(1L, responses.get(0).longValue());
     assertEquals(0L, responses.get(1).longValue());
   }

@@ -134,8 +134,8 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   public void evalshaBinary() {
     jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
     jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
-    byte[] result = (byte[]) jedis.evalsha(SafeEncoder
-        .encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+    byte[] result = (byte[]) jedis
+        .evalsha(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
 
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }

@@ -36,7 +36,7 @@ public class JedisPoolWithCompleteCredentialsTest {
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -88,8 +88,7 @@ public class JedisPoolWithCompleteCredentialsTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp, DefaultJedisClientConfig.builder()
-        .user("acljedis").password("fizzbuzz").clientName("closable-resuable-pool")
-        .build())) {
+        .user("acljedis").password("fizzbuzz").clientName("closable-resuable-pool").build())) {
 
       Jedis jedis = pool.getResource();
       jedis.set("hello", "jedis");
@@ -163,14 +162,18 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void nonDefaultDatabase() {
-    try (JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "acljedis", "fizzbuzz"); Jedis jedis0 = pool0.getResource()) {
+    try (
+        JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "acljedis", "fizzbuzz");
+        Jedis jedis0 = pool0.getResource()) {
       jedis0.set("foo", "bar");
       assertEquals("bar", jedis0.get("foo"));
     }
 
-    try (JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "acljedis", "fizzbuzz", 1); Jedis jedis1 = pool1.getResource()) {
+    try (
+        JedisPool pool1 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "acljedis", "fizzbuzz", 1);
+        Jedis jedis1 = pool1.getResource()) {
       assertNull(jedis1.get("foo"));
     }
   }
@@ -242,8 +245,10 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void customClientName() {
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "acljedis", "fizzbuzz", 0, "my_shiny_client_name"); Jedis jedis = pool.getResource()) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "acljedis", "fizzbuzz", 0, "my_shiny_client_name");
+        Jedis jedis = pool.getResource()) {
 
       assertEquals("my_shiny_client_name", jedis.clientGetname());
     }
@@ -251,8 +256,9 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void customClientNameNoSSL() {
-    try (JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "acljedis", "fizzbuzz", 0, "my_shiny_client_name_no_ssl", false);
+    try (
+        JedisPool pool0 = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "acljedis", "fizzbuzz", 0, "my_shiny_client_name_no_ssl", false);
         Jedis jedis = pool0.getResource()) {
 
       assertEquals("my_shiny_client_name_no_ssl", jedis.clientGetname());
@@ -263,8 +269,10 @@ public class JedisPoolWithCompleteCredentialsTest {
   public void testCloseConnectionOnMakeObject() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "acljedis", "foobared"); Jedis jedis = new Jedis("redis://:foobared@localhost:6379/")) {
+    try (
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+            "acljedis", "foobared");
+        Jedis jedis = new Jedis("redis://:foobared@localhost:6379/")) {
       int currentClientCount = getClientCount(jedis.clientList());
       try {
         pool.getResource();
@@ -281,8 +289,9 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void testResetInvalidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "acljedis", "fizzbuzz", 0, "my_shiny_client_name") { };
+    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000, "acljedis",
+        "fizzbuzz", 0, "my_shiny_client_name") {
+    };
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       Jedis obj1_ref;
@@ -299,7 +308,8 @@ public class JedisPoolWithCompleteCredentialsTest {
         factory.setPassword("wrong password");
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
-        } catch (JedisConnectionException jce) { }
+        } catch (JedisConnectionException jce) {
+        }
         assertEquals(1, pool.getNumActive());
       }
       assertEquals(0, pool.getNumActive());
@@ -308,13 +318,15 @@ public class JedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void testResetValidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "acljedis", "bad password", 0, "my_shiny_client_name") { };
+    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000, "acljedis",
+        "bad password", 0, "my_shiny_client_name") {
+    };
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
         fail("Should not get resource from pool");
-      } catch (JedisConnectionException e) { }
+      } catch (JedisConnectionException e) {
+      }
       assertEquals(0, pool.getNumActive());
 
       factory.setPassword("fizzbuzz");

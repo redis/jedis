@@ -111,7 +111,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertNull(jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().nx()));
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "b"));
     // incr: update elements that already exist.
-    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d,"b", ZAddParams.zAddParams().xx()));
+    assertEquals(Double.valueOf(3d), jedis.zaddIncr("foo", 1d, "b", ZAddParams.zAddParams().xx()));
     assertEquals(Double.valueOf(3d), jedis.zscore("foo", "b"));
 
     // binary
@@ -272,7 +272,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bExpected.add(ba);
 
     // with LIMIT
-    assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
+    assertByteArraySetEquals(bExpected,
+      jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
   }
 
   @Test
@@ -1600,7 +1601,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertNotNull(actual);
     assertEquals(2, actual.size());
     tuple = bactual.iterator().next();
-    assertEquals(getScoreFromByteMap(bhash, tuple.getBinaryElement()), Double.valueOf(tuple.getScore()));
+    assertEquals(getScoreFromByteMap(bhash, tuple.getBinaryElement()),
+      Double.valueOf(tuple.getScore()));
   }
 
   private Double getScoreFromByteMap(Map<byte[], Double> bhash, byte[] key) {

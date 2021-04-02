@@ -123,12 +123,12 @@ public class JedisClusterInfoCache {
       final String user, final String password, final String clientName, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap) {
-    this(poolConfig, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
-        .blockingSocketTimeoutMillis(infiniteSoTimeout).user(user).password(password)
-        .clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory)
-        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier)
-        .hostAndPortMapper(hostAndPortMap).build());
+    this(poolConfig,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+            .user(user).password(password).clientName(clientName).ssl(ssl)
+            .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+            .hostnameVerifier(hostnameVerifier).hostAndPortMapper(hostAndPortMap).build());
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
@@ -174,7 +174,8 @@ public class JedisClusterInfoCache {
   }
 
   public void renewClusterSlots(Jedis jedis) {
-    // If rediscovering is already in process - no need to start one more same rediscovering, just return
+    // If rediscovering is already in process - no need to start one more same rediscovering, just
+    // return
     if (!rediscovering) {
       try {
         w.lock();

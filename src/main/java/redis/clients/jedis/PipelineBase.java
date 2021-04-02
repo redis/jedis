@@ -1243,25 +1243,29 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(final String key, final double max, final double min) {
+  public Response<Set<String>> zrevrangeByScore(final String key, final double max,
+      final double min) {
     getClient(key).zrevrangeByScore(key, max, min);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final double max, final double min) {
+  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final double max,
+      final double min) {
     getClient(key).zrevrangeByScore(key, max, min);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(final String key, final String max, final String min) {
+  public Response<Set<String>> zrevrangeByScore(final String key, final String max,
+      final String min) {
     getClient(key).zrevrangeByScore(key, max, min);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min) {
+  public Response<Set<byte[]>> zrevrangeByScore(final byte[] key, final byte[] max,
+      final byte[] min) {
     getClient(key).zrevrangeByScore(key, max, min);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
@@ -1351,13 +1355,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeWithScores(final String key, final long start, final long stop) {
+  public Response<Set<Tuple>> zrangeWithScores(final String key, final long start,
+      final long stop) {
     getClient(key).zrangeWithScores(key, start, stop);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeWithScores(final byte[] key, final long start, final long stop) {
+  public Response<Set<Tuple>> zrangeWithScores(final byte[] key, final long start,
+      final long stop) {
     getClient(key).zrangeWithScores(key, start, stop);
     return getResponse(BuilderFactory.TUPLE_ZSET);
   }
@@ -1607,13 +1613,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
+  public Response<Set<byte[]>> zrevrangeByLex(final byte[] key, final byte[] max,
+      final byte[] min) {
     getClient(key).zrevrangeByLex(key, max, min);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByLex(final String key, final String max, final String min) {
+  public Response<Set<String>> zrevrangeByLex(final String key, final String max,
+      final String min) {
     getClient(key).zrevrangeByLex(key, max, min);
     return getResponse(BuilderFactory.STRING_ZSET);
   }
@@ -1843,13 +1851,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Double> hincrByFloat(final String key, final String field, final double increment) {
+  public Response<Double> hincrByFloat(final String key, final String field,
+      final double increment) {
     getClient(key).hincrByFloat(key, field, increment);
     return getResponse(BuilderFactory.DOUBLE);
   }
 
   @Override
-  public Response<Double> hincrByFloat(final byte[] key, final byte[] field, final double increment) {
+  public Response<Double> hincrByFloat(final byte[] key, final byte[] field,
+      final double increment) {
     getClient(key).hincrByFloat(key, field, increment);
     return getResponse(BuilderFactory.DOUBLE);
   }
@@ -1907,13 +1917,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+  public Response<Long> geoadd(String key, GeoAddParams params,
+      Map<String, GeoCoordinate> memberCoordinateMap) {
     getClient(key).geoadd(key, params, memberCoordinateMap);
     return getResponse(BuilderFactory.LONG);
   }
 
   @Override
-  public Response<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  public Response<Long> geoadd(byte[] key, GeoAddParams params,
+      Map<byte[], GeoCoordinate> memberCoordinateMap) {
     getClient(key).geoadd(key, params, memberCoordinateMap);
     return getResponse(BuilderFactory.LONG);
   }
@@ -2143,13 +2155,15 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<byte[]> xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
+  public Response<byte[]> xadd(final byte[] key, final Map<byte[], byte[]> hash,
+      final XAddParams params) {
     getClient(key).xadd(key, hash, params);
     return getResponse(BuilderFactory.BYTE_ARRAY);
   }
 
   @Override
-  public Response<StreamEntryID> xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+  public Response<StreamEntryID> xadd(final String key, final Map<String, String> hash,
+      final XAddParams params) {
     getClient(key).xadd(key, hash, params);
     return getResponse(BuilderFactory.STREAM_ENTRY_ID);
   }
@@ -2236,7 +2250,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
+  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id,
+      boolean makeStream) {
     getClient(key).xgroupCreate(key, groupname, id, makeStream);
     return getResponse(BuilderFactory.STRING);
   }
@@ -2317,7 +2332,8 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname,
+      XPendingParams params) {
     getClient(key).xpending(key, groupname, params);
     return getResponse(BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }

@@ -38,7 +38,7 @@ public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest
   @BeforeClass
   public static void prepare() {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
     SSLJedisTest.setupTrustStore();
   }

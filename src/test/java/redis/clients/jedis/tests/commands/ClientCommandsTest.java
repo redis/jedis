@@ -104,7 +104,8 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   public void clientUnblock() throws InterruptedException, TimeoutException {
     long clientId = client.clientId();
     assertEquals(0, jedis.clientUnblock(clientId, UnblockType.ERROR).longValue());
-    Future<?> future = Executors.newSingleThreadExecutor().submit(() -> client.brpop(100000, "foo"));
+    Future<?> future = Executors.newSingleThreadExecutor()
+        .submit(() -> client.brpop(100000, "foo"));
 
     try {
       // to make true command already executed
@@ -112,7 +113,9 @@ public class ClientCommandsTest extends JedisCommandTestBase {
       assertEquals(1, jedis.clientUnblock(clientId, UnblockType.ERROR).longValue());
       future.get(1, TimeUnit.SECONDS);
     } catch (ExecutionException e) {
-      assertEquals("redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK", e.getMessage());
+      assertEquals(
+        "redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK",
+        e.getMessage());
     }
   }
 

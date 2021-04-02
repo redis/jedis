@@ -33,7 +33,7 @@ public class SSLJedisWithCompleteCredentialsTest {
   public static void prepare() {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
 
     SSLJedisTest.setupTrustStore();
   }
@@ -48,8 +48,8 @@ public class SSLJedisWithCompleteCredentialsTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig
-        .builder().ssl(true).build())) {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
+        DefaultJedisClientConfig.builder().ssl(true).build())) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -149,10 +149,10 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.", SSLHandshakeException.class, e.getCause()
-          .getClass());
-      assertEquals("Unexpected second inner exception.", CertificateException.class, e.getCause()
-          .getCause().getClass());
+      assertEquals("Unexpected first inner exception.", SSLHandshakeException.class,
+        e.getCause().getClass());
+      assertEquals("Unexpected second inner exception.", CertificateException.class,
+        e.getCause().getCause().getClass());
     }
   }
 
@@ -241,11 +241,12 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.", SSLException.class, e.getCause().getClass());
-      assertEquals("Unexpected second inner exception.", RuntimeException.class, e.getCause()
-          .getCause().getClass());
-      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class, e
-          .getCause().getCause().getCause().getClass());
+      assertEquals("Unexpected first inner exception.", SSLException.class,
+        e.getCause().getClass());
+      assertEquals("Unexpected second inner exception.", RuntimeException.class,
+        e.getCause().getCause().getClass());
+      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
+        e.getCause().getCause().getCause().getClass());
     }
   }
 
@@ -303,7 +304,8 @@ public class SSLJedisWithCompleteCredentialsTest {
       try {
         peerCertificate = (X509Certificate) session.getPeerCertificates()[0];
       } catch (SSLPeerUnverifiedException e) {
-        throw new IllegalStateException("The session does not contain a peer X.509 certificate.", e);
+        throw new IllegalStateException("The session does not contain a peer X.509 certificate.",
+            e);
       }
       String peerCertificateCN = getCommonName(peerCertificate);
       return hostname.equals(peerCertificateCN);

@@ -415,9 +415,12 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
 
     List<Object> exp = new ArrayList<>();
     Transaction t = jedis.multi();
-    t.get(key);     exp.add(val);
-    t.unwatch();    exp.add("OK");
-    t.get(key);     exp.add(val);
+    t.get(key);
+    exp.add(val);
+    t.unwatch();
+    exp.add("OK");
+    t.get(key);
+    exp.add(val);
     List<Object> res = t.exec();
     assertEquals(exp, res);
   }

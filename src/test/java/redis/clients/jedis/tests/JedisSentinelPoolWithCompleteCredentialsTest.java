@@ -44,7 +44,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
   @BeforeClass
   public static void prepare() throws Exception {
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Before

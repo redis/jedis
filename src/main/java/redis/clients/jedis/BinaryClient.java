@@ -50,7 +50,8 @@ public class BinaryClient extends Connection {
   /**
    * @param host
    * @deprecated This constructor will be removed in future. It can be replaced with
-   * {@link #BinaryClient(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   *             {@link #BinaryClient(java.lang.String, int)} with the host and
+   *             {@link Protocol#DEFAULT_PORT}.
    */
   @Deprecated
   public BinaryClient(final String host) {
@@ -63,7 +64,7 @@ public class BinaryClient extends Connection {
 
   /**
    * @deprecated This constructor will be removed in future. Use
-   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
+   *             {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl) {
@@ -72,7 +73,7 @@ public class BinaryClient extends Connection {
 
   /**
    * @deprecated This constructor will be removed in future. Use
-   * {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
+   *             {@link #BinaryClient(redis.clients.jedis.HostAndPort, redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public BinaryClient(final String host, final int port, final boolean ssl,
@@ -100,7 +101,7 @@ public class BinaryClient extends Connection {
   /**
    * @param user
    * @deprecated This method will be removed in future. Because this class will be restricted from
-   * holding any user data.
+   *             holding any user data.
    */
   @Deprecated
   public void setUser(final String user) {
@@ -110,7 +111,7 @@ public class BinaryClient extends Connection {
   /**
    * @param password
    * @deprecated This method will be removed in future. Because this class will be restricted from
-   * holding any user data.
+   *             holding any user data.
    */
   @Deprecated
   public void setPassword(final String password) {
@@ -490,10 +491,10 @@ public class BinaryClient extends Connection {
     sendCommand(LPOS, joinParameters(key, element, params.getByteParams()));
   }
 
-  public void lpos(final byte[] key, final byte[] element, final LPosParams params, final long count) {
-    sendCommand(
-      LPOS,
-      joinParameters(key, element, params.getByteParams(Keyword.COUNT.getRaw(), toByteArray(count))));
+  public void lpos(final byte[] key, final byte[] element, final LPosParams params,
+      final long count) {
+    sendCommand(LPOS, joinParameters(key, element,
+      params.getByteParams(Keyword.COUNT.getRaw(), toByteArray(count))));
   }
 
   public void rpop(final byte[] key) {
@@ -592,7 +593,8 @@ public class BinaryClient extends Connection {
     sendCommand(ZADD, argsArray);
   }
 
-  public void zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
+  public void zadd(final byte[] key, final Map<byte[], Double> scoreMembers,
+      final ZAddParams params) {
     ArrayList<byte[]> args = convertScoreMembersToByteArrays(scoreMembers);
     byte[][] argsArray = new byte[args.size()][];
     args.toArray(argsArray);
@@ -612,7 +614,8 @@ public class BinaryClient extends Connection {
     sendCommand(ZDIFF, args.toArray(new byte[args.size()][]));
   }
 
-  public void zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public void zaddIncr(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     sendCommand(ZADD, params.getByteParams(key, INCR.getRaw(), toByteArray(score), member));
   }
 
@@ -753,7 +756,8 @@ public class BinaryClient extends Connection {
     sendCommand(LMOVE, srcKey, dstKey, from.getRaw(), to.getRaw());
   }
 
-  public void blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+  public void blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout) {
     sendCommand(BLMOVE, srcKey, dstKey, from.getRaw(), to.getRaw(), toByteArray(timeout));
   }
 
@@ -956,7 +960,8 @@ public class BinaryClient extends Connection {
     sendCommand(ZUNION, buildByteZParams(params, true, keys));
   }
 
-  private byte[][] buildByteZParams(final ZParams params, final boolean withScores, final byte[]... keys) {
+  private byte[][] buildByteZParams(final ZParams params, final boolean withScores,
+      final byte[]... keys) {
     final List<byte[]> args = new ArrayList<>();
     args.add(Protocol.toByteArray(keys.length));
     Collections.addAll(args, keys);
@@ -1014,15 +1019,16 @@ public class BinaryClient extends Connection {
 
   public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
+    sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.getRaw(), toByteArray(offset),
+      toByteArray(count));
   }
 
   public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
     sendCommand(ZREVRANGEBYLEX, key, max, min);
   }
 
-  public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
-      final int offset, final int count) {
+  public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min, final int offset,
+      final int count) {
     sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.getRaw(), toByteArray(offset),
       toByteArray(count));
   }
@@ -1265,14 +1271,16 @@ public class BinaryClient extends Connection {
   }
 
   /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   * @deprecated Use
+   *             {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   public void restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
     sendCommand(RESTORE, key, toByteArray(ttl), serializedValue, Keyword.REPLACE.getRaw());
   }
 
-  public void restore(final byte[] key, final long ttl, final byte[] serializedValue, final RestoreParams params) {
+  public void restore(final byte[] key, final long ttl, final byte[] serializedValue,
+      final RestoreParams params) {
     if (params == null) {
       sendCommand(RESTORE, key, toByteArray(ttl), serializedValue);
     } else {
@@ -1309,7 +1317,8 @@ public class BinaryClient extends Connection {
   }
 
   public void memoryUsage(final byte[] key, final int samples) {
-    sendCommand(MEMORY, Keyword.USAGE.getRaw(), key, Keyword.SAMPLES.getRaw(), toByteArray(samples));
+    sendCommand(MEMORY, Keyword.USAGE.getRaw(), key, Keyword.SAMPLES.getRaw(),
+      toByteArray(samples));
   }
 
   public void clientKill(final byte[] ipPort) {
@@ -1377,8 +1386,8 @@ public class BinaryClient extends Connection {
       toByteArray(destinationDb), toByteArray(timeout));
   }
 
-  public void migrate(final String host, final int port, final int destinationDB,
-      final int timeout, final MigrateParams params, final byte[]... keys) {
+  public void migrate(final String host, final int port, final int destinationDB, final int timeout,
+      final MigrateParams params, final byte[]... keys) {
     byte[][] bparams = params.getByteParams();
     int len = 5 + bparams.length + 1 + keys.length;
     byte[][] args = new byte[len][];
@@ -1471,7 +1480,8 @@ public class BinaryClient extends Connection {
     geoadd(key, GeoAddParams.geoAddParams(), memberCoordinateMap);
   }
 
-  public void geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  public void geoadd(final byte[] key, final GeoAddParams params,
+      final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     List<byte[]> args = new ArrayList<>(memberCoordinateMap.size() * 3);
     args.addAll(convertGeoCoordinateMapToByteArrays(memberCoordinateMap));
 
@@ -1568,7 +1578,8 @@ public class BinaryClient extends Connection {
     sendCommand(MODULE, Keyword.UNLOAD.getRaw(), name);
   }
 
-  private ArrayList<byte[]> convertScoreMembersToByteArrays(final Map<byte[], Double> scoreMembers) {
+  private ArrayList<byte[]> convertScoreMembersToByteArrays(
+      final Map<byte[], Double> scoreMembers) {
     ArrayList<byte[]> args = new ArrayList<>(scoreMembers.size() * 2);
 
     for (Map.Entry<byte[], Double> entry : scoreMembers.entrySet()) {
@@ -1735,7 +1746,7 @@ public class BinaryClient extends Connection {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
+   *             {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   public void xread(final int count, final long block, final Map<byte[], byte[]> streams) {
@@ -1806,7 +1817,8 @@ public class BinaryClient extends Connection {
     sendCommand(XGROUP, Keyword.DESTROY.getRaw(), key, groupname);
   }
 
-  public void xgroupDelConsumer(final byte[] key, final byte[] groupname, final byte[] consumerName) {
+  public void xgroupDelConsumer(final byte[] key, final byte[] groupname,
+      final byte[] consumerName) {
     sendCommand(XGROUP, Keyword.DELCONSUMER.getRaw(), key, groupname, consumerName);
   }
 
@@ -1834,7 +1846,7 @@ public class BinaryClient extends Connection {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   *             {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
@@ -1947,7 +1959,7 @@ public class BinaryClient extends Connection {
   }
 
   private void xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
-                           XClaimParams params, byte[][] ids, boolean justId) {
+      XClaimParams params, byte[][] ids, boolean justId) {
     final byte[][] bparams = params.getByteParams();
     final int paramLength = bparams.length;
     final int idsLength = ids.length;

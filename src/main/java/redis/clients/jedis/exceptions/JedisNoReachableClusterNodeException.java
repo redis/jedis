@@ -2,7 +2,7 @@ package redis.clients.jedis.exceptions;
 
 /**
  * @deprecated This exception class will be removed in future. Use
- * {@link JedisClusterOperationException} instead.
+ *             {@link JedisClusterOperationException} instead.
  */
 public class JedisNoReachableClusterNodeException extends JedisClusterOperationException {
 

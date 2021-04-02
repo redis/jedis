@@ -315,8 +315,8 @@ public class JedisClusterCommandTest {
   @Test(expected = JedisNoReachableClusterNodeException.class)
   public void runRethrowsJedisNoReachableClusterNodeException() {
     JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
-    when(connectionHandler.getConnectionFromSlot(anyInt())).thenThrow(
-      JedisNoReachableClusterNodeException.class);
+    when(connectionHandler.getConnectionFromSlot(anyInt()))
+        .thenThrow(JedisNoReachableClusterNodeException.class);
 
     JedisClusterCommand<String> testMe = new JedisClusterCommand<String>(connectionHandler, 10,
         Duration.ZERO) {

@@ -20,9 +20,9 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
-public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommands,
-    AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands,
-    ModuleCommands {
+public class Jedis extends BinaryJedis
+    implements JedisCommands, MultiKeyCommands, AdvancedJedisCommands, ScriptingCommands,
+    BasicCommands, ClusterCommands, SentinelCommands, ModuleCommands {
 
   /**
    * @deprecated This will be private in future.
@@ -36,9 +36,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   /**
    * @deprecated This constructor will not support a host string in future. It will accept only a
-   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
-   * constructor was being used with a host, it can be replaced with
-   * {@link #Jedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   *             uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If
+   *             this constructor was being used with a host, it can be replaced with
+   *             {@link #Jedis(java.lang.String, int)} with the host and
+   *             {@link Protocol#DEFAULT_PORT}.
    * @param uri
    */
   @Deprecated
@@ -82,7 +83,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     super(host, port, timeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout) {
+  public Jedis(final String host, final int port, final int connectionTimeout,
+      final int soTimeout) {
     super(host, port, connectionTimeout, soTimeout);
   }
 
@@ -97,8 +99,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   public Jedis(final String host, final int port, final int connectionTimeout, final int soTimeout,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
     super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
   }
@@ -154,9 +156,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * @deprecated This constructor will be removed in future major release.
-   *
-   * Use {@link Jedis#Jedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
+   * @deprecated This constructor will be removed in future major release. Use
+   *             {@link Jedis#Jedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -169,7 +170,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   /**
    * COPY source destination [DB destination-db] [REPLACE]
-   *
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param db
@@ -185,7 +185,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   /**
    * COPY source destination [DB destination-db] [REPLACE]
-   *
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace
@@ -281,11 +280,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys exist.
-   * Time complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys exist. Time
+   * complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
-   *         0 if none of the specified keys exist.
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist, 0 if
+   *         none of the specified keys exist.
    */
   @Override
   public Long exists(final String... keys) {
@@ -295,8 +294,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Test if the specified key exists. The command returns true if the key exists, otherwise false is
-   * returned. Note that even keys set with an empty string as value will return true. Time
+   * Test if the specified key exists. The command returns true if the key exists, otherwise false
+   * is returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false
@@ -500,8 +499,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Alters the last access time of a key(s). A key is ignored if it does not exist.
-   * Time complexity: O(N) where N is the number of keys that will be touched.
+   * Alters the last access time of a key(s). A key is ignored if it does not exist. Time
+   * complexity: O(N) where N is the number of keys that will be touched.
    * @param keys
    * @return Integer reply: The number of keys that were touched.
    */
@@ -955,8 +954,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
-   *         not found or the field is not present.
+   * @return Return true if the hash stored at key contains the specified field. Return false if the
+   *         key is not found or the field is not present.
    */
   @Override
   public Boolean hexists(final String key, final String field) {
@@ -1527,8 +1526,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the
    * client as a multi-bulk reply (see the protocol specification for more information). If just a
-   * single key is specified, then this command produces the same result as
-   * {@link #smembers(String) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+   * single key is specified, then this command produces the same result as {@link #smembers(String)
+   * SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
    * <p>
    * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
    * is returned (since the intersection with an empty set always is an empty set).
@@ -1704,14 +1703,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+  public Long zadd(final String key, final Map<String, Double> scoreMembers,
+      final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
   }
 
   @Override
-  public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
+  public Double zaddIncr(final String key, final double score, final String member,
+      final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zaddIncr(key, score, member, params);
     return BuilderFactory.DOUBLE.build(client.getOne());
@@ -2058,6 +2059,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
+   * 
    * @see #sort(String)
    * @see #sort(String, SortingParams, String)
    * @param key
@@ -2352,7 +2354,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public KeyedListElement blpop(double timeout, String key) {
-    return blpop(timeout, new String[]{key});
+    return blpop(timeout, new String[] { key });
   }
 
   @Override
@@ -2362,7 +2364,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public KeyedListElement brpop(double timeout, String key) {
-    return brpop(timeout, new String[]{key});
+    return brpop(timeout, new String[] { key });
   }
 
   @Override
@@ -2662,23 +2664,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
+      final double min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
-      final double min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min,
+      final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
-      final String min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min,
+      final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getTupledSet();
@@ -2694,7 +2697,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
+      final String min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
     return getTupledSet();
@@ -2763,8 +2767,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the client.
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of
+   * storing the resulting sorted set, it is returned to the client.
    * @param params
    * @param keys
    * @return
@@ -3163,6 +3167,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * 3. "maxmemory"
    * 4. "0\n"
    * </pre>
+   * 
    * @param pattern
    * @return Bulk reply.
    */
@@ -3401,8 +3406,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *    22) "2"
    *    23) "quorum"
    *    24) "2"
-   *
    * </pre>
+   * 
    * @return
    */
   @Override
@@ -3424,6 +3429,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * 1) "127.0.0.1"
    * 2) "6379"
    * </pre>
+   * 
    * @param masterName
    * @return two elements list of strings : host and port.
    */
@@ -3439,6 +3445,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * redis 127.0.0.1:26381&gt; sentinel reset mymaster
    * (integer) 1
    * </pre>
+   * 
    * @param pattern
    * @return
    */
@@ -3480,6 +3487,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *    27) "slave-priority"
    *    28) "100"
    * </pre>
+   * 
    * @param masterName
    * @return
    */
@@ -3991,7 +3999,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long geoadd(final String key, final GeoAddParams params, final Map<String, GeoCoordinate> memberCoordinateMap) {
+  public Long geoadd(final String key, final GeoAddParams params,
+      final Map<String, GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
     client.geoadd(key, params, memberCoordinateMap);
     return client.getIntegerReply();
@@ -4262,7 +4271,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
+  public StreamEntryID xadd(final String key, final StreamEntryID id,
+      final Map<String, String> hash) {
     return xadd(key, id, hash, Long.MAX_VALUE, false);
   }
 
@@ -4276,7 +4286,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+  public StreamEntryID xadd(final String key, final Map<String, String> hash,
+      final XAddParams params) {
     checkIsInMultiOrPipeline();
     client.xadd(key, hash, params);
     return BuilderFactory.STREAM_ENTRY_ID.build(client.getBinaryBulkReply());
@@ -4290,7 +4301,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end) {
+  public List<StreamEntry> xrange(final String key, final StreamEntryID start,
+      final StreamEntryID end) {
     checkIsInMultiOrPipeline();
     client.xrange(key, start, end);
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
@@ -4349,7 +4361,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xread(final XReadParams xReadParams, final Map<String, StreamEntryID> streams) {
+  public List<Map.Entry<String, List<StreamEntry>>> xread(final XReadParams xReadParams,
+      final Map<String, StreamEntryID> streams) {
     checkIsInMultiOrPipeline();
     client.xread(xReadParams, streams);
 
@@ -4398,7 +4411,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
+  public Long xgroupDelConsumer(final String key, final String groupname,
+      final String consumerName) {
     checkIsInMultiOrPipeline();
     client.xgroupDelConsumer(key, groupname, consumerName);
     return client.getIntegerReply();
@@ -4471,14 +4485,16 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
-      final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
+      final StreamEntryID start, final StreamEntryID end, final int count,
+      final String consumername) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, start, end, count, consumername);
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
+  public List<StreamPendingEntry> xpending(final String key, final String groupname,
+      final XPendingParams params) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, params);
     return BuilderFactory.STREAM_PENDING_ENTRY_LIST.build(client.getObjectMultiBulkReply());

@@ -699,15 +699,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("a", jedis2.get("foo"));
     assertTrue(jedis2.pttl("foo") <= 1000);
 
-    jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized, RestoreParams.restoreParams().replace().absTtl());
+    jedis2.restore("bar", System.currentTimeMillis() + 1000, serialized,
+      RestoreParams.restoreParams().replace().absTtl());
     assertTrue(jedis2.pttl("bar") <= 1000);
 
-    jedis2.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().idleTime(1000));
+    jedis2.restore("bar1", 1000, serialized,
+      RestoreParams.restoreParams().replace().idleTime(1000));
     assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
     jedis2.close();
 
     Jedis lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
-    lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
+    lfuJedis.restore("bar1", 1000, serialized,
+      RestoreParams.restoreParams().replace().frequency(90));
     assertEquals(90, lfuJedis.objectFreq("bar1").longValue());
     lfuJedis.close();
   }

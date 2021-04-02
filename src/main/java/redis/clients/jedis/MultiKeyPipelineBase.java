@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class MultiKeyPipelineBase extends PipelineBase implements
-    MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
+public abstract class MultiKeyPipelineBase extends PipelineBase
+    implements MultiKeyBinaryRedisPipeline, MultiKeyCommandsPipeline, ClusterPipeline,
     BinaryScriptingCommandsPipeline, ScriptingCommandsPipeline, BasicRedisPipeline {
 
   protected Client client = null;
@@ -87,7 +87,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
 
   /**
    * @deprecated Use {@link #blpop(double, java.lang.String...)} or
-   * {@link #blpop(int, java.lang.String...)}.
+   *             {@link #blpop(int, java.lang.String...)}.
    */
   @Deprecated
   public Response<Map<String, String>> blpopMap(int timeout, String... keys) {
@@ -133,7 +133,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
 
   /**
    * @deprecated Use {@link #brpop(double, java.lang.String...)} or
-   * {@link #brpop(int, java.lang.String...)}.
+   *             {@link #brpop(int, java.lang.String...)}.
    */
   @Deprecated
   public Response<Map<String, String>> brpopMap(int timeout, String... keys) {
@@ -970,7 +970,8 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<byte[]>> xread(XReadParams xReadParams,
+      Map.Entry<byte[], byte[]>... streams) {
     client.xread(xReadParams, streams);
     return getResponse(BuilderFactory.BYTE_ARRAY_LIST);
   }

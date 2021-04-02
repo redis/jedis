@@ -143,7 +143,8 @@ public interface MultiKeyCommandsPipeline {
       Map<String, StreamEntryID> streams);
 
   /**
-   * @deprecated Use {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   * @deprecated Use
+   *             {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
   @Deprecated
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,

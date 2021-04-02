@@ -18,8 +18,10 @@ import redis.clients.jedis.util.JedisByteHashMap;
 public class JedisByteHashMapTest {
   private static JedisByteHashMap map = new JedisByteHashMap();
 
-  private byte[][] keys = { { 'k', 'e', 'y', '1' }, { 'k', 'e', 'y', '2' }, { 'k', 'e', 'y', '3' } };
-  private byte[][] vals = { { 'v', 'a', 'l', '1' }, { 'v', 'a', 'l', '2' }, { 'v', 'a', 'l', '3' } };
+  private byte[][] keys = { { 'k', 'e', 'y', '1' }, { 'k', 'e', 'y', '2' },
+      { 'k', 'e', 'y', '3' } };
+  private byte[][] vals = { { 'v', 'a', 'l', '1' }, { 'v', 'a', 'l', '2' },
+      { 'v', 'a', 'l', '3' } };
 
   @Before
   public void before() throws Exception {
@@ -44,7 +46,8 @@ public class JedisByteHashMapTest {
     return false;
   }
 
-  private boolean entrySetSame(Set<Map.Entry<byte[], byte[]>> s1, Set<Map.Entry<byte[], byte[]>> s2) {
+  private boolean entrySetSame(Set<Map.Entry<byte[], byte[]>> s1,
+      Set<Map.Entry<byte[], byte[]>> s2) {
     for (Map.Entry<byte[], byte[]> en1 : s1) {
       if (!entryContainsKV(s2, en1.getKey(), en1.getValue())) {
         return false;

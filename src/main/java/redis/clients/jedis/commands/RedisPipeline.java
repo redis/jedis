@@ -236,7 +236,8 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset,
+      int count);
 
   Response<Set<String>> zrevrangeByScore(String key, double max, double min);
 
@@ -250,9 +251,11 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset,
+      int count);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
+  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset,
+      int count);
 
   Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop);
 
@@ -348,7 +351,8 @@ public interface RedisPipeline {
 
   Response<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
 
-  Response<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap);
+  Response<Long> geoadd(String key, GeoAddParams params,
+      Map<String, GeoCoordinate> memberCoordinateMap);
 
   Response<Double> geodist(String key, String member1, String member2);
 
@@ -384,7 +388,8 @@ public interface RedisPipeline {
 
   Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash);
 
-  Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+  Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen,
+      boolean approximateLength);
 
   Response<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params);
 
@@ -396,33 +401,34 @@ public interface RedisPipeline {
 
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
-  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+  Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start,
+      int count);
 
-  Response<Long> xack(String key, String group,  StreamEntryID... ids);
+  Response<Long> xack(String key, String group, StreamEntryID... ids);
 
-  Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
+  Response<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream);
 
-  Response<String> xgroupSetID( String key, String groupname, StreamEntryID id);
+  Response<String> xgroupSetID(String key, String groupname, StreamEntryID id);
 
-  Response<Long> xgroupDestroy( String key, String groupname);
+  Response<Long> xgroupDestroy(String key, String groupname);
 
-  Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
+  Response<Long> xgroupDelConsumer(String key, String groupname, String consumername);
 
   Response<StreamPendingSummary> xpending(String key, String groupname);
 
-  Response<List<StreamPendingEntry>> xpending(String key, String groupname,
-      StreamEntryID start, StreamEntryID end, int count, String consumername);
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start,
+      StreamEntryID end, int count, String consumername);
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params);
 
-  Response<Long> xdel( String key, StreamEntryID... ids);
+  Response<Long> xdel(String key, StreamEntryID... ids);
 
-  Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
+  Response<Long> xtrim(String key, long maxLen, boolean approximateLength);
 
   Response<Long> xtrim(String key, XTrimParams params);
 
-  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime,
-      long newIdleTime, int retries, boolean force, StreamEntryID... ids);
+  Response<List<StreamEntry>> xclaim(String key, String group, String consumername,
+      long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   Response<List<StreamEntry>> xclaim(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids);
@@ -440,7 +446,8 @@ public interface RedisPipeline {
 
   Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
+  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset,
+      int count);
 
   Response<Long> objectRefcount(String key);
 

@@ -201,7 +201,8 @@ public class ShardedJedisTest {
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 1));
     shards.add(new JedisShardInfo("localhost", Protocol.DEFAULT_PORT + 2));
-    Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards, Hashing.MD5);
+    Sharded<Jedis, JedisShardInfo> sharded = new Sharded<Jedis, JedisShardInfo>(shards,
+        Hashing.MD5);
     int shard_6379 = 0;
     int shard_6380 = 0;
     int shard_6381 = 0;

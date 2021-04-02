@@ -20,7 +20,8 @@ public class JedisRedirectionException extends JedisDataException {
     this.slot = slot;
   }
 
-  public JedisRedirectionException(String message, Throwable cause, HostAndPort targetNode, int slot) {
+  public JedisRedirectionException(String message, Throwable cause, HostAndPort targetNode,
+      int slot) {
     super(message, cause);
     this.targetNode = targetNode;
     this.slot = slot;

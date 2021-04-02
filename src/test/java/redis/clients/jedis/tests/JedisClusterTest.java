@@ -60,8 +60,8 @@ public class JedisClusterTest {
   private static final int DEFAULT_TIMEOUT = 2000;
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final JedisPoolConfig DEFAULT_POOL_CONFIG = new JedisPoolConfig();
-  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
-      = DefaultJedisClientConfig.builder().password("cluster").build();
+  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG = DefaultJedisClientConfig
+      .builder().password("cluster").build();
 
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -523,11 +523,11 @@ public class JedisClusterTest {
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
       node1.clusterKeySlot("{user1000}.following").intValue());
     assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
-        node1.clusterKeySlot("foo{bar}{zap}").intValue());
+      node1.clusterKeySlot("foo{bar}{zap}").intValue());
     assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
-        node1.clusterKeySlot("foo{}{bar}").intValue());
+      node1.clusterKeySlot("foo{}{bar}").intValue());
     assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"),
-        node1.clusterKeySlot("foo{{bar}}zap").intValue());
+      node1.clusterKeySlot("foo{{bar}}zap").intValue());
   }
 
   @Test
@@ -631,9 +631,11 @@ public class JedisClusterTest {
   @Test
   public void testJedisClusterTimeoutWithConfig() {
     HostAndPort hp = nodeInfo1;
-    try (JedisCluster jc = new JedisCluster(hp, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(4000).socketTimeoutMillis(4000).password("cluster").build(),
-        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+    try (
+        JedisCluster jc = new JedisCluster(hp,
+            DefaultJedisClientConfig.builder().connectionTimeoutMillis(4000)
+                .socketTimeoutMillis(4000).password("cluster").build(),
+            DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
       jc.getClusterNodes().values().forEach(pool -> {
         try (Jedis jedis = pool.getResource()) {
@@ -645,8 +647,8 @@ public class JedisClusterTest {
   }
 
   @Test
-  public void testJedisClusterRunsWithMultithreaded() throws InterruptedException,
-      ExecutionException, IOException {
+  public void testJedisClusterRunsWithMultithreaded()
+      throws InterruptedException, ExecutionException, IOException {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     final JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
@@ -747,8 +749,8 @@ public class JedisClusterTest {
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
 
-    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       String foo = "foo";
       byte[] bfoo = new byte[] { 0x0b, 0x0f, 0x00, 0x00 };
@@ -804,8 +806,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(nodeInfo2);
     jedisClusterNode.add(nodeInfo3);
 
-    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       // prepare datas
       Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
@@ -831,8 +833,8 @@ public class JedisClusterTest {
     jedisClusterNode.add(nodeInfo2);
     jedisClusterNode.add(nodeInfo3);
 
-    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT,
-        DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
 
       // prepare datas
       Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();

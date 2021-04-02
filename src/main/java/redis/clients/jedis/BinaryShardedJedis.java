@@ -25,8 +25,8 @@ import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Sharded;
 
-public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
-    BinaryJedisCommands {
+public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo>
+    implements BinaryJedisCommands {
 
   private static final Logger logger = LoggerFactory.getLogger(BinaryShardedJedis.class);
 
@@ -558,13 +558,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
+  public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers,
+      final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers, params);
   }
 
   @Override
-  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zaddIncr(key, score, member, params);
   }
@@ -774,14 +776,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
+      final double min) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min);
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
-      final double min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
   }
@@ -800,14 +803,15 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
+      final byte[] min) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min);
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
-      final byte[] min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min,
+      final int offset, final int count) {
     Jedis j = getShard(key);
     return j.zrevrangeByScoreWithScores(key, max, min, offset, count);
   }
@@ -996,7 +1000,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  public Long geoadd(byte[] key, GeoAddParams params,
+      Map<byte[], GeoCoordinate> memberCoordinateMap) {
     Jedis j = getShard(key);
     return j.geoadd(key, params, memberCoordinateMap);
   }
@@ -1242,7 +1247,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+  public List<Object> xpending(final byte[] key, final byte[] groupname,
+      final XPendingParams params) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname, params);
   }

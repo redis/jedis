@@ -28,7 +28,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+      RedisVersionUtil.checkRedisMajorVersionNumber(6));
   }
 
   @Test
@@ -249,8 +249,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
       assertNull(result);
-      assertEquals(
-        "NOPERM this user has no permissions to run the 'set' command or its subcommand",
+      assertEquals("NOPERM this user has no permissions to run the 'set' command or its subcommand",
         e.getMessage());
     }
 
@@ -332,7 +331,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     // generate an error (antirez user does not have the permission to access foo)
     try {
       jedis.get("foo");
-      fail("Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
+      fail(
+        "Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
     } catch (JedisAccessControlException e) {
     }
 
@@ -356,7 +356,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
       // generate an error (antirez user does not have the permission to access foo)
       try {
         jedis.get("foo");
-        fail("Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
+        fail(
+          "Should have thrown an JedisAccessControlException: user does not have the permission to get(\"foo\")");
       } catch (JedisAccessControlException e) {
       }
     }
@@ -371,7 +372,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.auth("antirez", "foo");
     try {
       jedis.set("somekeynotallowed", "1234");
-      fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"somekeynotallowed\", \"1234\")");
+      fail(
+        "Should have thrown an JedisAccessControlException: user does not have the permission to set(\"somekeynotallowed\", \"1234\")");
     } catch (JedisAccessControlException e) {
     }
 
@@ -390,7 +392,8 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     t.incr("foo");
     try {
       t.exec();
-      fail("Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
+      fail(
+        "Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
     } catch (Exception e) {
     }
     t.close();
@@ -406,13 +409,15 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     for (int i = 0; i < 5; i++) {
       try {
         jedis.incr("foo");
-        fail("Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
+        fail(
+          "Should have thrown an JedisAccessControlException: user does not have the permission to incr(\"foo\")");
       } catch (JedisAccessControlException e) {
       }
     }
     try {
       jedis.set("foo-2", "bar");
-      fail("Should have thrown an JedisAccessControlException: user does not have the permission to set(\"foo-2\", \"bar\")");
+      fail(
+        "Should have thrown an JedisAccessControlException: user does not have the permission to set(\"foo-2\", \"bar\")");
     } catch (JedisAccessControlException e) {
     }
 
@@ -463,9 +468,11 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   public void aclLoadTest() {
     try {
       jedis.aclLoad();
-      fail("Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
+      fail(
+        "Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
     } catch (JedisDataException e) {
-      assertTrue(e.getMessage().contains("ERR This Redis instance is not configured to use an ACL file."));
+      assertTrue(
+        e.getMessage().contains("ERR This Redis instance is not configured to use an ACL file."));
     }
 
     // TODO test with ACL file
@@ -475,9 +482,11 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
   public void aclSaveTest() {
     try {
       jedis.aclSave();
-      fail("Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
+      fail(
+        "Should throw a JedisDataException: ERR This Redis instance is not configured to use an ACL file...");
     } catch (JedisDataException e) {
-      assertTrue(e.getMessage().contains("ERR This Redis instance is not configured to use an ACL file."));
+      assertTrue(
+        e.getMessage().contains("ERR This Redis instance is not configured to use an ACL file."));
     }
 
     // TODO test with ACL file

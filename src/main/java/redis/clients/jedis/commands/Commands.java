@@ -433,7 +433,8 @@ public interface Commands {
   }
 
   /**
-   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   * @deprecated Use
+   *             {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   void restoreReplace(String key, long ttl, byte[] serializedValue);
@@ -468,7 +469,8 @@ public interface Commands {
 
   void migrate(String host, int port, String key, int destinationDB, int timeout);
 
-  void migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+  void migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      String... keys);
 
   void clientKill(String ipPort);
 
@@ -492,7 +494,8 @@ public interface Commands {
 
   void memoryDoctor();
 
-  void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+  void xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen,
+      boolean approximateLength);
 
   void xadd(String key, Map<String, String> hash, XAddParams params);
 
@@ -503,7 +506,8 @@ public interface Commands {
   void xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
   /**
-   * @deprecated Use {@link #xrange(java.lang.String, redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
+   * @deprecated Use
+   *             {@link #xrange(java.lang.String, redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
    */
   @Deprecated
   void xrange(String key, StreamEntryID start, StreamEntryID end, long count);
@@ -514,7 +518,7 @@ public interface Commands {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
+   *             {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
   @Deprecated
   void xread(int count, long block, Entry<String, StreamEntryID>... streams);
@@ -539,16 +543,19 @@ public interface Commands {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   *             {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
   @Deprecated
-  void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck, Entry<String, StreamEntryID>... streams);
+  void xreadGroup(String groupname, String consumer, int count, long block, boolean noAck,
+      Entry<String, StreamEntryID>... streams);
 
-  void xreadGroup(String groupname, String consumer, XReadGroupParams params, Map<String, StreamEntryID> streams);
+  void xreadGroup(String groupname, String consumer, XReadGroupParams params,
+      Map<String, StreamEntryID> streams);
 
   void xpending(String key, String groupname);
 
-  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername);
+  void xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count,
+      String consumername);
 
   void xpending(String key, String groupname, XPendingParams params);
 
@@ -561,9 +568,9 @@ public interface Commands {
   void xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
 
-  void xinfoStream (String key);
+  void xinfoStream(String key);
 
-  void xinfoGroup (String key);
+  void xinfoGroup(String key);
 
-  void xinfoConsumers (String key, String group);
+  void xinfoConsumers(String key, String group);
 }

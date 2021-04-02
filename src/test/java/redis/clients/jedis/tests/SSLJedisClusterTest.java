@@ -169,7 +169,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       // since the socket factory fails the hostname verification
       assertEquals("No reachable node in cluster.", e.getMessage());
     }
-    
+
     try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379), DEFAULT_TIMEOUT,
         DEFAULT_TIMEOUT, DEFAULT_REDIRECTIONS, "cluster", null, DEFAULT_POOL_CONFIG, true, null,
         null, localhostVerifier, portMap)) {

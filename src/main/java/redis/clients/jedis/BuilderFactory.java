@@ -544,8 +544,8 @@ public final class BuilderFactory {
               // coordinate
               List<Object> coord = (List<Object>) info;
 
-              resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
-                  DOUBLE.build(coord.get(1))));
+              resp.setCoordinate(
+                new GeoCoordinate(DOUBLE.build(coord.get(0)), DOUBLE.build(coord.get(1))));
             } else if (info instanceof Long) {
               // score
               resp.setRawScore(LONG.build(info));
@@ -723,7 +723,7 @@ public final class BuilderFactory {
       List<Object> objectList = (List<Object>) data;
       List<StreamEntryID> responses = new ArrayList<>(objectList.size());
       if (!objectList.isEmpty()) {
-        for(Object object : objectList) {
+        for (Object object : objectList) {
           responses.add(STREAM_ENTRY_ID.build(object));
         }
       }
@@ -802,8 +802,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
-      = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
+  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override
     public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
       if (data == null) {
@@ -844,8 +843,8 @@ public final class BuilderFactory {
         String consumerName = SafeEncoder.encode((byte[]) stream.get(1));
         long idleTime = BuilderFactory.LONG.build(stream.get(2));
         long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
-        result.add(new StreamPendingEntry(new StreamEntryID(id), consumerName, idleTime,
-            deliveredTimes));
+        result.add(
+          new StreamPendingEntry(new StreamEntryID(id), consumerName, idleTime, deliveredTimes));
       }
       return result;
     }
@@ -925,8 +924,8 @@ public final class BuilderFactory {
 
         Iterator<Object> groupInfoIterator = groupInfo.iterator();
 
-        StreamGroupInfo streamGroupInfo = new StreamGroupInfo(createMapFromDecodingFunctions(
-          groupInfoIterator, mappingFunctions));
+        StreamGroupInfo streamGroupInfo = new StreamGroupInfo(
+            createMapFromDecodingFunctions(groupInfoIterator, mappingFunctions));
         list.add(streamGroupInfo);
 
       }
@@ -1001,9 +1000,11 @@ public final class BuilderFactory {
       List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
       Map<String, Long> map = new HashMap<>(consumerObjList.size());
       for (List<Object> consumerObj : consumerObjList) {
-        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
+        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)),
+          Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
       }
-      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId),
+          map);
     }
 
     @Override

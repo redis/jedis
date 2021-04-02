@@ -31,17 +31,18 @@ public class JedisPool extends JedisPoolAbstract {
   /**
    * @param url
    * @deprecated This constructor will not accept a host string in future. It will accept only a uri
-   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
+   *             string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
    */
   @Deprecated
   public JedisPool(final String url) {
     URI uri = URI.create(url);
     if (JedisURIHelper.isValid(uri)) {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null));
+      initPool(new GenericObjectPoolConfig<Jedis>(),
+        new JedisFactory(uri, Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null));
     } else {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(url, Protocol.DEFAULT_PORT,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
+      initPool(new GenericObjectPoolConfig<Jedis>(),
+        new JedisFactory(url, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
+            Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
     }
   }
 
@@ -51,20 +52,20 @@ public class JedisPool extends JedisPoolAbstract {
    * @param sslParameters
    * @param hostnameVerifier
    * @deprecated This constructor will not accept a host string in future. It will accept only a uri
-   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
+   *             string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
    */
   @Deprecated
   public JedisPool(final String url, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     URI uri = URI.create(url);
     if (JedisURIHelper.isValid(uri)) {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory,
-          sslParameters, hostnameVerifier));
+      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri, Protocol.DEFAULT_TIMEOUT,
+          Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory, sslParameters, hostnameVerifier));
     } else {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(url, Protocol.DEFAULT_PORT,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null,
-          false, null, null, null));
+      initPool(new GenericObjectPoolConfig<Jedis>(),
+        new JedisFactory(url, Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT,
+            Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null, false, null, null,
+            null));
     }
   }
 
@@ -154,9 +155,8 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host,
-      final int port, final int timeout, final boolean ssl,
-      final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
-      final HostnameVerifier hostnameVerifier) {
+      final int port, final int timeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(poolConfig, host, port, timeout, null, ssl, sslSocketFactory, sslParameters,
         hostnameVerifier);
   }
@@ -177,7 +177,8 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host, int port,
-      int timeout, final String user, final String password, final int database, final boolean ssl) {
+      int timeout, final String user, final String password, final int database,
+      final boolean ssl) {
     this(poolConfig, host, port, timeout, user, password, database, null, ssl);
   }
 
@@ -214,8 +215,8 @@ public class JedisPool extends JedisPoolAbstract {
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host, int port,
       int timeout, final String password, final int database, final String clientName,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
     this(poolConfig, host, port, timeout, timeout, password, database, clientName, ssl,
         sslSocketFactory, sslParameters, hostnameVerifier);
   }
@@ -224,8 +225,8 @@ public class JedisPool extends JedisPoolAbstract {
       final int connectionTimeout, final int soTimeout, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, password,
-        database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
+    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, password, database,
+        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host, int port,
@@ -249,11 +250,12 @@ public class JedisPool extends JedisPoolAbstract {
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host, int port,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final int database, final String clientName,
-      final boolean ssl, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, infiniteSoTimeout,
-        user, password, database, clientName, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier));
+      final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
+    super(poolConfig,
+        new JedisFactory(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user,
+            password, database, clientName, ssl, sslSocketFactory, sslParameters,
+            hostnameVerifier));
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final HostAndPort hostAndPort,
@@ -261,8 +263,8 @@ public class JedisPool extends JedisPoolAbstract {
     super(poolConfig, new JedisFactory(hostAndPort, clientConfig));
   }
 
-  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final JedisSocketFactory jedisSocketFactory,
-      final JedisClientConfig clientConfig) {
+  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig,
+      final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     super(poolConfig, new JedisFactory(jedisSocketFactory, clientConfig));
   }
 
@@ -277,8 +279,8 @@ public class JedisPool extends JedisPoolAbstract {
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host, int port,
       final int connectionTimeout, final int soTimeout, final String password, final int database,
       final String clientName) {
-    super(poolConfig, new JedisFactory(host, port, connectionTimeout, soTimeout, password,
-        database, clientName));
+    super(poolConfig,
+        new JedisFactory(host, port, connectionTimeout, soTimeout, password, database, clientName));
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host, int port,
@@ -312,8 +314,8 @@ public class JedisPool extends JedisPoolAbstract {
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host,
       final int port, final int connectionTimeout, final int soTimeout, final String user,
       final String password, final int database, final String clientName, final boolean ssl) {
-    this(poolConfig, host, port, connectionTimeout, soTimeout, user, password, database,
-        clientName, ssl, null, null, null);
+    this(poolConfig, host, port, connectionTimeout, soTimeout, user, password, database, clientName,
+        ssl, null, null, null);
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final URI uri) {
@@ -327,13 +329,14 @@ public class JedisPool extends JedisPoolAbstract {
         hostnameVerifier);
   }
 
-  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final URI uri, final int timeout) {
+  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final URI uri,
+      final int timeout) {
     this(poolConfig, uri, timeout, timeout);
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final URI uri,
-      final int timeout, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final int timeout, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
+      final HostnameVerifier hostnameVerifier) {
     this(poolConfig, uri, timeout, timeout, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 

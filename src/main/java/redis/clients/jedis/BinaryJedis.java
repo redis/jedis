@@ -48,9 +48,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * @deprecated This constructor will not support a host string in future. It will accept only a
-   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
-   * constructor was being used with a host, it can be replaced with
-   * {@link #BinaryJedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   *             uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If
+   *             this constructor was being used with a host, it can be replaced with
+   *             {@link #BinaryJedis(java.lang.String, int)} with the host and
+   *             {@link Protocol#DEFAULT_PORT}.
    * @param uriString
    */
   @Deprecated
@@ -122,9 +123,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public BinaryJedis(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(host, port, DefaultJedisClientConfig.builder().ssl(ssl)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build());
+    this(host, port, DefaultJedisClientConfig.builder().ssl(ssl).sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final String host, final int port, final int timeout) {
@@ -143,52 +143,50 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout) {
-    this(host, port, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout).build());
+    this(host, port, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout) {
-    this(host, port, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
-        .blockingSocketTimeoutMillis(infiniteSoTimeout).build());
+    this(host, port, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl) {
-    this(host, port, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout).ssl(ssl)
-        .build());
+    this(host, port, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+        .socketTimeoutMillis(soTimeout).ssl(ssl).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final boolean ssl, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    this(host, port, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout).ssl(ssl)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build());
+    this(host, port,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).ssl(ssl).sslSocketFactory(sslSocketFactory)
+            .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final String host, final int port, final int connectionTimeout,
       final int soTimeout, final int infiniteSoTimeout, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(host, port, DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
-        .blockingSocketTimeoutMillis(infiniteSoTimeout).ssl(ssl)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build());
+    this(host, port,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).ssl(ssl)
+            .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+            .hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final JedisShardInfo shardInfo) {
-    this(shardInfo.getHost(), shardInfo.getPort(), DefaultJedisClientConfig.builder()
-        .connectionTimeoutMillis(shardInfo.getConnectionTimeout())
-        .socketTimeoutMillis(shardInfo.getSoTimeout()).user(shardInfo.getUser())
-        .password(shardInfo.getPassword()).database(shardInfo.getDb())
-        .ssl(shardInfo.getSsl()).sslSocketFactory(shardInfo.getSslSocketFactory())
-        .sslParameters(shardInfo.getSslParameters())
-        .hostnameVerifier(shardInfo.getHostnameVerifier()).build());
+    this(shardInfo.getHost(), shardInfo.getPort(),
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(shardInfo.getConnectionTimeout())
+            .socketTimeoutMillis(shardInfo.getSoTimeout()).user(shardInfo.getUser())
+            .password(shardInfo.getPassword()).database(shardInfo.getDb()).ssl(shardInfo.getSsl())
+            .sslSocketFactory(shardInfo.getSslSocketFactory())
+            .sslParameters(shardInfo.getSslParameters())
+            .hostnameVerifier(shardInfo.getHostnameVerifier()).build());
   }
 
   public BinaryJedis(URI uri) {
@@ -219,45 +217,47 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(uri, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
-        .socketTimeoutMillis(soTimeout).sslSocketFactory(sslSocketFactory)
-        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
+    this(uri,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).sslSocketFactory(sslSocketFactory)
+            .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final URI uri, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    this(uri, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
-        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build());
+    this(uri,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+            .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+            .hostnameVerifier(hostnameVerifier).build());
   }
 
   public BinaryJedis(final URI uri, JedisClientConfig config) {
     if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+      throw new InvalidURIException(
+          String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
-    client = new Client(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
-        .builder().connectionTimeoutMillis(config.getConnectionTimeoutMillis())
-        .socketTimeoutMillis(config.getSocketTimeoutMillis())
-        .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
-        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
-        .ssl(JedisURIHelper.isRedisSSLScheme(uri))
-        .sslSocketFactory(config.getSslSocketFactory())
-        .sslParameters(config.getSslParameters())
-        .hostnameVerifier(config.getHostnameVerifier()).build());
+    client = new Client(new HostAndPort(uri.getHost(), uri.getPort()),
+        DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
+            .socketTimeoutMillis(config.getSocketTimeoutMillis())
+            .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
+            .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+            .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+            .ssl(JedisURIHelper.isRedisSSLScheme(uri))
+            .sslSocketFactory(config.getSslSocketFactory()).sslParameters(config.getSslParameters())
+            .hostnameVerifier(config.getHostnameVerifier()).build());
     initializeFromURI(uri);
   }
 
   private static Client createClientFromURI(URI uri) {
     if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+      throw new InvalidURIException(
+          String.format("Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
-    return new Client(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
-        .builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+    return new Client(new HostAndPort(uri.getHost(), uri.getPort()),
+        DefaultJedisClientConfig.builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
   private void initializeFromURI(URI uri) {
@@ -277,16 +277,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * @deprecated This constructor will be removed in future major release.
-   *
-   * Use {@link BinaryJedis#BinaryJedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
+   * @deprecated This constructor will be removed in future major release. Use
+   *             {@link BinaryJedis#BinaryJedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
    */
   @Deprecated
   public BinaryJedis(final JedisSocketFactory jedisSocketFactory) {
     client = new Client(jedisSocketFactory);
   }
 
-  public BinaryJedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
+  public BinaryJedis(final JedisSocketFactory jedisSocketFactory,
+      final JedisClientConfig clientConfig) {
     client = new Client(jedisSocketFactory);
     initializeFromClientConfig(clientConfig);
   }
@@ -341,7 +341,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * COPY source destination [DB destination-db] [REPLACE]
-   *
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param db
@@ -357,7 +356,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * COPY source destination [DB destination-db] [REPLACE]
-   *
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace
@@ -474,11 +472,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys exist.
-   * Time complexity: O(N)
+   * Test if the specified keys exist. The command returns the number of keys exist. Time
+   * complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
-   *         0 if none of the specified keys exist.
+   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist, 0 if
+   *         none of the specified keys exist.
    */
   @Override
   public Long exists(final byte[]... keys) {
@@ -488,8 +486,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Test if the specified key exists. The command returns true if the key exists, otherwise false is
-   * returned. Note that even keys set with an empty string as value will return true. Time
+   * Test if the specified key exists. The command returns true if the key exists, otherwise false
+   * is returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
    * @return Boolean reply, true if the key exists, otherwise false
@@ -590,8 +588,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Returns all the keys matching the glob-style pattern as space separated strings. For example if
-   * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
-   * "foo foobar".
+   * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return "foo
+   * foobar".
    * <p>
    * Note that while the time complexity for this operation is O(n) the constant times are pretty
    * low. For example Redis running on an entry level laptop can scan a 1 million keys database in
@@ -683,9 +681,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
-   * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
-   * not stop the flow of time as Redis stores on disk the time when the key will no longer be
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all
+   * the other aspects of the dataset. Saving a dataset containing expires and stopping the server
+   * does not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining seconds.
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
@@ -708,9 +706,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * EXPIREAT works exactly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
-   * seconds representing the Time To Live of the key as a second argument (that is a relative way
-   * of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
+   * EXPIREAT works exactly like {@link #expire(byte[], int) EXPIRE} but instead to get the number
+   * of seconds representing the Time To Live of the key as a second argument (that is a relative
+   * way of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
    * seconds elapsed since 1 Gen 1970).
    * <p>
    * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
@@ -754,8 +752,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Alters the last access time of a key(s). A key is ignored if it does not exist.
-   * Time complexity: O(N) where N is the number of keys that will be touched.
+   * Alters the last access time of a key(s). A key is ignored if it does not exist. Time
+   * complexity: O(N) where N is the number of keys that will be touched.
    * @param keys
    * @return Integer reply: The number of keys that were touched.
    */
@@ -1261,8 +1259,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
-   *         not found or the field is not present.
+   * @return Return true if the hash stored at key contains the specified field. Return false if the
+   *         key is not found or the field is not present.
    */
   @Override
   public Boolean hexists(final byte[] key, final byte[] field) {
@@ -1620,8 +1618,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @see #lpos(byte[], byte[])
    * @param key
    * @param element
-   * @return Integer Reply, specifically: The index of first matching element in the list. Value will
-   * be 'nil' when the element is not present in the list.
+   * @return Integer Reply, specifically: The index of first matching element in the list. Value
+   *         will be 'nil' when the element is not present in the list.
    */
   @Override
   public Long lpos(final byte[] key, final byte[] element) {
@@ -1631,17 +1629,17 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * In case there are multiple matches Rank option specifies the "rank" of the element to return.
-   * A rank of 1 returns the first match, 2 to return the second match, and so forth.
-   * If list `foo` has elements ("a","b","c","1","2","3","c","c"), The function call to get the
-   * index of second occurrence of "c" will be as follows lpos("foo","c", LPosParams.lPosParams().rank(2)).
+   * In case there are multiple matches Rank option specifies the "rank" of the element to return. A
+   * rank of 1 returns the first match, 2 to return the second match, and so forth. If list `foo`
+   * has elements ("a","b","c","1","2","3","c","c"), The function call to get the index of second
+   * occurrence of "c" will be as follows lpos("foo","c", LPosParams.lPosParams().rank(2)).
    * <p>
-   * Maxlen option compares the element provided only with a given maximum number of list items.
-   * A value of 1000 will make sure that the command performs only 1000 comparisons. The
-   * comparison is made for the first part or the last part depending on the fact we use a positive or
-   * negative rank.
-   * Following is how we could use the Maxlen option lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2)).
-   * @see   #lpos(byte[], byte[], LPosParams)
+   * Maxlen option compares the element provided only with a given maximum number of list items. A
+   * value of 1000 will make sure that the command performs only 1000 comparisons. The comparison is
+   * made for the first part or the last part depending on the fact we use a positive or negative
+   * rank. Following is how we could use the Maxlen option lpos("foo", "b",
+   * LPosParams.lPosParams().rank(1).maxlen(2)).
+   * @see #lpos(byte[], byte[], LPosParams)
    * @param key
    * @param element
    * @param params
@@ -1656,9 +1654,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Count will return list of position of all the first N matching elements. It is possible to
-   * specify 0 as the number of matches, as a way to tell the command we want all the matches
-   * found returned as an array of indexes. When count is used and no match is found, an empty list
-   * is returned.
+   * specify 0 as the number of matches, as a way to tell the command we want all the matches found
+   * returned as an array of indexes. When count is used and no match is found, an empty list is
+   * returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
    * @see #lpos(byte[], byte[], LPosParams, long)
@@ -1666,7 +1664,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param element
    * @param params
    * @param count
-   * @return Returns value will be a list containing position of the matching elements inside the list.
+   * @return Returns value will be a list containing position of the matching elements inside the
+   *         list.
    */
   @Override
   public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params,
@@ -1845,8 +1844,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Boolean reply, specifically: true if the element is a member of the set false if the element
-   *         is not a member of the set OR if the key does not exist
+   * @return Boolean reply, specifically: true if the element is a member of the set false if the
+   *         element is not a member of the set OR if the key does not exist
    */
   @Override
   public Boolean sismember(final byte[] key, final byte[] member) {
@@ -1861,7 +1860,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Time complexity O(N) where N is the number of elements being checked for membership
    * @param key
    * @param members
-   * @return List representing the membership of the given elements, in the same order as they are requested.
+   * @return List representing the membership of the given elements, in the same order as they are
+   *         requested.
    */
   @Override
   public List<Boolean> smismember(final byte[] key, final byte[]... members) {
@@ -1874,8 +1874,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the
    * client as a multi-bulk reply (see the protocol specification for more information). If just a
-   * single key is specified, then this command produces the same result as
-   * {@link #smembers(byte[]) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+   * single key is specified, then this command produces the same result as {@link #smembers(byte[])
+   * SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
    * <p>
    * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
    * is returned (since the intersection with an empty set always is an empty set).
@@ -1893,8 +1893,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * This commanad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
-   * the resulting set is stored as dstkey.
+   * This commanad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being
+   * returned the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
@@ -2049,14 +2049,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
+  public Long zadd(final byte[] key, final Map<byte[], Double> scoreMembers,
+      final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zadd(key, scoreMembers, params);
     return client.getIntegerReply();
   }
 
   @Override
-  public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
+  public Double zaddIncr(final byte[] key, final double score, final byte[] member,
+      final ZAddParams params) {
     checkIsInMultiOrPipeline();
     client.zaddIncr(key, score, member, params);
     return BuilderFactory.DOUBLE.build(client.getOne());
@@ -2241,8 +2243,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Returns the scores associated with the specified members in the sorted set stored at key.
-   * For every member that does not exist in the sorted set, a nil value is returned.
+   * Returns the scores associated with the specified members in the sorted set stored at key. For
+   * every member that does not exist in the sorted set, a nil value is returned.
    * <p>
    * <b>Time complexity:</b> O(N) where N is the number of members being requested.
    * @param key
@@ -2403,6 +2405,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
+   * 
    * @see #sort(byte[])
    * @see #sort(byte[], SortingParams, byte[])
    * @param key
@@ -2469,7 +2472,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Pop an element from a list, push it to another list and return it; or block until one is available
+   * Pop an element from a list, push it to another list and return it; or block until one is
+   * available
    * @param srcKey
    * @param dstKey
    * @param from
@@ -2478,7 +2482,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+  public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout) {
     checkIsInMultiOrPipeline();
     client.blmove(srcKey, dstKey, from, to, timeout);
     client.setTimeoutInfinite();
@@ -2717,9 +2722,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Request for authentication with a Redis Server that is using ACL where user are authenticated with
-   * username and password.
-   * See https://redis.io/topics/acl
+   * Request for authentication with a Redis Server that is using ACL where user are authenticated
+   * with username and password. See https://redis.io/topics/acl
    * @param user
    * @param password
    * @return
@@ -3072,30 +3076,32 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
+      final double min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
-      final double min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
+      final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
+      final byte[] min) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min);
     return getTupledSet();
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
-      final byte[] min, final int offset, final int count) {
+  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min,
+      final int offset, final int count) {
     checkIsInMultiOrPipeline();
     client.zrevrangeByScoreWithScores(key, max, min, offset, count);
     return getTupledSet();
@@ -3164,8 +3170,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the client.
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of
+   * storing the resulting sorted set, it is returned to the client.
    * @param params
    * @param keys
    * @return
@@ -3183,8 +3189,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * and the other (optional) arguments.
    * <p>
    * As the terms imply, the {@link #zinterstore(byte[], byte[]...)} ZINTERSTORE} command requires
-   * an element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...)} command inserts all elements across all inputs.
+   * an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link #zunionstore(byte[], byte[]...)} command inserts all elements across all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
@@ -3219,8 +3225,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * and the other (optional) arguments.
    * <p>
    * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+   * element to be present in each of the given inputs to be inserted in the result. The
+   * {@link #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all
+   * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
@@ -3284,8 +3291,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * and the other (optional) arguments.
    * <p>
    * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+   * element to be present in each of the given inputs to be inserted in the result. The
+   * {@link #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all
+   * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
@@ -3320,8 +3328,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * and the other (optional) arguments.
    * <p>
    * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+   * element to be present in each of the given inputs to be inserted in the result. The
+   * {@link #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all
+   * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
@@ -3430,8 +3439,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed
-   * information about the Redis Append Only File check the <a
-   * href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
+   * information about the Redis Append Only File check the
+   * <a href="http://redis.io/topics/persistence#append-only-file">Append Only File Howto</a>.
    * <p>
    * BGREWRITEAOF rewrites the Append Only File in background when it gets too big. The Redis Append
    * Only File is a Journal, so every operation modifying the dataset is logged in the Append Only
@@ -3610,6 +3619,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * 3. "maxmemory"
    * 4. "0\n"
    * </pre>
+   * 
    * @param pattern
    * @return Bulk reply.
    */
@@ -4483,7 +4493,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
+  public Long geoadd(final byte[] key, final GeoAddParams params,
+      final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
     client.geoadd(key, params, memberCoordinateMap);
     return client.getIntegerReply();
@@ -4909,7 +4920,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+  public List<Object> xpending(final byte[] key, final byte[] groupname,
+      final XPendingParams params) {
     checkIsInMultiOrPipeline();
     client.xpending(key, groupname, params);
     return client.getObjectMultiBulkReply();

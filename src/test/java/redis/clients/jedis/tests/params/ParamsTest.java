@@ -12,10 +12,8 @@ public class ParamsTest {
   @Test
   public void toStringTest() {
 
-    ClientKillParams clientKillParams = ClientKillParams.clientKillParams()
-        .addr("127.0.0.1", 6379)
-        .id("12".getBytes())
-        .type(ClientKillParams.Type.NORMAL);
+    ClientKillParams clientKillParams = ClientKillParams.clientKillParams().addr("127.0.0.1", 6379)
+        .id("12".getBytes()).type(ClientKillParams.Type.NORMAL);
 
     String toStringResult = clientKillParams.toString();
     assertThat(toStringResult, CoreMatchers.containsString("ID, 12"));

@@ -77,15 +77,14 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
     this(nodes, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
-        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
-        .user(user).password(password).clientName(clientName).ssl(ssl)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build(), poolConfig, DefaultJedisClientConfig
-        .builder().connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
-        .blockingSocketTimeoutMillis(infiniteSoTimeout).user(user).password(password)
-        .clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory)
-        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier)
-        .hostAndPortMapper(portMap).build());
+        .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).user(user)
+        .password(password).clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory)
+        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build(), poolConfig,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+            .user(user).password(password).clientName(clientName).ssl(ssl)
+            .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+            .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build());
   }
 
   /**

@@ -4955,6 +4955,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, boolean justId) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, justId);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, int count, boolean justId) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, count, justId);
+    return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
   public StreamInfo xinfoStream(byte[] key) {
     checkIsInMultiOrPipeline();
     client.xinfoStream(key);

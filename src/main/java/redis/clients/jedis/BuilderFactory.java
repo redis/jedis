@@ -802,10 +802,10 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamAutoClaim> STREAM_AUTO_CLAIM = new Builder<StreamAutoClaim>() {
+  public static final Builder<StreamClaimedMessages> STREAM_AUTO_CLAIM = new Builder<StreamClaimedMessages>() {
     @Override
     @SuppressWarnings("unchecked")
-    public StreamAutoClaim build(Object data) {
+    public StreamClaimedMessages build(Object data) {
       if (null == data) {
         return null;
       }
@@ -816,11 +816,10 @@ public final class BuilderFactory {
       }
 
       StreamEntryID nextStartEntryID = STREAM_ENTRY_ID.build(objectList.get(0));
-      objectList.remove(0);
 
       List<StreamEntry> streamEntries = new ArrayList<>();
 
-      for (ArrayList<Object> res : objectList) {
+      for (ArrayList<Object> res : objectList.subList(1, objectList.size())) {
         if (res == null || res.isEmpty()) {
           continue;
         }
@@ -837,12 +836,45 @@ public final class BuilderFactory {
         streamEntries.add(new StreamEntry(entryID, map));
       }
 
-      return new StreamAutoClaim(nextStartEntryID, streamEntries);
+      return new StreamClaimedMessages(nextStartEntryID, streamEntries);
     }
 
     @Override
     public String toString() {
-      return "StreamAutoClaim";
+      return "StreamClaimedMessages";
+    }
+  };
+
+  public static final Builder<StreamClaimedMessagesId> STREAM_AUTO_CLAIM_ID = new Builder<StreamClaimedMessagesId>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamClaimedMessagesId build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
+      if (objectList.isEmpty()) {
+        return null;
+      }
+
+      StreamEntryID nextStartEntryID = STREAM_ENTRY_ID.build(objectList.get(0));
+
+      List<StreamEntryID> streamEntryIDs = new ArrayList<>();
+
+      for (ArrayList<Object> res : objectList.subList(1, objectList.size())) {
+        if (res == null || res.isEmpty()) {
+          continue;
+        }
+        streamEntryIDs.add(STREAM_ENTRY_ID.build(res.get(0)));
+      }
+
+      return new StreamClaimedMessagesId(nextStartEntryID, streamEntryIDs);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamClaimedMessagesId";
     }
   };
 

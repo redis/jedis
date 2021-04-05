@@ -565,6 +565,12 @@ public interface Commands {
 
   void xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, int count);
 
+  void xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, boolean justId);
+
+  void xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId);
+
   void xinfoStream (String key);
 
   void xinfoGroup (String key);

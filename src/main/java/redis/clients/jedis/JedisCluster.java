@@ -2938,23 +2938,45 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public StreamAutoClaim xautoclaim(final String key, final String group, final String consumerName,
+  public StreamClaimedMessages xautoclaim(final String key, final String group, final String consumerName,
       final long minIdleTime, final StreamEntryID start) {
-    return new JedisClusterCommand<StreamAutoClaim>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+    return new JedisClusterCommand<StreamClaimedMessages>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public StreamAutoClaim execute(Jedis connection) {
+      public StreamClaimedMessages execute(Jedis connection) {
         return connection.xautoclaim(key, group, consumerName, minIdleTime, start);
       }
     }.run(key);
   }
 
   @Override
-  public StreamAutoClaim xautoclaim(final String key, final String group, final String consumerName,
+  public StreamClaimedMessages xautoclaim(final String key, final String group, final String consumerName,
       final long minIdleTime, final StreamEntryID start, final int count) {
-    return new JedisClusterCommand<StreamAutoClaim>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+    return new JedisClusterCommand<StreamClaimedMessages>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public StreamAutoClaim execute(Jedis connection) {
+      public StreamClaimedMessages execute(Jedis connection) {
         return connection.xautoclaim(key, group, consumerName, minIdleTime, start, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamClaimedMessagesId xautoclaimJustId(final String key, final String group, final String consumerName,
+      final long minIdleTime, final StreamEntryID start, boolean justId) {
+    return new JedisClusterCommand<StreamClaimedMessagesId>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public StreamClaimedMessagesId execute(Jedis connection) {
+        return connection.xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamClaimedMessagesId xautoclaimJustId(final String key, final String group, final String consumerName,
+      final long minIdleTime, final StreamEntryID start, final int count, boolean justId) {
+    return new JedisClusterCommand<StreamClaimedMessagesId>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public StreamClaimedMessagesId execute(Jedis connection) {
+        return connection.xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
       }
     }.run(key);
   }

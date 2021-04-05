@@ -454,6 +454,12 @@ public interface BinaryJedisCommands {
 
   Object xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, int count);
 
+  Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, boolean justId);
+
+  Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, int count, boolean justId);
+
   /**
    * @deprecated Use {@link #xinfoStreamBinary(byte[])}.
    */

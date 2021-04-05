@@ -11,7 +11,8 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.StreamAutoClaim;
+import redis.clients.jedis.StreamClaimedMessages;
+import redis.clients.jedis.StreamClaimedMessagesId;
 import redis.clients.jedis.StreamGroupInfo;
 import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.StreamPendingEntry;
@@ -654,13 +655,25 @@ public interface JedisCommands {
   /**
    * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
    */
-  StreamAutoClaim xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start);
+  StreamClaimedMessages xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start);
 
   /**
    * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
    */
-  StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+  StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, int count);
+
+  /**
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
+                                           long minIdleTime, StreamEntryID start, boolean justId);
+
+  /**
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId);
 
   /**
    * Introspection command used in order to retrieve different information about the stream

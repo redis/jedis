@@ -2401,14 +2401,14 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<StreamAutoClaim> xautoclaim(String key, String group, String consumerName,
+  public Response<StreamClaimedMessages> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start) {
     getClient(key).xautoclaim(key, group, consumerName, minIdleTime, start);
     return getResponse(BuilderFactory.STREAM_AUTO_CLAIM);
   }
 
   @Override
-  public Response<StreamAutoClaim> xautoclaim(String key, String group, String consumerName,
+  public Response<StreamClaimedMessages> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, int count) {
     getClient(key).xautoclaim(key, group, consumerName, minIdleTime, start, count);
     return getResponse(BuilderFactory.STREAM_AUTO_CLAIM);
@@ -2425,6 +2425,34 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<Object> xautoclaim(byte[] key, byte[] group, byte[] consumerName,
       long minIdleTime, byte[] start, int count) {
     getClient(key).xautoclaim(key, group, consumerName, minIdleTime, start, count);
+    return getResponse(BuilderFactory.RAW_OBJECT);
+  }
+
+  @Override
+  public Response<StreamClaimedMessagesId> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, boolean justId) {
+    getClient(key).xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
+    return getResponse(BuilderFactory.STREAM_AUTO_CLAIM_ID);
+  }
+
+  @Override
+  public Response<StreamClaimedMessagesId> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId) {
+    getClient(key).xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
+    return getResponse(BuilderFactory.STREAM_AUTO_CLAIM_ID);
+  }
+
+  @Override
+  public Response<Object> xautoclaimJustId(byte[] key, byte[] group, byte[] consumerName,
+      long minIdleTime, byte[] start, boolean justId) {
+    getClient(key).xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
+    return getResponse(BuilderFactory.RAW_OBJECT);
+  }
+
+  @Override
+  public Response<Object> xautoclaimJustId(byte[] key, byte[] group, byte[] consumerName,
+      long minIdleTime, byte[] start, int count, boolean justId) {
+    getClient(key).xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
     return getResponse(BuilderFactory.RAW_OBJECT);
   }
 

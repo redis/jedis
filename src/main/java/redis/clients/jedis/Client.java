@@ -1630,17 +1630,29 @@ public class Client extends BinaryClient implements Commands {
 
   @Override
   public void xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start) {
-    final byte[][] bid = convertStreamEntryIDsToBinary(start);
     xautoclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
-      minIdleTime, bid[0]);
+      minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()));
   }
 
   @Override
   public void xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, int count) {
-    final byte[][] bid = convertStreamEntryIDsToBinary(start);
     xautoclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
-      minIdleTime, bid[0], count);
+      minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), count);
+  }
+
+  @Override
+  public void xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, boolean justId) {
+    xautoclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
+            minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), justId);
+  }
+
+  @Override
+  public void xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId) {
+    xautoclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
+            minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), count, justId);
   }
 
   @Override

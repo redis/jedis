@@ -6,7 +6,8 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.StreamAutoClaim;
+import redis.clients.jedis.StreamClaimedMessages;
+import redis.clients.jedis.StreamClaimedMessagesId;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
@@ -431,11 +432,17 @@ public interface RedisPipeline {
   Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids);
 
-  Response<StreamAutoClaim> xautoclaim(String key, String group, String consumerName,
+  Response<StreamClaimedMessages> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start);
 
-  Response<StreamAutoClaim> xautoclaim(String key, String group, String consumerName,
+  Response<StreamClaimedMessages> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, int count);
+
+  Response<StreamClaimedMessagesId> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, boolean justId);
+
+  Response<StreamClaimedMessagesId> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId);
 
   Response<Long> bitpos(String key, boolean value);
 

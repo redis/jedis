@@ -8,7 +8,8 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamAutoClaim;
+import redis.clients.jedis.StreamClaimedMessages;
+import redis.clients.jedis.StreamClaimedMessagesId;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
@@ -638,13 +639,25 @@ public interface JedisClusterCommands {
   /**
    *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
    */
-  StreamAutoClaim xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start);
+  StreamClaimedMessages xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start);
 
   /**
    *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
    */
-  StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+  StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, int count);
+
+  /**
+   *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, boolean justId);
+
+  /**
+   *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId);
 
   Long waitReplicas(String key, int replicas, long timeout);
 }

@@ -679,11 +679,105 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
 
     // Auto claim pending events to different consumer
-    StreamAutoClaim streamEntrys = jedis.xautoclaim("xpending-stream", "xpending-group",
+    StreamClaimedMessages streamEntrys = jedis.xautoclaim("xpending-stream", "xpending-group",
             "xpending-consumer2", 50, new StreamEntryID());
     assertEquals(1, streamEntrys.getStreamEntries().size());
     assertEquals(pendingRange.get(0).getID(), streamEntrys.getStreamEntries().get(0).getID());
     assertEquals("v1", streamEntrys.getStreamEntries().get(0).getFields().get("f1"));
+  }
+
+  @Test
+  public void xautoclaimBinary() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xpending-stream", null, map);
+
+    assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
+
+    // Read the event from Stream put it on pending
+    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
+            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
+            null, null, 3, "xpending-consumer");
+    // Sleep for 100ms so we can auto claim events pending for more than 50ms
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    // Auto claim pending events to different consumer
+    Object streamEntrys = jedis.xautoclaim(SafeEncoder.encode("xpending-stream"),
+            SafeEncoder.encode("xpending-group"), SafeEncoder.encode("xpending-consumer2"),
+            50, SafeEncoder.encode(new StreamEntryID().toString()));
+    StreamClaimedMessages res = BuilderFactory.STREAM_AUTO_CLAIM.build(streamEntrys);
+    assertEquals(1, res.getStreamEntries().size());
+    assertEquals(pendingRange.get(0).getID(), res.getStreamEntries().get(0).getID());
+    assertEquals("v1", res.getStreamEntries().get(0).getFields().get("f1"));
+  }
+
+  @Test
+  public void xautoclaimJustId() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xpending-stream", null, map);
+
+    assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
+
+    // Read the event from Stream put it on pending
+    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
+            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
+            null, null, 3, "xpending-consumer");
+    // Sleep for 100ms so we can auto claim events pending for more than 50ms
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    // Auto claim pending events to different consumer
+    StreamClaimedMessagesId streamEntrys = jedis.xautoclaimJustId("xpending-stream", "xpending-group",
+            "xpending-consumer2", 50, new StreamEntryID(), true);
+    assertEquals(1, streamEntrys.getStreamEntryIDs().size());
+    assertEquals(pendingRange.get(0).getID().getTime(), streamEntrys.getStreamEntryIDs().get(0).getTime());
+    assertEquals(pendingRange.get(0).getID().getSequence(), streamEntrys.getStreamEntryIDs().get(0).getSequence());
+  }
+
+  @Test
+  public void xautoclaimJustIdBinary() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xpending-stream", null, map);
+
+    assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
+
+    // Read the event from Stream put it on pending
+    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
+            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
+            null, null, 3, "xpending-consumer");
+    // Sleep for 100ms so we can auto claim events pending for more than 50ms
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    // Auto claim pending events to different consumer
+    Object streamEntrys = jedis.xautoclaimJustId(SafeEncoder.encode("xpending-stream"),
+            SafeEncoder.encode("xpending-group"), SafeEncoder.encode("xpending-consumer2"),
+            50, SafeEncoder.encode(new StreamEntryID().toString()), true);
+    StreamClaimedMessagesId res = BuilderFactory.STREAM_AUTO_CLAIM_ID.build(streamEntrys);
+    assertEquals(1, res.getStreamEntryIDs().size());
+    assertEquals(pendingRange.get(0).getID().getTime(), res.getStreamEntryIDs().get(0).getTime());
+    assertEquals(pendingRange.get(0).getID().getSequence(), res.getStreamEntryIDs().get(0).getSequence());
   }
 
   @Test

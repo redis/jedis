@@ -1268,17 +1268,31 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+  public StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start) {
     Jedis j = getShard(key);
     return j.xautoclaim(key, group, consumerName, minIdleTime, start);
   }
 
   @Override
-  public StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+  public StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, int count) {
     Jedis j = getShard(key);
     return j.xautoclaim(key, group, consumerName, minIdleTime, start, count);
+  }
+
+  @Override
+  public StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, boolean justId) {
+    Jedis j = getShard(key);
+    return j.xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
+  }
+
+  @Override
+  public StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count, boolean justId) {
+    Jedis j = getShard(key);
+    return j.xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
   }
 
   @Override

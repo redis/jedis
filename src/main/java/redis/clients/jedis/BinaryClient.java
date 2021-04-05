@@ -1983,6 +1983,11 @@ public class BinaryClient extends Connection {
 
   public void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, int count) {
+    xautoclaim(key, groupName, consumerName, minIdleTime, start, count, false);
+  }
+
+  private void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, int count, boolean justId) {
     List<byte[]> arguments = new ArrayList<>();
 
     arguments.add(key);
@@ -1993,7 +1998,21 @@ public class BinaryClient extends Connection {
     arguments.add(Keyword.COUNT.getRaw());
     arguments.add(toByteArray(count));
 
+    if (justId) {
+      arguments.add(Keyword.JUSTID.getRaw());
+    }
+
     sendCommand(XAUTOCLAIM, arguments.toArray(new byte[arguments.size()][]));
+  }
+
+  public void xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, boolean justId) {
+    xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, 100, justId);
+  }
+
+  public void xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, int count, boolean justId) {
+    xautoclaim(key, groupName, consumerName, minIdleTime, start, count, justId);
   }
 
   public void xinfoStream(byte[] key) {

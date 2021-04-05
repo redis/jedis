@@ -425,6 +425,12 @@ public interface BinaryJedisClusterCommands {
 
   Object xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, int count);
 
+  Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, boolean justId);
+
+  Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, int count, boolean justId);
+
   Long waitReplicas(byte[] key, int replicas, long timeout);
 
   Long memoryUsage(byte[] key);

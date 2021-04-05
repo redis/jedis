@@ -657,6 +657,36 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void xautoclaim() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xpending-stream", null, map);
+
+    assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
+
+    // Read the event from Stream put it on pending
+    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
+            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
+            null, null, 3, "xpending-consumer");
+    // Sleep for 100ms so we can auto claim events pending for more than 50ms
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
+    // Auto claim pending events to different consumer
+    StreamAutoClaim streamEntrys = jedis.xautoclaim("xpending-stream", "xpending-group",
+            "xpending-consumer2", 50, new StreamEntryID());
+    assertEquals(1, streamEntrys.getStreamEntries().size());
+    assertEquals(pendingRange.get(0).getID(), streamEntrys.getStreamEntries().get(0).getID());
+    assertEquals("v1", streamEntrys.getStreamEntries().get(0).getFields().get("f1"));
+  }
+
+  @Test
   public void xinfo() throws InterruptedException {
 
     final String STREAM_NAME = "xadd-stream1";

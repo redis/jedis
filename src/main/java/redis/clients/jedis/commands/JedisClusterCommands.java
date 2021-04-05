@@ -8,6 +8,7 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.StreamAutoClaim;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
@@ -633,6 +634,17 @@ public interface JedisClusterCommands {
 
   List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
+
+  /**
+   *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamAutoClaim xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start);
+
+  /**
+   *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count);
 
   Long waitReplicas(String key, int replicas, long timeout);
 }

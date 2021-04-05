@@ -4512,6 +4512,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaim(key, group, consumerName, minIdleTime, start);
+
+    return BuilderFactory.STREAM_AUTO_CLAIM.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaim(key, group, consumerName, minIdleTime, start, count);
+
+    return BuilderFactory.STREAM_AUTO_CLAIM.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public StreamInfo xinfoStream(String key) {
     client.xinfoStream(key);
 

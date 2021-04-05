@@ -802,6 +802,50 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<StreamAutoClaim> STREAM_AUTO_CLAIM = new Builder<StreamAutoClaim>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamAutoClaim build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
+      if (objectList.isEmpty()) {
+        return null;
+      }
+
+      StreamEntryID nextStartEntryID = STREAM_ENTRY_ID.build(objectList.get(0));
+      objectList.remove(0);
+
+      List<StreamEntry> streamEntries = new ArrayList<>();
+
+      for (ArrayList<Object> res : objectList) {
+        if (res == null || res.isEmpty()) {
+          continue;
+        }
+        ArrayList<Object> list = (ArrayList<Object>) res.get(0);
+        String entryIdString = SafeEncoder.encode((byte[]) list.get(0));
+        StreamEntryID entryID = new StreamEntryID(entryIdString);
+        List<byte[]> hash = (List<byte[]>) list.get(1);
+
+        Iterator<byte[]> hashIterator = hash.iterator();
+        Map<String, String> map = new HashMap<>(hash.size() / 2);
+        while (hashIterator.hasNext()) {
+          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
+        }
+        streamEntries.add(new StreamEntry(entryID, map));
+      }
+
+      return new StreamAutoClaim(nextStartEntryID, streamEntries);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamAutoClaim";
+    }
+  };
+
   public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
       = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override

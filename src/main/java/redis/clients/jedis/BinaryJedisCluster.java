@@ -2848,6 +2848,28 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Object xautoclaim(final byte[] key, final byte[] groupName, final byte[] consumerName,
+      final long minIdleTime, final byte[] start) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.xautoclaim(key, groupName, consumerName, minIdleTime, start);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Object xautoclaim(final byte[] key, final byte[] groupName, final byte[] consumerName,
+      final long minIdleTime, final byte[] start, final int count) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.xautoclaim(key, groupName, consumerName, minIdleTime, start, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public Long waitReplicas(final byte[] key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override

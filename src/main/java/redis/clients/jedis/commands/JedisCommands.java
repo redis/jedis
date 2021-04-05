@@ -11,6 +11,7 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.StreamAutoClaim;
 import redis.clients.jedis.StreamGroupInfo;
 import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.StreamPendingEntry;
@@ -649,6 +650,17 @@ public interface JedisCommands {
    */
   List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
+
+  /**
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamAutoClaim xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start);
+
+  /**
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   */
+  StreamAutoClaim xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, int count);
 
   /**
    * Introspection command used in order to retrieve different information about the stream

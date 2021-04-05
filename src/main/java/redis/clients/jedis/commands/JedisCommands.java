@@ -667,7 +667,7 @@ public interface JedisCommands {
    * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
    */
   StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
-                                           long minIdleTime, StreamEntryID start, boolean justId);
+      long minIdleTime, StreamEntryID start, boolean justId);
 
   /**
    * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]

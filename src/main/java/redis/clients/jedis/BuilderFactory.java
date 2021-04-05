@@ -811,32 +811,8 @@ public final class BuilderFactory {
       }
 
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
-      if (objectList.isEmpty()) {
-        return null;
-      }
-
-      StreamEntryID nextStartEntryID = STREAM_ENTRY_ID.build(objectList.get(0));
-
-      List<StreamEntry> streamEntries = new ArrayList<>();
-
-      for (ArrayList<Object> res : objectList.subList(1, objectList.size())) {
-        if (res == null || res.isEmpty()) {
-          continue;
-        }
-        ArrayList<Object> list = (ArrayList<Object>) res.get(0);
-        String entryIdString = SafeEncoder.encode((byte[]) list.get(0));
-        StreamEntryID entryID = new StreamEntryID(entryIdString);
-        List<byte[]> hash = (List<byte[]>) list.get(1);
-
-        Iterator<byte[]> hashIterator = hash.iterator();
-        Map<String, String> map = new HashMap<>(hash.size() / 2);
-        while (hashIterator.hasNext()) {
-          map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
-        }
-        streamEntries.add(new StreamEntry(entryID, map));
-      }
-
-      return new StreamClaimedMessages(nextStartEntryID, streamEntries);
+      String minId = BuilderFactory.STRING.build(objectList.get(0));
+      return new StreamClaimedMessages(new StreamEntryID(minId), STREAM_ENTRY_LIST.build(objectList.get(1)));
     }
 
     @Override
@@ -854,22 +830,8 @@ public final class BuilderFactory {
       }
 
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
-      if (objectList.isEmpty()) {
-        return null;
-      }
-
-      StreamEntryID nextStartEntryID = STREAM_ENTRY_ID.build(objectList.get(0));
-
-      List<StreamEntryID> streamEntryIDs = new ArrayList<>();
-
-      for (ArrayList<Object> res : objectList.subList(1, objectList.size())) {
-        if (res == null || res.isEmpty()) {
-          continue;
-        }
-        streamEntryIDs.add(STREAM_ENTRY_ID.build(res.get(0)));
-      }
-
-      return new StreamClaimedMessagesId(nextStartEntryID, streamEntryIDs);
+      String minId = BuilderFactory.STRING.build(objectList.get(0));
+      return new StreamClaimedMessagesId(new StreamEntryID(minId), STREAM_ENTRY_ID_LIST.build(objectList.get(1)));
     }
 
     @Override

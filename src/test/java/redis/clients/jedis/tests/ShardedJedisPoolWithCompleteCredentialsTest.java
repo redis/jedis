@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class ShardedJedisPoolWithCompleteCredentialsTest {
-  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);
 
@@ -243,39 +242,6 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     // delete user
     j1.aclDelUser("alice");
     j2.aclDelUser("alice");
-  }
-
-  @Test
-  public void returnResourceShouldResetState() throws URISyntaxException {
-    GenericObjectPoolConfig<ShardedJedis> config = new GenericObjectPoolConfig<>();
-    config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
-
-    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6380")));
-    shards.add(new JedisShardInfo(new URI("redis://default:foobared@localhost:6379")));
-
-    ShardedJedisPool pool = new ShardedJedisPool(config, shards);
-
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("pipelined", String.valueOf(0));
-    jedis.set("pipelined2", String.valueOf(0));
-
-    ShardedJedisPipeline pipeline = jedis.pipelined();
-
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
-
-    jedis.resetState();
-
-    pipeline = jedis.pipelined();
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
-    List<Object> results = pipeline.syncAndReturnAll();
-
-    assertEquals(2, results.size());
-    jedis.close();
-    pool.destroy();
   }
 
   @Test

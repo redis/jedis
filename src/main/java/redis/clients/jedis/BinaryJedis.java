@@ -3707,10 +3707,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
-  public void sync() {
-    client.sync();
-  }
-
   @Override
   public Long lpushx(final byte[] key, final byte[]... string) {
     checkIsInMultiOrPipeline();

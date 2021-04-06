@@ -1083,10 +1083,6 @@ public class BinaryClient extends Connection {
     sendCommand(STRLEN, key);
   }
 
-  public void sync() {
-    sendCommand(SYNC);
-  }
-
   public void lpushx(final byte[] key, final byte[]... string) {
     sendCommand(LPUSHX, joinParameters(key, string));
   }

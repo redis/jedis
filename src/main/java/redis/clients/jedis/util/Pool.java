@@ -8,6 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
@@ -73,6 +74,8 @@ public abstract class Pool<T> implements Closeable {
   public T getResource() {
     try {
       return internalPool.borrowObject();
+    } catch (JedisDataException jde) {
+      throw jde;
     } catch (NoSuchElementException nse) {
       if (null == nse.getCause()) { // The exception was caused by an exhausted pool
         throw new JedisExhaustedPoolException(

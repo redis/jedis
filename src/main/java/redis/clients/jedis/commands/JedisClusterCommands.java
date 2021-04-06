@@ -636,13 +636,27 @@ public interface JedisClusterCommands {
       XClaimParams params, StreamEntryID... ids);
 
   /**
-   *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count]
+   *
+   * @param key Stream Key
+   * @param group Consumer Group
+   * @param consumerName Consumer name to transfer the auto claimed entries
+   * @param minIdleTime Entries pending more than minIdleTime will be transferred ownership
+   * @param start {@link StreamEntryID} - Entries >= start will be transferred ownership, passing <code>null</code> will indicate '-'
+   * @param params {@link XAutoClaimParams}
    */
   Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, XAutoClaimParams params);
 
   /**
-   *  XAUTOCLAIM key group consumer min-idle-time start [COUNT count] [JUSTID]
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] JUSTID
+   *
+   * @param key Stream Key
+   * @param group Consumer Group
+   * @param consumerName Consumer name to transfer the auto claimed entries
+   * @param minIdleTime Entries pending more than minIdleTime will be transferred ownership
+   * @param start {@link StreamEntryID} - Entries >= start will be transferred ownership, passing <code>null</code> will indicate '-'
+   * @param params {@link XAutoClaimParams}
    */
   Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, XAutoClaimParams params);

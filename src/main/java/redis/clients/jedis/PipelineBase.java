@@ -2405,7 +2405,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     getClient(key).xautoclaim(key, group, consumerName, minIdleTime, start, params);
-    return getResponse(BuilderFactory.STREAM_AUTO_CLAIM);
+    return getResponse(BuilderFactory.STREAM_AUTO_CLAIM_RESPONSE);
   }
 
   @Override
@@ -2419,7 +2419,7 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     getClient(key).xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
-    return getResponse(BuilderFactory.STREAM_AUTO_CLAIM_ID);
+    return getResponse(BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE);
   }
 
   @Override

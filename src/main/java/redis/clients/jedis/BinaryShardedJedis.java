@@ -1270,14 +1270,14 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Object xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+  public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     Jedis j = getShard(key);
     return j.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
   }
 
   @Override
-  public Object xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+  public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     Jedis j = getShard(key);
     return j.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);

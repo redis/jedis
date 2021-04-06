@@ -1982,7 +1982,7 @@ public class BinaryClient extends Connection {
     xautoclaim(key, groupName, consumerName, minIdleTime, start, params, false);
   }
 
-  public void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+  private void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params, boolean justId) {
     List<byte[]> arguments = new ArrayList<>();
 

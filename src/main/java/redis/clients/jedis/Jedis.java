@@ -4517,7 +4517,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.xautoclaim(key, group, consumerName, minIdleTime, start, params);
 
-    return BuilderFactory.STREAM_AUTO_CLAIM.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.STREAM_AUTO_CLAIM_RESPONSE.build(client.getObjectMultiBulkReply());
   }
 
   @Override
@@ -4526,7 +4526,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
 
-    return BuilderFactory.STREAM_AUTO_CLAIM_ID.build(client.getObjectMultiBulkReply());
+    return BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE.build(client.getObjectMultiBulkReply());
   }
 
   @Override

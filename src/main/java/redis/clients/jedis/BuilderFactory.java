@@ -802,7 +802,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntry>>> STREAM_AUTO_CLAIM
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntry>>> STREAM_AUTO_CLAIM_RESPONSE
       = new Builder<Map.Entry<StreamEntryID, List<StreamEntry>>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -822,7 +822,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID_RESPONSE
       = new Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>>() {
     @Override
     @SuppressWarnings("unchecked")

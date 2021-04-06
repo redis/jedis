@@ -2,11 +2,17 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.params.ClientKillParams.Type;
 import static redis.clients.jedis.params.ClientKillParams.SkipMe;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +22,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -77,7 +84,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     long clientId1 = client.clientId();
     long clientId2 = client2.clientId();
 
-    ///client-id is monotonically increasing
+    // client-id is monotonically increasing
     assertTrue(clientId1 < clientId2);
 
     client2.close();
@@ -91,6 +98,22 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     long clientIdAfterReconnect = client.clientId();
 
     assertTrue(clientIdInitial < clientIdAfterReconnect);
+  }
+
+  @Test
+  public void clientUnblock() throws InterruptedException, TimeoutException {
+    long clientId = client.clientId();
+    assertEquals(0, jedis.clientUnblock(clientId, UnblockType.ERROR).longValue());
+    Future<?> future = Executors.newSingleThreadExecutor().submit(() -> client.brpop(100000, "foo"));
+
+    try {
+      // to make true command already executed
+      TimeUnit.MILLISECONDS.sleep(500);
+      assertEquals(1, jedis.clientUnblock(clientId, UnblockType.ERROR).longValue());
+      future.get(1, TimeUnit.SECONDS);
+    } catch (ExecutionException e) {
+      assertEquals("redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK", e.getMessage());
+    }
   }
 
   @Test
@@ -169,6 +192,19 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void killLAddr() {
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bladdr=(\\S+)\\b").matcher(info);
+    matcher.find();
+    String laddr = matcher.group(1);
+
+    long clients = jedis.clientKill(new ClientKillParams().laddr(laddr));
+    assertTrue(clients >= 1);
+
+    assertDisconnected(client);
+  }
+
+  @Test
   public void killAddrIpPort() {
     String info = findInClientList();
     Matcher matcher = Pattern.compile("\\baddr=(\\S+)\\b").matcher(info);
@@ -182,13 +218,40 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     assertDisconnected(client);
   }
 
-  private void assertDisconnected(Jedis j) {    
+  @Test
+  public void killUser() {
+    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    client.aclSetUser("test_kill", "on", "+acl", ">password1");
+    client2.auth("test_kill", "password1");
+    long clients = jedis.clientKill(new ClientKillParams().user("test_kill"));
+    assertEquals(1, clients);
+    assertDisconnected(client2);
+    jedis.aclDelUser("test_kill");
+  }
+
+  @Test
+  public void clientInfo() {
+    String info = client.clientInfo();
+    assertNotNull(info);
+    assertEquals(1, info.split("\n").length);
+    assertTrue(info.contains(clientName));
+  }
+
+  @Test
+  public void clientListWithClientId() {
+    Long id = client.clientId();
+    String listInfo = jedis.clientList(id);
+    assertNotNull(listInfo);
+    assertTrue(listInfo.contains(clientName));
+  }
+
+  private void assertDisconnected(Jedis j) {
     try {
       j.ping();
       fail("Jedis connection should be disconnected");
-    } catch(JedisConnectionException jce) {
+    } catch (JedisConnectionException jce) {
       // should be here
-    } 
+    }
   }
 
   private String findInClientList() {

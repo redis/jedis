@@ -156,7 +156,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", resp.get(0));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = IllegalStateException.class)
   public void validateWhenInMulti() {
     jedis.multi();
     jedis.ping();
@@ -215,7 +215,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertArrayEquals("foo".getBytes(), set.get());
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = IllegalStateException.class)
   public void transactionResponseWithinPipeline() {
     jedis.set("string", "foo");
 
@@ -360,7 +360,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void testTransactionWithGeneralCommand(){
+  public void testTransactionWithGeneralCommand() {
     Transaction t = jedis.multi();
     t.set("string", "foo");
     t.lpush("list", "foo");

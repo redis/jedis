@@ -7,27 +7,33 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Pool;
 
 public class ShardedJedisPool extends Pool<ShardedJedis> {
-  public ShardedJedisPool(final GenericObjectPoolConfig poolConfig, List<JedisShardInfo> shards) {
+
+  private static final Logger logger = LoggerFactory.getLogger(ShardedJedisPool.class);
+
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards) {
     this(poolConfig, shards, Hashing.MURMUR_HASH);
   }
 
-  public ShardedJedisPool(final GenericObjectPoolConfig poolConfig, List<JedisShardInfo> shards,
-      Hashing algo) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards, Hashing algo) {
     this(poolConfig, shards, algo, null);
   }
 
-  public ShardedJedisPool(final GenericObjectPoolConfig poolConfig, List<JedisShardInfo> shards,
-      Pattern keyTagPattern) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards, Pattern keyTagPattern) {
     this(poolConfig, shards, Hashing.MURMUR_HASH, keyTagPattern);
   }
 
-  public ShardedJedisPool(final GenericObjectPoolConfig poolConfig, List<JedisShardInfo> shards,
-      Hashing algo, Pattern keyTagPattern) {
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
     super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
   }
 
@@ -36,13 +42,6 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
     ShardedJedis jedis = super.getResource();
     jedis.setDataSource(this);
     return jedis;
-  }
-
-  @Override
-  public void returnBrokenResource(final ShardedJedis resource) {
-    if (resource != null) {
-      returnBrokenResourceObject(resource);
-    }
   }
 
   @Override
@@ -57,9 +56,10 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
    * PoolableObjectFactory custom impl.
    */
   private static class ShardedJedisFactory implements PooledObjectFactory<ShardedJedis> {
-    private List<JedisShardInfo> shards;
-    private Hashing algo;
-    private Pattern keyTagPattern;
+
+    private final List<JedisShardInfo> shards;
+    private final Hashing algo;
+    private final Pattern keyTagPattern;
 
     public ShardedJedisFactory(List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
       this.shards = shards;
@@ -79,14 +79,17 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
       for (Jedis jedis : shardedJedis.getAllShards()) {
         if (jedis.isConnected()) {
           try {
-            try {
+            // need a proper test, probably with mock
+            if (!jedis.isBroken()) {
               jedis.quit();
-            } catch (Exception e) {
-
             }
+          } catch (Exception e) {
+            logger.warn("Error while QUIT", e);
+          }
+          try {
             jedis.disconnect();
           } catch (Exception e) {
-
+            logger.warn("Error while disconnect", e);
           }
         }
       }

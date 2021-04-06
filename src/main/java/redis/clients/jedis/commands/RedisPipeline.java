@@ -6,8 +6,6 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.StreamClaimedMessages;
-import redis.clients.jedis.StreamClaimedMessagesId;
 import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
@@ -20,6 +18,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -432,17 +431,11 @@ public interface RedisPipeline {
   Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids);
 
-  Response<StreamClaimedMessages> xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start);
+  Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
 
-  Response<StreamClaimedMessages> xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count);
-
-  Response<StreamClaimedMessagesId> xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, boolean justId);
-
-  Response<StreamClaimedMessagesId> xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count, boolean justId);
+  Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
 
   Response<Long> bitpos(String key, boolean value);
 

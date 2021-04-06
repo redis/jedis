@@ -1629,30 +1629,17 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start) {
-    xautoclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
-      minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()));
-  }
-
-  @Override
   public void xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count) {
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     xautoclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
-      minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), count);
+      minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), params);
   }
 
   @Override
   public void xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, boolean justId) {
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     xautoclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
-            minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), justId);
-  }
-
-  @Override
-  public void xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count, boolean justId) {
-    xautoclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
-            minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), count, justId);
+            minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), params);
   }
 
   @Override

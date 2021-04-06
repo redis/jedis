@@ -802,41 +802,43 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamClaimedMessages> STREAM_AUTO_CLAIM = new Builder<StreamClaimedMessages>() {
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntry>>> STREAM_AUTO_CLAIM =
+          new Builder<Map.Entry<StreamEntryID, List<StreamEntry>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public StreamClaimedMessages build(Object data) {
+    public Map.Entry<StreamEntryID, List<StreamEntry>> build(Object data) {
       if (null == data) {
         return null;
       }
 
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
-      String minId = BuilderFactory.STRING.build(objectList.get(0));
-      return new StreamClaimedMessages(new StreamEntryID(minId), STREAM_ENTRY_LIST.build(objectList.get(1)));
+      return new AbstractMap.SimpleEntry<>(new StreamEntryID(BuilderFactory.STRING.build(objectList.get(0))),
+              STREAM_ENTRY_LIST.build(objectList.get(1)));
     }
 
     @Override
     public String toString() {
-      return "StreamClaimedMessages";
+      return "Map.Entry<StreamEntryID, List<StreamEntry>>";
     }
   };
 
-  public static final Builder<StreamClaimedMessagesId> STREAM_AUTO_CLAIM_ID = new Builder<StreamClaimedMessagesId>() {
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID =
+          new Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public StreamClaimedMessagesId build(Object data) {
+    public Map.Entry<StreamEntryID, List<StreamEntryID>> build(Object data) {
       if (null == data) {
         return null;
       }
 
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
-      String minId = BuilderFactory.STRING.build(objectList.get(0));
-      return new StreamClaimedMessagesId(new StreamEntryID(minId), STREAM_ENTRY_ID_LIST.build(objectList.get(1)));
+      return new AbstractMap.SimpleEntry<>(new StreamEntryID(BuilderFactory.STRING.build(objectList.get(0))),
+              STREAM_ENTRY_ID_LIST.build(objectList.get(1)));
     }
 
     @Override
     public String toString() {
-      return "StreamClaimedMessagesId";
+      return "Map.Entry<StreamEntryID, List<StreamEntryID>>";
     }
   };
 

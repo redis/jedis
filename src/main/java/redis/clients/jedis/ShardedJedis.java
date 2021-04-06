@@ -15,6 +15,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -1268,31 +1269,17 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start) {
+  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     Jedis j = getShard(key);
-    return j.xautoclaim(key, group, consumerName, minIdleTime, start);
+    return j.xautoclaim(key, group, consumerName, minIdleTime, start, params);
   }
 
   @Override
-  public StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count) {
+  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     Jedis j = getShard(key);
-    return j.xautoclaim(key, group, consumerName, minIdleTime, start, count);
-  }
-
-  @Override
-  public StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, boolean justId) {
-    Jedis j = getShard(key);
-    return j.xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
-  }
-
-  @Override
-  public StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count, boolean justId) {
-    Jedis j = getShard(key);
-    return j.xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
+    return j.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
   }
 
   @Override

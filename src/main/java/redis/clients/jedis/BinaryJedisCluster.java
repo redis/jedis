@@ -2849,44 +2849,22 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public Object xautoclaim(final byte[] key, final byte[] groupName, final byte[] consumerName,
-      final long minIdleTime, final byte[] start) {
+      final long minIdleTime, final byte[] start, XAutoClaimParams params) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Object execute(Jedis connection) {
-        return connection.xautoclaim(key, groupName, consumerName, minIdleTime, start);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public Object xautoclaim(final byte[] key, final byte[] groupName, final byte[] consumerName,
-      final long minIdleTime, final byte[] start, final int count) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.xautoclaim(key, groupName, consumerName, minIdleTime, start, count);
+        return connection.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
       }
     }.runBinary(key);
   }
 
   @Override
   public Object xautoclaimJustId(final byte[] key, final byte[] groupName, final byte[] consumerName,
-      final long minIdleTime, final byte[] start, boolean justId) {
+      final long minIdleTime, final byte[] start, XAutoClaimParams params) {
     return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Object execute(Jedis connection) {
-        return connection.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, justId);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public Object xautoclaimJustId(final byte[] key, final byte[] groupName, final byte[] consumerName,
-      final long minIdleTime, final byte[] start, final int count, boolean justId) {
-    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public Object execute(Jedis connection) {
-        return connection.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, count, justId);
+        return connection.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
       }
     }.runBinary(key);
   }

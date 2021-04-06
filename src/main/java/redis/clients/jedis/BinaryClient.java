@@ -1977,17 +1977,13 @@ public class BinaryClient extends Connection {
     xclaim(key, groupname, consumername, minIdleTime, params, ids, true);
   }
 
-  public void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start) {
-    xautoclaim(key, groupName, consumerName, minIdleTime, start, 100);
+  public void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params) {
+    xautoclaim(key, groupName, consumerName, minIdleTime, start, params, false);
   }
 
   public void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
-      long minIdleTime, byte[] start, int count) {
-    xautoclaim(key, groupName, consumerName, minIdleTime, start, count, false);
-  }
-
-  private void xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
-      long minIdleTime, byte[] start, int count, boolean justId) {
+      long minIdleTime, byte[] start, XAutoClaimParams params, boolean justId) {
     List<byte[]> arguments = new ArrayList<>();
 
     arguments.add(key);
@@ -1995,8 +1991,7 @@ public class BinaryClient extends Connection {
     arguments.add(consumerName);
     arguments.add(toByteArray(minIdleTime));
     arguments.add(start);
-    arguments.add(Keyword.COUNT.getRaw());
-    arguments.add(toByteArray(count));
+    Collections.addAll(arguments, params.getByteParams());
 
     if (justId) {
       arguments.add(Keyword.JUSTID.getRaw());
@@ -2006,13 +2001,8 @@ public class BinaryClient extends Connection {
   }
 
   public void xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
-      long minIdleTime, byte[] start, boolean justId) {
-    xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, 100, justId);
-  }
-
-  public void xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
-      long minIdleTime, byte[] start, int count, boolean justId) {
-    xautoclaim(key, groupName, consumerName, minIdleTime, start, count, justId);
+      long minIdleTime, byte[] start, XAutoClaimParams params) {
+    xautoclaim(key, groupName, consumerName, minIdleTime, start, params, true);
   }
 
   public void xinfoStream(byte[] key) {

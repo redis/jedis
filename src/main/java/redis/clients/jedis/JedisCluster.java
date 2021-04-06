@@ -2938,45 +2938,23 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public StreamClaimedMessages xautoclaim(final String key, final String group, final String consumerName,
-      final long minIdleTime, final StreamEntryID start) {
-    return new JedisClusterCommand<StreamClaimedMessages>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(final String key, final String group, final String consumerName,
+      final long minIdleTime, final StreamEntryID start, XAutoClaimParams params) {
+    return new JedisClusterCommand<Map.Entry<StreamEntryID, List<StreamEntry>>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public StreamClaimedMessages execute(Jedis connection) {
-        return connection.xautoclaim(key, group, consumerName, minIdleTime, start);
+      public Map.Entry<StreamEntryID, List<StreamEntry>> execute(Jedis connection) {
+        return connection.xautoclaim(key, group, consumerName, minIdleTime, start, params);
       }
     }.run(key);
   }
 
   @Override
-  public StreamClaimedMessages xautoclaim(final String key, final String group, final String consumerName,
-      final long minIdleTime, final StreamEntryID start, final int count) {
-    return new JedisClusterCommand<StreamClaimedMessages>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(final String key, final String group, final String consumerName,
+      final long minIdleTime, final StreamEntryID start, XAutoClaimParams params) {
+    return new JedisClusterCommand<Map.Entry<StreamEntryID, List<StreamEntryID>>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public StreamClaimedMessages execute(Jedis connection) {
-        return connection.xautoclaim(key, group, consumerName, minIdleTime, start, count);
-      }
-    }.run(key);
-  }
-
-  @Override
-  public StreamClaimedMessagesId xautoclaimJustId(final String key, final String group, final String consumerName,
-      final long minIdleTime, final StreamEntryID start, boolean justId) {
-    return new JedisClusterCommand<StreamClaimedMessagesId>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public StreamClaimedMessagesId execute(Jedis connection) {
-        return connection.xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
-      }
-    }.run(key);
-  }
-
-  @Override
-  public StreamClaimedMessagesId xautoclaimJustId(final String key, final String group, final String consumerName,
-      final long minIdleTime, final StreamEntryID start, final int count, boolean justId) {
-    return new JedisClusterCommand<StreamClaimedMessagesId>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public StreamClaimedMessagesId execute(Jedis connection) {
-        return connection.xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
+      public Map.Entry<StreamEntryID, List<StreamEntryID>> execute(Jedis connection) {
+        return connection.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
       }
     }.run(key);
   }

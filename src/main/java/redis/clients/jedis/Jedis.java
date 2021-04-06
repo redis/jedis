@@ -4512,37 +4512,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start) {
+  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     checkIsInMultiOrPipeline();
-    client.xautoclaim(key, group, consumerName, minIdleTime, start);
+    client.xautoclaim(key, group, consumerName, minIdleTime, start, params);
 
     return BuilderFactory.STREAM_AUTO_CLAIM.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public StreamClaimedMessages xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count) {
+  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     checkIsInMultiOrPipeline();
-    client.xautoclaim(key, group, consumerName, minIdleTime, start, count);
-
-    return BuilderFactory.STREAM_AUTO_CLAIM.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, boolean justId) {
-    checkIsInMultiOrPipeline();
-    client.xautoclaimJustId(key, group, consumerName, minIdleTime, start, justId);
-
-    return BuilderFactory.STREAM_AUTO_CLAIM_ID.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public StreamClaimedMessagesId xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, int count, boolean justId) {
-    checkIsInMultiOrPipeline();
-    client.xautoclaimJustId(key, group, consumerName, minIdleTime, start, count, justId);
+    client.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
 
     return BuilderFactory.STREAM_AUTO_CLAIM_ID.build(client.getObjectMultiBulkReply());
   }

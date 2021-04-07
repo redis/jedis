@@ -802,6 +802,46 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntry>>> STREAM_AUTO_CLAIM_RESPONSE
+      = new Builder<Map.Entry<StreamEntryID, List<StreamEntry>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map.Entry<StreamEntryID, List<StreamEntry>> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+      return new AbstractMap.SimpleEntry<>(STREAM_ENTRY_ID.build(objectList.get(0)),
+          STREAM_ENTRY_LIST.build(objectList.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "Map.Entry<StreamEntryID, List<StreamEntry>>";
+    }
+  };
+
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID_RESPONSE
+      = new Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map.Entry<StreamEntryID, List<StreamEntryID>> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+      return new AbstractMap.SimpleEntry<>(STREAM_ENTRY_ID.build(objectList.get(0)),
+          STREAM_ENTRY_ID_LIST.build(objectList.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "Map.Entry<StreamEntryID, List<StreamEntryID>>";
+    }
+  };
+
   public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
       = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override

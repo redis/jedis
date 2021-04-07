@@ -2409,10 +2409,10 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Object> xautoclaim(byte[] key, byte[] group, byte[] consumerName,
+  public Response<List<Object>> xautoclaim(byte[] key, byte[] group, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     getClient(key).xautoclaim(key, group, consumerName, minIdleTime, start, params);
-    return getResponse(BuilderFactory.RAW_OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT_LIST);
   }
 
   @Override
@@ -2423,10 +2423,10 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<Object> xautoclaimJustId(byte[] key, byte[] group, byte[] consumerName,
+  public Response<List<Object>> xautoclaimJustId(byte[] key, byte[] group, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     getClient(key).xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
-    return getResponse(BuilderFactory.RAW_OBJECT);
+    return getResponse(BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public Response<Object> sendCommand(final String sampleKey, final ProtocolCommand cmd,

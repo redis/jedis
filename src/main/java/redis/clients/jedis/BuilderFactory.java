@@ -812,7 +812,7 @@ public final class BuilderFactory {
       }
 
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
-      return new AbstractMap.SimpleEntry<>(new StreamEntryID(BuilderFactory.STRING.build(objectList.get(0))),
+      return new AbstractMap.SimpleEntry<>(STREAM_ENTRY_ID.build(objectList.get(0)),
           STREAM_ENTRY_LIST.build(objectList.get(1)));
     }
 
@@ -832,7 +832,7 @@ public final class BuilderFactory {
       }
 
       List<ArrayList<Object>> objectList = (List<ArrayList<Object>>) data;
-      return new AbstractMap.SimpleEntry<>(new StreamEntryID(BuilderFactory.STRING.build(objectList.get(0))),
+      return new AbstractMap.SimpleEntry<>(STREAM_ENTRY_ID.build(objectList.get(0)),
           STREAM_ENTRY_ID_LIST.build(objectList.get(1)));
     }
 

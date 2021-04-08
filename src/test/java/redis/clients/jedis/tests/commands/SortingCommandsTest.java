@@ -112,7 +112,7 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     assertEquals(3L, resultCount.longValue());
 
     bresult = jedis.lpop(bfoodest, 5);
-    assertEquals(bexpected, result);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test

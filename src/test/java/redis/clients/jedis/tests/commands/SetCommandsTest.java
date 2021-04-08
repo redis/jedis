@@ -536,14 +536,11 @@ public class SetCommandsTest extends JedisCommandTestBase {
     List<byte[]> bmembers = jedis.srandmember(bfoo, 2);
     assertEquals(2, bmembers.size());
 
-    assertEquals( Arrays.asList("a", "b"), bmembers);
-
     bmember = jedis.srandmember(bbar);
     assertNull(bmember);
     
     members = jedis.srandmember("bbar", 2);
     assertEquals(0, members.size());
-
   }
 
   @Test

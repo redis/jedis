@@ -32,7 +32,7 @@ public class JedisPool extends Pool<Jedis> {
   /**
    * WARNING: This constructor only accepts a uri string as {@code url}.
    * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
-   *
+   * <p>
    * To use a host string, {@link #JedisPool(java.lang.String, int)} can be used with
    * {@link Protocol#DEFAULT_PORT}.
    *
@@ -46,10 +46,10 @@ public class JedisPool extends Pool<Jedis> {
   /**
    * WARNING: This constructor only accepts a uri string as {@code url}.
    * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
-   *
+   * <p>
    * To use a host string,
-   * {@link #JedisPool(java.net.URI, javax.net.ssl.SSLSocketFactory, javax.net.ssl.SSLParameters, javax.net.ssl.HostnameVerifier)}
-   * can be used with {@link Protocol#DEFAULT_PORT}.
+   * {@link #JedisPool(java.lang.String, int, boolean, javax.net.ssl.SSLSocketFactory, javax.net.ssl.SSLParameters, javax.net.ssl.HostnameVerifier)}
+   * can be used with {@link Protocol#DEFAULT_PORT} and {@code ssl=true}.
    *
    * @param url
    * @param sslSocketFactory

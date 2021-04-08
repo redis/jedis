@@ -362,7 +362,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public KeyedListElement build(Object data) {
       if (data == null) return null;
-      List<byte[]> l = (List<byte[]>) data;
+      List<String> l = (List<String>) data;
       return new KeyedListElement(l.get(0), l.get(1));
     }
 

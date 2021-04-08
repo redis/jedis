@@ -19,9 +19,11 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.KeyedListElement;
 
 public class ListCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x05 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
   final byte[] bA = { 0x0A };
@@ -419,7 +421,20 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertEquals(2, result.size());
     assertEquals("foo", result.get(0));
     assertEquals("bar", result.get(1));
+    
+    // Multi keys
+    result = jedis.blpop(1, "foo", "foo1");
+    assertNull(result);
 
+    jedis.lpush("foo", "bar");
+    jedis.lpush("foo1", "bar1");
+    result = jedis.blpop(1, "foo1", "foo");
+
+    assertNotNull(result);
+    assertEquals(2, result.size());
+    assertEquals("foo1", result.get(0));
+    assertEquals("bar1", result.get(1));
+    
     // Binary
     jedis.lpush(bfoo, bbar);
     List<byte[]> bresult = jedis.blpop(1, bfoo);
@@ -429,6 +444,65 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bfoo, bresult.get(0));
     assertArrayEquals(bbar, bresult.get(1));
 
+    // Multi keys
+    bresult = jedis.blpop(1, bfoo, bfoo1);
+    assertNull(bresult);
+
+    jedis.lpush(bfoo, bbar);
+    jedis.lpush(bfoo1, bcar);
+    bresult = jedis.blpop(1, bfoo, bfoo1);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+  }
+  
+  @Test
+  public void blpopDouble() throws InterruptedException {
+    KeyedListElement result = jedis.blpop(1.1, "foo");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    result = jedis.blpop(1.02, "foo");
+
+    assertNotNull(result);
+    assertEquals("foo", result.getKey());
+    assertEquals("bar", result.getElement());
+    
+    // Multi keys
+    result = jedis.blpop(0.8, "foo", "foo1");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    jedis.lpush("foo1", "bar1");
+    result = jedis.blpop(1.2, "foo1", "foo");
+
+    assertNotNull(result);
+    assertEquals("foo1", result.getKey());
+    assertEquals("bar1", result.getElement());
+    
+    // Binary
+    jedis.lpush(bfoo, bbar);
+    List<byte[]> bresult = jedis.blpop(1.12, bfoo);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+
+    // Multi keys
+    bresult = jedis.blpop(1.11, bfoo, bfoo1);
+    assertNull(bresult);
+
+    jedis.lpush(bfoo, bbar);
+    jedis.lpush(bfoo1, bcar);
+    bresult = jedis.blpop(1.08, bfoo, bfoo1);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
   }
 
   @Test

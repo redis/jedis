@@ -12,6 +12,7 @@ import redis.clients.jedis.SortingParams;
 
 public class SortingCommandsTest extends JedisCommandTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoodest = { 0x01, 0x02, 0x03, 0x04, 0x05 };
   final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, '1' };
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, '2' };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, '3' };
@@ -77,7 +78,14 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     expected.add("1");
 
     assertEquals(expected, result);
+    
+    // Sort to dest key
+    Long resultCount = jedis.sort("foo", sp, "foodest");
+    assertEquals(3L, resultCount.longValue());
 
+    result = jedis.lpop("foodest", 5);
+    assertEquals(expected, result);
+    
     // Binary
     jedis.lpush(bfoo, b2);
     jedis.lpush(bfoo, b3);
@@ -98,7 +106,13 @@ public class SortingCommandsTest extends JedisCommandTestBase {
     bexpected.add(b1);
 
     assertByteArrayListEquals(bexpected, bresult);
+    
+    // Sort to dest key
+    resultCount = jedis.sort(bfoo, sp, bfoodest);
+    assertEquals(3L, resultCount.longValue());
 
+    bresult = jedis.lpop(bfoodest, 5);
+    assertByteArrayListEquals(bexpected, bresult);
   }
 
   @Test

@@ -1658,6 +1658,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  /**
+   * Return a random elements from a Set, without removing the elements. If the Set is empty or the
+   * key does not exist, an empty list is returned.
+   * <p>
+   * The SPOP command does a similar work but the returned elements is popped (removed) from the Set.
+   * <p>
+   * Time complexity O(1)
+   * @param key
+   * @param count if positive, return an array of distinct elements.
+   *        If negative the behavior changes and the command is allowed to
+   *        return the same element multiple times  
+   * @return list of elements
+   */
   @Override
   public List<String> srandmember(final String key, final int count) {
     checkIsInMultiOrPipeline();

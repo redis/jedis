@@ -183,7 +183,7 @@ public class JedisSentinelPoolTest {
         factory.setPassword("wrong password");
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
-        } catch (JedisConnectionException e) { }
+        } catch (JedisException e) { }
       }
     }
   }
@@ -195,7 +195,7 @@ public class JedisSentinelPoolTest {
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
         fail("Should not get resource from pool");
-      } catch (JedisConnectionException e) { }
+      } catch (JedisException e) { }
 
       factory.setPassword("foobared");
       try (Jedis obj2 = pool.getResource()) {

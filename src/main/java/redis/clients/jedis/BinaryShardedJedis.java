@@ -876,12 +876,6 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.linsert(key, where, pivot, value);
   }
 
-  public ShardedJedisPipeline pipelined() {
-    ShardedJedisPipeline pipeline = new ShardedJedisPipeline();
-    pipeline.setShardedJedis(this);
-    return pipeline;
-  }
-
   public Long objectRefcount(final byte[] key) {
     Jedis j = getShard(key);
     return j.objectRefcount(key);

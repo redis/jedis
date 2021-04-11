@@ -188,6 +188,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     reply = jedis.unlink("foo1", "foo2");
     assertEquals(0, reply);
 
+    // Test single key unlink
+    jedis.set("foo1", "bar1");    
+
+    reply = jedis.unlink("foo1");
+    assertEquals(1, reply);
+    
     // Binary ...
     jedis.set(bfoo1, bbar1);
     jedis.set(bfoo2, bbar2);

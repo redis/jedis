@@ -26,6 +26,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -649,6 +650,32 @@ public interface JedisCommands {
    */
   List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
+
+  /**
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count]
+   *
+   * @param key Stream Key
+   * @param group Consumer Group
+   * @param consumerName Consumer name to transfer the auto claimed entries
+   * @param minIdleTime Entries pending more than minIdleTime will be transferred ownership
+   * @param start {@link StreamEntryID} - Entries >= start will be transferred ownership, passing <code>null</code> will indicate '-'
+   * @param params {@link XAutoClaimParams}
+   */
+  Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
+
+  /**
+   * XAUTOCLAIM key group consumer min-idle-time start [COUNT count] JUSTID
+   *
+   * @param key Stream Key
+   * @param group Consumer Group
+   * @param consumerName Consumer name to transfer the auto claimed entries
+   * @param minIdleTime Entries pending more than minIdleTime will be transferred ownership
+   * @param start {@link StreamEntryID} - Entries >= start will be transferred ownership, passing <code>null</code> will indicate '-'
+   * @param params {@link XAutoClaimParams}
+   */
+  Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
 
   /**
    * Introspection command used in order to retrieve different information about the stream

@@ -213,6 +213,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
           && port == connectionPort && jedis.isConnected()
           && jedis.ping().equals("PONG");
     } catch (final Exception e) {
+      logger.error("Error while validating pooled Jedis object.", e);
       return false;
     }
   }

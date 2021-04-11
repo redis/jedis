@@ -423,6 +423,12 @@ public interface BinaryRedisPipeline {
   Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername,
       long minIdleTime, XClaimParams params, byte[]... ids);
 
+  Response<List<Object>> xautoclaim(byte[] key, byte[] group, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params);
+
+  Response<List<Object>> xautoclaimJustId(byte[] key, byte[] group, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params);
+
   Response<Long> bitpos(byte[] key, boolean value);
 
   Response<Long> bitpos(byte[] key, boolean value, BitPosParams params);

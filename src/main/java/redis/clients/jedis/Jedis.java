@@ -2215,7 +2215,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.blpop(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2294,7 +2294,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.brpop(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2340,7 +2340,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2352,7 +2352,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }

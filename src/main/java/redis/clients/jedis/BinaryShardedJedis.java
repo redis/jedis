@@ -875,6 +875,12 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.linsert(key, where, pivot, value);
   }
 
+  /**
+   * @return
+   * @deprecated The support of {@link ShardedJedisPipeline} and this method will be removed in next
+   * major release.
+   */
+  @Deprecated
   public ShardedJedisPipeline pipelined() {
     ShardedJedisPipeline pipeline = new ShardedJedisPipeline();
     pipeline.setShardedJedis(this);

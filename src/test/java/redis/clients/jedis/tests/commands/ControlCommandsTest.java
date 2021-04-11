@@ -124,11 +124,6 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void sync() {
-    jedis.sync();
-  }
-
-  @Test
   public void debug() {
     jedis.set("foo", "bar");
     String resp = jedis.debug(DebugParams.OBJECT("foo"));

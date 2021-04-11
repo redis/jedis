@@ -1083,6 +1083,10 @@ public class BinaryClient extends Connection {
     sendCommand(STRLEN, key);
   }
 
+  /**
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void sync() {
     sendCommand(SYNC);
   }

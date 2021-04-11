@@ -252,8 +252,7 @@ public class JedisPoolTest {
 
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
-    pool.initPool(config, new CrashingJedisPooledObjectFactory());
+    JedisPool pool = new JedisPool(config, new CrashingJedisPooledObjectFactory());
     Jedis crashingJedis = pool.getResource();
 
     try {

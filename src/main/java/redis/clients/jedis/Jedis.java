@@ -1655,6 +1655,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  /**
+   * Return a random elements from a Set, without removing the elements. If the Set is empty or the
+   * key does not exist, an empty list is returned.
+   * <p>
+   * The SPOP command does a similar work but the returned elements is popped (removed) from the Set.
+   * <p>
+   * Time complexity O(1)
+   * @param key
+   * @param count if positive, return an array of distinct elements.
+   *        If negative the behavior changes and the command is allowed to
+   *        return the same element multiple times  
+   * @return list of elements
+   */
   @Override
   public List<String> srandmember(final String key, final int count) {
     checkIsInMultiOrPipeline();
@@ -2199,7 +2212,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.blpop(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2278,7 +2291,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.brpop(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2324,7 +2337,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2336,7 +2349,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -4506,6 +4519,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
 
     return BuilderFactory.STREAM_ENTRY_ID_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaim(key, group, consumerName, minIdleTime, start, params);
+
+    return BuilderFactory.STREAM_AUTO_CLAIM_RESPONSE.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
+
+    return BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE.build(client.getObjectMultiBulkReply());
   }
 
   @Override

@@ -16,6 +16,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -1266,6 +1267,20 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
       XClaimParams params, byte[]... ids) {
     Jedis j = getShard(key);
     return j.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
+  }
+
+  @Override
+  public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params) {
+    Jedis j = getShard(key);
+    return j.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
+  }
+
+  @Override
+  public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params) {
+    Jedis j = getShard(key);
+    return j.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
   }
 
   @Override

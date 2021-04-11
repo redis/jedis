@@ -83,8 +83,6 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> sunionstore(String dstkey, String... keys);
 
-  Response<String> watch(String... keys);
-
   Response<String> unwatch();
 
   Response<Set<String>> zdiff(String... keys);

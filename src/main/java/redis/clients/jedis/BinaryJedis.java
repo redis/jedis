@@ -3708,6 +3708,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  /**
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void sync() {
     client.sync();
   }

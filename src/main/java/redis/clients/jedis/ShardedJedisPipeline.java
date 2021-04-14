@@ -5,6 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * @deprecated The support of {@link ShardedJedisPipeline} will be removed in next major release,
+ * due to several bugs and implementation issue.
+ */
+@Deprecated
 public class ShardedJedisPipeline extends PipelineBase {
   private BinaryShardedJedis jedis;
   private List<FutureResult> results = new ArrayList<>();

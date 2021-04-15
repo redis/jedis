@@ -1152,6 +1152,22 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void zremrangeByScoreExclusive() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 0d, "c");
+    jedis.zadd("foo", 2d, "b");
+
+    assertEquals(Long.valueOf(1), jedis.zremrangeByScore("foo", "(0", "(2"));
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 0d, bc);
+    jedis.zadd(bfoo, 2d, bb);
+
+    assertEquals(Long.valueOf(1), jedis.zremrangeByScore(bfoo, "(0".getBytes(), "(2".getBytes()));
+  }
+
+  @Test
   public void zremrangeByLex() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 1, "b");

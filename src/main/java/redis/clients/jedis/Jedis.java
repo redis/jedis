@@ -3097,6 +3097,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  @Deprecated
   public Boolean setbit(final String key, final long offset, final String value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);

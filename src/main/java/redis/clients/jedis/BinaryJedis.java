@@ -3795,6 +3795,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  @Deprecated
   public Boolean setbit(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);

@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
@@ -228,6 +229,19 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     assertEquals(2, results.size());
     assertNull(results.get(0));
     assertNull(results.get(1));
+  }
+
+  @Test
+  public void scriptEvalShaReturnValues() {
+    jedis.hset("key1", "foo", "bar");
+    jedis.hset("key2", "field", "value");
+
+    String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
+    String sha = jedis.scriptLoad(script);
+    List<String> results = (List<String>) jedis.evalsha(sha, Arrays.asList("key1", "key2"), Arrays.asList("foo", "field"));
+    assertEquals(2, results.size());
+    assertEquals("bar", results.get(0));
+    assertEquals("value", results.get(1));
   }
 
   @Test

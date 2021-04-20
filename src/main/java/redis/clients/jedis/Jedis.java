@@ -3953,7 +3953,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
-  public void setDataSource(Pool<Jedis> jedisPool) {
+  protected void setDataSource(Pool<Jedis> jedisPool) {
     this.dataSource = jedisPool;
   }
 

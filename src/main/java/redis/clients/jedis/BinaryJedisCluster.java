@@ -17,9 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -96,74 +93,18 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
       int soTimeout, int maxAttempts, String password, String clientName,
       GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName,
-        poolConfig, ssl, null, null, null, null);
+    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
+        poolConfig, ssl);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
       int soTimeout, int maxAttempts, String user, String password, String clientName,
       GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName,
-        poolConfig, ssl, null, null, null, null);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, String password, String clientName,
-      GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      JedisClusterHostAndPortMap hostAndPortMap) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
-        poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, String user, String password, String clientName,
-      GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      JedisClusterHostAndPortMap hostAndPortMap) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, 0, maxAttempts, user, password,
-        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int infiniteSoTimeout, int maxAttempts, String user, String password,
-      String clientName, GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user,
-        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap, Duration.ofMillis((long) soTimeout * maxAttempts));
-  }
-
-  /**
-   * @param maxTotalRetriesDuration After this amount of time we will do no more retries and report
-   * the operation as failed.
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
-      GenericObjectPoolConfig poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      JedisClusterHostAndPortMap hostAndPortMap, Duration maxTotalRetriesDuration) {
-    this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
-        connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName, ssl,
-        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-    this.maxAttempts = maxAttempts;
-    this.maxTotalRetriesDuration = maxTotalRetriesDuration;
+    this(jedisClusterNode,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).user(user).password(password).clientName(clientName)
+            .ssl(ssl).build(),
+        maxAttempts, poolConfig);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, JedisClientConfig clientConfig,

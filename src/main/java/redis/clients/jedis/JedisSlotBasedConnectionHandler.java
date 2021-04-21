@@ -2,9 +2,6 @@ package redis.clients.jedis;
 
 import java.util.List;
 import java.util.Set;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -46,33 +43,6 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
       int infiniteSoTimeout, String user, String password, String clientName) {
     super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password,
         clientName);
-  }
-
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
-      GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
-      String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      JedisClusterHostAndPortMap portMap) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName, ssl,
-        sslSocketFactory, sslParameters, hostnameVerifier, portMap);
-  }
-
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
-      GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout, String user,
-      String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
-      SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      JedisClusterHostAndPortMap portMap) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, user, password, clientName, ssl,
-        sslSocketFactory, sslParameters, hostnameVerifier, portMap);
-  }
-
-  public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
-      GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
-      int infiniteSoTimeout, String user, String password, String clientName, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap portMap) {
-    super(nodes, poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password,
-        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,

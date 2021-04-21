@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -86,33 +83,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
     this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password,
         clientName, poolConfig, ssl);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
-      String password, String clientName, final GenericObjectPoolConfig<Jedis> poolConfig,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, password,
-        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
-      String user, String password, String clientName,
-      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(Collections.singleton(node), connectionTimeout, soTimeout, maxAttempts, user, password,
-        clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap);
   }
 
   public JedisCluster(HostAndPort node, final JedisClientConfig clientConfig, int maxAttempts,
@@ -189,77 +159,6 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl) {
     super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName,
         poolConfig, ssl);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int maxAttempts, String password, String clientName,
-      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName,
-        poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int infiniteSoTimeout, int maxAttempts, String password, String clientName,
-      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, null,
-        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int maxAttempts, String user, String password, String clientName,
-      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName,
-        poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
-      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user,
-        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap);
-  }
-
-  /**
-   * @param maxTotalRetriesDuration After this amount of time we will do no more retries and report
-   * the operation as failed.
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
-      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
-      final GenericObjectPoolConfig<Jedis> poolConfig, boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap,
-      Duration maxTotalRetriesDuration) {
-    super(jedisClusterNode, connectionTimeout, soTimeout, infiniteSoTimeout, maxAttempts, user,
-        password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier,
-        hostAndPortMap, maxTotalRetriesDuration);
   }
 
   public JedisCluster(Set<HostAndPort> nodes, final JedisClientConfig clientConfig,

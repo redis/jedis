@@ -22,6 +22,7 @@ import redis.clients.jedis.Protocol;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class BinaryValuesCommandsTest extends JedisCommandTestBase {
@@ -166,6 +167,32 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bbar, value);
 
     assertNull(jedis.get(bfoo));
+  }
+
+  @Test
+  public void getEx() {
+    assertNull(jedis.getEx(bfoo, GetExParams.getExParams().ex(1)));
+    jedis.set(bfoo, bbar);
+
+    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().ex(10)));
+    long ttl = jedis.ttl(bfoo);
+    assertTrue(ttl > 0 && ttl <= 10);
+
+    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().px(20000l)));
+    ttl = jedis.ttl(bfoo);
+    assertTrue(ttl > 10 && ttl <= 20);
+
+    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    ttl = jedis.ttl(bfoo);
+    assertTrue(ttl > 20 && ttl <= 30);
+
+    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    ttl = jedis.ttl(bfoo);
+    assertTrue(ttl > 30 && ttl <= 40);
+
+    assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().persist()));
+    ttl = jedis.ttl(bfoo);
+    assertEquals(-1, ttl);
   }
 
   @Test

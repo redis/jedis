@@ -33,6 +33,17 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void getDel() {
+    String status = jedis.set("foo", "bar");
+    assertEquals("OK", status);
+
+    String value = jedis.getDel("foo");
+    assertEquals("bar", value);
+
+    assertNull(jedis.get("foo"));
+  }
+
+  @Test
   public void mget() {
     List<String> values = jedis.mget("foo", "bar");
     List<String> expected = new ArrayList<String>();
@@ -215,17 +226,6 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
     long ttl = jedis.ttl("foo");
     assertTrue(ttl > 0 && ttl <= 20000);
-  }
-
-  @Test
-  public void getDel() {
-    String status = jedis.set("foo", "bar");
-    assertEquals("OK", status);
-
-    String value = jedis.getDel("foo");
-    assertEquals("bar", value);
-
-    assertNull(jedis.get("foo"));
   }
 
   @Test

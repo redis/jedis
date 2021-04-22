@@ -158,6 +158,17 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void getDel() {
+    String status = jedis.set(bfoo, bbar);
+    assertEquals("OK", status);
+
+    byte[] value = jedis.getDel(bfoo);
+    assertArrayEquals(bbar, value);
+
+    assertNull(jedis.get(bfoo));
+  }
+
+  @Test
   public void mget() {
     List<byte[]> values = jedis.mget(bfoo, bbar);
     List<byte[]> expected = new ArrayList<>();

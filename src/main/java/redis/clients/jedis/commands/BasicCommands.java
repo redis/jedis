@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.exceptions.JedisException;
 
 public interface BasicCommands {
 
@@ -132,9 +133,9 @@ public interface BasicCommands {
   /**
    * Stop all the client. Perform a SAVE (if one save point is configured). Flush the append only
    * file if AOF is enabled quit the server
-   * @return only in case of error.
+   * @throws JedisException only in case of error.
    */
-  String shutdown();
+  void shutdown() throws JedisException;
 
   /**
    * The INFO command returns information and statistics about the server in a format that is simple

@@ -800,13 +800,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void psetex() {
-    long pttl = jedis.pttl("foo");
-    assertEquals(-2, pttl);
+    long pttl;
 
-    String status = jedis.psetex("foo", 200000000000L, "bar");
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
-
+    jedis.psetex("foo", 200000000000L, "bar");
     pttl = jedis.pttl("foo");
+    assertTrue(pttl > 100000000000L);
+
+    // Binary
+    jedis.psetex(bfoo, 200000000000L, bbar);
+    pttl = jedis.pttl(bfoo);
     assertTrue(pttl > 100000000000L);
   }
 

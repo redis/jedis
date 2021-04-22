@@ -3694,10 +3694,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Status code reply
    */
   @Override
-  public byte[] configSet(final byte[] parameter, final byte[] value) {
+  public String configSet(final byte[] parameter, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
-    return client.getBinaryBulkReply();
+    return client.getStatusCodeReply();
   }
 
   @Override

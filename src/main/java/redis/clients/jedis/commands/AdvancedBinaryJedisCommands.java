@@ -11,7 +11,7 @@ public interface AdvancedBinaryJedisCommands {
 
   List<byte[]> configGet(byte[] pattern);
 
-  byte[] configSet(byte[] parameter, byte[] value);
+  String configSet(byte[] parameter, byte[] value);
 
   String slowlogReset();
 

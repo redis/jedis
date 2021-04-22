@@ -5,8 +5,8 @@ import redis.clients.jedis.HostAndPort;
 public class JedisRedirectionException extends JedisDataException {
   private static final long serialVersionUID = 3878126572474819403L;
 
-  private HostAndPort targetNode;
-  private int slot;
+  private final HostAndPort targetNode;
+  private final int slot;
 
   public JedisRedirectionException(String message, HostAndPort targetNode, int slot) {
     super(message);

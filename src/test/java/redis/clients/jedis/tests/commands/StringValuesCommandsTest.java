@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.GetExParams;
 
 public class StringValuesCommandsTest extends JedisCommandTestBase {
   @Test
@@ -214,5 +215,42 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", status);
     long ttl = jedis.ttl("foo");
     assertTrue(ttl > 0 && ttl <= 20000);
+  }
+
+  @Test
+  public void getDel() {
+    String status = jedis.set("foo", "bar");
+    assertEquals("OK", status);
+
+    String value = jedis.getDel("foo");
+    assertEquals("bar", value);
+
+    assertNull(jedis.get("foo"));
+  }
+
+  @Test
+  public void getEx() {
+    assertNull(jedis.getEx("foo", GetExParams.getExParams().ex(1)));
+    jedis.set("foo", "bar");
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().ex(10)));
+    long ttl = jedis.ttl("foo");
+    assertTrue(ttl > 0 && ttl <= 10);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().px(20000l)));
+    ttl = jedis.ttl("foo");
+    assertTrue(ttl > 10 && ttl <= 20);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    ttl = jedis.ttl("foo");
+    assertTrue(ttl > 20 && ttl <= 30);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    ttl = jedis.ttl("foo");
+    assertTrue(ttl > 30 && ttl <= 40);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().persist()));
+    ttl = jedis.ttl("foo");
+    assertEquals(-1, ttl);
   }
 }

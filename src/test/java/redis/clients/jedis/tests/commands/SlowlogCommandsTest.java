@@ -57,6 +57,8 @@ public class SlowlogCommandsTest extends JedisCommandTestBase {
 
     assertNotNull(log1);
     assertNotNull(blog1);
+
+    assertEquals(7, jedis.slowlogLen().longValue());
   }
 
   @Test

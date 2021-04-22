@@ -654,6 +654,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     byte[] sv = jedis.dump("foo1");
     jedis.restore("foo2", 0, sv);
     assertEquals("bar", jedis.get("foo2"));
+
+    jedis.set(bfoo1, bbar);
+    sv = jedis.dump(bfoo1);
+    jedis.restore(bfoo2, 0, sv);
+    assertArrayEquals(bbar, jedis.get(bfoo2));
   }
 
   @Test

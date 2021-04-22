@@ -27,6 +27,16 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class ScriptingCommandsTest extends JedisCommandTestBase {
 
+  final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
+  final byte[] bfoo2 = { 0x01, 0x02, 0x03, 0x04, 0x0B };
+  final byte[] bfoo3 = { 0x01, 0x02, 0x03, 0x04, 0x0C };
+  final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
+  final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+  final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+  final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
+  final byte[] bfoobar = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+
   @SuppressWarnings("unchecked")
   @Test
   public void evalMultiBulk() {
@@ -233,15 +243,28 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void scriptEvalShaReturnValues() {
-    jedis.hset("key1", "foo", "bar");
-    jedis.hset("key2", "field", "value");
+    jedis.hset("foo", "foo1", "bar1");
+    jedis.hset("foobar", "foo2", "bar2");
 
     String script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}";
     String sha = jedis.scriptLoad(script);
-    List<String> results = (List<String>) jedis.evalsha(sha, Arrays.asList("key1", "key2"), Arrays.asList("foo", "field"));
+    List<String> results = (List<String>) jedis.evalsha(sha, Arrays.asList("foo", "foobar"), Arrays.asList("foo1", "foo2"));
     assertEquals(2, results.size());
-    assertEquals("bar", results.get(0));
-    assertEquals("value", results.get(1));
+    assertEquals("bar1", results.get(0));
+    assertEquals("bar2", results.get(1));
+  }
+
+  @Test
+  public void scriptEvalShaReturnValuesBinary() {
+    jedis.hset(bfoo, bfoo1, bbar1);
+    jedis.hset(bfoobar, bfoo2, bbar2);
+
+    byte[] script = "return {redis.call('hget',KEYS[1],ARGV[1]),redis.call('hget',KEYS[2],ARGV[2])}".getBytes();
+    byte[] sha = jedis.scriptLoad(script);
+    List<byte[]> results = (List<byte[]>) jedis.evalsha(sha, Arrays.asList(bfoo, bfoobar), Arrays.asList(bfoo1, bfoo2));
+    assertEquals(2, results.size());
+    assertArrayEquals(bbar1, results.get(0));
+    assertArrayEquals(bbar2, results.get(1));
   }
 
   @Test

@@ -742,6 +742,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     long pttl = jedis.pttl("foo2");
     assertTrue(pttl > 100000000000L);
+
+    // Binary
+    status = jedis.pexpire(bfoo, 10000);
+    assertEquals(0, status);
+
+    jedis.set(bfoo, bbar);
+    status = jedis.pexpire(bfoo, 10000);
+    assertEquals(1, status);
   }
 
   @Test
@@ -752,8 +760,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, status);
 
     jedis.set("foo", "bar");
-    unixTime = (System.currentTimeMillis()) + 10000;
     status = jedis.pexpireAt("foo", unixTime);
+    assertEquals(1, status);
+
+    // Binary
+    status = jedis.pexpireAt(bfoo, unixTime);
+    assertEquals(0, status);
+
+    jedis.set(bfoo, bbar);
+    status = jedis.pexpireAt(bfoo, unixTime);
     assertEquals(1, status);
   }
 
@@ -768,6 +783,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.pexpire("foo", 20000);
     pttl = jedis.pttl("foo");
+    assertTrue(pttl >= 0 && pttl <= 20000);
+
+    // Binary
+    pttl = jedis.pttl(bfoo);
+    assertEquals(-2, pttl);
+
+    jedis.set(bfoo, bbar);
+    pttl = jedis.pttl(bfoo);
+    assertEquals(-1, pttl);
+
+    jedis.pexpire(bfoo, 20000);
+    pttl = jedis.pttl(bfoo);
     assertTrue(pttl >= 0 && pttl <= 20000);
   }
 

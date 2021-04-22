@@ -125,7 +125,7 @@ public class HyperLogLogCommandsTest extends JedisCommandTestBase {
     String mergeStatus = jedis.pfmerge(bHll3, bHll1, bHll2);
     assertEquals("OK", mergeStatus);
 
-    status = jedis.pfcount("hll3");
+    status = jedis.pfcount(bHll3);
     assertEquals(6, status);
   }
 }

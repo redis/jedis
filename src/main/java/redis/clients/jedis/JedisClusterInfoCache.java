@@ -288,7 +288,7 @@ public class JedisClusterInfoCache {
       for (JedisPool pool : nodes.values()) {
         try {
           if (pool != null) {
-            pool.destroy();
+            pool.close();
           }
         } catch (Exception e) {
           // pass

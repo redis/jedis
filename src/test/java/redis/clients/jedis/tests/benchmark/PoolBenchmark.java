@@ -58,7 +58,7 @@ public class PoolBenchmark {
     for (Thread t : tds)
       t.join();
 
-    pool.destroy();
+    pool.close();
 
   }
 }

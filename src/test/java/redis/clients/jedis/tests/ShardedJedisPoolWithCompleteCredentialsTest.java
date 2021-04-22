@@ -58,7 +58,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
-    pool.destroy();
+    pool.close();
   }
 
   @Test
@@ -81,7 +81,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));
     jedis.close();
-    pool.destroy();
+    pool.close();
   }
 
   @Test
@@ -95,7 +95,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     jedis = pool.getResource();
     jedis.incr("foo");
     jedis.close();
-    pool.destroy();
+    pool.close();
   }
 
   @Test
@@ -109,7 +109,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     jedis = pool.getResource();
     jedis.incr("foo");
     jedis.close();
-    pool.destroy();
+    pool.close();
   }
 
   @Test(expected = JedisExhaustedPoolException.class)
@@ -147,7 +147,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
     ShardedJedis jedis = pool.getResource();
     jedis.incr("foo");
     jedis.close();
-    pool.destroy();
+    pool.close();
   }
 
   @Test

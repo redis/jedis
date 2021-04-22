@@ -292,19 +292,6 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void getNumActiveIsNegativeWhenPoolIsClosed() {
-    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "foobared", 0, "my_shiny_client_name");
-
-    try (Jedis j = pool.getResource()) {
-      j.ping();
-    }
-
-    pool.close();
-    assertTrue(pool.getNumActive() < 0);
-  }
-
-  @Test
   public void getNumActiveReturnsTheCorrectNumber() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       Jedis jedis = pool.getResource();
@@ -330,7 +317,7 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void testAddObject() {
+  public void testAddObject() throws Exception {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       pool.addObjects(1);
       assertEquals(1, pool.getNumIdle());

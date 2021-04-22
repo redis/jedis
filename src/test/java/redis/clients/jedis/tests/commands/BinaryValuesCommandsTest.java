@@ -263,12 +263,6 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(Arrays.equals(bfoo, jedis.get(bbar)));
   }
 
-  @Test(expected = JedisDataException.class)
-  public void incrWrongValue() {
-    jedis.set(bfoo, binaryValue);
-    jedis.incr(bfoo);
-  }
-
   @Test
   public void incr() {
     long value = jedis.incr(bfoo);
@@ -278,9 +272,9 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test(expected = JedisDataException.class)
-  public void incrByWrongValue() {
+  public void incrWrongValue() {
     jedis.set(bfoo, binaryValue);
-    jedis.incrBy(bfoo, 2);
+    jedis.incr(bfoo);
   }
 
   @Test
@@ -292,9 +286,17 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test(expected = JedisDataException.class)
-  public void decrWrongValue() {
+  public void incrByWrongValue() {
     jedis.set(bfoo, binaryValue);
-    jedis.decr(bfoo);
+    jedis.incrBy(bfoo, 2);
+  }
+
+  @Test
+  public void incrByFloat() {
+    double value = jedis.incrByFloat(bfoo, 10.5);
+    assertEquals(10.5, value, 0.0);
+    value = jedis.incrByFloat(bfoo, 0.1);
+    assertEquals(10.6, value, 0.0);
   }
 
   @Test
@@ -306,9 +308,9 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test(expected = JedisDataException.class)
-  public void decrByWrongValue() {
+  public void decrWrongValue() {
     jedis.set(bfoo, binaryValue);
-    jedis.decrBy(bfoo, 2);
+    jedis.decr(bfoo);
   }
 
   @Test
@@ -317,6 +319,12 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(-2, value);
     value = jedis.decrBy(bfoo, 2);
     assertEquals(-4, value);
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void decrByWrongValue() {
+    jedis.set(bfoo, binaryValue);
+    jedis.decrBy(bfoo, 2);
   }
 
   @Test

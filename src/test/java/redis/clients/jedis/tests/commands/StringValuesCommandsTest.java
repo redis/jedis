@@ -137,12 +137,6 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("foo", jedis.get("bar"));
   }
 
-  @Test(expected = JedisDataException.class)
-  public void incrWrongValue() {
-    jedis.set("foo", "bar");
-    jedis.incr("foo");
-  }
-
   @Test
   public void incr() {
     long value = jedis.incr("foo");
@@ -152,17 +146,31 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test(expected = JedisDataException.class)
-  public void incrByWrongValue() {
+  public void incrWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incrBy("foo", 2);
+    jedis.incr("foo");
   }
 
   @Test
   public void incrBy() {
     long value = jedis.incrBy("foo", 2);
     assertEquals(2, value);
-    value = jedis.incrBy("foo", 2);
-    assertEquals(4, value);
+    value = jedis.incrBy("foo", 3);
+    assertEquals(5, value);
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void incrByWrongValue() {
+    jedis.set("foo", "bar");
+    jedis.incrBy("foo", 2);
+  }
+
+  @Test
+  public void incrByFloat() {
+    double value = jedis.incrByFloat("foo", 10.5);
+    assertEquals(10.5, value, 0.0);
+    value = jedis.incrByFloat("foo", 0.1);
+    assertEquals(10.6, value, 0.0);
   }
 
   @Test(expected = JedisDataException.class)
@@ -185,18 +193,18 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(-2, value);
   }
 
-  @Test(expected = JedisDataException.class)
-  public void decrByWrongValue() {
-    jedis.set("foo", "bar");
-    jedis.decrBy("foo", 2);
-  }
-
   @Test
   public void decrBy() {
     long value = jedis.decrBy("foo", 2);
     assertEquals(-2, value);
     value = jedis.decrBy("foo", 2);
     assertEquals(-4, value);
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void decrByWrongValue() {
+    jedis.set("foo", "bar");
+    jedis.decrBy("foo", 2);
   }
 
   @Test
@@ -236,14 +244,6 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
     long value = jedis.incr("foo");
     assertEquals(Long.MIN_VALUE, value);
-  }
-
-  @Test
-  public void incrByFloat() {
-    double value = jedis.incrByFloat("foo", 10.5);
-    assertEquals(10.5, value, 0.0);
-    value = jedis.incrByFloat("foo", 0.1);
-    assertEquals(10.6, value, 0.0);
   }
 
   @Test

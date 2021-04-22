@@ -988,20 +988,39 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void copy() {
-    jedis.set("foo", "bar");
-    assertTrue(jedis.copy("foo", "bar", false));
-    assertFalse(jedis.copy("unknown", "bar1", false));
-    assertEquals("bar", jedis.get("bar"));
+    assertFalse(jedis.copy("unknown", "foo", false));
+
+    jedis.set("foo1", "bar");
+    assertTrue(jedis.copy("foo1", "foo2", false));
+    assertEquals("bar", jedis.get("foo2"));
 
     // with destinationDb
-    assertTrue(jedis.copy("foo", "bar1", 2, false));
+    assertTrue(jedis.copy("foo1", "foo3", 2, false));
     jedis.select(2);
-    assertEquals("bar", jedis.get("bar1"));
+    assertEquals("bar", jedis.get("foo3"));
+    jedis.select(0); // getting back to original db, for next tests
 
     // replace
-    jedis.set("foo", "bar");
-    jedis.set("bar2", "b");
-    assertTrue(jedis.copy("foo", "bar2", true));
-    assertEquals("bar", jedis.get("bar2"));
+    jedis.set("foo1", "bar1");
+    assertTrue(jedis.copy("foo1", "foo2", true));
+    assertEquals("bar1", jedis.get("foo2"));
+
+    // Binary
+    assertFalse(jedis.copy(bfoobar, bfoo, false));
+
+    jedis.set(bfoo1, bbar);
+    assertTrue(jedis.copy(bfoo1, bfoo2, false));
+    assertArrayEquals(bbar, jedis.get(bfoo2));
+
+    // with destinationDb
+    assertTrue(jedis.copy(bfoo1, bfoo3, 3, false));
+    jedis.select(3);
+    assertArrayEquals(bbar, jedis.get(bfoo3));
+    jedis.select(0); // getting back to original db, for next tests
+
+    // replace
+    jedis.set(bfoo1, bbar1);
+    assertTrue(jedis.copy(bfoo1, bfoo2, true));
+    assertArrayEquals(bbar1, jedis.get(bfoo2));
   }
 }

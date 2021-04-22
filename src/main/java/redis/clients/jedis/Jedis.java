@@ -177,7 +177,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Boolean copy(String srcKey, String dstKey, int db, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, db, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -192,7 +192,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Boolean copy(String srcKey, String dstKey, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
